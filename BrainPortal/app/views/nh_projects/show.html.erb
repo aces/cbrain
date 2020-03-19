@@ -59,16 +59,12 @@
         <div class="card-stat">
           <p><%= group_members.count %></p>
           <p class="card-label"><%= "Member#{group_members.count != 1 ? "s": ""}" %></p>
+          <div>
+            <p class="card-label">Editors: <span class="default-dk"><%= group_editors.count %></span></p>
+          </div>
         </div>
       </div>
 
-      <div class="card-item">
-        <img class="card-icon" src="/images/neurohub/NH_icon_members.svg"/>
-        <div class="card-stat">
-          <p><%= group_editors.count %></p>
-          <p class="card-label"><%= "Editor#{group_editors.count != 1 ? "s": ""}" %></p>
-        </div>
-      </div>
 
       <div class="card-item">
         <img class="card-icon" src="/images/neurohub/NH_icon_invites.svg"/>

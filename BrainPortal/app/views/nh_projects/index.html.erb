@@ -69,10 +69,14 @@ viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;"
       <% @nh_projects.each do |project| %>
         <div class="card">
           <%= link_to project.name, {:action => :show, :id => project.id}, :method  => :get, :class=>"btn-text-secondary bg-default-wash" %>
-          <div class="btn-text-secondary">
-            <p class="text-xs"><%= project.creator.try(:login) %></p>
-          </div>
-          <p class="card-text"><%= project.description.presence || "-" %></p>
+          <% if current_user.id === project.creator.id %>
+            <a href="/myaccount" class="btn-text-secondary">
+              <p class="text-xs"><%= project.creator.try(:login) %></p>
+            </a>
+          <% else %>
+            <p class="text-secondary text-xs"><%= project.creator.try(:login) %></p>
+          <% end %>
+          <p class="card-text ellipsis"><%= project.description.presence || "-" %></p>
           <div class="btn-section card-actions">
             <% if project.can_be_edited_by?(current_user) %>
               <%= link_to(edit_icon,{:action => :edit, :id => project.id}, :method  => :get)  %>
