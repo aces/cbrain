@@ -38,7 +38,6 @@
         <div id="nh_invitations">
           <div class="section secondary">
             <p class="section-title">New Notifications</p>
-            <% if new_invites.count > 0 %>
               <% new_invites.each do |invitation| %>
                 <div class="card">
                   <div class="card-row header">
@@ -51,7 +50,6 @@
                   </div>
                 </div>
               <% end %>
-            <% end %>
           </div>
         </div>
       <% end %>

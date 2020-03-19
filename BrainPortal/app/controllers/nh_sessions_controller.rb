@@ -71,7 +71,7 @@ class NhSessionsController < NeurohubApplicationController
       return
     end
 
-    redirect_to nh_projects_path
+    redirect_to neurohub_path
   end
 
   # GET /signout
@@ -148,7 +148,7 @@ class NhSessionsController < NeurohubApplicationController
 
     # All's good
     user.addlog('Authenticated by ORCID')
-    redirect_to nh_projects_path
+    redirect_to neurohub_path
     return
 
   rescue => ex

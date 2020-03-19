@@ -134,7 +134,9 @@ $variant : xs, sm, md, lg, xl.
   line-height: 1.5;
   -webkit-font-smoothing: auto;
   letter-spacing: 0;
-
+  @if $variant == "xxs" {
+    font-size: 0.65rem;
+  }
   @if $variant == "xs" {
     font-size: 0.75rem;
   }
@@ -1226,6 +1228,28 @@ $TOOLBAR_ZINDEX: 1000;
   }
 }
 
+.badge[data-badge] {
+  position: relative;
+  &::after {
+    @include text("xxs");
+    @include m(1);
+    content: attr(data-badge);
+    background: $PRIMARY_BG;
+    width: auto;
+    min-width: 1rem;
+    padding: 1px;
+    border-radius: 50%;
+    color: $DEFAULT_BG;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    right: 0;
+    box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2);
+  }
+}
+
 /*
 =============================================================
 | BREADCRUMBS
@@ -1796,6 +1820,9 @@ $DASH_CARD_MIN_WIDTH: 25;
     .notifications {
       .section {
         .card {
+          .header {
+            min-width: 200px;
+          }
           .btn-section {
             flex: 1;
           }
@@ -1812,7 +1839,7 @@ $DASH_CARD_MIN_WIDTH: 25;
       .card {
         @include m(0);
         @include mb(1);
-        flex: 1 0 $DASH_CARD_MIN_WIDTH + rem;
+        flex: 1 1 $DASH_CARD_MIN_WIDTH + rem;
         a {
           justify-content: flex-start;
           text-decoration: none;
