@@ -37,7 +37,7 @@ class ToolsController < ApplicationController
     scope_default_order(@scope, 'name')
 
     @base_scope = current_user.available_tools.includes(:user, :group)
-    @tools = @scope.apply(@base_scope)
+    @tools = @scope.apply(@base_scope).uniq
 
     respond_to do |format|
       format.js
