@@ -7,7 +7,7 @@
 #
 # A prerequisite is to have run, first:
 #
-#   RAILS_EMV=test rake db:seed:test:api
+#   RAILS_ENV=test rake db:seed:test:api
 #
 # This file CAN be loaded into the Rails console, however,
 # provided it was started in the test environment.
