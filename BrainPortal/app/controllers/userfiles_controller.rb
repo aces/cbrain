@@ -137,7 +137,7 @@ class UserfilesController < ApplicationController
 
     # This is for the tool selection dialog box....
     # we need the tools the user has access to and tags associated with the tools
-    @my_tools    = current_user.available_tools.where("tools.category <> 'background'").all.to_a.uniq
+    @my_tools    = current_user.available_tools.where("tools.category <> 'background'").all.to_a
     top_tool_ids = current_user.meta[:top_tool_ids] || {}
 
     if top_tool_ids.present?
@@ -777,7 +777,9 @@ class UserfilesController < ApplicationController
       # Dataprovider owner switch availability check
       if changes.has_key?(:user_id)
         allowed, rejected = DataProvider
-          .where(:id => userfiles.pluck('userfiles.data_provider_id').uniq)
+          .where(:id => userfiles.pluck('userfiles.data_provider_id')
+            
+            )
           .all.partition(&:allow_file_owner_change?)
 
         failed["changing file ownership is not allowed on this data provider"] = userfiles
