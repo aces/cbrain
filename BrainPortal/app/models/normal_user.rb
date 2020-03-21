@@ -36,9 +36,8 @@ class NormalUser < User
 
   def available_groups  #:nodoc:
     group_scope  = Group.where(
-                    ["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?)", self.id]
-                  ).or(Group.where(:public => true)
-                  ).or(Group.where("groups.type <> 'EveryoneGroup'"))
+                    ["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=? and groups.type <> 'EveryoneGroup')", self.id]
+                  ).or(Group.where(:public => true))
     group_scope = group_scope.where(:invisible => false)
 
     group_scope
