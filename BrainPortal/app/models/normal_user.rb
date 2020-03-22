@@ -27,18 +27,21 @@ class NormalUser < User
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+
   def available_tools  #:nodoc:
-    available_group_ids    = self.available_groups.pluck(:id)
+    available_group_ids    = (self.available_groups.pluck(:id) + self.group_ids).uniq
     available_bourreau_ids = Bourreau.find_all_accessible_by_user(self).pluck(:id)
+
+
     tools = Tool.where( ["tools.user_id = ? OR tools.group_id IN (?)", self.id, available_group_ids ])
     tools = tools.joins(:tool_configs).where(["tool_configs.bourreau_id IN (?)",available_bourreau_ids])
+    
+    tools
   end
 
   def available_groups  #:nodoc:
-    group_scope  = Group.where(
-                    ["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=? and groups.type <> 'EveryoneGroup')", self.id]
-                  ).or(Group.where(:public => true))
-    group_scope = group_scope.where(:invisible => false)
+    group_scope = Group.where(["groups.id IN (?)",self.group_ids]).or(Group.where(:public => true))
+    group_scope = group_scope.where("groups.type <> 'EveryoneGroup'").where(:invisible => false)
 
     group_scope
   end
