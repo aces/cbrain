@@ -281,18 +281,21 @@ describe User do
 
 
   describe "#availability" do
-    let!(:admin)        { create(:admin_user) }
-    let!(:group)        { create(:group) }
-    let!(:site_manager) { create(:site_manager, :group_ids => [group.id] ) }
-    let!(:bourreau)     { create(:bourreau, :group_id => group.id )}
+    let!(:admin)           { create(:admin_user) }
+    let!(:group)           { create(:group) }
+    let!(:public_group)    { create(:group, :public => true)}
+    let!(:site_manager)    { create(:site_manager, :group_ids => [group.id] ) }
+    let!(:bourreau)        { create(:bourreau, :group_id => group.id )}
+    let!(:public_bourreau) { create(:bourreau, :group_id => public_group.id )}
+
 
     describe "#tool" do
       let!(:tool1)        { create(:tool, :group_id => group.id, :user => site_manager) }#
       let!(:tool2)        { create(:tool, :category => "conversion tool") }
+      let!(:public_tool)  { create(:tool, :category => "conversion tool", :group_id => public_group.id) }
       let!(:tc1)          { create(:tool_config, :bourreau => bourreau, :tool => tool1)}
       let!(:tc2)          { create(:tool_config, :bourreau => bourreau, :tool => tool2)}
-
-      # tool_config = create(:tool_config, :bourreau_id => bourreau.id, :tool_id => nil)
+      let!(:tc_public)    { create(:tool_config, :bourreau => public_bourreau, :tool => public_tool)}
 
       describe "#available_tools" do
 
@@ -302,7 +305,11 @@ describe User do
         end
 
         it "should return all tools available for site_manager" do
-          expect(site_manager.available_tools).to match_array([tool1])
+          expect(site_manager.available_tools).to match_array([tool1,public_tool])
+        end
+
+        it "should return tools if the group of the tool is public and tool is on an available bourreau for site_manager" do
+          expect(site_manager.available_tools).to include(public_tool)
         end
 
         it "should return a tool if one of the user of the site have acces to the tool" do
@@ -310,7 +317,7 @@ describe User do
           normal_user.password = nil # avoid re-encrypt check
           expect(normal_user.save).to be(true)
           allow(site_manager).to receive_message_chain(:site, :user_ids).and_return([site_manager.id, normal_user.id])
-          expect(site_manager.available_tools).to match_array([tool1,tool2])
+          expect(site_manager.available_tools).to match_array([tool1,tool2,public_tool])
         end
 
         it "should return tools available for a standard user" do
@@ -318,7 +325,7 @@ describe User do
           normal_user.group_ids = [group.id]
           normal_user.password  = nil # avoid re-encrypt check
           expect(normal_user.save).to be(true)
-          expect(normal_user.available_tools.to_a).to eq([tool1,tool2])
+          expect(normal_user.available_tools.to_a).to eq([tool1,tool2,public_tool])
         end
 
       end
@@ -329,6 +336,7 @@ describe User do
 
     describe "#available_groups" do
       let!(:invisible_group) {create(:invisible_group)}
+      let!(:public_group)    { create(:group, :public => true)}
 
       it "should return all groups if called with an admin" do
         expect(admin.available_groups).to match(Group.all)
@@ -344,6 +352,10 @@ describe User do
         expect(site_manager.available_groups).not_to include(Group.where(:name => "everyone").first)
       end
 
+      it "should include public group for site_manager" do
+        expect(site_manager.available_groups).to include(public_group)
+      end
+
       it "should not return invisible group for standard user" do
         invisible_group.user_ids = [normal_user.id]
         invisible_group.save
@@ -352,6 +364,10 @@ describe User do
 
       it "should not include everyone group for standard user" do
         expect(normal_user.available_groups).not_to include(Group.where(:name => "everyone"))
+      end
+
+      it "should include public group for standard user" do
+        expect(normal_user.available_groups).to include(public_group)
       end
 
 
@@ -393,9 +409,13 @@ describe User do
         expect(site_manager.available_tasks).to include(my_task)
       end
 
+      xit "should return task of public group if task is on available bourreau for site_manager"
+
       it "should return my task if I'm a standard user" do
         expect(normal_user.available_tasks).to include(my_task)
       end
+
+      xit "should return task of public group if task is on available bourreau for standard user"
 
     end
 
