@@ -40,14 +40,18 @@ class SiteManager < User
     group_scope = Group.where(
                                ["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?) OR groups.site_id=?", self.id, self.site_id]
                              ).or(Group.where(:public => true))
-    group_scope = group_scope.where("groups.type <> 'EveryoneGroup'").where(:invisible => false)	
+    group_scope = group_scope.where("groups.type <> 'EveryoneGroup'").where(:invisible => false)
 
     group_scope
   end
 
   def available_tasks  #:nodoc:
     available_group_ids    = self.available_groups.pluck(:id)
-    CbrainTask.where( ["cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", available_group_ids, self.site.user_ids] )
+    tasks = CbrainTask.where( ["cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", available_group_ids, self.site.user_ids] )
+
+    available_bourreau_ids = Bourreau.find_all_accessible_by_user(self).pluck(:id)
+    tasks = tasks.where(:bourreau_id => available_bourreau_ids)
+    tasks
   end
 
   def available_users  #:nodoc:

@@ -392,8 +392,14 @@ describe User do
 
 
     describe "#available_tasks" do
-      let!(:my_task)      {create(:cbrain_task, :user_id => normal_user.id)}
-      let!(:user_of_site) {create(:normal_user, :site => site_manager.site)}
+      let!(:user_of_site)                 {create(:normal_user, :site => site_manager.site)}
+
+      let!(:public_group)                 {create(:group, :public => true)}
+      let!(:public_bourreau)              {create(:bourreau, :group_id => public_group.id )}
+      let!(:public_task)                  {create(:cbrain_task, :user_id => normal_user.id, :group_id => public_group.id, :bourreau_id => public_bourreau.id)}
+      let!(:private_bourreau)             {create(:bourreau)}
+      let!(:public_task_private_bourreau) {create(:cbrain_task, :user_id => normal_user.id, :bourreau_id => private_bourreau.id)}
+      let!(:my_task)                      {create(:cbrain_task, :user_id => normal_user.id, :bourreau_id => public_bourreau.id)}
 
       it "should return all tasks if called with an admin" do
         expect(CbrainTask).to receive(:where).with(nil)
@@ -409,13 +415,25 @@ describe User do
         expect(site_manager.available_tasks).to include(my_task)
       end
 
-      xit "should return task of public group if task is on available bourreau for site_manager"
+      it "should return task of public group if task is on available bourreau for site_manager" do
+        expect(site_manager.available_tasks).to include(public_task)
+      end
+
+      it "should not return task of public group if task is not available bourreau for site_manager" do
+        expect(site_manager.available_tasks).not_to include(public_task_private_bourreau)
+      end
 
       it "should return my task if I'm a standard user" do
         expect(normal_user.available_tasks).to include(my_task)
       end
 
-      xit "should return task of public group if task is on available bourreau for standard user"
+      it "should return task of public group if task is on available bourreau for standard user" do
+        expect(normal_user.available_tasks).to include(public_task)
+      end
+
+      it "should not return task of public group if task is not available bourreau for standard user" do
+        expect(normal_user.available_tasks).not_to include(public_task_private_bourreau)
+      end
 
     end
 

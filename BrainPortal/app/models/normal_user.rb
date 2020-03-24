@@ -35,7 +35,7 @@ class NormalUser < User
 
     tools = Tool.where( ["tools.user_id = ? OR tools.group_id IN (?)", self.id, available_group_ids ])
     tools = tools.joins(:tool_configs).where(["tool_configs.bourreau_id IN (?)",available_bourreau_ids])
-    
+
     tools
   end
 
@@ -48,7 +48,11 @@ class NormalUser < User
 
   def available_tasks  #:nodoc:
     available_group_ids    = self.available_groups.pluck(:id)
-    CbrainTask.where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, available_group_ids] )
+    tasks = CbrainTask.where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, available_group_ids] )
+
+    available_bourreau_ids = Bourreau.find_all_accessible_by_user(self).pluck(:id)
+    tasks = tasks.where(:bourreau_id => available_bourreau_ids)
+    tasks
   end
 
   def available_users  #:nodoc:
