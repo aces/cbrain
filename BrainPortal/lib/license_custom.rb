@@ -22,7 +22,7 @@
 
 
 
-# Module containing common methods for set and access the
+# Module containing common methods for set and access the user create, custom user-agreements
 # license agreements. Differently from the original, user can create his own licences
 module LicenseCustom
 
@@ -38,7 +38,6 @@ module LicenseCustom
 
     includer.class_eval do
       # License agreement is a pseudo attributes and cannot be accessed if the object is not saved.
-      #after_find :load_license_agreements
       validate   :valid_license_agreements?
       after_save :register_license_agreements
     end
@@ -62,6 +61,7 @@ module LicenseCustom
     @license_agreements = agrs
   end
 
+  # create a license file
   def create_license_file(content, user, basename=nil)
     basename ||= "license_#{SecureRandom.uuid().to_s}.txt"
     userfile = create_file(content, user, basename)
@@ -125,7 +125,6 @@ module LicenseCustom
     userfile.save
 
     if !userfile.save
-      puts 'SAVE FAILED'
       return nil
     end
 
@@ -141,8 +140,10 @@ module LicenseCustom
         )
     File.delete(tmpcontentfile) rescue true
     userfile
-  end # save
+  end
 
+  # writes back the license agreements array
+  # to the meta data store
   def register_license_agreements
     return true if @license_agreements.nil? # nothing to do if they were never loaded or updated
     # To keep pre_register licenses agreement, useful when the console is used to save the object
