@@ -212,6 +212,10 @@ $variant : xs, sm, md, lg, xl.
   overflow: hidden;
 }
 
+.text-uppercase {
+  text-transform: uppercase !important;
+}
+
 /*
 =============================================================
 | LAYOUT
@@ -1567,9 +1571,9 @@ $MAX_CARD_LIST_HEIGHT: 15;
         @include p(2);
         width: 100%;
         text-decoration: none;
+        text-transform: unset;
         text-align: center;
         color: $SECONDARY_TEXT;
-        text-transform: uppercase;
       }
       .card-text {
         @include p(2);
@@ -1654,7 +1658,7 @@ $MAX_CARD_LIST_HEIGHT: 15;
       @include text("xs");
       @include m(0);
       flex: 1;
-      text-transform: uppercase;
+      text-transform: none;
       border-right: 1px solid;
       border-color: $SECONDARY_WASH;
       display: flex;
@@ -1742,7 +1746,8 @@ $CARD_ITEM_MAX_WIDTH: 13;
     }
   }
 }
-#nh_invitations {
+
+.nh_invitations {
   .card {
     @include mb(2);
     flex-wrap: wrap;
