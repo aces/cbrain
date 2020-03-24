@@ -173,6 +173,33 @@ class User < ApplicationRecord
     self.meta[:all_licenses_signed] = x
   end
 
+  #############################################################
+  #
+  # Custom, user created licenses for groups
+  #
+  #############################################################
+
+  # synonym. fore easier copying to other licensees
+  def licensee
+    self
+  end
+
+  # This function lists custom licences that user still has to sign in order to access to the object
+  def o_unsigned_custom_licenses(o)
+    o.license_agreements - licensee.all_custom_licenses_signed
+  end
+
+  # This function lists all the already signed custom licenses
+  def all_custom_licenses_signed #:nodoc:
+    self.meta.reload
+    self.meta[:all_custom_licenses_signed] || []
+  end
+
+  def all_custom_licenses_signed=(x) #:nodoc:
+    self.meta.reload
+    self.meta[:all_custom_licenses_signed] = x
+  end
+
   ###############################################
   #
   # Password and login gestion

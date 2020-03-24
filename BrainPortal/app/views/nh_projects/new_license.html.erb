@@ -22,15 +22,18 @@
 #
 -%>
 
-<% title('Edit','') %>
+<% title "Project licence for #{@nh_project.name}" %>
 
-<div id="nh_projects_edit" class="nh_content">
-    <div class="nh_actions">
-        <%= link_to "Invite Other Users", new_nh_invitation_path(nh_project_id: @nh_project.id), :class => "btn-solid-secondary nh_action"  %>
-    </div>
-    <div class="nh_form">
-        <%= error_messages_for @nh_project, :header_message => "Project could not be updated." %>
-        <p class="nh_form_title">Edit Project</p>
-        <%= render :partial => 'form_for', :locals => {:action => :update} %>
-    </div>
-</div>
+<h2> Please enter the text of the license agreentment for project <% @nh_project.name %></h2>
+
+All the members of the project will be required to sign the agreement in order to access project files.
+However you can assign additional license agreements at any time.
+
+
+<%= form_tag(:action  => :add_license) do %>
+
+  <%= text_area_tag "meta[license_description]", "", :required => true %>
+
+<%= submit_tag "Impose License", :name => :add_license %>
+
+<% end %>

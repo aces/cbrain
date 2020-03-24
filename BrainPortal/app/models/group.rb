@@ -40,6 +40,8 @@ class Group < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  include LicenseCustom
+
   cbrain_abstract_model! # objects of this class are not to be instanciated
 
   before_validation       :set_default_creator

@@ -1,0 +1,109 @@
+
+<%-
+  #
+  # CBRAIN Project
+  #
+  # Copyright (C) 2008-2012
+  # The Royal Institution for the Advancement of Learning
+  # McGill University
+  #
+  # This program is free software: you can redistribute it and/or modify
+  # it under the terms of the GNU General Public License as published by
+  # the Free Software Foundation, either version 3 of the License, or
+  # (at your option) any later version.
+  #
+  # This program is distributed in the hope that it will be useful,
+  # but WITHOUT ANY WARRANTY; without even the implied warranty of
+  # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  # GNU General Public License for more details.
+  #
+  # You should have received a copy of the GNU General Public License
+  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  #
+-%>
+
+<% is_signed = current_user.all_custom_licenses_signed.include?(@license) %>
+
+  <% if ! is_signed %>
+    <%= form_tag :action => :sign_license, :license => @license %>
+    <%= hidden_field_tag :license, @license %>
+  <% end %>
+  <p>
+
+<fieldset>
+  <legend>Carefully read the license agreement below.</legend>
+
+  <% if @userfile.archived? %>
+    <%= "This document has been archived." %><br>
+    Content viewers are disabled until the file is unarchived.
+
+      (This file cannot be viewed as it is stored on Data Provider
+      <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
+      which is configured to not allow synchronization at all)
+
+    <% elsif @sync_status == "Corrupted" %>
+
+       
+          (The content of this document seems to be corrupted. This might be the result
+          of a bad data transfer while it was being created or a filesystem failure.
+          Please, escalate the problem to admin or maintainer.)
+        
+    <% elsif ! @userfile.data_provider.rr_allowed_syncing? %>
+
+      (This document cannot be viewed as it is stored on Data Provider
+      <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
+      which is configured to not allow synchronization to this Portal.)
+      Please escalate the issue to the maintainer or admin.
+
+    <% elsif (! @userfile.is_locally_synced?) && (! @userfile.data_provider.online?) %>
+
+      (This document is not currently synchronized and its Data Provider
+      <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
+      is offline, so its content is not viewable for the moment)
+      Please escalate the issue to the maintainer or admin.
+
+    <% elsif @userfile.is_locally_synced? && @userfile.viewers_with_applied_conditions.blank? %>
+
+      (The contents of this document cannot be viewed: no viewer code available at this moment
+      for files of type '<%= @userfile.pretty_type %>'). Please report this issues to a maintainer or admin.
+
+    <% else %>
+
+      <% if ! @userfile.is_locally_synced? %>
+          (This document is not currently synchronized. Click
+          <%= link_to "here", sync_multiple_userfiles_path(:file_ids => [ @userfile.id ], :back_to_show_page => 1), :method  => :post %>
+          to start the synchronization process.
+          
+        <br>
+      <% end %>
+
+      <% begin %>
+            <% if @viewer %>
+              <% if @viewer.errors.empty? %>
+                <%= render :file  => @viewer.partial_path %>
+              <% else %>
+                <%= render :partial  => "viewer_errors" %>
+              <% end %>
+            <% end %>
+          <% rescue ActionView::Template::Error => e %>
+             
+                An error occurred when loading the viewer plugin.
+              
+            <% raise e.original_exception unless Rails.env == 'production' %>
+            <% ExceptionLog.log_exception(e.original_exception, current_user, request) %>
+       <% end %> 
+          
+  <% end %>
+  <br>
+  <input name="license_check_1" type="checkbox" value="agree" /> By clicking here I agree with all the conditions above
+
+  <% if ! is_signed %>
+    <%= submit_tag "I Agree with above statement", :name => :agree %>
+    <%= submit_tag "I Do Not Agree", :name => :not_agree %>
+    </form>
+  <% else %>
+    You have already signed this agreement.
+  <% end %>
+  </div>
+
+</fieldset>  

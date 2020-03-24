@@ -29,6 +29,9 @@
     <div class="nh_actions">
       <%= link_to "Invite Other Users", new_nh_invitation_path(nh_project_id: @nh_project.id), :class => "btn-solid-secondary nh_action"  %>
       <%= link_to "Edit", {:action => :edit, :id => @nh_project.id}, :method  => :get, :class => "btn-text-secondary nh_action"  %>
+      <% if @can_add_license %>
+         <%= link_to "Add License", new_license_nh_project_path(nh_project_id: @nh_project.id) %>
+      <% end %>
     </div>
   <% end %>
 
@@ -131,14 +134,14 @@
                   <div class="list-row">
                     <div class="list-item"><p><%= member.name %></p></div>
                   </div>
-                <% end %>  
+                <% end %>
               <% end %>
             </div>
           </div>
         </div>
       </div>
     <% end %>
-  
+
     <% if open_invites.exists? %>
       <div class="card-row">
         <div class="card-item">
@@ -157,8 +160,3 @@
 
   </div>
 </div>
-
-
-
-
-
