@@ -12,6 +12,7 @@
   ├── BUTTONS
   ├── BANNERS
   ├── ERRORS
+  ├── EMPTY
   ├── FORMS
   ├── CARDS
   ├── TABLES
@@ -747,6 +748,39 @@ $variant : error, notice
     list-style: disc;
     li {
       @include mx(4);
+    }
+  }
+}
+
+/*
+=============================================================
+| EMPTY
+=============================================================
+*/
+
+.empty {
+  @include p(4);
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .empty-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .empty-icon {
+      @include pb(4);
+      width: 100%;
+    }
+    .empty-text {
+      @include py(4);
+      @include text("sm");
+      color: $DEFAULT_ALT;
+      text-align: center;
     }
   }
 }
@@ -1821,6 +1855,8 @@ $DASH_CARD_MIN_WIDTH: 25;
       .section {
         .card {
           .header {
+            @include px(5);
+            @include py(2);
             min-width: 200px;
           }
           .btn-section {
