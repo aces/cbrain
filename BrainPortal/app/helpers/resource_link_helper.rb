@@ -220,7 +220,7 @@ module ResourceLinkHelper
   # the name of the object.
   def link_to_model_if_accessible(model_class, model_obj_or_id, model_name_method = :name, user = current_user, options = {}) #:nodoc:
     return "(None)" if model_obj_or_id.blank?
-
+    user    ||= current_user # allows us to supply 'nil' in arg
     model_obj = model_obj_or_id
 
     if model_obj_or_id.is_a?(String) || model_obj_or_id.is_a?(Integer)
