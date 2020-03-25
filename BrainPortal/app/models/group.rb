@@ -82,8 +82,8 @@ class Group < ApplicationRecord
   # Can this group be accessed by +user+?
   def can_be_accessed_by?(user, access_requested = :read)
     @can_be_accessed_cache       ||= {}
-    return @can_be_accessed_cache[user] unless  @can_be_accessed_cache[user].nil?
-    @can_be_accessed_cache[user] = (user.has_role?(:admin_user) || user.is_member_of_group(self) || self.public?)
+    return @can_be_accessed_cache[user.id] unless  @can_be_accessed_cache[user.id].nil?
+    @can_be_accessed_cache[user.id] = (user.has_role?(:admin_user) || user.is_member_of_group(self) || self.public?)
   end
 
   # Can this group be edited by +user+?
