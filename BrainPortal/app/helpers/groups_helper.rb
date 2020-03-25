@@ -38,7 +38,7 @@ module GroupsHelper
     group_user_count ||= group.users.count
 
     return "invisible" if group.invisible?
-    return "public"    if group.public
+    return "public"    if group.public?
     return "empty"     if group_user_count == 0
     return "shared"    if group_user_count > 1
     return "personal"
