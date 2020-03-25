@@ -17,6 +17,7 @@
   ├── CARDS
   ├── TABLES
   ├── TOOLBAR
+  ├── FOOTER
   ├── PAGES
     ├── BASE
     ├── SESSIONS
@@ -1126,6 +1127,7 @@ $TABLE_BORDER: #e4e8eb;
         position: sticky;
         top: 0;
         z-index: 3;
+        overflow: hidden;
         box-shadow: rgba(0, 0, 0, 0.12) 0px 2px 3px 0px;
       }
       .table_actions {
@@ -1290,6 +1292,81 @@ $TOOLBAR_ZINDEX: 1000;
 
 /*
 =============================================================
+| FOOTER
+=============================================================
+*/
+
+#nh_footer {
+  @include p(4);
+  background: $DEFAULT_DK;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  &[data-controller="nh_sessions"][data-action="new"] {
+    position: absolute;
+    bottom: 0;
+    background: transparent;
+  }
+  .nh_footer_buttons {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    width: 100%;
+    .nh_footer_button {
+      @include text("xs");
+      @include mx(2);
+      @include pb(2);
+      display: flex;
+      align-items: center;
+      flex: 0 0 30%;
+      letter-spacing: 0.089em;
+      color: $DEFAULT_BG;
+      text-transform: uppercase;
+
+      a {
+        width: 100%;
+      }
+      a[data-active="true"],
+      &:hover {
+        opacity: 0.75;
+      }
+    }
+  }
+  .powered-by-cbrain {
+    @include text("xs");
+    @include px(2);
+    @include py(2);
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    color: $DEFAULT_BG;
+    opacity: 0.8;
+    img {
+      width: 1rem;
+    }
+  }
+
+  @media (min-width: $BREAKPOINT_SM) {
+    @include px(7);
+    &[data-controller="nh_sessions"][data-action="new"] {
+      justify-content: flex-end;
+    }
+    .nh_footer_buttons {
+      width: unset;
+      .nh_footer_button {
+        min-width: 150px;
+      }
+    }
+    .powered-by-cbrain {
+      @include py(0);
+      flex: 1;
+    }
+  }
+}
+
+/*
+=============================================================
 | BREADCRUMBS
 =============================================================
 */
@@ -1353,6 +1430,8 @@ body {
   font-size: 16px;
   min-width: 18rem;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .nh_content {
@@ -1360,7 +1439,10 @@ body {
   position: relative;
   flex: 1;
   background: $DEFAULT_WASH;
-
+  height: 100%;
+  height: -moz-available;
+  height: -webkit-fill-available;
+  height: stretch;
   @media (min-width: $BREAKPOINT_SM) {
     @include p(7);
   }
@@ -1375,12 +1457,6 @@ body {
     padding-top: $TOOLBAR_HEIGHT + rem;
     background: $DEFAULT_WASH;
   }
-}
-
-.nh_footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
 }
 
 /*
@@ -1401,6 +1477,7 @@ body {
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
+    height: 100%;
     .nh_logo {
       @include logo();
     }
@@ -1436,6 +1513,8 @@ body {
     display: flex;
     flex-wrap: wrap;
     position: relative;
+    height: 100%;
+
     &:before {
       content: "";
       width: 100%;
@@ -1551,9 +1630,9 @@ $MAX_CARD_LIST_HEIGHT: 15;
 
 #nh_projects {
   flex: 1;
-  height: 100%;
   display: flex;
   flex-direction: column;
+
   .grid {
     @include py(4);
     display: grid;

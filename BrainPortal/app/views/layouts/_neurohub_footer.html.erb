@@ -1,0 +1,57 @@
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+-%>
+
+<!-- ************************ -->
+<!-- PARTIAL: FOOTER SECTION -->
+<!-- ************************ -->
+
+
+<div id="nh_footer" data-controller="<%= controller_name %>" data-action="<%= action_name %>" >
+    <% if current_user %>
+        <div class="nh_footer_buttons">
+            <div class="nh_footer_button">
+                <%= link_to 'Dashboard', neurohub_path, {  "data-active"=> request.path_info.include?('welcome') || action_name==="welcome"}  %>
+            </div>
+            <div class="nh_footer_button">
+                <%= link_to 'Projects', nh_projects_path, {  "data-active"=> request.path_info.include?('nh_projects') && action_name==="index"  }%>
+            </div>
+            <% if @nh_invites_count > 0 %>
+                <div class="nh_footer_button">
+                    <%= link_to 'Invitations', nh_invitations_path, {   "data-active"=> request.path_info.include?('nh_invitations') && action_name==="index" } %>
+                </div>
+            <% end %>
+            <div class="nh_footer_button">
+                <%= link_to 'My Account', myaccount_path, {  "data-active"=> request.path_info.include?('myaccount')} %>
+            </div>
+        </div>
+    <% end %>
+    <div class="powered-by-cbrain">
+        <img src="/images/neurohub/NH_cb_logo.png" alt="cbrain-logo"/>
+        <%= link_to "Powered by CBRAIN", "https://github.com/aces/cbrain", :target => '_blank', :class => 'pl-2' %>
+    </div>
+</div>
+
+
+
+
