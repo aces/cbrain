@@ -207,7 +207,7 @@ $variant : xs, sm, md, lg, xl.
   @include text("xl");
 }
 
-.ellipsis {
+.text-ellipsis {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
@@ -616,6 +616,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 
 .btn-text {
   @extend .btn;
+  text-transform: unset;
   text-decoration: underline;
   text-align: center;
   display: flex;
@@ -1258,7 +1259,14 @@ $TOOLBAR_ZINDEX: 1000;
   z-index: $TOOLBAR_ZINDEX;
   .nh_toolbar_logo {
     @include logo("lettermark", "RGB", "xs");
-    @include mx(4);
+    @include ml(4);
+    @include mr(2);
+  }
+  .nh_toolbar_account {
+    @include text("xs");
+    @include pl(2);
+    color: $DEFAULT_ALT;
+    border-left: 1px solid $SECONDARY_ALT;
   }
   .nh_toolbar_buttons {
     flex: 1;
@@ -1919,7 +1927,7 @@ $DASH_CARD_MIN_WIDTH: 25;
   display: flex;
   flex-direction: column;
   height: 100%;
-  .title {
+  .nh_dashboard_title {
     @include px(4);
     @include py(2);
     background: $SECONDARY_ALT;
@@ -1960,6 +1968,47 @@ $DASH_CARD_MIN_WIDTH: 25;
         @include m(0);
         @include mb(1);
         flex: 1 1 $DASH_CARD_MIN_WIDTH + rem;
+        .card-title {
+          @include p(4);
+          background: $DEFAULT_WASH;
+        }
+        .card-row {
+          padding: 0;
+          &:nth-child(even) {
+            background: $DEFAULT_WASH;
+          }
+          .card-section {
+            flex: 1;
+          }
+          .card-item {
+            @include px(4);
+            @include py(2);
+            display: block;
+            text-overflow: ellipsis;
+            text-align: right;
+            &.title {
+              background: $DEFAULT_WASH;
+            }
+            &.btn-text-secondary {
+              text-align: left;
+              svg {
+                width: 1.5rem;
+                height: 1.5rem;
+                fill: $SECONDARY_TEXT;
+                stroke: $SECONDARY_TEXT;
+                vertical-align: sub;
+              }
+              &:hover {
+                svg {
+                  fill: $SECONDARY_BG;
+                  stroke: $SECONDARY_BG;
+
+                  transition: $TRANSITION_HOVER_ON;
+                }
+              }
+            }
+          }
+        }
         a {
           justify-content: flex-start;
           text-decoration: none;
@@ -1976,7 +2025,24 @@ $DASH_CARD_MIN_WIDTH: 25;
         @include p(0);
         flex-direction: column;
         .card {
-          flex: 1;
+          .card-row {
+            flex-direction: row;
+            flex-wrap: nowrap;
+            .card-section {
+              flex: unset;
+              width: 50%;
+              display: flex;
+              flex-direction: row;
+            }
+            .card-item {
+              text-align: left;
+
+              &.btn-text-secondary {
+                flex-direction: row-reverse;
+                justify-content: flex-end;
+              }
+            }
+          }
         }
       }
     }

@@ -1,60 +1,6 @@
 <svg id="files" xmlns="http://www.w3.org/2000/svg" width="364" height="188" viewBox="0 0 364 188">
   <defs>
-    <style>
-
-      .cls-1 {
-        fill: #e1e1e2; stroke: #e1e1e2; stroke-width: 4px; fill-rule: evenodd;
-      }
-
-      .cls-2 {
-            stroke-width: 4px; fill-rule: evenodd; fill: #c9c9c9; stroke: #c9c9c9;
-
-          }
-
-      .cls-3 {
-        stroke: #e1e1e2; stroke-width: 4px; fill-rule: evenodd; fill: #fff;
-      }
-
-       .cls-4 {
-        stroke-width: 4px; fill-rule: evenodd; fill: none; stroke: #b7b7b7;
-      }
-
-
-
-      .cls-5 {
-        stroke: #e1e1e2; fill-rule: evenodd; fill: none; stroke-width: 3px;
-      }
-
-      .cls-6 {
-        fill: #e1e1e2; fill-rule: evenodd; stroke-width: 4px; stroke: #d1d2d2;
-      }
-
-      .cls-7 {
-        stroke-width: 4px; fill-rule: evenodd; stroke: #d1d2d2; fill: #fff;
-      }
-
-      .cls-8 {
-        stroke: #d1d2d2; fill-rule: evenodd; stroke-width: 3px; fill: none;
-      }
-
-      .cls-9 {
-        stroke: #d1d2d2; fill: #d1d2d2; stroke-width: 4px; fill-rule: evenodd;
-      }
-
-      .cls-10 {
-        stroke-width: 4px; fill-rule: evenodd; fill: #fff; stroke: #b7b7b7;
-      }
-
-
-      .cls-11 {
-        fill-rule: evenodd; fill: none; stroke: #b7b7b7; stroke-width: 3px;
-      }
-
-      .cls-12 {
-        fill: #b7b7b7; stroke-width: 4px; fill-rule: evenodd; stroke: #b7b7b7;
-      }
-
-    
+    <style>    
     </style>
   </defs>
   <path id="Rounded_Rectangle_14_copy_5" data-name="Rounded Rectangle 14 copy 5" style="fill: #e1e1e2; stroke: #e1e1e2; stroke-width: 4px; fill-rule: evenodd;" d="M126.743,146.755l-17.856,5.354a2.636,2.636,0,0,0-1.782,3.274q2.553,8.512,5.1,17.025"/>

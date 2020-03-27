@@ -30,6 +30,8 @@ class NeurohubPortalController < NeurohubApplicationController
   # Main welcome/dashboard page
   def welcome #:nodoc:
     @username = current_user.login
+    @files       = Userfile.find_all_accessible_by_user(current_user).where(:hidden => false).order( "updated_at DESC" ).limit(10).all
+
   end
 
   # For development work convenience; not part of final neurohub deliverable
