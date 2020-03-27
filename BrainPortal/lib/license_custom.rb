@@ -63,11 +63,10 @@ module LicenseCustom
 
   # create a license file
   def create_license_file(content, user, basename=nil)
-    basename ||= "license_#{SecureRandom.uuid().to_s}.txt"
+    basename ||= "license_#{SecureRandom.uuid.to_s}.txt"
     userfile = create_file(content, user, basename)
-    license_agreements << userfile.id.to_s
-    register_license_agreements
-    # post save trigger
+    license_agreements << userfile.id.to_s if userfile.present?
+    register_license_agreements  # save
   end
 
   protected
@@ -86,12 +85,13 @@ module LicenseCustom
       Userfile.find(license) 
     end
 
-    if invalid_licenses.presence
+    unless invalid_licenses.presence
+      return true
+    else
       invalid_licenses_list = invalid_licenses.join(", ")
       self.errors.add(:base, "Some licence agreement files do not exist: #{invalid_licenses_list}\nPlease inform the maintainers or admins to fix issues with files.\n")
       return false
     end
-    return true
   end
 
   def create_file(content, user, basename) #:nodoc:

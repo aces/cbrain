@@ -104,12 +104,13 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def add_license #:nodoc:
+
     content = params[:meta][:license_description]
     @nh_project = find_nh_project(current_user, params[:id] || params[:nh_project_id], false)
     cb_error 'Presently empty licenses are not allowed' if content.blank?
-    unless @nh_project.creator_id == current_user.id
-      cb_error "Only owner can set licensing", :redirect  => :neurohub
-    end
+
+    cb_error "Only owner can set licensing", :redirect  => :neurohub if @nh_project.creator_id != current_user.id
+
     @nh_project = find_nh_project(current_user, params[:id], false)
     @nh_project.create_license_file(content, current_user)
     flash['message'] = 'A license is added. You can force users to sign multiple license agreements if needed'
@@ -124,9 +125,9 @@ class NhProjectsController < NeurohubApplicationController
         flash[:error] = 'You already signed all license'
       else
         flash[:error] = 'No license is defined for this project'
-        redirect_to :action => :show
-        return
       end
+      redirect_to :action => :show
+      return
     end
     @license = @unsigned_licenses[0]
     @userfile = Userfile.find(@license)
@@ -166,7 +167,7 @@ class NhProjectsController < NeurohubApplicationController
     if current_user.o_unsigned_custom_licenses(@nh_project).empty?
       flash['message'] = 'You signed all the project licences'      
     else
-      flash['message'] = 'please sign another agreement'      
+      flash['message'] = 'Please sign another agreement'
     end
     redirect_to :action => :show, :id => @nh_project.id
   end
@@ -194,7 +195,7 @@ class NhProjectsController < NeurohubApplicationController
     end
 
     # Some viewers return error(s) for some specific userfiles
-      @viewer.apply_conditions(@userfile) if @viewer
+    @viewer.apply_conditions(@userfile) if @viewer
 
     begin
       if @viewer
