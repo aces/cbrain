@@ -29,6 +29,8 @@ class GroupsController < ApplicationController
 
   before_action :login_required
 
+  before_action :license_check, :only => [:create, :swtich, :edit, :update, :destroy, :show]
+
   # GET /groups
   # GET /groups.xml
   def index  #:nodoc:
@@ -273,4 +275,15 @@ class GroupsController < ApplicationController
     end
   end
 
+  def license_check
+
+    @group = current_user.available_groups.find(params[:id])
+    unless current_user.o_unsigned_custom_licenses( @group ).present?
+      flash[:error] = "Access to the project #{@group.name} is blocked due to licensing issues."
+      redirect_to :index
+      format.any do
+        head :unauthorized
+      end
+    end
+  end
 end
