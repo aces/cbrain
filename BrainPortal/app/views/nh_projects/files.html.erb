@@ -38,7 +38,7 @@
         <tbody>
           <% @files.each do |file| %>
             <tr>
-              <td><%= file.name %></td>
+              <td><%= link_to_userfile_if_accessible(file) %></td>
               <td><%= file.pretty_type %></td>
               <td><%= colored_pretty_size(file.size) %></td>
             </tr>
