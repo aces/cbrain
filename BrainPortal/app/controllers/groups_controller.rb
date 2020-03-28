@@ -29,7 +29,7 @@ class GroupsController < ApplicationController
 
   before_action :login_required
 
-  before_action :license_check, :only => [:create, :swtich, :edit, :update, :destroy, :show]
+  before_action :license_check, :only => [:show, :create, :switch, :edit, :update, :destroy]
 
   # GET /groups
   # GET /groups.xml
@@ -265,6 +265,18 @@ class GroupsController < ApplicationController
     end
   end
 
+  def license_redirect
+    respond_to do |format|
+      format.html do
+        redirect_to :action => :index
+      end
+      format.any do
+        head :unauthorized
+      end
+    end
+    return
+  end
+
   private
 
   def group_params #:nodoc:
@@ -276,14 +288,10 @@ class GroupsController < ApplicationController
   end
 
   def license_check
-
     @group = current_user.available_groups.find(params[:id])
-    unless current_user.o_unsigned_custom_licenses( @group ).present?
+    if current_user.o_unsigned_custom_licenses(@group).present?
       flash[:error] = "Access to the project #{@group.name} is blocked due to licensing issues."
-      redirect_to :index
-      format.any do
-        head :unauthorized
-      end
+      license_redirect
     end
   end
 end
