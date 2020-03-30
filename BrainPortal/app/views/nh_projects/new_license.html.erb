@@ -24,15 +24,15 @@
 
 <% title "Project licence for #{@nh_project.name}" %>
 
-<h2> Please enter the text of the license agreentment for project <% @nh_project.name %></h2>
+<h2> Please enter the text of the license agreement for project <% @nh_project.name %></h2>
 
-All the members of the project will be required to sign the agreement in order to access project files.
+All the members of the project, including you, will be required to sign the agreement in order to access the project.
 However you can assign additional license agreements at any time.
 
 
 <%= form_tag(:action  => :add_license) do %>
 
-  <%= text_area_tag "meta[license_description]", "", :required => true %>
+<%= text_area_tag "meta[license_description]", "", :required => true %>
 
 <%= submit_tag "Impose License", :name => :add_license %>
 
