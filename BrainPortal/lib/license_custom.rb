@@ -18,7 +18,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#license_for_groups.rb
+
 
 
 
@@ -30,7 +30,7 @@ module LicenseCustom
 
   require 'securerandom'
 
-  # Check that the the class this module is being included into is a valid one.
+  # Check that the class this module is being included into is a valid one.
   def self.included(includer) #:nodoc:
     unless includer <= ApplicationRecord
       raise "#{includer} is not an ActiveRecord model. The LicenseCustom module cannot be used with it."
@@ -78,20 +78,19 @@ module LicenseCustom
     @license_agreements
   end
 
-  # Returns true if the set of licenses are identifiers that
-  # properly match files on the filesystem, in public/licenses/{name}.html
+  # Validate that license files exists
   def valid_license_agreements?
-    invalid_licenses = license_agreements.select do |license|
-      Userfile.find(license) 
-    end
+    # Verify if a license was deleted or not
+    invalid_licenses   = license_agreements.select {|id| !Userfile.exists?(id) }    
 
-    unless invalid_licenses.presence
-      return true
-    else
-      invalid_licenses_list = invalid_licenses.join(", ")
-      self.errors.add(:base, "Some licence agreement files do not exist: #{invalid_licenses_list}\nPlease inform the maintainers or admins to fix issues with files.\n")
-      return false
-    end
+    return true if !invalid_licenses.presence
+
+    invalid_licenses_ids = invalid_licenses.join(", ")
+
+    self.errors.add(:base, "Some licence agreement files do not exist: #{invalid_licenses_ids}\n
+                            Please inform the maintainers or admins to fix issues with files.\n")
+
+    return false
   end
 
   def create_file(content, user, basename) #:nodoc:
@@ -124,10 +123,7 @@ module LicenseCustom
 
     userfile.save
 
-    if !userfile.save
-      return nil
-    end
-
+    return nil if !userfile.save
     userfile.cache_copy_from_local_file(tmpcontentfile)
     userfile.size = content.length
     userfile.immutable = true
@@ -153,5 +149,4 @@ module LicenseCustom
     self.meta[:license_agreements] = license_agreements
     true
   end
-
 end
