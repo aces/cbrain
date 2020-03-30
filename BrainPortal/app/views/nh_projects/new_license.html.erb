@@ -32,8 +32,8 @@ However you can assign additional license agreements at any time.
 
 <%= form_tag(:action  => :add_license) do %>
 
-<%= text_area_tag "meta[license_description]", "", :required => true %>
+  <%= text_area_tag "meta[license_description]", "", :required => true %>
 
-<%= submit_tag "Impose License", :name => :add_license %>
+  <%= submit_tag "Impose License", :name => :add_license %>
 
 <% end %>
