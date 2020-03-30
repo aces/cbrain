@@ -151,7 +151,7 @@ class NhProjectsController < NeurohubApplicationController
     @userfile = Userfile.find(@license)
     unless params.has_key?(:agree)
       flash[:error] = "You cannot access that project without signing the End User Licence Agreement first."
-      redirect_to "/neurohub"
+      redirect_to :action => :index
       return
     end
 
