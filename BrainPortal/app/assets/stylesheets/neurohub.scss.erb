@@ -1096,11 +1096,13 @@ $TABLE_BORDER: #e4e8eb;
     min-width: 200px;
     border-right: 1px solid $TABLE_BORDER;
     white-space: nowrap;
+    &:last-child {
+      border-right: 0px solid $TABLE_BORDER;
+    }
   }
 
   .table_actions {
     min-width: unset;
-    display: flex;
   }
 
   table {
@@ -1120,7 +1122,7 @@ $TABLE_BORDER: #e4e8eb;
         @include p(3);
         @include title("xs");
         color: $DEFAULT_ALT;
-        text-transform: uppercase;
+        text-transform: capitalize;
         background: $DEFAULT_WASH;
         border-bottom: 1px solid $TABLE_BORDER;
         text-align: left;
@@ -1229,6 +1231,9 @@ th:first-child {
   display: flex;
   height: 100%;
   align-items: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 
   img {
     @include mr(2);
@@ -1264,7 +1269,7 @@ $TOOLBAR_ZINDEX: 1000;
   }
   .nh_toolbar_account {
     @include text("xs");
-    @include pl(2);
+    @include px(2);
     color: $DEFAULT_ALT;
     border-left: 1px solid $SECONDARY_ALT;
   }
@@ -1362,6 +1367,7 @@ $TOOLBAR_ZINDEX: 1000;
     }
     .nh_footer_buttons {
       width: unset;
+      flex: 1;
       .nh_footer_button {
         min-width: 150px;
       }
@@ -1971,6 +1977,7 @@ $DASH_CARD_MIN_WIDTH: 25;
         .card-title {
           @include p(4);
           background: $DEFAULT_WASH;
+          text-decoration: none;
         }
         .card-row {
           padding: 0;
@@ -1988,6 +1995,9 @@ $DASH_CARD_MIN_WIDTH: 25;
             text-align: right;
             &.title {
               background: $DEFAULT_WASH;
+            }
+            span {
+              vertical-align: sub;
             }
             &.btn-text-secondary {
               text-align: left;
@@ -2022,8 +2032,6 @@ $DASH_CARD_MIN_WIDTH: 25;
 
       .section.user {
         @include mt(0);
-        @include p(0);
-        flex-direction: column;
         .card {
           .card-row {
             flex-direction: row;

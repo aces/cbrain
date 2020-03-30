@@ -95,7 +95,9 @@ viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;"
               <tr>
                 <th>name <span>(<%= @nh_projects.count %></span>)</th>
                 <th>maintainer</th>
-                <th class="table_actions">...</th>
+                <% if @nh_projects.any? {|project| project.can_be_edited_by?(current_user)} %>
+                  <th class="table_actions">...</th>
+                <% end %>
               </tr>
             </thead>
 

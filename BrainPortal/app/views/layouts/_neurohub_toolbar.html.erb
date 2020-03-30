@@ -31,8 +31,8 @@
             <div class="nh_toolbar_logo"></div>
         </a>
         <div class="nh_toolbar_account">
-          <div><%= current_user.full_name %></div>
-          <div><%= current_user.name %></div>
+          <div class="text-ellipsis"><%= current_user.full_name %></div>
+          <div class="text-ellipsis"><%= current_user.name %></div>
         </div>
         <div class="nh_toolbar_buttons">
             <%= link_to 'Dashboard', neurohub_path, { :class => "btn-nav-primary", "data-active"=> request.path_info.include?('welcome') || action_name==="welcome"}  %>
