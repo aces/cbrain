@@ -34,6 +34,8 @@ class AdminUser < User
     Group.where(nil)
   end
 
+  alias public_and_available_groups available_groups
+
   def available_tasks  #:nodoc:
     CbrainTask.where(nil)
   end

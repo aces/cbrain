@@ -29,7 +29,7 @@ class NormalUser < User
 
 
   def available_tools  #:nodoc:
-    available_group_ids    = (self.available_groups.pluck(:id) + self.group_ids).uniq
+    available_group_ids    = (self.public_and_available_groups.pluck(:id) + self.group_ids).uniq
     available_bourreau_ids = Bourreau.find_all_accessible_by_user(self).pluck(:id)
 
 
@@ -40,6 +40,10 @@ class NormalUser < User
   end
 
   def available_groups  #:nodoc:
+    self.groups.where("groups.type <> 'EveryoneGroup'").where(:invisible => false)
+  end
+
+  def public_and_available_groups
     group_scope = Group.where(["groups.id IN (?)",self.group_ids]).or(Group.where(:public => true))
     group_scope = group_scope.where("groups.type <> 'EveryoneGroup'").where(:invisible => false)
 
@@ -47,7 +51,7 @@ class NormalUser < User
   end
 
   def available_tasks  #:nodoc:
-    available_group_ids    = self.available_groups.pluck(:id)
+    available_group_ids    = self.public_and_available_groups.pluck(:id)
     tasks = CbrainTask.where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, available_group_ids] )
 
     available_bourreau_ids = Bourreau.find_all_accessible_by_user(self).pluck(:id)

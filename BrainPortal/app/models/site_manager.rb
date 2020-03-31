@@ -30,7 +30,7 @@ class SiteManager < User
   validates_presence_of :site_id, :message => "must be set for site managers"
 
   def available_tools  #:nodoc:
-    available_group_ids    = (self.available_groups.pluck(:id) + self.group_ids).uniq
+    available_group_ids    = (self.public_and_available_groups.pluck(:id) + self.group_ids).uniq
     available_bourreau_ids = Bourreau.find_all_accessible_by_user(self).pluck(:id)
 
     tools = Tool.where( ["tools.group_id IN (?) OR tools.user_id IN (?)", available_group_ids , self.site.user_ids])
@@ -40,6 +40,13 @@ class SiteManager < User
   end
 
   def available_groups  #:nodoc:
+    group_scope = Group.where(["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?) OR groups.site_id=?", self.id, self.site_id])
+    group_scope = group_scope.where("groups.type <> 'EveryoneGroup'").where(:invisible => false)
+
+    group_scope
+  end
+
+  def public_and_available_groups  #:nodoc:
     group_scope = Group.where(
                                ["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?) OR groups.site_id=?", self.id, self.site_id]
                              ).or(Group.where(:public => true))
@@ -49,7 +56,7 @@ class SiteManager < User
   end
 
   def available_tasks  #:nodoc:
-    available_group_ids    = self.available_groups.pluck(:id)
+    available_group_ids    = self.public_and_available_groups.pluck(:id)
     tasks = CbrainTask.where( ["cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", available_group_ids, self.site.user_ids] )
 
     available_bourreau_ids = Bourreau.find_all_accessible_by_user(self).pluck(:id)
