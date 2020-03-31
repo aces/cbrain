@@ -352,6 +352,10 @@ class Userfile < ApplicationRecord
     query_string = "(groups.public = ?)"
     query_array  = [true]
 
+    if access_requested.to_sym != :read
+      query_string += " AND userfiles.group_writable = 1"
+    end
+
     query_user_string   = "userfiles.user_id = ?"
     query_group_string  = "userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)"
 
