@@ -353,7 +353,7 @@ describe User do
       end
 
       it "should include public group for site_manager" do
-        expect(site_manager.available_groups).to include(public_group)
+        expect(site_manager.public_and_available_groups).to include(public_group)
       end
 
       it "should not return invisible group for standard user" do
@@ -367,7 +367,7 @@ describe User do
       end
 
       it "should include public group for standard user" do
-        expect(normal_user.available_groups).to include(public_group)
+        expect(normal_user.public_and_available_groups).to include(public_group)
       end
 
 
