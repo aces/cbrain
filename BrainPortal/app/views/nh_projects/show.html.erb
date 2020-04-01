@@ -50,7 +50,14 @@
         <img class="card-icon" src="/images/neurohub/NH_icon_tasks.svg"/>
         <div class="card-stat">
           <p><%= @nh_project.cbrain_tasks.count %></p>
-          <p class="card-label"><%= "Task#{@nh_project.cbrain_tasks.count != 1 ? "s": ""}" %></p>
+          <p class="card-label">
+            <% task_label = ("<p class='card-label'>" + "Task#{@nh_project.cbrain_tasks.count != 1 ? "s": ""}" + "</p>").html_safe %>
+            <%=
+              scope_link(task_label,
+                'tasks#index', { :filters => [{ :a => 'group_id', :v => @nh_project.id }], },
+                url: { :controller => :tasks, :action => :index }
+              )
+            %>
         </div>
       </div>
 
@@ -131,14 +138,14 @@
                   <div class="list-row">
                     <div class="list-item"><p><%= member.name %></p></div>
                   </div>
-                <% end %>  
+                <% end %>
               <% end %>
             </div>
           </div>
         </div>
       </div>
     <% end %>
-  
+
     <% if open_invites.exists? %>
       <div class="card-row">
         <div class="card-item">
