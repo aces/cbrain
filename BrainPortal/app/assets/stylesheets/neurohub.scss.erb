@@ -88,6 +88,10 @@ $ORCID_ALT: #a6ce39;
   background-color: $DEFAULT_WASH;
 }
 
+.bg-primary-alt {
+  background-color: $PRIMARY_ALT;
+}
+
 .bg-default-disabled {
   background-color: $DEFAULT_DISABLED;
 }
@@ -1033,6 +1037,7 @@ Cards used for simple "show"-type views
     display: flex;
     flex: 1 1 50%;
     width: 100%;
+    overflow: hidden;
     .card-stat {
       @include title("lg");
       @include ml(4);
@@ -1817,14 +1822,23 @@ $CARD_ITEM_MAX_WIDTH: 13;
   @include p(2);
   @include px(4);
   border-radius: 2px;
-  background: $TABLE_BORDER;
+  display: flex;
+  flex-direction: column;
   .section-title {
     @include pb(2);
-    @include title("sm");
+    @include text("sm");
     color: $DEFAULT_DK;
+    opacity: 0.75;
+    display: flex;
+    align-items: center;
+    img {
+      @include mr(2);
+      height: 1rem;
+      width: 1rem;
+    }
   }
-  &.transparent {
-    background: transparent;
+  &.default {
+    background: $TABLE_BORDER;
   }
   &.primary {
     background: $PRIMARY_WASH;
@@ -1952,6 +1966,7 @@ $DASH_CARD_MIN_WIDTH: 25;
     .notifications {
       .section {
         .card {
+          @include mb(4);
           .header {
             @include px(5);
             @include py(2);
@@ -1974,6 +1989,8 @@ $DASH_CARD_MIN_WIDTH: 25;
         @include m(0);
         @include mb(1);
         flex: 1 1 $DASH_CARD_MIN_WIDTH + rem;
+        display: flex;
+        flex-direction: column;
         .card-title {
           @include p(4);
           background: $DEFAULT_WASH;
@@ -2001,6 +2018,12 @@ $DASH_CARD_MIN_WIDTH: 25;
             }
             &.btn-text-secondary {
               text-align: left;
+              text-decoration: none;
+              cursor: default;
+              a {
+                text-decoration: underline;
+                cursor: pointer;
+              }
               svg {
                 width: 1.5rem;
                 height: 1.5rem;

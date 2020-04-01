@@ -49,8 +49,6 @@
   </div>
   <div class="main">
     <div class="notifications">
-  
-
       <% if new_invites.count > 0 %>
         <div id="mb-7" class="nh_invitations">
           <div class="section secondary">
@@ -70,28 +68,40 @@
           </div>
         </div>
       <% end %>
-      <div class="section transparent flex-1">
-        <p class="section-title">Latest Neurohub News</p>
-          <div class="card">
-            <div class="card-row header bg-default-wash">
-              <p class="title-xs">New Portal Underway</p>
-            </div>
-              <div class="card-item">
-                <p> Neurohub news/features </p>
-              </div>
+      <div class="section default flex-1">
+
+        <div class="section-title">
+          <img src="/images/neurohub/NH_icon_grayscale.png" alt="cbrain-logo"/>
+          Neurohub news
+        </div>
+        <div class="card">
+          <div class="card-row header bg-primary-alt">
+            <p class="title-xs default-bg">Updated Portal Features</p>
+          </div>
+          <div class="card-item">
+            <p>New features have been added to the Neurohub portal. You can now create projects and share them with others. You collaborators can have edit access allowing them to update your project.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-row header bg-primary-alt">
+            <p class="title-xs default-bg">New Portal Under Construction</p>
+          </div>
+          <div class="card-item">
+            <p> NeuroHub is leveraging existing technologies developed by the Montreal Neurological Institute (the Neuro), the McGill Centre for Integrative Neuroscience (MCIN) and Canadian Center for Computational Genomics (C3G) to develop a robust infrastructure for the integration of complex brain information to stimulate new discoveries. </p>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="section user">
-      <% if @tasks.size > 0 %>
         <div class="card">
-          <%=
-            scope_link('<p class="btn-text-secondary card-title">Latest Tasks</p>'.html_safe,
-              'tasks#index', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
-              url: { :controller => :tasks, :action => :index }
-            )
-          %>
+        <%=
+          scope_link('<p class="btn-text-secondary card-title">Latest Tasks</p>'.html_safe,
+            'tasks#index', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
+            url: { :controller => :tasks, :action => :index }
+          )
+        %>
+        <% if @tasks.size > 0 %>
           <div>
             <% for task in @tasks %>
               <div class="card-row">
@@ -100,8 +110,9 @@
                     <%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau) %>
                   </div>
                   <div class="card-item text-ellipsis btn-text-secondary">
-                    <div class="text-ellipsis"><%= user_icon %>
-                     <%= link_to_user_if_accessible(task.user) %>
+                    <div class="text-ellipsis">
+                      <%= user_icon %>
+                      <%= link_to_user_if_accessible(task.user) %>
                     </div>
                   </div>
                 </div>
@@ -117,13 +128,22 @@
                     <%= to_localtime(task.updated_at,:date) %>
                     <%= to_localtime(task.updated_at,:time) %>
                   </div>
-                </div>
+              
+                  </div>
               </div>
             <% end %>
           </div>
+          <% else %>
+          <div class="card-item">
+            <div style="position: unset" class="empty">
+              <div class="empty-wrapper">
+                <img class="empty-icon" src="/images/neurohub/NH_empty_files.svg" />
+                <p class="empty-text">No tasks have been updated lately.</p>
+              </div>
+            </div>
+          </div>
+        <% end %>
         </div>
-      <% end %>
-      <% if @files.size > 0 %>
         <div class="card">
             <%=
             scope_link('<p class="btn-text-secondary card-title">Latest Updated Files</p>'.html_safe,
@@ -131,37 +151,47 @@
               url: { :controller => :userfiles, :action => :index }
             )
           %>
-          <div>
-            <% for file in @files %>
-              <div class="card-row">
-                <div class="card-section">
-                  <div class="card-item text-ellipsis btn-text-secondary">
-                    <%= file_icon %>
-                    <%= link_to_userfile_if_accessible(file, nil) %>
+          <% if @files.size > 0 %>
+            <div>
+              <% for file in @files %>
+                <div class="card-row">
+                  <div class="card-section">
+                    <div class="card-item text-ellipsis btn-text-secondary">
+                      <%= file_icon %>
+                      <%= link_to_userfile_if_accessible(file, nil) %>
+                    </div>
+                    <div class="card-item text-ellipsis btn-text-secondary">
+                      <div class="text-ellipsis"><%= user_icon %><%= link_to_user_if_accessible(file.user, nil) %></div>
+                    </div>
                   </div>
-                  <div class="card-item text-ellipsis btn-text-secondary">
-                    <div class="text-ellipsis"><%= user_icon %><%= link_to_user_if_accessible(file.user, nil) %></div>
+                  <div class="card-section">
+                    <div class="card-item text-ellipsis btn-text-secondary">
+                      <%= project_icon %>
+                      <%= link_to(file.group.name,{:controller => :nh_projects,:action => :show, :id => file.group.id}, :method  => :get)  %>
+                    </div>
+                    <div class="card-item text-ellipsis">
+                      <%= colored_pretty_size(file.size) %>
+                    </div>
+                    <div class="card-item text-ellipsis">
+                      <%= to_localtime(file.updated_at,:date) %>
+                      <%= to_localtime(file.updated_at,:time) %>
+                    </div>
                   </div>
-                </div>
-                <div class="card-section">
-                  <div class="card-item text-ellipsis btn-text-secondary">
-                    <%= project_icon %>
-                    <%= link_to_group_if_accessible(file.group) %>
-                  </div>
-                  <div class="card-item text-ellipsis">
-                    <%= colored_pretty_size(file.size) %>
-                  </div>
-                  <div class="card-item text-ellipsis">
-                    <%= to_localtime(file.updated_at,:date) %>
-                    <%= to_localtime(file.updated_at,:time) %>
-                  </div>
-                </div>
 
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="card-item">
+              <div style="position: unset" class="empty">
+                <div class="empty-wrapper">
+                  <img class="empty-icon" src="/images/neurohub/NH_empty_files.svg" />
+                  <p class="empty-text">No files have been updated lately.</p>
+                </div>
               </div>
-            <% end %>
-          </div>
-        </div>
-      <% end %>
+            </div>
+          <% end %>
+      </div>
     </div>
 
   </div>
