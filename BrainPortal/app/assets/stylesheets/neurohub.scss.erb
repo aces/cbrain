@@ -2007,14 +2007,21 @@ $DASH_CARD_MIN_WIDTH: 25;
           .card-item {
             @include px(4);
             @include py(2);
-            display: block;
-            text-overflow: ellipsis;
-            text-align: right;
+            justify-content: flex-start;
+
             &.title {
               background: $DEFAULT_WASH;
             }
             span {
               vertical-align: sub;
+            }
+            .text-ellipsis {
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              overflow: hidden;
+              display: block;
+              flex: 1;
+              text-align: left;
             }
             &.btn-text-secondary {
               text-align: left;
@@ -2069,8 +2076,6 @@ $DASH_CARD_MIN_WIDTH: 25;
               text-align: left;
 
               &.btn-text-secondary {
-                flex-direction: row-reverse;
-                justify-content: flex-end;
               }
             }
           }
