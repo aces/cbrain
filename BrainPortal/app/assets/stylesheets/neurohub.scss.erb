@@ -1031,6 +1031,7 @@ Cards used for simple "show"-type views
       flex-direction: column;
     }
   }
+
   .card-item {
     @include text("sm");
     @include p(4);
@@ -1038,6 +1039,8 @@ Cards used for simple "show"-type views
     flex: 1 1 50%;
     width: 100%;
     overflow: hidden;
+    position: relative;
+
     .card-stat {
       @include title("lg");
       @include ml(4);
@@ -1057,6 +1060,7 @@ Cards used for simple "show"-type views
     }
     &[href] {
       @include text("sm");
+      width: 100%;
       display: flex;
       justify-content: flex-start;
       text-align: start;
@@ -1228,10 +1232,15 @@ th:first-child {
   @include shadow("mid");
   background: $DEFAULT_BG;
   display: flex;
+  form {
+    height: 100%;
+    input {
+      background: none;
+    }
+  }
 }
 
 .nh_action {
-  @include mr(1);
   border-radius: 0px;
   display: flex;
   height: 100%;
@@ -1239,13 +1248,14 @@ th:first-child {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+  text-transform: uppercase;
+  &.btn-text-secondary {
+    border-right: 1px solid $SECONDARY_WASH;
+  }
 
   img {
     @include mr(2);
     width: 1rem;
-  }
-  &:last-child {
-    margin-right: 0;
   }
 }
 
@@ -1701,6 +1711,7 @@ $MAX_CARD_LIST_HEIGHT: 15;
           opacity: 0.5;
           transition: $TRANSITION_HOVER_OFF;
           background: transparent;
+
           .table_action_icon {
             width: 1rem;
             height: 1rem;

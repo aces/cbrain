@@ -40,6 +40,9 @@
 <% user_icon = '<svg fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-width="0" stroke-miterlimit="10" xmlns="http://www.w3.org/2000/svg" aria-labelledby="title" viewBox="0 0 32 32" preserveAspectRatio="xMidYMid meet" class="InlineSvg-gigSlh hwPeQh"><g><path d="M16.981,17c0,1.683 -0.271,2.241 -0.469,2.456c-0.163,0.176 -0.68,0.544 -2.531,0.544c-1.85,0 -2.367,-0.368 -2.53,-0.544c-0.198,-0.215 -0.47,-0.773 -0.47,-2.456c0,-1.657 1.343,-3 3,-3c1.657,0 3,1.343 3,3Zm0.835,3.977c0.879,-0.804 1.165,-2.104 1.165,-3.977c0,-2.761 -2.238,-5 -5,-5c-2.761,0 -5,2.239 -5,5c0,1.873 0.287,3.173 1.166,3.977c-1.665,0.911 -2.97,2.396 -3.649,4.189c-0.124,0.328 -0.154,0.708 0.051,0.993c0.569,0.789 1.674,-0.111 2.13,-0.97c1.008,-1.897 3.004,-3.189 5.302,-3.189c2.298,0 4.295,1.292 5.303,3.189c0.456,0.859 1.561,1.759 2.129,0.97c0.205,-0.285 0.176,-0.665 0.052,-0.993c-0.68,-1.793 -1.985,-3.278 -3.649,-4.189Z"></path></g></svg>'.html_safe
 %>
 
+<% task_icon = '<svg fill-rule="evenodd" clip-rule="evenodd" stroke-width="2px" stroke-linejoin="round" stroke-miterlimit="10" xmlns="http://www.w3.org/2000/svg" aria-labelledby="title" viewBox = "-10 -10 50 50" preserveAspectRatio="xMidYMid meet" class="InlineSvg-gigSlh hwPeQh"><g id="task"><path fill="none" stroke-linecap="round" d="M15.3,30.4H6.8c-3,0-5.4-2.4-5.4-5.4V6.9 c0-3,2.4-5.4,5.4-5.4h18.1c3,0,5.4,2.4,5.4,5.4v4.3"></path><polygon fill="none" stroke-linecap="round" stroke-linejoin="round" points="21.7,29.3  18.3,26.4 17.5,30.7     "></polygon><path fill="none" d="M28,15.2l3.1,2.7c0.1,0.1,0.1,0.3,0,0.4L22,29 c-0.1,0.1-0.3,0.1-0.4,0l-3.1-2.7c-0.1-0.1-0.1-0.3,0-0.4l3.7-4.4l5.5-6.4C27.7,15.1,27.9,15.1,28,15.2z"></path><path fill="none" d="M29.4,13.3l3.4,2.9c0,0,0.1,0.1,0,0.2l-1.3,1.5c0,0-0.1,0.1-0.2,0 L28,14.9c0,0-0.1-0.1,0-0.2l1.3-1.5C29.3,13.2,29.4,13.2,29.4,13.3z"></path><line stroke-linecap="round" stroke-linejoin="round" x1="11.9" y1="8" x2="24.1" y2="8"></line><polyline fill="none" stroke-linecap="round" stroke-linejoin="round" points="5.4,8.6  6.8,9.9 9,6.1     "></polyline><line stroke-linecap="round" stroke-linejoin="round" x1="11.9" y1="16.1" x2="24.1" y2="16.1"></line><polyline  fill="none" stroke-linecap="round" stroke-linejoin="round" points="5.7,16.7  7.1,18 9.3,14.2     "></polyline><line stroke-linecap="round" stroke-linejoin="round" x1="11.9" y1="24.2" x2="20" y2="24.2"></line><polyline fill="none" stroke-linecap="round" stroke-linejoin="round" points="5.3,24.8  6.7,26.1 8.9,22.2     "></polyline></g></svg>
+'.html_safe %>
+
 
 <% title("Dashboard", '') %>
 
@@ -79,7 +82,7 @@
             <p class="title-xs default-bg">Updated Portal Features</p>
           </div>
           <div class="card-item">
-            <p>New features have been added to the Neurohub portal. You can now create projects and share them with others. You collaborators can have edit access allowing them to update your project.</p>
+            <p>New features have been added to the Neurohub portal. You can now create projects and share them with others. Your collaborators can have edit access allowing them to update your project. Try it out!</p>
           </div>
         </div>
         <div class="card">
@@ -106,27 +109,37 @@
             <% for task in @tasks %>
               <div class="card-row">
                 <div class="card-section">
-                  <div class="card-item text-ellipsis btn-text-secondary">
-                    <%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau) %>
-                  </div>
-                  <div class="card-item text-ellipsis btn-text-secondary">
+                  <div class="card-item btn-text-secondary">
+                    <%= task_icon %>
                     <div class="text-ellipsis">
-                      <%= user_icon %>
+                      <%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau) %>
+                    </div>
+                  </div>
+                  <div class="card-item btn-text-secondary">
+                    <%= user_icon %>
+                    <div class="text-ellipsis">
                       <%= link_to_user_if_accessible(task.user) %>
+                    </div>
+                  </div>
+                  <div class="card-item" style="max-width:150px">
+                    <div class="text-ellipsis">
+                      <%= colored_status(task.status) %>
                     </div>
                   </div>
                 </div>
                 <div class="card-section">
-                  <div class="card-item text-ellipsis btn-text-secondary">
+                  <div class="card-item btn-text-secondary">
                     <%= project_icon %>
-                    <%= link_to_group_if_accessible(task.group) %>
+                    <div class="text-ellipsis">
+                      <%= link_to_group_if_accessible(task.group) %>
+                    </div>
                   </div>
-                  <div class="card-item text-ellipsis">
-                    <%= colored_status(task.status) %>
-                  </div>
-                  <div class="card-item text-ellipsis">
-                    <%= to_localtime(task.updated_at,:date) %>
-                    <%= to_localtime(task.updated_at,:time) %>
+                  
+                  <div class="card-item">
+                    <div class="text-ellipsis">
+                      <%= to_localtime(task.updated_at,:date) %>
+                      <%= to_localtime(task.updated_at,:time) %>
+                    </div>
                   </div>
               
                   </div>
@@ -137,7 +150,7 @@
           <div class="card-item">
             <div style="position: unset" class="empty">
               <div class="empty-wrapper">
-                <img class="empty-icon" src="/images/neurohub/NH_empty_files.svg" />
+                <img class="empty-icon" src="/images/neurohub/NH_empty_tasks.svg" />
                 <p class="empty-text">No tasks have been updated lately.</p>
               </div>
             </div>
@@ -156,25 +169,36 @@
               <% for file in @files %>
                 <div class="card-row">
                   <div class="card-section">
-                    <div class="card-item text-ellipsis btn-text-secondary">
+                    <div class="card-item btn-text-secondary">
                       <%= file_icon %>
-                      <%= link_to_userfile_if_accessible(file, nil) %>
+                      <div class="text-ellipsis">
+                        <%= link_to_userfile_if_accessible(file, nil) %>
+                      </div>
                     </div>
-                    <div class="card-item text-ellipsis btn-text-secondary">
-                      <div class="text-ellipsis"><%= user_icon %><%= link_to_user_if_accessible(file.user, nil) %></div>
+                    <div class="card-item btn-text-secondary">
+                      <%= user_icon %>
+                      <div class="text-ellipsis">
+                        <%= link_to_user_if_accessible(file.user, nil) %>
+                      </div>
+                    </div>
+                    <div class="card-item" style="max-width:150px">
+                      <div class="text-ellipsis">
+                        <%= colored_pretty_size(file.size) %>
+                      </div>
                     </div>
                   </div>
                   <div class="card-section">
-                    <div class="card-item text-ellipsis btn-text-secondary">
+                    <div class="card-item btn-text-secondary">
                       <%= project_icon %>
-                      <%= link_to(file.group.name,{:controller => :nh_projects,:action => :show, :id => file.group.id}, :method  => :get)  %>
+                      <div class="text-ellipsis">
+                        <%= link_to(file.group.name,{:controller => :nh_projects,:action => :show, :id => file.group.id}, :method  => :get)  %>
+                      </div>
                     </div>
-                    <div class="card-item text-ellipsis">
-                      <%= colored_pretty_size(file.size) %>
-                    </div>
-                    <div class="card-item text-ellipsis">
-                      <%= to_localtime(file.updated_at,:date) %>
-                      <%= to_localtime(file.updated_at,:time) %>
+                    <div class="card-item">
+                      <div class="text-ellipsis">
+                        <%= to_localtime(file.updated_at,:date) %>
+                        <%= to_localtime(file.updated_at,:time) %>
+                      </div>
                     </div>
                   </div>
 
