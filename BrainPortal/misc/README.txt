@@ -19,5 +19,5 @@ Content:
    We suggest disabling SQL logs with "no_log" first (see the
    console's "cbhelp" command for more information).
 
-2- Nothing else for the moment,
+2- Nothing else for the moment.
 

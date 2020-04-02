@@ -104,9 +104,13 @@ class RemoteCommand < RestrictedHash
 
     :data_provider_ids,    # an input for the command, a list of DP ids as string. "1,2,3"
 
-    # -------- KEEP USER IDS --------
+    # -------- COMMAND USER ID --------
 
     :requester_user_id,    # an input for the command, generally the current_user
+
+    # -------- SSH KEY PUSH PARAMETERS --------
+
+    :ssh_key_pub, :ssh_key_priv, # when installing new ssh key
 
     # -------- ERROR TRACES --------
 

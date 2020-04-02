@@ -1794,8 +1794,8 @@ class ClusterTask < CbrainTask
 
 # Science script created automatically for #{self.class.to_s}
 #   #{self.class.revision_info.to_s}
-# by CbrainTask::ClusterTask
-#   #{CbrainTask::ClusterTask.revision_info.to_s}
+# by ClusterTask
+#   #{ClusterTask.revision_info.to_s}
 
 #{bourreau_glob_config ? bourreau_glob_config.to_bash_prologue : ""}
 #{tool_glob_config     ? tool_glob_config.to_bash_prologue     : ""}
@@ -1819,8 +1819,8 @@ class ClusterTask < CbrainTask
     qsub_script = <<-QSUB_SCRIPT
 #!/bin/bash
 
-# QSUB wrapper script created automatically by CbrainTask::ClusterTask
-#   #{CbrainTask::ClusterTask.revision_info.to_s}
+# QSUB wrapper script created automatically by ClusterTask
+#   #{ClusterTask.revision_info.to_s}
 
 function got_sigterm {
   echo "CBRAIN Task Got TERM signal"
@@ -2178,8 +2178,8 @@ cat << \"DOCKERJOB\" > #{docker_wrapper_basename.bash_escape}
 
 # Docker wrapper script created automatically for #{self.class.to_s}
 #   #{self.class.revision_info.to_s}
-# by CbrainTask::ClusterTask
-#   #{CbrainTask::ClusterTask.revision_info.to_s}
+# by ClusterTask
+#   #{ClusterTask.revision_info.to_s}
 
 # CBRAIN internal consistency test
 if test -n "$UID" -a "X$UID" != "X#{Process.uid}" ; then
@@ -2316,8 +2316,8 @@ cat << \"SINGULARITYJOB\" > #{singularity_wrapper_basename.bash_escape}
 
 # Singularity wrapper script created automatically for #{self.class.to_s}
 #   #{self.class.revision_info.to_s}
-# by CbrainTask::ClusterTask
-#   #{CbrainTask::ClusterTask.revision_info.to_s}
+# by ClusterTask
+#   #{ClusterTask.revision_info.to_s}
 
 # CBRAIN internal consistency test 1: must run under proper UID
 if test "$UID" -ne "#{Process.uid}" ; then

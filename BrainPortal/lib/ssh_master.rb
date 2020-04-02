@@ -117,6 +117,12 @@ class SshMaster
   # returns true if the SshMaster object was created with option :nomaster
   attr_reader   :nomaster
 
+  # Other options from ssh_config; must be a hash of
+  # key/values, each one will be added as a "-o key=val" on the
+  # master's command-line. Values of 'nil' can be used to remove
+  # options already existing or provided by DEFAULT_SSH_CONFIG_OPTIONS
+  attr_accessor :ssh_config_options
+
   # This class method allows you to find out and fetch the
   # instance object that represents a master connection to a
   # remote host (there can only be a single master for
