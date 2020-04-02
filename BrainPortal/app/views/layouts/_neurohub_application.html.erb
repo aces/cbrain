@@ -35,6 +35,8 @@
     <%= id_csrf_meta_tag.html_safe %>
 
     <%= stylesheet_link_tag  "neurohub", :media => "all" %>
+    <%= javascript_include_tag "jquery", "jquery-ui", "jquery.form", "jquery_ujs" %>
+
     <% 
         # BUG: https://stackoverflow.com/questions/25404206/chrome-transition-fires-on-page-load-when-form-element-added
         # Empty script tags necessary to stop transitions from occurring on page load
