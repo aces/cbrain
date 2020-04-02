@@ -1241,32 +1241,6 @@ th:first-child {
   width: 100%;
 }
 
-.nh_actions {
-  @include shadow("mid");
-  background: $DEFAULT_BG;
-  display: flex;
-  overflow: hidden;
-}
-
-.nh_action {
-  border-radius: 0px;
-  display: flex;
-  height: 100%;
-  align-items: center;
-  white-space: nowrap;
-  text-transform: uppercase;
-  &.btn-solid-secondary {
-    @include mr(1);
-  }
-  &.btn-text-secondary {
-    border-right: 1px solid $SECONDARY_WASH;
-  }
-  img {
-    @include mr(2);
-    width: 1rem;
-  }
-}
-
 /*
 =============================================================
 | TOOLBAR
@@ -1493,6 +1467,38 @@ body {
   &[data-isLoggedIn="true"] {
     padding-top: $TOOLBAR_HEIGHT + rem;
     background: $DEFAULT_WASH;
+  }
+}
+
+$ACTION_BAR_HEIGHT: 2.5;
+
+.nh_actions {
+  @include shadow("mid");
+  background: $DEFAULT_BG;
+  display: flex;
+  overflow: hidden;
+  min-height: $ACTION_BAR_HEIGHT + rem;
+  form {
+    height: 100%;
+  }
+}
+
+.nh_action {
+  border-radius: 0px;
+  display: flex;
+  height: 100%;
+  align-items: center;
+  white-space: nowrap;
+  text-transform: uppercase;
+  &.btn-solid-secondary {
+    @include mr(1);
+  }
+  &.btn-text-secondary {
+    border-right: 1px solid $SECONDARY_WASH;
+  }
+  img {
+    @include mr(2);
+    width: 1rem;
   }
 }
 
@@ -2036,7 +2042,6 @@ $DASH_CARD_MIN_WIDTH: 25;
             span {
               vertical-align: sub;
             }
-
             &.btn-text-secondary {
               text-align: left;
               text-decoration: none;
