@@ -77,12 +77,15 @@
       <% end %>
     </div>
   </div>
-<!--
+
+  <% total_plus  = @dp_space_delta_P.values.inject(:+) || 0 %>
+  <% total_minus = @dp_space_delta_M.values.inject(:+) || 0 %>
+  <% total_delta = total_plus + total_minus.abs %>
   <div class="noc_panel">
     <div class="noc_header">Files Deltas</div><br>
-    <div class="noc_count"><%= @space_delta_P.zero? ? "-" : colored_pretty_size(@space_delta_P) %></div>
+    <div class="noc_count"><%= total_delta.zero? ? "-" : colored_pretty_size(total_delta) %></div>
   </div>
--->
+
   <% if @num_exceptions > 0 %>
   <div class="noc_panel">
     <div class="noc_header">Exceptions</div><br>
@@ -148,14 +151,26 @@
 
 <h1>Data Providers Updated Files</h1>
 
-<% @updated_files.each do |dp_id,size| %>
+<% joined_dp_ids = (@dp_space_delta_P.keys + @dp_space_delta_M.keys).uniq.sort %>
+<% joined_dp_ids.each do |dp_id| %>
   <% dp       = DataProvider.find(dp_id) %>
+  <% plus     = @dp_space_delta_P[dp_id] || 0 %>
+  <% minus    = @dp_space_delta_M[dp_id] || 0 %>
+  <% sum      = plus + minus %>
   <% offline  = dp.online? ? nil : "offline" %>
 
   <fieldset class="daily_dp <%= offline %>">
     <legend><%= red_if(offline, dp.name) %></legend>
-    <%= disk_space_info_display(size) do %>
-      <%= colored_pretty_size size %>
+    <%= disk_space_info_display(plus.abs + minus.abs) do %>
+      <% if plus > 0 %>
+        <span style="color: green">&plus;</span>&nbsp;<%= colored_pretty_size(plus) %>
+      <% end %>
+      <% if plus > 0 && minus < 0 %>
+        <br>
+      <% end %>
+      <% if minus < 0 %>
+        <span style="color: red">&minus;</span>&nbsp;<%= colored_pretty_size(- minus) %>
+      <% end %>
       <% if offline %>
         <br>
         <%= red_if(true,"OFFLINE!") %>

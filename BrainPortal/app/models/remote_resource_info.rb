@@ -51,7 +51,7 @@ class RemoteResourceInfo < RestrictedHash
      :host_uptime,          # Output of 'uptime' command
      :rails_time_zone,      # Time zone name as configured in config/environment.rb
 
-     # Svn info (Rails app)
+     # Source control info (Rails app)
      :revision,             # Latest GIT tag           on disk AT QUERYTIME, e.g. "3.1.13-121"
      :lc_author,            # Latest GIT commit author on disk AT QUERYTIME
      :lc_rev,               # Latest GIT commit ID     on disk AT QUERYTIME
@@ -69,11 +69,12 @@ class RemoteResourceInfo < RestrictedHash
      :bourreau_cms, :bourreau_cms_rev,
      :tasks_max,    :tasks_tot,  # jobs on compute clusters
 
-     # Bourreau Worker Svn info
-     :worker_pids,
+     # Bourreau Worker source control info
+     :worker_pids,       # pids joined by comma, e.g. "123,456,987"
+     :workers_expected,  # number of workers normally running
      :worker_lc_author,
      :worker_lc_rev,
-     :worker_lc_date
+     :worker_lc_date,
 
    ]
 

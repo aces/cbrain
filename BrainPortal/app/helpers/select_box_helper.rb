@@ -73,22 +73,22 @@ module SelectBoxHelper
   # When calling site_select, set the :prompt option in select_tag_options hash, to the text you want
   # displayed when no option is selected
   def site_select(parameter_name = "site", options = {}, select_tag_options = {} )
-     options  = { :selector => options } unless options.is_a?(Hash)
-     sites = options[:sites] || Site.order(:name)
-     sites = sites.all.to_a if sites.is_a?(ActiveRecord::Relation)
-     selector = options[:selector]
+    options  = { :selector => options } unless options.is_a?(Hash)
+    sites = options[:sites] || Site.order(:name)
+    sites = sites.all.to_a if sites.is_a?(ActiveRecord::Relation)
+    selector = options[:selector]
 
-     if selector.respond_to?(:site_id)
-       selected = selector.site_id.to_s
-     elsif selector.is_a?(Site)
-       selected = selector.id.to_s
-     else
-       selected = selector.to_s
-     end
+    if selector.respond_to?(:site_id)
+      selected = selector.site_id.to_s
+    elsif selector.is_a?(Site)
+      selected = selector.id.to_s
+    else
+      selected = selector.to_s
+    end
 
-     site_options = sites.map{ |s| [s.name, s.id]}
+    site_options = sites.map{ |s| [s.name, s.id]}
 
-     select_tag parameter_name, options_for_select(site_options, selected), select_tag_options
+    select_tag parameter_name, options_for_select(site_options, selected), select_tag_options
   end
 
 

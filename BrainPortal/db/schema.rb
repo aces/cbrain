@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20191029191851) do
+ActiveRecord::Schema.define(version: 20200226190034) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -152,6 +152,12 @@ ActiveRecord::Schema.define(version: 20191029191851) do
     t.index ["type"], name: "index_groups_on_type", using: :btree
   end
 
+  create_table "groups_editors", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1" do |t|
+    t.integer "group_id"
+    t.integer "user_id"
+    t.index ["group_id", "user_id"], name: "index_groups_editors_on_group_id_and_user_id", unique: true
+  end
+
   create_table "groups_users", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer "group_id"
     t.integer "user_id"
@@ -268,7 +274,7 @@ ActiveRecord::Schema.define(version: 20191029191851) do
     t.integer  "userfile_id"
     t.string   "userfile_type"
     t.string   "userfile_name"
-    t.string   "data_provider_id"
+    t.integer  "data_provider_id"
     t.string   "data_provider_type"
     t.string   "data_provider_name"
     t.integer  "cbrain_task_id"
@@ -281,6 +287,28 @@ ActiveRecord::Schema.define(version: 20191029191851) do
     t.integer  "tool_config_id"
     t.string   "tool_config_version_name"
     t.datetime "created_at",                              null: false
+    t.index ["type", "cbrain_task_id"], name: "index_resource_usage_on_type_and_cbrain_task_id", using: :btree
+    t.index ["type", "cbrain_task_status"], name: "index_resource_usage_on_type_and_cbrain_task_status", using: :btree
+    t.index ["type", "cbrain_task_type"], name: "index_resource_usage_on_type_and_cbrain_task_type", using: :btree
+    t.index ["type", "data_provider_id"], name: "index_resource_usage_on_type_and_data_provider_id", using: :btree
+    t.index ["type", "data_provider_name"], name: "index_resource_usage_on_type_and_data_provider_name", using: :btree
+    t.index ["type", "data_provider_type"], name: "index_resource_usage_on_type_and_data_provider_type", using: :btree
+    t.index ["type", "group_id"], name: "index_resource_usage_on_type_and_group_id", using: :btree
+    t.index ["type", "group_name"], name: "index_resource_usage_on_type_and_group_name", using: :btree
+    t.index ["type", "group_type"], name: "index_resource_usage_on_type_and_group_type", using: :btree
+    t.index ["type", "remote_resource_id"], name: "index_resource_usage_on_type_and_remote_resource_id", using: :btree
+    t.index ["type", "remote_resource_name"], name: "index_resource_usage_on_type_and_remote_resource_name", using: :btree
+    t.index ["type", "tool_config_id"], name: "index_resource_usage_on_type_and_tool_config_id", using: :btree
+    t.index ["type", "tool_config_version_name"], name: "index_resource_usage_on_type_and_tool_config_version_name", using: :btree
+    t.index ["type", "tool_id"], name: "index_resource_usage_on_type_and_tool_id", using: :btree
+    t.index ["type", "tool_name"], name: "index_resource_usage_on_type_and_tool_name", using: :btree
+    t.index ["type", "user_id"], name: "index_resource_usage_on_type_and_user_id", using: :btree
+    t.index ["type", "user_login"], name: "index_resource_usage_on_type_and_user_login", using: :btree
+    t.index ["type", "user_type"], name: "index_resource_usage_on_type_and_user_type", using: :btree
+    t.index ["type", "userfile_id"], name: "index_resource_usage_on_type_and_userfile_id", using: :btree
+    t.index ["type", "userfile_name"], name: "index_resource_usage_on_type_and_userfile_name", using: :btree
+    t.index ["type", "userfile_type"], name: "index_resource_usage_on_type_and_userfile_type", using: :btree
+    t.index ["type"], name: "index_resource_usage_on_type", using: :btree
   end
 
   create_table "sanity_checks", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|

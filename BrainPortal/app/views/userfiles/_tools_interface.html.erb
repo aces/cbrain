@@ -31,109 +31,103 @@
 
   <div class="userfiles_bourreau_selector" id="tool_version_selector"></div>
 
-  <div id="toolsDialogWrapper">
-    <div id="toolsDialogLeftCol">
+  <div id="toolsDialogLeftCol">
+    <div>
+      <span class="toolsDialogLabel">Search:</span><input type="text" id="searchToolSelectionBox" size="20">
+    </div>
+    <p>
+
+    <% if types.present? || packages.present? || tags.present? %>
       <div>
-        <span class="toolsDialogLabel">Search:</span><input type="text" id="searchToolSelectionBox" size="20">
+        <label><input type="checkbox" class="tag_checkbox" id="showAllTools"/>All tools</label>
       </div>
       <p>
+    <% end %>
 
-      <% if types.present? || packages.present? || tags.present? %>
-        <div>
-          <label><input type="checkbox" class="tag_checkbox" id="showAllTools"/>All tools</label>
-        </div>
-        <p>
+    <% if types.present? %>
+      <span class="toolsDialogLabel">Type:</span><br>
+      <% types.each do |type| %>
+        <label>
+          <input type="checkbox" class="tag_checkbox" data-tagname="<%= type %>"/>
+          <%= type %>
+        </label>
+        <br>
+      <% end %>
+      <p>
+    <% end %>
+
+    <% if packages.present? %>
+      <span class="toolsDialogLabel">Software Package:</span><br>
+      <% packages.each do |package| %>
+        <label>
+          <input type="checkbox" class="tag_checkbox" data-tagname="<%= package %>"/>
+          <%= package %>
+        </label>
+        <br>
+      <% end %>
+      <p>
+    <% end %>
+
+    <% if tags.present? %>
+      <span class="toolsDialogLabel">Tags:</span><br>
+      <% tags.each do |tag|%>
+        <label>
+          <input type="checkbox" class="tag_checkbox" data-tagname="<%= tag %>"/>
+          <%= tag %>
+        </label>
+        <br>
+      <% end %>
+      <p>
+    <% end %>
+
+  </div> <%# toolsDialogLeftCol %>
+
+
+
+
+  <div id="toolsDialogRightCol">
+
+    <span class="toolsDialogLabel">Tools:</span>
+
+    <div class="tools-container">
+      <table id="toolSelectTable">
+
+      <% if @my_tools.empty? %>
+        <tr>
+          <td>
+            <% if current_user.has_role? :admin_user %>
+              <h1 class="warning">No tools available. New tools may be registered from the Tools index.</h1>
+            <% else %>
+              <h1 class="warning">No tools available. Contact your admin to have them registered.</h1>
+            <% end %>
+          </td>
+        </tr>
       <% end %>
 
-      <% if types.present? %>
-        <span class="toolsDialogLabel">Type:</span><br>
-        <% types.each do |type| %>
-          <label>
-            <input type="checkbox" class="tag_checkbox" data-tagname="<%= type %>"/>
-            <%= type %>
-          </label>
-          <br>
-        <% end %>
-        <p>
-      <% end %>
+      <% # Render each of the tool info boxes %>
+      <% @my_tools.each do |tool| %>
+        <%
+           # We build a simple hash table to generate a HTML
+           # attribute to the TR element, e.g.
+           #     <tr data-taglist="tag1,tag2,etc">
+           taglist     = tool.get_all_tags || []
+           taglisthash = {}
+           taglisthash['data-taglist'] = taglist.join(",") if taglist.present?
+        %>
+        <tr <%= taglisthash.to_html_attributes.html_safe %>>
+          <td id="tool_<%= tool.id %>">
+            <span data-tool-id="<%= tool.id %>" class="toolsLink"><%= tool.name %></span><br>
+            <% if taglist.present? %>
+              Tags: <%= taglist.join(', ') %><br>
+            <% end %>
+            <%= link_to( "Tool Website", tool.url, :target => "_blank") if tool.url.present? %>
+          </td>
+        </tr>
+      <% end # each @my_tools %>
 
-      <% if packages.present? %>
-        <span class="toolsDialogLabel">Software Package:</span><br>
-        <% packages.each do |package| %>
-          <label>
-            <input type="checkbox" class="tag_checkbox" data-tagname="<%= package %>"/>
-            <%= package %>
-          </label>
-          <br>
-        <% end %>
-        <p>
-      <% end %>
+      </table> <%# toolSelectTable %>
+    </div> <%# tools-container %>
 
-      <% if tags.present? %>
-        <span class="toolsDialogLabel">Tags:</span><br>
-        <% tags.each do |tag|%>
-          <label>
-            <input type="checkbox" class="tag_checkbox" data-tagname="<%= tag %>"/>
-            <%= tag %>
-          </label>
-          <br>
-        <% end %>
-        <p>
-      <% end %>
-
-    </div> <%# toolsDialogLeftCol %>
-
-
-
-
-    <div id="toolsDialogRightCol">
-
-      <span class="toolsDialogLabel">Tools:</span>
-
-      <div class="tools-container">
-        <table id="toolSelectTable">
-
-        <% if @my_tools.empty? %>
-          <tr>
-            <td>
-              <% if current_user.has_role? :admin_user %>
-                <h1 class="warning">No tools available. New tools may be registered from the Tools index.</h1>
-              <% else %>
-                <h1 class="warning">No tools available. Contact your admin to have them registered.</h1>
-              <% end %>
-            </td>
-          </tr>
-        <% end %>
-
-        <% # Render each of the tool info boxes %>
-        <% @my_tools.each do |tool| %>
-          <%
-             # We build a simple hash table to generate a HTML
-             # attribute to the TR element, e.g.
-             #     <tr data-taglist="tag1,tag2,etc">
-             taglist     = tool.get_all_tags || []
-             taglisthash = {}
-             taglisthash['data-taglist'] = taglist.join(",") if taglist.present?
-          %>
-          <tr <%= taglisthash.to_html_attributes.html_safe %>>
-            <td id="tool_<%= tool.id %>">
-              <span data-tool-id="<%= tool.id %>" class="toolsLink"><%= tool.name %></span><br>
-              <% if taglist.present? %>
-                Tags: <%= taglist.join(', ') %><br>
-              <% end %>
-              <%= link_to( "Tool Website", tool.url, :target => "_blank") if tool.url.present? %>
-            </td>
-          </tr>
-        <% end # each @my_tools %>
-
-        </table> <%# toolSelectTable %>
-      </div> <%# tools-container %>
-
-    </div> <%# toolsDialogRightCol %>
-
-
-
-
-  </div> <%# toolsDialogWrapper %>
+  </div> <%# toolsDialogRightCol %>
 
 </div> <%# toolsDialog %>

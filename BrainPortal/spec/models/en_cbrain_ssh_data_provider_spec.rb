@@ -48,7 +48,7 @@ describe EnCbrainSshDataProvider do
     it "should erase provider" do
       allow(en_cbrain_ssh_data_provider).to receive(:remote_dir).and_return("x/y/z")
       allow(en_cbrain_ssh_data_provider).to receive(:ssh_shared_options)
-      expect(en_cbrain_ssh_data_provider).to receive(:remote_bash_this).with(/rm -rf/)
+      expect(en_cbrain_ssh_data_provider).to receive(:remote_bash_this).with(/rm -rf/, any_args)
       en_cbrain_ssh_data_provider.impl_provider_erase(userfile)
     end
 

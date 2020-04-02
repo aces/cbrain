@@ -638,5 +638,126 @@ describe User do
 
   end
 
+  describe "#add_editable_groups" do
+
+    let!(:group_a) { create(:work_group,     :name  => "G_A" ) }
+    let!(:group_b) { create(:work_group,     :name  => "G_B" ) }
+    let!(:group_c) { create(:work_group,     :name  => "G_C") }
+
+    let!(:user_a)  { create(:normal_user,    :login => "U_A", :group_ids => [group_a.id, group_b.id]) }
+    let!(:site_group) { create(:system_group, :name => "SiteGroup", :user_ids => [user_a.id] ) }
+
+    it "can add a single editable group by id" do
+      user_a.add_editable_groups(group_a.id)
+      expect(user_a.editable_group_ids).to include(group_a.id)
+    end
+    it "can add a single editable group by group" do
+      user_a.add_editable_groups(group_a)
+      expect(user_a.editable_groups).to include(group_a)
+    end
+    it "can add a list of editable groups (can be id or Group)" do
+      user_a.add_editable_groups([group_a,group_b.id])
+      expect(user_a.editable_group_ids).to include(group_a.id, group_b.id)
+    end
+    it "should be a menber of this group in order to be an editor" do
+      user_a.add_editable_groups(group_c)
+      expect(user_a.editable_group_ids).not_to include(group_c.id)
+    end
+    it "no editable capacity should be remove when new is added" do
+      user_a.add_editable_groups(group_a)
+      user_a.add_editable_groups(group_b)
+      expect(user_a.editable_group_ids).to include(group_a.id, group_b.id)
+    end
+    it "should not add 2 times the same editable group" do
+      user_a.add_editable_groups(group_a)
+      user_a.add_editable_groups(group_a)
+      expect(user_a.editable_group_ids.keep_if {|i| i == group_a.id}.count).to be(1)
+    end
+    it "can only be an editor of WorkGroup" do
+      user_a.add_editable_groups(site_group)
+      expect(user_a.editable_group_ids).not_to include(site_group.id)
+    end
+  end
+
+  describe "before_add on editable_groups #can_be_editor_of" do
+    let!(:user_a)  { create(:normal_user,    :login => "U_A" ) }
+    let!(:user_b)  { create(:normal_user,    :login => "U_B" ) }
+
+    let!(:group_a)      { create(:work_group,   :name  => "G_A", :user_ids => [user_a.id] ) }
+    let!(:system_group) { create(:system_group, :name  => "SystemGroup", :user_ids => [user_a.id] ) }
+
+    it "can only be an editor of WorkGroup" do
+      expect{user_a.editable_group_ids = [system_group.id]}.to raise_error(CbrainError)
+    end
+    it "can only be an editor when member of the group" do
+      expect{user_b.editable_group_ids = [group_a.id]}.to raise_error(CbrainError)
+    end
+  end
+
+  describe "#add_editable_groups" do
+    let!(:group_a)    { create(:work_group,   :name  => "G_A" ) }
+    let!(:group_b)    { create(:work_group,   :name  => "G_B" ) }
+    let!(:group_c)    { create(:work_group,   :name  => "G_C" ) }
+    let!(:site_group) { create(:system_group, :name => "SystemGroup", :user_ids => [user_a.id] ) }
+
+    let!(:user_a)     { create(:normal_user,    :login => "U_A", :group_ids => [group_a.id, group_b.id]) }
+
+    it "can add a single editable group by id" do
+      user_a.add_editable_groups(group_a.id)
+      expect(user_a.editable_group_ids).to include(group_a.id)
+    end
+    it "can add a single editable group by group" do
+      user_a.add_editable_groups(group_a)
+      expect(user_a.editable_groups).to include(group_a)
+    end
+    it "can add a list of editable groups (can be id or Group)" do
+      user_a.add_editable_groups([group_a,group_b.id])
+      expect(user_a.editable_group_ids).to include(group_a.id, group_b.id)
+    end
+    it "should be a member of this group in order to be an editor" do
+      user_a.add_editable_groups(group_c)
+      expect(user_a.editable_group_ids).not_to include(group_c.id)
+    end
+    it "no editable capacity should be remove when new is added" do
+      user_a.add_editable_groups(group_a)
+      user_a.add_editable_groups(group_b)
+      expect(user_a.editable_group_ids).to include(group_a.id, group_b.id)
+    end
+    it "should not add 2 times the same editable group" do
+      user_a.add_editable_groups(group_a)
+      user_a.add_editable_groups(group_a)
+      expect(user_a.editable_group_ids.keep_if {|i| i == group_a.id}.count).to be(1)
+    end
+    it "can only be an editor of WorkGroup" do
+      user_a.add_editable_groups(site_group)
+      expect(user_a.editable_group_ids).not_to include(site_group.id)
+    end
+  end
+
+  describe "#remove_editable_groups" do
+    let!(:group_a) { create(:work_group,   :name  => "G_A" ) }
+    let!(:group_b) { create(:work_group,   :name  => "G_B" ) }
+
+    let!(:user_a)  { create(:normal_user,    :login => "U_A", :group_ids => [group_a.id, group_b.id]) }
+
+    before(:each) do
+      user_a.add_editable_groups([group_a, group_b])
+    end
+
+    it "should remove group from editable groups based on it id" do
+      user_a.remove_editable_groups(group_a.id)
+      expect(user_a.editable_group_ids).not_to include(group_a.id)
+    end
+    it "should remove group from editable groups based on it group" do
+      user_a.remove_editable_groups(group_a)
+      expect(user_a.editable_group_ids).not_to include(group_a)
+    end
+    it "can remove a list of editable groups (can be id or Group)" do
+      user_a.remove_editable_groups([group_a,group_b.id])
+      expect(user_a.editable_group_ids).to be_empty
+    end
+  end
+
+
 end
 

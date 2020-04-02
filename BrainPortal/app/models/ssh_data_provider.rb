@@ -20,10 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'rubygems'
-require 'net/ssh'
-require 'net/sftp'
-
 #
 # This class provides an implementation for a data provider
 # where the remote files are accessed through +ssh+ and +rsync+.
@@ -36,6 +32,8 @@ require 'net/sftp'
 # For the list of API methods, see the DataProvider superclass.
 #
 class SshDataProvider < DataProvider
+
+  include SshDataProviderBase
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
@@ -80,7 +78,8 @@ class SshDataProvider < DataProvider
       sourceslash="/"
     end
 
-    rsync = rsync_over_ssh_prefix
+    rsync = rsync_over_ssh_prefix(userfile.user, userfile)
+
     # It's IMPORTANT that the source be specified with a bare ':' in front.
     text = bash_this("#{rsync} -a -l --no-p --no-g --chmod=u=rwX,g=rX,o=r --delete #{self.rsync_excludes} :#{remote_shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
@@ -98,7 +97,8 @@ class SshDataProvider < DataProvider
     cb_error "Error: file #{localfull} does not exist in local cache!" unless File.exist?(localfull)
 
     sourceslash = userfile.is_a?(FileCollection) ? "/" : ""
-    rsync = rsync_over_ssh_prefix
+    rsync       = rsync_over_ssh_prefix(userfile.user, userfile)
+
     # It's IMPORTANT that the destination be specified with a bare ':' in front.
     text = bash_this("#{rsync} -a -l --no-p --no-g --chmod=u=rwX,g=rX,o=r --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{remote_shell_escape(remotefull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
@@ -120,7 +120,7 @@ class SshDataProvider < DataProvider
   def provider_file_exists?(userfile) #:nodoc:
     remotefull  = provider_full_path(userfile).to_s
     check_cmd = "test -d #{remotefull.bash_escape} && echo dirExists; test -f #{remotefull.bash_escape} && echo fileExists; test ! -e #{remotefull.bash_escape} && echo absentExists"
-    text = self.remote_bash_this(check_cmd)
+    text = self.remote_bash_this(check_cmd, userfile.user, userfile)
     if text.present? && text =~ /(dir|file|absent)Exists/
       return Regexp.last_match[1].to_sym
     end
@@ -132,7 +132,7 @@ class SshDataProvider < DataProvider
   def impl_provider_erase(userfile) #:nodoc:
     full     = provider_full_path(userfile)
     erase_cmd = "/bin/rm -rf #{full.to_s.bash_escape} >/dev/null 2>&1"
-    remote_bash_this(erase_cmd)
+    remote_bash_this(erase_cmd, userfile.user, userfile)
     true
   end
 
@@ -144,8 +144,8 @@ class SshDataProvider < DataProvider
     oldpath   = oldpath.to_s
     newpath   = newpath.to_s
 
-    self.master # triggers unlocking the agent
-    Net::SFTP.start(remote_host,remote_user, :port => (remote_port.presence || 22), :auth_methods => [ 'publickey' ] ) do |sftp|
+    self.master(userfile.user, userfile) # triggers unlocking the agent
+    net_sftp(userfile.user, userfile) do |sftp|
       begin
         sftp.lstat!(newpath)
         return false # means file exists already
@@ -165,13 +165,13 @@ class SshDataProvider < DataProvider
   def impl_provider_readhandle(userfile, rel_path = ".", &block) #:nodoc:
     full_path = provider_full_path(userfile) + rel_path
     cb_error "Error: read handle cannot be provided for non-file." unless userfile.is_a?(SingleFile)
-    IO.popen("ssh #{ssh_shared_options} cat #{remote_shell_escape(full_path)}","r") do |fh|
+    IO.popen("ssh #{ssh_shared_options(userfile.user, userfile)} cat #{remote_shell_escape(full_path)}","r") do |fh|
       yield(fh)
     end
   end
 
   def impl_provider_list_all(user=nil) #:nodoc:
-    self.remote_dir_entries(self.browse_remote_dir(user))
+    self.remote_dir_entries(self.browse_remote_dir(user), user)
   end
 
   # Allows us to browse a remote directory that changes based on the user.
@@ -191,8 +191,8 @@ class SshDataProvider < DataProvider
     types.map!(&:to_sym)
 
     base_dir = "/"
-    self.master # triggers unlocking the agent
-    Net::SFTP.start(remote_host,remote_user, :port => (remote_port.presence || 22), :auth_methods => [ 'publickey' ] ) do |sftp|
+    self.master(userfile.user, userfile) # triggers unlocking the agent
+    net_sftp(userfile.user, userfile) do |sftp|
       entries = []
       if userfile.is_a? FileCollection
         if directory == :all
@@ -255,16 +255,17 @@ class SshDataProvider < DataProvider
 
   def impl_provider_report #:nodoc:
     issues       = []
-    remote_files = self.remote_dir_entries(self.remote_dir).map(&:name)
+    remote_files = self.remote_dir_entries(self.remote_dir, self.user).map(&:name)
 
     # Make sure all registered files exist
     self.userfiles.where("name NOT IN (?)", remote_files.empty? ? [''] : remote_files).each do |miss|
       issues << {
         :type        => :missing,
-        :message     => "Missing userfile '#{miss.name}'",
+        :message     => "Userfile '#{miss.name}'",
         :severity    => :major,
         :action      => :destroy,
         :userfile_id => miss.id,
+        :user_id     => miss.user_id
       }
     end
 
@@ -272,8 +273,9 @@ class SshDataProvider < DataProvider
     remote_files.select { |u| ! self.userfiles.where(:name => u).exists? }.each do |unreg|
       issues << {
         :type     => :unregistered,
-        :message  => "Unregistered file '#{unreg}'",
-        :severity => :trivial
+        :message  => "File '#{unreg}'",
+        :severity => :trivial,
+        :user_id  => nil
       }
     end
 
@@ -288,71 +290,15 @@ class SshDataProvider < DataProvider
 
   protected
 
-  # Builds a prefix for a +rsync+ command, such as
-  #
-  #   "rsync -e 'ssh -x -o a=b -o c=d -p port user@host'"
-  #
-  # Note that this means that remote file specifications for
-  # rsync MUST start with a bare ":" :
-  #
-  #   rsync -e 'ssh_options_here user_host'  :/remote/file  local/file
-  def rsync_over_ssh_prefix
-    ssh_opts = self.ssh_shared_options
-    ssh      = "ssh -q -x #{ssh_opts}"
-    rsync    = "rsync -e #{shell_escape(ssh)}"
-    rsync
-  end
-
-  # Returns the necessary options to connect to a master SSH
-  # command running in the background (which will be started if
-  # necessary).
-  def ssh_shared_options
-    self.master.ssh_shared_options("auto") # ControlMaster=auto
-  end
-
-  # Returns the SshMaster object handling the persistent connection to the Provider side.
-  # This incurs a costs, but increases security. Every access to this method
-  # will also, as a side effect, unlock the global CBRAIN SSH agent.
-  # This will open a N seconds window to perform a SSH or SFTP operation
-  # on the connection (N is configured in the AgentLocker subprocess).
-  #
-  # Addendum, Aug 1st 2012: the connection is no longer necessary persistent, by
-  # passing the :nomaster=true option to SshMaster when on a Bourreau!
-  def master
-    myself     = RemoteResource.current_resource
-    persistent = myself.meta[:use_persistent_ssh_masters_for_dps] # true, false, or string versions
-    # Default 'persistent' is TRUE for BrainPortals, FALSE for others (e.g. Bourreaux)
-    persistent = myself.is_a?(BrainPortal) if persistent.to_s !~ /\A(true|false)\z/
-    @master ||= SshMaster.find_or_create(remote_user,remote_host,remote_port,
-                  :category => "DP_#{Process.uid}",
-                  :uniq     => self.id.to_s,
-                  :nomaster => (persistent.to_s != 'true')
-                )
-    # Unlock agent, in preparation for doing stuff on it
-    CBRAIN.with_unlocked_agent(:caller_level => 1)
-    @master.start("DataProvider_#{self.name}") # does nothing is it's already started
-    @master
-  end
-
-  # Returns the stdout of 'command' as executed on the Provider side
-  # through the ssh tunnel. stdin is redirected from /dev/null.
-  def remote_bash_this(command)
-    text = ""
-    self.master.remote_shell_command_reader(command, :stdin => '/dev/null') do |fh|
-      text = fh.read
-    end
-    text
-  end
-
   # Returns a list of all files in remote directory +dirname+, with all their
   # associated metadata; size, permissions, access times, owner, group, etc.
-  def remote_dir_entries(dirname)
+  def remote_dir_entries(dirname, user = nil, userfile = nil)
     list    = []
     attlist = [ 'symbolic_type', 'size', 'permissions',
                 'uid',  'gid',  'owner', 'group',
                 'atime', 'ctime', 'mtime' ]
-    self.master # triggers unlocking the agent
-    Net::SFTP.start(remote_host,remote_user, :port => (remote_port.presence || 22), :auth_methods => [ 'publickey' ] ) do |sftp|
+    self.master(user, userfile) # triggers unlocking the agent
+    net_sftp(user, userfile) do |sftp|
       sftp.dir.foreach(dirname) do |entry|
         attributes = entry.attributes
         type = attributes.symbolic_type

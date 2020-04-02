@@ -39,9 +39,9 @@ module ResourceUsageHelper
       return report
     end
     if val >= 0
-       ('<span style="color: green">+</span>&nbsp;' + colored_pretty_size(val)).html_safe
+       ('<span style="color: green">&plus;</span>&nbsp;' + colored_pretty_size(val) ).html_safe
     else
-       ('<span style="color: red">-</span>&nbsp;' +   colored_pretty_size(-val)).html_safe
+       ('<span style="color: red">&minus;</span>&nbsp;'  + colored_pretty_size(-val)).html_safe
     end
   end
 

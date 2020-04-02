@@ -63,8 +63,12 @@ class PortalSanityChecks < CbrainChecker #:nodoc:
       #Where the magic happens
       #Run all methods in this class starting with ensure_
       super #calling super to run the actual checks
-      puts "C> \t- Adding new sanity check record."
-      SanityCheck.new(:revision_info => Revision_info.to_s).save! #Adding new SanityCheck record
+
+      # We record this only if it's not already in the DB
+      if not self.done?
+        puts "C> \t- Adding new sanity check record."
+        SanityCheck.new(:revision_info => Revision_info.to_s).save! #Adding new SanityCheck record
+      end
 
       #-----------------------------------------------------------------------------
       # Rescue: for the cases when the Rails application is started as part of

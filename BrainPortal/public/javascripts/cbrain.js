@@ -1003,6 +1003,18 @@
 
   });
 
+  // Unable chosen functionality for select box
+  // from chosen JavaScript librairy
+  $('select').each(function(){
+    var select = $(this);
+
+    var defined_width = (select.context.style.width);
+    if ( defined_width !== '' ){
+      select.chosen({ width: defined_width });
+    } else {
+      select.chosen({ width: '25em' });
+    }
+  });
 
   // Set a timer to update the "Last Updated" indicator
   (function () {

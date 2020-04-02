@@ -45,18 +45,19 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 % end
 %
 % # Parameter groups
-% inputs   = (descriptor['inputs'].dup                || []) rescue []
-% outputs  = (descriptor['output-files'].dup          || []) rescue []
-% eVars    = (descriptor['environment-variables'].dup || []) rescue []
+% inputs    = (descriptor['inputs'].dup                || []) rescue []
+% outputs   = (descriptor['output-files'].dup          || []) rescue []
+% eVars     = (descriptor['environment-variables'].dup || []) rescue []
 %
 % # Subsets
-% files    = inputs.select  { |i| i['type'] == 'File'   }
-% required = outputs.select { |o| ! o['optional']       }
-% globs    = outputs.select { |o| o['list']             }
-% in_keys  = inputs.select  { |i| i['value-key'] }
-% out_keys = outputs.select { |o| o['value-key'] }
-% flags    = (inputs + outputs).select { |p| p['command-line-flag'].present? }
-% seps     = (inputs + outputs).select { |i| i['command-line-flag-separator'] }
+% files     = inputs.select  { |i| i['type'] == 'File'   }
+% required  = outputs.select { |o| ! o['optional']       }
+% globs     = outputs.select { |o| o['list']             }
+% in_keys   = inputs.select  { |i| i['value-key'] }
+% out_keys  = outputs.select { |o| o['value-key'] }
+% flags     = (inputs + outputs).select { |p| p['command-line-flag'].present? }
+% seps      = (inputs + outputs).select { |p| p['command-line-flag-separator'] }
+% list_seps = (inputs + outputs).select { |p| p['list-separator'] }
 %
   # Task properties are special boolean properties of your task, returned as a
   # hash table. Used internally by CBRAIN to enable/disable special task
@@ -298,8 +299,24 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
       %>
 %     end
     }
-
 %   end
+
+%   unless list_seps.empty?
+    # Input command-line separators (with list-separator) used with keys in command-line
+    # substitution.
+    list_seps = {
+%     key_width = max_width.(list_seps, 'value-key')  + "''".length
+%     list_seps.each do |list_sep|
+      <%=
+        "%-#{key_width}s => %s" % [
+          "'#{list_sep['value-key']}'",
+          "'#{list_sep['list-separator']}',"
+        ]
+      %>
+%     end
+    }
+%   end
+
     outfileMoveCommands = []
 %   unless outputs.empty?
     # Generate output filenames
@@ -352,10 +369,13 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 %   end
 %   if (descriptor['custom'] || {})['cbrain:ignore-exit-status']
     # Generate the final command-line to run <%= name %>
-    envVars + [ apply_template(command_template, keys<%= flags.empty? ? '' : ', flags: flags' %><%= seps.empty? ? '' : ', separators: seps' %>) ] + outfileMoveCommands
+    envVars + [ apply_template( command_template,
+                                keys<%= flags.empty? ? '' : ', flags: flags' %><%= seps.empty? ? '' : ', separators: seps' %><%= list_seps.empty? ? '' : ', list_separators: list_seps' %>) ] +
+                                outfileMoveCommands
 %   else
     # Generate the final command-line to run <%= name %>
-    command = apply_template(command_template, keys<%= flags.empty? ? '' : ', flags: flags' %><%= seps.empty? ? '' : ', separators: seps' %>)
+    command = apply_template( command_template,
+                              keys<%= flags.empty? ? '' : ', flags: flags' %><%= seps.empty? ? '' : ', separators: seps' %><%= list_seps.empty? ? '' : ', list_separators: list_seps' %>)
 
     # And save its exit status
     envVars + [ command, "echo $? > ./#{exit_cluster_filename.bash_escape}" ] + outfileMoveCommands
@@ -568,10 +588,12 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 
   # Apply substitution keys +keys+ to +template+ in order to format a
   # command-line or output file name.
-  # Substitute each value in +keys+ in +template+, prepended by the
-  # corresponding flag in +flags+ (if available), stripped of the
-  # endings in +strip+, and separated by the corresponding string in
-  # +separators+:
+  # Substitute each value in +keys+ in +template+,
+  #   - prepended by the corresponding flag in +flags+ (if available),
+  #   - stripped of the endings in +strip+,
+  #   - separated by the corresponding string in +separators+ for flags
+  #   - separated by the corresponding string in +list_separators+ for list
+  # Some examples:
   #   apply_template('f [1]', { '[1]' => 5 })
   #     => 'f 5'
   #
@@ -589,10 +611,15 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
   #     separators: { '[1]' => '=' }
   #   ) => 'f -z=5'
   #
-  def apply_template(template, keys, flags: {}, strip: [], separators: {})
+  #   apply_template('f [1]', { '[1]' => '[1 2 3]' },
+  #     flags: { '[1]' => '-z' },
+  #     list_separators: {'[1]' => "*"}
+  #   ) => 'f -z 1*2*3'
+  #
+  def apply_template(template, keys, flags: {}, strip: [], separators: {}, list_separators: {})
     # Set of properties from the descriptor for file-type inputs
-    fileKeys = [<%= files.map { |f| '"' + f['value-key'] + '"' }.join(",") %>]
-    absPath  = [<%= files.map { |f| f['uses-absolute-path'] || false }.join(",") %>]
+    fileKeys = [<%= files.map { |f| '"' + (f['value-key'] || 'nil') + '"' }.join(",") %>]
+    absPath  = [<%= files.map { |f|      f['uses-absolute-path'] || false }.join(",") %>]
     # The working directory from which the task will be launched
     # Used to fill in absolute paths for inputs requesting it
     wd = self.container_working_directory || self.full_cluster_workdir
@@ -600,6 +627,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     keys.inject(template) do |template, (key, value)|
       flag = flags[key]
       sep_init = separators[key]
+      sep_list = list_separators[key] || ' '
 
       # Flag type
       isBool = (value.is_a?(TrueClass) || value.is_a?(FalseClass))
@@ -628,7 +656,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 
           v.to_s.bash_escape
         end
-        .join(' ')
+        .join(sep_list)
       sep = (sep_init.nil?) ? ' ' : sep_init # Default separator is space
       template.gsub(key){ (flag && value.present?) ? "#{flag}#{sep}#{value}" : value }
     end

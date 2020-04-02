@@ -110,10 +110,11 @@ class EnCbrainLocalDataProvider < LocalDataProvider
     (all_paths - userfile_paths).each do |unk|
       issues << {
         :type      => :unknown,
-        :message   => "Unknown file or directory '#{unk.sub(base_regex, '')}'",
+        :message   => "File or directory '#{unk.sub(base_regex, '')}'",
         :severity  => :major,
         :action    => :delete,
-        :file_path => unk
+        :file_path => unk,
+        :user_id   => nil
       }
     end
 
