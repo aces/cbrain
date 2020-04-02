@@ -264,6 +264,7 @@ class Bourreau < RemoteResource
     worker_lc_rev     = worker_revinfo.short_commit
     worker_lc_author  = worker_revinfo.author
     worker_lc_date    = worker_revinfo.datetime
+    num_workers       = myself.workers_instances.presence || 0
 
     num_sync_userfiles  = myself.sync_status.count         # number of files locally synchronized
     size_sync_userfiles = myself.sync_status.joins(:userfile).sum("userfiles.size") # tot sizes of these files
@@ -279,6 +280,7 @@ class Bourreau < RemoteResource
 
       # Worker info
       :worker_pids               => worker_pids,
+      :workers_expected          => num_workers,
       :worker_lc_rev             => worker_lc_rev,
       :worker_lc_author          => worker_lc_author,
       :worker_lc_date            => worker_lc_date,
@@ -297,7 +299,7 @@ class Bourreau < RemoteResource
   # for this server; the object returned is RemoteResourceInfo
   # with the same quick fields returned by
   # RemoteResource.ping_remote_resource_info, plus the PIDs
-  # of the Bourreau's workers.
+  # of the Bourreau's workers and some task stats.
   def self.remote_resource_ping
     myself             = RemoteResource.current_resource
 
@@ -305,6 +307,7 @@ class Bourreau < RemoteResource
     worker_pool        = WorkerPool.find_pool(BourreauWorker) rescue nil
     workers            = worker_pool.workers rescue nil
     worker_pids        = workers.map(&:pid).join(",") rescue '???'
+    num_workers        = myself.workers_instances.presence || 0
 
     # Stats
     num_sync_userfiles  = myself.sync_status.count         # number of files locally synchronized
@@ -314,6 +317,7 @@ class Bourreau < RemoteResource
 
     info = super
     info[:worker_pids]                = worker_pids
+    info[:workers_expected]           = num_workers
     info[:num_sync_cbrain_userfiles]  = num_sync_userfiles
     info[:size_sync_cbrain_userfiles] = size_sync_userfiles
     info[:num_cbrain_tasks]           = num_tasks

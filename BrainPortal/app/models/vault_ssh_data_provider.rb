@@ -73,7 +73,7 @@ class VaultSshDataProvider < SshDataProvider
     user_dirs = users.raw_rows(:login).flatten
 
     # Look for files outside user directories
-    self.remote_dir_entries(remote_dir).map(&:name).reject { |f| user_dirs.include? f }.each do |out|
+    self.remote_dir_entries(remote_dir,nil).map(&:name).reject { |f| user_dirs.include? f }.each do |out|
       issues << {
         :type     => :outside,
         :message  => "Unknown file '#{out}' outside user directories",
@@ -83,7 +83,7 @@ class VaultSshDataProvider < SshDataProvider
     end
 
     users.each do |user|
-      remote_files = self.remote_dir_entries((base_path + user.login).to_s).map(&:name) rescue []
+      remote_files = self.remote_dir_entries((base_path + user.login).to_s,nil).map(&:name) rescue []
       registered   = self.userfiles.where(:user_id => user).raw_rows(:id, :name)
 
       # Make sure all registered files exist

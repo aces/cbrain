@@ -87,6 +87,7 @@ class User < ApplicationRecord
   after_update              :system_group_site_update
   after_destroy             :destroy_system_group
   after_destroy             :destroy_user_sessions
+  after_destroy             :destroy_user_ssh_key
 
   # The following resources PREVENT the user from being destroyed if some of them exist.
   has_many                :userfiles,         :dependent => :restrict_with_exception
@@ -129,6 +130,12 @@ class User < ApplicationRecord
   def name
     self.login
   end
+
+  ###############################################
+  #
+  # Licensing methods
+  #
+  ###############################################
 
   def signed_license_agreements(license_agreement_set=self.license_agreement_set) #:nodoc:
     current_user_license = self.meta[:signed_license_agreements] || []
@@ -297,6 +304,24 @@ class User < ApplicationRecord
   # Destroy all sessions for user
   def destroy_user_sessions
     LargeSessionInfo.where(:user_id => self.id).destroy_all
+  end
+
+  # Returns a SshKey object for the user.
+  # If option +create_it+ is true, create the key files if necessary.
+  # If option +ok_no_files+ is true, will return the object even if
+  # the key files don't exist yet (default it to raise an exception)
+  def ssh_key(options = { :create_id => false, :ok_no_files => false })
+    name = "u#{self.id}" # Avoiding username in ssh filenames or in comment.
+    return SshKey.find_or_create(name) if options[:create_it]
+    return SshKey.new(name)            if options[:ok_no_files]
+    SshKey.find(name) # will raise exception if files are not there
+  end
+
+  # After destroy callback: destroy the user's SSH key on the filesystem, if any.
+  def destroy_user_ssh_key
+    self.ssh_key.destroy
+  rescue
+    true
   end
 
   # Returns the timestamp of last activity, based on session info.

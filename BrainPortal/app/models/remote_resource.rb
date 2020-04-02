@@ -519,7 +519,7 @@ class RemoteResource < ApplicationRecord
       :host_uptime        => host_uptime,
       :rails_time_zone    => time_zone_name,
 
-      # Svn info
+      # Source control info
       :revision           => @git_tag,                          # 'live' value
       :lc_author          => @git_author,                       # at process start
       :lc_rev             => @git_commit,                       # at process start
@@ -901,6 +901,36 @@ class RemoteResource < ApplicationRecord
         ss.delete rescue nil
       end
     end
+
+    true
+  end
+
+  # This installs a pair of private/public SSH keys
+  # for a user. The key pair has been created by another
+  # CBRAIN app which sent this command to install a copy
+  # of the files here.
+  def self.process_command_push_ssh_keys(command)
+    myself   = RemoteResource.current_resource
+
+    # Command params
+    priv_key = command.delete(:ssh_key_priv)
+    pub_key  = command.delete(:ssh_key_pub)
+    user_id  = command.requester_user_id
+    user     = User.find(user_id)
+
+    # To avoid sending back the info on the controls channel
+    command.ssh_key_priv = "[FILTERED]"
+    command.ssh_key_pub  = "[FILTERED]"
+
+    # Install key files
+    ssh_key  = user.ssh_key(ok_no_files: true)
+    ssh_key.install_key_files(pub_key, priv_key)
+    ssh_key.validate!
+
+    # Log install date
+    user.addlog("User SSH key installed on #{myself.name}")
+    myself.addlog("User SSH key for #{user.login} installed")
+    user.meta["ssh_key_install_date_#{myself.id}"] = Time.now
 
     true
   end

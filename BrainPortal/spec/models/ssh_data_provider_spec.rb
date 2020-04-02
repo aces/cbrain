@@ -137,7 +137,7 @@ describe SshDataProvider do
   end
   describe "#impl_provider_erase" do
     it "should execute rm command" do
-      expect(provider).to receive(:remote_bash_this).with(/rm -rf/)
+      expect(provider).to receive(:remote_bash_this).with(/rm -rf/, any_args)
       provider.impl_provider_erase(single_file)
     end
     it "should return true" do
