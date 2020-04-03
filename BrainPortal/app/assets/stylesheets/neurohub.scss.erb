@@ -88,6 +88,10 @@ $ORCID_ALT: #a6ce39;
   background-color: $DEFAULT_WASH;
 }
 
+.bg-primary-alt {
+  background-color: $PRIMARY_ALT;
+}
+
 .bg-default-disabled {
   background-color: $DEFAULT_DISABLED;
 }
@@ -1018,14 +1022,9 @@ Cards used for simple "show"-type views
   .card-row {
     @include px(4);
     flex: 1;
-    width: 100%;
     display: flex;
     flex-wrap: wrap;
     border-bottom: 1px solid $DEFAULT_DISABLED;
-    &.header {
-      @include p(4);
-      flex-direction: column;
-    }
   }
   .card-item {
     @include text("sm");
@@ -1033,30 +1032,50 @@ Cards used for simple "show"-type views
     display: flex;
     flex: 1 1 50%;
     width: 100%;
-    .card-stat {
-      @include title("lg");
-      @include ml(4);
-      line-height: normal;
-      height: 100%;
-    }
-    .card-icon {
-      width: 2rem;
-      align-self: center;
-    }
+    overflow: hidden;
+    position: relative;
     .card-label {
       @include label();
       white-space: nowrap;
     }
-    .card-text {
-      @include px(2);
+    .text-ellipsis {
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      display: block;
+      text-align: left;
     }
-    &[href] {
-      @include text("sm");
-      display: flex;
-      justify-content: flex-start;
-      text-align: start;
-      .card-label {
-        color: inherit;
+  }
+  .header {
+    @include px(7);
+    flex-direction: column;
+    .card-item {
+      @include p(0);
+      .btn-text-secondary,
+      .card-link a {
+        @include p(0);
+        width: 100%;
+        .label {
+          color: inherit;
+        }
+      }
+      .card-stat {
+        @include px(4);
+        @include py(7);
+        display: flex;
+        flex: 1;
+        width: 100%;
+        img {
+          width: 2rem;
+          align-self: center;
+        }
+        .card-details {
+          @include title("lg");
+          @include ml(4);
+          line-height: normal;
+          height: 100%;
+          text-align: left;
+        }
       }
     }
   }
@@ -1070,6 +1089,9 @@ Cards used for simple "show"-type views
   @media (min-width: $BREAKPOINT_MD) {
     .card-item {
       flex: 1;
+      .card-stat {
+        justify-content: center;
+      }
     }
   }
 }
@@ -1217,31 +1239,6 @@ th:first-child {
   left: 0;
   z-index: 2;
   width: 100%;
-}
-
-.nh_actions {
-  @include shadow("mid");
-  background: $DEFAULT_BG;
-  display: flex;
-}
-
-.nh_action {
-  @include mr(1);
-  border-radius: 0px;
-  display: flex;
-  height: 100%;
-  align-items: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-
-  img {
-    @include mr(2);
-    width: 1rem;
-  }
-  &:last-child {
-    margin-right: 0;
-  }
 }
 
 /*
@@ -1473,6 +1470,38 @@ body {
   }
 }
 
+$ACTION_BAR_HEIGHT: 2.5;
+
+.nh_actions {
+  @include shadow("mid");
+  background: $DEFAULT_BG;
+  display: flex;
+  overflow: hidden;
+  min-height: $ACTION_BAR_HEIGHT + rem;
+  form {
+    height: 100%;
+  }
+}
+
+.nh_action {
+  border-radius: 0px;
+  display: flex;
+  height: 100%;
+  align-items: center;
+  white-space: nowrap;
+  text-transform: uppercase;
+  &.btn-solid-secondary {
+    @include mr(1);
+  }
+  &.btn-text-secondary {
+    border-right: 1px solid $SECONDARY_WASH;
+  }
+  img {
+    @include mr(2);
+    width: 1rem;
+  }
+}
+
 /*
 =============================================================
 | SESSIONS
@@ -1696,6 +1725,7 @@ $MAX_CARD_LIST_HEIGHT: 15;
           opacity: 0.5;
           transition: $TRANSITION_HOVER_OFF;
           background: transparent;
+
           .table_action_icon {
             width: 1rem;
             height: 1rem;
@@ -1798,10 +1828,12 @@ $MAX_CARD_LIST_HEIGHT: 15;
 $CARD_ITEM_MAX_WIDTH: 13;
 
 #nh_users_show {
-  .card {
-    .card-row[data-max-size] {
-      .card-item {
-        flex: 0 1 $CARD_ITEM_MAX_WIDTH + rem;
+  @media (min-width: $BREAKPOINT_SM) {
+    .card {
+      .card-row[data-max-size] {
+        .card-item {
+          flex: 0 1 $CARD_ITEM_MAX_WIDTH + rem;
+        }
       }
     }
   }
@@ -1817,14 +1849,23 @@ $CARD_ITEM_MAX_WIDTH: 13;
   @include p(2);
   @include px(4);
   border-radius: 2px;
-  background: $TABLE_BORDER;
+  display: flex;
+  flex-direction: column;
   .section-title {
     @include pb(2);
-    @include title("sm");
+    @include text("sm");
     color: $DEFAULT_DK;
+    opacity: 0.75;
+    display: flex;
+    align-items: center;
+    img {
+      @include mr(2);
+      height: 1rem;
+      width: 1rem;
+    }
   }
-  &.transparent {
-    background: transparent;
+  &.default {
+    background: $TABLE_BORDER;
   }
   &.primary {
     background: $PRIMARY_WASH;
@@ -1952,6 +1993,7 @@ $DASH_CARD_MIN_WIDTH: 25;
     .notifications {
       .section {
         .card {
+          @include mb(4);
           .header {
             @include px(5);
             @include py(2);
@@ -1974,6 +2016,8 @@ $DASH_CARD_MIN_WIDTH: 25;
         @include m(0);
         @include mb(1);
         flex: 1 1 $DASH_CARD_MIN_WIDTH + rem;
+        display: flex;
+        flex-direction: column;
         .card-title {
           @include p(4);
           background: $DEFAULT_WASH;
@@ -1990,9 +2034,8 @@ $DASH_CARD_MIN_WIDTH: 25;
           .card-item {
             @include px(4);
             @include py(2);
-            display: block;
-            text-overflow: ellipsis;
-            text-align: right;
+            justify-content: flex-start;
+
             &.title {
               background: $DEFAULT_WASH;
             }
@@ -2001,6 +2044,12 @@ $DASH_CARD_MIN_WIDTH: 25;
             }
             &.btn-text-secondary {
               text-align: left;
+              text-decoration: none;
+              cursor: default;
+              a {
+                text-decoration: underline;
+                cursor: pointer;
+              }
               svg {
                 width: 1.5rem;
                 height: 1.5rem;
@@ -2044,11 +2093,6 @@ $DASH_CARD_MIN_WIDTH: 25;
             }
             .card-item {
               text-align: left;
-
-              &.btn-text-secondary {
-                flex-direction: row-reverse;
-                justify-content: flex-end;
-              }
             }
           }
         }
