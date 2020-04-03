@@ -30,6 +30,10 @@ class NeurohubPortalController < NeurohubApplicationController
   # Main welcome/dashboard page
   def welcome #:nodoc:
     @username = current_user.login
+    bourreau_ids = Bourreau.find_all_accessible_by_user(current_user).raw_first_column("remote_resources.id")
+    user_ids     = current_user.available_users.raw_first_column(:id)
+    @tasks       = CbrainTask.real_tasks.not_archived.where(:user_id => user_ids, :bourreau_id => bourreau_ids).order( "updated_at DESC" ).limit(5).all
+    @files       = Userfile.find_all_accessible_by_user(current_user).where(:hidden => false).order( "updated_at DESC" ).limit(5).all
   end
 
   # For development work convenience; not part of final neurohub deliverable
@@ -73,6 +77,18 @@ class NeurohubPortalController < NeurohubApplicationController
     end
 
     # Render reboot.html.erb
+  end
+
+  # This action searches among all sorts of models for IDs or strings,
+  # and reports links to the matches found.
+  def search
+    @search  = params[:search]
+    @limit   = 20 # used by interface only
+
+    @results = @search.present? ? ModelsReport.search_for_token(@search, current_user) : {}
+    @results[:groups] = @results[:groups].where(:type =>WorkGroup.sti_descendant_names)
+
+    @results
   end
 
 end

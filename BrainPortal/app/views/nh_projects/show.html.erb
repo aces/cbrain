@@ -28,6 +28,7 @@
   <% if @nh_project.can_be_edited_by?(current_user) %>
     <div class="nh_actions">
       <%= link_to "Invite Other Users", new_nh_invitation_path(nh_project_id: @nh_project.id), :class => "btn-solid-secondary nh_action"  %>
+      <%= button_to "Upload Files", switch_groups_path(id: @nh_project.id), :class => "btn-solid-secondary nh_action", :method => :post %>
       <%= link_to "Edit", {:action => :edit, :id => @nh_project.id}, :method  => :get, :class => "btn-text-secondary nh_action"  %>
       <% if @can_add_license %>
          <%= link_to "Add License", new_license_nh_project_path(nh_project_id: @nh_project.id) %>
@@ -44,44 +45,52 @@
       group_editors  = @nh_project.editors || []
       open_invites   = Invitation.where(sender_id: current_user.id, group_id: @nh_project.id, active: true)
     %>
-    <div class="card-row header">
 
-      <%= link_to(files_nh_project_path(@nh_project.id), :class=>"btn-text-secondary card-item") do %>
-          <img class="card-icon" src="/images/neurohub/NH_icon_files.svg"/>
-          <div class="card-stat">
-            <p><%= @nh_project.userfiles.count %></p>
-            <p class="card-label"><%= "File#{@nh_project.userfiles.count != 1 ? "s": ""}" %></p>
-          </div>
-      <% end %>
-
-      <div class="card-item">
-        <img class="card-icon" src="/images/neurohub/NH_icon_tasks.svg"/>
-        <div class="card-stat">
-          <p><%= @nh_project.cbrain_tasks.count %></p>
-          <p class="card-label"><%= "Task#{@nh_project.cbrain_tasks.count != 1 ? "s": ""}" %></p>
+      <div class="card-row header">
+        <div class="card-item">
+          <%= link_to(files_nh_project_path(@nh_project.id), :class=>"btn-text-secondary") do%>
+            <div class="card-stat">
+              <img class="card-icon" src="/images/neurohub/NH_icon_files.svg"/>
+              <div class="card-details">
+                <p><%= @nh_project.userfiles.count %></p>
+                <p class="label"><%= "File#{@nh_project.userfiles.count != 1 ? "s": ""}" %></p>
+              </div>
+            </div>
+          <% end %>
         </div>
-      </div>
 
-      <div class="card-item">
-        <img class="card-icon" src="/images/neurohub/NH_icon_members.svg"/>
-        <div class="card-stat">
-          <p><%= group_members.count %></p>
-          <p class="card-label"><%= "Member#{group_members.count != 1 ? "s": ""}" %></p>
-          <div>
-            <p class="card-label">Editors: <span class="default-dk"><%= group_editors.count %></span></p>
+        <div class="card-item">
+          <% task_stat = ("<div class='card-stat'><img class='card-icon' src='/images/neurohub/NH_icon_tasks.svg'/><div class='card-details'><p>#{@nh_project.cbrain_tasks.count}</p><p class='label'>Task#{@nh_project.cbrain_tasks.count != 1 ? 's': ''}</p></div></div>").html_safe %>
+          <div class="btn-text-secondary card-link"><%=
+            scope_link(task_stat,
+              'tasks#index', { :filters => [{ :a => 'group_id', :v => @nh_project.id }], },
+              url: { :controller => :tasks, :action => :index }
+            )
+          %>
           </div>
         </div>
-      </div>
 
-      <div class="card-item">
-        <img class="card-icon" src="/images/neurohub/NH_icon_invites.svg"/>
-        <div class="card-stat">
-          <p><%= open_invites.count %></p>
-          <p class="card-label"><%= "Pending Invite#{open_invites.count != 1 ? "s": ""}" %></p>
+        <div class="card-item">
+            <div class="card-stat">
+              <img class="card-icon" src="/images/neurohub/NH_icon_members.svg"/>
+              <div class="card-details text-ellipsis">
+                <p><%= group_members.count %></p>
+                <p class="label text-ellipsis"><%= "Member#{group_members.count != 1 ? "s": ""}" %> | Editors: <span class="default-dk"><%= group_editors.count %></span></p>
+              </div>
+            </div>
         </div>
-      </div>
 
-    </div>
+        <div class="card-item">
+            <div class="card-stat">
+              <img class="card-icon" src="/images/neurohub/NH_icon_invites.svg" />
+              <div class="card-details">
+                <p><%= open_invites.count %></p>
+                <p class="label text-ellipsis"><%= "Pending Invite#{open_invites.count != 1 ? "s": ""}" %></p>
+              </div>
+            </div>
+        </div>
+
+      </div>
 
     <div class="card-row">
       <div class="card-item">

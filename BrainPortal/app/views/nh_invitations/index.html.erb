@@ -49,9 +49,8 @@
           </div>
         <% end %>
       </div>
-    <% end %>
-    
-    <% if pending_invites.count > 0 %>
+
+    <% elsif pending_invites.count > 0 %>
       <div class="section my-4">
         <p class="section-title">Pending Invitations | <%= pending_invites.count %></p>
         <% pending_invites.each do |invitation| %>
@@ -66,6 +65,7 @@
           </div>
         <% end %>
       </div>
+        
     <% else %>
       <div class="empty">
         <div class="empty-wrapper">
@@ -73,6 +73,7 @@
           <p class="empty-text">You current have no invitations.</p>
         </div>
       </div>
+      
     <% end %>
 
 </div>

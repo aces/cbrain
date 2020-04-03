@@ -17,6 +17,7 @@
   ├── CARDS
   ├── TABLES
   ├── TOOLBAR
+  ├── FOOTER
   ├── PAGES
     ├── BASE
     ├── SESSIONS
@@ -85,6 +86,10 @@ $ORCID_ALT: #a6ce39;
 
 .bg-default-wash {
   background-color: $DEFAULT_WASH;
+}
+
+.bg-primary-alt {
+  background-color: $PRIMARY_ALT;
 }
 
 .bg-default-disabled {
@@ -206,7 +211,7 @@ $variant : xs, sm, md, lg, xl.
   @include text("xl");
 }
 
-.ellipsis {
+.text-ellipsis {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
@@ -615,6 +620,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 
 .btn-text {
   @extend .btn;
+  text-transform: unset;
   text-decoration: underline;
   text-align: center;
   display: flex;
@@ -1016,14 +1022,9 @@ Cards used for simple "show"-type views
   .card-row {
     @include px(4);
     flex: 1;
-    width: 100%;
     display: flex;
     flex-wrap: wrap;
     border-bottom: 1px solid $DEFAULT_DISABLED;
-    &.header {
-      @include p(4);
-      flex-direction: column;
-    }
   }
   .card-item {
     @include text("sm");
@@ -1031,30 +1032,50 @@ Cards used for simple "show"-type views
     display: flex;
     flex: 1 1 50%;
     width: 100%;
-    .card-stat {
-      @include title("lg");
-      @include ml(4);
-      line-height: normal;
-      height: 100%;
-    }
-    .card-icon {
-      width: 2rem;
-      align-self: center;
-    }
+    overflow: hidden;
+    position: relative;
     .card-label {
       @include label();
       white-space: nowrap;
     }
-    .card-text {
-      @include px(2);
+    .text-ellipsis {
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      display: block;
+      text-align: left;
     }
-    &[href] {
-      @include text("sm");
-      display: flex;
-      justify-content: flex-start;
-      text-align: start;
-      .card-label {
-        color: inherit;
+  }
+  .header {
+    @include px(7);
+    flex-direction: column;
+    .card-item {
+      @include p(0);
+      .btn-text-secondary,
+      .card-link a {
+        @include p(0);
+        width: 100%;
+        .label {
+          color: inherit;
+        }
+      }
+      .card-stat {
+        @include px(4);
+        @include py(7);
+        display: flex;
+        flex: 1;
+        width: 100%;
+        img {
+          width: 2rem;
+          align-self: center;
+        }
+        .card-details {
+          @include title("lg");
+          @include ml(4);
+          line-height: normal;
+          height: 100%;
+          text-align: left;
+        }
       }
     }
   }
@@ -1068,6 +1089,9 @@ Cards used for simple "show"-type views
   @media (min-width: $BREAKPOINT_MD) {
     .card-item {
       flex: 1;
+      .card-stat {
+        justify-content: center;
+      }
     }
   }
 }
@@ -1094,11 +1118,13 @@ $TABLE_BORDER: #e4e8eb;
     min-width: 200px;
     border-right: 1px solid $TABLE_BORDER;
     white-space: nowrap;
+    &:last-child {
+      border-right: 0px solid $TABLE_BORDER;
+    }
   }
 
   .table_actions {
     min-width: unset;
-    display: flex;
   }
 
   table {
@@ -1118,7 +1144,7 @@ $TABLE_BORDER: #e4e8eb;
         @include p(3);
         @include title("xs");
         color: $DEFAULT_ALT;
-        text-transform: uppercase;
+        text-transform: capitalize;
         background: $DEFAULT_WASH;
         border-bottom: 1px solid $TABLE_BORDER;
         text-align: left;
@@ -1126,6 +1152,7 @@ $TABLE_BORDER: #e4e8eb;
         position: sticky;
         top: 0;
         z-index: 3;
+        overflow: hidden;
         box-shadow: rgba(0, 0, 0, 0.12) 0px 2px 3px 0px;
       }
       .table_actions {
@@ -1214,28 +1241,6 @@ th:first-child {
   width: 100%;
 }
 
-.nh_actions {
-  @include shadow("mid");
-  background: $DEFAULT_BG;
-  display: flex;
-}
-
-.nh_action {
-  @include mr(1);
-  border-radius: 0px;
-  display: flex;
-  height: 100%;
-  align-items: center;
-
-  img {
-    @include mr(2);
-    width: 1rem;
-  }
-  &:last-child {
-    margin-right: 0;
-  }
-}
-
 /*
 =============================================================
 | TOOLBAR
@@ -1256,7 +1261,14 @@ $TOOLBAR_ZINDEX: 1000;
   z-index: $TOOLBAR_ZINDEX;
   .nh_toolbar_logo {
     @include logo("lettermark", "RGB", "xs");
-    @include mx(4);
+    @include ml(4);
+    @include mr(2);
+  }
+  .nh_toolbar_account {
+    @include text("xs");
+    @include px(2);
+    color: $DEFAULT_ALT;
+    border-left: 1px solid $SECONDARY_ALT;
   }
   .nh_toolbar_buttons {
     flex: 1;
@@ -1285,6 +1297,82 @@ $TOOLBAR_ZINDEX: 1000;
     top: 0;
     right: 0;
     box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/*
+=============================================================
+| FOOTER
+=============================================================
+*/
+
+#nh_footer {
+  @include p(4);
+  background: $DEFAULT_DK;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  &[data-controller="nh_sessions"][data-action="new"] {
+    position: absolute;
+    bottom: 0;
+    background: transparent;
+  }
+  .nh_footer_buttons {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    width: 100%;
+    .nh_footer_button {
+      @include text("xs");
+      @include mx(2);
+      @include pb(2);
+      display: flex;
+      align-items: center;
+      flex: 0 0 30%;
+      letter-spacing: 0.089em;
+      color: $DEFAULT_BG;
+      text-transform: uppercase;
+
+      a {
+        width: 100%;
+      }
+      a[data-active="true"],
+      &:hover {
+        opacity: 0.75;
+      }
+    }
+  }
+  .powered-by-cbrain {
+    @include text("xs");
+    @include px(2);
+    @include py(2);
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    color: $DEFAULT_BG;
+    opacity: 0.8;
+    img {
+      width: 1rem;
+    }
+  }
+
+  @media (min-width: $BREAKPOINT_SM) {
+    @include px(7);
+    &[data-controller="nh_sessions"][data-action="new"] {
+      justify-content: flex-end;
+    }
+    .nh_footer_buttons {
+      width: unset;
+      flex: 1;
+      .nh_footer_button {
+        min-width: 150px;
+      }
+    }
+    .powered-by-cbrain {
+      @include py(0);
+      flex: 1;
+    }
   }
 }
 
@@ -1353,6 +1441,8 @@ body {
   font-size: 16px;
   min-width: 18rem;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .nh_content {
@@ -1360,7 +1450,10 @@ body {
   position: relative;
   flex: 1;
   background: $DEFAULT_WASH;
-
+  height: 100%;
+  height: -moz-available;
+  height: -webkit-fill-available;
+  height: stretch;
   @media (min-width: $BREAKPOINT_SM) {
     @include p(7);
   }
@@ -1377,10 +1470,36 @@ body {
   }
 }
 
-.nh_footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
+$ACTION_BAR_HEIGHT: 2.5;
+
+.nh_actions {
+  @include shadow("mid");
+  background: $DEFAULT_BG;
+  display: flex;
+  overflow: hidden;
+  min-height: $ACTION_BAR_HEIGHT + rem;
+  form {
+    height: 100%;
+  }
+}
+
+.nh_action {
+  border-radius: 0px;
+  display: flex;
+  height: 100%;
+  align-items: center;
+  white-space: nowrap;
+  text-transform: uppercase;
+  &.btn-solid-secondary {
+    @include mr(1);
+  }
+  &.btn-text-secondary {
+    border-right: 1px solid $SECONDARY_WASH;
+  }
+  img {
+    @include mr(2);
+    width: 1rem;
+  }
 }
 
 /*
@@ -1401,6 +1520,7 @@ body {
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
+    height: 100%;
     .nh_logo {
       @include logo();
     }
@@ -1436,6 +1556,8 @@ body {
     display: flex;
     flex-wrap: wrap;
     position: relative;
+    height: 100%;
+
     &:before {
       content: "";
       width: 100%;
@@ -1551,9 +1673,9 @@ $MAX_CARD_LIST_HEIGHT: 15;
 
 #nh_projects {
   flex: 1;
-  height: 100%;
   display: flex;
   flex-direction: column;
+
   .grid {
     @include py(4);
     display: grid;
@@ -1603,6 +1725,7 @@ $MAX_CARD_LIST_HEIGHT: 15;
           opacity: 0.5;
           transition: $TRANSITION_HOVER_OFF;
           background: transparent;
+
           .table_action_icon {
             width: 1rem;
             height: 1rem;
@@ -1705,10 +1828,12 @@ $MAX_CARD_LIST_HEIGHT: 15;
 $CARD_ITEM_MAX_WIDTH: 13;
 
 #nh_users_show {
-  .card {
-    .card-row[data-max-size] {
-      .card-item {
-        flex: 0 1 $CARD_ITEM_MAX_WIDTH + rem;
+  @media (min-width: $BREAKPOINT_SM) {
+    .card {
+      .card-row[data-max-size] {
+        .card-item {
+          flex: 0 1 $CARD_ITEM_MAX_WIDTH + rem;
+        }
       }
     }
   }
@@ -1724,14 +1849,23 @@ $CARD_ITEM_MAX_WIDTH: 13;
   @include p(2);
   @include px(4);
   border-radius: 2px;
-  background: $TABLE_BORDER;
+  display: flex;
+  flex-direction: column;
   .section-title {
     @include pb(2);
-    @include title("sm");
+    @include text("sm");
     color: $DEFAULT_DK;
+    opacity: 0.75;
+    display: flex;
+    align-items: center;
+    img {
+      @include mr(2);
+      height: 1rem;
+      width: 1rem;
+    }
   }
-  &.transparent {
-    background: transparent;
+  &.default {
+    background: $TABLE_BORDER;
   }
   &.primary {
     background: $PRIMARY_WASH;
@@ -1840,7 +1974,7 @@ $DASH_CARD_MIN_WIDTH: 25;
   display: flex;
   flex-direction: column;
   height: 100%;
-  .title {
+  .nh_dashboard_title {
     @include px(4);
     @include py(2);
     background: $SECONDARY_ALT;
@@ -1859,6 +1993,7 @@ $DASH_CARD_MIN_WIDTH: 25;
     .notifications {
       .section {
         .card {
+          @include mb(4);
           .header {
             @include px(5);
             @include py(2);
@@ -1881,6 +2016,58 @@ $DASH_CARD_MIN_WIDTH: 25;
         @include m(0);
         @include mb(1);
         flex: 1 1 $DASH_CARD_MIN_WIDTH + rem;
+        display: flex;
+        flex-direction: column;
+        .card-title {
+          @include p(4);
+          background: $DEFAULT_WASH;
+          text-decoration: none;
+        }
+        .card-row {
+          padding: 0;
+          &:nth-child(even) {
+            background: $DEFAULT_WASH;
+          }
+          .card-section {
+            flex: 1;
+          }
+          .card-item {
+            @include px(4);
+            @include py(2);
+            justify-content: flex-start;
+
+            &.title {
+              background: $DEFAULT_WASH;
+            }
+            span {
+              vertical-align: sub;
+            }
+            &.btn-text-secondary {
+              text-align: left;
+              text-decoration: none;
+              cursor: default;
+              a {
+                text-decoration: underline;
+                cursor: pointer;
+              }
+              svg {
+                width: 1.5rem;
+                height: 1.5rem;
+                fill: $SECONDARY_TEXT;
+                stroke: $SECONDARY_TEXT;
+                vertical-align: sub;
+              }
+              &:hover {
+                svg {
+                  fill: $SECONDARY_BG;
+                  stroke: $SECONDARY_BG;
+
+                  transition: $TRANSITION_HOVER_ON;
+                }
+              }
+            }
+          }
+        }
         a {
           justify-content: flex-start;
           text-decoration: none;
@@ -1894,10 +2081,20 @@ $DASH_CARD_MIN_WIDTH: 25;
 
       .section.user {
         @include mt(0);
-        @include p(0);
-        flex-direction: column;
         .card {
-          flex: 1;
+          .card-row {
+            flex-direction: row;
+            flex-wrap: nowrap;
+            .card-section {
+              flex: unset;
+              width: 50%;
+              display: flex;
+              flex-direction: row;
+            }
+            .card-item {
+              text-align: left;
+            }
+          }
         }
       }
     }
