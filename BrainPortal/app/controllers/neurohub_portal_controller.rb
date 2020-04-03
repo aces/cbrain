@@ -86,7 +86,10 @@ class NeurohubPortalController < NeurohubApplicationController
     @limit   = 20 # used by interface only
 
     @results = @search.present? ? ModelsReport.search_for_token(@search, current_user) : {}
-    @results[:groups] = @results[:groups].where(:type =>WorkGroup.sti_descendant_names)
+    @results[:groups]   = @results[:groups].where(:type =>WorkGroup.sti_descendant_names) if @results[:groups].present?
+    @results[:files]  ||= []
+    @results[:tasks]  ||= []
+    @results[:groups] ||= []
 
     @results
   end
