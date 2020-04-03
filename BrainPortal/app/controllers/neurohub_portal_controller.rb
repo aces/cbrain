@@ -79,4 +79,16 @@ class NeurohubPortalController < NeurohubApplicationController
     # Render reboot.html.erb
   end
 
+  # This action searches among all sorts of models for IDs or strings,
+  # and reports links to the matches found.
+  def search
+    @search  = params[:search]
+    @limit   = 20 # used by interface only
+
+    @results = @search.present? ? ModelsReport.search_for_token(@search, current_user) : {}
+    @results[:files]  = @results[:files].select  {|file|  file.group.is_a?(WorkGroup)}
+    @results[:tasks]  = @results[:tasks].select  {|task|  task.group.is_a?(WorkGroup)}
+    @results[:groups] = @results[:groups].select {|group|      group.is_a?(WorkGroup)}
+  end
+
 end

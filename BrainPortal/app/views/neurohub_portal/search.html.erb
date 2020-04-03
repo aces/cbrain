@@ -21,10 +21,6 @@
 #
 -%>
 
-<%
-    new_invites = Invitation.where(user_id: current_user.id, active: true, read: false).all || []
-%>
-
 <% file_icon = '<svg id="files" xmlns="http://www.w3.org/2000/svg" viewBox="125 10 250 130">
 <path id="Rounded_Rectangle_14_copy-3" data-name="Rounded Rectangle 14 copy" style="stroke-width: 10px; fill-rule: evenodd; fill: none;" d="M310.072,136.3V10.646a2.6,2.6,0,0,0-2.534-2.661H187.556a2.6,2.6,0,0,0-2.535,2.661V154.322a2.6,2.6,0,0,0,2.535,2.661H289.685Z"/>
 <path id="Rounded_Rectangle_14_copy_2-3" data-name="Rounded Rectangle 14 copy 2" style="stroke-width: 4px; fill-rule: evenodd; fill: none;" d="M308.3,133.037H289.66a2.636,2.636,0,0,0-2.647,2.625v17.773"/>
@@ -40,66 +36,29 @@
 <% user_icon = '<svg fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-width="0" stroke-miterlimit="10" xmlns="http://www.w3.org/2000/svg" aria-labelledby="title" viewBox="0 0 32 32" preserveAspectRatio="xMidYMid meet" class="InlineSvg-gigSlh hwPeQh"><g><path d="M16.981,17c0,1.683 -0.271,2.241 -0.469,2.456c-0.163,0.176 -0.68,0.544 -2.531,0.544c-1.85,0 -2.367,-0.368 -2.53,-0.544c-0.198,-0.215 -0.47,-0.773 -0.47,-2.456c0,-1.657 1.343,-3 3,-3c1.657,0 3,1.343 3,3Zm0.835,3.977c0.879,-0.804 1.165,-2.104 1.165,-3.977c0,-2.761 -2.238,-5 -5,-5c-2.761,0 -5,2.239 -5,5c0,1.873 0.287,3.173 1.166,3.977c-1.665,0.911 -2.97,2.396 -3.649,4.189c-0.124,0.328 -0.154,0.708 0.051,0.993c0.569,0.789 1.674,-0.111 2.13,-0.97c1.008,-1.897 3.004,-3.189 5.302,-3.189c2.298,0 4.295,1.292 5.303,3.189c0.456,0.859 1.561,1.759 2.129,0.97c0.205,-0.285 0.176,-0.665 0.052,-0.993c-0.68,-1.793 -1.985,-3.278 -3.649,-4.189Z"></path></g></svg>'.html_safe
 %>
 
+<%
+   @files    = @results[:files][0,@limit]
+   @tasks    = @results[:tasks][0,@limit]
+   @projects = @results[:groups][0,@limit]
+%>
 
-<% title("Dashboard", '') %>
-
-<div id="nh_dashboard">
-  <div class="nh_dashboard_title">
-    <p class="title-md">Welcome <%= @username %></p>
-  </div>
+<% title("Search", '') %>
 
 <%= form_tag(nh_search_path, :method => :get) do %>
 
    <strong>Search:</strong> <%= text_field_tag :search, @search.presence, :placeholder => "Search for anything" %>
-   <span class="field_explanation">This will search files, tasks, projects by ID, by name or by description.</span>
+   <span class="field_explanation">This will search files, tasks, projects by ID, by name or by description. <%= @limit %> results shown maximum.</span>
    <p>
 <% end %>
 
+<div id="nh_dashboard">
+
   <div class="main">
-    <div class="notifications">
-
-
-      <% if new_invites.count > 0 %>
-        <div id="mb-7" class="nh_invitations">
-          <div class="section secondary">
-            <p class="section-title">New Notifications</p>
-              <% new_invites.each do |invitation| %>
-                <div class="card">
-                  <div class="card-row header">
-                    <p class="card-item"><%= invitation.header.html_safe %></p>
-                  </div>
-                  <div class="btn-section">
-                    <%= button_to 'Accept', nh_invitation_path(invitation.id), :method => :put, :class => "btn-solid-secondary btn" %>
-                    <%= button_to 'Decline', nh_invitation_path(invitation.id), :method => :delete, :class => "btn-outline-primary btn" %>
-                    <%= button_to 'Save for Later', nh_invitation_path(invitation.id, :read => true), :method => :put, :class => "btn-outline-secondary btn" %>
-                  </div>
-                </div>
-              <% end %>
-          </div>
-        </div>
-      <% end %>
-      <div class="section transparent flex-1">
-        <p class="section-title">Latest Neurohub News</p>
-          <div class="card">
-            <div class="card-row header bg-default-wash">
-              <p class="title-xs">New Portal Underway</p>
-            </div>
-              <div class="card-item">
-                <p> Neurohub news/features </p>
-              </div>
-        </div>
-      </div>
-    </div>
 
     <div class="section user">
       <% if @tasks.size > 0 %>
         <div class="card">
-          <%=
-            scope_link('<p class="btn-text-secondary card-title">Latest Tasks</p>'.html_safe,
-              'tasks#index', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
-              url: { :controller => :tasks, :action => :index }
-            )
-          %>
+          Task
           <div>
             <% for task in @tasks %>
               <div class="card-row">
@@ -133,12 +92,7 @@
       <% end %>
       <% if @files.size > 0 %>
         <div class="card">
-            <%=
-            scope_link('<p class="btn-text-secondary card-title">Latest Updated Files</p>'.html_safe,
-              'userfiles#index', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
-              url: { :controller => :userfiles, :action => :index }
-            )
-          %>
+          Files
           <div>
             <% for file in @files %>
               <div class="card-row">
@@ -170,6 +124,28 @@
           </div>
         </div>
       <% end %>
+      <% if @projects.size > 0 %>
+        <div class="card">
+          Groups
+          <div>
+            <% for project in @projects %>
+              <div class="card-row">
+                <div class="card-section">
+                  <div class="card-item text-ellipsis btn-text-secondary">
+                    <%= project_icon %>
+                    <%= link_to project.name, {:controller => :nh_projects, :action => :show, :id => project.id}, :method  => :get, :class=>"btn-text-secondary bg-default-wash" %>
+                  </div>
+                  <div class="card-item text-ellipsis btn-text-secondary">
+                    <div class="text-ellipsis"><%= user_icon %><%= link_to_user_if_accessible(project.creator, nil) %></div>
+                  </div>
+                </div>
+                
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
     </div>
 
   </div>

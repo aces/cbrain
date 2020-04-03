@@ -258,6 +258,7 @@ Rails.application.routes.draw do
 
     # Special named routes
     get   '/neurohub'               => 'neurohub_portal#welcome'
+    get   '/nh_search'              => 'neurohub_portal#search'
     get   '/signin'                 => 'nh_sessions#new'
     get   '/signout'                => 'nh_sessions#destroy'
     get   '/myaccount'              => 'nh_users#myaccount'
