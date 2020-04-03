@@ -286,7 +286,7 @@ class GroupsController < ApplicationController
     return true if params[:id].blank?
     @group = current_user.available_groups.find(params[:id])
     if current_user.unsigned_custom_licenses(@group).present?
-      flash[:error] = "Access to the project #{@group.name} is blocked due to licensing issues. Please consult project maintainer or support for details"
+      flash[:error] = "Access to the project #{@group.name} is blocked due to licensing issues. Please consult with the project maintainer or support for details"
       license_redirect
     end
   end
