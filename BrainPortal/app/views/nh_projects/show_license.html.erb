@@ -21,87 +21,38 @@
   #
 -%>
 
-<% is_signed = current_user.all_custom_licenses_signed.include?(@license) %>
+<% is_signed = current_user.custom_licenses_signed.include?(@license_id) %>
 
-<% if !is_signed %>
-  <%= form_tag :action => :sign_license, :license => @license %>
-  <%= hidden_field_tag :license, @license %>
-<% end %>
-<p>
+<% if is_signed %>
 
-<fieldset>
-  <legend>Carefully read the license agreement below.</legend>
+  <%= render :partial => 'show_license_text' %>
+  <p>
+  You have signed this license agreement.
 
-  <% if @userfile.archived? %>
-    This document has been archived.
-    Content viewers are disabled until the file is unarchived.
-
-    (This file cannot be viewed as it is stored on Data Provider
-    <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
-    which is configured to not allow synchronization at all)
-
-  <% elsif @sync_status == "Corrupted" %>
-
-
-    (The content of this document seems to be corrupted. This might be the result
-    of a bad data transfer while it was being created or a filesystem failure.
-    Please, escalate the problem to admin or maintainer.)
-
-  <% elsif !@userfile.data_provider.rr_allowed_syncing? %>
-
-    (This document cannot be viewed as it is stored on Data Provider
-    <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
-    which is configured to not allow synchronization to this Portal.)
-    Please escalate the issue to the maintainer or admin.
-
-  <% elsif (!@userfile.is_locally_synced?) && (!@userfile.data_provider.online?) %>
-
-    (This document is not currently synchronized and its Data Provider
-    <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
-    is offline, so its content is not viewable for the moment)
-    Please escalate the issue to the maintainer or admin.
-
-  <% elsif @userfile.is_locally_synced? && @userfile.viewers_with_applied_conditions.blank? %>
-
-    (The contents of this document cannot be viewed: no viewer code available at this moment
-    for files of type '<%= @userfile.pretty_type %>'). Please report this issues to a maintainer or admin.
-
-  <% else %>
-    <% if !@userfile.is_locally_synced? %>
-      (This document is not currently synchronized. Click
-      <%= link_to "here", sync_multiple_userfiles_path(:file_ids => [@userfile.id], :back_to_show_page => 1), :method => :post %>
-      to start the synchronization process.
-
+  <% if @current_licenses.size > 1 %>
+    <hr>
+    Other licenses on this project:
+    <p>
+    <% @current_licenses.each do |id| %>
+      <%= link_to "Licence ##{id}", show_license_nh_project_path(@nh_project, :license_id => id) %>
+      <% if id == @license_id %>
+        (currently seen above)
+      <% end %>
       <br>
     <% end %>
-
-    <% begin %>
-      <% if @viewer %>
-        <% if @viewer.errors.empty? %>
-          <%= render :file => @viewer.partial_path %>
-        <% else %>
-          <%= render :partial => "viewer_errors" %>
-        <% end %>
-      <% end %>
-    <% rescue ActionView::Template::Error => e %>
-
-      An error occurred when loading the viewer plugin.
-
-      <% raise e.original_exception unless Rails.env == 'production' %>
-      <% ExceptionLog.log_exception(e.original_exception, current_user, request) %>
-    <% end %>
-
   <% end %>
-  <br>
-  <input name="license_check_1" type="checkbox" value="agree"/> By clicking here I agree with all the conditions above
 
-  <% if !is_signed %>
+<% else %>
+
+  <%= form_tag sign_license_nh_project_path(@nh_project) do %>
+    <%= hidden_field_tag :license_id, @license_id %>
+    <%= render :partial => 'show_license_text' %>
+    <p>
+    <%= check_box_tag :license_check %>
+    <%= label_tag(:license_check,"By clicking here I agree with all the conditions above") %>
+    <p>
     <%= submit_tag "I Agree with above statement", :name => :agree %>
-    <%= submit_tag "I Do Not Agree", :name => :not_agree %>
-    </form>
-  <% else %>
-    You have already signed this agreement.
+    <%= submit_tag "I Do Not Agree",               :name => :not_agree %>
   <% end %>
-  </div>
 
-</fieldset>  
+<% end %>

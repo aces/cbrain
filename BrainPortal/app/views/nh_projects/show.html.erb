@@ -32,6 +32,9 @@
       <% if @can_add_license %>
          <%= link_to "Add License", new_license_nh_project_path(nh_project_id: @nh_project.id) %>
       <% end %>
+      <% if @current_licenses.present? %>
+         <%= link_to "View Licenses", show_license_nh_project_path(@nh_project, :license_id => @current_licenses.first) %>
+      <% end %>
     </div>
   <% end %>
 
@@ -42,13 +45,15 @@
       open_invites   = Invitation.where(sender_id: current_user.id, group_id: @nh_project.id, active: true)
     %>
     <div class="card-row header">
-      <%= link_to(files_nh_project_path(@nh_project.id), :class=>"btn-text-secondary card-item") do%>
+
+      <%= link_to(files_nh_project_path(@nh_project.id), :class=>"btn-text-secondary card-item") do %>
           <img class="card-icon" src="/images/neurohub/NH_icon_files.svg"/>
           <div class="card-stat">
             <p><%= @nh_project.userfiles.count %></p>
             <p class="card-label"><%= "File#{@nh_project.userfiles.count != 1 ? "s": ""}" %></p>
           </div>
       <% end %>
+
       <div class="card-item">
         <img class="card-icon" src="/images/neurohub/NH_icon_tasks.svg"/>
         <div class="card-stat">
@@ -68,7 +73,6 @@
         </div>
       </div>
 
-
       <div class="card-item">
         <img class="card-icon" src="/images/neurohub/NH_icon_invites.svg"/>
         <div class="card-stat">
@@ -76,6 +80,7 @@
           <p class="card-label"><%= "Pending Invite#{open_invites.count != 1 ? "s": ""}" %></p>
         </div>
       </div>
+
     </div>
 
     <div class="card-row">

@@ -27,7 +27,7 @@ class NhProjectsController < NeurohubApplicationController
 
   before_action :login_required
 
-  rescue_from CbrainLicenseException, with: :show_license
+  rescue_from CbrainLicenseException, with: :redirect_show_license
 
   def new #:nodoc:
     @nh_project = WorkGroup.new
@@ -42,7 +42,7 @@ class NhProjectsController < NeurohubApplicationController
     if @nh_project.save
       @nh_project.user_ids = [ current_user.id ]
       @nh_project.addlog_context(self,"Created by #{current_user.login}")
-      flash[:notice] = "Project #{@nh_project.name} is successfully created"
+      flash[:notice] = "Project #{@nh_project.name} was successfully created"
       redirect_to :action => :show, :id => @nh_project.id
     else
       flash[:error] = "Cannot create project #{@nh_project.name}"
@@ -86,8 +86,9 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def show #:nodoc:
-    @nh_project = find_nh_project(current_user, params[:id])
-    @can_add_license = @nh_project.creator_id == current_user.id
+    @nh_project       = find_nh_project(current_user, params[:id])
+    @current_licenses = @nh_project.custom_license_agreements # can be empty array
+    @can_add_license  = @nh_project.creator_id == current_user.id
   end
 
   def files #:nodoc:
@@ -96,129 +97,111 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def new_license #:nodoc:
-    @nh_project = find_nh_project(current_user, params[:id] || params[:nh_project_id], false)
-
-    unless @nh_project.creator_id == current_user.id
-      cb_error "Only owner can set licensing", :redirect  => :neurohub
+    @nh_project = find_nh_project(current_user, params[:id])
+    if @nh_project.creator_id != current_user.id
+      cb_error "Only owner can set licensing", :redirect => { :action => :show }
     end
   end
 
   def add_license #:nodoc:
-
-    content = params[:meta][:license_description]
-    @nh_project = find_nh_project(current_user, params[:id] || params[:nh_project_id], false)
-    cb_error 'Presently empty licenses are not allowed' if content.blank?
-
-    cb_error "Only owner can set licensing", :redirect  => :neurohub if @nh_project.creator_id != current_user.id
-
     @nh_project = find_nh_project(current_user, params[:id], false)
-    @nh_project.create_license_file(content, current_user)
-    flash['message'] = 'A license is added. You can force users to sign multiple license agreements if needed'
+    if @nh_project.creator_id != current_user.id
+      cb_error "Only owner can set licensing", :redirect  => { :action => :show }
+    end
+
+    license_text = params[:license_text]
+    cb_error 'Presently empty licenses are not allowed' if license_text.blank?
+
+    timestamp  = Time.zone.now.strftime("%Y-%m-%dT%H:%M:%S")
+    group_name = @nh_project.name.gsub(/[^\w]+/,"")
+    file_name  = "license_#{group_name}_#{timestamp}.txt"
+    @nh_project.register_custom_license(license_text, current_user, file_name)
+
+    flash[:notice] = 'A license is added. You can force users to sign multiple license agreements if needed.'
     redirect_to :action => :show
   end
 
   def show_license #:nodoc:
-    @nh_project = find_nh_project(current_user, params[:id], false)
-    @unsigned_licenses = current_user.o_unsigned_custom_licenses(@nh_project)
-    if @unsigned_licenses.empty?
-      if @nh_project.license_agreements.present?
-        flash[:error] = 'You already signed all license'
+    @nh_project       = find_nh_project(current_user, params[:id], false)
+    @current_licenses = @nh_project.custom_license_agreements
+    unsigned_licenses = current_user.unsigned_custom_licenses(@nh_project)
+
+    if unsigned_licenses.empty?
+      if @current_licenses.present?
+        flash[:notice] = 'You already signed all licenses'
       else
-        flash[:error] = 'No license is defined for this project'
+        flash[:notice] = 'No licenses are defined for this project'
+        redirect_to :action => :show
+        return
       end
-      redirect_to :action => :show
-      return
     end
-    @license = @unsigned_licenses[0]
-    @userfile = Userfile.find(@license)
-    set_viewer(@license)
+
+    # What to show. If a license is given in params,
+    # we make sure it's a registered one and we pick that.
+    param_lic_id = params[:license_id].presence.try(:to_i) # can be nil
+    if param_lic_id
+      @license_id = @current_licenses.detect { |id| id == param_lic_id }
+    end
+    # If no valid license was given and there are unsigned licenses, pick the first
+    @license_id ||= unsigned_licenses.first.try(:to_i)
+    # Otherwise, show the first license.
+    @license_id ||= @current_licenses.first
+
+    # Load the text of the license
+    userfile = Userfile.find(@license_id)
+    userfile.sync_to_cache
+    @license_text = userfile.cache_readhandle { |fh| fh.read }
   end
 
   def sign_license #:nodoc:
     @nh_project = find_nh_project(current_user, params[:id], false)
-    @unsigned_licenses = current_user.o_unsigned_custom_licenses(@nh_project)
-    @license = params[:license]
-    unless @nh_project.license_agreements.include?(@license)
-      flash['error'] = 'You are trying to access unrelated license. Try again or report the issue to the support.'
+    @license_id = params[:license_id].to_i
+
+    unless @nh_project.custom_license_agreements.include?(@license_id)
+      flash[:error] = 'You are trying to access unrelated license. Try again or report the issue to the support.'
       redirect_to :action => :show
       return
     end
-    if current_user.all_custom_licenses_signed.include?(@license)
-      flash['error'] = 'You cannot sign the license because you have already signed it.'
+
+    if current_user.custom_licenses_signed.include?(@license_id)
+      flash[:error] = 'You have already signed this license.'
       redirect_to :action => :show
       return
     end
-    @userfile = Userfile.find(@license)
+
     unless params.has_key?(:agree)
-      flash[:error] = "You cannot access that project without signing the End User Licence Agreement first."
+      flash[:error] = "You cannot access that project without signing the License Agreement first."
       redirect_to :action => :index
       return
     end
 
-    if params.keys.grep(/\Alicense_check/).size < 1
-        flash[:error] = "There was a problem with your submission. Please read the agreement and check all checkboxes."
-        redirect_to :action => :show
-        return
+    if params[:license_check].blank? || params[:license_check].to_i == 0
+      flash[:error] = "There was a problem with your submission. Please read the agreement and check the checkbox."
+      redirect_to show_license_nh_project_path(@nh_project)
+      return
     end
 
-    current_user.all_custom_licenses_signed = current_user.all_custom_licenses_signed << @license
-    current_user.addlog("Signed custom license agreement '#{@license}'.")
+    license = Userfile.find(@license_id)
 
-    if current_user.o_unsigned_custom_licenses(@nh_project).empty?
-      flash['message'] = 'You signed all the project licences'      
+    current_user.add_signed_custom_license(license)
+    current_user.addlog("Signed custom license agreement '#{license.name}' (ID #{@license_id}) for project '#{@nh_project.name}' (ID #{@nh_project.id}).")
+    @nh_project.addlog("User #{current_user.login} signed license agreement '#{license.name}' (ID #{@license_id}).")
+
+    if current_user.unsigned_custom_licenses(@nh_project).empty?
+      flash[:notice] = 'You signed all the project licenses'
+      redirect_to :action => :show, :id => @nh_project.id
     else
-      flash['message'] = 'Please sign another agreement'
+      flash[:notice] = 'This project has at least one other license agreement'
+      redirect_to :action => :show, :id => @nh_project.id
+      #redirect_to :action => show_license_nh_project_path(@nh_project)
     end
-    redirect_to :action => :show, :id => @nh_project.id
   end
 
-  private
-
-  def set_viewer(userfile_id)
-    @userfile = Userfile.find(userfile_id)
-
-    viewer_name           = 'text_file'
-    viewer_userfile_class = @userfile.class
-
-    # Try to find out viewer among those registered in the classes
-    @viewer      = viewer_userfile_class.find_viewer(viewer_name)
-    @viewer    ||= (viewer_name.camelcase.constantize rescue nil).try(:find_viewer, viewer_name) rescue nil
-
-    # If no viewer object is found but the argument "viewer_name" correspond to a partial
-    # on disk, then let's create a transient viewer object representing that file.
-    # Not an officially registered viewer, but it will work for the current rendering.
-    if @viewer.blank? && viewer_name =~ /\A\w+\z/
-      partial_filename_base = (viewer_userfile_class.view_path + "_#{viewer_name}.#{request.format.to_sym}").to_s
-      if File.exists?(partial_filename_base) || File.exists?(partial_filename_base + ".erb")
-        @viewer = Userfile::Viewer.new(viewer_userfile_class, :partial => viewer_name)
-      end
-    end
-
-    # Some viewers return error(s) for some specific userfiles
-    @viewer.apply_conditions(@userfile) if @viewer
-
-    begin
-      if @viewer
-        if @viewer.errors.present?
-          render :partial => "viewer_errors"
-        else
-          render :action => :show_license
-        end
-      else
-        render :html => "<div>Could not find license viewer.</div>", :status  => "404"
-      end
-    rescue ActionView::Template::Error => e
-      exception = e.original_exception
-
-      raise exception unless Rails.env == 'production'
-      ExceptionLog.log_exception(exception, current_user, request)
-      Message.send_message(current_user,
-                           :message_type => 'error',
-                           :header => "Could not render a license #{@userfile.name}".html_safe,
-                           :description => "An internal error occurred when trying to display the contents of #{@userfile.name}.".html_safe
-      )
-
-      render :html => "<div>Error generating view code for viewer.</div>", :status => "500"
+  def redirect_show_license
+    if params[:id]
+      redirect_to show_license_nh_project_path(params[:id])
+    else
+      redirect_to nh_projects_path
     end
   end
 

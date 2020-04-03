@@ -40,7 +40,7 @@ class Group < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  include LicenseCustom
+  include CustomLicense
 
   cbrain_abstract_model! # objects of this class are not to be instanciated
 

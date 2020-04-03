@@ -2,7 +2,7 @@
 #
 # NeuroHub Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2020
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -21,13 +21,10 @@
 #
 
 # This class provides an exception class for
-# representing a state transition error. Currently
-# used on CbrainTask objects.
+# representing an problem with a license.
 class CbrainLicenseException < CbrainException
 
    Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-
-   attr_accessor :original_object
 
 end
 
