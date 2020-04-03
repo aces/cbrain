@@ -110,7 +110,7 @@ class NhProjectsController < NeurohubApplicationController
     end
 
     license_text = params[:license_text]
-    cb_error 'Presently empty licenses are not allowed' if license_text.blank?
+    cb_error 'Empty licenses are presently not allowed' if license_text.blank?
 
     timestamp  = Time.zone.now.strftime("%Y-%m-%dT%H:%M:%S")
     group_name = @nh_project.name.gsub(/[^\w]+/,"")
