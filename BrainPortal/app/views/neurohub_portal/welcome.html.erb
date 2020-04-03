@@ -51,13 +51,6 @@
     <p class="title-md">Welcome <%= @username %></p>
   </div>
 
-<%= form_tag(nh_search_path, :method => :get) do %>
-
-   <strong>Search:</strong> <%= text_field_tag :search, @search.presence, :placeholder => "Search for anything" %>
-   <span class="field_explanation">This will search files, tasks, projects by ID, by name or by description.</span>
-   <p>
-<% end %>
-
   <div class="main">
     <div class="notifications">
       <% if new_invites.count > 0 %>
@@ -100,6 +93,16 @@
           <div class="card-item">
             <p> NeuroHub is leveraging existing technologies developed by the Montreal Neurological Institute (the Neuro), the McGill Centre for Integrative Neuroscience (MCIN) and Canadian Center for Computational Genomics (C3G) to develop a robust infrastructure for the integration of complex brain information to stimulate new discoveries. </p>
           </div>
+        </div>
+
+        <div class="card">
+          <%= form_tag(nh_search_path, :method => :get) do %>
+
+             <strong>Search:</strong> <%= text_field_tag :search, @search.presence, :placeholder => "Search for anything" %>
+             <p>
+             <span class="field_explanation">This will search files, tasks, projects by ID, by name or by description.</span>
+             <p>
+          <% end %>
         </div>
       </div>
     </div>
