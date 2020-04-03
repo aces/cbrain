@@ -34,7 +34,7 @@ module NeurohubHelpers
 
     raise ActiveRecord::RecordNotFound unless project.can_be_accessed_by?(user)
 
-    if check_license && user.o_unsigned_custom_licenses(project).present?
+    if check_license && user.unsigned_custom_licenses(project).present?
       raise CbrainLicenseException
     end
 
