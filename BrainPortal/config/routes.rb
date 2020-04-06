@@ -72,6 +72,7 @@ Rails.application.routes.draw do
     collection do
       post 'unregister'
       post 'switch'
+      get 'switch'
     end
   end
 

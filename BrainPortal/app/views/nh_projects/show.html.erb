@@ -28,7 +28,7 @@
   <% if @nh_project.can_be_edited_by?(current_user) %>
     <div class="nh_actions">
       <%= link_to "Invite Other Users", new_nh_invitation_path(nh_project_id: @nh_project.id), :class => "btn-solid-secondary nh_action"  %>
-      <%= button_to "Upload Files", switch_groups_path(id: @nh_project.id), :class => "btn-solid-secondary nh_action", :method => :post %>
+      <%= link_to "Upload Files", switch_groups_path(id: @nh_project.id), :class => "btn-solid-cbrain nh_action", :method => :post, target: '_blank' %>
       <%= link_to "Edit", {:action => :edit, :id => @nh_project.id}, :method  => :get, :class => "btn-text-secondary nh_action"  %>
     </div>
   <% end %>

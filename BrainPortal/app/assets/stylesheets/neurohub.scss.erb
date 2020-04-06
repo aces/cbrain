@@ -76,6 +76,9 @@ $ERROR_DK: #85000c;
 $ORCID_BG: #31789b;
 $ORCID_ALT: #a6ce39;
 
+$CBRAIN_BG: #05a3d6;
+$CBRAIN_ALT: #29b9e8;
+
 .default-dk {
   color: $DEFAULT_DK;
 }
@@ -517,6 +520,28 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
     background-color: $ORCID_ALT;
     border-color: $ORCID_ALT;
     color: $DEFAULT_BG;
+  }
+}
+
+.btn-solid-cbrain {
+  @extend .btn-solid;
+  background-color: $CBRAIN_BG;
+  border-color: $CBRAIN_BG;
+  color: $DEFAULT_BG;
+  &:hover {
+    background-color: $CBRAIN_ALT;
+    border-color: $CBRAIN_ALT;
+    color: $DEFAULT_BG;
+  }
+
+  &::before {
+    content: "";
+    width: 1.2rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-image: url("/images/neurohub/NH_cb_outline.png");
   }
 }
 
@@ -1486,10 +1511,10 @@ $ACTION_BAR_HEIGHT: 2.5;
 .nh_action {
   border-radius: 0px;
   display: flex;
-  height: 100%;
   align-items: center;
   white-space: nowrap;
   text-transform: uppercase;
+
   &.btn-solid-secondary {
     @include mr(1);
   }
