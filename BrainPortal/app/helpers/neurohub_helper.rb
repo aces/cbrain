@@ -1,9 +1,8 @@
 
-<%-
 #
-# NeuroHub Project
+# CBRAIN Project
 #
-# Copyright (C) 2020
+# Copyright (C) 2008-2020
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -20,17 +19,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<% title('Edit','') %>
+# Helpers for neurohub interface
+module NeurohubHelper
 
-<div id="nh_projects_edit" class="nh_content">
-    <div class="nh_actions">
-        <%= link_to "Invite Other Users", new_nh_invitation_path(nh_project_id: @nh_project.id), :class => "btn-solid-secondary nh_action"  %>
-    </div>
-    <div class="nh_form">
-        <%= error_messages_for @nh_project, :header_message => "Project could not be updated." %>
-        <p class="nh_form_title">Edit Project</p>
-        <%= render :partial => 'form_for', :locals => {:action => :update} %>
-    </div>
-</div>
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+  def nh_user_icon
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 32 32"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#user_icon"></use>
+    </svg>
+    SVG
+  end
+
+end

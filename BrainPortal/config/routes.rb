@@ -281,9 +281,15 @@ Rails.application.routes.draw do
     resources :nh_users,       :only => [ :myaccount, :edit, :update]
     resources :nh_projects do
       member do
-        get 'files'
+        get  :files
+        get  :new_license
+        post :add_license
+        get  :show_license
+        post :sign_license
       end
     end
+
+
 
     # Temporary development route
     get   '/reboot', :controller => :neurohub_portal, :action => :reboot

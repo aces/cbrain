@@ -180,6 +180,39 @@ class User < ApplicationRecord
     self.meta[:all_licenses_signed] = x
   end
 
+  #############################################################
+  #
+  # Custom, user-created licenses for misc objects
+  #
+  #############################################################
+
+  # This function lists custom licenses that user still has to sign in order to access to the object
+  def unsigned_custom_licenses(obj)
+    obj.custom_license_agreements - self.custom_licenses_signed
+  end
+
+  # This function lists all the already signed custom licenses
+  def custom_licenses_signed #:nodoc:
+    self.meta.reload
+    Array(self.meta[:custom_licenses_signed].presence)
+  end
+
+  # This function records custom licenses signed by the user.
+  def custom_licenses_signed=(licenses) #:nodoc:
+    self.meta.reload
+    self.meta[:custom_licenses_signed] = Array(licenses)
+  end
+
+  # Records that a custom license agreement has
+  # been signed by adding it to the list of signed ones.
+  def add_signed_custom_license(license_file)
+    cb_error "A license file is supposed to be a TextFile" unless license_file.is_a?(TextFile)
+    signed  = self.custom_licenses_signed
+    signed |= [ license_file.id ]
+    signed = TextFile.where(:id => signed).pluck(:id) # clean up dead IDs
+    self.custom_licenses_signed = signed
+  end
+
   ###############################################
   #
   # Password and login gestion

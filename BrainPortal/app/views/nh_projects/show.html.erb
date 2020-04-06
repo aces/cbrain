@@ -30,6 +30,12 @@
       <%= link_to "Invite Other Users", new_nh_invitation_path(nh_project_id: @nh_project.id), :class => "btn-solid-secondary nh_action"  %>
       <%= link_to "Upload Files", switch_groups_path(id: @nh_project.id), :class => "btn-solid-cbrain nh_action", :method => :post, target: '_blank' %>
       <%= link_to "Edit", {:action => :edit, :id => @nh_project.id}, :method  => :get, :class => "btn-text-secondary nh_action"  %>
+      <% if @can_add_license %>
+         <%= link_to "Add License", new_license_nh_project_path(nh_project_id: @nh_project.id) %>
+      <% end %>
+      <% if @current_licenses.present? %>
+         <%= link_to "View Licenses", show_license_nh_project_path(@nh_project, :license_id => @current_licenses.first) %>
+      <% end %>
     </div>
   <% end %>
 
@@ -168,8 +174,3 @@
 
   </div>
 </div>
-
-
-
-
-

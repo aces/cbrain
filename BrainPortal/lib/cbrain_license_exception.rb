@@ -1,9 +1,8 @@
 
-<%-
 #
 # NeuroHub Project
 #
-# Copyright (C) 2020
+# Copyright (C) 2008-2020
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -20,17 +19,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<% title('Edit','') %>
+# This class provides an exception class for
+# representing an problem with a license.
+class CbrainLicenseException < CbrainException
 
-<div id="nh_projects_edit" class="nh_content">
-    <div class="nh_actions">
-        <%= link_to "Invite Other Users", new_nh_invitation_path(nh_project_id: @nh_project.id), :class => "btn-solid-secondary nh_action"  %>
-    </div>
-    <div class="nh_form">
-        <%= error_messages_for @nh_project, :header_message => "Project could not be updated." %>
-        <p class="nh_form_title">Edit Project</p>
-        <%= render :partial => 'form_for', :locals => {:action => :update} %>
-    </div>
-</div>
+   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+end
+
