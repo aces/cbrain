@@ -21,7 +21,7 @@
 #
 
 # Helpers for neurohub interface
-module NeurohubHelper
+module NeurohubViewHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
