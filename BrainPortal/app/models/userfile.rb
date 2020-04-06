@@ -347,24 +347,18 @@ class Userfile < ApplicationRecord
 
     data_provider_ids   = DataProvider.find_all_accessible_by_user(user).raw_first_column("#{DataProvider.table_name}.id")
 
-    # If file is in public group
     scope        = scope.joins(:group)
-    query_string = "(groups.public = ?)"
-    query_array  = [true]
-
-    if access_requested.to_sym != :read
-      query_string += " AND userfiles.group_writable = 1"
-    end
 
     query_user_string   = "userfiles.user_id = ?"
-    query_group_string  = "userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)"
+
+    query_group_string  = "(groups.public = true OR userfiles.group_id IN (?)) AND userfiles.data_provider_id IN (?)"
 
     if access_requested.to_sym != :read
       query_group_string += " AND userfiles.group_writable = 1"
     end
 
-    query_string += " OR (#{query_user_string}) OR (#{query_group_string})"
-    query_array  += [user.id, user.group_ids, data_provider_ids]
+    query_string  = "(#{query_user_string}) OR (#{query_group_string})"
+    query_array   = [user.id, user.group_ids, data_provider_ids]
 
     if user.has_role? :site_manager
       scope = scope.joins(:user).readonly(false)

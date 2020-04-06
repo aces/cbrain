@@ -43,7 +43,7 @@ class NormalUser < User
     self.groups.where("groups.type <> 'EveryoneGroup'").where(:invisible => false)
   end
 
-  def public_and_available_groups
+  def public_and_available_groups   #:nodoc:
     group_scope = Group.where(["groups.id IN (?)",self.group_ids]).or(Group.where(:public => true))
     group_scope = group_scope.where("groups.type <> 'EveryoneGroup'").where(:invisible => false)
 
