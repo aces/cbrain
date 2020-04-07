@@ -59,6 +59,7 @@ verbose=""
 test $# -gt 0 && test "X$1" == "X-v" && shift && verbose="1"
 
 # With a -number in argument, will skip to that step
+skipto="1"
 if test $# -gt 0 ; then
   if test "X$1" = "X-1" -o "X$1" = "X-2" -o "X$1" = "X-3" -o \
           "X$1" = "X-4" -o "X$1" = "X-5" -o "X$1" = "X-6" -o \
@@ -129,7 +130,6 @@ if test -z "$skipto" -o "$skipto" -le "1" ; then
 
 Step 1: GIT Update CBRAIN Base
 runcapture "git pull"
-runcapture "crash"
 runcapture "git fetch --tags"
 
 fi
