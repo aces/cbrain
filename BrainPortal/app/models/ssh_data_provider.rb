@@ -223,7 +223,11 @@ class SshDataProvider < DataProvider
         next if is_excluded?(entry.name) # in DataProvider
 
         fileinfo               = FileInfo.new
-        fileinfo.name          = "#{userfile.name}#{base_dir}#{entry.name}"
+        if userfile.is_a?(SingleFile)
+          fileinfo.name          = userfile.name
+        else
+          fileinfo.name          = "#{userfile.name}#{base_dir}#{entry.name}"
+        end
 
         bad_attributes = []
         attlist.each do |meth|
