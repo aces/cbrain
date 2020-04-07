@@ -183,7 +183,9 @@ class SingSquashfsDataProvider < SshDataProvider
 
     # We must always reject the one entry that represents the top of the
     # scanned area.
-    file_infos.reject! { |fi| fi.name == subdir.to_s } # we nee
+    if userfile.is_a?(FileCollection)
+      file_infos.reject! { |fi| fi.name == subdir.to_s } # we nee
+    end
 
     file_infos
   end
