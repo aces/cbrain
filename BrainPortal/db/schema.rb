@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200224211918) do
+ActiveRecord::Schema.define(version: 20200226190034) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -150,6 +150,12 @@ ActiveRecord::Schema.define(version: 20200224211918) do
     t.index ["invisible"], name: "index_groups_on_invisible", using: :btree
     t.index ["name"], name: "index_groups_on_name", using: :btree
     t.index ["type"], name: "index_groups_on_type", using: :btree
+  end
+
+  create_table "groups_editors", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1" do |t|
+    t.integer "group_id"
+    t.integer "user_id"
+    t.index ["group_id", "user_id"], name: "index_groups_editors_on_group_id_and_user_id", unique: true
   end
 
   create_table "groups_users", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|

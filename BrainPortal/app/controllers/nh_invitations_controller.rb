@@ -27,6 +27,10 @@ class NhInvitationsController < NeurohubApplicationController
 
   before_action :login_required
 
+  def index #:nodoc:
+    @nh_invitations = Message.where(:user_id => current_user.id, :active => true)
+  end
+
   def new #:nodoc:
     @nh_project    = find_nh_project(current_user, params[:nh_project_id])
   end
@@ -34,6 +38,8 @@ class NhInvitationsController < NeurohubApplicationController
   def create #:nodoc:
     @nh_project     = find_nh_project(current_user, params[:nh_project_id])
     user_emails     = (params[:emails].presence.try(:strip) || "").split(/[\s,]+/)
+    user_emails     = user_emails.map(&:presence).compact
+    cb_error "Please specify at least one email address", :redirect => nh_project_path(@nh_project) if user_emails.empty?
     user_ids        = User.where(:email => user_emails).pluck(:id)
 
     already_sent_to = Invitation.where(active: true, user_id: user_ids, group_id: @nh_project.id).pluck(:user_id)
@@ -51,9 +57,58 @@ class NhInvitationsController < NeurohubApplicationController
       flash[:error] = "No new users were found to invite."
     end
 
-    flash[:notice] += flash_message if rejected_ids.present?
+    if rejected_ids.present?
+      flash[:notice] ||= ""
+      flash[:notice] += flash_message
+    end
 
     redirect_to nh_project_path(@nh_project)
+  end
+
+
+  # Accept an invitation
+  def update #:nodoc:
+    @nh_invitation = Invitation.where(user_id: current_user.id).find(params[:id])
+
+    unless @nh_invitation.try(:active?)
+      flash[:error] = "This invitation has already been accepted.\nPlease contact the project owner if you wish to be invited again."
+      redirect_to nh_projects_path
+      return
+    end
+
+    if params[:read]
+      @nh_invitation.read = true
+      @nh_invitation.save
+
+      respond_to do |format|
+        format.html { redirect_to nh_invitations_path }
+        format.xml  { head :ok }
+      end
+      return
+    end
+
+    @nh_project = @nh_invitation.group
+
+    unless @nh_project.users.include?(current_user)
+      @nh_project.users << current_user
+    end
+
+    @nh_invitation.active = false
+    @nh_invitation.save
+
+    flash[:notice] = "You have been added to project #{@nh_project.name}."
+    redirect_to nh_projects_path
+  end
+
+  # Delete an invitation
+  def destroy #:nodoc:
+    @nh_invitation = Invitation.where(user_id: current_user.id).find(params[:id])
+    @nh_project = @nh_invitation.group
+    
+    @nh_invitation.destroy
+
+    flash[:notice] = "You have declined an invitation to #{@nh_project.name}."
+    redirect_to nh_invitations_path
   end
 
 end

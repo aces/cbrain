@@ -101,17 +101,37 @@ class WorkGroup < Group
     end
   end
 
-  def can_be_edited_by?(user) #:nodoc:
-    if user.has_role? :admin_user
-      return true
-    elsif !self.invisible?
-      if user.has_role?(:site_manager) && self.site_id == user.site.id
-        return true
-      end
-      return self.creator_id == user.id
-    end
+  def add_editors(users) #:nodoc:
+    users_to_add     = Array(users)
+    user_ids_to_add  = users_to_add.map { |u| u.is_a?(User) ? u.id : u.to_i }
+    user_ids_to_add &= self.user_ids
+    self.editor_ids |= user_ids_to_add
+  end
 
-    false
+  def remove_editors(users) #:nodoc:
+    users              = Array(users)
+    user_ids_to_remove = users.map { |u| u.is_a?(User) ? u.id : u.to_i }
+    self.editor_ids   -= user_ids_to_remove
+  end
+
+  # Validation for join table editors_groups
+  def editor_can_be_added!(user)
+    cb_error "User #{user.name} is not a member of group #{self.name}" unless self.user_ids.include?(user.id)
+  end
+
+  # When a users is removed from the group,
+  # it should be not anymore an editor
+  def after_remove_user(user) #:nodoc:
+    self.remove_editors(user)
+  end
+
+
+  def can_be_edited_by?(user) #:nodoc:
+    return true  if user.has_role? :admin_user
+    return false if self.invisible?
+    return true  if user.editable_group_ids.include?(self.id)
+    return true  if user.has_role?(:site_manager) && self.site_id == user.site.id
+    return self.creator_id == user.id
   end
 
 end

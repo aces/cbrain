@@ -22,10 +22,21 @@
 
 source 'https://rubygems.org'
 
+#----------------------
 # In the :default group
+#----------------------
+
 gem 'rails', '~> 5.0.6'
+
+# Network components mostly
 gem "net-ssh",       :require => 'net/ssh'
 gem "net-sftp",      :require => 'net/sftp'
+gem "rbnacl"
+gem "ed25519"
+gem "rbnacl-libsodium"
+gem "bcrypt_pbkdf"
+
+# Other utilities
 gem "sys-proctable", '~> 1.2.0'
 gem "mysql2",        '< 0.5'
 gem "log4r"
@@ -33,7 +44,6 @@ gem "puma"
 gem "pbkdf2-ruby"
 gem "json-schema"
 gem "aws-sdk-s3", '~> 1'
-
 gem 'zenodo_client', '>= 1.0.0', :git => 'https://github.com/aces/zenodo-client-gem'
 
 # User interface gems
@@ -47,6 +57,21 @@ gem "activeresource", require: 'active_resource'
 gem "actionpack-xml_parser"
 gem "activemodel-serializers-xml"
 
+#----------------------
+# Assets
+#----------------------
+
+gem 'sassc-rails' # "rake assets:precompile" fails if this gems is put into the :assets group
+group :assets do
+  gem 'therubyracer'
+  gem 'coffee-rails'
+  gem 'uglifier'
+end
+
+#----------------------
+# Development
+#----------------------
+
 group :development do
   gem "wirble"
   gem "looksee"
@@ -56,12 +81,9 @@ group :development do
   gem "listen", '~> 3.0.5'
 end
 
-gem 'sassc-rails' # "rake assets:precompile" fails if this gems is put into the :assets group
-group :assets do
-  gem 'therubyracer'
-  gem 'coffee-rails'
-  gem 'uglifier'
-end
+#----------------------
+# Test
+#----------------------
 
 group :test do
   gem "rspec"

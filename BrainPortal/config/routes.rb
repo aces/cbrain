@@ -60,6 +60,7 @@ Rails.application.routes.draw do
     member do
       get  'change_password'
       post 'switch'
+      put  'push_keys'
     end
     collection do
       get  'request_password'
@@ -257,6 +258,7 @@ Rails.application.routes.draw do
 
     # Special named routes
     get   '/neurohub'               => 'neurohub_portal#welcome'
+    get   '/nh_search'              => 'neurohub_portal#search'
     get   '/signin'                 => 'nh_sessions#new'
     get   '/signout'                => 'nh_sessions#destroy'
     get   '/myaccount'              => 'nh_users#myaccount'
@@ -273,14 +275,20 @@ Rails.application.routes.draw do
     end
 
     # NeuroHub Resources
-    resources :nh_invitations, :only => [ :new, :create ]
+    resources :nh_invitations, :only => [ :new, :create, :index, :update, :destroy]
     resources :nh_signups
     resources :nh_users,       :only => [ :myaccount, :edit, :update]
     resources :nh_projects do
       member do
-        get 'files'
+        get  :files
+        get  :new_license
+        post :add_license
+        get  :show_license
+        post :sign_license
       end
     end
+
+
 
     # Temporary development route
     get   '/reboot', :controller => :neurohub_portal, :action => :reboot

@@ -1,6 +1,6 @@
 
 #
-# A quick method to test DataProvdier behaviors.
+# A quick method to test DataProvider behaviors.
 # Provided with no guarantees.
 #
 # Mostly useful in the console.

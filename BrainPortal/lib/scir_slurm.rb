@@ -175,13 +175,13 @@ class ScirSlurm < Scir
       command  = "sbatch "
       command += "-p #{shell_escape(self.queue)} "          unless self.queue.blank?
       command += "--no-requeue "
-      command += "--chdir=#{shell_escape(self.wd)} "        if self.wd
+      command += "-D #{shell_escape(self.wd)} "             if self.wd
       command += "--job-name=#{shell_escape(self.name)} "   if self.name
       command += "--output=#{shell_escape(self.stdout.sub(/\A:/,""))} "   if self.stdout
       command += "--error=#{shell_escape(self.stderr.sub(/\A:/,""))} "    if self.stderr
       command += "#{Scir.cbrain_config[:extra_qsub_args]} " unless Scir.cbrain_config[:extra_qsub_args].blank?
-      command += "#{self.tc_extra_qsub_args} "              unless self.tc_extra_qsub_args.blank?
       command += "--time=#{(self.walltime.to_i+60) / 60} "  unless self.walltime.blank?
+      command += "#{self.tc_extra_qsub_args} "              unless self.tc_extra_qsub_args.blank?
       command += "#{shell_escape(self.arg[0])} "
       command += " 2>&1"
 

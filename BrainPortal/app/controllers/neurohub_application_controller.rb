@@ -30,6 +30,8 @@ class NeurohubApplicationController < ApplicationController
   include NeurohubHelpers
 
   before_action :switch_to_neurohub_layout
+  before_action :prepare_invites
+
 
   # This before_action callback sets a instance
   # variable @_NeuroHubLayout_ which is used by
@@ -79,6 +81,15 @@ class NeurohubApplicationController < ApplicationController
       format.json  { render :json => {:message => message}, :status => :service_unavailable }
     end
 
+  end
+
+  # Find the number of new invitations to be displayed at the top of the page.
+  def prepare_invites
+    return unless current_user
+    nh_invites            = Invitation.where(user_id: current_user.id, active: true).all || [];
+    nh_new_invites        = Invitation.where(user_id: current_user.id, active: true, read: false).all || [];
+    @nh_invites_count     = nh_invites.count
+    @nh_new_invites_count = nh_new_invites.count
   end
 
   # ------------------

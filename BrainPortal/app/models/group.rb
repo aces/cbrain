@@ -40,6 +40,8 @@ class Group < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  include CustomLicense
+
   cbrain_abstract_model! # objects of this class are not to be instanciated
 
   before_validation       :set_default_creator
@@ -50,18 +52,20 @@ class Group < ApplicationRecord
                           :name_format => true
 
   has_many                :tools
-  has_and_belongs_to_many :users
-  has_and_belongs_to_many :access_profiles
   has_many                :userfiles
   has_many                :data_providers
   has_many                :remote_resources
   has_many                :cbrain_tasks
   has_many                :tags
+  # Resource usage is kept forever even if group is destroyed.
+  has_many                :resource_usage
+
   belongs_to              :site, :optional => true
   belongs_to              :creator, :class_name => "User", :optional => true
 
-  # Resource usage is kept forever even if group is destroyed.
-  has_many                :resource_usage
+  has_and_belongs_to_many :users, after_remove: :after_remove_user
+  has_and_belongs_to_many :access_profiles
+  has_and_belongs_to_many :editors, :class_name => 'User', join_table: 'groups_editors', before_add: :editor_can_be_added!
 
   api_attr_visible        :name, :description, :type, :site_id, :invisible
 
@@ -112,6 +116,15 @@ class Group < ApplicationRecord
     self.to_s.demodulize.underscore.titleize.sub(/\s*group\s*/i,"")
   end
 
+  # Validation for join table editors_groups
+  def editor_can_be_added!(user) #:nodoc:
+    cb_error "Must be redefined in subclasses."
+  end
+
+  # Should be redefined in subclasses
+  def after_remove_user(user) #:nodoc:
+    true
+  end
 
   private
 
@@ -123,6 +136,7 @@ class Group < ApplicationRecord
     end
   end
 
+  # After destroy callback
   def reassign_models_to_owner_group #:nodoc:
     group_has_many_model_list = Group.reflect_on_all_associations.select { |a| a.macro == :has_many }.map { |a| a.name }
     objlist = group_has_many_model_list.inject([]) { |list,modsym| list += self.send(modsym) }

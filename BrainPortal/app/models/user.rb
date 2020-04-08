@@ -87,27 +87,28 @@ class User < ApplicationRecord
   after_update              :system_group_site_update
   after_destroy             :destroy_system_group
   after_destroy             :destroy_user_sessions
+  after_destroy             :destroy_user_ssh_key
 
   # The following resources PREVENT the user from being destroyed if some of them exist.
   has_many                :userfiles,         :dependent => :restrict_with_exception
   has_many                :data_providers,    :dependent => :restrict_with_exception
   has_many                :remote_resources,  :dependent => :restrict_with_exception
   has_many                :cbrain_tasks,      :dependent => :restrict_with_exception
-
-  has_and_belongs_to_many :access_profiles
-  has_and_belongs_to_many :groups
-  belongs_to              :site, :optional => true
-  has_one                 :signup
-
   # The following resources are destroyed automatically when the user is destroyed.
   has_many                :messages,        :dependent => :destroy
   has_many                :tools,           :dependent => :destroy
   has_many                :tags,            :dependent => :destroy
   has_many                :custom_filters,  :dependent => :destroy
   has_many                :exception_logs,  :dependent => :destroy
-
   # Resource usage is kept forever even if account is destroyed.
   has_many                :resource_usage
+
+  has_and_belongs_to_many :access_profiles
+  has_and_belongs_to_many :groups
+  has_and_belongs_to_many :editable_groups, :class_name => 'Group', join_table: "groups_editors", before_add: :can_be_editor_of!
+
+  belongs_to              :site, :optional => true
+  has_one                 :signup
 
   api_attr_visible :login, :full_name, :email, :type, :site_id, :time_zone, :city, :last_connected_at, :account_locked
 
@@ -129,6 +130,12 @@ class User < ApplicationRecord
   def name
     self.login
   end
+
+  ###############################################
+  #
+  # Licensing methods
+  #
+  ###############################################
 
   def signed_license_agreements(license_agreement_set=self.license_agreement_set) #:nodoc:
     current_user_license = self.meta[:signed_license_agreements] || []
@@ -171,6 +178,39 @@ class User < ApplicationRecord
   def all_licenses_signed=(x) #:nodoc:
     self.meta.reload
     self.meta[:all_licenses_signed] = x
+  end
+
+  #############################################################
+  #
+  # Custom, user-created licenses for misc objects
+  #
+  #############################################################
+
+  # This function lists custom licenses that user still has to sign in order to access to the object
+  def unsigned_custom_licenses(obj)
+    obj.custom_license_agreements - self.custom_licenses_signed
+  end
+
+  # This function lists all the already signed custom licenses
+  def custom_licenses_signed #:nodoc:
+    self.meta.reload
+    Array(self.meta[:custom_licenses_signed].presence)
+  end
+
+  # This function records custom licenses signed by the user.
+  def custom_licenses_signed=(licenses) #:nodoc:
+    self.meta.reload
+    self.meta[:custom_licenses_signed] = Array(licenses)
+  end
+
+  # Records that a custom license agreement has
+  # been signed by adding it to the list of signed ones.
+  def add_signed_custom_license(license_file)
+    cb_error "A license file is supposed to be a TextFile" unless license_file.is_a?(TextFile)
+    signed  = self.custom_licenses_signed
+    signed |= [ license_file.id ]
+    signed = TextFile.where(:id => signed).pluck(:id) # clean up dead IDs
+    self.custom_licenses_signed = signed
   end
 
   ###############################################
@@ -299,6 +339,24 @@ class User < ApplicationRecord
     LargeSessionInfo.where(:user_id => self.id).destroy_all
   end
 
+  # Returns a SshKey object for the user.
+  # If option +create_it+ is true, create the key files if necessary.
+  # If option +ok_no_files+ is true, will return the object even if
+  # the key files don't exist yet (default it to raise an exception)
+  def ssh_key(options = { :create_id => false, :ok_no_files => false })
+    name = "u#{self.id}" # Avoiding username in ssh filenames or in comment.
+    return SshKey.find_or_create(name) if options[:create_it]
+    return SshKey.new(name)            if options[:ok_no_files]
+    SshKey.find(name) # will raise exception if files are not there
+  end
+
+  # After destroy callback: destroy the user's SSH key on the filesystem, if any.
+  def destroy_user_ssh_key
+    self.ssh_key.destroy
+  rescue
+    true
+  end
+
   # Returns the timestamp of last activity, based on session info.
   # Returns nil if no record is found in the LargeSessionInfo table.
   # +active+ can be set to true, false, or [ true, false ] (default).
@@ -378,7 +436,19 @@ class User < ApplicationRecord
     true
   end
 
+  def add_editable_groups(groups) #:nodoc:
+    groups                   = Array(groups)
+    group_ids_to_add         = groups.map { |g| g.is_a?(Group) ? g.id : g.to_i }
+    group_ids_to_add         = WorkGroup.where(id: group_ids_to_add).pluck(:id)
+    group_ids_to_add        &= self.group_ids
+    self.editable_group_ids |= group_ids_to_add
+  end
 
+  def remove_editable_groups(groups) #:nodoc:
+    groups                   = Array(groups)
+    group_ids_to_remove      = groups.map { |g| g.is_a?(WorkGroup) ? g.id : g.to_i }
+    self.editable_group_ids -= group_ids_to_remove
+  end
 
   protected
 
@@ -473,6 +543,11 @@ class User < ApplicationRecord
     if score < 3
       errors.add(:password, "must have three of the following properties: an uppercase letter, a lowercase letter, a digit, a symbol or be at least 15 characters in length")
     end
+  end
+
+  # Validation for join table editors_groups
+  def can_be_editor_of!(group) #:nodoc:
+    group.editor_can_be_added!(self)
   end
 
   def destroy_system_group #:nodoc:
