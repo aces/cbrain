@@ -48,9 +48,11 @@ $BREAKPOINT_LG: 64em; // 1024px
 $DEFAULT_BG: #ffffff;
 $DEFAULT_WASH: #f9fcfe;
 $DEFAULT_ALT: #787a7a;
+$DEFAULT_LT: #f5f5f5;
 $DEFAULT_DK: #343434;
 $DEFAULT_TEXT: #000000;
 $DEFAULT_DISABLED: #e5e5e5;
+$DEFAULT_BORDER: #e4e8eb;
 
 $PRIMARY_BG: #ff0000;
 $PRIMARY_WASH: #ffeeee;
@@ -76,8 +78,9 @@ $ERROR_DK: #85000c;
 $ORCID_BG: #31789b;
 $ORCID_ALT: #a6ce39;
 
-$CBRAIN_BG: #05a3d6;
-$CBRAIN_ALT: #29b9e8;
+$CBRAIN_BG: #29b9e8;
+$CBRAIN_WASH: #ecf7fc;
+$CBRAIN_ALT: #05a3d6;
 
 .default-dk {
   color: $DEFAULT_DK;
@@ -119,9 +122,11 @@ $variant : xs, sm, md, lg, xl.
 
   @if $variant == "xxs" {
     font-size: 0.75rem;
+    font-weight: 500;
   }
   @if $variant == "xs" {
     font-size: 0.875rem;
+    font-weight: 500;
   }
   @if $variant == "sm" {
     font-size: 1rem;
@@ -525,23 +530,22 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 
 .btn-solid-cbrain {
   @extend .btn-solid;
-  background-color: $CBRAIN_BG;
-  border-color: $CBRAIN_BG;
+  background-color: $CBRAIN_ALT;
+  border-color: $CBRAIN_ALT;
   color: $DEFAULT_BG;
   &:hover {
-    background-color: $CBRAIN_ALT;
-    border-color: $CBRAIN_ALT;
-    color: $DEFAULT_BG;
+    background-color: $CBRAIN_BG;
+    border-color: $CBRAIN_BG;
   }
 
-  &::before {
+  &::after {
+    @include ml(3);
     content: "";
     width: 1.2rem;
-    height: 1rem;
-    margin-right: 0.5rem;
+    height: 1.2rem;
     background-repeat: no-repeat;
     background-size: contain;
-    background-image: url("/images/neurohub/NH_cb_outline.png");
+    background-image: url("/images/neurohub/NH_cb_external.png");
   }
 }
 
@@ -576,7 +580,6 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   &:hover {
     background-color: $SECONDARY_BG;
     border-color: $SECONDARY_BG;
-    color: $DEFAULT_BG;
   }
 }
 
@@ -659,6 +662,48 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
     background-color: $DEFAULT_WASH;
     border-color: $DEFAULT_WASH;
     color: $DEFAULT_TEXT;
+  }
+}
+.cb-external {
+  position: relative;
+  &::after {
+    content: "";
+    width: 1rem;
+    height: 1rem;
+    margin-left: 0.5rem;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-image: url("/images/neurohub/NH_cb_external_blue.png");
+  }
+}
+
+.btn-text-cbrain {
+  @extend .btn-text;
+  color: $CBRAIN_ALT;
+  &.external {
+    &::after {
+      content: "";
+      width: 0.8rem;
+      height: 0.8rem;
+      margin: 0.5rem;
+      opacity: 0.75;
+      background-repeat: no-repeat;
+      background-size: contain;
+      background-image: url("/images/neurohub/NH_cb_external_blue.png");
+      transition: $TRANSITION_HOVER_OFF;
+    }
+  }
+
+  &:hover {
+    background-color: $CBRAIN_WASH;
+    border-color: $CBRAIN_WASH;
+    color: $CBRAIN_BG;
+    &.external {
+      &::after {
+        opacity: 1;
+        transition: $TRANSITION_HOVER_ON;
+      }
+    }
   }
 }
 
@@ -1077,6 +1122,7 @@ Cards used for simple "show"-type views
     .card-item {
       @include p(0);
       .btn-text-secondary,
+      .btn-text-cbrain,
       .card-link a {
         @include p(0);
         width: 100%;
@@ -1127,7 +1173,115 @@ Cards used for simple "show"-type views
 =============================================================
 */
 
-$TABLE_BORDER: #e4e8eb;
+.pagination {
+  @include p(2);
+  @include text("xs");
+  background: $DEFAULT_BG;
+  border-top: 1px solid $SECONDARY_WASH;
+  border-bottom: 1px solid $SECONDARY_WASH;
+  color: $SECONDARY_TEXT;
+  width: 100%;
+}
+
+table {
+  width: 100%;
+  margin: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: $DEFAULT_BG;
+  border-radius: 4px;
+  border: 0;
+  th,
+  td {
+    display: table-cell;
+    width: 150px;
+    min-width: 150px;
+    .text {
+      display: block;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      text-align: start;
+      justify-content: flex-start;
+    }
+    &[data-type="int"] {
+      min-width: 75px;
+      width: 75px;
+      > * {
+        text-align: center;
+        justify-content: center;
+      }
+    }
+  }
+  thead {
+    th {
+      @include p(2);
+      border: 1px solid $DEFAULT_LT;
+
+      .text {
+        @include title("xxs");
+        color: $DEFAULT_ALT;
+        text-transform: uppercase;
+      }
+    }
+  }
+  tbody {
+    th,
+    td {
+      position: relative;
+      border-right: 1px solid $DEFAULT_LT;
+      color: $DEFAULT_ALT;
+
+      .text {
+        @include title("xxs");
+        @include p(2);
+        .btn-text-cbrain {
+          background: inherit;
+          &:hover {
+            background: inherit;
+          }
+        }
+      }
+      .text[data-link="true"],
+      [data-link="true"] {
+        @include title("xxs");
+        @include p(2);
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        justify-content: inherit;
+      }
+    }
+
+    tr:nth-child(even) {
+      th,
+      td {
+        background: $DEFAULT_WASH;
+        transition: $TRANSITION_HOVER_OFF;
+      }
+    }
+    tr:nth-child(odd) {
+      th,
+      td {
+        background: $DEFAULT_BG;
+        transition: $TRANSITION_HOVER_OFF;
+      }
+    }
+    tr {
+      display: table-row;
+
+      &:hover {
+        th,
+        td {
+          background: $SECONDARY_WASH;
+          transition: $TRANSITION_HOVER_ON;
+        }
+      }
+    }
+  }
+}
 
 .nh_table_scroll {
   @include shadow("mid");
@@ -1137,133 +1291,43 @@ $TABLE_BORDER: #e4e8eb;
   margin: auto;
   overflow: auto;
   flex: 1;
-  th,
-  td {
-    vertical-align: top;
-    min-width: 200px;
-    border-right: 1px solid $TABLE_BORDER;
-    white-space: nowrap;
-    &:last-child {
-      border-right: 0px solid $TABLE_BORDER;
-    }
-  }
-
-  .table_actions {
-    min-width: unset;
-  }
-
   table {
-    width: 100%;
-    margin: auto;
-    border-collapse: separate;
-    border-spacing: 0;
-    background: $DEFAULT_BG;
-    border-radius: 4px;
-    border: 0;
-    thead {
-      th:first-child {
-        z-index: 5;
-        box-shadow: rgba(0, 0, 0, 0.12) 0px 2px 3px 0px;
+    thead,
+    tbody {
+      tr {
+        th:first-child {
+          position: -webkit-sticky;
+          position: sticky;
+          left: 0;
+        }
       }
+      tr:not(:hover) {
+        th:first-child {
+          position: -webkit-sticky;
+          position: sticky;
+          left: 0;
+          background: $DEFAULT_WASH;
+        }
+      }
+    }
+    thead {
       th {
-        @include p(3);
-        @include title("xs");
-        color: $DEFAULT_ALT;
-        text-transform: capitalize;
-        background: $DEFAULT_WASH;
-        border-bottom: 1px solid $TABLE_BORDER;
-        text-align: left;
         position: -webkit-sticky;
         position: sticky;
+        background: $DEFAULT_BG;
         top: 0;
         z-index: 3;
         overflow: hidden;
-        box-shadow: rgba(0, 0, 0, 0.12) 0px 2px 3px 0px;
-      }
-      .table_actions {
-        justify-content: center;
+
+        &:first-child {
+          z-index: 4;
+        }
       }
     }
-    tbody {
-      th,
-      td {
-        @include px(3);
-        @include py(2);
-        border-bottom: 1px solid $TABLE_BORDER;
-        &[data-type="link"] {
-          @include title("xs");
-          a {
-            text-transform: none;
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            padding: inherit;
-            display: flex;
-            justify-content: flex-start;
-            color: $SECONDARY_ALT;
-            &:hover {
-              text-decoration: underline;
-              color: $SECONDARY_BG;
-            }
-          }
-        }
-      }
-      td {
-        @include text("sm");
-        flex: 1;
-        color: $DEFAULT_DK;
-        text-decoration: none;
-      }
-      .table_actions {
-        padding: 0;
-        display: flex;
-        a {
-          border-radius: 0;
-          display: flex;
-          flex: 0 1 25%;
-          .table_action_icon {
-            width: 1rem;
-            height: 1rem;
-            fill: $DEFAULT_BG;
-          }
-        }
-      }
-      tr {
-        &:nth-child(even) {
-          th,
-          td {
-            background: $DEFAULT_WASH;
-          }
-        }
-        &:nth-child(odd) {
-          th,
-          td {
-            background: $DEFAULT_BG;
-          }
-        }
-        &:hover {
-          th,
-          td {
-            background: $SECONDARY_WASH;
-          }
-          td[data-type="link"],
-          th[data-type="link"] {
-            text-decoration: underline;
-          }
-        }
-      }
+    th:first-child {
+      z-index: 2;
     }
   }
-}
-
-th:first-child {
-  position: -webkit-sticky;
-  position: sticky;
-  left: 0;
-  z-index: 2;
-  width: 100%;
 }
 
 /*
@@ -1408,7 +1472,7 @@ $TOOLBAR_ZINDEX: 1000;
 */
 
 .nh_breadcrumbs {
-  background: #f5f5f5;
+  background: $DEFAULT_LT;
   display: flex;
   .nh_breadcrumbs_icon {
     display: flex;
@@ -1501,11 +1565,9 @@ $ACTION_BAR_HEIGHT: 2.5;
   @include shadow("mid");
   background: $DEFAULT_BG;
   display: flex;
+  flex-wrap: wrap;
   overflow: hidden;
   min-height: $ACTION_BAR_HEIGHT + rem;
-  form {
-    height: 100%;
-  }
 }
 
 .nh_action {
@@ -1514,6 +1576,9 @@ $ACTION_BAR_HEIGHT: 2.5;
   align-items: center;
   white-space: nowrap;
   text-transform: uppercase;
+  a {
+    height: 100%;
+  }
 
   &.btn-solid-secondary {
     @include mr(1);
@@ -1890,7 +1955,7 @@ $CARD_ITEM_MAX_WIDTH: 13;
     }
   }
   &.default {
-    background: $TABLE_BORDER;
+    background: $DEFAULT_BORDER;
   }
   &.primary {
     background: $PRIMARY_WASH;

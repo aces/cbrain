@@ -1,0 +1,80 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% edit_icon = '<svg version="1.1" class="icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;" xml:space="preserve">
+  <g>
+    <polygon points="0,303.947 0,383.947 80,383.947 316.053,147.893 236.053,67.893 			"/>
+    <path d="M377.707,56.053L327.893,6.24c-8.32-8.32-21.867-8.32-30.187,0l-39.04,39.04l80,80l39.04-39.04
+      C386.027,77.92,386.027,64.373,377.707,56.053z"/>
+  </g>
+</svg>'.html_safe
+%>
+<div class="nh_table_scroll">
+  <table>
+    <thead>
+      <tr>
+        <th><p class="text">name (<%= @nh_projects.count %></span>)</p></th>
+        <th><p class="text">maintainer</p></th>
+        <th data-type="int"><p class="text">users</p></th>
+        <th data-type="int"><p class="text">files</p></th>
+        <th data-type="int"><p class="text">tasks</p></th>
+        <% if @nh_projects.any? {|project| project.can_be_edited_by?(current_user)} %>
+          <th><p class="text" data-type="actions">...</p></th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <% @nh_projects.each do |project| %>
+        <tr>
+          <th>
+            <%= link_to project.name, {:action => :show, :id => project.id}, :method  => :get, :class=>"text btn-text-secondary", :'data-link' => "true" %>
+          </th>
+          <td>
+            <p class="text"><%= link_to_user_if_accessible(project.creator, current_user, :html_options => {:class => "btn-text-cbrain external", :'data-link' => "true"}) %></p>
+          </td>
+          <td data-type="int">
+            <p class="text"><%= project.users.count %></p>
+          </td>
+          <td data-type="int">
+            <%= link_to(files_nh_project_path(project.id), :class=>"text btn-text-secondary", :'data-link' => 'true') do%>
+              <%= project.userfiles.count %>
+            <% end %>
+          </td>
+          <td data-type="int">
+            <p class="text"><%=
+              scope_link("#{project.cbrain_tasks.count}".html_safe,
+                'tasks#index', { :filters => [{ :a => 'group_id', :v => project.id }], },
+                url: { :controller => :tasks, :action => :index },
+                link: {class:"btn-text-cbrain external", 'data-link': "true"}
+              )
+            %>
+            </p>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table
+</div>
+

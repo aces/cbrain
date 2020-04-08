@@ -60,8 +60,8 @@
         </div>
 
         <div class="card-item">
-          <% task_stat = ("<div class='card-stat'><img class='card-icon' src='/images/neurohub/NH_icon_tasks.svg'/><div class='card-details'><p>#{@nh_project.cbrain_tasks.count}</p><p class='label'>Task#{@nh_project.cbrain_tasks.count != 1 ? 's': ''}</p></div></div>").html_safe %>
-          <div class="btn-text-secondary card-link"><%=
+          <% task_stat = ("<div class='card-stat'><img class='card-icon' src='/images/neurohub/NH_icon_tasks.svg'/><div class='card-details'><p>#{@nh_project.cbrain_tasks.count}</p><p class='label cb-external'>Task#{@nh_project.cbrain_tasks.count != 1 ? 's': ''}</p></div></div>").html_safe %>
+          <div class="btn-text-cbrain card-link"><%=
             scope_link(task_stat,
               'tasks#index', { :filters => [{ :a => 'group_id', :v => @nh_project.id }], },
               url: { :controller => :tasks, :action => :index }

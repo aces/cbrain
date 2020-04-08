@@ -27,7 +27,7 @@
 <% title "Projects" %>
 
 
-<% edit_icon = '<svg version="1.1" class="table_action_icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+<% edit_icon = '<svg version="1.1" class="icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;" xml:space="preserve">
   <g>
     <polygon points="0,303.947 0,383.947 80,383.947 316.053,147.893 236.053,67.893 			"/>
@@ -66,6 +66,7 @@ viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;"
         )
     %></div>
       <%= link_to "+ Add project", {:action => :new }, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
+      <div class="pagination"> < 1 2 3 ></div>
     </div>
     <% if button_view %>
       <div class="grid">
@@ -89,33 +90,7 @@ viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;"
         <% end %>
       </div>
     <% else %>
-        <div class="nh_table_scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>name <span>(<%= @nh_projects.count %></span>)</th>
-                <th>maintainer</th>
-                <% if @nh_projects.any? {|project| project.can_be_edited_by?(current_user)} %>
-                  <th class="table_actions">...</th>
-                <% end %>
-              </tr>
-            </thead>
-
-            <tbody>
-                <% @nh_projects.each do |project| %>
-                <tr>
-                  <th data-type="link"><%= link_to project.name, {:action => :show, :id => project.id}, :method  => :get %></th>
-                  <td><%= project.creator.try(:login) %></td>
-                  <td class="table_actions">
-                    <% if project.can_be_edited_by?(current_user) %>
-                      <%= link_to(edit_icon,{:action => :edit, :id => project.id}, :method  => :get,:class=>"btn-solid-secondary")  %>
-                    <% end %>
-                  </td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
-      </div>
+      <%= render :partial => 'projects_table' %>
     <% end %>
 
   <% else %>

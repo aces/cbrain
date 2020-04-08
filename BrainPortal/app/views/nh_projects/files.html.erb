@@ -40,8 +40,8 @@
         </thead>
         <tbody>
           <% @files.each do |file| %>
-            <tr>
-              <td><%= link_to_userfile_if_accessible(file) %></td>
+            <tr class="cb">
+              <th data-type="link"><%= link_to_userfile_if_accessible(file, nil, {:html_options => { class:"cb-external", target:"_blank"}}) %></th>
               <td><%= file.pretty_type %></td>
               <td><%= colored_pretty_size(file.size) %></td>
             </tr>
