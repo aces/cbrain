@@ -128,7 +128,7 @@ class CarminController < ApplicationController
     limit      = params[:limit].presence
 
     if group_name
-      group = current_user.available_groups.where('groups.name' => group_name).first
+      group = current_user.viewable_groups.where('groups.name' => group_name).first
     end
 
     tasks = current_user.available_tasks.real_tasks
@@ -254,7 +254,7 @@ class CarminController < ApplicationController
     group_name     = params[:studyIdentifier].presence
 
     if group_name
-      group = current_user.available_groups.where('groups.name' => group_name).first
+      group = current_user.assignable_groups.where('groups.name' => group_name).first
     else
       group = current_user.own_group
     end
@@ -301,7 +301,7 @@ class CarminController < ApplicationController
     propvalue  = params[:propvalue].presence
 
     if group_name
-      group = current_user.available_groups.where('groups.name' => group_name).first
+      group = current_user.viewable_groups.where('groups.name' => group_name).first
     end
 
     # Get all tool config; filter by group if user wants it so.

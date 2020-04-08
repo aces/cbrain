@@ -125,6 +125,18 @@ class Group < ApplicationRecord
     true
   end
 
+  ##################################
+  # Public Group support methods
+  ##################################
+
+  def self.public_groups #:nodoc:
+    Group.where(:public => true)
+  end
+
+  def self.public_group_ids #:nodoc:
+    self.public_groups.pluck(:id)
+  end
+
   private
 
   # Set creator id if it's not set.

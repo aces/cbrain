@@ -27,36 +27,30 @@ class NormalUser < User
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-
   def available_tools  #:nodoc:
-    available_group_ids    = (self.public_and_available_groups.pluck(:id) + self.group_ids).uniq
-    available_bourreau_ids = Bourreau.find_all_accessible_by_user(self).pluck(:id)
-
-
-    tools = Tool.where( ["tools.user_id = ? OR tools.group_id IN (?)", self.id, available_group_ids ])
-    tools = tools.joins(:tool_configs).where(["tool_configs.bourreau_id IN (?)",available_bourreau_ids]).group('tools.id')
-
-    tools
+    Tool.where( ["tools.user_id = ? OR tools.group_id IN (?)", self.id, self.viewable_group_ids ])
   end
 
-  def available_groups  #:nodoc:
-    self.groups.where("groups.type <> 'EveryoneGroup'").where(:invisible => false)
+  # List of groups which provide view access to resources.
+  # It is possible for the user not to be a member of one of those groups.
+  def viewable_groups
+    Group.where(:id => (self.group_ids + Group.public_group_ids))
   end
 
-  def public_and_available_groups   #:nodoc:
-    group_scope = Group.where(["groups.id IN (?)",self.group_ids]).or(Group.where(:public => true))
-    group_scope = group_scope.where("groups.type <> 'EveryoneGroup'").where(:invisible => false)
+  # List of groups that the user can assign to resources.
+  # The user must be a member of one of these groups. Subset
+  # of viewable_groups
+  def assignable_groups
+    Group.where(:id => (self.group_ids - [ Group.everyone.id ])).where(:invisible => false)
+  end
 
-    group_scope
+  # List of groups that the user can modify (the group's attributes themselves, not the resources)
+  def modifiable_groups
+    WorkGroup.where(:creator_id => self.id).or(WorkGroup.where(:id => self.editable_group_ids))
   end
 
   def available_tasks  #:nodoc:
-    available_group_ids    = self.public_and_available_groups.pluck(:id)
-    tasks = CbrainTask.where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, available_group_ids] )
-
-    available_bourreau_ids = Bourreau.find_all_accessible_by_user(self).pluck(:id)
-    tasks = tasks.where(:bourreau_id => available_bourreau_ids)
-    tasks
+    CbrainTask.where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, viewable_group_ids] )
   end
 
   def available_users  #:nodoc:

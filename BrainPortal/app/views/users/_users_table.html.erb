@@ -120,7 +120,7 @@
     ) { |u| u.last_connected_at ? to_localtime(u.last_connected_at, :datetime) : "Unknown" }
 
     t.column("Projects", :groups) do |u|
-      group_names = u.available_groups.order(:name).raw_first_column(:name).reject { |n| n == u.login }
+      group_names = u.assignable_groups.order(:name).raw_first_column(:name).reject { |n| n == u.login }
       if group_names.size > 1 && group_names.size < 40
         html_tool_tip(pluralize(group_names.size, "project"), :offset_x => 60) do
           array_to_table(group_names,

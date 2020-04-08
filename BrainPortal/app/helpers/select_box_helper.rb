@@ -101,11 +101,11 @@ module SelectBoxHelper
   # The +options+ hash can contain either or both of the following:
   # [selector] used for default selection. This can be a Group object, a group id (String or Integer),
   #            or any model that has a group_id attribute.
-  # [groups] the array of Group objects used to build the select box. Defaults to +current_user.available_groups+.
+  # [groups] the array of Group objects used to build the select box. Defaults to +current_user.assignable_groups+.
   def group_select(parameter_name = "group_id", options = {}, select_tag_options = {} )
     options  = { :selector => options } unless options.is_a?(Hash)
     selector = options.has_key?(:selector) ? (options[:selector].presence || "") : current_project
-    groups   = options.has_key?(:groups)   ? (options[:groups]            || []) : current_user.available_groups
+    groups   = options.has_key?(:groups)   ? (options[:groups]            || []) : current_user.assignable_groups
     groups   = groups.all.to_a if groups.is_a?(ActiveRecord::Relation)
 
     if selector.respond_to?(:group_id)

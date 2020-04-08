@@ -30,7 +30,7 @@ module NeurohubHelpers
   # an exception ActiveRecord::RecordNotFound is raised.
   def find_nh_project(user, id_or_project)
     id      = id_or_project.is_a?(Group) ? id_or_project.id : id_or_project
-    project = user.available_groups.where(:type => "WorkGroup").find(id)
+    project = user.viewable_groups.where(:type => "WorkGroup").find(id)
 
     raise ActiveRecord::RecordNotFound unless project.can_be_accessed_by?(user)
 
@@ -40,7 +40,7 @@ module NeurohubHelpers
   # For the user +user+, this method will return
   # neurohub projects ('available' groups of class WorkGroup)
   def find_nh_projects(user)
-    current_user.available_groups.where(:type => 'WorkGroup')
+    current_user.viewable_groups.where(:type => 'WorkGroup')
   end
 
 end

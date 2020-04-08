@@ -119,7 +119,7 @@
     <% end %>
 
     <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@userfile.group), :disabled => (!@userfile.has_owner_access?(current_user))) do %>
-      <%= group_select 'userfile[group_id]', { :groups => current_user.available_groups, :selector => @userfile.group_id.to_s } %>
+      <%= group_select 'userfile[group_id]', { :groups => current_user.assignable_groups, :selector => @userfile.group_id.to_s } %>
     <% end  %>
 
     <% t.edit_cell(:tag_ids, :header => "Tags", :content => @userfile.get_tags_for_user(current_user).map(&:name).join(", ")) do %>

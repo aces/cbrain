@@ -125,7 +125,6 @@ class WorkGroup < Group
     self.remove_editors(user)
   end
 
-
   def can_be_edited_by?(user) #:nodoc:
     return true  if user.has_role? :admin_user
     return false if self.invisible?

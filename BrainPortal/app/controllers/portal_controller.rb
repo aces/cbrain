@@ -40,7 +40,7 @@ class PortalController < ApplicationController
     end
 
     @num_files              = current_user.userfiles.count
-    @groups                 = current_user.has_role?(:admin_user) ? current_user.groups.order(:name) : current_user.available_groups.order(:name)
+    @groups                 = current_user.has_role?(:admin_user) ? current_user.groups.order(:name) : current_user.viewable_groups.order(:name)
     @default_data_provider  = DataProvider.find_by_id(current_user.meta["pref_data_provider_id"])
     @default_bourreau       = Bourreau.find_by_id(current_user.meta["pref_bourreau_id"])
 
@@ -293,8 +293,8 @@ class PortalController < ApplicationController
     else
        table_content_scope = @model.where({})
        if ! current_user.has_role?(:admin_user)
-         table_content_scope = table_content_scope.where(:user_id  => current_user.available_users.map(&:id))  if @model.columns_hash['user_id']
-         table_content_scope = table_content_scope.where(:group_id => current_user.available_groups.map(&:id)) if @model.columns_hash['group_id']
+         table_content_scope = table_content_scope.where(:user_id  => current_user.available_users.pluck('users.id'))  if @model.columns_hash['user_id']
+         table_content_scope = table_content_scope.where(:group_id => current_user.viewable_group_ids)                 if @model.columns_hash['group_id']
        end
     end
 

@@ -44,7 +44,7 @@ class GroupsController < ApplicationController
     @scope.custom[:button] = true if
       current_user.has_role?(:normal_user) && @scope.custom[:button].nil?
 
-    @base_scope = current_user.public_and_available_groups.includes(:site)
+    @base_scope = current_user.viewable_groups.includes(:site)
     @view_scope = @scope.apply(@base_scope)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 50 })
@@ -78,7 +78,7 @@ class GroupsController < ApplicationController
   # GET /groups/1.xml
   # GET /groups/1.json
   def show #:nodoc:
-    @group = current_user.public_and_available_groups.find(params[:id])
+    @group = current_user.viewable_groups.find(params[:id])
     raise ActiveRecord::RecordNotFound unless @group.can_be_accessed_by?(current_user)
     @users = current_user.available_users.order(:login).reject { |u| u.class == CoreAdmin }
 
@@ -133,7 +133,7 @@ class GroupsController < ApplicationController
   # PUT /groups/1.xml
   # PUT /groups/1.json
   def update #:nodoc:
-    @group = current_user.available_groups.find(params[:id])
+    @group = current_user.modifiable_groups.find(params[:id])
 
     unless @group.can_be_edited_by?(current_user)
        flash[:error] = "You don't have permission to edit this project."
@@ -197,7 +197,7 @@ class GroupsController < ApplicationController
 
   # Used in order to remove a user from a group.
   def unregister
-    @group = current_user.available_groups.where( :type => "WorkGroup" ).find(params[:id])
+    @group = current_user.assignable_groups.where( :type => "WorkGroup" ).find(params[:id])
 
     respond_to do |format|
       if current_user.id == @group.creator_id
@@ -222,7 +222,7 @@ class GroupsController < ApplicationController
   # DELETE /groups/1.xml
   # DELETE /groups/1.json
   def destroy  #:nodoc:
-    @group = current_user.available_groups.find(params[:id])
+    @group = current_user.assignable_groups.find(params[:id])
     @group.destroy
 
     respond_to do |format|
@@ -248,7 +248,7 @@ class GroupsController < ApplicationController
     elsif params[:id] == "all"
       cbrain_session[:active_group_id] = "all"
     else
-      @group = current_user.public_and_available_groups.find(params[:id])
+      @group = current_user.viewable_groups.find(params[:id])
       cbrain_session[:active_group_id] = @group.id
     end
 

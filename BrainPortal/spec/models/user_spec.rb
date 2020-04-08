@@ -312,14 +312,6 @@ describe User do
           expect(site_manager.available_tools).to include(public_tool)
         end
 
-        it "should return a tool if one of the user of the site have acces to the tool" do
-          normal_user.tool_ids = [tool2.id]
-          normal_user.password = nil # avoid re-encrypt check
-          expect(normal_user.save).to be(true)
-          allow(site_manager).to receive_message_chain(:site, :user_ids).and_return([site_manager.id, normal_user.id])
-          expect(site_manager.available_tools).to match_array([tool1,tool2,public_tool])
-        end
-
         it "should return tools available for a standard user" do
           normal_user.tool_ids  = [tool2.id]
           normal_user.group_ids = [group.id]
@@ -334,45 +326,57 @@ describe User do
 
 
 
-    describe "#available_groups" do
-      let!(:invisible_group) {create(:invisible_group)}
-      let!(:public_group)    { create(:group, :public => true)}
+    describe "#assignable_groups" do
+      let!(:invisible_group) { create(:invisible_group)             }
+      let!(:public_group)    { create(:work_group, :public => true) }
 
       it "should return all groups if called with an admin" do
-        expect(admin.available_groups).to match(Group.all)
+        expect(admin.assignable_groups).to match(Group.all)
       end
 
       it "should not return invisible group for site_manager" do
         invisible_group.user_ids = [site_manager.id]
         invisible_group.save
-        expect(site_manager.available_groups).not_to include(invisible_group)
+        expect(site_manager.assignable_groups).not_to include(invisible_group)
       end
 
       it "should not include everyone group for site_manager" do
-        expect(site_manager.available_groups).not_to include(Group.where(:name => "everyone").first)
-      end
-
-      it "should include public group for site_manager" do
-        expect(site_manager.public_and_available_groups).to include(public_group)
+        expect(site_manager.assignable_groups).not_to include(Group.where(:name => "everyone").first)
       end
 
       it "should not return invisible group for standard user" do
         invisible_group.user_ids = [normal_user.id]
         invisible_group.save
-        expect(normal_user.available_groups).not_to include(invisible_group)
+        expect(normal_user.assignable_groups).not_to include(invisible_group)
       end
 
       it "should not include everyone group for standard user" do
-        expect(normal_user.available_groups).not_to include(Group.where(:name => "everyone"))
+        expect(normal_user.assignable_groups).not_to include(Group.where(:name => "everyone"))
       end
 
-      it "should include public group for standard user" do
-        expect(normal_user.public_and_available_groups).to include(public_group)
+      it "should not include public group for standard user" do
+        expect(normal_user.assignable_groups).not_to include(public_group)
       end
 
+      it "should not include public group for site_manager" do
+        expect(site_manager.assignable_groups).not_to include(public_group)
+      end
 
     end
 
+    describe "#viewable_groups" do
+      let!(:invisible_group) { create(:invisible_group)             }
+      let!(:public_group)    { create(:work_group, :public => true) }
+
+      it "should include public group for standard user" do
+        expect(normal_user.viewable_groups).to include(public_group)
+      end
+
+      it "should include public group for site_manager" do
+        expect(site_manager.viewable_groups).to include(public_group)
+      end
+
+    end
 
 
     describe "#available_tags" do
@@ -398,7 +402,6 @@ describe User do
       let!(:public_bourreau)              {create(:bourreau, :group_id => public_group.id )}
       let!(:public_task)                  {create(:cbrain_task, :user_id => normal_user.id, :group_id => public_group.id, :bourreau_id => public_bourreau.id)}
       let!(:private_bourreau)             {create(:bourreau)}
-      let!(:public_task_private_bourreau) {create(:cbrain_task, :user_id => normal_user.id, :bourreau_id => private_bourreau.id)}
       let!(:my_task)                      {create(:cbrain_task, :user_id => normal_user.id, :bourreau_id => public_bourreau.id)}
 
       it "should return all tasks if called with an admin" do
@@ -419,20 +422,12 @@ describe User do
         expect(site_manager.available_tasks).to include(public_task)
       end
 
-      it "should not return task of public group if task is not available bourreau for site_manager" do
-        expect(site_manager.available_tasks).not_to include(public_task_private_bourreau)
-      end
-
       it "should return my task if I'm a standard user" do
         expect(normal_user.available_tasks).to include(my_task)
       end
 
       it "should return task of public group if task is on available bourreau for standard user" do
         expect(normal_user.available_tasks).to include(public_task)
-      end
-
-      it "should not return task of public group if task is not available bourreau for standard user" do
-        expect(normal_user.available_tasks).not_to include(public_task_private_bourreau)
       end
 
     end

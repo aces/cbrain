@@ -253,7 +253,7 @@
           <th>Members</th>
         </tr>
 
-     <% (@user.available_groups.sort { |g1,g2| g1.name.casecmp(g2.name) }).each do |group| %>
+     <% (@user.assignable_groups.sort { |g1,g2| g1.name.casecmp(g2.name) }).each do |group| %>
        <% next if group.name == 'everyone' %>
        <tr class=<%= cycle("list-even", "list-odd") %> >
          <td><%= link_to_group_if_accessible(group) %></td>

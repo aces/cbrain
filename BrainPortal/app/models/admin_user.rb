@@ -30,11 +30,23 @@ class AdminUser < User
     Tool.where(nil)
   end
 
-  def available_groups  #:nodoc:
+  # List of groups which provide view access to resources.
+  # It is possible for the user not to be a member of one of those groups.
+  def viewable_groups
     Group.where(nil)
   end
 
-  alias public_and_available_groups available_groups
+  # List of groups that the user can assign to resources.
+  # The user must be a member of one of these groups. Subset
+  # of viewable_groups
+  def assignable_groups
+    Group.where(nil)
+  end
+
+  # List of groups that the user can modify (the group's attributes themselves, not the resources)
+  def editable_groups
+    Group.where(nil)
+  end
 
   def available_tasks  #:nodoc:
     CbrainTask.where(nil)

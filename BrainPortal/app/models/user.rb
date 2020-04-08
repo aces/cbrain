@@ -240,9 +240,41 @@ class User < ApplicationRecord
     self.available_tools.where( :category  => "conversion tool" ).order( "tools.select_menu_text" )
   end
 
-  # Returns the list of groups available to this user based on role.
-  def available_groups
-    cb_error "#available_groups called from User base class! Method must be implemented in a subclass."
+#  # Returns the list of groups available to this user based on role.
+#  # This method is deprecated; the more specific methods viewable_groups, assignable_groups and editable_groups
+#  # are to be used instead.
+#  def available_groups
+#    cb_error "#available_groups called from User base class! Method must be implemented in a subclass."
+#  end
+
+  # List of groups which provide view access to resources.
+  # It is possible for the user not to be a member of one of those groups.
+  def viewable_groups
+    cb_error "#viewable_groups called from User base class! Method must be implemented in a subclass."
+  end
+
+  def viewable_group_ids
+    viewable_groups.pluck('groups.id')
+  end
+
+  # List of groups that the user can assign to resources.
+  # The user must be a member of one of these groups. Subset
+  # of viewable_groups
+  def assignable_groups
+    cb_error "#assignable_groups called from User base class! Method must be implemented in a subclass."
+  end
+
+  def assignable_group_ids
+    assignable_groups.pluck('groups.id')
+  end
+
+  # List of groups that the user can modify (the group's attributes themselves, not the resources)
+  def modifiable_groups
+    cb_error "#modifiable_groups called from User base class! Method must be implemented in a subclass."
+  end
+
+  def modifiable_group_ids
+    modifiable_groups.pluck('groups.id')
   end
 
   # Returns the list of tags available to this user.
