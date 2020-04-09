@@ -45,10 +45,10 @@ gem "pbkdf2-ruby"
 gem "json-schema"
 gem "aws-sdk-s3", '~> 1'
 gem 'zenodo_client', '>= 1.0.0', :git => 'https://github.com/aces/zenodo-client-gem'
-gem 'pagy', '~>3.7'
 
 # User interface gems
 gem "will_paginate"
+gem 'pagy', '~>3.7'   # fast pagination for NeuroHub
 gem "jquery-rails"
 gem "jquery-ui-rails"
 gem "jquery-form-rails"
