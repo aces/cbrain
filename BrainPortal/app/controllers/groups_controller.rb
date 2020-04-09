@@ -287,7 +287,7 @@ class GroupsController < ApplicationController
     return true if params[:id] == 'all'
     # if unexpected id - let the action method handle the error message
     begin
-      @group = current_user.available_groups.find(params[:id])
+      @group = current_user.viewable_groups.find(params[:id])
     rescue ActiveRecord::RecordNotFound
       return true
     end

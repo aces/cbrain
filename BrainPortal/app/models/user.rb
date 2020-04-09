@@ -280,13 +280,6 @@ class User < ApplicationRecord
     self.available_tools.where( :category  => "conversion tool" ).order( "tools.select_menu_text" )
   end
 
-#  # Returns the list of groups available to this user based on role.
-#  # This method is deprecated; the more specific methods viewable_groups, assignable_groups and editable_groups
-#  # are to be used instead.
-#  def available_groups
-#    cb_error "#available_groups called from User base class! Method must be implemented in a subclass."
-#  end
-
   # List of groups which provide view access to resources.
   # It is possible for the user not to be a member of one of those groups.
   def viewable_groups
