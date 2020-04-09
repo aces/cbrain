@@ -480,7 +480,7 @@ class UserfilesController < ApplicationController
                    )
                  )
       userfile.group_id = current_user.own_group.id unless
-        current_user.available_groups.pluck(:id).include?(userfile.group_id.to_i)
+        current_user.assignable_group_ids.include?(userfile.group_id.to_i)
 
       if !userfile.save
         flash[:error]  += "File '#{basename}' could not be added.\n"
@@ -647,8 +647,8 @@ class UserfilesController < ApplicationController
 
       @userfile.attributes = new_userfile_attr
       @userfile.type       = type         if type
-      @userfile.user_id    = new_user_id  if current_user.available_users.where(:id => new_user_id).first
-      @userfile.group_id   = new_group_id if current_user.available_groups.where(:id => new_group_id).first
+      @userfile.user_id    = new_user_id  if current_user.available_users.where(:id => new_user_id).exists?
+      @userfile.group_id   = new_group_id if current_user.assignable_groups.where(:id => new_group_id).exists?
       @userfile            = @userfile.class_update
 
       if @userfile.save_with_logging(current_user, %w( group_writable num_files parent_id hidden ) )
@@ -708,7 +708,7 @@ class UserfilesController < ApplicationController
     if (
       changes.has_key?(:group_id) &&
       ! current_user
-        .available_groups
+        .assignable_groups
         .where(:id => changes[:group_id].to_i)
         .exists?
     )
@@ -760,8 +760,7 @@ class UserfilesController < ApplicationController
           .where(:id => userfiles.pluck(:user_id).uniq)
           .all.partition do |user|
             user
-              .available_groups
-              .map(&:id)
+              .assignable_groups_ids
               .include?(changes[:group_id])
           end
 

@@ -295,6 +295,7 @@ describe Userfile do
      it "should return true if user is site_manager of the site" do
        allow(userfile).to receive_message_chain(:user, :site_id).and_return(site_manager.site_id)
        allow(userfile).to receive_message_chain(:group, :site_id).and_return(site_manager.site_id)
+       allow(userfile).to receive_message_chain(:group, :public).and_return(false)
        expect(userfile.can_be_accessed_by?(site_manager)).to be_truthy
      end
 
@@ -329,6 +330,7 @@ describe Userfile do
     it "should return true if user is site_manager of the site" do
        allow(userfile).to receive_message_chain(:user, :site_id).and_return(site_manager.site_id)
        allow(userfile).to receive_message_chain(:group, :site_id).and_return(site_manager.site_id)
+       allow(userfile).to receive_message_chain(:group, :public).and_return(false)
        expect(userfile.can_be_accessed_by?(site_manager)).to be_truthy
     end
 

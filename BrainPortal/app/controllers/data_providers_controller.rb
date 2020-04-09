@@ -456,10 +456,8 @@ class DataProvidersController < ApplicationController
     # Fallback to the user's own project if the one selected above is invalid
     # (the everyone project, under which no file is ever registered, or a
     # project the user doesn't have access to).
-    group_id = current_user.own_group.id if (
-      group_id == Group.everyone.id ||
-      ! current_user.available_groups.raw_first_column('groups.id').include?(group_id)
-    )
+    group_id = current_user.own_group.id unless
+      current_user.assignable_group_ids.include?(group_id)
 
     # Remind the user if browsing as another user
     flash[:notice] += "Important note! Since you were browsing as user '#{@as_user.login}', the files will be registered as belonging to that user instead of you!\n" if

@@ -1,9 +1,8 @@
 
-<%-
 #
-# NeuroHub Project
+# CBRAIN Project
 #
-# Copyright (C) 2020
+# Copyright (C) 2008-2012
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -19,15 +18,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
--%>
 
-<% title("Add", '') %>
-
-<div class="nh_content">
-    <div class="nh_form">
-        <%= error_messages_for @nh_project, :header_message => "Project could not be created." %>
-        <p class="nh_form_title">Add Project</p>
-        <%= render :partial => 'form_for', :locals => {:action => :create} %>
-    </div>
-</div>
+class AddPublicToGroups < ActiveRecord::Migration[5.0]
+  def change
+    add_column :groups, :public, :boolean, :default => false
+    add_index  :groups, :public
+  end
+end

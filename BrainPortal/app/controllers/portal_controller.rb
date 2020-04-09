@@ -40,7 +40,9 @@ class PortalController < ApplicationController
     end
 
     @num_files              = current_user.userfiles.count
-    @groups                 = current_user.has_role?(:admin_user) ? current_user.groups.order(:name) : current_user.available_groups.order(:name)
+    @groups                 = current_user.has_role?(:admin_user) ?
+                                current_user.groups.order(:name)  :  # admins see just his own groups
+                                current_user.viewable_groups.without_everyone.order(:name) # normal users
     @default_data_provider  = DataProvider.find_by_id(current_user.meta["pref_data_provider_id"])
     @default_bourreau       = Bourreau.find_by_id(current_user.meta["pref_bourreau_id"])
 
@@ -71,7 +73,7 @@ class PortalController < ApplicationController
     bourreau_ids = Bourreau.find_all_accessible_by_user(current_user).raw_first_column("remote_resources.id")
     user_ids     = current_user.available_users.raw_first_column(:id)
     @tasks       = CbrainTask.real_tasks.not_archived.where(:user_id => user_ids, :bourreau_id => bourreau_ids).order( "updated_at DESC" ).limit(10).all
-    @files       = Userfile.find_all_accessible_by_user(current_user).where(:hidden => false).order( "updated_at DESC" ).limit(10).all
+    @files       = Userfile.find_all_accessible_by_user(current_user).where(:hidden => false).order( "userfiles.updated_at DESC" ).limit(10).all
   end
 
   def portal_log #:nodoc:
@@ -293,8 +295,8 @@ class PortalController < ApplicationController
     else
        table_content_scope = @model.where({})
        if ! current_user.has_role?(:admin_user)
-         table_content_scope = table_content_scope.where(:user_id  => current_user.available_users.map(&:id))  if @model.columns_hash['user_id']
-         table_content_scope = table_content_scope.where(:group_id => current_user.available_groups.map(&:id)) if @model.columns_hash['group_id']
+         table_content_scope = table_content_scope.where(:user_id  => current_user.available_users.pluck('users.id'))  if @model.columns_hash['user_id']
+         table_content_scope = table_content_scope.where(:group_id => current_user.viewable_group_ids)                 if @model.columns_hash['group_id']
        end
     end
 

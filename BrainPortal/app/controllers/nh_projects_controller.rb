@@ -36,7 +36,7 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def create #:nodoc:
-    attributes             = params.require_as_params(:nh_project).permit(:name, :description)
+    attributes             = params.require_as_params(:nh_project).permit(:name, :description, :public, :editor_ids => [])
 
     @nh_project            = WorkGroup.new(attributes)
     @nh_project.creator_id = current_user.id
@@ -94,7 +94,7 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def files #:nodoc:
-    @nh_project   = find_nh_project(current_user, params[:id])    
+    @nh_project   = find_nh_project(current_user, params[:id])
     @pagy, @files = pagy(@nh_project.userfiles)
   end
 
