@@ -80,7 +80,9 @@ class GroupsController < ApplicationController
   # GET /groups/1.xml
   # GET /groups/1.json
   def show #:nodoc:
-    @group = current_user.viewable_groups.without_everyone.find(params[:id])
+    @group = current_user.viewable_groups
+    @group = @group.without_everyone if ! current_user.has_role? :admin_user
+    @group = @group.find(params[:id])
     raise ActiveRecord::RecordNotFound unless @group.can_be_accessed_by?(current_user)
     @users = current_user.available_users.order(:login).reject { |u| u.class == CoreAdmin }
 
@@ -250,7 +252,9 @@ class GroupsController < ApplicationController
     elsif params[:id] == "all"
       cbrain_session[:active_group_id] = "all"
     else
-      @group = current_user.viewable_groups.without_everyone.find(params[:id])
+      @group = current_user.viewable_groups
+      @group = @group.without_everyone if ! current_user.has_role? :admin_user
+      @group = @group.find(params[:id])
       cbrain_session[:active_group_id] = @group.id
     end
 
