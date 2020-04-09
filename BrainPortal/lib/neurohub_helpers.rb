@@ -28,11 +28,15 @@ module NeurohubHelpers
   # If +id_or_project_ is already a Group, it will make sure it's
   # a valid one. The WorkGroup is returned. If the validation fails,
   # an exception ActiveRecord::RecordNotFound is raised.
-  def find_nh_project(user, id_or_project)
+  def find_nh_project(user, id_or_project, check_license=true)
     id      = id_or_project.is_a?(Group) ? id_or_project.id : id_or_project
     project = user.viewable_groups.where(:type => "WorkGroup").find(id)
 
     raise ActiveRecord::RecordNotFound unless project.can_be_accessed_by?(user)
+
+    if check_license && user.unsigned_custom_licenses(project).present?
+      raise CbrainLicenseException
+    end
 
     project
   end
@@ -40,7 +44,7 @@ module NeurohubHelpers
   # For the user +user+, this method will return
   # neurohub projects ('available' groups of class WorkGroup)
   def find_nh_projects(user)
-    current_user.viewable_groups.where(:type => 'WorkGroup')
+    user.available_groups.where(:type => 'WorkGroup')
   end
 
 end

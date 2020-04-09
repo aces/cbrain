@@ -30,6 +30,10 @@
         <a href="/neurohub">
             <div class="nh_toolbar_logo"></div>
         </a>
+        <div class="nh_toolbar_account">
+          <div class="text-ellipsis"><%= current_user.full_name %></div>
+          <div class="text-ellipsis"><%= current_user.name %></div>
+        </div>
         <div class="nh_toolbar_buttons">
             <%= link_to 'Dashboard', neurohub_path, { :class => "btn-nav-primary", "data-active"=> request.path_info.include?('welcome') || action_name==="welcome"}  %>
             <%= link_to 'Projects', nh_projects_path, { :class => "btn-nav-primary", "data-active"=> request.path_info.include?('nh_projects') && action_name==="index"  }%>

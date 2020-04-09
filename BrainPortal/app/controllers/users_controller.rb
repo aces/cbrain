@@ -30,7 +30,7 @@ class UsersController < ApplicationController
   api_available :only => [ :index, :create, :show, :destroy, :update]
 
   before_action :login_required,        :except => [:request_password, :send_password]
-  before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password]
+  before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password, :push_keys]
 
   def index #:nodoc:
     @scope = scope_from_session
@@ -79,6 +79,9 @@ class UsersController < ApplicationController
     @default_data_provider  = DataProvider.find_by_id(@user.meta["pref_data_provider_id"])
     @default_bourreau       = Bourreau.find_by_id(@user.meta["pref_bourreau_id"])
     @log                    = @user.getlog()
+
+    # If needed, create a SSH key for the user
+    @ssh_key = @user.ssh_key(create_it: true) rescue nil
 
     respond_to do |format|
       format.html # show.html.erb
@@ -340,6 +343,38 @@ class UsersController < ApplicationController
       flash[:error] = "Unable to find user with login #{params[:login]} and email #{params[:email]}.\nPlease contact your admin."
       redirect_to :action  => :request_password
     end
+  end
+
+  def push_keys #:nodoc:
+    @user = User.where(:id => params[:id]).first
+    cb_error "You don't have permission to update this user.", :redirect => start_page_path unless edit_permission?(@user)
+
+    push_bids = params[:push_keys_to].presence
+    cb_notice "No servers selected.", :redirect => user_path(@user) if push_bids.blank?
+    ssh_key   = @user.ssh_key rescue nil
+    cb_notice "No user SSH key exists yet.", :redirect => :show if ! ssh_key
+
+    pub_key  = ssh_key.public_key
+    priv_key = ssh_key.send(:private_key, "I Know What I Am Doing")
+
+    flash[:notice] = ""
+    flash[:error]  = ""
+    bourreau_to_push = Bourreau.find_all_accessible_by_user(@user).where(:id => push_bids).to_a
+    bourreau_to_push.each do |bourreau|
+      command          = RemoteCommand.new(:command           => 'push_ssh_keys',
+                                           :requester_user_id => @user.id,
+                                           :ssh_key_pub       => pub_key,
+                                           :ssh_key_priv      => priv_key,
+                                          )
+      answer = bourreau.send_command(command)
+      if answer.command_execution_status == 'OK'
+        flash[:notice] += "Pushed user SSH key to #{bourreau.name}.\n"
+      else
+        flash[:error]  += "Could not push SSH key to #{bourreau.name}.\n"
+      end
+    end
+
+    redirect_to :action => :show
   end
 
   private

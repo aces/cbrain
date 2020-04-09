@@ -86,9 +86,9 @@ class NeurohubApplicationController < ApplicationController
   # Find the number of new invitations to be displayed at the top of the page.
   def prepare_invites
     return unless current_user
-    nh_invites = Invitation.where(user_id: current_user.id, active: true).all || [];
-    nh_new_invites = Invitation.where(user_id: current_user.id, active: true, read: false).all || [];
-    @nh_invites_count = nh_invites.count
+    nh_invites            = Invitation.where(user_id: current_user.id, active: true).all || [];
+    nh_new_invites        = Invitation.where(user_id: current_user.id, active: true, read: false).all || [];
+    @nh_invites_count     = nh_invites.count
     @nh_new_invites_count = nh_new_invites.count
   end
 
