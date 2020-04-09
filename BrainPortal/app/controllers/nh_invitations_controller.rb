@@ -104,7 +104,7 @@ class NhInvitationsController < NeurohubApplicationController
   def destroy #:nodoc:
     @nh_invitation = Invitation.where(user_id: current_user.id).find(params[:id])
     @nh_project = @nh_invitation.group
-    
+
     @nh_invitation.destroy
 
     flash[:notice] = "You have declined an invitation to #{@nh_project.name}."

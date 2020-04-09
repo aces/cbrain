@@ -25,24 +25,37 @@
 <% title("Files", '') %>
 
 <div id="nh_projects_files" class="nh_content">
-  <div class="nh_table_scroll">
-    <table>
-     <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Size</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @files.each do |file| %>
+  <% if @files.exists? %>
+    <div class="nh_actions">
+      <%= button_to "Upload Files", switch_groups_path(id: @nh_project.id), :class => "btn-solid-secondary nh_action", :method => :post %>
+    </div>
+    <div class="nh_table_scroll">
+      <%== pagy_nav(@pagy) %>
+      <table>
+      <thead>
           <tr>
-            <td><%= link_to_userfile_if_accessible(file) %></td>
-            <td><%= file.pretty_type %></td>
-            <td><%= colored_pretty_size(file.size) %></td>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Size</th>
           </tr>
-        <% end %>
-      </tbody>
-    </table>
-  </div>
+        </thead>
+        <tbody>
+          <% @files.each do |file| %>
+            <tr>
+              <td><%= link_to_userfile_if_accessible(file) %></td>
+              <td><%= file.pretty_type %></td>
+              <td><%= colored_pretty_size(file.size) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="empty">
+      <div class="empty-wrapper">
+        <img class="empty-icon" src="/images/neurohub/NH_empty_files.svg" />
+        <p class="empty-text">There are no current files for this project.</p>
+      </div>
+    </div>
+  <% end %>
 </div>
