@@ -26,7 +26,7 @@
     ├── USERS
     ├── INVITATIONS
     ├── DASHBOARD
-  └── 
+  └──
 
 /*
 =============================================================
@@ -664,28 +664,19 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
     color: $DEFAULT_TEXT;
   }
 }
-.cb-external {
-  position: relative;
-  &::after {
-    content: "";
-    width: 1rem;
-    height: 1rem;
-    margin-left: 0.5rem;
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-image: url("/images/neurohub/NH_cb_external_blue.png");
-  }
-}
 
 .btn-text-cbrain {
   @extend .btn-text;
   color: $CBRAIN_ALT;
-  &.external {
+  &.external,
+  .external {
+    display: flex;
+    align-items: center;
     &::after {
+      @include mx(2);
       content: "";
-      width: 0.8rem;
-      height: 0.8rem;
-      margin: 0.5rem;
+      width: 1rem;
+      height: 1rem;
       opacity: 0.75;
       background-repeat: no-repeat;
       background-size: contain;
@@ -1186,7 +1177,7 @@ Cards used for simple "show"-type views
 table {
   width: 100%;
   margin: auto;
-  border-collapse: separate;
+  border-collapse: collapse;
   border-spacing: 0;
   background: $DEFAULT_BG;
   border-radius: 4px;
@@ -1194,7 +1185,6 @@ table {
   th,
   td {
     display: table-cell;
-    width: 150px;
     min-width: 150px;
     .text {
       display: block;
@@ -1204,7 +1194,8 @@ table {
       text-align: start;
       justify-content: flex-start;
     }
-    &[data-type="int"] {
+    &[data-type="int"],
+    &[data-action="true"] {
       min-width: 75px;
       width: 75px;
       > * {
@@ -1217,7 +1208,6 @@ table {
     th {
       @include p(2);
       border: 1px solid $DEFAULT_LT;
-
       .text {
         @include title("xxs");
         color: $DEFAULT_ALT;
@@ -1231,12 +1221,14 @@ table {
       position: relative;
       border-right: 1px solid $DEFAULT_LT;
       color: $DEFAULT_ALT;
-
+      vertical-align: top; // removes table cell default padding
       .text {
         @include title("xxs");
         @include p(2);
+        align-items: flex-start;
         .btn-text-cbrain {
           background: inherit;
+          align-items: flex-start;
           &:hover {
             background: inherit;
           }
@@ -1252,6 +1244,46 @@ table {
         top: 0;
         left: 0;
         justify-content: inherit;
+        align-items: inherit;
+      }
+      &[data-action="true"] {
+        min-width: 75px;
+        max-width: 100px;
+        width: 100px;
+        div {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: flex-start;
+          height: 100%;
+          top: 0;
+          left: 0;
+          width: inherit;
+          max-width: inherit;
+          min-width: inherit;
+        }
+        .text[data-link="true"],
+        [data-link="true"] {
+          width: unset;
+          position: unset;
+          max-height: 34px;
+          margin: 1px;
+          border-radius: 0;
+          flex: 1 1 48%;
+          display: flex;
+          justify-content: center;
+          &:nth-child(even) {
+            margin-right: 0;
+          }
+          &:not(:first-child):last-child:nth-child(odd) {
+            margin-right: 0;
+          }
+          svg {
+            width: 1rem;
+            height: 1rem;
+            fill: $DEFAULT_BG;
+            stroke: $DEFAULT_BG;
+          }
+        }
       }
     }
 
@@ -1315,17 +1347,34 @@ table {
         position: -webkit-sticky;
         position: sticky;
         background: $DEFAULT_BG;
-        top: 0;
+        top: -1px;
         z-index: 3;
         overflow: hidden;
-
         &:first-child {
           z-index: 4;
+        }
+        &::before {
+          content: ""; // bottom border;
+          width: 100%;
+          height: 1px;
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          background: $DEFAULT_BORDER;
         }
       }
     }
     th:first-child {
       z-index: 2;
+      &::after {
+        content: "";
+        width: 1px;
+        height: 100%;
+        position: absolute;
+        right: 0;
+        top: 0;
+        background: $DEFAULT_BORDER;
+      }
     }
   }
 }

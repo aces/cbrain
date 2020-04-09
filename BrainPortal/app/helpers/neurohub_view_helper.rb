@@ -25,6 +25,16 @@ module NeurohubViewHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  def nh_edit_icon
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 32 32"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#edit_icon"></use>
+    </svg>
+    SVG
+  end
+
   def nh_user_icon
     <<-SVG.html_safe
     <svg xmlns="http://www.w3.org/2000/svg"

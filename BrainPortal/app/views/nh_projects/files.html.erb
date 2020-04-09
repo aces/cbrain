@@ -31,19 +31,29 @@
     </div>
     <div class="nh_table_scroll">
       <table>
-      <thead>
+        <thead>
           <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Size</th>
+            <th><p class="text">name (<%= @files.count %></span>)</p></th>
+            <th><p class="text">owner</p></th>
+            <th><p class="text">type</p></th>
+            <th><p class="text">size</p></th>
           </tr>
         </thead>
         <tbody>
           <% @files.each do |file| %>
-            <tr class="cb">
-              <th data-type="link"><%= link_to_userfile_if_accessible(file, nil, {:html_options => { class:"cb-external", target:"_blank"}}) %></th>
-              <td><%= file.pretty_type %></td>
-              <td><%= colored_pretty_size(file.size) %></td>
+            <tr>
+              <th>
+                <p class="text"><%= link_to file.name, {:action => :show, :id => @nh_project.id}, :method  => :get, :class=>"btn-text-cbrain external", :'data-link' => "true" %></p>
+              </th>
+              <td>
+                <p class="text"><%= link_to_user_if_accessible(file.user, current_user, :html_options => {:class => "btn-text-cbrain external", :'data-link' => "true", :target => "_blank"}) %></p>
+              </td>
+              <td>
+                <p class="text"><%= file.pretty_type %></p>
+              </td>
+              <td>
+                <p class="text"><%= colored_pretty_size(file.size) %></p>
+              </td>
             </tr>
           <% end %>
         </tbody>
