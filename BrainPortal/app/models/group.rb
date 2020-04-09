@@ -65,11 +65,17 @@ class Group < ApplicationRecord
   has_and_belongs_to_many :access_profiles
   has_and_belongs_to_many :editors, :class_name => 'User', join_table: 'groups_editors', before_add: :editor_can_be_added!
 
+  scope                   :without_everyone, -> { where([ "groups.id <> ?", Group.everyone_id ]) }
+
   api_attr_visible        :name, :description, :type, :site_id, :invisible
 
   # Returns the unique and special group 'everyone'
   def self.everyone
     @everyone ||= EveryoneGroup.find_by_name('everyone')
+  end
+
+  def self.everyone_id #:nodoc:
+    @everyone_id ||= self.everyone.id
   end
 
   # Returns itself; this method is here to make it symmetrical

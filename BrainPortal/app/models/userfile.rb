@@ -332,9 +332,7 @@ class Userfile < ApplicationRecord
   # [For regular users:] all files that belong to the user all
   #                      files assigned to a group to which the user belongs.
   def self.find_all_accessible_by_user(user, options = {})
-    self.accessible_for_user(user, options).where(
-      :data_provider_id => DataProvider.find_all_accessible_by_user(user).pluck(:id)
-    )
+    self.accessible_for_user(user, options)
   end
 
   # This method takes in an array to be used as the :+conditions+
@@ -357,8 +355,8 @@ class Userfile < ApplicationRecord
       query_group_string += " AND userfiles.group_writable = 1"
     end
 
-    query_string  = "(#{query_user_string}) OR (#{query_group_string})"
-    query_array   = [user.id, user.group_ids, data_provider_ids]
+    query_string = "(#{query_user_string}) OR (#{query_group_string})"
+    query_array  = [user.id, user.group_ids, data_provider_ids]
 
     if user.has_role? :site_manager
       scope = scope.joins(:user).readonly(false)

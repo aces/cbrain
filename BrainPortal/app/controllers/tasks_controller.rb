@@ -1539,7 +1539,11 @@ class TasksController < ApplicationController
   def user_scope(base)
     base
       .where(current_project ? { :group_id => current_project.id } : {})
-      .where(:bourreau_id => Bourreau.find_all_accessible_by_user(current_user).pluck(:id))
+      .where(
+        :bourreau_id => Bourreau
+          .find_all_accessible_by_user(current_user)
+          .pluck("#{Bourreau.quoted_table_name}.id")
+      )
   end
 
   # Custom filters scope; filtered list of tasks respecting currently active

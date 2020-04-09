@@ -379,14 +379,7 @@ class CbrainTask < ApplicationRecord
     header
   end
 
-  ##########################################
-  # Access control (overrides module ResourceAccess)
-  ##########################################
 
-  def self.find_all_accessible_by_user(user, options = {}) #:nodoc:
-    scope = super
-    scope.where(:bourreau_id => Bourreau.find_all_accessible_by_user(user).pluck(:id))
-  end
 
   ##################################################################
   # Useful ID Generators

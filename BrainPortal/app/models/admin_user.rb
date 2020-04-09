@@ -44,7 +44,7 @@ class AdminUser < User
   end
 
   # List of groups that the user can modify (the group's attributes themselves, not the resources)
-  def editable_groups
+  def modifiable_groups
     Group.where(nil)
   end
 

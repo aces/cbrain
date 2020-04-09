@@ -128,7 +128,7 @@ class CarminController < ApplicationController
     limit      = params[:limit].presence
 
     if group_name
-      group = current_user.viewable_groups.where('groups.name' => group_name).first
+      group = current_user.assignable_groups.where('groups.name' => group_name).first
     end
 
     tasks = current_user.available_tasks.real_tasks

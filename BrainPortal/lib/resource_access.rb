@@ -86,8 +86,8 @@ module ResourceAccess
 
       return scope if user.has_role? :admin_user
 
-      scope     = scope.joins(:user)
-      available_group_ids = (user.group_ids + Group.where(:public => true).pluck(:id)).uniq
+      scope               = scope.joins(:user)
+      available_group_ids = user.viewable_group_ids
 
       if user.has_role? :site_manager
         scope = scope.where(["(#{self.table_name}.user_id = ?) OR (#{self.table_name}.group_id IN (?)) OR (users.site_id = ?)",

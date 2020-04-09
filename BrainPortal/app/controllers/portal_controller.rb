@@ -40,7 +40,9 @@ class PortalController < ApplicationController
     end
 
     @num_files              = current_user.userfiles.count
-    @groups                 = current_user.has_role?(:admin_user) ? current_user.groups.order(:name) : current_user.viewable_groups.order(:name)
+    @groups                 = current_user.has_role?(:admin_user) ?
+                                current_user.groups.order(:name)  :  # admins see just his own groups
+                                current_user.viewable_groups.without_everyone.order(:name) # normal users
     @default_data_provider  = DataProvider.find_by_id(current_user.meta["pref_data_provider_id"])
     @default_bourreau       = Bourreau.find_by_id(current_user.meta["pref_bourreau_id"])
 

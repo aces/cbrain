@@ -290,7 +290,7 @@ describe User do
 
 
     describe "#tool" do
-      let!(:tool1)        { create(:tool, :group_id => group.id, :user => site_manager) }#
+      let!(:tool1)        { create(:tool, :group_id => group.id, :user => site_manager) }
       let!(:tool2)        { create(:tool, :category => "conversion tool") }
       let!(:public_tool)  { create(:tool, :category => "conversion tool", :group_id => public_group.id) }
       let!(:tc1)          { create(:tool_config, :bourreau => bourreau, :tool => tool1)}
