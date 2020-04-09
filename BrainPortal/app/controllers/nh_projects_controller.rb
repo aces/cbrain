@@ -25,6 +25,8 @@ class NhProjectsController < NeurohubApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  include Pagy::Backend # lightweight pagination gem
+
   before_action :login_required
 
   rescue_from CbrainLicenseException, with: :redirect_show_license
@@ -92,8 +94,8 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def files #:nodoc:
-    @nh_project = find_nh_project(current_user, params[:id])
-    @files      = @nh_project.userfiles
+    @nh_project   = find_nh_project(current_user, params[:id])    
+    @pagy, @files = pagy(@nh_project.userfiles)
   end
 
   def new_license #:nodoc:
