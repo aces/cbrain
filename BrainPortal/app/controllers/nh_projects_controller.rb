@@ -74,7 +74,7 @@ class NhProjectsController < NeurohubApplicationController
       return
     end
 
-    attr_to_update = params.require_as_params(:nh_project).permit(:name, :description, :editor_ids => [])
+    attr_to_update = params.require_as_params(:nh_project).permit(:name, :description, :public, :editor_ids => [])
     attr_to_update["editor_ids"] = [] if !attr_to_update["editor_ids"]
     success        = @nh_project.update_attributes_with_logging(attr_to_update,current_user)
 
