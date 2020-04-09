@@ -284,7 +284,13 @@ class GroupsController < ApplicationController
 
   def license_check
     return true if params[:id].blank?
-    @group = current_user.available_groups.find(params[:id])
+    return true if params[:id] == 'all'
+    # if unexpected id - let the action method handle the error message
+    begin
+      @group = current_user.available_groups.find(params[:id])
+    rescue ActiveRecord::RecordNotFound
+      return true
+    end
     if current_user.unsigned_custom_licenses(@group).present?
       flash[:error] = "Access to the project #{@group.name} is blocked due to licensing issues. Please consult with the project maintainer or support for details"
       license_redirect

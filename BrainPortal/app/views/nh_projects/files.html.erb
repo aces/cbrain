@@ -29,7 +29,8 @@
     <div class="nh_actions">
       <%= link_to "Upload Files", switch_groups_path(id: @nh_project.id), :class => "btn-solid-cbrain nh_action", :method => :post, target: '_blank' %>
     </div>
-    <div class="nh_table_scroll">
+    <div class="nh_table_scroll">      
+      <%== pagy_nav(@pagy) %>
       <table>
         <thead>
           <tr>
