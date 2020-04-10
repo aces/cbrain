@@ -1,0 +1,51 @@
+
+Private storage <%= @nh_dp.name %>
+
+<p>
+<%= link_to "[Back to list of storages]", nh_storages_path %>
+<p>
+<%= link_to "[Edit this storage]", edit_nh_storage_path(@nh_dp) %>
+<p>
+
+
+User: <%= @nh_dp.remote_user %>
+<p>
+Host: <%= @nh_dp.remote_host %>
+<p>
+Port: <%= @nh_dp.remote_port %>
+<p>
+Directory: <%= @nh_dp.remote_dir %>
+<p>
+Project access: <%= link_to @nh_dp.group.name, nh_project_path(@nh_dp.group) %>
+
+<% if @file_counts.present? %>
+  <hr>
+  Stats:
+  <dl>
+    <% @file_counts.keys.sort.each do |type| %>
+      <% num  = @file_counts[type] %>
+      <% size = @file_sizes[type] %>
+      <dt><%= type %></dt>
+      <dd><%= pluralize(num, "file") %>, <%= colored_pretty_size(size) %></dd>
+    <% end %>
+  </dl>
+<% else %>
+  There are yet no files registered on this storage.
+<% end %>
+
+<hr>
+
+<%= button_to "[Test Configuration]", check_nh_storage_path(@nh_dp), :method => :post %>
+<p>
+<%= button_to "[Auto Register Files]", autoregister_nh_storage_path(@nh_dp), :method => :post %>
+<p>
+
+<%= button_to "[Deconfigure this storage CONFIRM DOES NOT WORK]", nh_storage_path(@nh_dp),
+    {
+      :data => { :confirm => "Are you sure you want to deconfigure this private storage? Files will be unregistered. Explain more here." },
+      :class  => "button menu_button",
+      :method => :delete
+    }
+%>
+
+<%= render :partial => 'nh_storages/show_key' %>

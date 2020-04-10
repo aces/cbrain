@@ -1,0 +1,17 @@
+<% route_path = @nh_dp.new_record? ? nh_storages_path : nh_storage_path(@nh_dp) %>
+
+<%= error_messages_for @nh_dp, :header_message => "This storage configuration is invalid." %>
+
+<%= form_for(@nh_dp, :as => :nh_dp, :url => route_path ) do |f| %>
+Name: <%= f.text_field :name %>
+<p>
+Hostname: <%= f.text_field :remote_host %>
+<p>
+Port: <%= f.text_field :remote_port %>
+<p>
+Username: <%= f.text_field :remote_user %>
+<p>
+Path: <%= f.text_field :remote_dir %>
+<p>
+<%= f.submit "Save configuration" %>
+<% end %>

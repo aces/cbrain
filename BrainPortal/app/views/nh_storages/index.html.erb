@@ -1,0 +1,37 @@
+
+List of your private storage configurations
+<p>
+
+<%= link_to "[Create new configuration]", new_nh_storage_path %>
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th>User</th>
+    <th>Host</th>
+    <th>Port</th>
+    <th>Directory</th>
+    <th>SSH specification</th>
+  </tr>
+
+  <% @nh_dps.each do |dp| %>
+    <tr>
+      <td><%= link_to dp.name, nh_storage_path(dp) %></td>
+      <td><%= dp.remote_user %></td>
+      <td><%= dp.remote_host %></td>
+      <td><%= dp.remote_port %></td>
+      <td><%= dp.remote_dir %></td>
+      <td><%= "-p #{dp.remote_port}" if dp.remote_port.present?%>
+          <%= "#{dp.remote_user}@#{dp.remote_host}:#{dp.remote_dir}" %>
+      </td>
+    </tr>
+  <% end %>
+
+  <% if @nh_dps.empty? %>
+    <tr>
+      <td colspan=6">No storage configured yet</td>
+    </tr>
+  <% end %>
+
+</table>
+

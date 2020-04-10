@@ -1,0 +1,11 @@
+
+Configuration information:
+<p>
+This is your own public SSH key that must be installed on the storage host.
+<p>
+SSH Key installation instructions go here.
+<p>
+Note that revealing this key's content to other people cause <em>no security risks at all</em>.
+The information in this key is meant to be public and people cannot use it to access your information.
+<p>
+<pre><%= current_user.ssh_key.public_key rescue "Error fetching public key" %></pre>
