@@ -59,6 +59,7 @@ class NhStoragesController < NeurohubApplicationController
 
     if @nh_dp.save
       @nh_dp.addlog_context(self,"Created by #{current_user.login}")
+      @nh_dp.meta[:browse_gid] = current_user.own_group.id # only the owner can browse this in CBRAIN
       flash[:notice] = "Private storage #{@nh_dp.name} was successfully created"
       redirect_to :action => :show, :id => @nh_dp.id
     else
@@ -107,6 +108,7 @@ class NhStoragesController < NeurohubApplicationController
   end
 
   def autoregister
+    @nh_dp = UserkeyFlatDirSshDataProvider.where(:user_id => current_user.id).find(params[:id])
     cb_error 'NYI'
   end
 
@@ -122,7 +124,7 @@ class NhStoragesController < NeurohubApplicationController
 
     # Check #1: the SSH connection can be established
     if ! master.is_alive?
-      test_error "Cannot establish the SSH connection. Check the configuration"
+      test_error "Cannot establish the SSH connection. Check the configuration: username, hostname, port are valid, and SSH key is installed."
     end
 
     # Check #2: we can run "true" on the remote site and get no output
@@ -133,14 +135,16 @@ class NhStoragesController < NeurohubApplicationController
     )
     stdout = File.read("#{tmpfile}.out") rescue "Error capturing stdout"
     stderr = File.read("#{tmpfile}.err") rescue "Error capturing stderr"
-    if ! status
-      test_error "Got non-zero return code when trying to run 'true' on remote side"
-    end
     if stdout.size != 0
-      test_error "Shell is not clean: got some bytes on stdout: '#{stdout}'"
+      stdout.strip! if stdout.present? # just to make it pretty while still reporting whitespace-only strings
+      test_error "Remote shell is not clean: got some bytes on stdout: '#{stdout}'"
     end
     if stderr.size != 0
-      test_error "Shell is not clean: got some bytes on stderr: '#{stderr}'"
+      stderr.strip! if stdout.present?
+      test_error "Remote shell is not clean: got some bytes on stderr: '#{stderr}'"
+    end
+    if ! status
+      test_error "Got non-zero return code when trying to run 'true' on remote side."
     end
 
     # Check #3: the remote directory exists
@@ -166,13 +170,17 @@ class NhStoragesController < NeurohubApplicationController
     flash[:error] += "\nThis storage is marked as 'offline' until this test pass."
     @nh_dp.update_column(:online, false)
     redirect_to :action => :show
+
   ensure
     File.unlink "#{tmpfile}.out" rescue true
     File.unlink "#{tmpfile}.err" rescue true
+
   end
 
   private
 
+  # Utility method to raise an exception
+  # when testing for a DP's configuration.
   def test_error(message) #:nodoc:
     raise UserKeyTestConnectionError.new(message)
   end
