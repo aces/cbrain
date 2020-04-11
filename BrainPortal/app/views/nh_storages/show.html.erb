@@ -1,22 +1,23 @@
 
 Private storage <%= @nh_dp.name %>
 
-<p>
+<hr>
 <%= link_to "[Back to list of storages]", nh_storages_path %>
-<p>
+<hr>
 <%= link_to "[Edit this storage]", edit_nh_storage_path(@nh_dp) %>
-<p>
+<hr>
 
 
 User: <%= @nh_dp.remote_user %>
-<p>
+<hr>
 Host: <%= @nh_dp.remote_host %>
-<p>
+<hr>
 Port: <%= @nh_dp.remote_port %>
-<p>
+<hr>
 Directory: <%= @nh_dp.remote_dir %>
-<p>
+<hr>
 Project access: <%= link_to @nh_dp.group.name, nh_project_path(@nh_dp.group) %>
+<hr>
 
 <% if @file_counts.present? %>
   <hr>
@@ -26,7 +27,7 @@ Project access: <%= link_to @nh_dp.group.name, nh_project_path(@nh_dp.group) %>
       <% num  = @file_counts[type] %>
       <% size = @file_sizes[type] %>
       <dt><%= type %></dt>
-      <dd><%= pluralize(num, "file") %>, <%= colored_pretty_size(size) %></dd>
+      <dd><%= pluralize(num, "entry") %>, <%= colored_pretty_size(size) %></dd>
     <% end %>
   </dl>
 <% else %>
@@ -36,9 +37,9 @@ Project access: <%= link_to @nh_dp.group.name, nh_project_path(@nh_dp.group) %>
 <hr>
 
 <%= button_to "[Test Configuration]", check_nh_storage_path(@nh_dp), :method => :post %>
-<p>
+<hr>
 <%= button_to "[Auto Register Files]", autoregister_nh_storage_path(@nh_dp), :method => :post %>
-<p>
+<hr>
 
 <%= button_to "[Deconfigure this storage CONFIRM DOES NOT WORK]", nh_storage_path(@nh_dp),
     {

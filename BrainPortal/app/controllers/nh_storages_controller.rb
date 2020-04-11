@@ -33,7 +33,8 @@ class NhStoragesController < NeurohubApplicationController
   class UserKeyTestConnectionError < RuntimeError ; end
 
   def new #:nodoc:
-    @nh_dp = UserkeyFlatDirSshDataProvider.new
+    @nh_dp       = UserkeyFlatDirSshDataProvider.new
+    @nh_projects = find_nh_projects(current_user)
   end
 
   def show
@@ -44,18 +45,26 @@ class NhStoragesController < NeurohubApplicationController
 
   def create #:nodoc:
     attributes = params.require_as_params(:nh_dp)
-                       .permit(:name       , :description,
+                       .permit(:name       , :description, :group_id,
                                :remote_user, :remote_host,
                                :remote_port, :remote_dir,
                               )
+
+    # Make sure project is allowed
+    nh_project = find_nh_project(current_user, attributes[:group_id]) rescue nil
+    attributes.delete(:group_id) if nh_project.nil?
+
+    # Set the basic attributes from the form
     @nh_dp = UserkeyFlatDirSshDataProvider.new(attributes)
 
-    # Some constants
+    # Some constant attributes
     @nh_dp.update_attributes(
       :user_id  => current_user.id,
-      :group_id => current_user.own_group.id,
       :online   => true,
     )
+
+    # Default project is user's own project
+    @nh_dp.group_id ||= current_user.own_group.id
 
     if @nh_dp.save
       @nh_dp.addlog_context(self,"Created by #{current_user.login}")
@@ -73,16 +82,22 @@ class NhStoragesController < NeurohubApplicationController
   end
 
   def edit #:nodoc:
-    @nh_dp = UserkeyFlatDirSshDataProvider.where(:user_id => current_user.id).find(params[:id])
+    @nh_dp       = UserkeyFlatDirSshDataProvider.where(:user_id => current_user.id).find(params[:id])
+    @nh_projects = find_nh_projects(current_user)
   end
 
   def update #:nodoc:
     @nh_dp = UserkeyFlatDirSshDataProvider.where(:user_id => current_user.id).find(params[:id])
     attributes = params.require_as_params(:nh_dp)
-                       .permit(:name       , :description,
+                       .permit(:name       , :description, :group_id,
                                :remote_user, :remote_host,
                                :remote_port, :remote_dir,
                               )
+    # Make sure project is allowed
+    nh_project = find_nh_project(current_user, attributes[:group_id]) rescue nil
+    attributes.delete(:group_id) if nh_project.nil?
+
+    # Update all
     success = @nh_dp.update_attributes_with_logging(attributes, current_user,
                      %i( remote_user remote_host remote_port remote_dir )
     )
@@ -98,6 +113,13 @@ class NhStoragesController < NeurohubApplicationController
 
   def destroy
     @nh_dp = UserkeyFlatDirSshDataProvider.where(:user_id => current_user.id).find(params[:id])
+    @nh_dp.userfiles.to_a.each do |f|
+      f.send :track_resource_usage_destroy # private method
+      f.delete # remove from DB; does not remove content on provider side; no callbacks...
+      f.destroy_log # ... so we clean up here
+      f.destroy_all_meta_data # ... and here.
+    end
+    @nh_dp.reload # cause userfile assoc has changed
     if @nh_dp.destroy
       flash[:notice] = "Storage configuration #{@nh_dp.name} was successfully removed."
       redirect_to :action => :index
@@ -109,7 +131,65 @@ class NhStoragesController < NeurohubApplicationController
 
   def autoregister
     @nh_dp = UserkeyFlatDirSshDataProvider.where(:user_id => current_user.id).find(params[:id])
-    cb_error 'NYI'
+
+    # Contact remote site and get list of files there
+    fileinfos = BrowseProviderFileCaching.get_recent_provider_list_all(@nh_dp, current_user)
+
+    # Get currently registered files on DP
+    registered = Userfile.where( :data_provider_id => @nh_dp.id )
+
+    # Match them together
+    FileInfo.array_match_all_userfiles(fileinfos, registered)
+
+    # Make validation checks
+    FileInfo.array_validate_for_registration(fileinfos)
+
+    # Register all new ones
+    added_ids = []
+    fileinfos.select do |fi|
+      fi.userfile.blank? &&
+      (fi.symbolic_type == :regular || fi.symbolic_type == :directory)
+    end.each do |fi|
+
+      basename = fi.name
+
+      # Guess best type
+      type     = Userfile.suggested_file_type(basename) || SingleFile
+      type     = FileCollection if fi.symbolic_type == :directory && ! (type < FileCollection)
+
+      # Make the object
+      userfile = type.new(
+        :name             => basename,
+        :user_id          => current_user.id,
+        :group_id         => @nh_dp.group_id,
+        :data_provider_id => @nh_dp.id,
+        :group_writable   => false,
+        :size             => (fi.symbolic_type == :regular ? fi.size : nil), # dir sizes set later
+        :num_files        => (fi.symbolic_type == :regular ? 1       : nil),
+      )
+      if userfile.save
+        added_ids << userfile.id
+        userfile.addlog("Registered on storage '#{@nh_dp.name}'.")
+      end
+
+    end
+
+    # Start size+num_files calculation in background
+    todo = Userfile.where(:id => added_ids, :size => nil)
+    CBRAIN.spawn_with_active_records_if(todo.count > 0, current_user, "Adjust file sizes") do
+      todo.each do |file|
+        file.set_size rescue nil
+      end
+    end
+
+    # TODO: auto-deregister missing files?
+
+    # Report
+    @file_counts = Userfile.where(:id => added_ids).group(:type).count
+    @file_sizes  = Userfile.where(:id => added_ids).group(:type).sum(:size)
+    flash.now[:notice] = "Registered #{view_pluralize(added_ids.size,"new file")}"
+    render :action => :registered_report
+
   end
 
   # This action checks that the remote side of the DataProvider is

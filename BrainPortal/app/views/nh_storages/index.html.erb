@@ -1,6 +1,6 @@
 
 List of your private storage configurations
-<p>
+<hr>
 
 <%= link_to "[Create new configuration]", new_nh_storage_path %>
 
@@ -11,6 +11,7 @@ List of your private storage configurations
     <th>Host</th>
     <th>Port</th>
     <th>Directory</th>
+    <th>Associated project</th>
     <th>SSH specification</th>
   </tr>
 
@@ -21,6 +22,7 @@ List of your private storage configurations
       <td><%= dp.remote_host %></td>
       <td><%= dp.remote_port %></td>
       <td><%= dp.remote_dir %></td>
+      <td><%= link_to dp.group.name, nh_project_path(dp.group) %></td>
       <td><%= "-p #{dp.remote_port}" if dp.remote_port.present?%>
           <%= "#{dp.remote_user}@#{dp.remote_host}:#{dp.remote_dir}" %>
       </td>

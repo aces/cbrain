@@ -613,7 +613,8 @@ class DataProvidersController < ApplicationController
             userfile.send :track_resource_usage_destroy # private method
             result = userfile.delete
           end
-          userfile.destroy_log rescue true
+          userfile.destroy_all_meta_data rescue true
+          userfile.destroy_log           rescue true
 
           (result ? succeeded : (failed["Unspecified error"] ||= [])) << basename
         rescue => e
