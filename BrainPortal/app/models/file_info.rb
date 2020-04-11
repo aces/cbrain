@@ -66,28 +66,28 @@ class FileInfo
   # any type inconsistency.
   def validate_for_registration
 
-    fi.message     = ""
-    fi.state_ok    = true
+    self.message     = ""
+    self.state_ok    = true
 
-    fi_type    = fi.symbolic_type
-    registered = fi.userfile # if already registered
+    fi_type    = self.symbolic_type
+    registered = self.userfile # if already registered
     if registered
       unless ((fi_type == :symlink)                                    ||
               (fi_type == :regular    && registered.is_a?(SingleFile)) ||
               (fi_type == :directory  && registered.is_a?(FileCollection)))
-        fi.message  = "Conflicting types!"
-        fi.state_ok = false
+        self.message  = "Conflicting types!"
+        self.state_ok = false
       end
     end
 
     # Check filename's validity
     if ! Userfile.is_legal_filename?(self.name)
-      fi.message  += ", " if fi.message.present?
-      fi.message  += "Illegal characters in filename."
-      fi.state_ok  = false
+      self.message  += ", " if self.message.present?
+      self.message  += "Illegal characters in filename."
+      self.state_ok  = false
     end
 
-    fi.state_ok
+    self.state_ok
   end
 
   # Given a +userfile+, this will fill the

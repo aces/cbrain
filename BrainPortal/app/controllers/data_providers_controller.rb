@@ -350,11 +350,15 @@ class DataProvidersController < ApplicationController
     respond_to do |format|
       format.html
       format.xml do
-        @fileinfolist.each { |fil| fil.instance_eval {remove_instance_variable :@userfile} }
+        @fileinfolist.each do |fil| # just setting userfile to nil breaks the schema, it must be unset
+          fil.instance_eval { remove_instance_variable :@userfile } rescue nil
+        end
         render :xml  => @fileinfolist
       end
       format.json do
-        @fileinfolist.each { |fil| fil.instance_eval {remove_instance_variable :@userfile} }
+        @fileinfolist.each do |fil| # just setting userfile to nil breaks the schema, it must be unset
+          fil.instance_eval { remove_instance_variable :@userfile } rescue nil
+        end
         render :json  => @fileinfolist
       end
       format.js
