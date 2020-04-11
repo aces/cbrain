@@ -327,9 +327,6 @@ class DataProvidersController < ApplicationController
     # - the userfile if the file is already registered
     # - the state_ok flag that tell whether or not it's OK to register/unregister
     # - a message.
-    if @fileinfolist.size > 0
-       @fileinfolist[0].class.class_eval("attr_accessor :userfile, :userfile_id, :state_ok, :message")
-    end
 
     # NOTE: next paragraph for initializing registered_files is also in register() action
     registered_files = Userfile.where( :data_provider_id => @provider.id )

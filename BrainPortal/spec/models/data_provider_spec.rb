@@ -100,21 +100,6 @@ describe DataProvider do
     end
   end
 
-  describe DataProvider::FileInfo do
-    let(:file_info) {DataProvider::FileInfo.new}
-
-    describe "#depth" do
-      it "should calculate the depth of the userfile" do
-        file_info.name = "/x/y/z"
-        expect(file_info.depth).to eq(3)
-      end
-      it "should raise an exception if no name is given" do
-        file_info.name = ""
-        expect{file_info.depth}.to raise_error(CbrainError, "File doesn't have a name.")
-      end
-    end
-  end
-
   describe "#is_alive?" do
      it "should return false when is_alive? is called on offline provider" do
        provider.online = false
