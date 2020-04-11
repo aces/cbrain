@@ -20,9 +20,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# RESTful controller for the DataProvider resource.
+require 'file_info'
 
-
+# Controller for the DataProvider resource.
 class DataProvidersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -323,50 +323,20 @@ class DataProvidersController < ApplicationController
       return
     end
 
-    # Let's add three more custom attributes:
-    # - the userfile if the file is already registered
-    # - the state_ok flag that tell whether or not it's OK to register/unregister
-    # - a message.
-
-    # NOTE: next paragraph for initializing registered_files is also in register() action
+    # Make a list of files that are already registered on this DP.
     registered_files = Userfile.where( :data_provider_id => @provider.id )
     # On data providers where files are stored in a per user subdir, we limit our
     # search of what's registered to only those belonging to @as_user;
     # otherwise we must report when files are registered by other users too.
     registered_files = registered_files.where( :user_id => @as_user.id ) if ! @provider.content_storage_shared_between_users?
-    registered_files = registered_files.all.index_by(&:name)
 
-    @fileinfolist.each do |fi|
-      fi_name  = fi.name
-      fi_type  = fi.symbolic_type
-
-      # Special local attributes
-      fi.userfile    = nil
-      fi.userfile_id = nil
-      fi.message     = ""
-      fi.state_ok    = true
-
-      # Add additional info if file is already registered
-      registered = registered_files[fi_name]
-      if registered
-        fi.userfile    = registered # the userfile object itself
-        fi.userfile_id = registered.id
-        unless ((fi_type == :symlink)                                    ||
-                (fi_type == :regular    && registered.is_a?(SingleFile)) ||
-                (fi_type == :directory  && registered.is_a?(FileCollection)))
-          fi.message  = "Conflicting types!"
-          fi.state_ok = false
-        end
-        next
-      end
-
-      # Otherwise, if not registered, check filename's validity
-      if ! Userfile.is_legal_filename?(fi_name)
-        fi.message = "Illegal characters in filename."
-        fi.state_ok = false
-      end
-
-    end
+    # Add attributes and cross-reference with previously registered files
+    # - Adds: the userfile and userfile_id if the file is already registered
+    FileInfo.array_match_all_userfiles(@fileinfolist, registered_files)
+    # Check filenames, check for type inconsistencies
+    # - Adds: the state_ok flag that tell whether or not it's OK to register/unregister
+    # - Adds: an error message if something is wrong
+    FileInfo.array_validate_for_registration(@fileinfolist)
 
     # Now that @fileinfolist is complete, apply @scope's elements and paginate
     # before display.

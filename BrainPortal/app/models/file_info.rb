@@ -56,6 +56,87 @@ class FileInfo
     @depth
   end
 
+  # Verify that the information we have about this file
+  # seems to make it acceptable for registration. Sets
+  # the state_ok to true or false depending on result.
+  # Also sets an error message in the +message+ attribute
+  # if the result is false. This method will also compare
+  # the information in the FileInfo with the information
+  # in the userfile attribute, if any, and highlight
+  # any type inconsistency.
+  def validate_for_registration
+
+    fi.message     = ""
+    fi.state_ok    = true
+
+    fi_type    = fi.symbolic_type
+    registered = fi.userfile # if already registered
+    if registered
+      unless ((fi_type == :symlink)                                    ||
+              (fi_type == :regular    && registered.is_a?(SingleFile)) ||
+              (fi_type == :directory  && registered.is_a?(FileCollection)))
+        fi.message  = "Conflicting types!"
+        fi.state_ok = false
+      end
+    end
+
+    # Check filename's validity
+    if ! Userfile.is_legal_filename?(self.name)
+      fi.message  += ", " if fi.message.present?
+      fi.message  += "Illegal characters in filename."
+      fi.state_ok  = false
+    end
+
+    fi.state_ok
+  end
+
+  # Given a +userfile+, this will fill the
+  # two FileInfo attribute +userfile+ and +userfile_id+
+  # with that userfile. A check is made to make sure
+  # that the name in the FileInfo matches exactly
+  # the name in the userfile.
+  def match_info_from_userfile(userfile)
+    cb_error "Mismatch in names: FileInfo: '#{self.name}' vs Userfile: '#{userfile.name}'" unless
+      self.name == userfile.name
+    self.userfile    = userfile
+    self.userfile_id = userfile.id
+    self
+  end
+
+  # Utility method. Given a set of +file_infos+ and a set of
+  # +userfiles+, this will set the two attributes +userfile+
+  # and +userfile_id+ in each file_info to associate it
+  # to a specific userfile. The match is made only when
+  # there is an exact same name on each side.
+  #
+  # This method is usually invoked when building a set
+  # of FileInfo objects describing basenames on a remote
+  # DataProvider, and we want to know which ones are registered
+  # already in the DB or not. So the set of +userfiles+ passed
+  # in argument should be carefully considered before making
+  # the match, to represent only files that are know to have
+  # been on the remote side previously.
+  def self.array_match_all_userfiles(file_infos, userfiles)
+    userfiles_by_names = userfiles.to_a.index_by(&:name)
+    file_infos.each do |fi|
+      next if fi.userfile_id # already done? skip it
+      userfile = userfiles_by_names[fi.name]
+      next unless userfile
+      fi.match_info_from_userfile(userfile)
+    end
+    file_infos
+  end
+
+  # Utility method; runs validate_for_registration on all
+  # FileInfos.
+  def self.array_validate_for_registration(file_infos)
+    file_infos.each(&:validate_for_registration)
+  end
+
+  ########################################
+  # Serializers
+  ########################################
+
   def to_xml(options = {}) #:nodoc:
     require 'builder' unless defined?(Builder)
 
@@ -77,6 +158,8 @@ class FileInfo
     end
   end
 
+  # This serializer only seems to work when invoked
+  # from Rails's controllers when in "render :json"...
   def to_json #:nodoc:
     self.instance_variables.each do |key_sym|
         key = key_sym.to_s.sub "@", ""   # changes '@name' or :@name to 'name'

@@ -25,6 +25,7 @@ require 'fileutils'
 require 'pathname'
 require 'socket'
 require 'digest/md5'
+require 'file_info'
 
 #
 # = Data Provider interface
