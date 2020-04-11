@@ -311,7 +311,7 @@ class DataProvidersController < ApplicationController
 
     begin
       # [ base, size, type, mtime ]
-      @fileinfolist = get_recent_provider_list_all(@provider, @as_user, params[:refresh])
+      @fileinfolist = BrowseProviderFileCaching.get_recent_provider_list_all(@provider, @as_user, params[:refresh])
     rescue => e
       flash[:error] = 'Cannot get list of files. Maybe the remote directory doesn\'t exist or is locked?' #emacs fails to parse this properly so I switched to single quotes.
       Message.send_internal_error_message(User.find_by_login('admin'), "Browse DP exception", e, params) rescue nil
@@ -488,7 +488,7 @@ class DataProvidersController < ApplicationController
       end
 
       # If files actually got registered, clear the browsing cache
-      clear_browse_provider_local_cache_file(@as_user, @provider) if
+      BrowseProviderFileCaching.clear_cache(@as_user, @provider) if
         succeeded.present? && [:html, :js].include?(request.format.to_sym)
 
       # No need to move or copy? Just set the file sizes and exit.
@@ -624,7 +624,7 @@ class DataProvidersController < ApplicationController
       end
 
       # If files actually got erased, clear the browsing cache
-      clear_browse_provider_local_cache_file(@as_user, @provider) if
+      BrowseProviderFileCaching.clear_cache(@as_user, @provider) if
         erasing && succeeded.present? && [:html, :js].include?(request.format.to_sym)
 
       generic_notice_messages('unregister', succeeded, failed)
@@ -708,7 +708,7 @@ class DataProvidersController < ApplicationController
       end
 
       # If files actually got erased, clear the browsing cache
-      clear_browse_provider_local_cache_file(@as_user, @provider) if
+      BrowseProviderFileCaching.clear_cache(@as_user, @provider) if
         succeeded.present? && [:html, :js].include?(request.format.to_sym)
 
       generic_notice_messages('delet', succeeded, failed)
@@ -916,49 +916,6 @@ class DataProvidersController < ApplicationController
       :num_unregistered                => 0,
       :num_erased                      => 0,
     }
-  end
-
-  # Note: the following methods should all be part of one of the subclasses of DataProvider, probably.
-
-  def browse_provider_local_cache_file(user, provider) #:nodoc:
-    cache_file = "/tmp/dp_cache_list_all_#{user.id}.#{provider.id}"
-    cache_file
-  end
-
-  def get_recent_provider_list_all(provider, as_user = current_user, refresh = false) #:nodoc:
-
-    refresh = false if refresh.blank? || refresh.to_s == 'false'
-
-    # Check to see if we can simply reload the cached copy
-    cache_file = browse_provider_local_cache_file(as_user, provider)
-    if ! refresh && File.exist?(cache_file) && File.mtime(cache_file) > 60.seconds.ago
-       filelisttext = File.read(cache_file)
-       fileinfolist = YAML.load(filelisttext)
-       return fileinfolist
-    end
-
-    # Get info from provider
-    fileinfolist = provider.provider_list_all(as_user)
-
-    # Write a new cached copy
-    save_browse_provider_local_cache_file(as_user, provider, fileinfolist)
-
-    # Return it
-    fileinfolist
-  end
-
-  def save_browse_provider_local_cache_file(user, provider, fileinfolist) #:nodoc:
-    cache_file = browse_provider_local_cache_file(user, provider)
-    tmpcachefile = cache_file + ".#{Process.pid}.tmp";
-    File.open(tmpcachefile,"w") do |fh|
-       fh.write(YAML.dump(fileinfolist))
-    end
-    File.rename(tmpcachefile,cache_file) rescue true  # crush it
-  end
-
-  def clear_browse_provider_local_cache_file(user, provider) #:nodoc:
-    cache_file = browse_provider_local_cache_file(user, provider)
-    File.unlink(cache_file) rescue true
   end
 
 end

@@ -269,11 +269,11 @@ RSpec.describe DataProvidersController, :type => :controller do
           end
         end
         it "should retrieve the list of files" do
-          expect(controller).to receive(:get_recent_provider_list_all).and_return(file_info_list)
+          expect(BrowseProviderFileCaching).to receive(:get_recent_provider_list_all).and_return(file_info_list)
           get :browse, params: {id: 1}
         end
         it "should iterate over the file list" do
-          allow(controller).to    receive(:get_recent_provider_list_all).and_return(file_info_list)
+          allow(BrowseProviderFileCaching).to  receive(:get_recent_provider_list_all).and_return(file_info_list)
           expect(file_info_list).to receive(:each).at_least(2)
           get :browse, params: {id: 1}
         end
