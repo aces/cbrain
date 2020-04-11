@@ -269,16 +269,20 @@ RSpec.describe DataProvidersController, :type => :controller do
           end
         end
         it "should retrieve the list of files" do
-          expect(controller).to receive(:get_recent_provider_list_all).and_return(file_info_list)
+          expect(BrowseProviderFileCaching).to receive(:get_recent_provider_list_all).and_return(file_info_list)
           get :browse, params: {id: 1}
         end
         it "should iterate over the file list" do
-          allow(controller).to    receive(:get_recent_provider_list_all).and_return(file_info_list)
-          expect(file_info_list).to receive(:each)
+          allow(BrowseProviderFileCaching).to  receive(:get_recent_provider_list_all).and_return(file_info_list)
+          expect(file_info_list).to receive(:each).at_least(2)
+          get :browse, params: {id: 1}
+        end
+        it "should match remote files to registered files" do
+          expect(FileInfo).to receive(:array_match_all_userfiles)
           get :browse, params: {id: 1}
         end
         it "should check that the filenames are legal" do
-          expect(Userfile).to receive(:is_legal_filename?).at_least(:once)
+          expect(FileInfo).to receive(:array_validate_for_registration)
           get :browse, params: {id: 1}
         end
         it "should retrieve the list of file with name_like 'hi'" do

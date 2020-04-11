@@ -20,9 +20,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# RESTful controller for the DataProvider resource.
+require 'file_info'
 
-
+# Controller for the DataProvider resource.
 class DataProvidersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -311,7 +311,7 @@ class DataProvidersController < ApplicationController
 
     begin
       # [ base, size, type, mtime ]
-      @fileinfolist = get_recent_provider_list_all(@provider, @as_user, params[:refresh])
+      @fileinfolist = BrowseProviderFileCaching.get_recent_provider_list_all(@provider, @as_user, params[:refresh])
     rescue => e
       flash[:error] = 'Cannot get list of files. Maybe the remote directory doesn\'t exist or is locked?' #emacs fails to parse this properly so I switched to single quotes.
       Message.send_internal_error_message(User.find_by_login('admin'), "Browse DP exception", e, params) rescue nil
@@ -323,53 +323,20 @@ class DataProvidersController < ApplicationController
       return
     end
 
-    # Let's add three more custom attributes:
-    # - the userfile if the file is already registered
-    # - the state_ok flag that tell whether or not it's OK to register/unregister
-    # - a message.
-    if @fileinfolist.size > 0
-       @fileinfolist[0].class.class_eval("attr_accessor :userfile, :userfile_id, :state_ok, :message")
-    end
-
-    # NOTE: next paragraph for initializing registered_files is also in register() action
+    # Make a list of files that are already registered on this DP.
     registered_files = Userfile.where( :data_provider_id => @provider.id )
     # On data providers where files are stored in a per user subdir, we limit our
     # search of what's registered to only those belonging to @as_user;
     # otherwise we must report when files are registered by other users too.
     registered_files = registered_files.where( :user_id => @as_user.id ) if ! @provider.content_storage_shared_between_users?
-    registered_files = registered_files.all.index_by(&:name)
 
-    @fileinfolist.each do |fi|
-      fi_name  = fi.name
-      fi_type  = fi.symbolic_type
-
-      # Special local attributes
-      fi.userfile    = nil
-      fi.userfile_id = nil
-      fi.message     = ""
-      fi.state_ok    = true
-
-      # Add additional info if file is already registered
-      registered = registered_files[fi_name]
-      if registered
-        fi.userfile    = registered # the userfile object itself
-        fi.userfile_id = registered.id
-        unless ((fi_type == :symlink)                                    ||
-                (fi_type == :regular    && registered.is_a?(SingleFile)) ||
-                (fi_type == :directory  && registered.is_a?(FileCollection)))
-          fi.message  = "Conflicting types!"
-          fi.state_ok = false
-        end
-        next
-      end
-
-      # Otherwise, if not registered, check filename's validity
-      if ! Userfile.is_legal_filename?(fi_name)
-        fi.message = "Illegal characters in filename."
-        fi.state_ok = false
-      end
-
-    end
+    # Add attributes and cross-reference with previously registered files
+    # - Adds: the userfile and userfile_id if the file is already registered
+    FileInfo.array_match_all_userfiles(@fileinfolist, registered_files)
+    # Check filenames, check for type inconsistencies
+    # - Adds: the state_ok flag that tell whether or not it's OK to register/unregister
+    # - Adds: an error message if something is wrong
+    FileInfo.array_validate_for_registration(@fileinfolist)
 
     # Now that @fileinfolist is complete, apply @scope's elements and paginate
     # before display.
@@ -383,11 +350,15 @@ class DataProvidersController < ApplicationController
     respond_to do |format|
       format.html
       format.xml do
-        @fileinfolist.each { |fil| fil.instance_eval {remove_instance_variable :@userfile} }
+        @fileinfolist.each do |fil| # just setting userfile to nil breaks the schema, it must be unset
+          fil.instance_eval { remove_instance_variable :@userfile } rescue nil
+        end
         render :xml  => @fileinfolist
       end
       format.json do
-        @fileinfolist.each { |fil| fil.instance_eval {remove_instance_variable :@userfile} }
+        @fileinfolist.each do |fil| # just setting userfile to nil breaks the schema, it must be unset
+          fil.instance_eval { remove_instance_variable :@userfile } rescue nil
+        end
         render :json  => @fileinfolist
       end
       format.js
@@ -515,7 +486,7 @@ class DataProvidersController < ApplicationController
       end
 
       # If files actually got registered, clear the browsing cache
-      clear_browse_provider_local_cache_file(@as_user, @provider) if
+      BrowseProviderFileCaching.clear_cache(@as_user, @provider) if
         succeeded.present? && [:html, :js].include?(request.format.to_sym)
 
       # No need to move or copy? Just set the file sizes and exit.
@@ -651,7 +622,7 @@ class DataProvidersController < ApplicationController
       end
 
       # If files actually got erased, clear the browsing cache
-      clear_browse_provider_local_cache_file(@as_user, @provider) if
+      BrowseProviderFileCaching.clear_cache(@as_user, @provider) if
         erasing && succeeded.present? && [:html, :js].include?(request.format.to_sym)
 
       generic_notice_messages('unregister', succeeded, failed)
@@ -735,7 +706,7 @@ class DataProvidersController < ApplicationController
       end
 
       # If files actually got erased, clear the browsing cache
-      clear_browse_provider_local_cache_file(@as_user, @provider) if
+      BrowseProviderFileCaching.clear_cache(@as_user, @provider) if
         succeeded.present? && [:html, :js].include?(request.format.to_sym)
 
       generic_notice_messages('delet', succeeded, failed)
@@ -943,49 +914,6 @@ class DataProvidersController < ApplicationController
       :num_unregistered                => 0,
       :num_erased                      => 0,
     }
-  end
-
-  # Note: the following methods should all be part of one of the subclasses of DataProvider, probably.
-
-  def browse_provider_local_cache_file(user, provider) #:nodoc:
-    cache_file = "/tmp/dp_cache_list_all_#{user.id}.#{provider.id}"
-    cache_file
-  end
-
-  def get_recent_provider_list_all(provider, as_user = current_user, refresh = false) #:nodoc:
-
-    refresh = false if refresh.blank? || refresh.to_s == 'false'
-
-    # Check to see if we can simply reload the cached copy
-    cache_file = browse_provider_local_cache_file(as_user, provider)
-    if ! refresh && File.exist?(cache_file) && File.mtime(cache_file) > 60.seconds.ago
-       filelisttext = File.read(cache_file)
-       fileinfolist = YAML.load(filelisttext)
-       return fileinfolist
-    end
-
-    # Get info from provider
-    fileinfolist = provider.provider_list_all(as_user)
-
-    # Write a new cached copy
-    save_browse_provider_local_cache_file(as_user, provider, fileinfolist)
-
-    # Return it
-    fileinfolist
-  end
-
-  def save_browse_provider_local_cache_file(user, provider, fileinfolist) #:nodoc:
-    cache_file = browse_provider_local_cache_file(user, provider)
-    tmpcachefile = cache_file + ".#{Process.pid}.tmp";
-    File.open(tmpcachefile,"w") do |fh|
-       fh.write(YAML.dump(fileinfolist))
-    end
-    File.rename(tmpcachefile,cache_file) rescue true  # crush it
-  end
-
-  def clear_browse_provider_local_cache_file(user, provider) #:nodoc:
-    cache_file = browse_provider_local_cache_file(user, provider)
-    File.unlink(cache_file) rescue true
   end
 
 end
