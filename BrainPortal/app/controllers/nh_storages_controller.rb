@@ -38,7 +38,7 @@ class NhStoragesController < NeurohubApplicationController
   end
 
   def show
-    @nh_dp       = UserkeyFlatDirSshDataProvider.where(:user_id => current_user.id).find(params[:id])
+    @nh_dp       = find_nh_storage(current_user, params[:id])
     @file_counts = @nh_dp.userfiles.group(:type).count
     @file_sizes  = @nh_dp.userfiles.group(:type).sum(:size)
   end
@@ -78,16 +78,16 @@ class NhStoragesController < NeurohubApplicationController
   end
 
   def index  #:nodoc:
-    @nh_dps = UserkeyFlatDirSshDataProvider.where(:user_id => current_user.id)
+    @nh_dps = find_all_nh_storages(current_user)
   end
 
   def edit #:nodoc:
-    @nh_dp       = UserkeyFlatDirSshDataProvider.where(:user_id => current_user.id).find(params[:id])
+    @nh_dp       = find_nh_storage(current_user, params[:id])
     @nh_projects = find_nh_projects(current_user)
   end
 
   def update #:nodoc:
-    @nh_dp = UserkeyFlatDirSshDataProvider.where(:user_id => current_user.id).find(params[:id])
+    @nh_dp = find_nh_storage(current_user, params[:id])
     attributes = params.require_as_params(:nh_dp)
                        .permit(:name       , :description, :group_id,
                                :remote_user, :remote_host,
@@ -112,7 +112,7 @@ class NhStoragesController < NeurohubApplicationController
   end
 
   def destroy
-    @nh_dp = UserkeyFlatDirSshDataProvider.where(:user_id => current_user.id).find(params[:id])
+    @nh_dp = find_nh_storage(current_user, params[:id])
     @nh_dp.userfiles.to_a.each do |f|
       f.send :track_resource_usage_destroy # private method
       f.delete # remove from DB; does not remove content on provider side; no callbacks...
@@ -130,7 +130,7 @@ class NhStoragesController < NeurohubApplicationController
   end
 
   def autoregister
-    @nh_dp = UserkeyFlatDirSshDataProvider.where(:user_id => current_user.id).find(params[:id])
+    @nh_dp = find_nh_storage(current_user, params[:id])
 
     # Contact remote site and get list of files there
     fileinfos = BrowseProviderFileCaching.get_recent_provider_list_all(@nh_dp, current_user)
@@ -195,7 +195,7 @@ class NhStoragesController < NeurohubApplicationController
   # This action checks that the remote side of the DataProvider is
   # accessible using SSH.
   def check
-    @nh_dp = UserkeyFlatDirSshDataProvider.where(:user_id => current_user.id).find(params[:id])
+    @nh_dp = find_nh_storage(current_user, params[:id])
 
     @nh_dp.update_column(:online, true)
 

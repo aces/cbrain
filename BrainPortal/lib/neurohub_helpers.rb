@@ -52,4 +52,16 @@ module NeurohubHelpers
         .where(:invisible => false)
   end
 
+  # For +user+, return the private storage (DataProvider) named
+  # by +id_or_dp+ which can be an ID or a DataProvider itself.
+  def find_nh_storage(user, id_or_dp)
+    id = id_or_dp.is_a?(DataProvider) ? id_or_dp.id : id_or_dp
+    find_all_nh_storages(user).find(id)
+  end
+
+  # Returns all private storages (DataProviders) of +user+
+  def find_all_nh_storages(user)
+    UserkeyFlatDirSshDataProvider.where(:user_id => user.id)
+  end
+
 end

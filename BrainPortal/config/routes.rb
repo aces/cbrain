@@ -291,6 +291,8 @@ Rails.application.routes.draw do
         post :add_license
         get  :show_license
         post :sign_license
+        get  :new_file
+        post :upload_file
       end
     end
 

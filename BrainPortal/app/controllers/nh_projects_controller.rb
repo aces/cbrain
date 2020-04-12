@@ -107,7 +107,7 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def add_license #:nodoc:
-    @nh_project = find_nh_project(current_user, params[:id], false)
+    @nh_project = find_nh_project(current_user, params[:id], false) # false means no license check
     if @nh_project.creator_id != current_user.id
       cb_error "Only owner can set licensing", :redirect  => { :action => :show }
     end
@@ -125,7 +125,7 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def show_license #:nodoc:
-    @nh_project       = find_nh_project(current_user, params[:id], false)
+    @nh_project       = find_nh_project(current_user, params[:id], false) # false means no license check
     @current_licenses = @nh_project.custom_license_agreements
     unsigned_licenses = current_user.unsigned_custom_licenses(@nh_project)
 
@@ -157,7 +157,7 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def sign_license #:nodoc:
-    @nh_project = find_nh_project(current_user, params[:id], false)
+    @nh_project = find_nh_project(current_user, params[:id], false) # false means no license check
     @license_id = params[:license_id].to_i
 
     unless @nh_project.custom_license_agreements.include?(@license_id)
@@ -199,6 +199,71 @@ class NhProjectsController < NeurohubApplicationController
       #redirect_to :action => show_license_nh_project_path(@nh_project)
     end
   end
+
+  # GET /nh_projects/:id/new_file
+  def new_file
+    @nh_project  = find_nh_project(current_user, params[:id])
+    @nh_projects = find_nh_projects(current_user)
+    @nh_dps      = find_all_nh_storages(current_user).where(:group_id => @nh_project.id)
+    if @nh_dps.count == 0
+      flash[:notice] = 'You need to configure at least one storage for this project before you can upload files.'
+      redirect_to :action => :show
+    end
+  end
+
+  # POST /nh_projects/:id/upload_file
+  def upload_file
+    nh_project = find_nh_project(current_user, params[:id])
+
+    # Get stream info
+    upload_stream = params[:upload_file]
+    cb_error "No file selected for uploading" if upload_stream.blank?
+
+    # Get the data provider for the destination files.
+    nh_storage = find_nh_storage(current_user, params[:nh_dp_id]) rescue nil
+    cb_error "No storage selected for uploading" if nh_storage.blank?
+
+    # Get basic attributes
+    basename  = File.basename(upload_stream.original_filename)
+    file_type = Userfile.suggested_file_type(basename) || SingleFile
+    file_type = SingleFile unless file_type < Userfile
+    new_group = if params[:file_nh_project_id].blank?
+                  nh_storage.group
+                else
+                  find_nh_project(current_user, params[:file_nh_project_id])
+                end
+
+    # Temp file where the data is saved by rack
+    rack_tempfile_path = upload_stream.tempfile.path
+    rack_tempfile_size = upload_stream.tempfile.size
+
+    # Create the file
+    userfile = file_type.new(
+      :name             => basename,
+      :user_id          => current_user.id,
+      :group_id         => new_group.id,
+      :data_provider_id => nh_storage.id,
+      :group_writable   => false,
+      :size             => rack_tempfile_size,
+      :num_files        => 1,
+    )
+    if ! userfile.save
+      flash[:error] = "Could not save file in DB: " + userfile.errors.to_a.join(", ")
+      redirect_to :action => :new_file
+      return
+    end
+
+    # Upload content
+    userfile.cache_copy_from_local_file(rack_tempfile_path)
+    userfile.addlog("Uploaded by #{current_user.login} on storage '#{nh_storage.name}' and in project '#{new_group.name}'")
+
+    # Tell user all's well that ends well or something
+    flash[:notice] = 'File content being uploaded' # actually it's supposed to be all there by now
+    redirect_to files_nh_project_path(new_group)
+
+  end
+
+  private
 
   def redirect_show_license
     if params[:id]
