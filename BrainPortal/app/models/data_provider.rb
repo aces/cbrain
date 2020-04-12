@@ -215,9 +215,9 @@ class DataProvider < ApplicationRecord
   cbrain_abstract_model! # objects of this class are not to be instantiated
 
   validates               :name,
-                          :uniqueness => true,
-                          :presence => true,
-                          :name_format => true
+                          :uniqueness        => true,
+                          :presence          => true,
+                          :identifier_format => true
 
   validates               :type,
                           subclass: { allow_blank: true },

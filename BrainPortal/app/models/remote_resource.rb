@@ -64,9 +64,9 @@ class RemoteResource < ApplicationRecord
   serialize             :dp_ignore_patterns
 
   validates             :name,
-                        :uniqueness => true,
-                        :presence => true,
-                        :name_format => true
+                        :uniqueness        => true,
+                        :presence          => true,
+                        :identifier_format => true
 
   validates_presence_of :user_id, :group_id
 
