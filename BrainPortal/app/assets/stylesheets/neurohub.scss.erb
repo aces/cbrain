@@ -270,6 +270,35 @@ $size    : xs, ssm, md, lg
   background-size: contain;
 }
 
+@mixin icon($size: "xxs", $stroke: "none", $fill: "none") {
+  @if $stroke != "none" {
+    stroke: $stroke;
+  }
+  @if $fill != "none" {
+    fill: $fill;
+  }
+  @if $size == "xxs" {
+    width: 1rem;
+    height: 1rem;
+  }
+  @if $size == "xs" {
+    width: 2rem;
+    height: 2rem;
+  }
+  @if $size == "sm" {
+    width: 3rem;
+    height: 3rem;
+  }
+  @if $size == "md" {
+    width: 4rem;
+    height: 4rem;
+  }
+  @if $size == "lg" {
+    width: 5rem;
+    height: 5rem;
+  }
+}
+
 @mixin logo($variant: "wordmark", $color: "RGB", $size: "md") {
   @include logoImg($variant, $color);
   @if $variant != "icon" {
@@ -290,6 +319,10 @@ $size    : xs, ssm, md, lg
       height: 4rem;
     }
   } @else {
+    @if $size == "xxs" {
+      width: 1rem;
+      height: 1rem;
+    }
     @if $size == "xs" {
       width: 2rem;
       height: 2rem;
@@ -1127,8 +1160,8 @@ Cards used for simple "show"-type views
         display: flex;
         flex: 1;
         width: 100%;
-        img {
-          width: 2rem;
+        .card-icon {
+          @include icon("xs", $DEFAULT_TEXT);
           align-self: center;
         }
         .card-details {
@@ -1445,71 +1478,31 @@ $TOOLBAR_ZINDEX: 1000;
 */
 
 #nh_footer {
-  @include p(4);
   background: $DEFAULT_DK;
   width: 100%;
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
   &[data-controller="nh_sessions"][data-action="new"] {
     position: absolute;
     bottom: 0;
     background: transparent;
   }
-  .nh_footer_buttons {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    width: 100%;
-    .nh_footer_button {
-      @include text("xs");
-      @include mx(2);
-      @include pb(2);
-      display: flex;
-      align-items: center;
-      flex: 0 0 30%;
-      letter-spacing: 0.089em;
-      color: $DEFAULT_BG;
-      text-transform: uppercase;
-
-      a {
-        width: 100%;
-      }
-      a[data-active="true"],
-      &:hover {
-        opacity: 0.75;
-      }
-    }
-  }
   .powered-by-cbrain {
     @include text("xs");
-    @include px(2);
-    @include py(2);
+    @include p(2);
     display: flex;
-    align-items: flex-end;
-    justify-content: flex-end;
+    align-items: center;
+    opacity: 0.75;
     color: $DEFAULT_BG;
-    opacity: 0.8;
-    img {
-      width: 1rem;
+    transition: $TRANSITION_HOVER_OFF;
+    svg {
+      @include mr(2);
+      @include icon("xxs", $DEFAULT_BG, $DEFAULT_BG);
     }
-  }
-
-  @media (min-width: $BREAKPOINT_SM) {
-    @include px(7);
-    &[data-controller="nh_sessions"][data-action="new"] {
-      justify-content: flex-end;
-    }
-    .nh_footer_buttons {
-      width: unset;
-      flex: 1;
-      .nh_footer_button {
-        min-width: 150px;
-      }
-    }
-    .powered-by-cbrain {
-      @include py(0);
-      flex: 1;
+    &:hover {
+      transition: $TRANSITION_HOVER_ON;
+      opacity: 1;
     }
   }
 }
@@ -1635,9 +1628,11 @@ $ACTION_BAR_HEIGHT: 2.5;
   &.btn-text-secondary {
     border-right: 1px solid $SECONDARY_WASH;
   }
-  img {
+  .icon {
     @include mr(2);
-    width: 1rem;
+    @include icon("xxs", null, $DEFAULT_BG);
+    display: inline-block;
+    vertical-align: middle;
   }
 }
 
@@ -1864,6 +1859,12 @@ $MAX_CARD_LIST_HEIGHT: 15;
           opacity: 0.5;
           transition: $TRANSITION_HOVER_OFF;
           background: transparent;
+          svg {
+            width: 1rem;
+            height: 1rem;
+            fill: $SECONDARY_ALT;
+            stroke: $SECONDARY_ALT;
+          }
 
           .table_action_icon {
             width: 1rem;
@@ -2175,6 +2176,16 @@ $DASH_CARD_MIN_WIDTH: 25;
             @include py(2);
             justify-content: flex-start;
 
+            .card-icon {
+              svg {
+                @include mr(2);
+                width: 1rem;
+                stroke: $SECONDARY_TEXT;
+                fill: $SECONDARY_TEXT;
+                vertical-align: sub;
+              }
+            }
+
             &.title {
               background: $DEFAULT_WASH;
             }
@@ -2189,19 +2200,13 @@ $DASH_CARD_MIN_WIDTH: 25;
                 text-decoration: underline;
                 cursor: pointer;
               }
-              svg {
-                width: 1.5rem;
-                height: 1.5rem;
-                fill: $SECONDARY_TEXT;
-                stroke: $SECONDARY_TEXT;
-                vertical-align: sub;
-              }
               &:hover {
-                svg {
-                  fill: $SECONDARY_BG;
-                  stroke: $SECONDARY_BG;
-
-                  transition: $TRANSITION_HOVER_ON;
+                .card-icon {
+                  svg {
+                    fill: $SECONDARY_BG;
+                    stroke: $SECONDARY_BG;
+                    transition: $TRANSITION_HOVER_ON;
+                  }
                 }
               }
             }

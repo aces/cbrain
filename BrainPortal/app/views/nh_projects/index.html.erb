@@ -22,41 +22,27 @@
   #
 -%>
 
-
-
 <% title "Projects" %>
 
-
-<% edit_icon = '<svg version="1.1" class="icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;" xml:space="preserve">
-  <g>
-    <polygon points="0,303.947 0,383.947 80,383.947 316.053,147.893 236.053,67.893 			"/>
-    <path d="M377.707,56.053L327.893,6.24c-8.32-8.32-21.867-8.32-30.187,0l-39.04,39.04l80,80l39.04-39.04
-      C386.027,77.92,386.027,64.373,377.707,56.053z"/>
-  </g>
-</svg>'.html_safe
+<% grid_icon = ("
+  <div class='btn-solid-secondary nh_action'>
+    <div class='icon'>#{nh_icon_grid}</div>
+    <p>Grid View</p>
+  </div>").html_safe
 %>
 
 
-<% grid_icon = '
-  <div class="btn-solid-secondary nh_action">
-    <img src="/images/neurohub/NH_icon_grid.svg"/>
-    <p>Grid View </p>
-  </div>
-'.html_safe %>
-
-<% list_icon = '
-  <div class="btn-solid-secondary nh_action">
-    <img src="/images/neurohub/NH_icon_list.svg"/>
-    <p>List View </p>
-  </div>
-'.html_safe %>
+<% list_icon = ("
+  <div class='btn-solid-secondary nh_action'>
+    <div class='icon'>#{nh_icon_list}</div>
+    <p>List View</p>
+  </div>").html_safe
+%>
 
 
 <% button_view = @scope.custom[:button] %>
 
 <div id="nh_projects" class="nh_content">
-
   <% if @nh_projects.exists? %>
     <div class="nh_actions">
       <div class="nh_action"><%=
@@ -83,7 +69,7 @@ viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;"
             <p class="card-text text-ellipsis"><%= project.description.presence || "-" %></p>
             <div class="btn-section card-actions">
               <% if project.can_be_edited_by?(current_user) %>
-                <%= link_to(edit_icon,{:action => :edit, :id => project.id}, :method  => :get)  %>
+                <%= link_to nh_icon_edit, {:action => :edit, :id => project.id}, :method  => :get %>
               <% end %>
             </div>
           </div>

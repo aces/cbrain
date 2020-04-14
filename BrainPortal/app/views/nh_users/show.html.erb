@@ -38,7 +38,7 @@
     <div class="card-row header" data-max-size="true">
       <div class="card-item">
         <div class="card-stat">
-          <img class="card-icon" src="/images/neurohub/NH_icon_filesize.svg"/>
+          <div class="card-icon"><%= nh_stats_filesize %></div>
           <div class="card-details text-ellipsis">
             <p><%= colored_pretty_size @user.userfiles.sum(:size) %></p>
             <p class="label text-ellipsis">Files Size</p>
@@ -47,7 +47,7 @@
       </div>
       <div class="card-item">
         <div class="card-stat">
-          <img class="card-icon" src="/images/neurohub/NH_icon_files.svg"/>
+          <div class="card-icon"><%= nh_stats_files %></div>
           <div class="card-details text-ellipsis">
             <p><%= @user.userfiles.count %></p>
             <p class="label text-ellipsis">Files</p>
@@ -55,7 +55,7 @@
         </div>
       </div>
     </div>
-    
+
     <div class="card-row">
       <div class="card-item">
         <div>
