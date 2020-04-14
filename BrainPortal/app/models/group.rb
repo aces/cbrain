@@ -145,7 +145,7 @@ class Group < ApplicationRecord
   ##################################
 
   def self.public_groups #:nodoc:
-    Group.where(:public => true)
+    self.where(:public => true)
   end
 
   def self.public_group_ids #:nodoc:

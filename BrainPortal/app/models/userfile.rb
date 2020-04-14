@@ -300,6 +300,7 @@ class Userfile < ApplicationRecord
   # Returns a scope representing the set of files accessible to the
   # given user.
   def self.accessible_for_user(user, options)
+    options = options.dup
     access_options = {}
     access_options[:access_requested] = options.delete :access_requested
 
@@ -341,34 +342,35 @@ class Userfile < ApplicationRecord
   def self.restrict_access_on_query(user, scope, options = {})
     return scope if user.has_role? :admin_user
 
-    access_requested    = options[:access_requested] || :write
+    access_requested = options[:access_requested] || :write
 
-    data_provider_ids   = DataProvider.find_all_accessible_by_user(user).raw_first_column("#{DataProvider.table_name}.id")
-
-    scope        = scope.joins(:group)
-
-    query_user_string   = "userfiles.user_id = ?"
-
-    query_group_string  = "(groups.public = true OR userfiles.group_id IN (?)) AND userfiles.data_provider_id IN (?)"
-
-    if access_requested.to_sym != :read
-      query_group_string += " AND userfiles.group_writable = 1"
-    end
-
-    query_string = "(#{query_user_string}) OR (#{query_group_string})"
-    query_array  = [user.id, user.group_ids, data_provider_ids]
-
+    # Filter by owner
+    user_ids = [ user.id ]
     if user.has_role? :site_manager
-      scope = scope.joins(:user).readonly(false)
-      query_string += "OR (users.site_id = ?)"
-      query_array  << user.site_id
+      user_ids = User.where(:site_id => user.site_id).pluck(:id)
     end
 
-    scope = scope.where( [query_string] + query_array)
+    # Filter by group
+    group_ids  = user.group_ids
+    group_ids |= Group.public_group_ids if access_requested != :write
+
+    # Filter by DP
+    data_provider_ids = DataProvider.find_all_accessible_by_user(user).pluck('data_providers.id')
+
+    # The final complex relation
+    scope = scope
+      .where('userfiles.user_id' => user_ids) # if owner, or site manager, you CAN, period.
+      .or(
+        Userfile.where( # the files are in the user's groups and their DPs too
+             'userfiles.group_id'         => group_ids,
+             'userfiles.data_provider_id' => data_provider_ids,
+        ).where( # and if we want to write, it's allowed by the file's attributes
+           (access_requested != :write) ? {} : { 'userfiles.group_writable' => true }
+        )
+      )
 
     scope
   end
-
 
 
 
@@ -405,24 +407,6 @@ class Userfile < ApplicationRecord
       result += child.descendants(seen)
     end
     result
-  end
-
-
-
-  ##############################################
-  # Sequential traversal methods.
-  ##############################################
-
-  # Find the next file available to the given user.
-  def next_available_file(user, options = {}, order = :id)
-    raise "Cannot order userfiles using attribute '#{order}'" unless self.has_attribute? order
-    Userfile.accessible_for_user(user, options).order(order).where( ["userfiles.#{order} > ?", self.send(order)] ).first
-  end
-
-  # Find the previous file available to the given user.
-  def previous_available_file(user, options = {}, order = :id)
-    raise "Cannot order userfiles using attribute '#{order}'" unless self.has_attribute? order
-    Userfile.accessible_for_user(user, options).order(order).where( ["userfiles.#{order} < ?", self.send(order)] ).last
   end
 
 
