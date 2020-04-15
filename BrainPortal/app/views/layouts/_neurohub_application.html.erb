@@ -31,12 +31,12 @@
         id_csrf_meta_tag.sub!('name="csrf-token"', 'name="csrf-token" id="csrf-token"')
         id_csrf_meta_tag.sub!('name="csrf-param"', 'name="csrf-param" id="csrf-param"')
     %>
-   
+
     <%= id_csrf_meta_tag.html_safe %>
 
     <%= stylesheet_link_tag  "neurohub", :media => "all" %>
 
-    <% 
+    <%
         # BUG: https://stackoverflow.com/questions/25404206/chrome-transition-fires-on-page-load-when-form-element-added
         # Empty script tags necessary to stop transitions from occurring on page load
     %>
@@ -44,18 +44,18 @@
 
   </head>
 
-  <body id="neurohub">  
-  
-    <%= render :partial => 'layouts/neurohub_toolbar' %>
-    
+  <body id="neurohub">
+
+    <%= render :partial => 'layouts/neurohub_navbar' %>
+
     <%= content_tag :div, nil, :class => "nh_page", "data-isLoggedIn" => !!current_user do -%>
         <%= render :partial => 'layouts/neurohub_flash_message'    %>
-        <%= render :partial => 'layouts/neurohub_breadcrumbs' %>
+        <%= render :partial => 'layouts/neurohub_secondary_toolbar' %>
         <%= yield :layout %>
     <% end -%>
-  
+
     <%= render :partial => 'layouts/neurohub_footer' %>
-    
+
   </body>
 
 </html>

@@ -23,24 +23,27 @@
 -%>
 
 <div class="nh_table_scroll">
+  <% if pagination %>
+    <%== pagy_nav(@pagy) %>
+  <% end %>
   <table>
     <thead>
       <tr>
-        <th><p class="text">name (<%= @nh_projects.count %></span>)</p></th>
+        <th><p class="text">name (<%= projects.count %></span>)</p></th>
         <th><p class="text">maintainer</p></th>
         <th data-type="int"><p class="text">users</p></th>
         <th data-type="int"><p class="text">files</p></th>
         <th data-type="int"><p class="text">tasks</p></th>
-        <% if @nh_projects.any? {|project| project.can_be_edited_by?(current_user)} %>
+        <% if projects.any? {|project| project.can_be_edited_by?(current_user)} %>
           <th data-action="true"><p class="text">actions</p></th>
         <% end %>
       </tr>
     </thead>
     <tbody>
-      <% @nh_projects.each do |project| %>
+      <% projects.each do |project| %>
         <tr>
           <th>
-            <%= link_to project.name, {:action => :show, :id => project.id}, :method  => :get, :class=>"text btn-text-secondary", :'data-link' => "true" %>
+            <%= link_to project.name, {:controller => :nh_projects, :action => :show, :id => project.id}, :method  => :get, :class=>"text btn-text-secondary", :'data-link' => "true" %>
           </th>
           <td>
             <p class="text"><%= link_to_user_if_accessible(project.creator, current_user, :html_options => {:class => "btn-text-cbrain external", :'data-link' => "true"}) %></p>
@@ -60,7 +63,7 @@
           <td data-action="true">
             <div>
               <% if project.can_be_edited_by?(current_user) %>
-                <%= link_to(nh_icon_edit,{:action => :edit, :id => project.id}, :method  =>
+                <%= link_to(nh_icon_edit,{:controller => :nh_projects, :action => :edit, :id => project.id}, :method  =>
                 :get,:class=>"text btn-solid-secondary", :'data-link'=>"true")  %>
               <% end %>
             </div>

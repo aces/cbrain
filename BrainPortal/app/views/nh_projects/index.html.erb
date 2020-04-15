@@ -39,7 +39,6 @@
   </div>").html_safe
 %>
 
-
 <% button_view = @scope.custom[:button] %>
 
 <div id="nh_projects" class="nh_content">
@@ -76,7 +75,7 @@
         <% end %>
       </div>
     <% else %>
-      <%= render :partial => 'projects_table' %>
+      <%= render :partial => 'projects_table', :locals => {projects: @nh_projects, pagination: false} %>
     <% end %>
 
   <% else %>

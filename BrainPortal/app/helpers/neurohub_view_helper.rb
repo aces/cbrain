@@ -25,6 +25,15 @@ module NeurohubViewHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  def nh_icon_caret_right
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 32 32"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#caret_right"></use>
+    </svg>
+    SVG
+  end
 
   def nh_icon_cb_external
     <<-SVG.html_safe
@@ -102,6 +111,16 @@ module NeurohubViewHelper
       viewBox="0 0 32 32"
     >
       <use xlink:href="#{image_path("neurohub.svg")}#project"></use>
+    </svg>
+    SVG
+  end
+
+  def nh_icon_search
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 32 32"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#search"></use>
     </svg>
     SVG
   end

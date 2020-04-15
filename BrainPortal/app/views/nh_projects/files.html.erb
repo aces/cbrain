@@ -27,39 +27,9 @@
 <div id="nh_icon_cb" class="nh_content">
   <% if @files.exists? %>
     <div class="nh_actions">
-      <%= link_to "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid-secondary nh_action", :method => :get, target: "_blank" %>
+      <%= link_to "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid-secondary nh_action", :method => :get %>
     </div>
-    <div class="nh_table_scroll">
-      <%== pagy_nav(@pagy) %>
-      <table>
-        <thead>
-          <tr>
-            <th><p class="text">name (<%= @files.count %></span>)</p></th>
-            <th><p class="text">owner</p></th>
-            <th><p class="text">type</p></th>
-            <th><p class="text">size</p></th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @files.each do |file| %>
-            <tr>
-              <th>
-                <p class="text"><%= link_to file.name, {:action => :show, :id => @nh_project.id}, :method  => :get, :class=>"btn-text-cbrain external", :'data-link' => "true" %></p>
-              </th>
-              <td>
-                <p class="text"><%= link_to_user_if_accessible(file.user, current_user, :html_options => {:class => "btn-text-cbrain external", :'data-link' => "true", :target => "_blank"}) %></p>
-              </td>
-              <td>
-                <p class="text"><%= file.pretty_type %></p>
-              </td>
-              <td>
-                <p class="text"><%= colored_pretty_size(file.size) %></p>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
+    <%= render :partial => 'files_table', :locals => {files: @files, pagination: true} %>
   <% else %>
     <div class="empty">
       <div class="empty-wrapper">

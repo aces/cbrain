@@ -1,0 +1,66 @@
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<div class="nh_table_scroll">
+  <table>
+    <thead>
+      <tr>
+        <th><p class="text">name (<%= tasks.count %></span>)</p></th>
+        <th><p class="text">user</p></th>
+        <th><p class="text">project</p></th>
+        <th><p class="text">status</p></th>
+        <th><p class="text">last updated</p></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% tasks.each do |task| %>
+        <tr>
+            <th>
+              <p class="text">
+                <%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau , :html_options => {:class => "text btn-text-cbrain external", :'data-link' => "true", :target => "_blank"}) %>
+              </p>
+            </th>
+            <td>
+              <p class="text">
+                <%= link_to_user_if_accessible(task.user, current_user, :html_options => {:class => "btn-text-cbrain external", :'data-link' => "true", :target => "_blank"}) %>
+              </p>
+            </td>
+            <td>
+              <p class="text">
+                <%= link_to_group_if_accessible(task.group, nil, :html_options => {:class => "btn-text-cbrain external", :'data-link' => "true", :target => "_blank"}) %>
+              </p>
+            </td>
+            <td>
+              <p class="text"><%= colored_status(task.status) %></p>
+            </td>
+            <td>
+              <p class="text">
+                <%= to_localtime(task.updated_at,:date) %>
+                <%= to_localtime(task.updated_at,:time) %>
+            </p>
+            </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
