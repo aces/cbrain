@@ -174,7 +174,8 @@ class Group
       ConsoleCtx.send(:pretty_past_date,created_at),
       ConsoleCtx.send(:pretty_past_date,updated_at),
       (site_id || 0), site.try(:name) || "No site",
-      (self.invisible? ? "Invisible" : "")
+      [ (self.invisible? ? "Invisible" : nil),
+        (self.public?    ? "Public"    : nil) ].compact.join(", ")
   end
 end
 

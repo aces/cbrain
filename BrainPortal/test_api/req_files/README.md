@@ -55,7 +55,7 @@ GET /userfile/15?NTOK application/json ControlKeyword
 The components are, in order:
 
 - The HTTP verb, one of GET, POST, PUT etc
-- A relatve path; the strings NTOK, ATOK and DTOK are special (see below)
+- A relative path; the strings NTOK, ATOK and DTOK are special (see below)
 - The Content-Type of the request (curl only, optional, default application/json)
 - Special control keywords specific to frameworks (rarely used)
 

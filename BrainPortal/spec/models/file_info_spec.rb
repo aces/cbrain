@@ -1,9 +1,8 @@
 
-<%-
 #
-# NeuroHub Project
+# CBRAIN Project
 #
-# Copyright (C) 2020
+# Copyright (C) 2008-2020
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -20,14 +19,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<% title("Add", '') %>
+require 'rails_helper'
 
-<div class="nh_content">
-    <div class="nh_form">
-        <%= error_messages_for @nh_project, :header_message => "Project could not be created." %>
-        <p class="nh_form_title">Add Project</p>
-        <%= render :partial => 'form_for', :locals => {:action => :create} %>
-    </div>
-</div>
+describe FileInfo do
+  let(:file_info) { FileInfo.new }
+
+  describe "#depth" do
+    it "should calculate the depth of the userfile" do
+      file_info.name = "/x/y/z"
+      expect(file_info.depth).to eq(3)
+    end
+    it "should raise an exception if no name is given" do
+      file_info.name = ""
+      expect{ file_info.depth }.to raise_error(CbrainError, "File doesn't have a name.")
+    end
+  end
+
+end
+

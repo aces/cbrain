@@ -82,7 +82,7 @@ class MessagesController < ApplicationController
     if @group_id.blank?
       @message.errors.add(:base, "You need to specify the project whose members will receive this message.")
     elsif @message.errors.empty?
-      group = current_user.available_groups.find(@group_id)
+      group = current_user.assignable_groups.find(@group_id)
       if group
         @message.send_me_to(group)
       else

@@ -164,7 +164,7 @@ class ModelsReport
     # For the next three, wow: 'available' and 'accessible' have reverse meaning!
     # 'available' means user can modify them, 'accessible' means they can only view.
     user_scope  = user.available_users  .order(:login)
-    group_scope = user.available_groups .order(:name)
+    group_scope = user.viewable_groups  .order(:name)
     site_scope  = user.accessible_sites .order(:name)
 
     results = if (is_numeric)

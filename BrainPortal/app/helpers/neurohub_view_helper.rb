@@ -25,6 +25,7 @@ module NeurohubViewHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+
   def nh_icon_cb_external
     <<-SVG.html_safe
     <svg xmlns="http://www.w3.org/2000/svg"

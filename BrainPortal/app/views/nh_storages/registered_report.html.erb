@@ -1,0 +1,28 @@
+
+Statistics about private storage <%= @nh_dp.name %>
+
+<% if @background_processing %>
+<p>
+Note that the reported sizes may not be accurate until
+the background process that computes them is finished.
+<% end %>
+
+<% if @file_counts.present? %>
+  <hr>
+  Stats:
+  <hr>
+  <dl>
+    <% @file_counts.keys.sort.each do |type| %>
+      <% num  = @file_counts[type] %>
+      <% size = @file_sizes[type] %>
+      <dt><%= type %></dt>
+      <dd><%= pluralize(num, "entry") %>, <%= colored_pretty_size(size) %></dd>
+    <% end %>
+  </dl>
+<% else %>
+  There were no new files registered.
+<% end %>
+
+<hr>
+
+<%= link_to "[Back to storage configuration]", nh_storage_path(@nh_dp) %>

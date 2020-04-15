@@ -109,7 +109,7 @@ class TagsController < ApplicationController
     user_id      = new_tag_attr[:user_id]
     group_id     = new_tag_attr[:group_id]
     new_tag_attr[:user_id]  = current_user.id           if !current_user.available_users.where(:id => user_id).exists?
-    new_tag_attr[:group_id] = current_user.own_group.id if !current_user.available_groups.where(:id => group_id).exists?
+    new_tag_attr[:group_id] = current_user.own_group.id if !current_user.assignable_groups.where(:id => group_id).exists?
 
     new_tag_attr
   end

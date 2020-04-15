@@ -1,9 +1,8 @@
 
-<%-
 #
-# NeuroHub Project
+# CBRAIN Project
 #
-# Copyright (C) 2020
+# Copyright (C) 2008-2012
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -20,14 +19,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<% title("Add", '') %>
+class IdentifierFormatValidator < ActiveModel::EachValidator #:nodoc:
 
-<div class="nh_content">
-    <div class="nh_form">
-        <%= error_messages_for @nh_project, :header_message => "Project could not be created." %>
-        <p class="nh_form_title">Add Project</p>
-        <%= render :partial => 'form_for', :locals => {:action => :create} %>
-    </div>
-</div>
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+  # Iterator that validates a string so it correspond to a
+  # simple identifier (letter, then letters digits underscore dashes...)
+  def validate_each(object, attribute, value) #:nodoc:
+    unless value.blank? || value =~ /\A[a-zA-Z][\w\-]*\z/
+      object.errors[attribute] << (options[:message] || "contains invalid characters")
+    end
+  end
+
+end
+

@@ -66,11 +66,11 @@ RSpec.describe VaultSshDataProvider, :type => :model do
       vault_ssh_data_provider.impl_provider_list_all
     end
     it "should create a new FileInfo object" do
-      expect(DataProvider::FileInfo).to receive(:new).and_return(double.as_null_object)
+      expect(FileInfo).to receive(:new).and_return(double.as_null_object)
       vault_ssh_data_provider.impl_provider_list_all
     end
     it "should return an array of FileInfo objects" do
-      expect(vault_ssh_data_provider.impl_provider_list_all.all? { |fi| fi.is_a?(DataProvider::FileInfo) }).to be_truthy
+      expect(vault_ssh_data_provider.impl_provider_list_all.all? { |fi| fi.is_a?(FileInfo) }).to be_truthy
     end
   end
 

@@ -241,7 +241,7 @@ class Userfile < ApplicationRecord
   # by +user+. Actually returns a ActiveRecord::Relation.
   def get_tags_for_user(user)
     user = User.find(user) unless user.is_a?(User)
-    self.tags.where(["tags.user_id=? OR tags.group_id IN (?)", user.id, user.cached_group_ids])
+    self.tags.where('tags.user_id' => user.id)
   end
 
   # Set the tags associated with this file to those
@@ -275,41 +275,32 @@ class Userfile < ApplicationRecord
   # Returns whether or not +user+ has access to this
   # userfile.
   def can_be_accessed_by?(user, requested_access = :write)
-    if user.has_role? :admin_user
-      return true
-    end
-    if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
-      return true
-    end
-    if user.id == self.user_id
-      return true
-    end
-    if user.is_member_of_group(self.group_id) && (self.group_writable || requested_access == :read)
-      return true
-    end
 
-    false
+    return true if user.has_role? :admin_user
+    return true if user.id == self.user_id
+    return true if user.has_role?(:site_manager) &&
+                   self.user.site_id == user.site_id &&
+                   self.group.site_id == user.site_id
+    return true if user.is_member_of_group(self.group_id) &&
+                   (self.group_writable || requested_access == :read)
+
+    return true if self.group.public && requested_access == :read
+
+    return false
   end
 
   # Returns whether or not +user+ has owner access to this
   # userfile.
   def has_owner_access?(user)
-    if user.has_role? :admin_user
-      return true
-    end
-    if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
-      return true
-    end
-    if user.id == self.user_id
-      return true
-    end
-
-    false
+    return true if user.has_role? :admin_user
+    return true if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
+    return user.id == self.user_id
   end
 
   # Returns a scope representing the set of files accessible to the
   # given user.
   def self.accessible_for_user(user, options)
+    options = options.dup
     access_options = {}
     access_options[:access_requested] = options.delete :access_requested
 
@@ -328,7 +319,7 @@ class Userfile < ApplicationRecord
   # [For regular users:] all files that belong to the user all
   #                      files assigned to a group to which the user belongs.
   def self.find_accessible_by_user(id, user, options = {})
-    # Seems weird, it is to accommodate rails5 deprecation warnin for find (accept only id)
+    # Seems weird, it is to accommodate rails5 deprecation warning for find (accept only id)
     id = id.id if id.is_a?(Userfile)
     self.accessible_for_user(user, options).find(id)
   end
@@ -350,28 +341,36 @@ class Userfile < ApplicationRecord
   # on file ownership or group access.
   def self.restrict_access_on_query(user, scope, options = {})
     return scope if user.has_role? :admin_user
-    access_requested    = options[:access_requested] || :write
 
-    data_provider_ids   = DataProvider.find_all_accessible_by_user(user).raw_first_column("#{DataProvider.table_name}.id")
+    access_requested = options[:access_requested] || :write
 
-    query_user_string  = "userfiles.user_id = ?"
-    query_group_string = "userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)"
-    if access_requested.to_sym != :read
-      query_group_string += " AND userfiles.group_writable = 1"
-    end
-    query_string = "(#{query_user_string}) OR (#{query_group_string})"
-    query_array  = [user.id, user.group_ids, data_provider_ids]
+    # Filter by owner
+    user_ids = [ user.id ]
     if user.has_role? :site_manager
-      scope = scope.joins(:user).readonly(false)
-      query_string += "OR (users.site_id = ?)"
-      query_array  << user.site_id
+      user_ids = User.where(:site_id => user.site_id).pluck(:id)
     end
 
-    scope = scope.where( [query_string] + query_array)
+    # Filter by group
+    group_ids  = user.group_ids
+    group_ids |= Group.public_group_ids if access_requested != :write
+
+    # Filter by DP
+    data_provider_ids = DataProvider.find_all_accessible_by_user(user).pluck('data_providers.id')
+
+    # The final complex relation
+    scope = scope
+      .where('userfiles.user_id' => user_ids) # if owner, or site manager, you CAN, period.
+      .or(
+        Userfile.where( # the files are in the user's groups and their DPs too
+             'userfiles.group_id'         => group_ids,
+             'userfiles.data_provider_id' => data_provider_ids,
+        ).where( # and if we want to write, it's allowed by the file's attributes
+           (access_requested != :write) ? {} : { 'userfiles.group_writable' => true }
+        )
+      )
 
     scope
   end
-
 
 
 
@@ -408,24 +407,6 @@ class Userfile < ApplicationRecord
       result += child.descendants(seen)
     end
     result
-  end
-
-
-
-  ##############################################
-  # Sequential traversal methods.
-  ##############################################
-
-  # Find the next file available to the given user.
-  def next_available_file(user, options = {}, order = :id)
-    raise "Cannot order userfiles using attribute '#{order}'" unless self.has_attribute? order
-    Userfile.accessible_for_user(user, options).order(order).where( ["userfiles.#{order} > ?", self.send(order)] ).first
-  end
-
-  # Find the previous file available to the given user.
-  def previous_available_file(user, options = {}, order = :id)
-    raise "Cannot order userfiles using attribute '#{order}'" unless self.has_attribute? order
-    Userfile.accessible_for_user(user, options).order(order).where( ["userfiles.#{order} < ?", self.send(order)] ).last
   end
 
 

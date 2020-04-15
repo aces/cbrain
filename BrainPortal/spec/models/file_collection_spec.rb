@@ -117,8 +117,8 @@ describe FileCollection do
 
   describe "#set_size" do
 
-    let(:file_info1) {DataProvider::FileInfo.new}
-    let(:file_info2) {DataProvider::FileInfo.new}
+    let(:file_info1) {FileInfo.new}
+    let(:file_info2) {FileInfo.new}
 
     before(:each) do
       file_info1.size = file_info2.size = 1024
@@ -196,7 +196,7 @@ describe FileCollection do
 
   describe "#remove_unwanted_files" do
 
-    let(:file_info1) {DataProvider::FileInfo.new}
+    let(:file_info1) {FileInfo.new}
 
     before(:each) do
       a = double("cache_path")

@@ -124,7 +124,7 @@
           <h4><%= h crop_text_to(25, g.name) %></h4>
           <hr>
           <span class="project_user_count">
-            <% if user_count > 1 %>
+            <% if g.users.include?(current_user) && user_count > 1 %>
               Users: <%= user_count %>
             <% elsif css_type != "user" && user_count == 1 %>
               <% # FIXME can be rather slow, as it forces a query for each group with just one user %>
