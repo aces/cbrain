@@ -87,9 +87,9 @@ class NhInvitationsController < NeurohubApplicationController
       return
     end
 
-    @nh_project = WorkGroup.find_by_id(@nh_invitation.group)
+    @nh_project = @nh_invitation.group
 
-    if !@nh_project
+    unless @nh_project
       @nh_invitation.destroy
       
       flash[:notice] = "This project does not exist anymore."
