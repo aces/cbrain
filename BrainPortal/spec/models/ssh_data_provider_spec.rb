@@ -207,11 +207,11 @@ describe SshDataProvider do
       provider.impl_provider_list_all
     end
     it "should create a new FileInfo object" do
-      expect(DataProvider::FileInfo).to receive(:new).and_return(double.as_null_object)
+      expect(FileInfo).to receive(:new).and_return(double.as_null_object)
       provider.impl_provider_list_all
     end
     it "should return an array of FileInfo objects" do
-      expect(provider.impl_provider_list_all.all? { |fi| fi.is_a?(DataProvider::FileInfo) }).to be_truthy
+      expect(provider.impl_provider_list_all.all? { |fi| fi.is_a?(FileInfo) }).to be_truthy
     end
   end
   describe "#browse_remote_dir" do
@@ -255,11 +255,11 @@ describe SshDataProvider do
       end
     end
     it "should create a new FileInfo object" do
-      expect(DataProvider::FileInfo).to receive(:new).and_return(double.as_null_object)
+      expect(FileInfo).to receive(:new).and_return(double.as_null_object)
       provider.impl_provider_collection_index(file_collection)
     end
     it "should return an array of FileInfo objects" do
-      expect(provider.impl_provider_collection_index(file_collection).all? { |fi| fi.is_a?(DataProvider::FileInfo) }).to be_truthy
+      expect(provider.impl_provider_collection_index(file_collection).all? { |fi| fi.is_a?(FileInfo) }).to be_truthy
     end
   end
   describe "#provider_full_path" do

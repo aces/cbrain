@@ -25,6 +25,7 @@ require 'fileutils'
 require 'pathname'
 require 'socket'
 require 'digest/md5'
+require 'file_info'
 
 #
 # = Data Provider interface
@@ -214,9 +215,9 @@ class DataProvider < ApplicationRecord
   cbrain_abstract_model! # objects of this class are not to be instantiated
 
   validates               :name,
-                          :uniqueness => true,
-                          :presence => true,
-                          :name_format => true
+                          :uniqueness        => true,
+                          :presence          => true,
+                          :identifier_format => true
 
   validates               :type,
                           subclass: { allow_blank: true },
@@ -245,66 +246,6 @@ class DataProvider < ApplicationRecord
   has_many                :resource_usage
 
   api_attr_visible        :name, :type, :user_id, :group_id, :online, :read_only, :description
-
-  # A class to represent a file accessible through SFTP or available locally.
-  # Most of the attributes here are compatible with
-  #   Net::SFTP::Protocol::V01::Attributes
-  class FileInfo
-    AttrList = [
-                  :name, :symbolic_type, :size, :permissions,
-                  :uid, :gid, :owner, :group,
-                  :atime, :mtime, :ctime,
-               ]
-    attr_accessor(*AttrList)
-
-    def initialize(attributes = {}) #:nodoc:
-       (attributes.keys.collect(&:to_sym) & AttrList).each { |name| self.send("#{name}=",attributes[name]) }
-    end
-
-    # Return the depth of the file,
-    # For example for file located at the following place:
-    #   /first_dir/second_dir/file
-    # it will return 3
-    def depth #:nodoc:
-      return @depth if @depth
-      cb_error "File doesn't have a name." if self.name.blank?
-      count = -1
-      Pathname.new(self.name).cleanpath.descend{ count += 1}
-      @depth = count
-      @depth
-    end
-
-    def to_xml(options = {}) #:nodoc:
-      require 'builder' unless defined?(Builder)
-
-      options = options.dup
-      options[:indent] ||= 2
-      options.reverse_merge!({ :builder => Builder::XmlMarkup.new(:indent => options[:indent]),
-                               :root => self.class.name.underscore.dasherize.tr('/', '-') })
-      options[:builder].instruct! unless options.delete(:skip_instruct)
-      root = options[:root].to_s
-
-      options[:builder].__send__(:method_missing, root) do
-        self.instance_variables.each do |key_sym|
-          key = key_sym.to_s.sub "@", ""   # changes '@name' or :@name to 'name'
-          value = self.__send__(key)
-          options[:builder].tag!(key, value)
-        end
-
-        yield options[:builder] if block_given?
-      end
-    end
-
-    def to_json #:nodoc:
-      self.instance_variables.each do |key_sym|
-          key = key_sym.to_s.sub "@", ""   # changes '@name' or :@name to 'name'
-          value = self.__send__(key)
-          options[:builder].tag!(key, value)
-        end
-      my_hash.to_json
-    end
-
-  end
 
   # This value is used to trigger DP cache wipes
   # in the validation code (see CbrainSystemChecks)
