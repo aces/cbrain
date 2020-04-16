@@ -24,10 +24,11 @@
 
 <% title("Edit #{@user.login}", '') %>
 
-<div id="nh_users_edit" class="nh_content"> 
-    <div class="nh_form"> 
-        <%= error_messages_for @user, :header_message => "User could not be updated." %>
-        <p class="nh_form_title">Edit Account of <%=@user.login %></p>
-        <%= render :partial => 'form_for', :locals => {:action => :update} %>
-    </div>
+<div id="nh_users_edit" class="nh_content">
+  <div class="nh_form">
+    <%= error_messages_for @user, :header_message => "User could not be updated." %>
+    <p class="nh_form_title">Edit Account of <%=@user.login %></p>
+      <%= render :partial => 'form' %>
+  </div>
 </div>
+
