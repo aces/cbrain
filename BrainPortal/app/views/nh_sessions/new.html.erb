@@ -25,6 +25,7 @@
 <% title 'Login' %>
 
 <div id="nh_sessions_new">
+
   <div class="nh_login">
     <div class="nh_logo"></div>
     <%= form_tag nh_session_path, :class=>"nh_login_form" do %>
@@ -44,8 +45,9 @@
         <%= link_to "Login with your ORCID account", @orcid_uri, :class => "btn-solid-orcid" %>
       <% end %>
     <% end %>
- </div>
- <div class="nh_features">
+  </div>
+
+  <div class="nh_features">
     <div class="nh_features_header mb-7"></div>
     <div class="nh_features_list">
       <p class="title-sm pb-7">NEUROHUB connects researchers with:</p>
@@ -64,14 +66,13 @@
         <img class="nh_feature_icon" src="/images/neurohub/NH_features_discoverable.svg">
         <p class="nh_feature_text">Discoverable, accessible and reusable data.</p>
       </div>
-    <%= link_to 'Request an account',
-    url_for(:controller => :nh_signups, :action => :new),
-    { tabindex: 4, :class => "action_link btn-text-primary nh_register" }%>
 
-
+      <%= link_to 'Request an account',
+                  url_for(:controller => :nh_signups, :action => :new),
+                  { :tabindex => 4, :class => "action_link btn-text-primary nh_register" }
+      %>
+    </div>
   </div>
- </div>
 
 </div>
-
 
