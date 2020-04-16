@@ -65,7 +65,7 @@
             <% else %>
               <p class="text-secondary text-xs"><%= project.creator.try(:login) %></p>
             <% end %>
-            <p class="card-text text-ellipsis"><%= project.description.presence || "-" %></p>
+            <p class="card-text text-ellipsis"><%= project.description.presence %></p>
             <div class="btn-section card-actions">
               <% if project.can_be_edited_by?(current_user) %>
                 <%= link_to nh_icon_edit, {:action => :edit, :id => project.id}, :method  => :get %>
