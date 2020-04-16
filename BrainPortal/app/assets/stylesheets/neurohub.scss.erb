@@ -245,6 +245,10 @@ A few shortcut often-used alignment classes.
   justify-content: center;
 }
 
+.justify-space-between {
+  justify-content: space-between;
+}
+
 .align-center {
   align-items: center;
 }
@@ -256,6 +260,7 @@ A few shortcut often-used alignment classes.
 .flex-1 {
   flex: 1;
 }
+
 /*
 =============================================================
 | LOGOS
@@ -1690,11 +1695,14 @@ $ACTION_BAR_HEIGHT: 2.5;
 }
 
 .nh_action {
+  @include mb(1);
   border-radius: 0px;
   display: flex;
   align-items: center;
   white-space: nowrap;
   text-transform: uppercase;
+  text-decoration: none;
+  height: $ACTION_BAR_HEIGHT + rem;
   a {
     height: 100%;
   }
@@ -2293,9 +2301,9 @@ $DASH_CARD_MIN_WIDTH: 25;
   @media (min-width: $BREAKPOINT_MD) {
     .main {
       flex-direction: row;
-
       .section.user {
         @include mt(0);
+        flex-direction: column;
         .card {
           .card-row {
             flex-direction: row;
