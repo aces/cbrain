@@ -1,39 +1,75 @@
 
-List of your private storage configurations
-<hr>
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
 
-<%= link_to "[Create new configuration]", new_nh_storage_path %>
+<% title "Storage" %>
 
-<table>
-  <tr>
-    <th>Name</th>
-    <th>User</th>
-    <th>Host</th>
-    <th>Port</th>
-    <th>Directory</th>
-    <th>Associated project</th>
-    <th>SSH specification</th>
-  </tr>
-
-  <% @nh_dps.each do |dp| %>
-    <tr>
-      <td><%= link_to dp.name, nh_storage_path(dp) %></td>
-      <td><%= dp.remote_user %></td>
-      <td><%= dp.remote_host %></td>
-      <td><%= dp.remote_port %></td>
-      <td><%= dp.remote_dir %></td>
-      <td><%= link_to dp.group.name, nh_project_path(dp.group) %></td>
-      <td><%= "-p #{dp.remote_port}" if dp.remote_port.present?%>
-          <%= "#{dp.remote_user}@#{dp.remote_host}:#{dp.remote_dir}" %>
-      </td>
-    </tr>
-  <% end %>
+<div id="nh_storages" class="nh_content">
 
   <% if @nh_dps.empty? %>
-    <tr>
-      <td colspan=6">No storage configured yet</td>
-    </tr>
+    <div class="empty">
+      <div class="empty-wrapper">
+        <img class="empty-icon" src="" />
+        <p class="empty-text">No storage is configured yet.</p>
+          <%= link_to "Create new storage configuration", new_nh_storage_path, :class => "btn-solid-secondary" %>
+      </div>
+    </div>
+  <% else %>
+    <div class="nh_actions">
+        <%= link_to "+ Storage Configuration", new_nh_storage_path, :class => "btn-solid-secondary nh_action" %>
+    </div>
+    <div class="nh_table_scroll">
+      <table>
+        <thead>
+          <tr>
+            <th><p class="text">Name</p></th>
+            <th><p class="text">User</p></th>
+            <th><p class="text">Host</p></th>
+            <th data-type="int"><p class="text">Port</p></th>
+            <th><p class="text">Directory</p></th>
+            <th><p class="text">Associated project</p></th>
+            <th><p class="text">SSH specification</p></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @nh_dps.each do |dp| %>
+            <tr>
+              <th><%= link_to dp.name, nh_storage_path(dp), :class=>"text btn-text-secondary", :'data-link' => "true" %></th>
+              <td><p class="text"><%= dp.remote_user %></p></td>
+              <td><p class="text"><%= dp.remote_host %></p></td>
+              <td data-type="int"><p class="text"><%= dp.remote_port %></p></td>
+              <td><p class="text"><%= dp.remote_dir %></p></td>
+              <td><%= link_to dp.group.name, nh_project_path(dp.group), :class=>"text btn-text-secondary", :'data-link' => "true" %></td>
+              <td>
+                <p class="text">
+                  <%= "-p #{dp.remote_port}" if dp.remote_port.present?%>
+                  <%= "#{dp.remote_user}@#{dp.remote_host}:#{dp.remote_dir}" %>
+                </p>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
   <% end %>
-
-</table>
-
+</div>

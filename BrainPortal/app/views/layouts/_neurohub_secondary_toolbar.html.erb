@@ -61,27 +61,36 @@
       <% end %>
 
       <%- # projects -%>
-        <% if(params[:controller].include?('nh_projects')||(params[:controller].include?('nh_invitations') && params[:action].include?('new'))) %>
-          <%= link_to "Projects", nh_projects_path, { :class => "nh_breadcrumbs_item", "data-active"=> controller_name === 'nh_projects' && action_name==="index"  }%>
+      <% if(params[:controller].include?('nh_projects')||(params[:controller].include?('nh_invitations') && params[:action].include?('new'))) %>
+        <%= link_to "Projects", nh_projects_path, { :class => "nh_breadcrumbs_item", "data-active"=> controller_name === 'nh_projects' && action_name==="index"  }%>
 
-          <% if(@nh_project && @nh_project.id)%>
-              <div class="nh_breadcrumbs_icon"><%= nh_icon_caret_right %></div>
-              <%= link_to @nh_project.name, {:controller=> "nh_projects",:action => :show, :id => @nh_project.id }, :method  => :get, :class => "nh_breadcrumbs_item", "data-active"=> controller_name === 'nh_projects' && action_name === "show"  %>
-          <% end %>
-
-          <% if action_name!="index" && action_name!="show" %>
+        <% if(@nh_project && @nh_project.id)%>
             <div class="nh_breadcrumbs_icon"><%= nh_icon_caret_right %></div>
-            <div class="nh_breadcrumbs_item" data-active="true"><%= yield(:title) %></div>
-          <% end %>
+            <%= link_to @nh_project.name, {:controller=> "nh_projects",:action => :show, :id => @nh_project.id }, :method  => :get, :class => "nh_breadcrumbs_item", "data-active"=> controller_name === 'nh_projects' && action_name === "show"  %>
         <% end %>
-      </div>
 
-      <div class="nh_search">
-        <%= form_tag(nh_search_path, :method => :get) do %>
-            <div class="icon"><%= nh_icon_search %></div>
-            <%= text_field_tag :search, @search.presence, :placeholder => "Search files, tasks, projects", :class => "text-xs" %>
+        <% if action_name!="index" && action_name!="show" %>
+          <div class="nh_breadcrumbs_icon"><%= nh_icon_caret_right %></div>
+          <div class="nh_breadcrumbs_item" data-active="true"><%= yield(:title) %></div>
         <% end %>
-      </div>
+      <% end %>
+
+      <%- # storage -%>
+      <% if(params[:controller].include?('nh_storages')) %>
+        <%= link_to 'Storage', nh_storages_path, { :class => "nh_breadcrumbs_item", "data-active"=> controller_name === "nh_storages" && action_name === "index"} %>
+        <% if action_name!="index" %>
+          <div class="nh_breadcrumbs_icon"><%= nh_icon_caret_right %></div>
+          <div class="nh_breadcrumbs_item" data-active="true"><%= yield(:title) %></div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="nh_search">
+      <%= form_tag(nh_search_path, :method => :get) do %>
+          <div class="icon"><%= nh_icon_search %></div>
+          <%= text_field_tag :search, @search.presence, :placeholder => "Search files, tasks, projects", :class => "text-xs" %>
+      <% end %>
+    </div>
 
   </div>
 <% end %>

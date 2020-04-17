@@ -1709,7 +1709,6 @@ $ACTION_BAR_HEIGHT: 2.5;
 }
 
 .nh_action {
-  @include mb(1);
   flex: 1;
   border-radius: 0px;
   display: flex;
@@ -1717,15 +1716,18 @@ $ACTION_BAR_HEIGHT: 2.5;
   white-space: nowrap;
   text-transform: uppercase;
   text-decoration: none;
-  height: $ACTION_BAR_HEIGHT + rem;
+  min-height: $ACTION_BAR_HEIGHT + rem;
+  &:last-child {
+    @include mr(0);
+  }
   a {
     width: 100%;
     height: 100%;
+    border-radius: unset;
+    display: flex;
+    align-items: center;
   }
 
-  &.btn-solid-secondary {
-    @include mr(1);
-  }
   &.btn-text-secondary {
     border-right: 1px solid $SECONDARY_WASH;
   }
@@ -1740,7 +1742,8 @@ $ACTION_BAR_HEIGHT: 2.5;
 .nh_actions {
   @media (min-width: $BREAKPOINT_MD) {
     .nh_action {
-      max-width: 200px;
+      @include mr(1);
+      max-width: max-content;
     }
   }
 }
@@ -2432,6 +2435,29 @@ $DASH_CARD_MIN_WIDTH: 25;
       .card-section {
         @include p(0);
       }
+    }
+  }
+}
+
+/*
+=============================================================
+| STORAGE
+=============================================================
+*/
+
+#nh_show_key {
+  @include form-layout();
+  background: $DEFAULT_WASH;
+  .label {
+    @include label();
+    @include mt(2);
+  }
+  .text {
+    @include text("sm");
+    @include my(1);
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
     }
   }
 }

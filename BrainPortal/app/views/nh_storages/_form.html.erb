@@ -1,19 +1,56 @@
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
 <% route_path = @nh_dp.new_record? ? nh_storages_path : nh_storage_path(@nh_dp) %>
 
 <%= error_messages_for @nh_dp, :header_message => "This storage configuration is invalid." %>
 
 <%= form_for(@nh_dp, :as => :nh_dp, :url => route_path ) do |f| %>
-Name: <%= f.text_field :name %>
-<hr>
-Hostname: <%= f.text_field :remote_host %>
-<hr>
-Port: <%= f.text_field :remote_port %>
-<hr>
-Username: <%= f.text_field :remote_user %>
-<hr>
-Path: <%= f.text_field :remote_dir %>
-<hr>
-Project: <%= group_select('nh_dp[group_id]', { :groups => @nh_projects, :selector => @nh_dp.group_id }, { :include_blank => '(Select project)' } ) %>
-<hr>
-<%= f.submit "Save configuration" %>
+  <fieldset >
+    <%= f.label :name, "Name"%>
+    <%= f.text_field :name %>
+  </fieldset>
+  <fieldset >
+    <%= f.label :remote_host, "Hostname"%>
+    <%= f.text_field :remote_host %>
+  </fieldset>
+  <fieldset>
+    <%= f.label :remote_port, "Port"%>
+    <%= f.text_field :remote_port %>
+  </fieldset>
+  <fieldset>
+    <%= f.label :remote_user, "Username"%>
+    <%= f.text_field :remote_user %>
+  </fieldset>
+  <fieldset>
+    <%= f.label :remote_dir, "Path"%>
+    <%= f.text_field :remote_dir %>
+  </fieldset>
+  <fieldset >
+    <%= f.label('nh_dp[group_id]', "Choose a Project", "data-required"=>"true") %>
+    <%= group_select('nh_dp[group_id]', { :groups => @nh_projects, :selector => @nh_dp.group_id }, { :include_blank => '(Select project)' } ) %>
+  </fieldset>
+  <div class="btn-section">
+    <%= f.submit "Save configuration", :class=>"btn-solid-secondary" %>
+  </div>
 <% end %>
