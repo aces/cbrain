@@ -52,6 +52,14 @@ module NeurohubHelpers
         .where(:invisible => false)
   end
 
+  # this function gets an integer parameter that to be used to change page size, and saves it into session
+  def items_per_page(model='', field='items')
+    key = "#{model}_per_page"
+    items = params[field]
+    session[key] = items.to_i if items.present? and items === 2...100
+    session[key].presence || Pagy::VARS[:items]
+  end
+
   # For +user+, return the private storage (DataProvider) named
   # by +id_or_dp+ which can be an ID or a DataProvider itself.
   def find_nh_storage(user, id_or_dp)

@@ -54,7 +54,8 @@ class NhProjectsController < NeurohubApplicationController
 
   def index  #:nodoc:
     # Note: Should refactor to use session object instead of scope to store button state in the future.
-    @pagy, @nh_projects = pagy(find_nh_projects(current_user), :items => items_per_page(:projects))
+    @items = items_per_page(:userfiles)  # updates and loads the user preference for number of items of given kind per page
+    @pagy, @nh_projects = pagy(find_nh_projects(current_user), :items => @items)
 
     @scope = scope_from_session
     @scope.custom[:button] = true if
@@ -97,7 +98,8 @@ class NhProjectsController < NeurohubApplicationController
 
   def files #:nodoc:
     @nh_project   = find_nh_project(current_user, params[:id])
-    @pagy, @files = pagy(@nh_project.userfiles, :items => items_per_page(:userfiles))
+    @items = items_per_page(:userfiles) # loads/updates page size preferences
+    @pagy, @files = pagy(@nh_project.userfiles, :items => @items)
   end
 
   def new_license #:nodoc:
@@ -264,14 +266,6 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   private
-
-  # this function get a integer parameter that to be used to change page size
-  def items_per_page(model='', field='items')
-    key = "#{model}_per_page"
-    items = params[field]
-    cbrain_session[key] = items.to_i if items.present? and items === 2...100
-    @items = items.presence || Pagy::VARS[:items]
-  end
 
   def redirect_show_license
     if params[:id]
