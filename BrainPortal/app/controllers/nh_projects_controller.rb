@@ -217,6 +217,7 @@ class NhProjectsController < NeurohubApplicationController
   # POST /nh_projects/:id/upload_file
   def upload_file
     nh_project = find_nh_project(current_user, params[:id])
+
     # Get stream info
     upload_stream = params[:upload_file]
     cb_error "No file selected for uploading" if upload_stream.blank?
