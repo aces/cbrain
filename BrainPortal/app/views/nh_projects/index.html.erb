@@ -25,18 +25,16 @@
 <% title "Projects" %>
 
 <% grid_icon = ("
-  <div class='btn-solid-secondary nh_action'>
     <div class='icon'>#{nh_icon_grid}</div>
     <p>Grid View</p>
-  </div>").html_safe
+  ").html_safe
 %>
 
 
 <% list_icon = ("
-  <div class='btn-solid-secondary nh_action'>
     <div class='icon'>#{nh_icon_list}</div>
     <p>List View</p>
-  </div>").html_safe
+  ").html_safe
 %>
 
 <% button_view = @scope.custom[:button] %>
@@ -48,6 +46,10 @@
         scope_custom_link(
           button_view ? list_icon : grid_icon,
           @scope, { 'button' => !button_view },
+          url:  {},
+          link: {
+            :class => "btn-solid-secondary"
+          }
         )
     %></div>
       <%= link_to "+ Add project", {:action => :new }, :method  => :get, :class => "btn-solid-secondary nh_action"  %>

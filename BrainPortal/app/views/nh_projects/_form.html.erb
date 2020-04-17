@@ -42,10 +42,12 @@
     <% end %>
 
     <fieldset>
-      <%= f.label :public, "Public" %>
+      <div class="d-flex align-center">
+      <%= f.label :public, "Public", :class => "mr-2" %>
       <%= f.check_box :public %>
-      <small>Description of what is a public project go here</small>
-    </fieldset>
+      </div>
+      <span class="field_note">Description of what is a public project go here</span>
+      </fieldset>
 
     <% if @nh_project.can_be_edited_by?(current_user) %>
       <% if ((@nh_project.users.exists?) && (@nh_project.users.count != 1)) %>
