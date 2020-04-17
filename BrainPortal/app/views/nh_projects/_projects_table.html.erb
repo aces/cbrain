@@ -25,6 +25,9 @@
 <div class="nh_table_scroll">
   <% if pagination %>
     <%== pagy_nav(@pagy) %>
+    <%= form_for "#{index_nh_projects_path}?page=#{@pagy.page}", :method => :get do %>
+      <%= number_field_tag :items, @pagy.items, @pagy.items, min: 2, max: 100, step: 1 %>
+    <% end %>
   <% end %>
   <table>
     <thead>
