@@ -54,7 +54,7 @@ class NhProjectsController < NeurohubApplicationController
 
   def index  #:nodoc:
     # Note: Should refactor to use session object instead of scope to store button state in the future.
-    @pagy, @nh_projects = pagy(find_nh_projects(current_user), :items => per_page(:projects))
+    @pagy, @nh_projects = pagy(find_nh_projects(current_user), :items => items_per_page(:projects))
 
     @scope = scope_from_session
     @scope.custom[:button] = true if
@@ -97,7 +97,7 @@ class NhProjectsController < NeurohubApplicationController
 
   def files #:nodoc:
     @nh_project   = find_nh_project(current_user, params[:id])
-    @pagy, @files = pagy(@nh_project.userfiles, :items => per_page(:userfiles))
+    @pagy, @files = pagy(@nh_project.userfiles, :items => items_per_page(:userfiles))
   end
 
   def new_license #:nodoc:
@@ -215,7 +215,6 @@ class NhProjectsController < NeurohubApplicationController
   # POST /nh_projects/:id/upload_file
   def upload_file
     nh_project = find_nh_project(current_user, params[:id])
-
     # Get stream info
     upload_stream = params[:upload_file]
     cb_error "No file selected for uploading" if upload_stream.blank?
@@ -266,16 +265,16 @@ class NhProjectsController < NeurohubApplicationController
 
   private
 
-  # this function get a integer parameter that to be used to chage page size
-  def per_page(model='', field='items')
+  # this function get a integer parameter that to be used to change page size
+  def items_per_page(model='', field='items')
     key = "#{model}_per_page"
     items = params[field]
     if items.present? and items.is_a Integer then
-         cbrain_session[key] = items if items?presence and 2...100 == items
+      cbrain_session[key] = items if items?presence and 2...100 == items
     else
       Rails.logger.error "page size is not integer #{model} #{items}"
     end
-      items?presence || Pagy::VARS[:items]
+    @items = items.presence || Pagy::VARS[:items]
   end
 
   def redirect_show_license
