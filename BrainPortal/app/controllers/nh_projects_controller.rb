@@ -269,11 +269,7 @@ class NhProjectsController < NeurohubApplicationController
   def items_per_page(model='', field='items')
     key = "#{model}_per_page"
     items = params[field]
-    if items.present? and items.is_a Integer then
-      cbrain_session[key] = items if items?presence and 2...100 == items
-    else
-      Rails.logger.error "page size is not integer #{model} #{items}"
-    end
+    cbrain_session[key] = items.to_i if items.present? and items === 2...100
     @items = items.presence || Pagy::VARS[:items]
   end
 
