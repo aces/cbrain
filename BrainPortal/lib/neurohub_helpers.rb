@@ -56,7 +56,7 @@ module NeurohubHelpers
   def items_per_page(model='', field='items')
     key = "#{model}_per_page"
     items = params[field].to_i
-    session[key] = items if items.present? and 2...100 === items
+    session[key] = items if items.present? and (2...100) === items
     session[key].presence || Pagy::VARS[:items]
   end
 
