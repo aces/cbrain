@@ -186,8 +186,9 @@ class UsersController < ApplicationController
       # This makes sure the user stays in all his SystemGroups
       new_user_attr[:group_ids]   |= @user.groups.where(:type => SystemGroup.sti_descendant_names).pluck(:id).map(&:to_s)
       unless current_user.has_role?(:admin_user)
-        # This makes sure the user stays in all his invisible WorkGroups
+        # This makes sure the user stays in all his invisible and public WorkGroups
         new_user_attr[:group_ids] |= @user.groups.where(:type => WorkGroup.sti_descendant_names, :invisible => true).pluck(:id).map(&:to_s)
+        new_user_attr[:group_ids] |= @user.groups.where(:type => WorkGroup.sti_descendant_names, :public    => true).pluck(:id).map(&:to_s)
       end
     end
 

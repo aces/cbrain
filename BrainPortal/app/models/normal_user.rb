@@ -28,15 +28,29 @@ class NormalUser < User
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def available_tools  #:nodoc:
-    Tool.where( ["tools.user_id = ? OR tools.group_id IN (?)", self.id, self.group_ids])
+    Tool.where( ["tools.user_id = ? OR tools.group_id IN (?)", self.id, self.viewable_group_ids ])
   end
 
-  def available_groups  #:nodoc:
-    self.groups.where("groups.type <> 'EveryoneGroup'").where(:invisible => false)
+  # List of groups which provide view access to resources.
+  # It is possible for the user not to be a member of one of those groups.
+  def viewable_groups
+    Group.where(:id => (self.group_ids + Group.public_group_ids))
+  end
+
+  # List of groups that the user can assign to resources.
+  # The user must be a member of one of these groups. Subset
+  # of viewable_groups
+  def assignable_groups
+    Group.where(:id => (self.group_ids - [ Group.everyone.id ])).where(:invisible => false)
+  end
+
+  # List of groups that the user can modify (the group's attributes themselves, not the resources)
+  def modifiable_groups
+    WorkGroup.where(:creator_id => self.id).or(WorkGroup.where(:id => self.editable_group_ids))
   end
 
   def available_tasks  #:nodoc:
-    CbrainTask.where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, self.group_ids] )
+    CbrainTask.where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, viewable_group_ids] )
   end
 
   def available_users  #:nodoc:

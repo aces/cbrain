@@ -30,7 +30,10 @@ module NeurohubHelpers
   # an exception ActiveRecord::RecordNotFound is raised.
   def find_nh_project(user, id_or_project, check_license=true)
     id      = id_or_project.is_a?(Group) ? id_or_project.id : id_or_project
-    project = user.available_groups.where(:type => "WorkGroup").find(id)
+    project = user.viewable_groups
+                  .where(:type => 'WorkGroup')
+                  .where(:invisible => false)
+                  .find(id)
 
     raise ActiveRecord::RecordNotFound unless project.can_be_accessed_by?(user)
 
@@ -44,7 +47,21 @@ module NeurohubHelpers
   # For the user +user+, this method will return
   # neurohub projects ('available' groups of class WorkGroup)
   def find_nh_projects(user)
-    user.available_groups.where(:type => 'WorkGroup')
+    user.viewable_groups
+        .where(:type      => 'WorkGroup')
+        .where(:invisible => false)
+  end
+
+  # For +user+, return the private storage (DataProvider) named
+  # by +id_or_dp+ which can be an ID or a DataProvider itself.
+  def find_nh_storage(user, id_or_dp)
+    id = id_or_dp.is_a?(DataProvider) ? id_or_dp.id : id_or_dp
+    find_all_nh_storages(user).find(id)
+  end
+
+  # Returns all private storages (DataProviders) of +user+
+  def find_all_nh_storages(user)
+    UserkeyFlatDirSshDataProvider.where(:user_id => user.id)
   end
 
 end

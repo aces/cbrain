@@ -90,7 +90,7 @@ class BourreauxController < ApplicationController
   def new #:nodoc:
     bourreau_group_id = ( current_project && current_project.id ) || current_user.own_group.id
     @users    = current_user.available_users
-    @groups   = current_user.available_groups
+    @groups   = current_user.assignable_groups
     @bourreau = Bourreau.new( :user_id   => current_user.id,
                               :group_id  => bourreau_group_id,
                               :cache_trust_expire => 1.month.to_i.to_s,
@@ -127,7 +127,7 @@ class BourreauxController < ApplicationController
     cb_notice "This #{@bourreau.class.to_s} is not accessible by you." unless @bourreau.has_owner_access?(current_user)
 
     @users    = current_user.available_users
-    @groups   = current_user.available_groups
+    @groups   = current_user.assignable_groups
 
     new_bourreau_attr = bourreau_params
 

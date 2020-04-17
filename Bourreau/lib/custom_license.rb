@@ -1,0 +1,1 @@
+../../BrainPortal/lib/custom_license.rb

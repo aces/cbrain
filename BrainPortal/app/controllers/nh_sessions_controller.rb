@@ -67,6 +67,7 @@ class NhSessionsController < NeurohubApplicationController
     @cbrain_session = new_cb_session # crush the session object that was created for the NhSessionsController
 
     if ! all_ok
+      flash[:error] = 'Invalid username or password.'
       redirect_to signin_path
       return
     end

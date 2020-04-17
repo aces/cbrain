@@ -134,7 +134,7 @@ class UserfileCustomFilter < CustomFilter
   def valid_data_group_ids #:nodoc:
     my_ids = cleaned_array_for_attribute(:group_ids)
     return true if my_ids.blank?
-    return true if (my_ids.map(&:to_i) - self.user.available_groups.pluck(:id)).empty?
+    return true if (my_ids.map(&:to_i) - self.user.viewable_group_ids).empty?
     errors.add(:data_group_ids, 'have groups that are not accessible')
     false
   end

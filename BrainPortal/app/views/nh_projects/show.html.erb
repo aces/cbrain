@@ -28,8 +28,9 @@
   <% if @nh_project.can_be_edited_by?(current_user) %>
     <div class="nh_actions">
       <%= link_to "Invite Other Users", new_nh_invitation_path(nh_project_id: @nh_project.id), :class => "btn-solid-secondary nh_action"  %>
-      <%= button_to "Upload Files", switch_groups_path(id: @nh_project.id), :class => "btn-solid-secondary nh_action", :method => :post %>
+      <%= link_to "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid-secondary nh_action", :method => :get %>
       <%= link_to "Edit", {:action => :edit, :id => @nh_project.id}, :method  => :get, :class => "btn-text-secondary nh_action"  %>
+      <%= link_to "Storage (#{@proj_dp_count})", nh_storages_path %>
       <% if @can_add_license %>
          <%= link_to "Add License", new_license_nh_project_path(nh_project_id: @nh_project.id) %>
       <% end %>
@@ -50,7 +51,7 @@
         <div class="card-item">
           <%= link_to(files_nh_project_path(@nh_project.id), :class=>"btn-text-secondary") do%>
             <div class="card-stat">
-              <img class="card-icon" src="/images/neurohub/NH_icon_files.svg"/>
+              <div class="card-icon"><%= nh_stats_files %></div>
               <div class="card-details">
                 <p><%= @nh_project.userfiles.count %></p>
                 <p class="label"><%= "File#{@nh_project.userfiles.count != 1 ? "s": ""}" %></p>
@@ -60,19 +61,19 @@
         </div>
 
         <div class="card-item">
-          <% task_stat = ("<div class='card-stat'><img class='card-icon' src='/images/neurohub/NH_icon_tasks.svg'/><div class='card-details'><p>#{@nh_project.cbrain_tasks.count}</p><p class='label'>Task#{@nh_project.cbrain_tasks.count != 1 ? 's': ''}</p></div></div>").html_safe %>
-          <div class="btn-text-secondary card-link"><%=
+          <% task_stat = ("<div class='card-stat external middle'><div class='card-icon'>#{nh_stats_tasks}</div><div class='card-details'><p>#{@nh_project.cbrain_tasks.count}</p><p class='label'>Task#{@nh_project.cbrain_tasks.count != 1 ? 's': ''}</p></div></div>").html_safe %>
+          <%=
             scope_link(task_stat,
               'tasks#index', { :filters => [{ :a => 'group_id', :v => @nh_project.id }], },
-              url: { :controller => :tasks, :action => :index }
+              url: { :controller => :tasks, :action => :index },
+              link: { class:"btn-text-cbrain" }
             )
           %>
-          </div>
         </div>
 
         <div class="card-item">
             <div class="card-stat">
-              <img class="card-icon" src="/images/neurohub/NH_icon_members.svg"/>
+              <div class="card-icon"><%= nh_stats_members %></div>
               <div class="card-details text-ellipsis">
                 <p><%= group_members.count %></p>
                 <p class="label text-ellipsis"><%= "Member#{group_members.count != 1 ? "s": ""}" %> | Editors: <span class="default-dk"><%= group_editors.count %></span></p>
@@ -82,7 +83,7 @@
 
         <div class="card-item">
             <div class="card-stat">
-              <img class="card-icon" src="/images/neurohub/NH_icon_invites.svg" />
+              <div class="card-icon"><%= nh_stats_invites %></div>
               <div class="card-details">
                 <p><%= open_invites.count %></p>
                 <p class="label text-ellipsis"><%= "Pending Invite#{open_invites.count != 1 ? "s": ""}" %></p>

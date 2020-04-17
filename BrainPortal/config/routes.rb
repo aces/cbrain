@@ -72,6 +72,7 @@ Rails.application.routes.draw do
     collection do
       post 'unregister'
       post 'switch'
+      get 'switch'
     end
   end
 
@@ -278,6 +279,12 @@ Rails.application.routes.draw do
     resources :nh_invitations, :only => [ :new, :create, :index, :update, :destroy]
     resources :nh_signups
     resources :nh_users,       :only => [ :myaccount, :edit, :update]
+    resources :nh_storages do # yeah pluralized, looks weird because it's uncountable
+      member do
+        post :check
+        post :autoregister
+      end
+    end
     resources :nh_projects do
       member do
         get  :files
@@ -285,13 +292,12 @@ Rails.application.routes.draw do
         post :add_license
         get  :show_license
         post :sign_license
+        get  :new_file
+        post :upload_file
       end
     end
 
-
-
     # Temporary development route
     get   '/reboot', :controller => :neurohub_portal, :action => :reboot
-
 
 end

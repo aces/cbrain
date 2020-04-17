@@ -59,15 +59,9 @@ module ResourceAccess
   # Returns whether or not +user+ has owner access to this
   # resource.
   def has_owner_access?(user)
-    if user.has_role? :admin_user
-      return true
-    end
-    if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
-      return true
-    end
-    if user.id == self.user_id
-      return true
-    end
+    return true if user.has_role? :admin_user
+    return true if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
+    return true if user.id == self.user_id
 
     false
   end
@@ -88,16 +82,19 @@ module ResourceAccess
     # [For *admin* users:] any resource on the system.
     # [For regular users:] all resources that belong to a group to which the user belongs.
     def find_all_accessible_by_user(user, options = {})
-      scope = self.where(options) # will fail if not simple attibute mappings
+      scope = self.where(options) # will fail if not simple attribute mappings
 
-      unless user.has_role? :admin_user
-        scope = scope.joins(:user)
+      return scope if user.has_role? :admin_user
 
-        if user.has_role? :site_manager
-          scope = scope.where(["(#{self.table_name}.user_id = ?) OR (#{self.table_name}.group_id IN (?)) OR (users.site_id = ?)", user.id, user.group_ids, user.site_id])
-        else
-          scope = scope.where(["(#{self.table_name}.user_id = ?) OR (#{self.table_name}.group_id IN (?))", user.id, user.group_ids])
-        end
+      scope               = scope.joins(:user)
+      available_group_ids = user.viewable_group_ids
+
+      if user.has_role? :site_manager
+        scope = scope.where(["(#{self.table_name}.user_id = ?) OR (#{self.table_name}.group_id IN (?)) OR (users.site_id = ?)",
+                                                            user.id,                               available_group_ids,    user.site_id])
+      else
+        scope = scope.where(["(#{self.table_name}.user_id = ?) OR (#{self.table_name}.group_id IN (?))",
+                                                            user.id,                               available_group_ids])
       end
 
       scope

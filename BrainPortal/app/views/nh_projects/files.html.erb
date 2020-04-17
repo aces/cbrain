@@ -24,31 +24,12 @@
 
 <% title("Files", '') %>
 
-<div id="nh_projects_files" class="nh_content">
+<div id="nh_icon_cb" class="nh_content">
   <% if @files.exists? %>
     <div class="nh_actions">
-      <%= button_to "Upload Files", switch_groups_path(id: @nh_project.id), :class => "btn-solid-secondary nh_action", :method => :post %>
+      <%= link_to "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid-secondary nh_action", :method => :get %>
     </div>
-    <div class="nh_table_scroll">
-      <table>
-      <thead>
-          <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Size</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @files.each do |file| %>
-            <tr>
-              <td><%= link_to_userfile_if_accessible(file) %></td>
-              <td><%= file.pretty_type %></td>
-              <td><%= colored_pretty_size(file.size) %></td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
+    <%= render :partial => 'files_table', :locals => {files: @files, pagination: true} %>
   <% else %>
     <div class="empty">
       <div class="empty-wrapper">

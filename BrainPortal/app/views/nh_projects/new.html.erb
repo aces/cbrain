@@ -24,10 +24,10 @@
 
 <% title("Add", '') %>
 
-<div class="nh_content"> 
-    <div class="nh_form"> 
+<div class="nh_content">
+    <div class="nh_form">
         <%= error_messages_for @nh_project, :header_message => "Project could not be created." %>
         <p class="nh_form_title">Add Project</p>
-        <%= render :partial => 'form_for', :locals => {:action => :create} %>
+        <%= render :partial => 'form', :locals => {:action => :create} %>
     </div>
 </div>

@@ -3,7 +3,7 @@
 ##############################################################################
 #
 #                                 test_all.pl
-#                           Pierre Rioux, Oct 201
+#                           Pierre Rioux, Oct 2018
 #
 # DESCRIPTION:
 # Runs a set of test cases for the CBRAIN API

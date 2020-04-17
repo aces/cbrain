@@ -67,11 +67,17 @@ class Group < ApplicationRecord
   has_and_belongs_to_many :access_profiles
   has_and_belongs_to_many :editors, :class_name => 'User', join_table: 'groups_editors', before_add: :editor_can_be_added!
 
+  scope                   :without_everyone, -> { where([ "groups.id <> ?", Group.everyone_id ]) }
+
   api_attr_visible        :name, :description, :type, :site_id, :invisible
 
   # Returns the unique and special group 'everyone'
   def self.everyone
     @everyone ||= EveryoneGroup.find_by_name('everyone')
+  end
+
+  def self.everyone_id #:nodoc:
+    @everyone_id ||= self.everyone.id
   end
 
   # Returns itself; this method is here to make it symmetrical
@@ -84,7 +90,15 @@ class Group < ApplicationRecord
   # Can this group be accessed by +user+?
   def can_be_accessed_by?(user, access_requested = :read)
     @can_be_accessed_cache       ||= {}
-    @can_be_accessed_cache[user] ||= (user.has_role?(:admin_user) || user.is_member_of_group(self))
+    # Check for cached value
+    return @can_be_accessed_cache[user.id] unless @can_be_accessed_cache[user.id].nil?
+    # Case by case
+    return @can_be_accessed_cache[user.id] = true if user.has_role?(:admin_user)
+    return @can_be_accessed_cache[user.id] = true if self.creator_id == user.id
+    return @can_be_accessed_cache[user.id] = true if user.is_member_of_group(self) # maybe restrict on acces_req?
+    return @can_be_accessed_cache[user.id] = true if user.has_role?(:site_manager) && user.site.group_ids.include?(self.id)
+    return @can_be_accessed_cache[user.id] = (access_requested == :read) if self.public?
+    return @can_be_accessed_cache[user.id] = false
   end
 
   # Can this group be edited by +user+?
@@ -124,6 +138,18 @@ class Group < ApplicationRecord
   # Should be redefined in subclasses
   def after_remove_user(user) #:nodoc:
     true
+  end
+
+  ##################################
+  # Public Group support methods
+  ##################################
+
+  def self.public_groups #:nodoc:
+    self.where(:public => true)
+  end
+
+  def self.public_group_ids #:nodoc:
+    self.public_groups.pluck(:id)
   end
 
   private

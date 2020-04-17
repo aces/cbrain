@@ -30,18 +30,29 @@ class SiteManager < User
   validates_presence_of :site_id, :message => "must be set for site managers"
 
   def available_tools  #:nodoc:
-    Tool.where( ["tools.group_id IN (?) OR tools.user_id IN (?)", self.group_ids, self.site.user_ids])
+    Tool.where( ["tools.group_id IN (?) OR tools.user_id IN (?)", viewable_group_ids , self.site.user_ids])
   end
 
-  def available_groups  #:nodoc:
-    group_scope = Group.where(["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?) OR groups.site_id=?", self.id, self.site_id])
-    group_scope = group_scope.where("groups.type <> 'EveryoneGroup'").where(:invisible => false)
+  # List of groups which provide view access to resources.
+  # It is possible for the user not to be a member of one of those groups.
+  def viewable_groups
+    Group.where(:id => (self.group_ids + Group.public_group_ids + self.site.group_ids))
+  end
 
-    group_scope
+  # List of groups that the user can assign to resources.
+  # The user must be a member of one of these groups. Subset
+  # of viewable_groups
+  def assignable_groups
+    Group.where(:id => (self.group_ids + self.site.group_ids - [ Group.everyone.id ])).where(:invisible => false)
+  end
+
+  # List of groups that the user can modify (the group's attributes themselves, not the resources)
+  def modifiable_groups
+    WorkGroup.where(:id => self.assignable_group_ids).or(WorkGroup.where(:id => self.editable_group_ids))
   end
 
   def available_tasks  #:nodoc:
-    CbrainTask.where( ["cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", self.group_ids, self.site.user_ids] )
+    CbrainTask.where( ["cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", viewable_group_ids, self.site.user_ids] )
   end
 
   def available_users  #:nodoc:

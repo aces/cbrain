@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200226190034) do
+ActiveRecord::Schema.define(version: 20200309142414) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -147,7 +147,9 @@ ActiveRecord::Schema.define(version: 20200226190034) do
     t.integer  "creator_id"
     t.boolean  "invisible",                 default: false
     t.text     "description", limit: 65535
+    t.boolean  "public", default: false
     t.index ["invisible"], name: "index_groups_on_invisible", using: :btree
+    t.index ["public"], name: "index_groups_on_public", using: :btree
     t.index ["name"], name: "index_groups_on_name", using: :btree
     t.index ["type"], name: "index_groups_on_type", using: :btree
   end

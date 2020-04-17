@@ -1,8 +1,8 @@
 <%-
 #
-# CBRAIN Project
+# NeuroHub Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2020
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -25,15 +25,8 @@
 <!-- PARTIAL: FLASH MESSAGE SECTION -->
 <!-- ****************************** -->
 
-    <%
-    # This partial requires two variables:
-    # msg  : the content of the flash message
-    # type : either 'notice' or 'error'
-    %>
-
-    <%- flash.each do |name, msg| -%>
-        <% next if msg.blank? %>
-            <%= content_tag :div, (h(msg.to_s.strip).gsub(/\n/, '<BR/>')).html_safe, :class => "flash_#{name}" %>
-    <%- end -%>
-
+<%- flash.each do |name, msg| -%>
+  <% next if msg.blank? %>
+  <%= content_tag :div, (h(msg.to_s.strip).gsub(/\n/, '<BR/>')).html_safe, :class => "flash_#{name}" %>
+<%- end -%>
 
