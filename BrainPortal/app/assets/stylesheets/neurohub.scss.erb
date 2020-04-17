@@ -27,6 +27,7 @@
     ├── INVITATIONS
     ├── DASHBOARD
     ├── SEARCH
+    ├── LICENSE
   └──
 
 /*
@@ -89,6 +90,10 @@ $CBRAIN_ALT: #05a3d6;
 
 .default-bg {
   color: $DEFAULT_BG;
+}
+
+.success-dk {
+  color: $SUCCESS_DK;
 }
 
 .bg-default-wash {
@@ -751,9 +756,15 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 .btn-text-secondary {
   @extend .btn-text;
   color: $SECONDARY_TEXT;
+  &[data-active="true"],
   &:hover {
     background-color: $SECONDARY_WASH;
     color: $SECONDARY_BG;
+  }
+  &[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
   }
 }
 
@@ -1074,7 +1085,7 @@ $variant : error, notice
   position: relative;
 
   .nh_form_title {
-    @include form-layout;
+    @include form-layout();
     @include title("sm");
     @include pb(2);
   }
@@ -1124,12 +1135,19 @@ Cards used for simple "show"-type views
 .card {
   @include shadow("mid");
   background: $DEFAULT_BG;
+  .card-title {
+    @include title("sm");
+    @include pb(2);
+  }
   .card-row {
     @include px(4);
     flex: 1;
     display: flex;
     flex-wrap: wrap;
     border-bottom: 1px solid $DEFAULT_DISABLED;
+  }
+  .card-label {
+    @include label();
   }
   .card-item {
     @include text("sm");
@@ -1139,10 +1157,6 @@ Cards used for simple "show"-type views
     width: 100%;
     overflow: hidden;
     position: relative;
-    .card-label {
-      @include label();
-      white-space: nowrap;
-    }
     .text-ellipsis {
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -1696,6 +1710,7 @@ $ACTION_BAR_HEIGHT: 2.5;
 
 .nh_action {
   @include mb(1);
+  flex: 1;
   border-radius: 0px;
   display: flex;
   align-items: center;
@@ -1704,6 +1719,7 @@ $ACTION_BAR_HEIGHT: 2.5;
   text-decoration: none;
   height: $ACTION_BAR_HEIGHT + rem;
   a {
+    width: 100%;
     height: 100%;
   }
 
@@ -1718,6 +1734,14 @@ $ACTION_BAR_HEIGHT: 2.5;
     @include icon("xxs", null, $DEFAULT_BG);
     display: inline-block;
     vertical-align: middle;
+  }
+}
+
+.nh_actions {
+  @media (min-width: $BREAKPOINT_MD) {
+    .nh_action {
+      max-width: 200px;
+    }
   }
 }
 
@@ -2341,6 +2365,73 @@ $DASH_CARD_MIN_WIDTH: 25;
       width: 100%;
       opacity: 1;
       border-bottom: 1px solid $SECONDARY_ALT;
+    }
+  }
+}
+
+/*
+=============================================================
+| LICENSE
+=============================================================
+*/
+
+#nh_show_license {
+  .card {
+    display: flex;
+    flex-direction: column;
+    .card-section {
+      @include form-layout();
+      @include p(0);
+      flex: 2;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      &.license-list {
+        flex: 1;
+      }
+      .card-item {
+        display: block;
+      }
+    }
+    .card-title {
+      @include p(4);
+      text-align: center;
+    }
+  }
+  .license-text {
+    @include p(2);
+    @include my(2);
+    width: 100%;
+    border: 1px solid $DEFAULT_BORDER;
+    border-radius: 2px;
+    overflow: scroll;
+  }
+  .license-list {
+    background: $SECONDARY_WASH;
+    .card-title {
+      color: $SECONDARY_DK;
+    }
+    .card-item {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  .nh_form {
+    width: 100%;
+    box-shadow: none;
+    .btn-section {
+      > * {
+        white-space: normal;
+      }
+    }
+  }
+  @media (min-width: $BREAKPOINT_MD) {
+    .card {
+      flex-direction: row;
+      .card-section {
+        @include p(0);
+      }
     }
   }
 }

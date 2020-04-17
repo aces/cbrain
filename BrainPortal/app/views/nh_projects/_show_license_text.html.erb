@@ -21,9 +21,16 @@
   #
 -%>
 
-<h2>License agreement</h2>
-
-Carefully read this license agreement.
-<p>
-<pre><%= @license_text %></pre>
-
+  <div class="card-item">
+    <p class="card-label">Carefully read this license agreement.</p>
+    <pre class="card-text license-text"><%= @license_text %></pre>
+    <% if is_signed %>
+      <p class="success-dk text-xs">You have already signed this license agreement. </p>
+    <% end %>
+    <% if !is_signed %>
+      <div class="d-flex">
+        <%= check_box_tag :license_check, 1, nil, :class => "mt-2" %>
+        <%= label_tag(:license_check,"By clicking here, I agree with all the conditions above.", :class=>"ml-2  card-label") %>
+      </div>
+    <% end %>
+  </div>

@@ -21,38 +21,42 @@
   #
 -%>
 
+<% title("License #{@license_id}", '') %>
+
 <% is_signed = current_user.custom_licenses_signed.include?(@license_id) %>
 
-<% if is_signed %>
-
-  <%= render :partial => 'show_license_text' %>
-  <p>
-  You have signed this license agreement.
-
-  <% if @current_licenses.size > 1 %>
-    <hr>
-    Other licenses on this project:
-    <p>
-    <% @current_licenses.each do |id| %>
-      <%= link_to "Licence ##{id}", show_license_nh_project_path(@nh_project, :license_id => id) %>
-      <% if id == @license_id %>
-        (currently seen above)
+<div id="nh_show_license" class="nh_content">
+  <div class="card">
+    <div class="card-section">
+      <div class="card-title">
+        License <%= @license_id %>
+      </div>
+      <% if is_signed %>
+        <%= render :partial => 'show_license_text', :locals => { is_signed: is_signed } %>
+      <% else %>
+        <div class="nh_form">
+          <%= form_tag sign_license_nh_project_path(@nh_project) do %>
+            <%= hidden_field_tag :license_id, @license_id %>
+            <%= render :partial => 'show_license_text', :locals => { is_signed: is_signed } %>
+            <div class="btn-section">
+              <%= submit_tag "I agree with the above statement", :name => :agree,     :class => "btn-solid-secondary m-1" %>
+              <%= submit_tag "I do not agree",               :name => :not_agree, :class => "btn-outline-secondary m-1"  %>
+            </div>
+          <% end %>
+        </div>
       <% end %>
-      <br>
+    </div>
+    <% if @current_licenses.size > 1 %>
+      <div class="card-section license-list">
+        <div class="card-title">
+          Other Licenses for <%= @nh_project.name %>
+        </div>
+        <div class="card-item">
+          <% @current_licenses.each do |id| %>
+            <%= link_to "License ##{id} #{id == @license_id? "- currently selected": ""}", show_license_nh_project_path(@nh_project, :license_id => id), :class => "btn-text-secondary", 'data-active' => (id == @license_id), 'disabled' => (id == @license_id) %>
+          <% end %>
+        </div>
+      </div>
     <% end %>
-  <% end %>
-
-<% else %>
-
-  <%= form_tag sign_license_nh_project_path(@nh_project) do %>
-    <%= hidden_field_tag :license_id, @license_id %>
-    <%= render :partial => 'show_license_text' %>
-    <p>
-    <%= check_box_tag :license_check %>
-    <%= label_tag(:license_check,"By clicking here I agree with all the conditions above") %>
-    <p>
-    <%= submit_tag "I Agree with above statement", :name => :agree %>
-    <%= submit_tag "I Do Not Agree",               :name => :not_agree %>
-  <% end %>
-
-<% end %>
+  </div>
+</div>
