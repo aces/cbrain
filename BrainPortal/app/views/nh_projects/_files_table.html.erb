@@ -24,8 +24,9 @@
 <div class="nh_table_scroll">
   <% if pagination %>
     <%== pagy_nav(@pagy) %>
-    <%= form_for "#{files_nh_project_path}?page=#{@pagy.page}", :method => :get do %>
-      <%= number_field_tag :items, @items, min: 2, max: 100, step: 1 %>
+   I<%= form_for @nh_project, :url => { :action => :files, :page => @pagy.page }, :method => :get, :datatype => "script" do -%>
+      <%= label_tag :items, 'show per page' %>
+      <%= number_field_tag :items, @items, min: 4, max: 100, step: 1 %>
     <% end %>
   <% end %>
   <table>
