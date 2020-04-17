@@ -55,6 +55,11 @@
     </div>
     <% if button_view %>
       <div class="grid">
+        <%== pagy_nav(@pagy) %>
+        I<%= form_for nh_projects_path(:page => @pagy.page), :method => :get do %>
+          <%= label_tag :items, "per page" %>
+          <%= number_field_tag :items, @items, min: 2, max: 100, step: 1 %>
+        <% end %>
         <% @nh_projects.each do |project| %>
           <div class="card">
             <%= link_to project.name, {:action => :show, :id => project.id}, :method  => :get, :class=>"btn-text-secondary bg-default-wash" %>

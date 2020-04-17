@@ -28,7 +28,7 @@
   <%== pagy_nav(@pagy) %>
  I<%= form_for nh_projects_path(:page => @pagy.page), :method => :get do %>
     <%= label_tag :items, "per page" %> 
-    <%= number_field_tag :items, @items, min: 2, max: 100, step: 1 %>
+    <%= number_field_tag :items, @items, min: 4, max: 100, step: 1 %>
   <% end %>
   <table>
     <thead>
