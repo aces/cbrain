@@ -55,8 +55,8 @@ module NeurohubHelpers
   # this function gets an integer parameter that to be used to change page size, and saves it into session
   def items_per_page(model='', field='items')
     key = "#{model}_per_page"
-    items = params[field]
-    session[key] = items.to_i if items.present? and items === 2...100
+    items = params[field].to_i
+    session[key] = items if items.present? and items === 2...100
     session[key].presence || Pagy::VARS[:items]
   end
 
