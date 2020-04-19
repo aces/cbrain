@@ -21,14 +21,6 @@
 #
 -%>
 
-
-
-<%
-   @files    = @results[:files][0,@limit]
-   @tasks    = @results[:tasks][0,@limit]
-   @projects = @results[:groups][0,@limit]
-%>
-
 <% title("Search", '') %>
 
 <div id="nh_search" class="nh_content">
@@ -43,7 +35,7 @@
   <% if @files.size > 0 %>
     <div class="section">
       <div class="section-title">Files</div>
-      <%= render :partial => './nh_projects/files_table', :locals => { files: @files, pagination: false } %>
+      <%= render :partial => 'nh_projects/files_table', :locals => { files: @files, pagination: false } %>
     </div>
   <% end %>
   <% if @tasks.size > 0 %>

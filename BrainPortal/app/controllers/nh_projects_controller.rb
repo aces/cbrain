@@ -53,11 +53,21 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def index  #:nodoc:
-    # Note: Should refactor to use session object instead of scope to store button state in the future.
-    @nh_projects = find_nh_projects(current_user)
-    @scope = scope_from_session
-    @scope.custom[:button] = true if
-      current_user.has_role?(:normal_user) && @scope.custom[:button].nil?
+    @nh_projects        = find_nh_projects(current_user)
+    @project_count      = @nh_projects.count
+
+    @page, @per_page    = pagination_check(@nh_projects, :nh_projects)
+    @pagy, @nh_projects = pagy(@nh_projects, :items => @per_page)
+
+    # Check to see if we request a particular view (list vs button)
+    if params[:button].present?
+       @button_view = params[:button].to_s == 'true'
+    else
+       @button_view = session[:nh_proj_button].nil? ? true : session[:nh_proj_button]
+    end
+    # Save current pref in session
+    session[:nh_proj_button] = (@button_view == true)
+    true
   end
 
   def edit #:nodoc:
@@ -95,8 +105,12 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def files #:nodoc:
-    @nh_project   = find_nh_project(current_user, params[:id])
-    @pagy, @files = pagy(@nh_project.userfiles)
+    @nh_project      = find_nh_project(current_user, params[:id])
+    @files           = @nh_project.userfiles
+    @files_count     = @files.count
+
+    @page, @per_page = pagination_check(@files, :nh_project_files)
+    @pagy, @files    = pagy(@files, :items => @per_page)
   end
 
   def new_license #:nodoc:
