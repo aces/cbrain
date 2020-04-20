@@ -26,9 +26,9 @@
 
 <div id="nh_projects_show" class="nh_content">
 
-  <%- # actions-%>
-  <div class="nh_actions">
-    <% if @nh_project.can_be_edited_by?(current_user) %>
+  <%- # actions -%>
+  <% if @nh_project.can_be_edited_by?(current_user) %>
+    <div class="nh_actions">
       <%= link_to "Invite Other Users", new_nh_invitation_path(nh_project_id: @nh_project.id), :class => "btn-solid-secondary nh_action"  %>
       <%= link_to "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid-secondary nh_action", :method => :get %>
       <% if @can_add_license %>
@@ -36,9 +36,10 @@
       <% end %>
       <%= link_to "+ Add Storage", new_nh_storage_path, :class => "btn-solid-secondary nh_action" %>
       <%= link_to "Edit", {:action => :edit, :id => @nh_project.id}, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
-      <% end %>
-  </div>
+    </div>
+  <% end %>
 
+  <%- # project details -%>
   <div class="card">
     <%
       group_members  = @nh_project.users   || []

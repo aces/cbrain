@@ -127,6 +127,7 @@ class NhProjectsController < NeurohubApplicationController
   def show_license #:nodoc:
     @nh_project       = find_nh_project(current_user, params[:id], false) # false means no license check
     @current_licenses = @nh_project.custom_license_agreements
+    @can_add_license  = @nh_project.creator_id == current_user.id
     unsigned_licenses = current_user.unsigned_custom_licenses(@nh_project)
 
     if unsigned_licenses.empty?

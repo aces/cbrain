@@ -26,6 +26,15 @@
 <% is_signed = current_user.custom_licenses_signed.include?(@license_id) %>
 
 <div id="nh_show_license" class="nh_content">
+
+  <%- # actions -%>
+  <% if @can_add_license %>
+    <div class="nh_actions">
+      <%= link_to "+ Add License", new_license_nh_project_path(nh_project_id: @nh_project.id), :class => "btn-solid-secondary nh_action" %>
+    </div>
+  <% end %>
+
+  <%- # license - %>
   <div class="card">
     <div class="card-section">
       <div class="card-title">
@@ -40,7 +49,7 @@
             <%= render :partial => 'show_license_text', :locals => { is_signed: is_signed } %>
             <div class="btn-section">
               <%= submit_tag "I agree with the above statement", :name => :agree,     :class => "btn-solid-secondary m-1" %>
-              <%= submit_tag "I do not agree",               :name => :not_agree, :class => "btn-outline-secondary m-1"  %>
+              <%= submit_tag "I do not agree",               :name => :not_agree, :class => "btn-text-secondary bg-secondary-wash m-1"  %>
             </div>
           <% end %>
         </div>

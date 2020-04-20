@@ -559,7 +559,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 .btn-outline {
   @extend .btn;
   @include shadow("low");
-  border-radius: 4px;
+  border-radius: 2px;
   border: 1px solid;
   transition: $TRANSITION_HOVER_OFF;
 
@@ -2441,6 +2441,9 @@ $DASH_CARD_MIN_WIDTH: 25;
     .btn-section {
       > * {
         white-space: normal;
+      }
+      .btn-text-secondary {
+        text-transform: uppercase;
       }
     }
   }
