@@ -22,4 +22,17 @@
 #
 -%>
 
-Your informations will be reviewed and your account will be created.
+<div id="nh_signups_show">
+  <% if !current_user %>
+    <a href="/signin">
+      <div class="nh_logo"></div>
+    </a>
+  <% end %>
+  <div class="empty">
+    <div class="empty-wrapper">
+        <img class="empty-icon" src="/images/neurohub/NH_lettermark_RGB.png" />
+        <p class="empty-text">Your informations will be reviewed and your account will be created.</p>
+        <%= link_to "Back to login", {:controller => "nh_sessions", :action => :new }, :method  => :get, :class => "btn-solid-secondary"  %>
+    </div>
+  </div>
+</div>
