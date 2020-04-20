@@ -91,7 +91,7 @@ class NhProjectsController < NeurohubApplicationController
     @nh_project       = find_nh_project(current_user, params[:id])
     @current_licenses = @nh_project.custom_license_agreements # can be empty array
     @can_add_license  = @nh_project.creator_id == current_user.id
-    @proj_dp_count    = @nh_project.data_providers.where(:user_id => current_user.id).count
+    @proj_dps         = @nh_project.data_providers.where(:user_id => current_user.id)
   end
 
   def files #:nodoc:

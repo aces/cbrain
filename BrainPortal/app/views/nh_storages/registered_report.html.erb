@@ -1,28 +1,71 @@
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
 
-Statistics about private storage <%= @nh_dp.name %>
+<% title " Registered report for private storage #{@nh_dp.name}", "" %>
 
-<% if @background_processing %>
-<p>
-Note that the reported sizes may not be accurate until
-the background process that computes them is finished.
-<% end %>
+<div id="nh_storages_registered_report" class="nh_content">
+  <div class="card">
+    <div class="card-item title">
+      <div class="card-title"><%= @nh_dp.name %></div>
+    </div>
+    <div class="card-row">
+      <div class="card-item">
+        <div class="flex-1">
+          <p class="card-label">Stats</p>
+          <% if @file_counts.present? %>
+            <div class="list">
+              <div class="list-row">
+                <div class="list-item list-header"><p>File Type</p></div>
+                <div class="list-item list-header"><p>Entries</p></div>
+                <div class="list-item list-header"><p>Size</p></div>
+              </div>
+              <% @file_counts.keys.sort.each do |type| %>
+                <% num  = @file_counts[type] %>
+                <% size = @file_sizes[type] %>
+                <div class="list-row">
+                  <div class="list-item">
+                    <p><%= type %></p>
+                  </div>
+                  <div class="list-item">
+                    <p><%= num %></p>
+                  </div>
+                  <div class="list-item">
+                    <p><%= colored_pretty_size(size) %></p>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+            <% if @background_processing %>
+              <p class="text-italic text-xs">
+                <b>Note:</b> Reported sizes may not be accurate until the background process that computes them is finished.
+              </p>
+            <% end %>
+          <% else %>
+            <p class="card-text">No current stats to report.</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-<% if @file_counts.present? %>
-  <hr>
-  Stats:
-  <hr>
-  <dl>
-    <% @file_counts.keys.sort.each do |type| %>
-      <% num  = @file_counts[type] %>
-      <% size = @file_sizes[type] %>
-      <dt><%= type %></dt>
-      <dd><%= pluralize(num, "entry") %>, <%= colored_pretty_size(size) %></dd>
-    <% end %>
-  </dl>
-<% else %>
-  There were no new files registered.
-<% end %>
-
-<hr>
-
-<%= link_to "[Back to storage configuration]", nh_storage_path(@nh_dp) %>

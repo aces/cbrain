@@ -28,6 +28,7 @@
     ├── DASHBOARD
     ├── SEARCH
     ├── LICENSE
+    ├── STORAGES
   └──
 
 /*
@@ -94,6 +95,10 @@ $CBRAIN_ALT: #05a3d6;
 
 .success-dk {
   color: $SUCCESS_DK;
+}
+
+.bg-secondary-wash {
+  background-color: $SECONDARY_WASH;
 }
 
 .bg-default-wash {
@@ -244,6 +249,10 @@ A few shortcut often-used alignment classes.
 
 .d-flex {
   display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
 }
 
 .justify-center {
@@ -627,6 +636,15 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   }
 }
 
+.btn-outline {
+  @include px(4);
+  @include py(3);
+  border-radius: 0px;
+  width: 100%;
+  height: 100%;
+  box-shadow: none;
+}
+
 .btn-outline-default {
   @extend .btn-outline;
   background-color: $DEFAULT_BG;
@@ -640,12 +658,11 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 
 .btn-outline-primary {
   @extend .btn-outline;
-  background-color: $DEFAULT_BG;
-  border-color: $PRIMARY_ALT;
-  color: $PRIMARY_ALT;
+
+  background: $PRIMARY_WASH;
+  color: $PRIMARY_BG;
   &:hover {
-    background-color: $PRIMARY_WASH;
-    border-color: $PRIMARY_ALT;
+    border-color: transparent;
   }
 }
 
@@ -657,6 +674,16 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   &:hover {
     background-color: $SECONDARY_WASH;
     border-color: $SECONDARY_ALT;
+  }
+}
+
+.btn-outline-secondary,
+.btn-outline-primary {
+  border-color: transparent;
+  opacity: 0.6;
+  &:hover {
+    opacity: 1;
+    z-index: 100;
   }
 }
 
@@ -1087,7 +1114,8 @@ $variant : error, notice
   .nh_form_title {
     @include form-layout();
     @include title("sm");
-    @include pb(2);
+    @include py(7);
+    background: $DEFAULT_WASH;
   }
   form {
     @include form("secondary");
@@ -1137,7 +1165,7 @@ Cards used for simple "show"-type views
   background: $DEFAULT_BG;
   .card-title {
     @include title("sm");
-    @include pb(2);
+    @include p(4);
   }
   .card-row {
     @include px(4);
@@ -1157,6 +1185,9 @@ Cards used for simple "show"-type views
     width: 100%;
     overflow: hidden;
     position: relative;
+    &.title {
+      background: $DEFAULT_WASH;
+    }
     .text-ellipsis {
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -2168,22 +2199,6 @@ $CARD_ITEM_MAX_WIDTH: 13;
         height: 100%;
         box-shadow: none;
       }
-      .btn-outline-primary {
-        background: $PRIMARY_WASH;
-        color: $PRIMARY_BG;
-        &:hover {
-          border-color: transparent;
-        }
-      }
-      .btn-outline-secondary,
-      .btn-outline-primary {
-        border-color: transparent;
-        opacity: 0.6;
-        &:hover {
-          opacity: 1;
-          z-index: 100;
-        }
-      }
     }
     @media (min-width: $BREAKPOINT_SM) {
       display: flex;
@@ -2441,11 +2456,11 @@ $DASH_CARD_MIN_WIDTH: 25;
 
 /*
 =============================================================
-| STORAGE
+| STORAGES
 =============================================================
 */
 
-#nh_show_key {
+.nh_show_key {
   @include form-layout();
   background: $DEFAULT_WASH;
   .label {
@@ -2459,5 +2474,16 @@ $DASH_CARD_MIN_WIDTH: 25;
       white-space: pre-wrap;
       word-wrap: break-word;
     }
+  }
+}
+
+#nh_storages_show {
+  .nh_show_key {
+    @include p(0);
+    width: 100%;
+    background: transparent;
+  }
+  .btn-text-secondary {
+    background: $SECONDARY_WASH;
   }
 }

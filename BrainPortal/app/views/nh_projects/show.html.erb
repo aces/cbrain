@@ -25,6 +25,7 @@
 <% title("Summary", '') %>
 
 <div id="nh_projects_show" class="nh_content">
+
   <%- # actions-%>
   <div class="nh_actions">
     <% if @nh_project.can_be_edited_by?(current_user) %>
@@ -35,7 +36,6 @@
       <% end %>
       <%= link_to "+ Add Storage", new_nh_storage_path, :class => "btn-solid-secondary nh_action" %>
       <%= link_to "Edit", {:action => :edit, :id => @nh_project.id}, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
-      <%= link_to "View Storage | #{@proj_dp_count}", nh_storages_path, :class => "btn-solid-secondary nh_action" %>
       <% end %>
   </div>
 
@@ -173,11 +173,11 @@
     <% if @current_licenses.present? %>
       <div class="card-row">
         <div class="card-item">
-          <div class="flex-1">
+          <div>
             <p class="card-label">Licenses | <%= @current_licenses.count %></p>
             <div class="card-text pt-2">
               <% @current_licenses.each do |id| %>
-                <%= link_to "License ##{id}", show_license_nh_project_path(@nh_project, :license_id => id), :class=>"btn-text-secondary" %>
+                <%= link_to "License ##{id}", show_license_nh_project_path(@nh_project, :license_id => id), :class=>"btn-text-secondary bg-secondary-wash mt-1" %>
               <% end %>
             </div>
           </div>
@@ -185,14 +185,14 @@
       </div>
     <% end %>
 
-    <% if @current_licenses.present? %>
+    <% if @proj_dps.present? %>
       <div class="card-row">
         <div class="card-item">
-          <div class="flex-1">
-            <p class="card-label">Licenses | <%= @current_licenses.count %></p>
+          <div>
+            <p class="card-label">Storages | <%= @proj_dps.count %></p>
             <div class="card-text pt-2">
-              <% @current_licenses.each do |id| %>
-                <%= link_to "License ##{id}", show_license_nh_project_path(@nh_project, :license_id => id), :class=>"btn-text-secondary" %>
+              <% @proj_dps.each do |dp| %>
+                <%= link_to dp.name, nh_storage_path(dp), :class=>"btn-text-secondary bg-secondary-wash mt-1" %>
               <% end %>
             </div>
           </div>

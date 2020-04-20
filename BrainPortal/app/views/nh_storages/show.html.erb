@@ -1,52 +1,148 @@
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
 
-Private storage <%= @nh_dp.name %>
+<% title "#{@nh_dp.name}", "" %>
 
-<hr>
-<%= link_to "[Back to list of storages]", nh_storages_path %>
-<hr>
-<%= link_to "[Edit this storage]", edit_nh_storage_path(@nh_dp) %>
-<hr>
+<div id="nh_storages_show" class="nh_content">
 
+  <%- # actions -%>
+  <div class="nh_actions">
+    <%= link_to "Edit", edit_nh_storage_path(@nh_dp), :class=>"btn-solid-secondary nh_action" %>
+  </div>
 
-User: <%= @nh_dp.remote_user %>
-<hr>
-Host: <%= @nh_dp.remote_host %>
-<hr>
-Port: <%= @nh_dp.remote_port %>
-<hr>
-Directory: <%= @nh_dp.remote_dir %>
-<hr>
-Project access: <%= link_to @nh_dp.group.name, nh_project_path(@nh_dp.group) %>
-<hr>
+  <%- # show -%>
+  <div class="card">
+    <div class="card-item title">
+      <div class="card-title"><%= @nh_dp.name %></div>
+    </div>
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">User</p>
+          <p class="card-text"><%= @nh_dp.remote_user %></p>
+        </div>
+      </div>
+    </div>
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Host</p>
+          <p class="card-text"><%= @nh_dp.remote_host %></p>
+        </div>
+      </div>
+    </div>
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Port</p>
+          <p class="card-text"><%= @nh_dp.remote_port %></p>
+        </div>
+      </div>
+    </div>
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Directory</p>
+          <p class="card-text"><%= @nh_dp.remote_dir %></p>
+        </div>
+      </div>
+    </div>
+    <div class="card-row">
+      <div class="card-item">
+        <div class="d-flex flex-column">
+          <p class="card-label">Project Access</p>
+          <%= link_to @nh_dp.group.name, nh_project_path(@nh_dp.group), :class => "btn-text-secondary mt-2" %>
+        </div>
+      </div>
+    </div>
 
-<% if @file_counts.present? %>
-  <hr>
-  Stats:
-  <dl>
-    <% @file_counts.keys.sort.each do |type| %>
-      <% num  = @file_counts[type] %>
-      <% size = @file_sizes[type] %>
-      <dt><%= type %></dt>
-      <dd><%= pluralize(num, "entry") %>, <%= colored_pretty_size(size) %></dd>
-    <% end %>
-  </dl>
-<% else %>
-  There are yet no files registered on this storage.
-<% end %>
-
-<hr>
-
-<%= button_to "[Test Configuration]", check_nh_storage_path(@nh_dp), :method => :post %>
-<hr>
-<%= button_to "[Auto Register Files]", autoregister_nh_storage_path(@nh_dp), :method => :post %>
-<hr>
-
-<%= button_to "[Deconfigure this storage CONFIRM DOES NOT WORK]", nh_storage_path(@nh_dp),
-    {
-      :data => { :confirm => "Are you sure you want to deconfigure this private storage? Files will be unregistered. Explain more here." },
-      :class  => "button menu_button",
-      :method => :delete
-    }
-%>
-
-<%= render :partial => 'nh_storages/show_key' %>
+  <% if @file_counts.present? %>
+    <div class="card-row">
+      <div class="card-item">
+        <div class="flex-1">
+          <p class="card-label">Stats</p>
+          <div class="list">
+            <div class="list-row">
+              <div class="list-item list-header"><p>File Type</p></div>
+              <div class="list-item list-header"><p>Entries</p></div>
+              <div class="list-item list-header"><p>Size</p></div>
+            </div>
+            <% @file_counts.keys.sort.each do |type| %>
+              <% num  = @file_counts[type] %>
+              <% size = @file_sizes[type] %>
+              <div class="list-row">
+                <div class="list-item">
+                  <p><%= type %></p>
+                </div>
+                <div class="list-item">
+                  <p><%= num %></p>
+                </div>
+                <div class="list-item">
+                  <p><%= colored_pretty_size(size) %></p>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+  <div class="card-row">
+    <div class="card-item">
+      <div>
+        <p class="card-label">Test Configuration</p>
+        <p class="text-sm py-2">Insert description here.</p>
+        <%= button_to "Test Configuration", check_nh_storage_path(@nh_dp), :method => :post, :class => "btn-solid-secondary mt-2" %>
+      </div>
+    </div>
+  </div>
+  <div class="card-row">
+    <div class="card-item">
+      <div>
+        <p class="card-label">Auto Register</p>
+        <p class="text-sm py-2">Insert description here.</p>
+        <%= button_to "Auto Register Files", autoregister_nh_storage_path(@nh_dp), :method => :post, :class => "btn-solid-secondary mt-2" %>
+      </div>
+    </div>
+  </div>
+  <div class="card-row">
+    <div class="card-item">
+      <div>
+        <p class="card-label">Deconfigure Storage</p>
+        <p class="text-sm py-2">Insert description here.</p>
+        <%= button_to "Deconfigure this storage CONFIRM DOES NOT WORK",       nh_storage_path(@nh_dp),
+        {
+          :data => { :confirm => "Are you sure you want to deconfigure this private storage? Files will be unregistered. Explain more here." },
+          :class  => "btn-solid-secondary",
+          :method => :delete
+        }
+      %>
+      </div>
+    </div>
+  </div>
+  <div class="card-row">
+    <div class="card-item">
+      <%= render :partial => 'nh_storages/show_key' %>
+    </div>
+  </div>
+</div>

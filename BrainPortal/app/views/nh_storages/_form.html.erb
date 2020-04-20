@@ -27,11 +27,11 @@
 
 <%= form_for(@nh_dp, :as => :nh_dp, :url => route_path ) do |f| %>
   <fieldset >
-    <%= f.label :name, "Name"%>
+    <%= f.label :name, "Name", "data-required"=>"true" %>
     <%= f.text_field :name %>
   </fieldset>
   <fieldset >
-    <%= f.label :remote_host, "Hostname"%>
+    <%= f.label :remote_host, "Hostname", "data-required"=>"true" %>
     <%= f.text_field :remote_host %>
   </fieldset>
   <fieldset>
@@ -39,11 +39,11 @@
     <%= f.text_field :remote_port %>
   </fieldset>
   <fieldset>
-    <%= f.label :remote_user, "Username"%>
+    <%= f.label :remote_user, "Username", "data-required"=>"true"%>
     <%= f.text_field :remote_user %>
   </fieldset>
   <fieldset>
-    <%= f.label :remote_dir, "Path"%>
+    <%= f.label :remote_dir, "Path", "data-required"=>"true" %>
     <%= f.text_field :remote_dir %>
   </fieldset>
   <fieldset >
