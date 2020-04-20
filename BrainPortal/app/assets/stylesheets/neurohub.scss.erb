@@ -109,6 +109,10 @@ $CBRAIN_ALT: #05a3d6;
   background-color: $PRIMARY_ALT;
 }
 
+.bg-cbrain-wash {
+  background-color: $CBRAIN_WASH;
+}
+
 .bg-default-disabled {
   background-color: $DEFAULT_DISABLED;
 }
@@ -590,15 +594,22 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
     background-color: $CBRAIN_BG;
     border-color: $CBRAIN_BG;
   }
-
-  &::after {
-    @include ml(3);
-    content: "";
-    width: 1.2rem;
-    height: 1.2rem;
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-image: url("/images/neurohub/NH_cb_external.png");
+  &.external,
+  .external {
+    display: flex;
+    align-items: center;
+    &::after {
+      @include mx(2);
+      content: "";
+      display: inline-block;
+      width: 1rem;
+      min-width: 1rem;
+      height: 1rem;
+      background-repeat: no-repeat;
+      background-size: contain;
+      background-image: url("/images/neurohub/NH_cb_external.png");
+      transition: $TRANSITION_HOVER_OFF;
+    }
   }
 }
 
@@ -739,6 +750,11 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 .btn-text-cbrain {
   @extend .btn-text;
   color: $CBRAIN_ALT;
+  .icon-cb {
+    @include mx(2);
+    @include icon("xxs", none, $CBRAIN_ALT);
+    transition: $TRANSITION_HOVER_OFF;
+  }
   &.external,
   .external {
     display: flex;
@@ -750,7 +766,6 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
       width: 1rem;
       min-width: 1rem;
       height: 1rem;
-      opacity: 0.75;
       background-repeat: no-repeat;
       background-size: contain;
       background-image: url("/images/neurohub/NH_cb_external_blue.png");
@@ -762,11 +777,10 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
     background-color: $CBRAIN_WASH;
     border-color: $CBRAIN_WASH;
     color: $CBRAIN_BG;
-    &.external {
-      &::after {
-        opacity: 1;
-        transition: $TRANSITION_HOVER_ON;
-      }
+    .icon-cb {
+      @include mx(2);
+      @include icon("xxs", none, $CBRAIN_BG);
+      transition: $TRANSITION_HOVER_ON;
     }
   }
 }
@@ -1041,6 +1055,12 @@ $variant : error, notice
   background: none;
   border: 1px solid $DEFAULT_WASH;
   cursor: pointer;
+  &[type="file"] {
+    border-bottom: 0;
+    * {
+      @extend .btn-text-secondary;
+    }
+  }
 
   @if ($theme == "primary") {
     border: 0;

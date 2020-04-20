@@ -1,32 +1,69 @@
 
-Upload a single file to project <%= @nh_project.name %>
-<hr>
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
 
-<%= form_tag upload_file_nh_project_path(@nh_project), :multipart => true do %>
+<% title("Upload File", '') %>
 
-  <%= label_tag :upload_file, "Select file to upload:" %>
-  <%= file_field_tag :upload_file %>
-  <hr>
-  <%= label_tag :nh_dp_id, "Select storage for file content:" %>
-  <%= data_provider_select(:nh_dp_id,
-      { :data_providers => @nh_dps },
-      { :include_blank  => '(Select storage)' } )
-  %>
-  <hr>
-  <%= label_tag :nh_project_id, "Optional: assign file to a different project:" %>
-  <%= group_select(:file_nh_project_id,
-      { :groups => @nh_projects, :selector => @nh_project.id },
-      { :include_blank => '(Use project of selected storage)' } )
-  %>
-  <hr>
-  <%= submit_tag "Upload the file!" %>
-
-<% end %>
-
-<hr>
-More advanced upload options are available in the
-<%= button_to "CBRAIN file manager for this project",
-    switch_groups_path(id: @nh_project.id),
-    :class => "btn-solid-secondary nh_action",
-    :method => :post
-%>
+<div id="nh_projects_new_file" class="nh_content">
+  <div class="nh_form">
+    <div class="nh_form_title">
+      Upload File
+    </div>
+    <%= form_tag upload_file_nh_project_path(@nh_project), :multipart => true do %>
+      <%= error_messages_for @nh_project, :header_message => "File could not be created." %>
+      <fieldset>
+        <%= label_tag :upload_file, "Select file to upload", "data-required" => "true" %>
+        <%= file_field_tag :upload_file %>
+      </fieldset>
+      <fieldset>
+        <%= label_tag :nh_dp_id, "Select storage for file content", "data-required" => "true" %>
+        <%= data_provider_select(:nh_dp_id,
+            { :data_providers => @nh_dps },
+            { :include_blank  => '(Select storage)' } )
+        %>
+      </fieldset>
+      <fieldset>
+        <%= label_tag :nh_project_id, "Assign file to a different project" %>
+        <%= group_select(:file_nh_project_id,
+            { :groups => @nh_projects, :selector => @nh_project.id },
+            { :include_blank => '(Use project of selected storage)' } )
+        %>
+      </fieldset>
+      <div class="btn-section">
+        <%= submit_tag "Upload File", :class => "btn-solid-secondary" %>
+        <div class="py-4">
+          <div class="label ">
+            For more advanced upload options:
+            <% cbrain_text= ("<p class='d-flex'>CBRAIN File Manager <span class='icon-cb'>#{nh_icon_cb_external}</span></p>").html_safe %>
+            <%= link_to cbrain_text,
+                switch_groups_path(id: @nh_project.id),
+                :class => "btn-text-cbrain bg-cbrain-wash",
+                :method => :post,
+                :target => "_blank"
+            %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
