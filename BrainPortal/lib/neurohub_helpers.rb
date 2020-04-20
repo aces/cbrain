@@ -52,6 +52,30 @@ module NeurohubHelpers
         .where(:invisible => false)
   end
 
+  # This function validates the page and per_page parameters
+  # and store them in the session, if needed.
+  def pagination_check(collection, modelkey)
+    ppkey    = "#{modelkey}_per_page"
+    page     = params[:page].presence.try(:to_i) || 1
+    per_page = (params[:per_page].presence || session[ppkey].presence).try(:to_i) || 20
+    per_page = 5 if per_page < 5 || per_page > 100
+
+    # Compare page number with collection size and adjust if needed
+    totsize  = collection.count # works for arrays or ActiveRecord relations
+    offset   = (page-1)*per_page
+    page     = ((totsize+per_page-1) / per_page) if offset >= totsize
+
+    # Make persistent in session
+    session[ppkey] = per_page
+
+    # Same back in params, in case someone fetches the info there (e.g. pagy)
+    params[:page]     = page
+    params[:per_page] = per_page
+
+    # Return a sane page number and page size
+    return [ page, per_page ]
+  end
+
   # For +user+, return the private storage (DataProvider) named
   # by +id_or_dp+ which can be an ID or a DataProvider itself.
   def find_nh_storage(user, id_or_dp)

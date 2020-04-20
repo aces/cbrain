@@ -50,8 +50,7 @@
       </fieldset>
 
     <% if @nh_project.can_be_edited_by?(current_user) %>
-      <% if ((@nh_project.users.exists?) && (@nh_project.users.count != 1)) %>
-        <% if @nh_project.users.any? %>
+      <% if (@nh_project.users.count > 1) %>
             <div>
               <div class="label">Members</div>
               <p class="field_note">Editors have more privileges than members.</p>
@@ -68,7 +67,6 @@
                 <% end %>
               </div>
             </div>
-        <% end %>
       <% end %>
     <% end %>
 

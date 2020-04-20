@@ -83,18 +83,24 @@ class NeurohubPortalController < NeurohubApplicationController
   # and reports links to the matches found.
   def search
     @search  = params[:search]
-    @limit   = 20 # used by interface only
+    limit    = 20 # used by interface only
 
-    @results = @search.present? ? ModelsReport.search_for_token(@search, current_user) : {}
-    @results[:files]  ||= []
-    @results[:tasks]  ||= []
+    if @search.blank?
+      #flash[:notice] = 'Blank search'
+      redirect_to neurohub_path
+      return
+    end
 
-    @results[:groups] ||= []
-    valid_group_ids     = Group.where(:type =>WorkGroup.sti_descendant_names).pluck(:id)
-    @results[:groups]   = @results[:groups].keep_if{ |group| valid_group_ids.include?(group.id)}
+    @results  = ModelsReport.search_for_token(@search, current_user)
+    @files    = @results[:files]
+    @tasks    = @results[:tasks]
+    @projects = @results[:groups]
 
+    @files    = @files.limit(limit)    if @files.is_a?(ActiveRecord::Relation)
+    @tasks    = @tasks.limit(limit)    if @tasks.is_a?(ActiveRecord::Relation)
+    @projects = @projects.limit(limit) if @projects.is_a?(ActiveRecord::Relation)
 
-    @results
+    @projects = @projects.to_a.select { |g| g.is_a?(WorkGroup) }
   end
 
 end

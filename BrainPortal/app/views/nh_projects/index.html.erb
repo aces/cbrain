@@ -37,10 +37,9 @@
   ").html_safe
 %>
 
-<% button_view = @scope.custom[:button] %>
-
 <div id="nh_projects" class="nh_content">
   <% if @nh_projects.exists? %>
+
     <div class="nh_actions">
       <div class="nh_action"><%=
         scope_custom_link(
@@ -54,7 +53,19 @@
     %></div>
       <%= link_to "+ Add project", {:action => :new }, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
     </div>
-    <% if button_view %>
+
+      <div class="nh_pagination">
+        <%== pagy_nav(@pagy) %>
+        <div class="nh_per_page">
+          <%= form_for nh_projects_path(:page => @page), :method => :get do %>
+            <%= label_tag :per_page, "per page" %>
+            <%= number_field_tag :per_page, @per_page, min: 5, max: 100, step: 1, size: 5 %>
+          <% end %>
+        </div>
+      </div>
+
+
+    <% if @button_view %>
       <div class="grid">
         <% @nh_projects.each do |project| %>
           <div class="card">
@@ -76,10 +87,11 @@
         <% end %>
       </div>
     <% else %>
-      <%= render :partial => 'projects_table', :locals => {projects: @nh_projects, pagination: false} %>
+      <%= render :partial => 'projects_table', :locals => { projects: @nh_projects } %>
     <% end %>
 
   <% else %>
+
     <div class="empty">
       <div class="empty-wrapper">
         <img class="empty-icon" src="/images/neurohub/NH_empty_projects.svg" />
@@ -87,6 +99,7 @@
           <%= link_to "+ Add project", {:action => :new }, :method  => :get, :class => "btn-solid-secondary"  %>
       </div>
     </div>
+
   <% end %>
 
 </div>

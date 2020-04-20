@@ -29,7 +29,7 @@
     <div class="nh_actions">
       <%= link_to "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid-secondary nh_action", :method => :get %>
     </div>
-    <%= render :partial => 'files_table', :locals => {files: @files, pagination: true} %>
+    <%= render :partial => 'files_table', :locals => { files: @files, pagination: true } %>
   <% else %>
     <div class="empty">
       <div class="empty-wrapper">
