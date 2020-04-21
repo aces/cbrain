@@ -28,7 +28,7 @@
 
 <% title("Dashboard", '') %>
 
-<div id="nh_dashboard">
+<div id="nh_neurohub_portal_welcome">
   <div class="main">
     <div class="notifications">
       <% if new_invites.count > 0 %>
@@ -77,9 +77,10 @@
     <div class="section user">
         <div class="card">
         <%=
-          scope_link('<p class="btn-text-secondary card-title">Latest Tasks</p>'.html_safe,
+          scope_link('<p class="btn-text-cbrain external card-title">Latest Tasks</p>'.html_safe,
             'tasks#index', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
-            url: { :controller => :tasks, :action => :index }
+            url: { :controller => :tasks, :action => :index },
+            link: { :target => "_blank" }
           )
         %>
         <% if @tasks.size > 0 %>
@@ -87,18 +88,16 @@
             <% for task in @tasks %>
               <div class="card-row">
                 <div class="card-section">
-                  <div class="card-item btn-text-secondary">
+                  <div class="card-item btn-text-cbrain">
                     <div class="card-icon"><%= nh_icon_task %></div>
+                      <%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau, :html_options => { :class => "text-ellipsis external", :target => "_blank" }) %>
+                  </div>
+                  <div class="card-item btn-text-cbrain">
+                    <div class="card-icon"><%= nh_icon_user %></div>
                     <div class="text-ellipsis flex-1">
-                      <%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau) %>
+                      <%= link_to_user_if_accessible(task.user, nil, :html_options => { :class => "text-ellipsis external", :target => "_blank" })%>
                     </div>
                   </div>
-                  <div class="card-item btn-text-secondary">
-                  <div class="card-icon"><%= nh_icon_user %></div>
-                  <div class="text-ellipsis flex-1">
-                    <%= link_to_user_if_accessible(task.user, nil) %>
-                  </div>
-                </div>
                   <div class="card-item" style="max-width:150px">
                     <div class="text-ellipsis flex-1">
                       <%= colored_status(task.status) %>
@@ -109,7 +108,7 @@
                   <div class="card-item btn-text-secondary">
                     <div class="card-icon"><%= nh_icon_project %></div>
                     <div class="text-ellipsis flex-1">
-                      <%= link_to_group_if_accessible(task.group) %>
+                      <%= link_to task.group.name, {:controller => :nh_projects, :action => :show, :id => task.group.id}, :method  => :get %>
                     </div>
                   </div>
 
@@ -136,9 +135,10 @@
         </div>
         <div class="card">
             <%=
-            scope_link('<p class="btn-text-secondary card-title">Latest Updated Files</p>'.html_safe,
+            scope_link('<p class="btn-text-cbrain external card-title">Latest Updated Files</p>'.html_safe,
               'userfiles#index', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
-              url: { :controller => :userfiles, :action => :index }
+              url: { :controller => :userfiles, :action => :index },
+              link: { :target => "_blank" }
             )
           %>
           <% if @files.size > 0 %>
@@ -146,16 +146,16 @@
               <% for file in @files %>
                 <div class="card-row">
                   <div class="card-section">
-                    <div class="card-item btn-text-secondary">
+                    <div class="card-item btn-text-cbrain">
                       <div class="card-icon"><%= nh_icon_file %></div>
                       <div class="text-ellipsis flex-1">
-                        <%= link_to_userfile_if_accessible(file, nil) %>
+                        <%= link_to_userfile_if_accessible(file, nil, :html_options => { :class => "text-ellipsis external", :target => "_blank" }) %>
                       </div>
                     </div>
-                    <div class="card-item btn-text-secondary">
+                    <div class="card-item btn-text-cbrain">
                       <div class="card-icon"><%= nh_icon_user %></div>
                       <div class="text-ellipsis flex-1">
-                        <%= link_to_user_if_accessible(file.user, nil) %>
+                        <%= link_to_user_if_accessible(file.user, nil, :html_options => { :class => "text-ellipsis external", :target => "_blank" }) %>
                       </div>
                     </div>
                     <div class="card-item" style="max-width:150px">

@@ -25,7 +25,7 @@
     ├── PROJECTS
     ├── USERS
     ├── INVITATIONS
-    ├── DASHBOARD
+    ├── WELCOME
     ├── SEARCH
     ├── LICENSE
     ├── STORAGES
@@ -564,7 +564,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   @extend .btn;
   @include shadow("low");
   border-radius: 2px;
-  border: 1px solid;
+  border: none;
   transition: $TRANSITION_HOVER_OFF;
 
   &:hover {
@@ -752,6 +752,9 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   color: $CBRAIN_ALT;
   .icon-cb {
     @include mx(2);
+  }
+  .icon-cb,
+  .icon-cb svg {
     @include icon("xxs", none, $CBRAIN_ALT);
     transition: $TRANSITION_HOVER_OFF;
   }
@@ -763,8 +766,8 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
       @include mx(2);
       content: "";
       display: inline-block;
-      width: 1rem;
-      min-width: 1rem;
+      width: 0.9rem;
+      min-width: 0.9rem;
       height: 1rem;
       background-repeat: no-repeat;
       background-size: contain;
@@ -777,8 +780,10 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
     background-color: $CBRAIN_WASH;
     border-color: $CBRAIN_WASH;
     color: $CBRAIN_BG;
-    .icon-cb {
-      @include mx(2);
+    transition: $TRANSITION_HOVER_ON;
+
+    .icon-cb,
+    .icon-cb svg {
       @include icon("xxs", none, $CBRAIN_BG);
       transition: $TRANSITION_HOVER_ON;
     }
@@ -1713,6 +1718,7 @@ Secondary toolbar with application-wide search + breadcrumbs
     }
   }
   &[data-welcome="true"] {
+    @include py(4);
     background: $SECONDARY_ALT;
     color: $DEFAULT_BG;
     .nh_search {
@@ -1725,6 +1731,9 @@ Secondary toolbar with application-wide search + breadcrumbs
     }
   }
   @media (min-width: $BREAKPOINT_MD) {
+    &[data-welcome="true"] {
+      @include py(0);
+    }
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
@@ -2011,11 +2020,25 @@ $ACTION_BAR_HEIGHT: 2.5;
 */
 
 $MAX_CARD_LIST_HEIGHT: 15;
+$BAR_HEIGHT: 2.3;
 
 #nh_projects {
   flex: 1;
   display: flex;
   flex-direction: column;
+  .nh_projects_public {
+    @include text("xxs");
+    @include p(1);
+    @include px(2);
+    border-radius: 2px;
+    background: $SECONDARY_WASH;
+    color: $SECONDARY_ALT;
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translate(0, -50%);
+    text-transform: uppercase;
+  }
 
   .grid {
     @include py(4);
@@ -2026,60 +2049,76 @@ $MAX_CARD_LIST_HEIGHT: 15;
     .card {
       display: flex;
       flex-wrap: wrap;
-      &:hover {
-        @include shadow("high");
-      }
-      .text-secondary,
-      .btn-text-secondary {
-        @include p(2);
+      flex-direction: column;
+      > * {
         width: 100%;
-        text-decoration: none;
-        text-transform: unset;
-        text-align: center;
-        color: $SECONDARY_TEXT;
       }
-      .card-text {
-        @include p(2);
+      .card_text {
         @include text("xs");
         color: $DEFAULT_DK;
-        width: 5rem;
-        flex: 1;
-        height: 5rem;
-        white-space: unset;
       }
-      .card-actions {
-        @include p(0);
-        @include mt(2);
-
-        cursor: pointer;
-        transition: $TRANSITION_HOVER_OFF;
-        &:hover {
-          background: $SECONDARY_WASH;
-          transition: $TRANSITION_HOVER_ON;
+      .card_creator {
+        height: $BAR_HEIGHT + rem; // patch that sets height for link_to element that does not return a link
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        .btn-text-cbrain {
+          @include text("xs");
+          width: 100%;
         }
-        a {
-          @include p(2);
-          @include mx(1);
+      }
+      .card_description {
+        @include p(2);
+        flex: 1 1 5rem;
+        overflow: hidden;
+        position: relative;
+        &::after {
+          content: "";
+          background: linear-gradient(
+            transparent,
+            $DEFAULT_BG
+          ); // overflow gradient
+          width: 100%;
+          height: 1rem;
+          position: absolute;
+          bottom: 0;
+          left: 0;
+        }
+      }
+
+      .card_public {
+        @include my(1);
+        display: flex;
+        justify-content: flex-end;
+        div {
+          @extend .nh_projects_public;
+          position: relative;
+        }
+      }
+      .card_actions {
+        @include p(1);
+        @include m(0);
+        height: $BAR_HEIGHT + rem;
+        align-self: flex-end;
+        &[data-actions="true"]:hover {
+          background: $SECONDARY_WASH;
+        }
+        .icon {
+          @include m(1);
+          @include icon("xxs", $SECONDARY_ALT, $SECONDARY_ALT);
+          align-self: flex-end;
           display: flex;
-          flex-direction: row;
-          justify-content: flex-end;
-          opacity: 0.5;
-          transition: $TRANSITION_HOVER_OFF;
-          background: transparent;
+          justify-content: center;
+          align-items: center;
           svg {
             width: 1rem;
             height: 1rem;
-            fill: $SECONDARY_ALT;
-            stroke: $SECONDARY_ALT;
-          }
-
-          .table_action_icon {
-            width: 1rem;
-            height: 1rem;
-            fill: $SECONDARY_ALT;
           }
           &:hover {
-            opacity: 1;
+            svg {
+              fill: $SECONDARY_BG;
+              stroke: $SECONDARY_BG;
+            }
           }
         }
       }
@@ -2295,13 +2334,13 @@ $CARD_ITEM_MAX_WIDTH: 13;
 
 /*
 =============================================================
-| DASHBOARD
+| WELCOME
 =============================================================
 */
 
-$DASH_CARD_MIN_WIDTH: 25;
+$DASHBOARD_CARD_MIN_WIDTH: 25;
 
-#nh_dashboard {
+#nh_neurohub_portal_welcome {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -2340,7 +2379,7 @@ $DASH_CARD_MIN_WIDTH: 25;
       .card {
         @include m(0);
         @include mb(1);
-        flex: 1 1 $DASH_CARD_MIN_WIDTH + rem;
+        flex: 1 1 $DASHBOARD_CARD_MIN_WIDTH + rem;
         display: flex;
         flex-direction: column;
         .card-title {
@@ -2360,24 +2399,21 @@ $DASH_CARD_MIN_WIDTH: 25;
             @include px(4);
             @include py(2);
             justify-content: flex-start;
-
             .card-icon {
+              display: flex;
+
               svg {
                 @include mr(2);
                 width: 1rem;
-                stroke: $SECONDARY_TEXT;
-                fill: $SECONDARY_TEXT;
-                vertical-align: sub;
+                stroke-width: 1.5px;
               }
             }
 
             &.title {
               background: $DEFAULT_WASH;
             }
-            span {
-              vertical-align: sub;
-            }
-            &.btn-text-secondary {
+            &.btn-text-secondary,
+            &.btn-text-cbrain {
               text-align: left;
               text-decoration: none;
               cursor: default;
@@ -2385,13 +2421,31 @@ $DASH_CARD_MIN_WIDTH: 25;
                 text-decoration: underline;
                 cursor: pointer;
               }
+            }
+
+            &.btn-text-secondary {
+              svg {
+                fill: $SECONDARY_TEXT;
+                stroke: $SECONDARY_TEXT;
+              }
+              &:hover {
+                svg {
+                  fill: $SECONDARY_BG;
+                  stroke: $SECONDARY_BG;
+                  transition: $TRANSITION_HOVER_ON;
+                }
+              }
+            }
+            &.btn-text-cbrain {
+              .card-icon {
+                fill: $CBRAIN_ALT;
+                stroke: $CBRAIN_ALT;
+              }
               &:hover {
                 .card-icon {
-                  svg {
-                    fill: $SECONDARY_BG;
-                    stroke: $SECONDARY_BG;
-                    transition: $TRANSITION_HOVER_ON;
-                  }
+                  fill: $CBRAIN_BG;
+                  stroke: $CBRAIN_BG;
+                  transition: $TRANSITION_HOVER_ON;
                 }
               }
             }

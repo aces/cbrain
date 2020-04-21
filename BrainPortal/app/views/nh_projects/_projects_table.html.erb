@@ -40,10 +40,13 @@
       <% projects.each do |project| %>
         <tr>
           <th>
-            <%= link_to project.name, {:controller => :nh_projects, :action => :show, :id => project.id}, :method  => :get, :class=>"text btn-text-secondary", :'data-link' => "true" %>
+            <%= link_to project.name, {:controller => :nh_projects, :action => :show, :id => project.id}, :method  => :get, :class=>"text btn-text-secondary", :'data-link' => "true", :'data-public' => project.public  %>
+            <% if project.public %>
+              <div class="nh_projects_public"> public </div>
+            <% end %>
           </th>
           <td>
-            <p class="text"><%= link_to_user_if_accessible(project.creator, current_user, :html_options => {:class => "btn-text-cbrain external", :'data-link' => "true"}) %></p>
+            <p class="text"><%= link_to_user_if_accessible(project.creator, current_user, :html_options => {:class => "btn-text-cbrain external", :'data-link' => "true", :target => "_blank"}) %></p>
           </td>
           <td data-type="int">
             <p class="text"><%= project.users.count %></p>
