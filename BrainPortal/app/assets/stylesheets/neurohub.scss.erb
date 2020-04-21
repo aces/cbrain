@@ -2053,6 +2053,13 @@ $BAR_HEIGHT: 2.3;
       > * {
         width: 100%;
       }
+      .card_title {
+        background: $DEFAULT_WASH;
+      }
+      .btn-text-secondary,
+      .btn-text-cbrain {
+        text-decoration: none;
+      }
       .card_text {
         @include text("xs");
         color: $DEFAULT_DK;
@@ -2100,8 +2107,17 @@ $BAR_HEIGHT: 2.3;
         @include m(0);
         height: $BAR_HEIGHT + rem;
         align-self: flex-end;
+        &[data-actions="true"] {
+          svg {
+            opacity: 0.7;
+          }
+        }
+
         &[data-actions="true"]:hover {
           background: $SECONDARY_WASH;
+          svg {
+            opacity: 1;
+          }
         }
         .icon {
           @include m(1);
