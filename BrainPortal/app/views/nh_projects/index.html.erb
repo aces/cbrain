@@ -40,31 +40,26 @@
 <div id="nh_projects" class="nh_content">
   <% if @nh_projects.exists? %>
 
+    <%- # actions -%>
     <div class="nh_actions">
-      <div class="nh_action"><%=
-        scope_custom_link(
-          button_view ? list_icon : grid_icon,
-          @scope, { 'button' => !button_view },
-          url:  {},
-          link: {
-            :class => "btn-solid-secondary"
-          }
-        )
-    %></div>
+      <%= link_to( (@button_view ? list_icon : grid_icon), nh_projects_path(:button => !@button_view),:class => "btn-solid-secondary nh_action") %>
       <%= link_to "+ Add project", {:action => :new }, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
-    </div>
 
+      <%- # pagination -%>
       <div class="nh_pagination">
         <%== pagy_nav(@pagy) %>
         <div class="nh_per_page">
           <%= form_for nh_projects_path(:page => @page), :method => :get do %>
-            <%= label_tag :per_page, "per page" %>
+            <%= label_tag :per_page, "show" %>
             <%= number_field_tag :per_page, @per_page, min: 5, max: 100, step: 1, size: 5 %>
+            <span> of <%= @project_count || projects.count %> </span>
           <% end %>
         </div>
       </div>
 
+    </div>
 
+    <%- # projects -%>
     <% if @button_view %>
       <div class="grid">
         <% @nh_projects.each do |project| %>
@@ -91,7 +86,7 @@
     <% end %>
 
   <% else %>
-
+    <%- empty state -%>
     <div class="empty">
       <div class="empty-wrapper">
         <img class="empty-icon" src="/images/neurohub/NH_empty_projects.svg" />

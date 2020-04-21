@@ -26,16 +26,36 @@
 
 <div id="nh_icon_cb" class="nh_content">
   <% if @files.exists? %>
+
+    <%- # actions -%>
     <div class="nh_actions">
       <%= link_to "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid-secondary nh_action", :method => :get %>
+
+      <%- # pagination -%>
+      <div class="nh_pagination">
+        <%== pagy_nav(@pagy) %>
+        <div class="nh_per_page">
+          <%= form_tag files_nh_project_path(@nh_project, :page => @page), :method => :get do %>
+            <%= label_tag :per_page, 'show' %>
+            <%= number_field_tag :per_page, @per_page, min: 5, max: 100, step: 1, size: 5 %>
+            <span> of <%= @files_count || @files.count %> </span>
+          <% end %>
+        </div>
+      </div>
+
     </div>
-    <%= render :partial => 'files_table', :locals => { files: @files, pagination: true } %>
+
+    <%= render :partial => 'files_table', :locals => { files: @files } %>
+
   <% else %>
+
+    <%- # empty state -%>
     <div class="empty">
       <div class="empty-wrapper">
         <img class="empty-icon" src="/images/neurohub/NH_empty_files.svg" />
         <p class="empty-text">There are no current files for this project.</p>
       </div>
     </div>
+
   <% end %>
 </div>

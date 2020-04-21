@@ -932,20 +932,21 @@ $variant : error, notice
   display: flex;
   align-items: center;
   justify-content: center;
-  .empty-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    .empty-icon {
-      @include pb(4);
-      width: 100%;
-    }
-    .empty-text {
-      @include py(4);
-      @include text("sm");
-      color: $DEFAULT_ALT;
-      text-align: center;
-    }
+}
+
+.empty-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  .empty-icon {
+    @include pb(4);
+    width: 100%;
+  }
+  .empty-text {
+    @include py(4);
+    @include text("sm");
+    color: $DEFAULT_ALT;
+    text-align: center;
   }
 }
 
@@ -1273,7 +1274,7 @@ Cards used for simple "show"-type views
 =============================================================
 */
 
-.pagination {
+.nh_pagination {
   @include p(2);
   @include text("xs");
   background: $DEFAULT_BG;
@@ -1281,6 +1282,36 @@ Cards used for simple "show"-type views
   border-bottom: 1px solid $SECONDARY_WASH;
   color: $SECONDARY_TEXT;
   width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  .pagination {
+    .page,
+    .disabled {
+      @include px(1);
+      opacity: 0.7;
+    }
+    .active,
+    .prev:not(.disabled),
+    .next:not(.disabled) {
+      opacity: 1;
+    }
+    .active {
+      text-decoration: underline;
+    }
+  }
+  .nh_per_page {
+    @include text("xs");
+    #per_page {
+      @include mx(1);
+      @include p(1);
+      text-align: right;
+      border: 1px solid $DEFAULT_BORDER;
+      outline-color: $SECONDARY_BG;
+      transition: $TRANSITION_HOVER_ON;
+      opacity: 1;
+    }
+  }
 }
 
 table {
@@ -1720,6 +1751,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .nh_content {
@@ -1755,8 +1787,6 @@ $ACTION_BAR_HEIGHT: 2.5;
   background: $DEFAULT_BG;
   display: flex;
   flex-wrap: wrap;
-  overflow: hidden;
-  min-height: $ACTION_BAR_HEIGHT + rem;
 }
 
 .nh_action {
@@ -1951,12 +1981,16 @@ $ACTION_BAR_HEIGHT: 2.5;
 =============================================================
 */
 
-#nh_signups_new, #nh_signups_show {
+#nh_signups_new,
+#nh_signups_show {
   @extend .nh_content;
   flex: 1;
   .nh_logo {
     @include logo();
     @include mb(4);
+  }
+  .empty {
+    position: unset;
   }
 }
 
