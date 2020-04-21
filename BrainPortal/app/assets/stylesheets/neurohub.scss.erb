@@ -1285,6 +1285,10 @@ Cards used for simple "show"-type views
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-direction: column-reverse;
+  > * {
+    @include my(1);
+  }
   .pagination {
     .page,
     .disabled {
@@ -1310,6 +1314,12 @@ Cards used for simple "show"-type views
       outline-color: $SECONDARY_BG;
       transition: $TRANSITION_HOVER_ON;
       opacity: 1;
+    }
+  }
+  @media (min-width: $BREAKPOINT_SM) {
+    flex-direction: row;
+    > * {
+      @include my(0);
     }
   }
 }
