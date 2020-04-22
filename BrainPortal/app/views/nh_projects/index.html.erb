@@ -64,7 +64,9 @@
         <% @nh_projects.each do |project| %>
           <div class="card">
             <%= link_to project.name, {:action => :show, :id => project.id}, :method  => :get, :class=> "btn-text-secondary card_title" %>
-            <div class="card_text card_creator"><%= link_to_user_if_accessible(project.creator, current_user, :html_options => {:class => "btn-text-cbrain external", :target => "_blank"}) %></div>
+            <div class="card_text card_creator">
+              <%= link_to_user_if_accessible(project.creator, current_user, :html_options => {:class => "btn-text-cbrain external", :target => "_blank"}) %>
+            </div>
             <% if project.public %>
               <div class="card_text card_public">
                 <div>public</div>
@@ -74,7 +76,7 @@
               <%= project.description.presence %>
             </div>
 
-            <div class="btn-section card_actions" data-actions=<%=project.can_be_edited_by?(current_user)%>>
+            <div class="btn-section card_actions" data-actions = <%=p roject.can_be_edited_by?(current_user) %> >
               <% if project.can_be_edited_by?(current_user) %>
                 <%= link_to nh_icon_edit, {:action => :edit, :id => project.id}, :method  => :get, :class => "icon" %>
               <% end %>

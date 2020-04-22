@@ -40,7 +40,7 @@
       <% projects.each do |project| %>
         <tr>
           <th>
-            <%= link_to project.name, {:controller => :nh_projects, :action => :show, :id => project.id}, :method  => :get, :class=>"text btn-text-secondary", :'data-link' => "true", :'data-public' => project.public  %>
+            <%= link_to project.name, {:controller => :nh_projects, :action => :show, :id => project.id}, :method  => :get, :class=>"text btn-text-secondary", :'data-link' => "true" %>
             <% if project.public %>
               <div class="nh_projects_public"> public </div>
             <% end %>
