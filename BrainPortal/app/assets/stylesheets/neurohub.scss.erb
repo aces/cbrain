@@ -1499,14 +1499,6 @@ table {
           left: 0;
         }
       }
-      tr:not(:hover) {
-        th:first-child {
-          position: -webkit-sticky;
-          position: sticky;
-          left: 0;
-          background: $DEFAULT_WASH;
-        }
-      }
     }
     thead {
       th {
@@ -1517,6 +1509,7 @@ table {
         z-index: 3;
         overflow: hidden;
         &:first-child {
+          background: $DEFAULT_WASH;
           z-index: 4;
         }
         &::before {
@@ -1527,6 +1520,13 @@ table {
           right: 0;
           bottom: 0;
           background: $DEFAULT_BORDER;
+        }
+      }
+    }
+    tbody {
+      tr:not(:hover) {
+        th:first-child {
+          background: $DEFAULT_WASH;
         }
       }
     }
