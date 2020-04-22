@@ -31,9 +31,7 @@
         <th data-type="int"><p class="text">users</p></th>
         <th data-type="int"><p class="text">files</p></th>
         <th data-type="int"><p class="text">tasks</p></th>
-        <% if projects.any? {|project| project.can_be_edited_by?(current_user)} %>
-          <th data-action="true"><p class="text">actions</p></th>
-        <% end %>
+        <th data-action="true"><p class="text">actions</p></th>
       </tr>
     </thead>
     <tbody>

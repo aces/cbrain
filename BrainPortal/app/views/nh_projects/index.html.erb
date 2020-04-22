@@ -38,7 +38,6 @@
 
 <div id="nh_projects" class="nh_content">
   <% if @nh_projects.exists? %>
-
     <%- # actions -%>
     <div class="nh_actions">
       <%= link_to( (@button_view ? list_icon : grid_icon), nh_projects_path(:button => !@button_view),:class => "btn-solid-secondary nh_action") %>
@@ -55,10 +54,10 @@
           <% end %>
         </div>
       </div>
-
     </div>
 
     <%- # projects -%>
+
     <% if @button_view %>
       <div class="grid">
         <% @nh_projects.each do |project| %>
@@ -85,7 +84,6 @@
             <div class="card_text">
               <div class="card_stats">
                 <% task_stat = ("<div> Tasks: #{project.cbrain_tasks.count}</div>").html_safe %>
-
                 <%= link_to(files_nh_project_path(project.id), :class=>"text btn-text-secondary") do%>
                   Files: <%= project.userfiles.count %>
                 <% end %>
@@ -97,10 +95,8 @@
                     )
                 %>
                 <p class="text btn-text no-hover">Users: <%= project.users.count %></p>
-
               </div>
             </div>
-
           </div>
         <% end %>
       </div>

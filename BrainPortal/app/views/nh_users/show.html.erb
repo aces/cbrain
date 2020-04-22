@@ -27,6 +27,7 @@
 <% title("Account Summary", '') %>
 
 <div id="nh_users_show" class="nh_content">
+  <%- # actions -%>
   <div class="nh_actions">
     <%= link_to 'Edit', {:action => :edit, :id => @user.id}, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
     <% if invites.count > 0 %>
@@ -34,8 +35,12 @@
     <% end %>
   </div>
 
+  <%- # account details -%>
+
   <div class="card">
+
     <div class="card-row header" data-max-size="true">
+
       <div class="card-item">
         <div class="card-stat">
           <div class="card-icon"><%= nh_stats_filesize %></div>
@@ -45,14 +50,27 @@
           </div>
         </div>
       </div>
+
       <div class="card-item">
-        <div class="card-stat">
-          <div class="card-icon"><%= nh_stats_files %></div>
-          <div class="card-details text-ellipsis">
-            <p><%= @user.userfiles.count %></p>
-            <p class="label text-ellipsis">Files</p>
-          </div>
-        </div>
+        <% userfiles_stat = ("<div class='card-stat external middle'><div class='card-icon'>#{nh_stats_files}</div><div class='card-details'><p>#{@user.userfiles.count}</p><p class='label'>File#{@user.userfiles.count != 1 ? 's': ''}</p></div></div>").html_safe %>
+        <%=
+          scope_link(userfiles_stat,
+            'userfiles#index', { },
+            url: { :controller => :userfiles, :action => :index },
+            link: { class:"btn-text-cbrain", target: "_blank" }
+          )
+        %>
+      </div>
+
+      <div class="card-item">
+        <% task_stat = ("<div class='card-stat external middle'><div class='card-icon'>#{nh_stats_tasks}</div><div class='card-details'><p>#{@user.cbrain_tasks.count}</p><p class='label'>Task#{@user.cbrain_tasks.count != 1 ? 's': ''}</p></div></div>").html_safe %>
+        <%=
+          scope_link(task_stat,
+            'tasks#index', { },
+            url: { :controller => :tasks, :action => :index },
+            link: { class:"btn-text-cbrain", target: "_blank" }
+          )
+        %>
       </div>
     </div>
 
