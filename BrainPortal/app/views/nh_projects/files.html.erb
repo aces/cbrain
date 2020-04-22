@@ -54,6 +54,7 @@
       <div class="empty-wrapper">
         <img class="empty-icon" src="/images/neurohub/NH_empty_files.svg" />
         <p class="empty-text">There are no current files for this project.</p>
+        <%= link_to "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid-secondary", :method => :get %>
       </div>
     </div>
 

@@ -110,7 +110,10 @@ class NhProjectsController < NeurohubApplicationController
     @files_count     = @files.count
 
     @page, @per_page = pagination_check(@files, :nh_project_files)
-    @pagy, @files    = pagy(@files, :items => @per_page)
+
+    if @files.count > 0
+      @pagy, @files    = pagy(@files, :items => @per_page)
+    end
   end
 
   def new_license #:nodoc:
