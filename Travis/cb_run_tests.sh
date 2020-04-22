@@ -80,7 +80,7 @@ git log --date=iso -n 1 --pretty="%h by %an at %ad, %s"
 cd $cb_test/BrainPortal || die "Cannot cd to test BrainPortal directory"
 printf "${BLUE}Travis CI TEST CBRAIN:${NC} "
 git log --date=iso -n 1 --pretty="%h by %an at %ad, %s"
-printf "${BLUE}Travis CI REV CBRAIN:${NC}  "; script/show_cbrain_rev
+printf "${BLUE}Travis CI REV CBRAIN:${NC}  "; script/show_cbrain_rev -z
 
 echo ""
 
