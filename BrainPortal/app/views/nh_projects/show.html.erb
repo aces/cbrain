@@ -67,7 +67,7 @@
             scope_link(task_stat,
               'tasks#index', { :filters => [{ :a => 'group_id', :v => @nh_project.id }], },
               url: { :controller => :tasks, :action => :index },
-              link: { class:"btn-text-cbrain" }
+              link: { class:"btn-text-cbrain", target: "_blank" }
             )
           %>
         </div>

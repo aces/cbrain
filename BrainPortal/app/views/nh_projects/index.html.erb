@@ -67,20 +67,40 @@
             <div class="card_text card_creator">
               <%= link_to_user_if_accessible(project.creator, current_user, :html_options => {:class => "btn-text-cbrain external", :target => "_blank"}) %>
             </div>
-            <% if project.public %>
-              <div class="card_text card_public">
-                <div>public</div>
-              </div>
-            <% end %>
             <div class="card_text card_description">
               <%= project.description.presence %>
             </div>
+            <% if project.public || project.can_be_edited_by?(current_user) %>
+              <div class="card_footer" data-actions = <%= project.can_be_edited_by?(current_user) %> >
+                <% if project.public %>
+                  <div class="nh_projects_public">public</div>
+                <% end %>
+                <% if project.can_be_edited_by?(current_user) %>
+                  <div class="card_actions">
+                    <%= link_to nh_icon_edit, {:action => :edit, :id => project.id}, :method  => :get, :class => "icon" %>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+            <div class="card_text">
+              <div class="card_stats">
+                <% task_stat = ("<div> Tasks: #{project.cbrain_tasks.count}</div>").html_safe %>
 
-            <div class="btn-section card_actions" data-actions = <%= project.can_be_edited_by?(current_user) %> >
-              <% if project.can_be_edited_by?(current_user) %>
-                <%= link_to nh_icon_edit, {:action => :edit, :id => project.id}, :method  => :get, :class => "icon" %>
-              <% end %>
+                <%= link_to(files_nh_project_path(project.id), :class=>"text btn-text-secondary") do%>
+                  Files: <%= project.userfiles.count %>
+                <% end %>
+                <%=
+                  scope_link(task_stat,
+                    'tasks#index', { :filters => [{ :a => 'group_id', :v => project.id }], },
+                    url: { :controller => :tasks, :action => :index },
+                    link: { class:"text btn-text-cbrain external", target: "_blank" }
+                    )
+                %>
+                <p class="text btn-text no-hover">Users: <%= project.users.count %></p>
+
+              </div>
             </div>
+
           </div>
         <% end %>
       </div>

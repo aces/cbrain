@@ -735,6 +735,13 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   text-align: center;
   display: flex;
   align-items: center;
+  color: $DEFAULT_ALT;
+
+  &.no-hover {
+    text-decoration: none;
+    cursor: default;
+    pointer-events: none;
+  }
 }
 
 .btn-text-default {
@@ -803,10 +810,11 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   @extend .btn-text;
   color: $SECONDARY_TEXT;
   &[data-active="true"],
-  &:hover {
+  &:not(.no-hover):hover {
     background-color: $SECONDARY_WASH;
     color: $SECONDARY_BG;
   }
+
   &[disabled] {
     opacity: 0.5;
     cursor: not-allowed;
@@ -2077,8 +2085,9 @@ $BAR_HEIGHT: 2.3;
           width: 100%;
         }
       }
+
       .card_description {
-        @include p(2);
+        @include p(4);
         flex: 1 1 5rem;
         overflow: hidden;
         position: relative;
@@ -2093,21 +2102,39 @@ $BAR_HEIGHT: 2.3;
           left: 0;
         }
       }
-
-      .card_public {
-        @include my(1);
+      .card_stats {
         display: flex;
-        justify-content: flex-end;
-        div {
-          @extend .nh_projects_public;
-          position: relative;
+        justify-content: center;
+        background: $DEFAULT_WASH;
+        > * {
+          @include p(2);
+          @include title("xxs");
+          flex: 1;
+          border-right: 1px solid $DEFAULT_BG;
+          &:last-child {
+            border-right: none;
+          }
         }
       }
-      .card_actions {
-        @include p(1);
+      .card_footer {
+        @include p(2);
         @include m(0);
         height: $BAR_HEIGHT + rem;
-        align-self: flex-end;
+        display: flex;
+
+        .nh_projects_public {
+          position: relative;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        .card_actions {
+          flex: 1;
+          align-items: center;
+          display: flex;
+          justify-content: flex-end;
+        }
+
         &[data-actions="true"] {
           svg {
             opacity: 0.7;
