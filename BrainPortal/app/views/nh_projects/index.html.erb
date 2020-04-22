@@ -76,7 +76,7 @@
               <%= project.description.presence %>
             </div>
 
-            <div class="btn-section card_actions" data-actions = <%=p roject.can_be_edited_by?(current_user) %> >
+            <div class="btn-section card_actions" data-actions = <%= project.can_be_edited_by?(current_user) %> >
               <% if project.can_be_edited_by?(current_user) %>
                 <%= link_to nh_icon_edit, {:action => :edit, :id => project.id}, :method  => :get, :class => "icon" %>
               <% end %>
