@@ -50,9 +50,9 @@
           </div>
         </div>
       <% end %>
-      <div class="section default flex-1">
+      <div class="section flex-1">
         <div class="section-title">
-          <img src="/images/neurohub/NH_icon_grayscale.png" alt="cbrain-logo"/>
+          <img src="/images/neurohub/NH_hbhl_icon_grayscale.png" alt="cbrain-logo"/>
           Neurohub news
         </div>
         <div class="card">
@@ -123,11 +123,16 @@
             <% end %>
           </div>
         <% else %>
+          <%- # empty state -%>
           <div class="card-item">
-            <div style="position: unset;" class="empty">
-              <div class="empty-wrapper">
-                <img class="empty-icon" src="/images/neurohub/NH_empty_tasks.svg" />
-                <p class="empty-text">No tasks have been updated lately.</p>
+            <div class="empty-wrapper">
+              <div style="position: unset" class="empty">
+                <div>
+                  <div class="empty-icon">
+                    <%= nh_empty_tasks %>
+                  </div>
+                  <p class="empty-text">No tasks have been updated lately.</p>
+                </div>
               </div>
             </div>
           </div>
@@ -183,11 +188,16 @@
               <% end %>
             </div>
           <% else %>
+            <%- # empty state -%>
             <div class="card-item">
-              <div style="position: unset" class="empty">
-                <div class="empty-wrapper">
-                  <img class="empty-icon" src="/images/neurohub/NH_empty_files.svg" />
-                  <p class="empty-text">No files have been updated lately.</p>
+              <div class="empty-wrapper">
+                <div style="position: unset" class="empty">
+                  <div>
+                    <div class="empty-icon">
+                      <%= nh_empty_files %>
+                    </div>
+                    <p class="empty-text">No files have been updated lately.</p>
+                  </div>
                 </div>
               </div>
             </div>

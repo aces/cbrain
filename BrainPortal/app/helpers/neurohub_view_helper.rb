@@ -25,6 +25,66 @@ module NeurohubViewHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  def nh_empty_files
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 239.42 187.76"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#empty_files"></use>
+    </svg>
+    SVG
+  end
+
+  def nh_empty_invites
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 364 188"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#empty_invites"></use>
+    </svg>
+    SVG
+  end
+
+  def nh_empty_projects
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 364 188"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#empty_projects"></use>
+    </svg>
+    SVG
+  end
+
+  def nh_empty_search
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 137.74 163.54"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#empty_search"></use>
+    </svg>
+    SVG
+  end
+
+  def nh_empty_storage
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 214.51 182.53"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#empty_storage"></use>
+    </svg>
+    SVG
+  end
+
+  def nh_empty_tasks
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 260.1 185.84"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#empty_tasks"></use>
+    </svg>
+    SVG
+  end
+
   def nh_icon_caret_right
     <<-SVG.html_safe
     <svg xmlns="http://www.w3.org/2000/svg"

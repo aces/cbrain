@@ -289,7 +289,7 @@ $size    : xs, ssm, md, lg
 */
 
 @mixin logoImg($variant, $color) {
-  background-image: url(<%=asset_path"/images/neurohub/NH_\#{$variant}_\#{$color}.png"%>);
+  background-image: url(<%=asset_path"/images/neurohub/NH_hbhl_\#{$variant}_\#{$color}.png"%>);
   background-repeat: no-repeat;
   background-size: contain;
 }
@@ -935,6 +935,12 @@ $variant : error, notice
 =============================================================
 */
 
+.empty-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
 .empty {
   @include p(4);
   position: absolute;
@@ -945,21 +951,26 @@ $variant : error, notice
   display: flex;
   align-items: center;
   justify-content: center;
-}
 
-.empty-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  .empty-icon {
-    @include pb(4);
-    width: 100%;
-  }
-  .empty-text {
-    @include py(4);
-    @include text("sm");
-    color: $DEFAULT_ALT;
-    text-align: center;
+  div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .empty-icon {
+      @include pb(4);
+      width: 100%;
+      min-width: 300px;
+      max-height: 300px;
+    }
+    .empty-text {
+      @include py(4);
+      @include text("sm");
+      color: $DEFAULT_ALT;
+      text-align: center;
+    }
+    .btn-solid-secondary {
+      text-align: center;
+    }
   }
 }
 

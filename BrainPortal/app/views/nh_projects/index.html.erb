@@ -107,15 +107,17 @@
 
   <% else %>
     <%- # empty state -%>
-    <div class="empty">
-      <div class="empty-wrapper">
-        <img class="empty-icon" src="/images/neurohub/NH_empty_projects.svg" />
-        <p class="empty-text">There are currently no projects.</p>
+    <div class="empty-wrapper">
+      <div class="empty">
+        <div>
+          <div class="empty-icon">
+            <%= nh_empty_projects %>
+          </div>
+          <p class="empty-text">There are currently no projects.</p>
           <%= link_to "+ Add project", {:action => :new }, :method  => :get, :class => "btn-solid-secondary"  %>
+        </div>
       </div>
     </div>
-
   <% end %>
-
 </div>
 

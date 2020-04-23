@@ -27,11 +27,23 @@
   <p class="text-xs">
     Results are based on search by ID, name and description and are limited to 20 items per section (files, tasks, projects).
   </p>
+
+  <%- # empty state -%>
   <% if @files.size === 0 && @tasks.size === 0 && @projects.size === 0 %>
-    <p class="text-xs mt-2">
-     The search yielded no results.
-    </p>
+    <div class="empty-wrapper">
+      <div class="empty">
+        <div>
+          <div class="empty-icon">
+            <%= nh_empty_search %>
+          </div>
+          <p class="empty-text">The search returned no results.</p>
+        </div>
+      </div>
+      </div>
+    </div>
   <% end %>
+
+  <%- # search results -%>
   <% if @files.size > 0 %>
     <div class="section">
       <div class="section-title">Files</div>

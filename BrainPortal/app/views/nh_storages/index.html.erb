@@ -27,17 +27,27 @@
 <div id="nh_storages" class="nh_content">
 
   <% if @nh_dps.empty? %>
-    <div class="empty">
-      <div class="empty-wrapper">
-        <img class="empty-icon" src="" />
-        <p class="empty-text">No storage is configured yet.</p>
-        <%= link_to "Create new storage configuration", new_nh_storage_path, :class => "btn-solid-secondary" %>
+    <%- # empty state -%>
+    <div class="empty-wrapper">
+      <div class="empty">
+        <div>
+          <div class="empty-icon">
+            <%= nh_empty_storage %>
+          </div>
+          <p class="empty-text">No storage is configured yet.</p>
+          <%= link_to "Create new storage configuration", new_nh_storage_path, :class => "btn-solid-secondary" %>
+        </div>
+      </div>
       </div>
     </div>
+
   <% else %>
+    <%- # actions -%>
     <div class="nh_actions">
         <%= link_to "+ Storage Configuration", new_nh_storage_path, :class => "btn-solid-secondary nh_action" %>
     </div>
+
+    <%- # dp storage table -%>
     <div class="nh_table_scroll">
       <table>
         <thead>
