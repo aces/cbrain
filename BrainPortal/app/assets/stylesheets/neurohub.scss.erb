@@ -1222,6 +1222,9 @@ Cards used for simple "show"-type views
     width: 100%;
     overflow: hidden;
     position: relative;
+    .empty {
+      align-self: center;
+    }
     &.title {
       background: $DEFAULT_WASH;
     }
@@ -1237,8 +1240,7 @@ Cards used for simple "show"-type views
     flex-direction: column;
     .card-item {
       @include p(0);
-      .btn-text-secondary,
-      .btn-text-cbrain,
+      a,
       .card-link a {
         @include p(0);
         width: 100%;
@@ -1305,10 +1307,16 @@ Cards used for simple "show"-type views
     @include my(1);
   }
   .pagination {
+    user-select: none;
+
     .page,
     .disabled {
       @include px(1);
       opacity: 0.7;
+    }
+    .page:not(.active):hover {
+      color: $SECONDARY_BG;
+      cursor: pointer;
     }
     .active,
     .prev:not(.disabled),
@@ -1347,6 +1355,10 @@ table {
   background: $DEFAULT_BG;
   border-radius: 4px;
   border: 0;
+  .error_link {
+    @extend .btn-text-cbrain;
+    @extend .external;
+  }
   th,
   td {
     display: table-cell;
@@ -1358,6 +1370,9 @@ table {
       overflow: hidden;
       text-align: start;
       justify-content: flex-start;
+    }
+    &[data-trim="true"] {
+      max-width: 250px;
     }
     &[data-type="int"],
     &[data-action="true"] {
@@ -1391,6 +1406,7 @@ table {
         @include title("xxs");
         @include p(2);
         align-items: flex-start;
+        .btn-text-secondary,
         .btn-text-cbrain {
           background: inherit;
           text-align: left;
@@ -2073,8 +2089,7 @@ $BAR_HEIGHT: 2.3;
           background: $SECONDARY_WASH;
         }
       }
-      .btn-text-secondary,
-      .btn-text-cbrain {
+      a {
         text-decoration: none;
       }
       .card_text {
@@ -2086,8 +2101,11 @@ $BAR_HEIGHT: 2.3;
         display: flex;
         justify-content: center;
         align-items: center;
-        .btn-text-cbrain {
+        a {
+          @extend .btn-text-cbrain;
+          @extend .external;
           @include text("xs");
+          text-decoration: none;
           width: 100%;
         }
       }
@@ -2117,6 +2135,7 @@ $BAR_HEIGHT: 2.3;
           @include title("xxs");
           flex: 1;
           border-right: 1px solid $DEFAULT_BG;
+          white-space: nowrap;
           &:last-child {
             border-right: none;
           }
@@ -2310,7 +2329,7 @@ $BAR_HEIGHT: 2.3;
       @include shadow("high");
     }
     .header {
-      @include py(2);
+      @include p(2);
       border: none;
     }
     .card-item {
@@ -2433,6 +2452,9 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
             @include px(4);
             @include py(2);
             justify-content: flex-start;
+            .empty {
+              align-self: center;
+            }
             .card-icon {
               display: flex;
 
@@ -2452,6 +2474,8 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
               text-decoration: none;
               cursor: default;
               a {
+                @extend .text-ellipsis;
+                @extend .external;
                 text-decoration: underline;
                 cursor: pointer;
               }

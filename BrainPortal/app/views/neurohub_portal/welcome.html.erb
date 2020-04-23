@@ -90,12 +90,12 @@
                 <div class="card-section">
                   <div class="card-item btn-text-cbrain">
                     <div class="card-icon"><%= nh_icon_task %></div>
-                      <%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau, :html_options => { :class => "text-ellipsis external", :target => "_blank" }) %>
+                      <%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau, :html_options => { :target => "_blank" }) %>
                   </div>
                   <div class="card-item btn-text-cbrain">
                     <div class="card-icon"><%= nh_icon_user %></div>
                     <div class="text-ellipsis flex-1">
-                      <%= link_to_user_if_accessible(task.user, nil, :html_options => { :class => "text-ellipsis external", :target => "_blank" })%>
+                      <%= link_to_user_if_accessible(task.user, nil, :html_options => { :target => "_blank" })%>
                     </div>
                   </div>
                   <div class="card-item" style="max-width:150px">
@@ -124,7 +124,7 @@
           </div>
         <% else %>
           <div class="card-item">
-            <div style="position: unset" class="empty">
+            <div style="position: unset;" class="empty">
               <div class="empty-wrapper">
                 <img class="empty-icon" src="/images/neurohub/NH_empty_tasks.svg" />
                 <p class="empty-text">No tasks have been updated lately.</p>
@@ -149,13 +149,13 @@
                     <div class="card-item btn-text-cbrain">
                       <div class="card-icon"><%= nh_icon_file %></div>
                       <div class="text-ellipsis flex-1">
-                        <%= link_to_userfile_if_accessible(file, nil, :html_options => { :class => "text-ellipsis external", :target => "_blank" }) %>
+                        <%= link_to_userfile_if_accessible(file, nil, :html_options => { :target => "_blank" }) %>
                       </div>
                     </div>
                     <div class="card-item btn-text-cbrain">
                       <div class="card-icon"><%= nh_icon_user %></div>
                       <div class="text-ellipsis flex-1">
-                        <%= link_to_user_if_accessible(file.user, nil, :html_options => { :class => "text-ellipsis external", :target => "_blank" }) %>
+                        <%= link_to_user_if_accessible(file.user, nil, :html_options => { :target => "_blank" }) %>
                       </div>
                     </div>
                     <div class="card-item" style="max-width:150px">

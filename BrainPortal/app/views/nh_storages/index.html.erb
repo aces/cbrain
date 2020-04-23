@@ -46,9 +46,9 @@
             <th><p class="text">User</p></th>
             <th><p class="text">Host</p></th>
             <th data-type="int"><p class="text">Port</p></th>
-            <th><p class="text">Directory</p></th>
-            <th><p class="text">Associated project</p></th>
-            <th><p class="text">SSH specification</p></th>
+            <th data-trim="true"><p class="text">Directory</p></th>
+            <th data-trim="true"><p class="text">Associated project</p></th>
+            <th data-trim="true"><p class="text">SSH specification</p></th>
             <th data-action="true"><p class="text">actions</p></th>
           </tr>
         </thead>
@@ -59,9 +59,9 @@
               <td><p class="text"><%= dp.remote_user %></p></td>
               <td><p class="text"><%= dp.remote_host %></p></td>
               <td data-type="int"><p class="text"><%= dp.remote_port %></p></td>
-              <td><p class="text"><%= dp.remote_dir %></p></td>
-              <td><%= link_to dp.group.name, nh_project_path(dp.group), :class=>"text btn-text-secondary", :'data-link' => "true" %></td>
-              <td>
+              <td data-trim="true"><p class="text"><%= dp.remote_dir %></p></td>
+              <td data-trim="true"><%= link_to dp.group.name, nh_project_path(dp.group), :class=>"text btn-text-secondary", :'data-link' => "true" %></td>
+              <td data-trim="true">
                 <p class="text">
                   <%= "-p #{dp.remote_port}" if dp.remote_port.present?%>
                   <%= "#{dp.remote_user}@#{dp.remote_host}:#{dp.remote_dir}" %>
