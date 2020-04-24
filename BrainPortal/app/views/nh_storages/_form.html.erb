@@ -50,8 +50,13 @@
   <fieldset >
     <%= f.label('nh_dp[group_id]', "Choose a Project", "data-required"=>"true") %>
     <%= group_select('nh_dp[group_id]', { :groups => @nh_projects, :selector => @nh_dp.group_id }, { :include_blank => '(Select project)' } ) %>
-  </fieldset>
-  <div class="btn-section">
-    <%= f.submit "Save configuration", :class=>"btn-solid-secondary" %>
+    <p class="text-info">The project associated with this storage
+    will control who has access to the content of the files (regardless
+    of the projects that the files are associated with), and will
+    also be used as the default project for new files when using
+    the 'autoregister' function.</p>
+  </fieldset> <div class="btn-section">
+    <%= f.submit "Save configuration", :class=>"btn-solid-secondary"
+    %>
   </div>
 <% end %>
