@@ -112,7 +112,7 @@
     <div class="card-item">
       <div>
         <p class="card-label">Test Configuration</p>
-        <p class="text-sm py-2">This will run tests on the current storage configuration. Note that if these tests fail, the storage will be marked 'offline'.</p>
+        <p class="text-info">This will run tests on the current storage configuration. Note that if these tests fail, the storage will be marked 'offline'.</p>
         <%= button_to "Test Configuration", check_nh_storage_path(@nh_dp), :method => :post, :class => "btn-solid-secondary mt-2" %>
       </div>
     </div>
@@ -121,7 +121,7 @@
     <div class="card-item">
       <div>
         <p class="card-label">Auto Register</p>
-        <p class="text-sm py-2">Insert description here.</p>
+        <p class="text-info">Insert description here.</p>
         <%= button_to "Auto Register Files", autoregister_nh_storage_path(@nh_dp), :method => :post, :class => "btn-solid-secondary mt-2" %>
       </div>
     </div>
@@ -130,11 +130,11 @@
     <div class="card-item">
       <div>
         <p class="card-label">Deconfigure Storage</p>
-        <p class="text-sm py-2">Removes the current configuration of this storage. Files will be unregistered.</p>
+        <p class="text-info">Removes the current configuration of this storage. Files will be unregistered.</p>
         <%= button_to "Deconfigure this storage CONFIRM DOES NOT WORK",       nh_storage_path(@nh_dp),
         {
           :data => { :confirm => "Are you sure you want to deconfigure this private storage? Files will be unregistered. Explain more here." },
-          :class  => "btn-solid-secondary",
+          :class  => "btn-solid-secondary  mt-2",
           :method => :delete
         }
       %>

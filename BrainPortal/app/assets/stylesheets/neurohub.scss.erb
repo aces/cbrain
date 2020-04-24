@@ -3,11 +3,11 @@
 /*
   LEGEND
   ├── BREAKPOINTS
+  ├── SPACE
   ├── PALETTE
   ├── FONTS
   ├── LOGOS
   ├── SHADOWS
-  ├── SPACE
   ├── TRANSITIONS
   ├── BUTTONS
   ├── BANNERS
@@ -41,6 +41,137 @@ $BREAKPOINT_XS: 20em; // 320px
 $BREAKPOINT_SM: 30em; // 480px
 $BREAKPOINT_MD: 48em; // 768px
 $BREAKPOINT_LG: 64em; // 1024px
+
+/*
+=============================================================
+| SPACE
+=============================================================
+$index : where 0 <= index < length of sizes array.
+
+This generates bootstrap-like padding and margin classes.
+They following classes are available:
+
+%p, %px, %py, %pt, %pb, %pl, %prs
+%m, %mx, %my, %mt, %mb, %ml, %mr
+
+followed by an integer that represents the index of the
+desired size from the sizes array e.g. py-2 = 0.5rem.
+
+Note: @mixin is used in favour of not using @extend, but
+classes are generated for inline style needs.
+*/
+
+$sizes: 0rem, 0.25rem, 0.5rem, 0.75rem, 1rem, 1.25rem, 1.5rem, 2rem, 2.5rem,
+  3rem, 4rem, 5rem, 6rem, 8rem;
+
+@function space($index) {
+  @return nth($sizes, $index + 1);
+}
+
+@mixin p($index) {
+  padding: space($index); // lists in scss are not zero-indexed.
+}
+
+@mixin px($index) {
+  padding-left: space($index);
+  padding-right: space($index);
+}
+
+@mixin pl($index) {
+  padding-left: space($index);
+}
+
+@mixin pr($index) {
+  padding-right: space($index);
+}
+
+@mixin py($index) {
+  padding-top: space($index);
+  padding-bottom: space($index);
+}
+
+@mixin pt($index) {
+  padding-top: space($index);
+}
+
+@mixin pb($index) {
+  padding-bottom: space($index);
+}
+
+@mixin m($index) {
+  margin: space($index); // lists in sass are not zero-indexed.
+}
+
+@mixin mx($index) {
+  margin-left: space($index);
+  margin-right: space($index);
+}
+
+@mixin ml($index) {
+  margin-left: space($index);
+}
+
+@mixin mr($index) {
+  margin-right: space($index);
+}
+
+@mixin my($index) {
+  margin-top: space($index);
+  margin-bottom: space($index);
+}
+
+@mixin mt($index) {
+  margin-top: space($index);
+}
+
+@mixin mb($index) {
+  margin-bottom: space($index);
+}
+
+@each $size in $sizes {
+  .p-#{index($sizes,$size)-1} {
+    @include p(index($sizes, $size)-1);
+  }
+  .px-#{index($sizes,$size)-1} {
+    @include px(index($sizes, $size)-1);
+  }
+  .py-#{index($sizes,$size)-1} {
+    @include py(index($sizes, $size)-1);
+  }
+  .pt-#{index($sizes,$size)-1} {
+    @include pt(index($sizes, $size)-1);
+  }
+  .pb-#{index($sizes,$size)-1} {
+    @include pb(index($sizes, $size)-1);
+  }
+  .pr-#{index($sizes,$size)-1} {
+    @include pr(index($sizes, $size)-1);
+  }
+  .pl-#{index($sizes,$size)-1} {
+    @include pl(index($sizes, $size)-1);
+  }
+  .m-#{index($sizes,$size)-1} {
+    @include m(index($sizes, $size)-1);
+  }
+  .mx-#{index($sizes,$size)-1} {
+    @include mx(index($sizes, $size)-1);
+  }
+  .my-#{index($sizes,$size)-1} {
+    @include my(index($sizes, $size)-1);
+  }
+  .mt-#{index($sizes,$size)-1} {
+    @include mt(index($sizes, $size)-1);
+  }
+  .mb-#{index($sizes,$size)-1} {
+    @include mb(index($sizes, $size)-1);
+  }
+  .mr-#{index($sizes,$size)-1} {
+    @include mr(index($sizes, $size)-1);
+  }
+  .ml-#{index($sizes,$size)-1} {
+    @include ml(index($sizes, $size)-1);
+  }
+}
 
 /*
 =============================================================
@@ -245,6 +376,15 @@ $variant : xs, sm, md, lg, xl.
   text-transform: uppercase !important;
 }
 
+.text-italic {
+  font-style: italic;
+}
+
+.text-info {
+  @include py(2);
+  @include text("sm");
+}
+
 /*
 =============================================================
 | LAYOUT
@@ -390,141 +530,6 @@ $variant : xlow, low, mid, high.
     box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
       0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 3px 10px 3px rgba(0, 0, 0, 0.16);
   }
-}
-
-/*
-=============================================================
-| SPACE
-=============================================================
-$index : where 0 <= index < length of sizes array.
-
-This generates bootstrap-like padding and margin classes.
-They following classes are available:
-
-%p, %px, %py, %pt, %pb, %pl, %prs
-%m, %mx, %my, %mt, %mb, %ml, %mr
-
-followed by an integer that represents the index of the
-desired size from the sizes array e.g. py-2 = 0.5rem.
-
-Note: @mixin is used in favour of not using @extend, but
-classes are generated for inline style needs.
-*/
-
-$sizes: 0rem, 0.25rem, 0.5rem, 0.75rem, 1rem, 1.25rem, 1.5rem, 2rem, 2.5rem,
-  3rem, 4rem, 5rem, 6rem, 8rem;
-
-@function space($index) {
-  @return nth($sizes, $index + 1);
-}
-
-@mixin p($index) {
-  padding: space($index); // lists in scss are not zero-indexed.
-}
-
-@mixin px($index) {
-  padding-left: space($index);
-  padding-right: space($index);
-}
-
-@mixin pl($index) {
-  padding-left: space($index);
-}
-
-@mixin pr($index) {
-  padding-right: space($index);
-}
-
-@mixin py($index) {
-  padding-top: space($index);
-  padding-bottom: space($index);
-}
-
-@mixin pt($index) {
-  padding-top: space($index);
-}
-
-@mixin pb($index) {
-  padding-bottom: space($index);
-}
-
-@mixin m($index) {
-  margin: space($index); // lists in sass are not zero-indexed.
-}
-
-@mixin mx($index) {
-  margin-left: space($index);
-  margin-right: space($index);
-}
-
-@mixin ml($index) {
-  margin-left: space($index);
-}
-
-@mixin mr($index) {
-  margin-right: space($index);
-}
-
-@mixin my($index) {
-  margin-top: space($index);
-  margin-bottom: space($index);
-}
-
-@mixin mt($index) {
-  margin-top: space($index);
-}
-
-@mixin mb($index) {
-  margin-bottom: space($index);
-}
-
-@each $size in $sizes {
-  .p-#{index($sizes,$size)-1} {
-    @include p(index($sizes, $size)-1);
-  }
-  .px-#{index($sizes,$size)-1} {
-    @include px(index($sizes, $size)-1);
-  }
-  .py-#{index($sizes,$size)-1} {
-    @include py(index($sizes, $size)-1);
-  }
-  .pt-#{index($sizes,$size)-1} {
-    @include pt(index($sizes, $size)-1);
-  }
-  .pb-#{index($sizes,$size)-1} {
-    @include pb(index($sizes, $size)-1);
-  }
-  .pr-#{index($sizes,$size)-1} {
-    @include pr(index($sizes, $size)-1);
-  }
-  .pl-#{index($sizes,$size)-1} {
-    @include pl(index($sizes, $size)-1);
-  }
-  .m-#{index($sizes,$size)-1} {
-    @include m(index($sizes, $size)-1);
-  }
-  .mx-#{index($sizes,$size)-1} {
-    @include mx(index($sizes, $size)-1);
-  }
-  .my-#{index($sizes,$size)-1} {
-    @include my(index($sizes, $size)-1);
-  }
-  .mt-#{index($sizes,$size)-1} {
-    @include mt(index($sizes, $size)-1);
-  }
-  .mb-#{index($sizes,$size)-1} {
-    @include mb(index($sizes, $size)-1);
-  }
-  .mr-#{index($sizes,$size)-1} {
-    @include mr(index($sizes, $size)-1);
-  }
-  .ml-#{index($sizes,$size)-1} {
-    @include ml(index($sizes, $size)-1);
-  }
-}
-
-.text-italic {
-  font-style: italic;
 }
 
 /*
