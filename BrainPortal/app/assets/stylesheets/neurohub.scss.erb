@@ -1027,8 +1027,7 @@ $variant : error, notice
   select {
     @include select($theme);
   }
-  input:not([type="submit"]),
-  p {
+  input:not([type="submit"]) {
     @include input($theme);
   }
   textarea {
@@ -1167,6 +1166,9 @@ $variant : error, notice
     @include title("sm");
     @include py(7);
     background: $DEFAULT_WASH;
+  }
+  > .text-info {
+    @include form-layout();
   }
   form {
     @include form("secondary");
