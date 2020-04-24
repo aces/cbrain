@@ -54,7 +54,7 @@
     of the projects that the files are associated with), and will
     also be used as the default project for new files when using
     the 'autoregister' function.</p>
-    <%= group_select('nh_dp[group_id]', { :groups => @nh_projects, :selector => @nh_dp.group_id }, { :include_blank => '(Select project)' } ) %>
+    <%= group_select('nh_dp[group_id]', { :groups => @nh_projects, :selector => (@nh_dp.group_id || @def_proj_id) }, { :include_blank => '(Select project)' } ) %>
   </fieldset> <div class="btn-section">
     <%= f.submit "Save configuration", :class=>"btn-solid-secondary"
     %>

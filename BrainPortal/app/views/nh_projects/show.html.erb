@@ -37,7 +37,7 @@
       <% if @can_add_license %>
         <%= link_to nh_icon_add + "Add License", new_license_nh_project_path(nh_project_id: @nh_project.id), :class => "btn-solid-secondary nh_action" %>
       <% end %>
-      <%= link_to nh_icon_add + "Add Storage", new_nh_storage_path, :class => "btn-solid-secondary nh_action" %>
+      <%= link_to nh_icon_add + "Add Storage", new_nh_storage_path(:group_id => @nh_project.id), :class => "btn-solid-secondary nh_action" %>
     </div>
   <% end %>
 

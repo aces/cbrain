@@ -35,6 +35,7 @@ class NhStoragesController < NeurohubApplicationController
   def new #:nodoc:
     @nh_dp       = UserkeyFlatDirSshDataProvider.new
     @nh_projects = find_nh_projects(current_user)
+    @def_proj_id = params[:group_id] # can be nil or invalid, makes no diff, just a default for select box
   end
 
   def show
