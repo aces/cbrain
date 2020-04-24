@@ -78,7 +78,11 @@
       <%- # storage -%>
       <% if(params[:controller].include?('nh_storages')) %>
         <%= link_to 'Storage', nh_storages_path, { :class => "nh_breadcrumbs_item", "data-active"=> controller_name === "nh_storages" && action_name === "index"} %>
-        <% if action_name!="index" %>
+        <% if(@nh_dp && @nh_dp.name)%>
+            <div class="nh_breadcrumbs_icon"><%= nh_icon_caret_right %></div>
+            <%= link_to @nh_dp.name, {:controller=> "nh_storages",:action => :show, :id => @nh_dp.id }, :method  => :get, :class => "nh_breadcrumbs_item", "data-active"=> controller_name === 'nh_storages' && action_name === "show"  %>
+        <% end %>
+        <% if action_name != "index" && action_name != "show"%>
           <div class="nh_breadcrumbs_icon"><%= nh_icon_caret_right %></div>
           <div class="nh_breadcrumbs_item" data-active="true"><%= yield(:title) %></div>
         <% end %>
