@@ -37,13 +37,23 @@
       </fieldset>
       <fieldset>
         <%= label_tag :nh_dp_id, "Select storage for file content", "data-required" => "true" %>
+        <p class="text-info">
+          The storage configuration selected here will control who has access to the content of
+          the file. Each storage configuration is associated with a particular project, and
+          the members of that project are the ones who can access the file's content.
+        <p>
         <%= data_provider_select(:nh_dp_id,
             { :data_providers => @nh_dps },
             { :include_blank  => '(Select storage)' } )
         %>
       </fieldset>
       <fieldset>
-        <%= label_tag :nh_project_id, "Assign file to a different project" %>
+        <%= label_tag :nh_project_id, "Assign file to a project" %>
+        <p class="text-info">
+          The project name selected here will control who can see the file.
+          The members of that project are the ones who will be granted access to the file's information.
+          The file's content is controlled by the storage configuration, above.
+        <p>
         <%= group_select(:file_nh_project_id,
             { :groups => @nh_projects, :selector => @nh_project.id },
             { :include_blank => '(Use project of selected storage)' } )
