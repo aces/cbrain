@@ -120,7 +120,7 @@ class NhStoragesController < NeurohubApplicationController
       f.destroy_log # ... so we clean up here
       f.destroy_all_meta_data # ... and here.
     end
-    @nh_dp.reload # cause userfile assoc has changed
+    @nh_dp.reload # because userfile assoc has changed
     if @nh_dp.destroy
       flash[:notice] = "Storage configuration #{@nh_dp.name} was successfully removed."
       redirect_to :action => :index
