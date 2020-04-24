@@ -222,7 +222,11 @@ class NhProjectsController < NeurohubApplicationController
   def new_file
     @nh_project  = find_nh_project(current_user, params[:id])
     @nh_projects = find_nh_projects(current_user)
-    @nh_dps      = find_all_nh_storages(current_user).where(:group_id => @nh_project.id)
+    nh_dps       = find_all_nh_storages(current_user).where(:group_id => @nh_project.id).to_a
+    service_dps  = DataProvider.find_all_accessible_by_user(current_user)
+                     .where(:id => RemoteResource.current_resource.meta[:neurohub_service_dp_ids]).to_a
+    @nh_dps      = nh_dps | service_dps
+
     if @nh_dps.count == 0
       flash[:notice] = 'You need to configure at least one storage for this project before you can upload files.'
       redirect_to :action => :show
