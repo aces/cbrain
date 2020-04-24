@@ -29,7 +29,7 @@
 
     <%- # actions -%>
     <div class="nh_actions">
-      <%= link_to "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid-secondary nh_action", :method => :get %>
+      <%= link_to nh_icon_upload + "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid-secondary nh_action", :method => :get %>
 
       <%- # pagination -%>
       <div class="nh_pagination">

@@ -70,6 +70,7 @@ $SECONDARY_DK: #003943;
 $SECONDARY_TEXT: #008484;
 
 $SUCCESS_BG: #51b83c;
+$SUCCESS_ALT: #04b069;
 $SUCCESS_WASH: #bbe5b3;
 $SUCCESS_DK: #00663c;
 
@@ -1858,6 +1859,13 @@ $ACTION_BAR_HEIGHT: 2.5;
   &:last-child {
     @include mr(0);
   }
+  svg {
+    @include mr(2);
+    width: 1rem;
+    height: 1rem;
+    stroke: $DEFAULT_BG;
+    fill: $DEFAULT_BG;
+  }
   a {
     width: 100%;
     height: 100%;
@@ -2581,6 +2589,28 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
 */
 
 #nh_show_license {
+  .status {
+    @include text("xs");
+    display: flex;
+    svg {
+      @include mr(1);
+      width: 1rem;
+    }
+    &.success {
+      color: $SUCCESS_ALT;
+      svg {
+        fill: $SUCCESS_ALT;
+        stroke: $SUCCESS_ALT;
+      }
+    }
+    &.error {
+      color: $ERROR_ALT;
+      svg {
+        fill: $ERROR_ALT;
+        stroke: $ERROR_ALT;
+      }
+    }
+  }
   .card {
     display: flex;
     flex-direction: column;
@@ -2625,7 +2655,14 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
   .nh_form {
     width: 100%;
     box-shadow: none;
+    height: 100%;
+    form {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
     .btn-section {
+      align-self: flex-end;
       > * {
         white-space: normal;
       }

@@ -41,7 +41,7 @@
     <%- # actions -%>
     <div class="nh_actions">
       <%= link_to( (@button_view ? list_icon : grid_icon), nh_projects_path(:button => !@button_view),:class => "btn-solid-secondary nh_action") %>
-      <%= link_to "+ Add project", {:action => :new }, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
+      <%= link_to nh_icon_add + "Add project", {:action => :new }, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
 
       <%- # pagination -%>
       <div class="nh_pagination">

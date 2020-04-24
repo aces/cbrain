@@ -85,6 +85,16 @@ module NeurohubViewHelper
     SVG
   end
 
+  def nh_icon_add
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 32 32"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#add"></use>
+    </svg>
+    SVG
+  end
+
   def nh_icon_caret_right
     <<-SVG.html_safe
     <svg xmlns="http://www.w3.org/2000/svg"
@@ -125,12 +135,32 @@ module NeurohubViewHelper
     SVG
   end
 
+  def nh_icon_checkmark
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 32 32"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#checkmark"></use>
+    </svg>
+    SVG
+  end
+
   def nh_icon_edit
     <<-SVG.html_safe
     <svg xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 32 32"
     >
       <use xlink:href="#{image_path("neurohub.svg")}#edit"></use>
+    </svg>
+    SVG
+  end
+
+  def nh_icon_error
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 32 32"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#error"></use>
     </svg>
     SVG
   end
@@ -151,6 +181,16 @@ module NeurohubViewHelper
       viewBox="0 0 32 32"
     >
       <use xlink:href="#{image_path("neurohub.svg")}#grid"></use>
+    </svg>
+    SVG
+  end
+
+  def nh_icon_invite
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 32 32"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#invite"></use>
     </svg>
     SVG
   end
@@ -191,6 +231,16 @@ module NeurohubViewHelper
       viewBox="0 0 32 32"
     >
       <use xlink:href="#{image_path("neurohub.svg")}#task"></use>
+    </svg>
+    SVG
+  end
+
+  def nh_icon_upload
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 32 32"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#upload"></use>
     </svg>
     SVG
   end
