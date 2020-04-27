@@ -354,16 +354,12 @@ class Userfile < ApplicationRecord
     group_ids  = user.group_ids
     group_ids |= Group.public_group_ids if access_requested != :write
 
-    # Filter by DP
-    data_provider_ids = DataProvider.find_all_accessible_by_user(user).pluck('data_providers.id')
-
     # The final complex relation
     scope = scope
       .where('userfiles.user_id' => user_ids) # if owner, or site manager, you CAN, period.
       .or(
         Userfile.where( # the files are in the user's groups and their DPs too
              'userfiles.group_id'         => group_ids,
-             'userfiles.data_provider_id' => data_provider_ids,
         ).where( # and if we want to write, it's allowed by the file's attributes
            (access_requested != :write) ? {} : { 'userfiles.group_writable' => true }
         )
