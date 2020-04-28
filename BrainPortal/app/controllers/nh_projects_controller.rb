@@ -114,6 +114,8 @@ class NhProjectsController < NeurohubApplicationController
     if @files.count > 0
       @pagy, @files    = pagy(@files, :items => @per_page)
     end
+
+    @can_upload = ensure_assignable_nh_projects(current_user, @nh_project).present? rescue nil
   end
 
   def new_license #:nodoc:
