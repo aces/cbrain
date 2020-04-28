@@ -220,8 +220,13 @@ class NhProjectsController < NeurohubApplicationController
 
   # GET /nh_projects/:id/new_file
   def new_file
+
     @nh_project  = find_nh_project(current_user, params[:id])
+    @nh_project  = ensure_assignable_nh_projects(current_user, @nh_project)
+
     @nh_projects = find_nh_projects(current_user)
+    @nh_projects = ensure_assignable_nh_projects(current_user, @nh_projects)
+
     nh_dps       = find_all_nh_storages(current_user).where(:group_id => @nh_project.id).to_a
     service_dps  = nh_service_storages(current_user).to_a
     @nh_dps      = nh_dps | service_dps
@@ -235,6 +240,7 @@ class NhProjectsController < NeurohubApplicationController
   # POST /nh_projects/:id/upload_file
   def upload_file
     nh_project = find_nh_project(current_user, params[:id])
+    nh_project = ensure_assignable_nh_projects(current_user, nh_project)
 
     # Get stream info
     upload_stream = params[:upload_file]

@@ -52,6 +52,24 @@ module NeurohubHelpers
         .where(:invisible => false)
   end
 
+  # Make sure +projects+ are all assignable
+  # projects (and return the sublist); if
+  # +projects+ is a single project, will raise
+  # an ActiveRecord::RecordNotFound just like
+  # a failed find().
+  def ensure_assignable_nh_projects(user, projects)
+    can_assign_ids = user.assignable_group_ids
+    # If argument 'projects' is a single group
+    if projects.is_a?(Group)
+      raise ActiveRecord::RecordNotFound unless can_assign_ids.include? projects.id
+      return projects
+    end
+    # Modify relation
+    return projects.where(:id => can_assign_ids) if projects.is_a?(ActiveRecord::Relation)
+    # Subset array
+    projects.select { |g| can_assign_ids.include?(g.id) }
+  end
+
   # This function validates the page and per_page parameters
   # and store them in the session, if needed.
   def pagination_check(collection, modelkey)
