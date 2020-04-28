@@ -53,7 +53,7 @@ class NhStoragesController < NeurohubApplicationController
 
     # Make sure project is allowed
     nh_project = find_nh_project(current_user, attributes[:group_id]) rescue nil
-    attributes.delete(:group_id) if nh_project.nil?
+    attributes.delete(:group_id) if nh_project.nil? # will cause validation error and form redisplayed
 
     # Set the basic attributes from the form
     @nh_dp = UserkeyFlatDirSshDataProvider.new(attributes)
@@ -64,15 +64,14 @@ class NhStoragesController < NeurohubApplicationController
       :online   => true,
     )
 
-    # Default project is user's own project
-    @nh_dp.group_id ||= current_user.own_group.id
-
+    # Save
     if @nh_dp.save
       @nh_dp.addlog_context(self,"Created by #{current_user.login}")
       @nh_dp.meta[:browse_gid] = current_user.own_group.id # only the owner can browse this in CBRAIN
       flash[:notice] = "Private storage #{@nh_dp.name} was successfully created"
       redirect_to :action => :show, :id => @nh_dp.id
     else
+      @nh_projects = find_nh_projects(current_user) # for form
       flash[:error] = "Cannot create storage #{@nh_dp.name}"
       render :action => :new
     end
