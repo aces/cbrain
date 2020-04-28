@@ -223,8 +223,7 @@ class NhProjectsController < NeurohubApplicationController
     @nh_project  = find_nh_project(current_user, params[:id])
     @nh_projects = find_nh_projects(current_user)
     nh_dps       = find_all_nh_storages(current_user).where(:group_id => @nh_project.id).to_a
-    service_dps  = DataProvider.find_all_accessible_by_user(current_user)
-                     .where(:id => RemoteResource.current_resource.meta[:neurohub_service_dp_ids]).to_a
+    service_dps  = nh_service_storages(current_user).to_a
     @nh_dps      = nh_dps | service_dps
 
     if @nh_dps.count == 0
@@ -239,11 +238,13 @@ class NhProjectsController < NeurohubApplicationController
 
     # Get stream info
     upload_stream = params[:upload_file]
-    cb_error "No file selected for uploading" if upload_stream.blank?
+    cb_error "No file selected for uploading", :redirect => new_file_nh_project_path(nh_project) if upload_stream.blank?
 
     # Get the data provider for the destination files.
-    nh_storage = find_nh_storage(current_user, params[:nh_dp_id]) rescue nil
-    cb_error "No storage selected for uploading" if nh_storage.blank?
+    nh_storage   = find_nh_storage(current_user, params[:nh_dp_id]) rescue nil
+    nh_storage ||= nh_service_storages(current_user)
+                     .where(:id => params[:nh_dp_id]).first
+    cb_error "No storage selected for uploading", :redirect => new_file_nh_project_path(nh_project) if nh_storage.blank?
 
     # Get basic attributes
     basename  = File.basename(upload_stream.original_filename)
@@ -271,7 +272,7 @@ class NhProjectsController < NeurohubApplicationController
     )
     if ! userfile.save
       flash[:error] = "Could not save file in DB: " + userfile.errors.to_a.join(", ")
-      redirect_to :action => :new_file
+      redirect_to new_file_nh_project_path(nh_project)
       return
     end
 
