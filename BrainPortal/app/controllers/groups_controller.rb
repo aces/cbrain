@@ -185,6 +185,7 @@ class GroupsController < ApplicationController
         if new_group_attr[:creator_id].present?
           @group.addlog_object_list_updated("Creator", User, original_creator, @group.creator_id, current_user, :login)
         end
+        @group.user_ids |= [ @group.creator.id ]
         @group.addlog_object_list_updated("Users", User, original_user_ids, @group.user_ids, current_user, :login)
         flash[:notice] = 'Project was successfully updated.'
         format.html { redirect_to :action => "show" }
@@ -227,6 +228,9 @@ class GroupsController < ApplicationController
   # DELETE /groups/1.json
   def destroy  #:nodoc:
     @group = current_user.modifiable_groups.find(params[:id])
+    if ! current_user.has_role?(:admin_user)
+      cb_error "Cannot destroy this project: you are not its creator." if current_user.id != @group.creator_id
+    end
     @group.destroy
 
     respond_to do |format|
