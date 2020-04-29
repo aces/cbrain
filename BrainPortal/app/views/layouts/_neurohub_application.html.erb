@@ -24,6 +24,9 @@
 
   <head>
     <title>NeuroHub <%= yield :title %></title>
+    <% small_logo = RemoteResource.current_resource.small_logo.blank? ? "/images/neurohub/NH_hbhl_icon_RGB.png" : RemoteResource.current_resource.small_logo %>
+
+    <link rel="shortcut icon" type="image/png" href="<%= small_logo %>">
 
     <%
         # Get the CSRF meta tags, but add IDs to them
