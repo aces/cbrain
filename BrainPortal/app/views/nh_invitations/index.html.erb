@@ -59,7 +59,7 @@
             <p class="card-item"><%= invitation.header.html_safe %></p>
           </div>
           <div class="btn-section">
-            <%= button_to 'Accept', nh_invitation_path(invitation.id), :method => :put, :class => "btn-solid-secondary" %>
+            <%= button_to 'Accept', nh_invitation_path(invitation.id), :method => :put, :class => "btn-solid-secondary btn" %>
             <%= button_to 'Decline', nh_invitation_path(invitation.id), :method => :delete, :class => "btn-outline-primary btn" %>
           </div>
         </div>
