@@ -376,6 +376,10 @@ $variant : xs, sm, md, lg, xl.
   text-transform: uppercase !important;
 }
 
+em {
+  font-style: italic;
+}
+
 .text-italic {
   font-style: italic;
 }
@@ -550,11 +554,10 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 =============================================================
 */
 
-.btn {
+@mixin btn($variant: "none") {
   @include px(5);
   @include py(2);
   @include text-button($DEFAULT_BG);
-
   outline: none;
   transition: $TRANSITION_HOVER_OFF;
   text-decoration: none;
@@ -564,24 +567,43 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
     cursor: pointer;
     transition: $TRANSITION_HOVER_ON;
   }
-}
+  @if $variant == "solid" or $variant == "outline" {
+    @include shadow("low");
+    border-radius: 2px;
+    border: none;
+    transition: $TRANSITION_HOVER_OFF;
 
-.btn-solid,
-.btn-outline {
-  @extend .btn;
-  @include shadow("low");
-  border-radius: 2px;
-  border: none;
-  transition: $TRANSITION_HOVER_OFF;
+    &:hover {
+      @include shadow("mid");
+      transition: $TRANSITION_HOVER_ON;
+    }
+  }
+  @if $variant == "text" {
+    text-transform: unset;
+    text-decoration: underline;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    color: $DEFAULT_ALT;
 
-  &:hover {
-    @include shadow("mid");
-    transition: $TRANSITION_HOVER_ON;
+    &.no-hover {
+      text-decoration: none;
+      cursor: default;
+      pointer-events: none;
+    }
+  }
+  @if $variant == "disabled" {
+    @include text-button($DEFAULT_TEXT, 0.5);
+
+    &:hover {
+      @include shadow("low");
+      cursor: not-allowed;
+    }
   }
 }
 
 .btn-solid-orcid {
-  @extend .btn-solid;
+  @include btn("solid");
   background-color: $ORCID_BG;
   border-color: $ORCID_BG;
   color: $DEFAULT_BG;
@@ -593,7 +615,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 }
 
 .btn-solid-cbrain {
-  @extend .btn-solid;
+  @include btn("solid");
   background-color: $CBRAIN_ALT;
   border-color: $CBRAIN_ALT;
   color: $DEFAULT_BG;
@@ -621,7 +643,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 }
 
 .btn-solid-default {
-  @extend .btn-solid;
+  @include btn("solid");
   background-color: $DEFAULT_ALT;
   border-color: $DEFAULT_ALT;
   color: $DEFAULT_BG;
@@ -633,7 +655,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 }
 
 .btn-solid-primary {
-  @extend .btn-solid;
+  @include btn("solid");
   background-color: $PRIMARY_ALT;
   border-color: $PRIMARY_ALT;
   color: $DEFAULT_BG;
@@ -644,7 +666,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 }
 
 .btn-solid-secondary {
-  @extend .btn-solid;
+  @include btn("solid");
   background-color: $SECONDARY_ALT;
   border-color: $SECONDARY_ALT;
   color: $DEFAULT_BG;
@@ -664,7 +686,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 }
 
 .btn-outline-default {
-  @extend .btn-outline;
+  @include btn("outline");
   background-color: $DEFAULT_BG;
   border-color: $DEFAULT_ALT;
   color: $DEFAULT_DK;
@@ -675,7 +697,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 }
 
 .btn-outline-primary {
-  @extend .btn-outline;
+  @include btn("outline");
 
   background: $PRIMARY_WASH;
   color: $PRIMARY_BG;
@@ -685,7 +707,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 }
 
 .btn-outline-secondary {
-  @extend .btn-outline;
+  @include btn("outline");
   background-color: $DEFAULT_BG;
   border-color: $SECONDARY_ALT;
   color: $SECONDARY_ALT;
@@ -705,54 +727,28 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   }
 }
 
-.btn-disabled {
-  @extend .btn;
-  @include text-button($DEFAULT_TEXT, 0.5);
-
-  &:hover {
-    @include shadow("low");
-    cursor: not-allowed;
-  }
-}
-
 .btn-disabled-default {
-  @extend .btn-disabled;
+  @include btn("disabled");
   background-color: $DEFAULT_DISABLED;
   border-color: $DEFAULT_DISABLED;
 }
 
 .btn-disabled-primary {
-  @extend .btn-disabled;
+  @include btn("disabled");
   background-color: $PRIMARY_WASH;
   border-color: $PRIMARY_WASH;
   color: $PRIMARY_TEXT;
 }
 
 .btn-disabled-default {
-  @extend .btn-disabled;
+  @include btn("disabled");
   background-color: $SECONDARY_WASH;
   border-color: $SECONDARY_WASH;
   color: $SECONDARY_TEXT;
 }
 
-.btn-text {
-  @extend .btn;
-  text-transform: unset;
-  text-decoration: underline;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  color: $DEFAULT_ALT;
-
-  &.no-hover {
-    text-decoration: none;
-    cursor: default;
-    pointer-events: none;
-  }
-}
-
 .btn-text-default {
-  @extend .btn-text;
+  @include btn("text");
   color: $DEFAULT_ALT;
   &:hover {
     background-color: $DEFAULT_WASH;
@@ -762,7 +758,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 }
 
 .btn-text-cbrain {
-  @extend .btn-text;
+  @include btn("text");
   color: $CBRAIN_ALT;
   .icon-cb {
     @include mx(2);
@@ -805,7 +801,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 }
 
 .btn-text-primary {
-  @extend .btn-text;
+  @include btn("text");
   color: $PRIMARY_TEXT;
   &:hover {
     background-color: $PRIMARY_WASH;
@@ -814,7 +810,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 }
 
 .btn-text-secondary {
-  @extend .btn-text;
+  @include btn("text");
   color: $SECONDARY_TEXT;
   &[data-active="true"],
   &:not(.no-hover):hover {
@@ -1088,9 +1084,6 @@ $variant : error, notice
   cursor: pointer;
   &[type="file"] {
     border-bottom: 0;
-    * {
-      @extend .btn-text-secondary;
-    }
   }
 
   @if ($theme == "primary") {
@@ -1388,7 +1381,7 @@ table {
       text-overflow: ellipsis;
       white-space: nowrap;
       overflow: hidden;
-      text-align: start;
+      text-align: left;
       justify-content: flex-start;
     }
     &[data-trim="true"] {
@@ -1440,9 +1433,11 @@ table {
       [data-link="true"] {
         @include title("xxs");
         @include p(2);
+        flex: 1;
         width: 100%;
         height: 100%;
         position: absolute;
+        min-height: 34px;
         top: 0;
         left: 0;
         justify-content: inherit;
@@ -1519,7 +1514,6 @@ table {
 
 .nh_table_scroll {
   @include shadow("mid");
-  position: relative;
   width: 100%;
   z-index: 1;
   margin: auto;
@@ -1805,8 +1799,8 @@ Base styles for all pages.
   box-sizing: border-box;
 }
 html {
-  height: 100%;
   display: flex;
+  min-height: 100vh;
 }
 
 html,
@@ -1815,8 +1809,11 @@ body {
   min-width: 18rem;
   flex: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   position: relative;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
 }
 
 .nh_content {
@@ -1825,15 +1822,13 @@ body {
   flex: 1;
   background: $DEFAULT_WASH;
   height: 100%;
-  height: -moz-available;
-  height: -webkit-fill-available;
-  height: stretch;
   @media (min-width: $BREAKPOINT_SM) {
     @include p(7);
   }
 }
 
 .nh_page {
+  width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -1898,6 +1893,9 @@ $ACTION_BAR_HEIGHT: 2.5;
     .nh_action {
       @include mr(1);
       max-width: max-content;
+      &:last-child {
+        @include mr(0);
+      }
     }
   }
 }
@@ -2145,7 +2143,7 @@ $BAR_HEIGHT: 2.3;
         &::after {
           // overflow gradient
           content: "";
-          background: linear-gradient(transparent, $DEFAULT_BG);
+          background: linear-gradient(rgba(255, 255, 255, 0), $DEFAULT_BG);
           width: 100%;
           height: 1rem;
           position: absolute;
@@ -2423,10 +2421,9 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
 #nh_neurohub_portal_welcome {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
   .main {
     display: flex;
-    flex-direction: column;
     flex-wrap: wrap;
     flex: 1;
     > * {
@@ -2451,6 +2448,7 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
     }
     .section.user {
       @include mt(7);
+      width: 100%;
       background: transparent;
       display: flex;
       flex-direction: row;
@@ -2479,6 +2477,7 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
             @include px(4);
             @include py(2);
             justify-content: flex-start;
+            max-height: 2.3rem;
             .empty {
               align-self: center;
             }
@@ -2550,6 +2549,8 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
         @include mt(0);
         flex-direction: column;
         .card {
+          flex: 1;
+
           .card-row {
             flex-direction: row;
             flex-wrap: nowrap;
@@ -2599,7 +2600,6 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
 #nh_show_license {
   .status {
     @include text("xs");
-    display: flex;
     svg {
       @include mr(1);
       width: 1rem;
