@@ -82,6 +82,7 @@ module NeurohubHelpers
     totsize  = collection.count # works for arrays or ActiveRecord relations
     offset   = (page-1)*per_page
     page     = ((totsize+per_page-1) / per_page) if offset >= totsize
+    page     = 1 if page < 1 # when no entries
 
     # Make persistent in session
     session[ppkey] = per_page
