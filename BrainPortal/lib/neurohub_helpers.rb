@@ -52,6 +52,24 @@ module NeurohubHelpers
         .where(:invisible => false)
   end
 
+  # Make sure +projects+ are all assignable
+  # projects (and return the sublist); if
+  # +projects+ is a single project, will raise
+  # an ActiveRecord::RecordNotFound just like
+  # a failed find().
+  def ensure_assignable_nh_projects(user, projects)
+    can_assign_ids = user.assignable_group_ids
+    # If argument 'projects' is a single group
+    if projects.is_a?(Group)
+      raise ActiveRecord::RecordNotFound unless can_assign_ids.include? projects.id
+      return projects
+    end
+    # Modify relation
+    return projects.where(:id => can_assign_ids) if projects.is_a?(ActiveRecord::Relation)
+    # Subset array
+    projects.select { |g| can_assign_ids.include?(g.id) }
+  end
+
   # This function validates the page and per_page parameters
   # and store them in the session, if needed.
   def pagination_check(collection, modelkey)
@@ -86,6 +104,14 @@ module NeurohubHelpers
   # Returns all private storages (DataProviders) of +user+
   def find_all_nh_storages(user)
     UserkeyFlatDirSshDataProvider.where(:user_id => user.id)
+  end
+
+  # Returns a list of other data providers made availabel to NeuroHub users
+  # by the admin (requires setting mmeta[:neurohub_service_dp_ids] on the
+  # BrainPortal object of the NeuroHub server)
+  def nh_service_storages(user)
+    svc_ids = RemoteResource.current_resource.meta[:neurohub_service_dp_ids].presence || [ -999 ]
+    DataProvider.find_all_accessible_by_user(user).where(:id => svc_ids)
   end
 
 end

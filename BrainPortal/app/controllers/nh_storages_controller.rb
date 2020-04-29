@@ -35,6 +35,7 @@ class NhStoragesController < NeurohubApplicationController
   def new #:nodoc:
     @nh_dp       = UserkeyFlatDirSshDataProvider.new
     @nh_projects = find_nh_projects(current_user)
+    @nh_projects = ensure_assignable_nh_projects(current_user, @nh_projects)
     @def_proj_id = params[:group_id] # can be nil or invalid, makes no diff, just a default for select box
   end
 
@@ -52,8 +53,9 @@ class NhStoragesController < NeurohubApplicationController
                               )
 
     # Make sure project is allowed
-    nh_project = find_nh_project(current_user, attributes[:group_id]) rescue nil
-    attributes.delete(:group_id) if nh_project.nil?
+    nh_project   = find_nh_project(current_user, attributes[:group_id]) rescue nil
+    nh_project &&= ensure_assignable_nh_projects(current_user, nh_project) rescue nil
+    attributes.delete(:group_id) if nh_project.nil? # will cause validation error and form redisplayed
 
     # Set the basic attributes from the form
     @nh_dp = UserkeyFlatDirSshDataProvider.new(attributes)
@@ -64,15 +66,15 @@ class NhStoragesController < NeurohubApplicationController
       :online   => true,
     )
 
-    # Default project is user's own project
-    @nh_dp.group_id ||= current_user.own_group.id
-
+    # Save
     if @nh_dp.save
       @nh_dp.addlog_context(self,"Created by #{current_user.login}")
       @nh_dp.meta[:browse_gid] = current_user.own_group.id # only the owner can browse this in CBRAIN
       flash[:notice] = "Private storage #{@nh_dp.name} was successfully created"
       redirect_to :action => :show, :id => @nh_dp.id
     else
+      @nh_projects = find_nh_projects(current_user) # for form
+      @nh_projects = ensure_assignable_nh_projects(current_user, @nh_projects)
       flash[:error] = "Cannot create storage #{@nh_dp.name}"
       render :action => :new
     end
@@ -85,6 +87,7 @@ class NhStoragesController < NeurohubApplicationController
   def edit #:nodoc:
     @nh_dp       = find_nh_storage(current_user, params[:id])
     @nh_projects = find_nh_projects(current_user)
+    @nh_projects = ensure_assignable_nh_projects(current_user, @nh_projects)
   end
 
   def update #:nodoc:
@@ -95,7 +98,8 @@ class NhStoragesController < NeurohubApplicationController
                                :remote_port, :remote_dir,
                               )
     # Make sure project is allowed
-    nh_project = find_nh_project(current_user, attributes[:group_id]) rescue nil
+    nh_project   = find_nh_project(current_user, attributes[:group_id]) rescue nil
+    nh_project &&= ensure_assignable_nh_projects(current_user, nh_project) rescue nil
     attributes.delete(:group_id) if nh_project.nil?
 
     # Update all

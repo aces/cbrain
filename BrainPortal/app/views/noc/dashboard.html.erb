@@ -153,14 +153,14 @@
 
 <% joined_dp_ids = (@dp_space_delta_P.keys + @dp_space_delta_M.keys).uniq.sort %>
 <% joined_dp_ids.each do |dp_id| %>
-  <% dp       = DataProvider.find(dp_id) %>
+  <% dp       = DataProvider.find(dp_id) rescue nil %>
   <% plus     = @dp_space_delta_P[dp_id] || 0 %>
   <% minus    = @dp_space_delta_M[dp_id] || 0 %>
   <% sum      = plus + minus %>
-  <% offline  = dp.online? ? nil : "offline" %>
+  <% offline  = dp.try(:online?) ? nil : "offline" %>
 
   <fieldset class="daily_dp <%= offline %>">
-    <legend><%= red_if(offline, dp.name) %></legend>
+    <legend><%= red_if(offline, (dp.try(:name) || dp_id)) %></legend>
     <%= disk_space_info_display(plus.abs + minus.abs) do %>
       <% if plus > 0 %>
         <span style="color: green">&plus;</span>&nbsp;<%= colored_pretty_size(plus) %>
