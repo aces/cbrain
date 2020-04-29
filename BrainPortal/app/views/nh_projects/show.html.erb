@@ -31,7 +31,9 @@
   <% if @nh_project.can_be_edited_by?(current_user) %>
     <div class="nh_actions">
       <%= link_to nh_icon_invite + "Invite Other Users", new_nh_invitation_path(nh_project_id: @nh_project.id), :class => "btn-solid-secondary nh_action"  %>
-      <%= link_to nh_icon_upload + "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid-secondary nh_action", :method => :get %>
+      <% if @can_upload %>
+        <%= link_to nh_icon_upload + "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid-secondary nh_action", :method => :get %>
+      <% end %>
       <%= link_to nh_icon_edit + "Edit", {:action => :edit, :id => @nh_project.id}, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
 
       <% if @can_add_license %>

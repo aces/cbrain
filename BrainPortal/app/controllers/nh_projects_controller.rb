@@ -102,6 +102,7 @@ class NhProjectsController < NeurohubApplicationController
     @current_licenses = @nh_project.custom_license_agreements # can be empty array
     @can_add_license  = @nh_project.creator_id == current_user.id
     @proj_dps         = @nh_project.data_providers.where(:user_id => current_user.id)
+    @can_upload       = ensure_assignable_nh_projects(current_user, @nh_project).present? rescue nil
   end
 
   def files #:nodoc:
