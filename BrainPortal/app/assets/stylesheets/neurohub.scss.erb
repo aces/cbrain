@@ -2074,6 +2074,20 @@ $ACTION_BAR_HEIGHT: 2.5;
 $MAX_CARD_LIST_HEIGHT: 15;
 $BAR_HEIGHT: 2.3;
 
+.nh_projects_public {
+  @include text("xxs");
+  @include p(1);
+  @include px(2);
+  border-radius: 2px;
+  background: $SECONDARY_WASH;
+  color: $SECONDARY_ALT;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translate(0, -50%);
+  text-transform: uppercase;
+}
+
 #nh_projects {
   flex: 1;
   display: flex;
@@ -2081,20 +2095,6 @@ $BAR_HEIGHT: 2.3;
   .nh_actions {
     min-height: 5rem;
   }
-  .nh_projects_public {
-    @include text("xxs");
-    @include p(1);
-    @include px(2);
-    border-radius: 2px;
-    background: $SECONDARY_WASH;
-    color: $SECONDARY_ALT;
-    position: absolute;
-    top: 50%;
-    right: 0;
-    transform: translate(0, -50%);
-    text-transform: uppercase;
-  }
-
   .grid {
     @include py(4);
     display: grid;
