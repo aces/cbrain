@@ -767,13 +767,13 @@ class DataProvidersController < ApplicationController
       :header        => "Repair #{@issues.size} inconsistencies in background.",
     )
 
-    CBRAIN.spawn_with_active_records(:admin, "Repair DP  #{self.name}") do
+    CBRAIN.spawn_with_active_records(:admin, "Repair DP #{@provider.name}") do
       # Try to repair the inconsistencies (or issues)
       failed_list  = []
       success_list = []
 
       @issues.each_with_index_and_size do |issue, idx, size|
-        Process.setproctitle "Repair DP=#{@provider.id} #{idx+1}/#{size}"
+        Process.setproctitle "Repair ID=#{@provider.id} #{idx+1}/#{size}"
         begin
           @provider.provider_repair(issue)
           success_list << issue
