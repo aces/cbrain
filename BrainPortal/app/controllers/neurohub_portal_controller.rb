@@ -90,25 +90,44 @@ class NeurohubPortalController < NeurohubApplicationController
   # This action searches among all sorts of models for IDs or strings,
   # and reports links to the matches found.
   def search
-    @search  = params[:search]
-    limit    = 20 # used by interface only
+    @search    = params[:search]
+    limit      = 20 # used by interface only
 
-    if @search.blank?
-      #flash[:notice] = 'Blank search'
-      redirect_to neurohub_path
-      return
-    end
+    search     = @search.to_s.presence || "-9998877"           # -9998877 is a way to ensure we find nothing ...
+    is_numeric = search =~ /\A\d+\z/   || search == "-9998877" # ... because we'll find by ID
+    psearch    = "%#{search}%"
 
-    @results  = ModelsReport.search_for_token(@search, current_user)
-    @files    = @results[:files]
-    @tasks    = @results[:tasks]
-    @projects = @results[:groups]
+    workgroup_public_ids = WorkGroup.where(:public => true).pluck(:id)
 
-    @files    = @files.limit(limit)    if @files.is_a?(ActiveRecord::Relation)
-    @tasks    = @tasks.limit(limit)    if @tasks.is_a?(ActiveRecord::Relation)
-    @projects = @projects.limit(limit) if @projects.is_a?(ActiveRecord::Relation)
+    # Find files
+    files_accessible_by_user_ids = Userfile.find_all_accessible_by_user(current_user).pluck(:id)
+    files_in_public_group_ids    = Userfile.where(:group_id => workgroup_public_ids).pluck(:id)
+    files_ids                    = (files_accessible_by_user_ids + files_in_public_group_ids).uniq
 
-    @projects = @projects.to_a.select { |g| g.is_a?(WorkGroup) }
+    file_scope                   = Userfile.where(:id => files_ids)
+
+    @files = is_numeric ?
+                Array(file_scope.find_by_id(search)) :
+                file_scope.where([ "name like ? OR description like ?", psearch, psearch]).limit(limit)
+
+    # Find tasks
+    tasks_accessible_by_user_ids = CbrainTask.find_all_accessible_by_user(current_user).pluck(:id)
+    tasks_in_public_group_ids    = CbrainTask.where(:group_id => workgroup_public_ids).pluck(:id)
+    tasks_ids                    = (tasks_accessible_by_user_ids + tasks_in_public_group_ids).uniq
+    
+    task_scope                   = CbrainTask.where(:id => tasks_ids)
+
+    @tasks = is_numeric ?
+                Array(task_scope.find_by_id(search)) :
+                task_scope.where([ "description like ?", psearch]).limit(limit)
+
+    # Find groups
+    workgroup_ids = WorkGroup.pluck(:id)
+    project_scope = current_user.viewable_groups.order(:name)
+
+    @projects     = is_numeric ?
+                        Array(project_scope.find_by_id(search)) :
+                        project_scope.where( ["name like ? OR description like ?", psearch, psearch ]).where(:id => workgroup_ids).limit(limit)
   end
 
   private
