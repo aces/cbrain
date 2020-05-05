@@ -169,14 +169,15 @@ module NeurohubHelpers
         tasks = CbrainTask.find_all_accessible_by_user(user).where([ "description like ?", token ]).limit(limit)
         tasks_count = tasks.count
         if tasks_count < limit
-          tasks += CbrainTask.where(:group_id => public_group_ids).where([ "description like ?", token ]).limit(limit - tasks_count)
+          public_tasks = CbrainTask.where.not(:id => tasks.pluck(:id)).where(:group_id => public_group_ids)
+          tasks += public_tasks.where([ "description like ?", token ]).limit(limit - tasks_count)
         end
 
         projects = user.viewable_groups.where([ "name like ? OR description like ?", token, token]).limit(limit)
       else
         files  =   Userfile.find_all_accessible_by_user(user, :access_requested => :read).where([ "name like ? OR description like ?", token, token])
-        tasks  =   CbrainTask.find_all_accessible_by_user(user).where([ "description like ?", token])
-                 + CbrainTask.where(:group_id => public_group_ids).where([ "description like ?", token, token])
+        tasks  =   (CbrainTask.find_all_accessible_by_user(user).where([ "description like ?", token])
+                 + CbrainTask.where(:group_id => public_group_ids).where([ "description like ?", token])).uniq
         projects = user.viewable_groups.where([ "name like ? OR description like ?", token, token])
       end
     end
