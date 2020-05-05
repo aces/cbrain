@@ -91,9 +91,15 @@ class NeurohubPortalController < NeurohubApplicationController
   # and reports links to the matches found.
   def search
     @search   = params[:search]
-    limit     = 20 # used by interface only
+    @limit     = 20 # used by interface only
 
-    report    = neurohub_search(@search,limit)
+    if @search.blank?
+      #flash[:notice] = 'Blank search'
+      redirect_to neurohub_path
+      return
+    end
+
+    report    = neurohub_search(@search,@limit)
 
     @files    = report[:files]
     @tasks    = report[:tasks]

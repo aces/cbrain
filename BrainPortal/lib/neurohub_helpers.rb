@@ -129,47 +129,75 @@ module NeurohubHelpers
   #     :files  => [],  # Userfile objects
   #   }
   def neurohub_search(token, limit=nil, user=current_user)
-    token      = token.to_s.presence || "-9998877"           # -9998877 is a way to ensure we find nothing ...
+    token      = token.to_s.presence  || "-9998877"          # -9998877 is a way to ensure we find nothing ...
     is_numeric = token =~ /\A\d+\z/   || token == "-9998877" # ... because we'll find by ID
-    ptoken    = "%#{token}%"
+
+    ########################
+    # Extract viewable ids #
+    ########################
 
     workgroup_public_ids = WorkGroup.where(:public => true).pluck(:id)
 
-    # Find files
-    files_accessible_by_user_ids = Userfile.find_all_accessible_by_user(current_user).pluck(:id)
-    files_in_public_group_ids    = Userfile.where(:group_id => workgroup_public_ids).pluck(:id)
-    files_ids                    = (files_accessible_by_user_ids + files_in_public_group_ids).uniq
+    # file_ids
+    file_accessible_by_user_ids = 
+        Userfile.find_all_accessible_by_user(user).pluck(:id)
+    file_in_public_group_ids    = user.has_role?(:admin_user) ? [] :
+        Userfile.where(:group_id => workgroup_public_ids).pluck(:id)
 
-    file_scope                   = Userfile.where(:id => files_ids)
-
-    files = is_numeric ?
-                Array(file_scope.find_by_id(token)) :
-                file_scope.where([ "name like ? OR description like ?", ptoken, ptoken])
-    files = files.limit(limit) if files.is_a?(ActiveRecord::Relation) && limit
-
-    # Find tasks
-    tasks_accessible_by_user_ids = CbrainTask.find_all_accessible_by_user(current_user).pluck(:id)
-    tasks_in_public_group_ids    = CbrainTask.where(:group_id => workgroup_public_ids).pluck(:id)
-    tasks_ids                    = (tasks_accessible_by_user_ids + tasks_in_public_group_ids).uniq
+    viewable_file_ids = (file_accessible_by_user_ids + 
+                 file_in_public_group_ids)
     
-    task_scope                   = CbrainTask.where(:id => tasks_ids)
+    # task_ids
+    task_accessible_by_user_ids = 
+        CbrainTask.find_all_accessible_by_user(user).pluck(:id)
+    task_in_public_group_ids    = user.has_role?(:admin_user) ? [] :
+        CbrainTask.where(:group_id => workgroup_public_ids).pluck(:id)
 
-    tasks = is_numeric ?
-                Array(task_scope.find_by_id(token)) :
-                task_scope.where([ "description like ?", ptoken])
+    viewable_task_ids = (task_accessible_by_user_ids + 
+                 task_in_public_group_ids)
 
-    tasks = tasks.limit(limit) if tasks.is_a?(ActiveRecord::Relation) && limit
+    # project_ids
+    viewable_project_ids = user.viewable_groups.order(:name).pluck(:id)
+    
 
+    if is_numeric 
+      token = token.to_i
+      if user.has_role? :admin_user
+        files    = Array(Userfile.find_by_id(token))
+        tasks    = Array(CbrainTask.find_by_id(token))
+        projects = Array(Group.find_by_id(token))
+      else
+        files    = viewable_file_ids.include?(token)    ? Array(Userfile.find_by_id(token))   : []
+        tasks    = viewable_task_ids.include?(token)    ? Array(CbrainTask.find_by_id(token)) : []
+        projects = viewable_project_ids.include?(token) ? Array(Group.find_by_id(token))      : []
+      end 
+    else 
+      ptoken    = "%#{token}%"
+      
+      # Find files
+      filter_file_ids = Userfile.where([ "name like ? OR description like ?", ptoken, ptoken]).pluck(:id)
 
-    # Find groups
-    workgroup_ids = WorkGroup.pluck(:id)
-    project_scope = current_user.viewable_groups.order(:name)
+      file_ids        = viewable_file_ids & filter_file_ids
+      files_limit     = limit || file_ids.size
+      file_ids        = file_ids[0..files_limit]      
+      files           = Userfile.where(:id => file_ids)
 
-    projects = is_numeric ?
-                        Array(project_scope.find_by_id(token)) :
-                        project_scope.where( ["name like ? OR description like ?", ptoken, ptoken ]).where(:id => workgroup_ids).limit(limit)
-  
-    projects = projects.limit(limit) if projects.is_a?(ActiveRecord::Relation) && limit
+      # Find tasks
+      filter_task_ids = CbrainTask.where([ "description like ?", ptoken])
+
+      task_ids       = viewable_task_ids & filter_task_ids
+      tasks_limit    = limit || task_ids.size     
+      task_ids       = task_ids[0..tasks_limit] 
+      tasks          = CbrainTask.where(:id => task_ids)
+      
+      # Find groups
+      filter_project_ids = WorkGroup.where( ["name like ? OR description like ?", ptoken, ptoken ]).pluck(:id)
+      
+      project_ids    = viewable_project_ids & filter_project_ids
+      projects_limit = limit || project_ids.size
+      project_ids    = project_ids[0..projects_limit]
+      projects       = Group.where(:id => project_ids)
+    end
 
     report = {files: files, tasks: tasks, projects: projects}
     return report
