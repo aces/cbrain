@@ -90,8 +90,8 @@ class NeurohubPortalController < NeurohubApplicationController
   # This action searches among all sorts of models for IDs or strings,
   # and reports links to the matches found.
   def search
-    @search  = params[:search]
-    limit    = 20 # used by interface only
+    @search   = params[:search]
+    @limit     = 20 # used by interface only
 
     if @search.blank?
       #flash[:notice] = 'Blank search'
@@ -99,16 +99,11 @@ class NeurohubPortalController < NeurohubApplicationController
       return
     end
 
-    @results  = ModelsReport.search_for_token(@search, current_user)
-    @files    = @results[:files]
-    @tasks    = @results[:tasks]
-    @projects = @results[:groups]
+    report    = neurohub_search(@search,@limit)
 
-    @files    = @files.limit(limit)    if @files.is_a?(ActiveRecord::Relation)
-    @tasks    = @tasks.limit(limit)    if @tasks.is_a?(ActiveRecord::Relation)
-    @projects = @projects.limit(limit) if @projects.is_a?(ActiveRecord::Relation)
-
-    @projects = @projects.to_a.select { |g| g.is_a?(WorkGroup) }
+    @files    = report[:files]
+    @tasks    = report[:tasks]
+    @projects = report[:projects]
   end
 
   private
