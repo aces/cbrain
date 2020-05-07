@@ -134,7 +134,7 @@ module NeurohubHelpers
     token      = is_numeric ? token.to_i : "%#{token}%"
 
     if is_numeric
-      files    = Array(Userfile.find_all_accessible_by_user(user).find_by_id(token))
+      files    = Array(Userfile.find_all_accessible_by_user(user, :access_requested => :read).find_by_id(token))
       tasks    = Array(CbrainTask.find_all_accessible_by_user(user).find_by_id(token))
       projects = Array(user.viewable_groups.find_by_id(token))
     else
