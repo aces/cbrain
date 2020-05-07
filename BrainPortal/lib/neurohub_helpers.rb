@@ -128,58 +128,19 @@ module NeurohubHelpers
   #     :groups => [],  # Group objects
   #     :files  => [],  # Userfile objects
   #   }
-  def neurohub_search(token, limit=nil, user=current_user)
+  def neurohub_search(token, limit=20, user=current_user)
     token      = token.to_s.presence  || "-9998877"          # -9998877 is a way to ensure we find nothing ...
     is_numeric = token =~ /\A\d+\z/   || token == "-9998877" # ... because we'll find by ID
     token      = is_numeric ? token.to_i : "%#{token}%"
 
-    public_group_ids    = WorkGroup.public_group_ids
-
     if is_numeric
-      if user.has_role?(:admin_user)
-        files    = Userfile.find_by_id(token)
-        tasks    = CbrainTask.find_by_id(token)
-        projects = WorkGroup.find_by_id(token)
-      else
-        files    = Userfile.find_all_accessible_by_user(user).find(token)   rescue Userfile.where(:group => public_group_ids, :id => token)
-        tasks    = CbrainTask.find_all_accessible_by_user(user).find(token) rescue CbrainTask.where(:group => public_group_ids, :id => token)
-        projects = user.viewable_groups.find(token) rescue []
-      end
-      report = {files: Array(files), tasks: Array(tasks), projects: Array(projects)}
-      return report
-    end
-
-
-    if user.has_role?(:admin_user)
-      files    = Userfile.where([ "name like ? OR description like ?", token, token])
-      tasks    = CbrainTask.where([ "description like ?", token])
-      projects = WorkGroup.where(["name like ? OR description like ?", token, token ])
-
-      if limit
-        files    = files.limit(limit)
-        tasks    = tasks.limit(limit)
-        projects = projects.limit(limit)
-      end
+      files    = Array(Userfile.find_all_accessible_by_user(user).find_by_id(token))
+      tasks    = Array(CbrainTask.find_all_accessible_by_user(user).find_by_id(token))
+      projects = Array(user.viewable_groups.find_by_id(token))
     else
-      if limit
-        # files
-        files = Userfile.find_all_accessible_by_user(user, :access_requested => :read).where([ "name like ? OR description like ?", token, token ]).limit(limit)
-
-        # tasks
-        tasks = CbrainTask.find_all_accessible_by_user(user).where([ "description like ?", token ]).limit(limit)
-        tasks_count = tasks.count
-        if tasks_count < limit
-          public_tasks = CbrainTask.where.not(:id => tasks.pluck(:id)).where(:group_id => public_group_ids)
-          tasks += public_tasks.where([ "description like ?", token ]).limit(limit - tasks_count)
-        end
-
-        projects = user.viewable_groups.where([ "name like ? OR description like ?", token, token]).limit(limit)
-      else
-        files  =   Userfile.find_all_accessible_by_user(user, :access_requested => :read).where([ "name like ? OR description like ?", token, token])
-        tasks  =   (CbrainTask.find_all_accessible_by_user(user).where([ "description like ?", token])
-                 + CbrainTask.where(:group_id => public_group_ids).where([ "description like ?", token])).uniq
-        projects = user.viewable_groups.where([ "name like ? OR description like ?", token, token])
-      end
+      files    = Userfile.find_all_accessible_by_user(user, :access_requested => :read).where([ "name like ? OR description like ?", token, token ]).limit(limit)
+      tasks    = CbrainTask.find_all_accessible_by_user(user).where([ "description like ?", token ]).limit(limit)
+      projects = user.viewable_groups.where([ "name like ? OR description like ?", token, token]).limit(limit)
     end
 
     report = {files: files, tasks: tasks, projects: projects}
