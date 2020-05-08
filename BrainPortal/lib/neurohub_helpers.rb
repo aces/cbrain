@@ -82,6 +82,7 @@ module NeurohubHelpers
     totsize  = collection.count # works for arrays or ActiveRecord relations
     offset   = (page-1)*per_page
     page     = ((totsize+per_page-1) / per_page) if offset >= totsize
+    page     = 1 if page < 1 # when no entries
 
     # Make persistent in session
     session[ppkey] = per_page
@@ -112,6 +113,38 @@ module NeurohubHelpers
   def nh_service_storages(user)
     svc_ids = RemoteResource.current_resource.meta[:neurohub_service_dp_ids].presence || [ -999 ]
     DataProvider.find_all_accessible_by_user(user).where(:id => svc_ids)
+  end
+
+  # This method implements the 'search for anything' for the controller portal action +search+
+  # for NeuroHub
+  #
+  # If +token+ looks like an ID, the models are searched by ID only.
+  # Otherwise, models are searched by name, description.
+  #
+  # It returns a hash table with these keys:
+  #
+  #   {
+  #     :tasks  => [],  # CbrainTask objects
+  #     :groups => [],  # Group objects
+  #     :files  => [],  # Userfile objects
+  #   }
+  def neurohub_search(token, limit=20, user=current_user)
+    token      = token.to_s.presence  || "-9998877"          # -9998877 is a way to ensure we find nothing ...
+    is_numeric = token =~ /\A\d+\z/   || token == "-9998877" # ... because we'll find by ID
+    token      = is_numeric ? token.to_i : "%#{token}%"
+
+    if is_numeric
+      files    = Array(Userfile.find_all_accessible_by_user(user, :access_requested => :read).find_by_id(token))
+      tasks    = Array(CbrainTask.find_all_accessible_by_user(user).find_by_id(token))
+      projects = Array(user.viewable_groups.find_by_id(token))
+    else
+      files    = Userfile.find_all_accessible_by_user(user, :access_requested => :read).where([ "name like ? OR description like ?", token, token ]).limit(limit)
+      tasks    = CbrainTask.find_all_accessible_by_user(user).where([ "description like ?", token ]).limit(limit)
+      projects = user.viewable_groups.where([ "name like ? OR description like ?", token, token]).limit(limit)
+    end
+
+    report = {files: files, tasks: tasks, projects: projects}
+    return report
   end
 
 end
