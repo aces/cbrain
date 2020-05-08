@@ -37,17 +37,17 @@
         <tr>
             <th>
               <p class="text">
-                <%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau , :html_options => {:class => "text btn-text-cbrain external", :'data-link' => "true", :target => "_blank"}) %>
+                <%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau , :html_options => {:class => "text btn-text cbrain external", :'data-link' => "true", :target => "_blank"}) %>
               </p>
             </th>
             <td>
               <p class="text">
-                <%= link_to_user_if_accessible(task.user, current_user, :html_options => {:class => "btn-text-cbrain external", :'data-link' => "true", :target => "_blank"}) %>
+                <%= link_to_user_if_accessible(task.user, current_user, :html_options => {:class => "btn-text cbrain external", :'data-link' => "true", :target => "_blank"}) %>
               </p>
             </td>
             <td>
               <p class="text">
-                <%= link_to_group_if_accessible(task.group, nil, :html_options => {:class => "btn-text-cbrain external", :'data-link' => "true", :target => "_blank"}) %>
+                <%= link_to_group_if_accessible(task.group, nil, :html_options => {:class => "btn-text cbrain external", :'data-link' => "true", :target => "_blank"}) %>
               </p>
             </td>
             <td>

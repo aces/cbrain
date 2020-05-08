@@ -31,23 +31,23 @@
     <div class="nh_actions">
 
       <% if @nh_project.can_be_edited_by?(current_user) %>
-        <%= link_to nh_icon_invite + "Invite Other Users", new_nh_invitation_path(nh_project_id: @nh_project.id), :class => "btn-solid-secondary nh_action"  %>
+        <%= link_to nh_icon_invite + "Invite Other Users", new_nh_invitation_path(nh_project_id: @nh_project.id), :class => "btn-solid primary nh_action"  %>
       <% end %>
 
       <% if @can_upload %>
-        <%= link_to nh_icon_upload + "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid-secondary nh_action", :method => :get %>
+        <%= link_to nh_icon_upload + "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid primary nh_action", :method => :get %>
       <% end %>
 
       <% if @nh_project.can_be_edited_by?(current_user) %>
-        <%= link_to nh_icon_edit + "Edit", {:action => :edit, :id => @nh_project.id}, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
+        <%= link_to nh_icon_edit + "Edit", {:action => :edit, :id => @nh_project.id}, :method  => :get, :class => "btn-solid primary nh_action"  %>
       <% end %>
 
       <% if @can_add_license %>
-        <%= link_to nh_icon_add + "Add License", new_license_nh_project_path(nh_project_id: @nh_project.id), :class => "btn-solid-secondary nh_action" %>
+        <%= link_to nh_icon_add + "Add License", new_license_nh_project_path(nh_project_id: @nh_project.id), :class => "btn-solid primary nh_action" %>
       <% end %>
 
       <% if @nh_project.can_be_edited_by?(current_user) %>
-        <%= link_to nh_icon_add + "Add Storage", new_nh_storage_path(:group_id => @nh_project.id), :class => "btn-solid-secondary nh_action" %>
+        <%= link_to nh_icon_add + "Add Storage", new_nh_storage_path(:group_id => @nh_project.id), :class => "btn-solid primary nh_action" %>
       <% end %>
 
     </div>
@@ -62,7 +62,7 @@
 
       <div class="card-row header">
         <div class="card-item">
-          <%= link_to(files_nh_project_path(@nh_project.id), :class=>"btn-text-secondary") do %>
+          <%= link_to(files_nh_project_path(@nh_project.id), :class=>"btn-text primary") do %>
             <div class="card-stat">
               <div class="card-icon"><%= nh_stats_files %></div>
               <div class="card-details">
@@ -79,7 +79,7 @@
             scope_link(task_stat,
               'tasks#index', { :filters => [{ :a => 'group_id', :v => @nh_project.id }], },
               url: { :controller => :tasks, :action => :index },
-              link: { class:"btn-text-cbrain", target: "_blank" }
+              link: { class:"btn-text cbrain", target: "_blank" }
             )
           %>
         </div>
@@ -89,7 +89,7 @@
               <div class="card-icon"><%= nh_stats_members %></div>
               <div class="card-details text-ellipsis">
                 <p><%= group_members.count %></p>
-                <p class="label text-ellipsis"><%= "Member#{group_members.count != 1 ? "s": ""}" %> | Editors: <span class="default-dk"><%= group_editors.count %></span></p>
+                <p class="label text-ellipsis"><%= "Member#{group_members.count != 1 ? "s": ""}" %> | Editors: <span class="grey-400"><%= group_editors.count %></span></p>
               </div>
             </div>
         </div>
@@ -191,7 +191,7 @@
             <p class="card-label">Licenses | <%= @current_licenses.count %></p>
             <div class="card-text pt-2">
               <% @current_licenses.each do |id| %>
-                <%= link_to "License ##{id}", show_license_nh_project_path(@nh_project, :license_id => id), :class=>"btn-text-secondary bg-secondary-wash mt-1" %>
+                <%= link_to "License ##{id}", show_license_nh_project_path(@nh_project, :license_id => id), :class=>"btn-text primary bg-primary-wash mt-1" %>
               <% end %>
             </div>
           </div>
@@ -206,7 +206,7 @@
             <p class="card-label">Storages | <%= @proj_dps.count %></p>
             <div class="card-text pt-2">
               <% @proj_dps.each do |dp| %>
-                <%= link_to dp.name, nh_storage_path(dp), :class=>"btn-text-secondary bg-secondary-wash mt-1" %>
+                <%= link_to dp.name, nh_storage_path(dp), :class=>"btn-text primary bg-primary-wash mt-1" %>
               <% end %>
             </div>
           </div>

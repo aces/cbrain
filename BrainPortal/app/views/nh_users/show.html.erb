@@ -29,9 +29,9 @@
 <div id="nh_users_show" class="nh_content">
   <%- # actions -%>
   <div class="nh_actions">
-    <%= link_to nh_icon_edit + 'Edit', {:action => :edit, :id => @user.id}, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
+    <%= link_to nh_icon_edit + 'Edit', {:action => :edit, :id => @user.id}, :method  => :get, :class => "btn-solid primary nh_action"  %>
     <% if invites.count > 0 %>
-      <a class="btn-solid-secondary nh_action" href="/nh_invitations"> <%= nh_icon_invite %> View Invitations | <%= invites.count %> </a>
+      <a class="btn-solid primary nh_action" href="/nh_invitations"> <%= nh_icon_invite %> View Invitations | <%= invites.count %> </a>
     <% end %>
   </div>
 
@@ -57,7 +57,7 @@
           scope_link(userfiles_stat,
             'userfiles#index', { },
             url: { :controller => :userfiles, :action => :index },
-            link: { class:"btn-text-cbrain", target: "_blank" }
+            link: { class:"btn-text cbrain", target: "_blank" }
           )
         %>
       </div>
@@ -68,7 +68,7 @@
           scope_link(task_stat,
             'tasks#index', { },
             url: { :controller => :tasks, :action => :index },
-            link: { class:"btn-text-cbrain", target: "_blank" }
+            link: { class:"btn-text cbrain", target: "_blank" }
           )
         %>
       </div>

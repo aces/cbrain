@@ -35,7 +35,7 @@
             <%= nh_empty_storage %>
           </div>
           <p class="empty-text">No storage is configured yet.</p>
-          <%= link_to "Create new storage configuration", new_nh_storage_path, :class => "btn-solid-secondary" %>
+          <%= link_to "Create new storage configuration", new_nh_storage_path, :class => "btn-solid primary" %>
         </div>
       </div>
       </div>
@@ -44,7 +44,7 @@
   <% else %>
     <%- # actions -%>
     <div class="nh_actions">
-        <%= link_to nh_icon_add + "Storage Configuration", new_nh_storage_path, :class => "btn-solid-secondary nh_action" %>
+        <%= link_to nh_icon_add + "Storage Configuration", new_nh_storage_path, :class => "btn-solid primary nh_action" %>
     </div>
 
     <%- # dp storage table -%>
@@ -65,12 +65,12 @@
         <tbody>
           <% @nh_dps.each do |dp| %>
             <tr>
-              <th><%= link_to dp.name, nh_storage_path(dp), :class=>"text btn-text-secondary", :'data-link' => "true" %></th>
+              <th><%= link_to dp.name, nh_storage_path(dp), :class=>"text btn-text primary", :'data-link' => "true" %></th>
               <td><p class="text"><%= dp.remote_user %></p></td>
               <td><p class="text"><%= dp.remote_host %></p></td>
               <td data-type="int"><p class="text"><%= dp.remote_port %></p></td>
               <td data-trim="true"><p class="text"><%= dp.remote_dir %></p></td>
-              <td data-trim="true"><%= link_to dp.group.name, nh_project_path(dp.group), :class=>"text btn-text-secondary", :'data-link' => "true" %></td>
+              <td data-trim="true"><%= link_to dp.group.name, nh_project_path(dp.group), :class=>"text btn-text primary", :'data-link' => "true" %></td>
               <td data-trim="true">
                 <p class="text">
                   <%= "-p #{dp.remote_port}" if dp.remote_port.present?%>
@@ -79,7 +79,7 @@
               </td>
               <td data-action="true">
                 <div>
-                  <%= link_to nh_icon_edit, edit_nh_storage_path(dp), :class=>"text btn-solid-secondary", :'data-link'=>"true" %>
+                  <%= link_to nh_icon_edit, edit_nh_storage_path(dp), :class=>"text btn-solid primary", :'data-link'=>"true" %>
                 </div>
               </td>
             </tr>

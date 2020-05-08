@@ -52,7 +52,7 @@
     <%= render :partial => 'layouts/neurohub_navbar' %>
 
     <%= content_tag :div, nil, :class => "nh_page", "data-isLoggedIn" => !!current_user do -%>
-        <%= render :partial => 'layouts/neurohub_secondary_toolbar' %>
+        <%= render :partial => 'layouts/neurohub_secondary_navbar' %>
         <%= render :partial => 'layouts/neurohub_flash_message'    %>
         <%= yield :layout %>
     <% end -%>

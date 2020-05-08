@@ -33,7 +33,7 @@
     <div class="notifications">
       <% if new_invites.count > 0 %>
         <div id="mb-7" class="nh_invitations">
-          <div class="section secondary">
+          <div class="section primary">
             <p class="section-title">New Notifications</p>
               <% new_invites.each do |invitation| %>
                 <div class="card">
@@ -41,31 +41,31 @@
                     <p class="card-item"><%= invitation.header.html_safe %></p>
                   </div>
                   <div class="btn-section">
-                    <%= button_to 'Accept', nh_invitation_path(invitation.id), :method => :put, :class => "btn-solid-secondary btn" %>
-                    <%= button_to 'Decline', nh_invitation_path(invitation.id), :method => :delete, :class => "btn-outline-primary btn" %>
-                    <%= button_to 'Save for Later', nh_invitation_path(invitation.id, :read => true), :method => :put, :class => "btn-outline-secondary btn" %>
+                    <%= button_to 'Accept', nh_invitation_path(invitation.id), :method => :put, :class => "btn-solid primary btn" %>
+                    <%= button_to 'Decline', nh_invitation_path(invitation.id), :method => :delete, :class => "btn-solid secondary wash btn" %>
+                    <%= button_to 'Save for Later', nh_invitation_path(invitation.id, :read => true), :method => :put, :class => "btn-solid primary wash btn" %>
                   </div>
                 </div>
               <% end %>
           </div>
         </div>
       <% end %>
-      <div class="section flex-1">
+      <div class="section secondary flex-1">
         <div class="section-title">
-          <img src="/images/neurohub/NH_hbhl_icon_grayscale.png" alt="cbrain-logo"/>
+          <img src="/images/neurohub/NH_hbhl_icon_rgb.png" alt="cbrain-logo"/>
           Neurohub news
         </div>
         <div class="card">
-          <div class="card-row header bg-primary-alt">
-            <p class="title-xs default-bg">Updated Portal Features</p>
+          <div class="card-row header bg-secondary-alt">
+            <p class="heading-xs default-bg">Updated Portal Features</p>
           </div>
           <div class="card-item">
             <p>New features have been added to the Neurohub portal. You can now create projects and share them with others. Your collaborators can have edit access allowing them to update your project. Try it out!</p>
           </div>
         </div>
         <div class="card">
-          <div class="card-row header bg-primary-alt">
-            <p class="title-xs default-bg">New Portal Under Construction</p>
+          <div class="card-row header bg-secondary-alt">
+            <p class="heading-xs default-bg">New Portal Under Construction</p>
           </div>
           <div class="card-item">
             <p> NeuroHub is leveraging existing technologies developed by the Montreal Neurological Institute (the Neuro), the McGill Centre for Integrative Neuroscience (MCIN) and Canadian Center for Computational Genomics (C3G) to develop a robust infrastructure for the integration of complex brain information to stimulate new discoveries. </p>
@@ -77,7 +77,7 @@
     <div class="section user">
         <div class="card">
         <%=
-          scope_link('<p class="btn-text-cbrain external card-title">Latest Tasks</p>'.html_safe,
+          scope_link('<p class="btn-text cbrain external card-heading">Latest Tasks</p>'.html_safe,
             'tasks#index', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
             url: { :controller => :tasks, :action => :index },
             link: { :target => "_blank" }
@@ -88,11 +88,11 @@
             <% for task in @tasks %>
               <div class="card-row">
                 <div class="card-section">
-                  <div class="card-item btn-text-cbrain">
+                  <div class="card-item btn-text cbrain">
                     <div class="card-icon"><%= nh_icon_task %></div>
                       <%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau, :html_options => { :target => "_blank" }) %>
                   </div>
-                  <div class="card-item btn-text-cbrain">
+                  <div class="card-item btn-text cbrain">
                     <div class="card-icon"><%= nh_icon_user %></div>
                     <div class="text-ellipsis flex-1">
                       <%= link_to_user_if_accessible(task.user, nil, :html_options => { :target => "_blank" })%>
@@ -105,7 +105,7 @@
                   </div>
                 </div>
                 <div class="card-section">
-                  <div class="card-item btn-text-secondary">
+                  <div class="card-item btn-text primary">
                     <div class="card-icon"><%= nh_icon_project %></div>
                     <div class="text-ellipsis flex-1">
                       <%= link_to task.group.name, {:controller => :nh_projects, :action => :show, :id => task.group.id}, :method  => :get %>
@@ -140,7 +140,7 @@
         </div>
         <div class="card">
             <%=
-            scope_link('<p class="btn-text-cbrain external card-title">Latest Updated Files</p>'.html_safe,
+            scope_link('<p class="btn-text cbrain external card-heading">Latest Updated Files</p>'.html_safe,
               'userfiles#index', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
               url: { :controller => :userfiles, :action => :index },
               link: { :target => "_blank" }
@@ -151,13 +151,13 @@
               <% for file in @files %>
                 <div class="card-row">
                   <div class="card-section">
-                    <div class="card-item btn-text-cbrain">
+                    <div class="card-item btn-text cbrain">
                       <div class="card-icon"><%= nh_icon_file %></div>
                       <div class="text-ellipsis flex-1">
                         <%= link_to_userfile_if_accessible(file, nil, :html_options => { :target => "_blank" }) %>
                       </div>
                     </div>
-                    <div class="card-item btn-text-cbrain">
+                    <div class="card-item btn-text cbrain">
                       <div class="card-icon"><%= nh_icon_user %></div>
                       <div class="text-ellipsis flex-1">
                         <%= link_to_user_if_accessible(file.user, nil, :html_options => { :target => "_blank" }) %>
@@ -170,7 +170,7 @@
                     </div>
                   </div>
                   <div class="card-section">
-                    <div class="card-item btn-text-secondary">
+                    <div class="card-item btn-text primary">
                       <div class="card-icon"><%= nh_icon_project %></div>
                       <div class="text-ellipsis flex-1">
                         <%= link_to(file.group.name,{:controller => :nh_projects, :action => :show, :id => file.group.id}, :method  => :get) %>
@@ -210,7 +210,7 @@
   <% if @reboot_manager_user_ids.include?(current_user.id) %>
     <div class="section footer">
       <p class="section-title">For Development:</p>
-      <div class="py-4 d-flex justify-center"><%= link_to 'Reboot Manager', reboot_path, { :class => "btn-solid-primary" } %></div>
+      <div class="py-4 d-flex justify-center"><%= link_to 'Reboot Manager', reboot_path, { :class => "btn-solid secondary" } %></div>
     </div>
   <% end %>
 

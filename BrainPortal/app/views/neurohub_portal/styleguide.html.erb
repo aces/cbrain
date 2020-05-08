@@ -1,0 +1,693 @@
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title("Styleguide", '') %>
+
+<div id="nh_neurohub_portal_styleguide" class="nh_content">
+<div class="section">
+  <p class="section-title">STYLEGUIDE</p>
+  <div class="styleguide">
+
+    <%- # Palette -%>
+    <p class="title">Palette</p>
+    <div class="section">
+      <ul class="description">
+        <li>The palette can be broken down into the following: default/grey values(60%) + the theme: primary(30%) + secondary(10%).</li>
+        <li>The default + grey values - Base UI elements such as backgrounds and text.</li>
+        <li>The primary values - UI elements such as buttons, cards and tables. </li>
+        <li>The secondary values - Accent color + target specific Neurohub activity.</li>
+        <li>Alerts - Notifications only.</li>
+      </ul>
+      <div class="row">
+        <div class="label">DEFAULT</div>
+        <div class="item sample">
+          <div class="swatch bg-default-bg"></div>
+          <div class="label">
+            <b>bg</b>
+            <p>#FFF</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-default-wash"></div>
+          <div class="label">
+            <b>wash</b>
+            <p>#F9FCFE</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-default-alt"></div>
+          <div class="label">
+            <b>alt</b>
+            <p>#E4E8EB</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-default-text"></div>
+          <div class="label">
+            <b>text</b>
+            <p>#000000</p>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="label">GREY</div>
+        <div class="item sample">
+          <div class="swatch bg-grey-100"></div>
+          <div class="label">
+            <b>100</b>
+            <p>#F5F5F5</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-grey-200"></div>
+          <div class="label">
+            <b>200</b>
+            <p>#e5e5e5</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-grey-300"></div>
+          <div class="label">
+            <b>300</b>
+            <p>#787a7a</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-grey-400"></div>
+          <div class="label">
+            <b>400</b>
+            <p>#343434</p>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="label">PRIMARY</div>
+        <div class="item sample">
+          <div class="swatch bg-primary-bg"></div>
+          <div class="label">
+            <b>bg</b>
+            <p>#25bfc1</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-primary-wash"></div>
+          <div class="label">
+            <b>wash</b>
+            <p>#effafa</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-primary-alt"></div>
+          <div class="label">
+            <b>alt</b>
+            <p>#00a1a0</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-primary-dk"></div>
+          <div class="label">
+            <b>dk</b>
+            <p>#003943</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-primary-text"></div>
+          <div class="label">
+            <b>text</b>
+            <p>#008484</p>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="label">SECONDARY</div>
+        <div class="item sample">
+          <div class="swatch bg-secondary-bg"></div>
+          <div class="label">
+            <b>bg</b>
+            <p>#ff0000</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-secondary-wash"></div>
+          <div class="label">
+            <b>wash</b>
+            <p>#ffeeee</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-secondary-alt"></div>
+          <div class="label">
+            <b>alt</b>
+            <p>#e8182b</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-secondary-dk"></div>
+          <div class="label">
+            <b>dk</b>
+            <p>#9b0000</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-secondary-text"></div>
+          <div class="label">
+            <b>text</b>
+            <p>#b91f20</p>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="label">SUCCESS</div>
+        <div class="item sample">
+          <div class="swatch bg-success-bg"></div>
+          <div class="label">
+            <b>bg</b>
+            <p>#51b83c</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-success-wash"></div>
+          <div class="label">
+            <b>wash</b>
+            <p>#bbe5b3</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-success-alt"></div>
+          <div class="label">
+            <b>alt</b>
+            <p>#04b069</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-success-dk"></div>
+          <div class="label">
+            <b>dk</b>
+            <p>#00663c</p>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="label">ERROR</div>
+        <div class="item sample">
+          <div class="swatch bg-error-bg"></div>
+          <div class="label">
+            <b>bg</b>
+            <p>#e22f2f</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-error-wash"></div>
+          <div class="label">
+            <b>wash</b>
+            <p>#fcc2c2</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-error-alt"></div>
+          <div class="label">
+            <b>alt</b>
+            <p>#be4040</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-error-dk"></div>
+          <div class="label">
+            <b>dk</b>
+            <p>#85000c</p>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="label">ORCID</div>
+        <div class="item sample">
+          <div class="swatch bg-orcid-bg"></div>
+          <div class="label">
+            <b>bg</b>
+            <p>#31789b</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-orcid-alt"></div>
+          <div class="label">
+            <b>alt</b>
+            <p>#a6ce39</p>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="label">CBRAIN</div>
+        <div class="item sample">
+          <div class="swatch bg-cbrain-bg"></div>
+          <div class="label">
+            <b>bg</b>
+            <p>#29b9e8</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-cbrain-wash"></div>
+          <div class="label">
+            <b>wash</b>
+            <p>#ecf7fc</p>
+          </div>
+        </div>
+        <div class="item sample">
+          <div class="swatch bg-cbrain-alt"></div>
+          <div class="label">
+            <b>alt</b>
+            <p>#05a3d6</p>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="label">BOXSHADOWS</div>
+        <div class="item sample">
+          <div class="swatch shadow-xlow"></div>
+          <div class="label">x-low</div>
+        </div>
+        <div class="item sample">
+          <div class="swatch shadow-low"></div>
+          <div class="label">low</div>
+        </div>
+        <div class="item sample">
+          <div class="swatch shadow-mid"></div>
+          <div class="label">mid</div>
+        </div>
+        <div class="item sample">
+          <div class="swatch shadow-high"></div>
+          <div class="label">high</div>
+        </div>
+      </div>
+    </div>
+
+
+    <%- # TYPOGRAPHY -%>
+    <p class="title">TYPOGRAPHY</p>
+    <div class="section">
+      <div class="description">
+        Base font: system-ui, sans-serif.
+      </div>
+      <div class="row">
+        <div class="label">heading</div>
+
+        <div class="item">
+          <div class="swatch heading-xxs">Aa</div>
+          <div class="label">xxs</div>
+        </div>
+        <div class="item">
+          <div class="swatch heading-xs">Aa</div>
+          <div class="label">xs</div>
+        </div>
+        <div class="item">
+          <div class="swatch heading-sm">Aa</div>
+          <div class="label">sm</div>
+        </div>
+        <div class="item">
+          <div class="swatch heading-md">Aa</div>
+          <div class="label">md</div>
+        </div>
+        <div class="item">
+          <div class="swatch heading-lg">Aa</div>
+          <div class="label">lg</div>
+        </div>
+        <div class="item">
+          <div class="swatch heading-xl">Aa</div>
+          <div class="label">xl</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="label">text</div>
+
+        <div class="item">
+          <div class="swatch text-xxs">Aa</div>
+          <div class="label">xxs</div>
+        </div>
+        <div class="item">
+          <div class="swatch text-xs">Aa</div>
+          <div class="label">xs</div>
+        </div>
+        <div class="item">
+          <div class="swatch text-sm">Aa</div>
+          <div class="label">sm</div>
+        </div>
+        <div class="item">
+          <div class="swatch text-md">Aa</div>
+          <div class="label">md</div>
+        </div>
+        <div class="item">
+          <div class="swatch text-lg">Aa</div>
+          <div class="label">lg</div>
+        </div>
+        <div class="item">
+          <div class="swatch text-xl">Aa</div>
+          <div class="label">xl</div>
+        </div>
+      </div>
+    </div>
+
+    <%- # SPACE -%>
+    <p class="title">SPACE</p>
+    <div class="section">
+      <div class="description">
+        Base unit: 16px.
+      </div>
+      <div class="row">
+        <div class="label mx-2">Pixels</div>
+        <div>
+          <div class="text-xxs mx-2">4</div>
+          <div class="d m-2">
+            <div class="p-1 bg-grey-300"></div>
+          </div>
+        </div>
+        <div>
+          <div class="text-xxs mx-2">8</div>
+          <div class="m-2">
+            <div class="p-2 bg-grey-300"></div>
+          </div>
+        </div>
+        <div>
+          <div class="text-xxs mx-2">12</div>
+          <div class="m-2">
+            <div class="p-3 bg-grey-300"></div>
+          </div>
+        </div>
+        <div>
+          <div class="text-xxs mx-2">16</div>
+          <div class="m-2">
+            <div class="p-4 bg-grey-300"></div>
+          </div>
+        </div>
+        <div>
+          <div class="text-xxs mx-2">20</div>
+          <div class="m-2">
+            <div class="p-5 bg-grey-300"></div>
+          </div>
+        </div>
+        <div>
+          <div class="text-xxs mx-2">24</div>
+          <div class="m-2">
+            <div class="p-6 bg-grey-300"></div>
+          </div>
+        </div>
+        <div>
+          <div class="text-xxs mx-2">32</div>
+          <div class="m-2">
+            <div class="p-7 bg-grey-300"></div>
+          </div>
+        </div>
+        <div>
+          <div class="text-xxs mx-2">40</div>
+          <div class="m-2">
+            <div class="p-8 bg-grey-300"></div>
+          </div>
+        </div>
+        <div>
+          <div class="text-xxs mx-2">48</div>
+          <div class="m-2">
+            <div class="p-9 bg-grey-300"></div>
+          </div>
+        </div>
+        <div>
+          <div class="text-xxs mx-2">64</div>
+          <div class="m-2">
+            <div class="p-10 bg-grey-300"></div>
+          </div>
+        </div>
+        <div>
+          <div class="text-xxs mx-2">80</div>
+          <div class="m-2">
+            <div class="p-11 bg-grey-300"></div>
+          </div>
+        </div>
+        <div>
+          <div class="text-xxs mx-2">96</div>
+          <div class="m-2">
+            <div class="p-12 bg-grey-300"></div>
+          </div>
+        </div>
+        <div>
+          <div class="text-xxs mx-2">128</div>
+          <div class="m-2">
+            <div class="p-13 bg-grey-300"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%- # Icons -%>
+    <p class="title">ICONS</p>
+    <div class="section">
+      <div class="description">
+        Icons are svgs with defined sizes.
+        <ul>
+          <li>16px | xxs </li>
+          <li>24px | xs </li>
+          <li>32px | sm </li>
+          <li>64px | md </li>
+          <li>80px | lg </li>
+        </ul>
+      </div>
+      <div class="row">
+        <div class="item">
+          <div class="swatch icon"><%= nh_icon_add%></div>
+          <div class="label">add</div>
+        </div>
+        <div class="item">
+          <div class="swatch icon"><%= nh_icon_caret_right%></div>
+          <div class="label">caret right</div>
+        </div>
+        <div class="item">
+          <div class="swatch icon"><%= nh_icon_cb_external%></div>
+          <div class="label">cb external</div>
+        </div>
+        <div class="item">
+          <div class="swatch icon"><%= nh_icon_cb_filled%></div>
+          <div class="label">cb filled</div>
+        </div>
+        <div class="item">
+          <div class="swatch icon"><%= nh_icon_cb_outline%></div>
+          <div class="label">cb outline</div>
+        </div>
+        <div class="item">
+          <div class="swatch icon"><%= nh_icon_checkmark%></div>
+          <div class="label">checkmark</div>
+        </div>
+        <div class="item">
+          <div class="swatch icon"><%= nh_icon_edit%></div>
+          <div class="label">edit</div>
+        </div>
+        <div class="item">
+          <div class="swatch icon"><%= nh_icon_error%></div>
+          <div class="label">error</div>
+        </div>
+        <div class="item">
+          <div class="swatch icon"><%= nh_icon_file%></div>
+          <div class="label">file</div>
+        </div>
+        <div class="item">
+          <div class="swatch icon"><%= nh_icon_grid%></div>
+          <div class="label">grid</div>
+        </div>
+        <div class="item">
+          <div class="swatch icon"><%= nh_icon_invite%></div>
+          <div class="label">invite</div>
+        </div>
+        <div class="item">
+          <div class="swatch icon"><%= nh_icon_list%></div>
+          <div class="label">list</div>
+        </div>
+        <div class="item">
+          <div class="swatch icon"><%= nh_icon_project%></div>
+          <div class="label">project</div>
+        </div>
+        <div class="item">
+          <div class="swatch icon"><%= nh_icon_search%></div>
+          <div class="label">search</div>
+        </div>
+        <div class="item">
+          <div class="swatch icon"><%= nh_icon_task%></div>
+          <div class="label">task</div>
+        </div>
+        <div class="item">
+          <div class="swatch icon"><%= nh_icon_upload%></div>
+          <div class="label">upload</div>
+        </div>
+        <div class="item">
+          <div class="swatch icon"><%= nh_icon_user%></div>
+          <div class="label">user</div>
+        </div>
+      </div>
+    </div>
+
+    <%- # Controls -%>
+    <p class="title">Controls</p>
+    <div class="section">
+      <ul class="description">
+        <li>Solid: Primary option.</li>
+        <li>Text: Links, secondary option.</li>
+        <li>Navigation: Navbar, secondary navbar.</li>
+      </ul>
+      <div class="row">
+        <p class="label">Buttons - Solid</p>
+        <div class="item">
+          <div class="label">Default</div>
+          <div class="btn-solid primary">Primary</div>
+          <div class="btn-solid secondary">Secondary</div>
+          <div class="btn-solid cbrain external">CBRAIN</div>
+        </div>
+        <div class="item">
+          <div class="label">Disabled</div>
+          <div class="btn-solid primary" disabled>Primary</div>
+          <div class="btn-solid secondary" disabled>Secondary</div>
+          <div class="btn-solid cbrain external" disabled>CBRAIN</div>
+        </div>
+        <div class="item">
+          <div class="label">With Icon</div>
+          <div class="btn-solid primary">
+            <div class="icon"><%= nh_icon_add %></div>
+            <div>Primary</div>
+          </div>
+          <div class="btn-solid secondary">
+            <div class="icon"><%= nh_icon_add %></div>
+            <div>Secondary</div>
+          </div>
+          <div class="btn-solid cbrain external">
+            <div class="icon"><%= nh_icon_add %></div>
+            <div>CBrain</div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <p class="label">Buttons - Text</p>
+        <div class="item">
+          <div class="label">Default</div>
+          <div class="btn-text primary">Primary</div>
+          <div class="btn-text secondary">Secondary</div>
+          <div class="btn-text cbrain external">CBRAIN</div>
+        </div>
+        <div class="item">
+          <div class="label">Disabled</div>
+          <div class="btn-text primary" disabled>Primary</div>
+          <div class="btn-text secondary" disabled>Secondary</div>
+          <div class="btn-text cbrain external" disabled>CBRAIN</div>
+        </div>
+        <div class="item">
+          <div class="label">With Icon</div>
+          <div class="btn-text primary">
+            <div class="icon"><%= nh_icon_add %></div>
+            <div>Primary</div>
+          </div>
+          <div class="btn-text secondary">
+            <div class="icon"><%= nh_icon_add %></div>
+            <div>Secondary</div>
+          </div>
+          <div class="btn-text cbrain external">
+            <div class="icon"><%= nh_icon_add %></div>
+            <div>CBRAIN</div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <p class="label">Buttons - Navigation</p>
+        <div class="item border">
+          <div class="label">Default</div>
+          <div class="btn-nav primary">Primary</div>
+          <div class="btn-nav secondary">Secondary</div>
+        </div>
+        <div class="item">
+          <div class="label">Disabled</div>
+          <div class="btn-nav primary" disabled>Primary</div>
+          <div class="btn-nav secondary" disabled>Secondary</div>
+        </div>
+        <div class="item">
+          <div class="label">With Icon</div>
+          <div class="btn-nav primary">
+            <div class="icon"><%= nh_icon_add %></div>
+            <div>Primary</div>
+          </div>
+          <div class="btn-nav secondary">
+            <div class="icon"><%= nh_icon_add %></div>
+            <div>Secondary</div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="label">Forms Fields</div>
+          <div class="nh_form">
+            <p class="nh_form_title">Form Title</p>
+            <form>
+              <fieldset>
+                <label>Field: Input </label>
+                <p class="field-description">Field Description...</p>
+                <input></input>
+                <p class="field_note">A sample field note.</p>
+              </fieldset>
+              <fieldset>
+                <label>Field: Select</label>
+                <select>
+                  <option>A</option>
+                  <option>B</option>
+                  <option>C</option>
+                </select>
+              </fieldset>
+              <fieldset>
+                <label data-required>Field: TextArea (required) </label>
+                <textarea></textarea>
+              </fieldset>
+              <div class="btn-section">
+               <button class="btn-solid primary">Submit</button>
+                <button class="btn-text primary">Cancel</button>
+              </div>
+            </form
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <%- # Bars -%>
+    <p class="title">Bars</p>
+    <div class="section">
+      <div class="row bar">
+        <div class="label">Navigation</div>
+        <%= render :partial => 'layouts/neurohub_navbar' %>
+      </div>
+      <div class="row bar">
+        <div class="label">Secondary Navigation</div>
+        <%= render :partial => 'layouts/neurohub_secondary_navbar' %>
+      </div>
+      <div class="row bar">
+        <div class="label">Table Actions</div>
+        <div class="nh_actions">
+          <a class="btn-solid primary nh_action"> <%= nh_icon_add %> Add project</a>
+        </div>
+      </div>
+      <div class="row bar">
+        <div class="label">Footer</div>
+        <%= render :partial => 'layouts/neurohub_footer' %>
+      </div>
+    </div>
+  </div>
+</div>
+
+

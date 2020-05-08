@@ -40,8 +40,8 @@
   <% if @nh_projects.exists? %>
     <%- # actions -%>
     <div class="nh_actions">
-      <%= link_to( (@button_view ? list_icon : grid_icon), nh_projects_path(:button => !@button_view),:class => "btn-solid-secondary nh_action") %>
-      <%= link_to nh_icon_add + "Add project", {:action => :new }, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
+      <%= link_to( (@button_view ? list_icon : grid_icon), nh_projects_path(:button => !@button_view),:class => "btn-solid primary nh_action") %>
+      <%= link_to nh_icon_add + "Add project", {:action => :new }, :method  => :get, :class => "btn-solid primary nh_action"  %>
 
       <%- # pagination -%>
       <div class="nh_pagination">
@@ -61,9 +61,9 @@
       <div class="grid">
         <% @nh_projects.each do |project| %>
           <div class="card">
-            <%= link_to project.name, {:action => :show, :id => project.id}, :method  => :get, :class=> "btn-text-secondary card_title" %>
+            <%= link_to project.name, {:action => :show, :id => project.id}, :method  => :get, :class=> "btn-text primary card_heading" %>
             <div class="card_text card_creator">
-              <%= link_to_user_if_accessible(project.creator, current_user, :html_options => {:class => "btn-text-cbrain external", :target => "_blank"}) %>
+              <%= link_to_user_if_accessible(project.creator, current_user, :html_options => {:class => "btn-text cbrain external", :target => "_blank"}) %>
             </div>
             <div class="card_text card_description">
               <%= project.description.presence %>
@@ -83,14 +83,14 @@
             <div class="card_text">
               <div class="card_stats">
                 <% task_stat = ("<div> Tasks: #{project.cbrain_tasks.count}</div>").html_safe %>
-                <%= link_to(files_nh_project_path(project.id), :class=>"text btn-text-secondary") do%>
+                <%= link_to(files_nh_project_path(project.id), :class=>"text btn-text primary") do%>
                   Files: <%= project.userfiles.count %>
                 <% end %>
                 <%=
                   scope_link(task_stat,
                     'tasks#index', { :filters => [{ :a => 'group_id', :v => project.id }], },
                     url: { :controller => :tasks, :action => :index },
-                    link: { class:"text btn-text-cbrain external", target: "_blank" }
+                    link: { class:"text btn-text cbrain external", target: "_blank" }
                     )
                 %>
                 <p class="text btn-text no-hover">Users: <%= project.users.count %></p>
@@ -113,7 +113,7 @@
             <%= nh_empty_projects %>
           </div>
           <p class="empty-text">There are currently no projects.</p>
-          <%= link_to "+ Add project", {:action => :new }, :method  => :get, :class => "btn-solid-secondary"  %>
+          <%= link_to "+ Add project", {:action => :new }, :method  => :get, :class => "btn-solid primary"  %>
         </div>
       </div>
     </div>

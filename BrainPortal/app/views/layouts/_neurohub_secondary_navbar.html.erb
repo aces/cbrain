@@ -21,18 +21,18 @@
 #
 -%>
 
-<!-- ******************************* -->
-<!-- PARTIAL: SEARCH TOOLBAR SECTION -->
-<!-- ******************************* -->
+<!-- ******************************** -->
+<!-- PARTIAL: SEARCH + NAVBAR SECTION -->
+<!-- ******************************** -->
 
 <%-
-# Secondary toolbar, contains a search bar and breadcrumbs.
+# Secondary navbar, contains a search bar and breadcrumbs.
 # Breadcrumbs are loaded based on the user's path and
 # should be reimplemented properly in the future.
 -%>
 
 <% if current_user %>
-  <div class="nh_secondary_toolbar" data-controller data-welcome="<%= params[:controller].include?("neurohub_portal")&&params[:action].include?("welcome") %>">
+  <div class="nh_secondary_navbar" data-controller data-welcome="<%= params[:controller].include?("neurohub_portal")&&params[:action].include?("welcome") %>">
 
     <div class="nh_breadcrumbs">
 
@@ -87,7 +87,14 @@
           <div class="nh_breadcrumbs_item" data-active="true"><%= yield(:title) %></div>
         <% end %>
       <% end %>
+
+      <%- # styleguide -%>
+      <% if(params[:controller].include?('neurohub_portal') && action_name === "styleguide") %>
+        <%= link_to 'Styleguide', styleguide_path, { :class => "nh_breadcrumbs_item", "data-active"=> controller_name === "neurohub_portal" && action_name === "styleguide"} %>
+      <% end %>
+
     </div>
+
 
     <div class="nh_search">
       <%= form_tag(nh_search_path, :method => :get) do %>

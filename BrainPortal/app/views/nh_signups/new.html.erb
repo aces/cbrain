@@ -144,10 +144,10 @@
           </span>
       </fieldset>
       <div class="btn-section">
-        <%= f.submit(@signup.new_record? ? "Request Account" : "Update Request", { :class => "btn-solid-secondary" })  %>
-        <%= link_to 'Already have an account',
+        <%= f.submit(@signup.new_record? ? "Request Account" : "Update Request", { :class => "btn-solid primary" })  %>
+        <%= link_to 'Already Have An Account',
         url_for(:controller => :nh_sessions, :action => :new),
-        { tabindex: 4, :class => "action_link btn-text-secondary mt-2" }%>
+        { tabindex: 4, :class => "btn-text primary mt-2" }%>
       </div>
     <% end %>
   </div>

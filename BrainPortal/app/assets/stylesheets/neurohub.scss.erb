@@ -1,11 +1,10 @@
 @import "<%= asset_path './normalize.css' %>";
-
 /*
   LEGEND
   ├── BREAKPOINTS
   ├── SPACE
   ├── PALETTE
-  ├── FONTS
+  ├── TYPOGRAPHY
   ├── LOGOS
   ├── SHADOWS
   ├── TRANSITIONS
@@ -16,7 +15,8 @@
   ├── FORMS
   ├── CARDS
   ├── TABLES
-  ├── SECONDARY TOOLBAR
+  ├── NAVIGATION BAR
+  ├── SECONDARY NAVIGATION BAR
   ├── FOOTER
   ├── PAGES
     ├── BASE
@@ -181,33 +181,34 @@ $sizes: 0rem, 0.25rem, 0.5rem, 0.75rem, 1rem, 1.25rem, 1.5rem, 2rem, 2.5rem,
 
 $DEFAULT_BG: #ffffff;
 $DEFAULT_WASH: #f9fcfe;
-$DEFAULT_ALT: #787a7a;
-$DEFAULT_LT: #f5f5f5;
-$DEFAULT_DK: #343434;
+$DEFAULT_ALT: #e4e8eb;
 $DEFAULT_TEXT: #000000;
-$DEFAULT_DISABLED: #e5e5e5;
-$DEFAULT_BORDER: #e4e8eb;
 
-$PRIMARY_BG: #ff0000;
-$PRIMARY_WASH: #ffeeee;
-$PRIMARY_ALT: #e8182b;
-$PRIMARY_DK: #9b0000;
-$PRIMARY_TEXT: #b91f20;
+$GREY_100: #f5f5f5;
+$GREY_200: #e5e5e5;
+$GREY_300: #787a7a;
+$GREY_400: #343434;
 
-$SECONDARY_BG: #25bfc1;
-$SECONDARY_WASH: #effafa;
-$SECONDARY_ALT: #00a1a0;
-$SECONDARY_DK: #003943;
-$SECONDARY_TEXT: #008484;
+$PRIMARY_BG: #25bfc1;
+$PRIMARY_WASH: #effafa;
+$PRIMARY_ALT: #00a1a0;
+$PRIMARY_DK: #003943;
+$PRIMARY_TEXT: #008484;
+
+$SECONDARY_BG: #ff0000;
+$SECONDARY_WASH: #ffeeee;
+$SECONDARY_ALT: #e8182b;
+$SECONDARY_DK: #9b0000;
+$SECONDARY_TEXT: #b91f20;
 
 $SUCCESS_BG: #51b83c;
-$SUCCESS_ALT: #04b069;
 $SUCCESS_WASH: #bbe5b3;
+$SUCCESS_ALT: #04b069;
 $SUCCESS_DK: #00663c;
 
-$ERROR_BG: #f07171;
-$ERROR_ALT: #e22f2f;
+$ERROR_BG: #e22f2f;
 $ERROR_WASH: #fcc2c2;
+$ERROR_ALT: #be4040;
 $ERROR_DK: #85000c;
 
 $ORCID_BG: #31789b;
@@ -217,8 +218,8 @@ $CBRAIN_BG: #29b9e8;
 $CBRAIN_WASH: #ecf7fc;
 $CBRAIN_ALT: #05a3d6;
 
-.default-dk {
-  color: $DEFAULT_DK;
+.grey-400 {
+  color: $GREY_400;
 }
 
 .default-bg {
@@ -229,38 +230,138 @@ $CBRAIN_ALT: #05a3d6;
   color: $SUCCESS_DK;
 }
 
-.bg-secondary-wash {
-  background-color: $SECONDARY_WASH;
+.bg-default-bg {
+  background: $DEFAULT_BG;
 }
 
 .bg-default-wash {
-  background-color: $DEFAULT_WASH;
+  background: $DEFAULT_WASH;
+}
+
+.bg-default-alt {
+  background: $DEFAULT_ALT;
+}
+
+.bg-default-text {
+  background: $DEFAULT_TEXT;
+}
+
+.bg-grey-100 {
+  background-color: $GREY_100;
+}
+
+.bg-grey-200 {
+  background-color: $GREY_200;
+}
+
+.bg-grey-300 {
+  background-color: $GREY_300;
+}
+
+.bg-grey-400 {
+  background-color: $GREY_400;
+}
+
+.bg-primary-bg {
+  background-color: $PRIMARY_BG;
+}
+
+.bg-primary-wash {
+  background-color: $PRIMARY_WASH !important;
 }
 
 .bg-primary-alt {
   background-color: $PRIMARY_ALT;
 }
 
+.bg-primary-dk {
+  background-color: $PRIMARY_DK;
+}
+
+.bg-primary-text {
+  background-color: $PRIMARY_TEXT;
+}
+
+.bg-secondary-bg {
+  background-color: $SECONDARY_BG;
+}
+
+.bg-secondary-wash {
+  background-color: $SECONDARY_WASH;
+}
+
+.bg-secondary-alt {
+  background-color: $SECONDARY_ALT;
+}
+
+.bg-secondary-dk {
+  background-color: $SECONDARY_DK;
+}
+
+.bg-secondary-text {
+  background-color: $SECONDARY_TEXT;
+}
+
+.bg-success-bg {
+  background-color: $SUCCESS_BG;
+}
+
+.bg-success-wash {
+  background-color: $SUCCESS_WASH;
+}
+
+.bg-success-alt {
+  background-color: $SUCCESS_ALT;
+}
+
+.bg-success-dk {
+  background-color: $SUCCESS_DK;
+}
+
+.bg-error-bg {
+  background-color: $ERROR_BG;
+}
+
+.bg-error-wash {
+  background-color: $ERROR_WASH;
+}
+
+.bg-error-alt {
+  background-color: $ERROR_ALT;
+}
+
+.bg-error-dk {
+  background-color: $ERROR_DK;
+}
+
+.bg-orcid-bg {
+  background-color: $ORCID_BG;
+}
+
+.bg-orcid-alt {
+  background-color: $ORCID_ALT;
+}
+
+.bg-cbrain-bg {
+  background-color: $CBRAIN_BG;
+}
+
 .bg-cbrain-wash {
   background-color: $CBRAIN_WASH;
 }
 
-.bg-default-disabled {
-  background-color: $DEFAULT_DISABLED;
-}
-
-.bg-default-alt {
-  background-color: $DEFAULT_DK;
+.bg-cbrain-alt {
+  background-color: $CBRAIN_ALT;
 }
 
 /*
 =============================================================
-| FONTS
+| TYPOGRAPHY
 =============================================================
 $variant : xs, sm, md, lg, xl.
 */
 
-@mixin title($variant) {
+@mixin heading($variant) {
   font-family: "system-ui", sans-serif;
   font-weight: 600;
   line-height: 1.5;
@@ -315,35 +416,32 @@ $variant : xs, sm, md, lg, xl.
   }
 }
 
-@mixin text-button($color: $DEFAULT_TEXT, $opacity: 1, $size: "xs") {
-  @include title($size);
-
-  -webkit-font-smoothing: antialiased;
-  text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: 0.089em;
-  opacity: $opacity;
-  color: $color;
+.heading-xxs {
+  @include heading("xxs");
 }
 
-.title-xs {
-  @include title("xs");
+.heading-xs {
+  @include heading("xs");
 }
 
-.title-sm {
-  @include title("sm");
+.heading-sm {
+  @include heading("sm");
 }
 
-.title-md {
-  @include title("md");
+.heading-md {
+  @include heading("md");
 }
 
-.title-lg {
-  @include title("lg");
+.heading-lg {
+  @include heading("lg");
 }
 
-.title-xl {
-  @include title("xl");
+.heading-xl {
+  @include heading("xl");
+}
+
+.text-xxs {
+  @include text("xxs");
 }
 
 .text-xs {
@@ -376,18 +474,16 @@ $variant : xs, sm, md, lg, xl.
   text-transform: uppercase !important;
 }
 
+.text-underline {
+  text-decoration: underline !important;
+}
+
 em {
   font-style: italic;
 }
 
 .text-italic {
   font-style: italic;
-}
-
-.text-info {
-  @include py(2);
-  @include text("sm");
-  color: $DEFAULT_DK;
 }
 
 /*
@@ -524,17 +620,33 @@ $variant : xlow, low, mid, high.
     box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
   }
   @if $variant== "low" {
-    box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
-      0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+    box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.14),
+      0px 1px 5px 0px rgba(0, 0, 0, 0.12);
   }
   @if $variant == "mid" {
     box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
-      0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+      0px 4px 5px 0px rgba(0, 0, 0, 0.14);
   }
   @if $variant == "high" {
     box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
-      0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 3px 10px 3px rgba(0, 0, 0, 0.16);
+      0px 4px 5px 0px rgba(0, 0, 0, 0.24);
   }
+}
+
+.shadow-xlow {
+  @include shadow("xlow");
+}
+
+.shadow-low {
+  @include shadow("low");
+}
+
+.shadow-mid {
+  @include shadow("mid");
+}
+
+.shadow-high {
+  @include shadow("high");
 }
 
 /*
@@ -552,22 +664,27 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 =============================================================
 | BUTTONS
 =============================================================
+Button variants: solid, text, and nav.
 */
 
 @mixin btn($variant: "none") {
   @include px(5);
   @include py(2);
-  @include text-button($DEFAULT_BG);
+  @include heading("xs");
   outline: none;
   transition: $TRANSITION_HOVER_OFF;
   text-decoration: none;
   justify-content: center;
+  -webkit-font-smoothing: antialiased;
+  text-transform: uppercase;
+  letter-spacing: 0.089em;
+  color: $DEFAULT_BG;
 
   &:hover {
     cursor: pointer;
     transition: $TRANSITION_HOVER_ON;
   }
-  @if $variant == "solid" or $variant == "outline" {
+  @if $variant == "solid" {
     @include shadow("low");
     border-radius: 2px;
     border: none;
@@ -580,11 +697,10 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   }
   @if $variant == "text" {
     text-transform: unset;
-    text-decoration: underline;
     text-align: center;
     display: flex;
     align-items: center;
-    color: $DEFAULT_ALT;
+    color: $GREY_300;
 
     &.no-hover {
       text-decoration: none;
@@ -593,7 +709,8 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
     }
   }
   @if $variant == "disabled" {
-    @include text-button($DEFAULT_TEXT, 0.5);
+    color: $DEFAULT_TEXT;
+    opacity: 0.5;
 
     &:hover {
       @include shadow("low");
@@ -602,8 +719,70 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   }
 }
 
-.btn-solid-orcid {
+.btn-solid {
   @include btn("solid");
+  transition: $TRANSITION_HOVER_OFF;
+  display: flex;
+  align-items: center;
+  .icon {
+    @include mr(2);
+    @include icon("xxs", null, $DEFAULT_BG);
+    display: inline-block;
+    vertical-align: middle;
+  }
+  &[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.btn-solid.primary {
+  background-color: $PRIMARY_ALT;
+  border-color: $PRIMARY_ALT;
+  color: $DEFAULT_BG;
+  &:hover {
+    background-color: $PRIMARY_BG;
+    border-color: $PRIMARY_BG;
+    transition: $TRANSITION_HOVER_ON;
+  }
+  &.wash {
+    background-color: $DEFAULT_BG;
+    border-color: $PRIMARY_ALT;
+    color: $PRIMARY_ALT;
+    &:hover {
+      background-color: $PRIMARY_WASH;
+      border-color: $PRIMARY_ALT;
+      transition: $TRANSITION_HOVER_ON;
+    }
+  }
+}
+
+.btn-solid.secondary {
+  background-color: $SECONDARY_ALT;
+  border-color: $SECONDARY_ALT;
+  color: $DEFAULT_BG;
+  &:hover {
+    background-color: $SECONDARY_BG;
+    border-color: $SECONDARY_BG;
+    transition: $TRANSITION_HOVER_ON;
+  }
+  &.wash {
+    background: $SECONDARY_WASH;
+    color: $SECONDARY_BG;
+    border-color: transparent;
+    opacity: 0.6;
+    box-shadow: none;
+    &:hover {
+      opacity: 1;
+      box-shadow: none;
+      z-index: 100;
+      transition: $TRANSITION_HOVER_ON;
+    }
+  }
+}
+
+.btn-solid.orcid {
   background-color: $ORCID_BG;
   border-color: $ORCID_BG;
   color: $DEFAULT_BG;
@@ -611,17 +790,18 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
     background-color: $ORCID_ALT;
     border-color: $ORCID_ALT;
     color: $DEFAULT_BG;
+    transition: $TRANSITION_HOVER_ON;
   }
 }
 
-.btn-solid-cbrain {
-  @include btn("solid");
+.btn-solid.cbrain {
   background-color: $CBRAIN_ALT;
   border-color: $CBRAIN_ALT;
   color: $DEFAULT_BG;
   &:hover {
     background-color: $CBRAIN_BG;
     border-color: $CBRAIN_BG;
+    transition: $TRANSITION_HOVER_ON;
   }
   &.external,
   .external {
@@ -642,131 +822,69 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   }
 }
 
-.btn-solid-default {
-  @include btn("solid");
-  background-color: $DEFAULT_ALT;
-  border-color: $DEFAULT_ALT;
-  color: $DEFAULT_BG;
+.btn-text {
+  @include btn("text");
+  transition: $TRANSITION_HOVER_OFF;
+  text-decoration: underline;
+  background: transparent;
   &:hover {
-    background-color: $DEFAULT_BG;
-    border-color: $DEFAULT_BG;
-    color: $DEFAULT_ALT;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .icon {
+    @include mr(2);
+    display: inline-block;
+    vertical-align: middle;
+  }
+  &[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
   }
 }
 
-.btn-solid-primary {
-  @include btn("solid");
-  background-color: $PRIMARY_ALT;
-  border-color: $PRIMARY_ALT;
-  color: $DEFAULT_BG;
-  &:hover {
-    background-color: $PRIMARY_BG;
-    border-color: $PRIMARY_BG;
+.btn-text.primary {
+  color: $PRIMARY_TEXT;
+  .icon {
+    @include icon("xxs", null, $PRIMARY_TEXT);
+  }
+  &[data-active="true"],
+  &:not(.no-hover):hover {
+    background-color: $PRIMARY_WASH;
+    color: $PRIMARY_BG;
+    transition: $TRANSITION_HOVER_ON;
+    .icon {
+      @include icon("xxs", null, $PRIMARY_BG);
+    }
   }
 }
 
-.btn-solid-secondary {
-  @include btn("solid");
-  background-color: $SECONDARY_ALT;
-  border-color: $SECONDARY_ALT;
-  color: $DEFAULT_BG;
-  &:hover {
-    background-color: $SECONDARY_BG;
-    border-color: $SECONDARY_BG;
+.btn-text.secondary {
+  color: $SECONDARY_TEXT;
+  .icon {
+    @include icon("xxs", null, $SECONDARY_TEXT);
   }
-}
-
-.btn-outline {
-  @include px(4);
-  @include py(3);
-  border-radius: 0px;
-  width: 100%;
-  height: 100%;
-  box-shadow: none;
-}
-
-.btn-outline-default {
-  @include btn("outline");
-  background-color: $DEFAULT_BG;
-  border-color: $DEFAULT_ALT;
-  color: $DEFAULT_DK;
-  &:hover {
-    background-color: $DEFAULT_WASH;
-    border-color: $DEFAULT_ALT;
-  }
-}
-
-.btn-outline-primary {
-  @include btn("outline");
-
-  background: $PRIMARY_WASH;
-  color: $PRIMARY_BG;
-  &:hover {
-    border-color: transparent;
-  }
-}
-
-.btn-outline-secondary {
-  @include btn("outline");
-  background-color: $DEFAULT_BG;
-  border-color: $SECONDARY_ALT;
-  color: $SECONDARY_ALT;
   &:hover {
     background-color: $SECONDARY_WASH;
-    border-color: $SECONDARY_ALT;
+    color: $SECONDARY_BG;
+    transition: $TRANSITION_HOVER_ON;
+    .icon {
+      @include icon("xxs", null, $SECONDARY_BG);
+    }
   }
 }
 
-.btn-outline-secondary,
-.btn-outline-primary {
-  border-color: transparent;
-  opacity: 0.6;
-  &:hover {
-    opacity: 1;
-    z-index: 100;
-  }
-}
-
-.btn-disabled-default {
-  @include btn("disabled");
-  background-color: $DEFAULT_DISABLED;
-  border-color: $DEFAULT_DISABLED;
-}
-
-.btn-disabled-primary {
-  @include btn("disabled");
-  background-color: $PRIMARY_WASH;
-  border-color: $PRIMARY_WASH;
-  color: $PRIMARY_TEXT;
-}
-
-.btn-disabled-default {
-  @include btn("disabled");
-  background-color: $SECONDARY_WASH;
-  border-color: $SECONDARY_WASH;
-  color: $SECONDARY_TEXT;
-}
-
-.btn-text-default {
-  @include btn("text");
-  color: $DEFAULT_ALT;
-  &:hover {
-    background-color: $DEFAULT_WASH;
-    border-color: $DEFAULT_WASH;
-    color: $DEFAULT_TEXT;
-  }
-}
-
-.btn-text-cbrain {
-  @include btn("text");
+.btn-text.cbrain {
   color: $CBRAIN_ALT;
+  .icon {
+    @include icon("xxs", null, $CBRAIN_ALT);
+  }
   .icon-cb {
     @include mx(2);
   }
   .icon-cb,
   .icon-cb svg {
     @include icon("xxs", none, $CBRAIN_ALT);
-    transition: $TRANSITION_HOVER_OFF;
   }
   &.external,
   .external {
@@ -782,7 +900,6 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
       background-repeat: no-repeat;
       background-size: contain;
       background-image: url("/images/neurohub/NH_cb_external_blue.png");
-      transition: $TRANSITION_HOVER_OFF;
     }
   }
 
@@ -791,7 +908,10 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
     border-color: $CBRAIN_WASH;
     color: $CBRAIN_BG;
     transition: $TRANSITION_HOVER_ON;
-
+    .icon {
+      @include icon("xxs", null, $CBRAIN_BG);
+      transition: $TRANSITION_HOVER_ON;
+    }
     .icon-cb,
     .icon-cb svg {
       @include icon("xxs", none, $CBRAIN_BG);
@@ -800,65 +920,42 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   }
 }
 
-.btn-text-primary {
-  @include btn("text");
-  color: $PRIMARY_TEXT;
-  &:hover {
-    background-color: $PRIMARY_WASH;
-    color: $PRIMARY_BG;
-  }
-}
-
-.btn-text-secondary {
-  @include btn("text");
-  color: $SECONDARY_TEXT;
-  &[data-active="true"],
-  &:not(.no-hover):hover {
-    background-color: $SECONDARY_WASH;
-    color: $SECONDARY_BG;
-  }
-
-  &[disabled] {
-    opacity: 0.5;
-    cursor: not-allowed;
-    pointer-events: none;
-  }
-}
-
 .btn-nav {
-  @extend .btn-text-default;
+  @extend .btn-text;
   text-decoration: none;
   border-bottom: 2px solid transparent;
-  color: $DEFAULT_ALT;
-}
-
-.btn-nav-default {
-  @extend .btn-nav;
-  &:hover,
-  &[data-active="true"] {
-    background: $DEFAULT_WASH;
-    border-color: $DEFAULT_BG;
-    color: $DEFAULT_BG;
+  cursor: pointer;
+  transition: $TRANSITION_HOVER_OFF;
+  &:hover {
+    text-decoration: none;
   }
 }
 
-.btn-nav-primary {
-  @extend .btn-nav;
+.btn-nav.secondary {
+  color: $GREY_300;
+  .icon {
+    @include icon("xxs", null, $GREY_300);
+  }
+  &:hover,
+  &[data-active="true"] {
+    transition: $TRANSITION_HOVER_ON;
+    background: $SECONDARY_WASH;
+    border-color: $SECONDARY_BG;
+    color: $SECONDARY_BG;
+  }
+}
+
+.btn-nav.primary {
+  color: $GREY_300;
+  .icon {
+    @include icon("xxs", null, $GREY_300);
+  }
   &:hover,
   &[data-active="true"] {
     background: $PRIMARY_WASH;
     border-color: $PRIMARY_BG;
     color: $PRIMARY_BG;
-  }
-}
-
-.btn-nav-secondary {
-  @extend .btn-nav;
-  &:hover,
-  &[data-active="true"] {
-    background: $SECONDARY_WASH;
-    border-color: $SECONDARY_BG;
-    color: $SECONDARY_BG;
+    transition: $TRANSITION_HOVER_ON;
   }
 }
 
@@ -891,13 +988,13 @@ $variant : error, notice
   width: 100%;
   @if ($variant == "notice") {
     background-color: $SUCCESS_WASH;
-    border: 1px solid $SUCCESS_BG;
     color: $SUCCESS_DK;
+    border: 1px solid $SUCCESS_BG;
   }
   @if ($variant == "error") {
     background-color: $ERROR_WASH;
-    border: 1px solid $ERROR_BG;
     color: $ERROR_DK;
+    border: 1px solid $ERROR_ALT;
   }
 }
 
@@ -960,18 +1057,18 @@ $variant : error, notice
     flex-direction: column;
     align-items: center;
     .empty-icon {
-      @include pb(4);
+      @include py(4);
       width: 100%;
       min-width: 300px;
-      max-height: 300px;
+      max-height: 200px;
     }
     .empty-text {
       @include py(4);
       @include text("sm");
-      color: $DEFAULT_ALT;
+      color: $GREY_300;
       text-align: center;
     }
-    .btn-solid-secondary {
+    .btn-solid.primary {
       text-align: center;
     }
   }
@@ -982,6 +1079,12 @@ $variant : error, notice
 | FORMS
 =============================================================
 */
+
+.field-description {
+  @include py(2);
+  @include text("sm");
+  color: $GREY_400;
+}
 
 @mixin form-layout() {
   @include py(4);
@@ -1000,7 +1103,7 @@ $variant : error, notice
 }
 
 @mixin form($theme: "secondary") {
-  @include title("sm");
+  @include heading("sm");
   > * {
     @include form-layout();
   }
@@ -1055,15 +1158,15 @@ $variant : error, notice
 
 @mixin label($theme: "default") {
   @include mt(1);
-  @include title("xxs");
-  color: $DEFAULT_ALT;
+  @include heading("xxs");
+  color: $GREY_300;
   text-transform: uppercase;
 
   @if $theme == "secondary" {
-    color: $SECONDARY_TEXT;
+    color: $PRIMARY_TEXT;
   }
   @if $theme == "primary" {
-    color: $PRIMARY_TEXT;
+    color: $SECONDARY_TEXT;
   }
   &[data-required] {
     position: relative;
@@ -1088,26 +1191,26 @@ $variant : error, notice
 
   @if ($theme == "primary") {
     border: 0;
-    border-bottom: 1px solid $DEFAULT_DISABLED;
-    border-radius: 2px;
-    outline: 0;
-
-    &:focus {
-      outline: 0;
-      border-color: $PRIMARY_ALT;
-      box-shadow: none;
-    }
-  }
-
-  @if ($theme == "secondary") {
-    border: 0;
-    border-bottom: 1px solid $DEFAULT_DISABLED;
+    border-bottom: 1px solid $GREY_200;
     border-radius: 2px;
     outline: 0;
 
     &:focus {
       outline: 0;
       border-color: $SECONDARY_ALT;
+      box-shadow: none;
+    }
+  }
+
+  @if ($theme == "secondary") {
+    border: 0;
+    border-bottom: 1px solid $GREY_200;
+    border-radius: 2px;
+    outline: 0;
+
+    &:focus {
+      outline: 0;
+      border-color: $PRIMARY_ALT;
       box-shadow: none;
     }
   }
@@ -1120,13 +1223,14 @@ $variant : error, notice
   background: $DEFAULT_BG;
   width: 100%;
   height: 2rem;
+  border-color: $GREY_200;
+
   &:focus {
-    outline: auto $DEFAULT_DISABLED 5px;
-    border-color: $DEFAULT_WASH;
+    outline: auto $GREY_200 5px;
     box-shadow: none;
     @if $theme == "secondary" {
-      outline: auto $SECONDARY_ALT 5px;
-      border-color: $SECONDARY_ALT;
+      outline: auto $PRIMARY_ALT 5px;
+      border-color: $PRIMARY_ALT;
       box-shadow: none;
     }
   }
@@ -1134,22 +1238,22 @@ $variant : error, notice
 
 @mixin textarea($theme: "default") {
   @include input($theme);
-  border: 1px solid $DEFAULT_DISABLED;
+  border: 1px solid $GREY_200;
   &:focus {
-    outline: auto $DEFAULT_DISABLED 5px;
+    outline: auto $GREY_200 5px;
     border-color: $DEFAULT_WASH;
     box-shadow: none;
 
     @if $theme == "secondary" {
-      outline: auto $SECONDARY_ALT 5px;
-      border-color: $SECONDARY_ALT;
+      outline: auto $PRIMARY_ALT 5px;
+      border-color: $PRIMARY_ALT;
       box-shadow: none;
     }
   }
 }
 
 .nh_form {
-  @include title("sm");
+  @include heading("sm");
   @include shadow("low");
   width: 100%;
   background: $DEFAULT_BG;
@@ -1157,11 +1261,11 @@ $variant : error, notice
 
   .nh_form_title {
     @include form-layout();
-    @include title("sm");
+    @include heading("sm");
     @include py(7);
     background: $DEFAULT_WASH;
   }
-  > .text-info {
+  > .field-description {
     @include form-layout();
   }
   form {
@@ -1178,20 +1282,25 @@ form {
   }
   .btn-section {
     @include py(7);
+    > * {
+      &:nth-child(2) {
+        @include mt(2);
+      }
+    }
   }
 }
 
 .field_with_errors {
   label {
-    color: $ERROR_ALT !important;
+    color: $ERROR_BG !important;
     position: relative;
     &:after {
       content: "*";
       position: absolute;
     }
   }
-  input {
-    color: $ERROR_BG !important;
+  color: $ERROR_WASH !important;
+  > * {
     border-color: $ERROR_BG !important;
   }
 }
@@ -1210,8 +1319,8 @@ Cards used for simple "show"-type views
 .card {
   @include shadow("mid");
   background: $DEFAULT_BG;
-  .card-title {
-    @include title("xs");
+  .card-heading {
+    @include heading("xs");
     @include p(4);
   }
   .card-row {
@@ -1219,7 +1328,7 @@ Cards used for simple "show"-type views
     flex: 1;
     display: flex;
     flex-wrap: wrap;
-    border-bottom: 1px solid $DEFAULT_DISABLED;
+    border-bottom: 1px solid $GREY_200;
     &.header {
       @include px(0);
     }
@@ -1238,7 +1347,7 @@ Cards used for simple "show"-type views
     .empty {
       align-self: center;
     }
-    &.title {
+    &.heading {
       background: $DEFAULT_WASH;
     }
     .text-ellipsis {
@@ -1262,7 +1371,7 @@ Cards used for simple "show"-type views
         }
       }
       .card-stat {
-        @include px(4);
+        @include px(7);
         @include py(7);
         display: flex;
         flex: 1;
@@ -1272,7 +1381,7 @@ Cards used for simple "show"-type views
           align-self: center;
         }
         .card-details {
-          @include title("lg");
+          @include heading("lg");
           @include ml(4);
           line-height: normal;
           height: 100%;
@@ -1308,9 +1417,9 @@ Cards used for simple "show"-type views
   @include p(2);
   @include text("xs");
   background: $DEFAULT_BG;
-  border-top: 1px solid $SECONDARY_WASH;
-  border-bottom: 1px solid $SECONDARY_WASH;
-  color: $SECONDARY_TEXT;
+  border-top: 1px solid $PRIMARY_WASH;
+  border-bottom: 1px solid $PRIMARY_WASH;
+  color: $PRIMARY_TEXT;
   width: 100%;
   display: flex;
   justify-content: space-between;
@@ -1327,15 +1436,17 @@ Cards used for simple "show"-type views
       @include px(1);
       opacity: 0.7;
     }
-    .page:not(.active):hover {
-      color: $SECONDARY_BG;
+    .page:not(.active, .disabled):hover {
+      color: $PRIMARY_BG;
       cursor: pointer;
     }
+
     .active,
     .prev:not(.disabled),
     .next:not(.disabled) {
       opacity: 1;
     }
+
     .active {
       text-decoration: underline;
     }
@@ -1346,8 +1457,8 @@ Cards used for simple "show"-type views
       @include mx(1);
       @include p(1);
       text-align: right;
-      border: 1px solid $DEFAULT_BORDER;
-      outline-color: $SECONDARY_BG;
+      border: 1px solid $DEFAULT_ALT;
+      outline-color: $PRIMARY_BG;
       transition: $TRANSITION_HOVER_ON;
       opacity: 1;
     }
@@ -1369,7 +1480,8 @@ table {
   border-radius: 4px;
   border: 0;
   .error_link {
-    @extend .btn-text-cbrain;
+    @extend .btn-text;
+    @extend .cbrain;
     @extend .external;
   }
   th,
@@ -1400,10 +1512,10 @@ table {
   thead {
     th {
       @include p(2);
-      border: 1px solid $DEFAULT_LT;
+      border: 1px solid $GREY_100;
       .text {
-        @include title("xxs");
-        color: $DEFAULT_ALT;
+        @include heading("xxs");
+        color: $GREY_300;
         text-transform: uppercase;
       }
     }
@@ -1412,15 +1524,15 @@ table {
     th,
     td {
       position: relative;
-      border-right: 1px solid $DEFAULT_LT;
-      color: $DEFAULT_ALT;
+      border-right: 1px solid $GREY_100;
+      color: $GREY_300;
       vertical-align: top; // removes table cell default padding
       .text {
-        @include title("xxs");
+        @include heading("xxs");
         @include p(2);
         align-items: flex-start;
-        .btn-text-secondary,
-        .btn-text-cbrain {
+        .btn-text.primary,
+        .btn-text.cbrain {
           background: inherit;
           text-align: left;
           display: block;
@@ -1431,7 +1543,7 @@ table {
       }
       .text[data-link="true"],
       [data-link="true"] {
-        @include title("xxs");
+        @include heading("xxs");
         @include p(2);
         flex: 1;
         width: 100%;
@@ -1504,7 +1616,7 @@ table {
       &:hover {
         th,
         td {
-          background: $SECONDARY_WASH;
+          background: $PRIMARY_WASH;
           transition: $TRANSITION_HOVER_ON;
         }
       }
@@ -1549,7 +1661,7 @@ table {
           position: absolute;
           right: 0;
           bottom: 0;
-          background: $DEFAULT_BORDER;
+          background: $DEFAULT_ALT;
         }
       }
     }
@@ -1569,7 +1681,7 @@ table {
         position: absolute;
         right: 0;
         top: 0;
-        background: $DEFAULT_BORDER;
+        background: $DEFAULT_ALT;
       }
     }
   }
@@ -1577,34 +1689,35 @@ table {
 
 /*
 =============================================================
-| TOOLBAR
+| NAVIGATION BAR
 =============================================================
 */
 
-$TOOLBAR_HEIGHT: 3.5;
-$TOOLBAR_ZINDEX: 1000;
+$NAVBAR_HEIGHT: 3.5;
+$NAVBAR_ZINDEX: 1000;
 
-#nh_toolbar {
+#nh_navbar {
   @include shadow("mid");
   display: flex;
   align-items: center;
   position: fixed;
   width: 100%;
-  height: $TOOLBAR_HEIGHT + rem;
+  height: $NAVBAR_HEIGHT + rem;
   background: $DEFAULT_BG;
-  z-index: $TOOLBAR_ZINDEX;
-  .nh_toolbar_logo {
+  overflow: auto;
+  z-index: $NAVBAR_ZINDEX;
+  .nh_navbar_logo {
     @include logo("lettermark", "RGB", "xs");
     @include ml(4);
     @include mr(2);
   }
-  .nh_toolbar_account {
+  .nh_navbar_account {
     @include text("xs");
     @include px(2);
-    color: $DEFAULT_ALT;
-    border-left: 1px solid $SECONDARY_ALT;
+    color: $GREY_300;
+    border-left: 1px solid $PRIMARY_ALT;
   }
-  .nh_toolbar_buttons {
+  .nh_navbar_buttons {
     flex: 1;
     height: 100%;
     display: flex;
@@ -1614,11 +1727,13 @@ $TOOLBAR_ZINDEX: 1000;
 
 .badge[data-badge] {
   position: relative;
+
   &::after {
     @include text("xxs");
     @include m(1);
+
     content: attr(data-badge);
-    background: $PRIMARY_BG;
+    background: $SECONDARY_BG;
     width: auto;
     min-width: 1rem;
     padding: 1px;
@@ -1630,55 +1745,18 @@ $TOOLBAR_ZINDEX: 1000;
     position: absolute;
     top: 0;
     right: 0;
-    box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2);
   }
 }
 
 /*
 =============================================================
-| FOOTER
+| SECONDARY NAVIGATION BAR
 =============================================================
+Secondary navbar with application-wide search + breadcrumbs
 */
 
-#nh_footer {
-  background: $DEFAULT_DK;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  &[data-controller="nh_sessions"][data-action="new"] {
-    position: absolute;
-    bottom: 0;
-    background: transparent;
-  }
-  .powered-by-cbrain {
-    @include text("xs");
-    @include p(2);
-    display: flex;
-    align-items: center;
-    opacity: 0.75;
-    color: $DEFAULT_BG;
-    transition: $TRANSITION_HOVER_OFF;
-    svg {
-      @include mr(2);
-      @include icon("xxs", $DEFAULT_BG, $DEFAULT_BG);
-    }
-    &:hover {
-      transition: $TRANSITION_HOVER_ON;
-      opacity: 1;
-    }
-  }
-}
-
-/*
-=============================================================
-| SECONDARY TOOLBAR
-=============================================================
-Secondary toolbar with application-wide search + breadcrumbs
-*/
-
-.nh_secondary_toolbar {
-  background: $DEFAULT_LT;
+.nh_secondary_navbar {
+  background: $GREY_100;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -1686,7 +1764,7 @@ Secondary toolbar with application-wide search + breadcrumbs
     display: flex;
     align-items: center;
     .nh_welcome {
-      @include title("md");
+      @include heading("md");
       @include px(4);
       margin: 0 auto;
     }
@@ -1697,15 +1775,16 @@ Secondary toolbar with application-wide search + breadcrumbs
       svg {
         width: 1rem;
         height: 1rem;
-        fill: $DEFAULT_ALT;
-        stroke: $DEFAULT_ALT;
+        fill: $GREY_300;
+        stroke: $GREY_300;
         opacity: 0.5;
       }
     }
     .nh_breadcrumbs_item {
-      @extend .btn-nav-secondary;
+      @extend .btn-nav;
+      @extend .primary;
       opacity: 0.5;
-      color: $DEFAULT_ALT;
+      color: $GREY_300;
       transition: $TRANSITION_HOVER_OFF;
       display: flex;
       flex-direction: row-reverse;
@@ -1713,14 +1792,14 @@ Secondary toolbar with application-wide search + breadcrumbs
 
       &:hover,
       &[data-active="true"] {
-        background: transparent;
+        background: transparent !important;
         transition: $TRANSITION_HOVER_ON;
         opacity: 1;
         svg {
           width: 1rem;
           height: 1rem;
-          fill: $SECONDARY_BG;
-          stroke: $SECONDARY_BG;
+          fill: $PRIMARY_BG;
+          stroke: $PRIMARY_BG;
         }
       }
     }
@@ -1733,7 +1812,7 @@ Secondary toolbar with application-wide search + breadcrumbs
       width: 100%;
       .icon {
         @include mr(1);
-        @include icon("xs", $SECONDARY_ALT, $SECONDARY_ALT);
+        @include icon("xs", $PRIMARY_ALT, $PRIMARY_ALT);
         opacity: 0.35;
         transition: $TRANSITION_HOVER_OFF;
       }
@@ -1746,27 +1825,27 @@ Secondary toolbar with application-wide search + breadcrumbs
       input {
         @include px(2);
         flex: 1;
-        border: 1px solid $DEFAULT_BORDER;
-        outline-color: $SECONDARY_BG;
+        border: 1px solid $DEFAULT_ALT;
+        outline-color: $PRIMARY_BG;
         transition: $TRANSITION_HOVER_ON;
 
         &::placeholder {
           opacity: 0.35;
-          color: $SECONDARY_TEXT;
+          color: $PRIMARY_TEXT;
         }
       }
     }
   }
   &[data-welcome="true"] {
     @include py(4);
-    background: $SECONDARY_ALT;
+    background: $PRIMARY_ALT;
     color: $DEFAULT_BG;
     .nh_search {
       .icon {
         @include icon("xs", $DEFAULT_BG, $DEFAULT_BG);
       }
       input {
-        outline-color: $SECONDARY_BG;
+        outline-color: $PRIMARY_BG;
       }
     }
   }
@@ -1784,6 +1863,42 @@ Secondary toolbar with application-wide search + breadcrumbs
           min-width: 18rem;
         }
       }
+    }
+  }
+}
+
+/*
+=============================================================
+| FOOTER
+=============================================================
+*/
+
+#nh_footer {
+  background: $GREY_400;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  &[data-controller="nh_sessions"][data-action="new"] {
+    position: absolute;
+    bottom: 0;
+    background: transparent;
+  }
+  .powered_by_cbrain {
+    @include text("xs");
+    @include p(2);
+    display: flex;
+    align-items: center;
+    opacity: 0.75;
+    color: $DEFAULT_BG;
+    transition: $TRANSITION_HOVER_OFF;
+    svg {
+      @include mr(2);
+      @include icon("xxs", $DEFAULT_BG, $DEFAULT_BG);
+    }
+    &:hover {
+      transition: $TRANSITION_HOVER_ON;
+      opacity: 1;
     }
   }
 }
@@ -1835,7 +1950,7 @@ body {
   position: relative;
   overflow: hidden;
   &[data-isLoggedIn="true"] {
-    padding-top: $TOOLBAR_HEIGHT + rem;
+    padding-top: $NAVBAR_HEIGHT + rem;
     background: $DEFAULT_WASH;
   }
 }
@@ -1877,14 +1992,8 @@ $ACTION_BAR_HEIGHT: 2.5;
     align-items: center;
   }
 
-  &.btn-text-secondary {
-    border-right: 1px solid $SECONDARY_WASH;
-  }
-  .icon {
-    @include mr(2);
-    @include icon("xxs", null, $DEFAULT_BG);
-    display: inline-block;
-    vertical-align: middle;
+  &.btn-text.primary {
+    border-right: 1px solid $PRIMARY_WASH;
   }
 }
 
@@ -1948,8 +2057,8 @@ $ACTION_BAR_HEIGHT: 2.5;
 
   .nh_features {
     @extend .nh_content;
-    @include title("sm");
-    background: $PRIMARY_DK;
+    @include heading("sm");
+    background: $SECONDARY_DK;
     flex: 1;
     display: flex;
     flex-wrap: wrap;
@@ -2003,10 +2112,9 @@ $ACTION_BAR_HEIGHT: 2.5;
       }
       .nh_register {
         @include my(2);
-        border-radius: 4px;
         color: $DEFAULT_BG;
         &:hover {
-          color: $PRIMARY_BG;
+          color: $SECONDARY_BG;
         }
       }
     }
@@ -2079,8 +2187,8 @@ $BAR_HEIGHT: 2.3;
   @include p(1);
   @include px(2);
   border-radius: 2px;
-  background: $SECONDARY_WASH;
-  color: $SECONDARY_ALT;
+  background: $PRIMARY_WASH;
+  color: $PRIMARY_ALT;
   position: absolute;
   top: 50%;
   right: 0;
@@ -2108,18 +2216,22 @@ $BAR_HEIGHT: 2.3;
       > * {
         width: 100%;
       }
-      .card_title {
+      .card_heading {
         background: $DEFAULT_WASH;
         &:hover {
-          background: $SECONDARY_WASH;
+          background: $PRIMARY_WASH;
+          text-decoration: underline;
         }
       }
       a {
         text-decoration: none;
+        &:hover {
+          text-decoration: underline;
+        }
       }
       .card_text {
         @include text("xs");
-        color: $DEFAULT_DK;
+        color: $GREY_400;
       }
       .card_creator {
         height: $BAR_HEIGHT + rem; // patch that sets height for link_to element that does not return a link
@@ -2127,9 +2239,11 @@ $BAR_HEIGHT: 2.3;
         justify-content: center;
         align-items: center;
         a {
-          @extend .btn-text-cbrain;
+          @extend .btn-text;
+          @extend .cbrain;
           @extend .external;
           @include text("xs");
+          height: 100%;
           text-decoration: none;
           width: 100%;
         }
@@ -2157,7 +2271,7 @@ $BAR_HEIGHT: 2.3;
         background: $DEFAULT_WASH;
         > * {
           @include p(2);
-          @include title("xxs");
+          @include heading("xxs");
           flex: 1;
           border-right: 1px solid $DEFAULT_BG;
           white-space: nowrap;
@@ -2193,7 +2307,7 @@ $BAR_HEIGHT: 2.3;
         }
 
         &[data-actions="true"]:hover {
-          background: $SECONDARY_WASH;
+          background: $PRIMARY_WASH;
           transition: $TRANSITION_HOVER_ON;
 
           .icon {
@@ -2203,7 +2317,7 @@ $BAR_HEIGHT: 2.3;
         }
         .icon {
           @include m(1);
-          @include icon("xxs", $SECONDARY_ALT, $SECONDARY_ALT);
+          @include icon("xxs", $PRIMARY_ALT, $PRIMARY_ALT);
           align-self: flex-end;
           display: flex;
           justify-content: center;
@@ -2214,8 +2328,8 @@ $BAR_HEIGHT: 2.3;
           }
           &:hover {
             svg {
-              fill: $SECONDARY_BG;
-              stroke: $SECONDARY_BG;
+              fill: $PRIMARY_BG;
+              stroke: $PRIMARY_BG;
             }
           }
         }
@@ -2259,7 +2373,7 @@ $BAR_HEIGHT: 2.3;
       background: $DEFAULT_WASH;
     }
     &:hover {
-      background: $SECONDARY_WASH;
+      background: $PRIMARY_WASH;
     }
     .list-item {
       @include text("xs");
@@ -2267,7 +2381,7 @@ $BAR_HEIGHT: 2.3;
       flex: 1;
       text-transform: none;
       border-right: 1px solid;
-      border-color: $SECONDARY_WASH;
+      border-color: $PRIMARY_WASH;
       display: flex;
       justify-content: space-between;
       > * {
@@ -2289,14 +2403,14 @@ $BAR_HEIGHT: 2.3;
         display: flex;
         justify-content: center;
         flex: 1;
-        background: $SECONDARY_WASH;
-        color: $SECONDARY_ALT;
+        background: $PRIMARY_WASH;
+        color: $PRIMARY_ALT;
       }
     }
     .list-header {
       @include label();
       @include m(0);
-      background: $SECONDARY_BG;
+      background: $PRIMARY_BG;
       color: white;
       border-color: $DEFAULT_BG;
     }
@@ -2315,13 +2429,17 @@ $BAR_HEIGHT: 2.3;
   border-radius: 2px;
   display: flex;
   flex-direction: column;
+  color: $GREY_400;
+
   .section-title {
+    @include heading("xs");
     @include pb(2);
-    @include text("sm");
-    color: $DEFAULT_DK;
-    opacity: 0.75;
+    width: 100%;
+    opacity: 1;
     display: flex;
     align-items: center;
+    border-bottom: 1px solid $GREY_400;
+
     img {
       @include mr(2);
       height: 1rem;
@@ -2329,18 +2447,20 @@ $BAR_HEIGHT: 2.3;
     }
   }
   &.default {
-    background: $DEFAULT_BORDER;
+    background: $DEFAULT_ALT;
   }
   &.primary {
     background: $PRIMARY_WASH;
     .section-title {
-      color: $PRIMARY_BG;
+      color: $PRIMARY_ALT;
+      border-bottom: 1px solid $PRIMARY_ALT;
     }
   }
   &.secondary {
     background: $SECONDARY_WASH;
     .section-title {
-      color: $SECONDARY_BG;
+      color: $SECONDARY_ALT;
+      border-bottom: 1px solid $SECONDARY_ALT;
     }
   }
 }
@@ -2360,6 +2480,11 @@ $BAR_HEIGHT: 2.3;
     .card-item {
       @include p(1);
       align-items: center;
+      text-overflow: ellipsis;
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      display: block;
     }
 
     .btn-section {
@@ -2433,6 +2558,7 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
     }
     .notifications {
       .section {
+        background: transparent;
         .card {
           @include mb(4);
           .header {
@@ -2460,7 +2586,7 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
         flex: 1 1 $DASHBOARD_CARD_MIN_WIDTH + rem;
         display: flex;
         flex-direction: column;
-        .card-title {
+        .card-heading {
           @include p(4);
           background: $DEFAULT_WASH;
           text-decoration: none;
@@ -2494,8 +2620,8 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
             &.title {
               background: $DEFAULT_WASH;
             }
-            &.btn-text-secondary,
-            &.btn-text-cbrain {
+            &.btn-text.primary,
+            &.btn-text.cbrain {
               text-align: left;
               text-decoration: none;
               cursor: default;
@@ -2507,20 +2633,20 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
               }
             }
 
-            &.btn-text-secondary {
+            &.btn-text.primary {
               svg {
-                fill: $SECONDARY_TEXT;
-                stroke: $SECONDARY_TEXT;
+                fill: $PRIMARY_TEXT;
+                stroke: $PRIMARY_TEXT;
               }
               &:hover {
                 svg {
-                  fill: $SECONDARY_BG;
-                  stroke: $SECONDARY_BG;
+                  fill: $PRIMARY_BG;
+                  stroke: $PRIMARY_BG;
                   transition: $TRANSITION_HOVER_ON;
                 }
               }
             }
-            &.btn-text-cbrain {
+            &.btn-text.cbrain {
               .card-icon {
                 fill: $CBRAIN_ALT;
                 stroke: $CBRAIN_ALT;
@@ -2580,14 +2706,7 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
   .section {
     @include my(2);
     @include px(0);
-    .section-title {
-      @include title("sm");
-      @include pb(1);
-      color: $SECONDARY_ALT;
-      width: 100%;
-      opacity: 1;
-      border-bottom: 1px solid $SECONDARY_ALT;
-    }
+    background-color: transparent;
   }
 }
 
@@ -2612,10 +2731,10 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
       }
     }
     &.error {
-      color: $ERROR_ALT;
+      color: $ERROR_BG;
       svg {
-        fill: $ERROR_ALT;
-        stroke: $ERROR_ALT;
+        fill: $ERROR_BG;
+        stroke: $ERROR_BG;
       }
     }
   }
@@ -2636,7 +2755,7 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
         display: block;
       }
     }
-    .card-title {
+    .card-heading {
       @include p(4);
       text-align: center;
     }
@@ -2645,14 +2764,14 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
     @include p(2);
     @include my(2);
     width: 100%;
-    border: 1px solid $DEFAULT_BORDER;
+    border: 1px solid $DEFAULT_ALT;
     border-radius: 2px;
     overflow: scroll;
   }
   .license-list {
-    background: $SECONDARY_WASH;
-    .card-title {
-      color: $SECONDARY_DK;
+    background: $PRIMARY_WASH;
+    .card-heading {
+      color: $PRIMARY_DK;
     }
     .card-item {
       display: flex;
@@ -2673,8 +2792,11 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
       align-self: flex-end;
       > * {
         white-space: normal;
+        &:nth-child(2) {
+          @include mt(2);
+        }
       }
-      .btn-text-secondary {
+      .btn-text.primary {
         text-transform: uppercase;
       }
     }
@@ -2718,7 +2840,129 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
     width: 100%;
     background: transparent;
   }
-  .btn-text-secondary {
-    background: $SECONDARY_WASH;
+  .btn-text.primary {
+    background: $PRIMARY_WASH;
+  }
+}
+
+/*
+=============================================================
+| STYLEGUIDE
+=============================================================
+*/
+
+.styleguide {
+  @include shadow("xlow");
+  background: white;
+  display: flex;
+  flex-wrap: wrap;
+  .title {
+    @include p(4);
+    @include heading("xs");
+    text-transform: uppercase;
+    width: 100%;
+    background: $GREY_100;
+  }
+  .section {
+    @include p(4);
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    overflow: auto;
+    .description {
+      @include text("sm");
+      color: $GREY_300;
+      font-weight: 600;
+      max-width: $BREAKPOINT_LG;
+    }
+    .row {
+      @include my(4);
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .column {
+      @include my(4);
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+    }
+    .bar {
+      > * {
+        position: unset !important;
+        width: 100%;
+      }
+    }
+    .label {
+      @include mb(2);
+      @include heading("xxs");
+      width: 100%;
+      text-transform: uppercase;
+      color: $GREY_300;
+    }
+    .item {
+      @include m(2);
+      flex: 1;
+      max-width: 200px;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+      .label {
+        color: #cccccc;
+      }
+      > *:not(.label) {
+        @include m(1);
+      }
+    }
+    .icon {
+      max-width: 60px;
+    }
+    .swatch {
+      @include mr(3);
+      min-width: 50px;
+      min-height: 50px;
+      border: 1px solid $GREY_400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      svg {
+        width: 1rem;
+        height: 1rem;
+        fill: $GREY_400;
+        stroke: $GREY_400;
+      }
+    }
+    .sample {
+      flex: 1;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      max-width: 200px;
+
+      .label {
+        @include ml(2);
+
+        display: flex;
+        flex-direction: column;
+      }
+    }
+  }
+
+  @media (min-width: $BREAKPOINT_MD) {
+    .title {
+      @include px(7);
+    }
+    .section {
+      @include px(7);
+
+      .item {
+        @include m(4);
+      }
+      .sample {
+        @include m(1);
+      }
+    }
   }
 }

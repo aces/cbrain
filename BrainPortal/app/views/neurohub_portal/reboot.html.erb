@@ -1,18 +1,18 @@
 
 <div id="neurohub_portal_reboot" class="nh_content" style="background-image: url('/images/neurohub/horses.png'); background-size: 100%;background-repeat: repeat-y;">
-  <div class="title-lg mb-4">
+  <div class="heading-lg mb-4">
     Update and reboot control page
     <p class="text-xs text-italic">This is a temporary feature for NeuroHub developers.</p>
   </div>
-  <p class="title-sm p-2 default-bg bg-default-alt"> Current PUMA pid: <%= @pid_to_restart %></p>
+  <p class="heading-sm p-2 default-bg bg-grey-400"> Current PUMA pid: <%= @pid_to_restart %></p>
   <fieldset class="card my-2">
-    <p class="title-sm bg-default-disabled p-2">Git log of currently running code:</p>
+    <p class="heading-sm bg-grey-200 p-2">Git log of currently running code:</p>
     <pre class="nh-reboot-text p-2">
       <%= IO.popen("git log -n 1 --decorate=full --stat","r") { |f| f.read } %>
     </pre>
   </fieldset>
   <fieldset class="card my-2">
-    <p class="title-sm bg-default-disabled p-2">Git log of GitHub branch</p>
+    <p class="heading-sm bg-grey-200 p-2">Git log of GitHub branch</p>
     <% remote=`git rev-parse --abbrev-ref --symbolic-full-name "@{u}"`.strip %>
     <% system("git fetch") %>
     <pre class="nh-reboot-text p-2">
@@ -20,10 +20,10 @@
     </pre>
   </fieldset>
   <div class="d-flex justify-center my-7">
-    <%= link_to 'Update and Reboot', reboot_path({ :do_it => true }), { :class => "btn-solid-primary" } %>
+    <%= link_to 'Update and Reboot', reboot_path({ :do_it => true }), { :class => "btn-solid secondary" } %>
   </div>
 
-  <p class="title-sm default-bg bg-default-alt p-2 mb-2"> Note: Please read below first.</p>
+  <p class="heading-sm default-bg bg-grey-400 p-2 mb-2"> Note: Please read below first.</p>
   <p class="m-2">
     Please <strong>do not abuse this system</strong>. Use only when you've pushed something new to
     the <em>neurohub</em> GitHub branch. If anything goes wrong (it's totally possible), contact Pierre.

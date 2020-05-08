@@ -28,13 +28,13 @@
 
   <%- # actions -%>
   <div class="nh_actions">
-    <%= link_to nh_icon_edit + "Edit", edit_nh_storage_path(@nh_dp), :class=>"btn-solid-secondary nh_action" %>
+    <%= link_to nh_icon_edit + "Edit", edit_nh_storage_path(@nh_dp), :class=>"btn-solid primary nh_action" %>
   </div>
 
   <%- # show -%>
   <div class="card">
-    <div class="card-item title">
-      <div class="card-title"><%= @nh_dp.name %></div>
+    <div class="card-item heading">
+      <div class="card-heading"><%= @nh_dp.name %></div>
     </div>
     <div class="card-row">
       <div class="card-item">
@@ -72,7 +72,7 @@
       <div class="card-item">
         <div class="d-flex flex-column">
           <p class="card-label">Project Access</p>
-          <%= link_to @nh_dp.group.name, nh_project_path(@nh_dp.group), :class => "btn-text-secondary mt-2" %>
+          <%= link_to @nh_dp.group.name, nh_project_path(@nh_dp.group), :class => "btn-text primary mt-2" %>
         </div>
       </div>
     </div>
@@ -112,8 +112,8 @@
     <div class="card-item">
       <div>
         <p class="card-label">Test Configuration</p>
-        <p class="text-info">This will run tests on the current storage configuration. Note that if these tests fail, the storage will be marked 'offline'.</p>
-        <%= button_to "Test Configuration", check_nh_storage_path(@nh_dp), :method => :post, :class => "btn-solid-secondary mt-2" %>
+        <p class="field-description">This will run tests on the current storage configuration. Note that if these tests fail, the storage will be marked 'offline'.</p>
+        <%= button_to "Test Configuration", check_nh_storage_path(@nh_dp), :method => :post, :class => "btn-solid primary mt-2" %>
       </div>
     </div>
   </div>
@@ -121,13 +121,13 @@
     <div class="card-item">
       <div>
         <p class="card-label">Auto Register</p>
-        <p class="text-info">
+        <p class="field-description">
            This button will contact the remote storage, get a list
            of files there, and automatically add all those files to
            the storage's associated project. Files already present
            or associated with other projects will be left alone.
         </p>
-        <%= button_to "Auto Register Files", autoregister_nh_storage_path(@nh_dp), :method => :post, :class => "btn-solid-secondary mt-2" %>
+        <%= button_to "Auto Register Files", autoregister_nh_storage_path(@nh_dp), :method => :post, :class => "btn-solid primary mt-2" %>
       </div>
     </div>
   </div>
@@ -135,14 +135,14 @@
     <div class="card-item">
       <div>
         <p class="card-label">Deconfigure Storage</p>
-        <p class="text-info">
+        <p class="field-description">
           Removes the current configuration of this storage. All
           files will be unregistered!
         </p>
         <%= button_to "Deconfigure this storage", nh_storage_path(@nh_dp),
           {
             :onclick => "return confirm('Are you sure you want to deconfigure this private storage? ALL FILES WILL BE UNREGISTERED!');",
-            :class  => "btn-solid-secondary  mt-2",
+            :class  => "btn-solid primary mt-2",
             :method => :delete
           }
         %>

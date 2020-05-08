@@ -30,7 +30,7 @@
     <%- # actions -%>
     <div class="nh_actions">
       <% if @can_upload %>
-        <%= link_to nh_icon_upload + "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid-secondary nh_action", :method => :get %>
+        <%= link_to nh_icon_upload + "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid primary nh_action", :method => :get %>
       <% end %>
 
       <%- # pagination -%>
@@ -59,7 +59,7 @@
           </div>
           <p class="empty-text">There are currently no files in this project.</p>
           <% if @can_upload %>
-            <%= link_to "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid-secondary", :method => :get %>
+            <%= link_to "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid primary", :method => :get %>
           <% end %>
         </div>
       </div>

@@ -38,19 +38,19 @@
       <% projects.each do |project| %>
         <tr>
           <th>
-            <%= link_to project.name, {:controller => :nh_projects, :action => :show, :id => project.id}, :method  => :get, :class=>"text btn-text-secondary", :'data-link' => "true" %>
+            <%= link_to project.name, {:controller => :nh_projects, :action => :show, :id => project.id}, :method  => :get, :class=>"text btn-text primary", :'data-link' => "true" %>
             <% if project.public %>
               <div class="nh_projects_public"> public </div>
             <% end %>
           </th>
           <td>
-            <p class="text"><%= link_to_user_if_accessible(project.creator, current_user, :html_options => {:class => "btn-text-cbrain external", :'data-link' => "true", :target => "_blank"}) %></p>
+            <p class="text"><%= link_to_user_if_accessible(project.creator, current_user, :html_options => {:class => "btn-text cbrain external", :'data-link' => "true", :target => "_blank"}) %></p>
           </td>
           <td data-type="int">
             <p class="text"><%= project.users.count %></p>
           </td>
           <td data-type="int">
-            <%= link_to(files_nh_project_path(project.id), :class=>"text btn-text-secondary", :'data-link' => 'true') do%>
+            <%= link_to(files_nh_project_path(project.id), :class=>"text btn-text primary", :'data-link' => 'true') do%>
               <%= project.userfiles.count %>
             <% end %>
           </td>
@@ -63,7 +63,7 @@
               <% if project.can_be_edited_by?(current_user) %>
                 <%= link_to(nh_icon_edit, edit_nh_project_path(project),
                               :method      => :get,
-                              :class       => "text btn-solid-secondary",
+                              :class       => "text btn-solid primary",
                               :'data-link' => "true") %>
               <% end %>
             </div>

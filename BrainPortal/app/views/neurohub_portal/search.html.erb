@@ -45,19 +45,19 @@
 
   <%- # search results -%>
   <% if @files.size > 0 %>
-    <div class="section">
+    <div class="section primary">
       <div class="section-title">Files</div>
       <%= render :partial => 'nh_projects/files_table', :locals => { files: @files, pagination: false } %>
     </div>
   <% end %>
   <% if @tasks.size > 0 %>
-    <div class="section">
+    <div class="section primary">
       <div class="section-title">Tasks</div>
       <%= render :partial => 'tasks_table', :locals => { tasks: @tasks } %>
     </div>
   <% end %>
   <% if @projects.size > 0 %>
-    <div class="section">
+    <div class="section primary">
       <div class="section-title">Projects</div>
       <%= render :partial => './nh_projects/projects_table', :locals => { projects: @projects, pagination: false } %>
     </div>

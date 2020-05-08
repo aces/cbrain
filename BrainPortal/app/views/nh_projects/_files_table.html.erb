@@ -37,11 +37,11 @@
         <tr>
             <th>
               <p class="text">
-                <%= link_to_userfile_if_accessible(file, current_user, :html_options => {:class => "text btn-text-cbrain external", :'data-link' => "true", :target => "_blank"}) %>
+                <%= link_to_userfile_if_accessible(file, current_user, :html_options => {:class => "text btn-text cbrain external", :'data-link' => "true", :target => "_blank"}) %>
               </p>
             </th>
             <td>
-              <p class="text"><%= link_to_user_if_accessible(file.user, current_user, :html_options => {:class => "btn-text-cbrain external", :'data-link' => "true", :target => "_blank"}) %></p>
+              <p class="text"><%= link_to_user_if_accessible(file.user, current_user, :html_options => {:class => "btn-text cbrain external", :'data-link' => "true", :target => "_blank"}) %></p>
             </td>
             <td>
               <p class="text"><%= file.pretty_type %></p>
