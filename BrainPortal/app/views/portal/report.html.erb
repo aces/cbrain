@@ -419,7 +419,15 @@ in a tabular layout. Proceed as follow:
           <% if @model_atts.include?(:user_id) %>
             <tr class="report_fix_attributes">
             <th>Users:</th>
-            <td><%= user_select          :user_id,          { :selector => params[:user_id] },                                  :multiple => true, :size => 5 %></td>
+            <td colspan="2">
+              <%= user_select            :user_id,          { :selector => params[:user_id] },                                  :multiple => true, :size => 5 %>
+              <div>
+                <%= check_box_tag(:show_locked, 1, params[:show_locked] ) %>
+                <%= label_tag(:show_locked, "Show all locked users") %>
+                <%= check_box_tag(:show_unlocked, 1, params[:show_unlocked] ) %>
+                <%= label_tag(:show_unlocked, "Show all unlocked users") %>
+              </div>
+            </td>
             </tr>
           <% end %>
 

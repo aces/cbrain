@@ -298,6 +298,21 @@ class PortalController < ApplicationController
        end
     end
 
+    # Add all locked/unlocked users.
+    if params[:show_locked] || params[:show_unlocked]
+      results = []
+      if params[:show_locked]
+        locked_users = User.where(:account_locked => true).all
+        results.concat locked_users
+      end
+      if params[:show_unlocked]
+        unlocked_users = User.where(:account_locked => false).all
+        results.concat unlocked_users
+      end
+      params[:user_id]  = results
+    end
+
+
     # Add fixed values
     @filter_fixed = {}
     @model_atts.each do |att|
