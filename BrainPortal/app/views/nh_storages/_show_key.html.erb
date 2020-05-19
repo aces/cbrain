@@ -32,7 +32,13 @@
   <div class="pb-2">
     <div class="label">SSH Key installation Instructions</div>
     <div class="text">
-      SSH Key installation instructions go here.
+       A public SSH key needs to be added to the authorized keys of the user on the host. Paste the ssh key bellow in a text file the use the following command to add it to the authorized_keys file on the host.
+      <div class="label">Command line</div>
+      <div class="text">
+        <pre>
+$ cat mykey.txt | ssh user@host "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >>  ~/.ssh/authorized_keys"
+        </pre>
+      </div>
       <div class="text-italic">
         Note that revealing this key's content to other people causes <em>no security risks at all</em>.
         The information in this key is meant to be public and people cannot use it to access your information.
