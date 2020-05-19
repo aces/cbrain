@@ -128,6 +128,8 @@ class TasksController < ApplicationController
     task_id     = params[:id]
 
     @task              = current_user.available_tasks.find(task_id)
+    @task_batch_count  = current_user.available_tasks.where(:batch_id => @task.batch_id).count
+
     @task.add_new_params_defaults # auto-adjust params with new defaults if needed
     @run_number        = params[:run_number] || @task.run_number
 
@@ -1669,6 +1671,95 @@ class TasksController < ApplicationController
     end
 
     # Compact +hash+, a hash representation of StatusFilter (matching
+    # +from_hash+'s structure).
+    def self.compact_hash(hash)
+      ViewScopes::Scope.generic_compact_hash(
+        hash,
+        {
+          'type'  => 't',
+          'value' => 'v',
+        }
+      )
+    end
+  end
+
+
+  public
+
+  # Tasks-specific batch filter; filters by batch id to return a list
+  # of subtasks.
+  # Note that this filter uses Scope::Filter's *value* attribute to hold the
+  # id to check against, and that the *attribute* attribute is
+  # statically set to 'batch_id' (as this filter will only ever filter on a task's
+  # batch ).
+  class BatchFilter < Scope::Filter
+
+    # Create a new blank BatchFilter. Only present to pre-set *attribute*.
+    def initialize
+      @attribute = 'batch_id'
+    end
+
+    # Nice string representation of this filter for +pretty_scope_filter+.
+    def to_s
+      "Batch Id: ##{@value.to_s.humanize}"
+    end
+
+    # The methods below are TagFilter specific versions of the Scope::Filter
+    # interface. See Scope::Filter for more details on how these methods
+    # operate and for detailed parameter information.
+
+    # Type name to recognize this filter when in hash representation
+    # (+type+ (+t+) key).
+    def self.type_name
+      't.bid'
+    end
+
+    # Apply this filter to retrieve the subtasks with a given batch id.
+    def apply(collection)
+      raise "no batch id to filter with" unless @value.present?
+
+      batch = CbrainTask.real_tasks.where(:batch_id => @value)
+    end
+
+    # Check if this filter is valid (+apply+ can be used). A BatchFilter only
+    # requires a valid *value* to be useable.
+    def valid?
+      @value.present?
+    end
+
+    # Create a new BatchFilter from a hash representation. The following keys
+    # are recognized in +hash+:
+    #
+    # [+value+ or +v+]
+    #  *value* attribute: a string or symbol denoting which set of subtask ids
+    #  to match against.
+    #
+    # Note that no other key from Scope::Filter's +from_hash+ is recognized.
+    def self.from_hash(hash)
+      return nil unless hash.is_a?(Hash)
+
+      hash = hash.with_indifferent_access unless
+        hash.is_a?(HashWithIndifferentAccess)
+
+      filter = self.new
+      value = (hash['value'] || hash['v']).to_s
+      filter.value = value
+
+      filter
+    end
+
+    # Convert this BatchFilter into a hash representation, doing the exact
+    # opposite of +from_hash+.
+    def to_hash(compact: false)
+      hash = {
+        'type'  => self.class.type_name,
+        'value' => @value
+      }
+
+      compact ? self.class.compact_hash(hash) : hash
+    end
+
+    # Compact +hash+, a hash representation of BatchFilter (matching
     # +from_hash+'s structure).
     def self.compact_hash(hash)
       ViewScopes::Scope.generic_compact_hash(
