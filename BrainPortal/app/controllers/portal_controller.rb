@@ -300,14 +300,13 @@ class PortalController < ApplicationController
 
     # Add all locked/unlocked users.
     results = []
-
-    if params[:show_locked]
+    if params[:show_users].presence === "locked"
       locked_users = User.where(:account_locked => true).all
       results.concat locked_users
       params[:user_id]  = results
     end
 
-    if params[:show_unlocked]
+    if params[:show_users].presence === "active"
       unlocked_users = User.where(:account_locked => false).all
       results.concat unlocked_users
       params[:user_id]  = results

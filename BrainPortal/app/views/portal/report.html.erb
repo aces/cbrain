@@ -422,10 +422,9 @@ in a tabular layout. Proceed as follow:
             <td colspan="2">
               <%= user_select            :user_id,          { :selector => params[:user_id] },                                  :multiple => true, :size => 5 %>
               <div>
-                <%= check_box_tag(:show_locked, 1, params[:show_locked] ) %>
-                <%= label_tag(:show_locked, "Show all locked users") %>
-                <%= check_box_tag(:show_unlocked, 1, params[:show_unlocked] ) %>
-                <%= label_tag(:show_unlocked, "Show all unlocked users") %>
+                <%= radio_button_tag(:show_users, "default", params[:show_users]==="default" || (params[:show_users]!="active" && params[:show_users]!="locked")) %> Show All Users         <br/>
+                <%= radio_button_tag(:show_users, "active" , params[:show_users]==="active")                                                                      %> Show Only Active Users <br/>
+                <%= radio_button_tag(:show_users, "locked" , params[:show_users]==="locked")                                                                      %> Show Only Locked Users <br/>
               </div>
             </td>
             </tr>
