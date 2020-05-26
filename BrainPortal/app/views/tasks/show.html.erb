@@ -47,16 +47,6 @@
 <% if @task.bourreau.online? %>
 
   <div class="menu_bar">
-    <!-- TASKS IN BATCH -->
-    <% if @task.batch_id && @task_batch_count > 1 %>
-      <%=
-        scope_filter_link("View All Tasks in Batch (#{@task_batch_count})",
-          'tasks#index', :replace, { :t => 't.bid', :v => @task.batch_id },
-          url: { :controller => :tasks, :action => :index },
-          link: {:class => "button menu_button"}
-        )
-      %>
-    <% end %>
 
     <!-- EDIT -->
     <% if (@task.status =~ /Completed|Failed|Duplicated|Terminated/) && (! @task.class.properties[:cannot_be_edited]) %>
@@ -228,7 +218,23 @@
            <pre>Problem loading summary view (template error).</pre>
            <% Message.send_internal_error_message(nil,"Show summary of params for task #{@task.name}",ex) rescue true %>
          <% end %>
+
+        <!-- View tasks in batch -->
+        <% if @task.batch_id && @task_batch_count > 1 %>
+          <p>
+            In the task manager, you can view the full
+            <%=
+              scope_filter_link("list of tasks (#{@task_batch_count})",
+                'tasks#index', :replace, { :t => 't.bid', :v => @task.batch_id },
+                url:  { :controller => :tasks },
+                link: { :ajax       => false  }
+              )
+            %>
+            in this batch.
+          </p>
+        <% end %>
        <% end %>
+
        <%= tb.tab("Raw") do %>
          <% yamltext = @task.params.to_yaml(
                          :root        => "Params", # no longer supported

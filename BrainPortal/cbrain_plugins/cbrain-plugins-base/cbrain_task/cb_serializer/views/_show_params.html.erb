@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -47,17 +47,22 @@
   <% end %>
   </ul>
 
-  <p>
-  In the task manager, you can view the full
-  <%=
-    scope_filter_link('list of tasks',
-      'tasks', :replace, { :a => 'batch_id', :v => @task.batch_id },
-      url:  { :controller => :tasks },
-      link: { :ajax       => false  }
-    )
-  %>
-  in this batch.
-  </p>
+  <% @task_batch_count  = current_user.available_tasks.where(:batch_id => @task.batch_id).count %>
+
+  <!-- View tasks in batch -->
+  <% if @task.batch_id && @task_batch_count > 1 %>
+    <p>
+      In the task manager, you can view the full
+      <%=
+        scope_filter_link("list of tasks (#{@task_batch_count})",
+          'tasks#index', :replace, { :t => 't.bid', :v => @task.batch_id },
+          url:  { :controller => :tasks },
+          link: { :ajax       => false  }
+        )
+      %>
+      in this batch.
+    </p>
+  <% end %>
 
 </fieldset>
 
