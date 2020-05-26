@@ -1601,7 +1601,7 @@ class TasksController < ApplicationController
       "Status: #{@value.to_s.humanize}"
     end
 
-    # The methods below are TagFilter specific versions of the Scope::Filter
+    # The methods below are StatusFilter specific versions of the Scope::Filter
     # interface. See Scope::Filter for more details on how these methods
     # operate and for detailed parameter information.
 
@@ -1704,7 +1704,7 @@ class TasksController < ApplicationController
       "Batch Id: ##{@value.to_s.humanize}"
     end
 
-    # The methods below are TagFilter specific versions of the Scope::Filter
+    # The methods below are BatchFilter specific versions of the Scope::Filter
     # interface. See Scope::Filter for more details on how these methods
     # operate and for detailed parameter information.
 
