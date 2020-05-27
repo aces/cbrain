@@ -98,6 +98,20 @@ class CbrainMailer < ActionMailer::Base
     )
   end
 
+  # Sends an email asking to verify a user's email address by clicking a link fo NeuroHub
+  def signup_nh_request_confirmation(signup, confirm_url)
+    @signup      = signup
+    @confirm_url = confirm_url
+    return if signup.confirm_token.blank? || signup.email.blank? || confirm_url.blank?
+    from = build_from
+    return unless from
+    mail(
+      :from    => from,
+      :to      => @signup.email,
+      :subject => "Confirmation of NeuroHub Account Request"
+    )
+  end
+
   # Sends an email to the administrator
   def signup_notify_admin(signup, show_url)
     @signup     = signup
