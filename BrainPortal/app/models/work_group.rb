@@ -81,6 +81,8 @@ class WorkGroup < Group
     return @_pretty_category_name if @_pretty_category_name
     if self.invisible?
       @_pretty_category_name = 'Invisible Project'
+    elsif self.public?
+      @_pretty_category_name = 'Public Project'
     elsif self.users.count == 0
       @_pretty_category_name = 'Empty Work Project'
     elsif self.users.count > 1
@@ -94,6 +96,9 @@ class WorkGroup < Group
   end
 
   def short_pretty_type #:nodoc:
+    if self.public?
+      return "Public"
+    end
     if self.users.count > 1
       return "Shared"
     else
