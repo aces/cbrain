@@ -53,6 +53,10 @@ class NhSignupsController < NeurohubApplicationController
       return
     end
 
+    unless send_nh_confirm_email(@signup)
+      flash[:error] = "It seems some error occurred. The email notification was probably not sent. There's nothing we can do about this."
+    end
+
     sleep 1
     flash[:notice] = "Success!"
     redirect_to nh_signup_path(@signup)
@@ -75,6 +79,17 @@ class NhSignupsController < NeurohubApplicationController
     return true  if signup[:session_id] == request.session_options[:id]
     return true  if current_user && current_user.has_role?(:admin_user)
     false
+  end
+
+  private 
+
+  def send_nh_confirm_email(signup) #:nodoc:
+    confirm_url = url_for(:controller => :signups, :action => :confirm, :id => signup.id, :only_path => false, :token => signup.confirm_token)
+    CbrainMailer.signup_nh_request_confirmation(signup, confirm_url).deliver
+    return true
+  rescue => ex
+    Rails.logger.error ex.to_s
+    return false
   end
 
 end
