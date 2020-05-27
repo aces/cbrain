@@ -1684,8 +1684,6 @@ class TasksController < ApplicationController
   end
 
 
-  public
-
   # Tasks-specific batch filter; filters by batch id to return a list
   # of subtasks.
   # Note that this filter uses Scope::Filter's *value* attribute to hold the
