@@ -124,15 +124,6 @@
     <% end %>
     <% t.cell("Task Description") { h(@task.description).gsub("\n", "<br>").html_safe } %>
 
-    <% if @task.batch_id %>
-      <% t.cell("Tasks in Batch") do %>
-        <%= link_to @task_batch_count, tasks_path(scope_filter_params(@scope, :set, {
-          :attribute => 'batch_id',
-          :value     => @task.batch_id
-        })) %>
-      <% end %>
-    <% end %>
-
     <% t.cell("Execution Server") { link_to_bourreau_if_accessible(@task.bourreau) }  %>
     <% t.cell("Owner") { link_to_user_with_tooltip(@task.user) } %>
 
@@ -227,6 +218,18 @@
            <pre>Problem loading summary view (template error).</pre>
            <% Message.send_internal_error_message(nil,"Show summary of params for task #{@task.name}",ex) rescue true %>
          <% end %>
+
+         <% if @task.batch_id %>
+          <p>
+            In the task manager, you can view the full
+            <%= link_to "list of tasks (#{@task_batch_count})", tasks_path(scope_filter_params(@scope, :set, {
+              :attribute => 'batch_id',
+              :value     => @task.batch_id
+            })) %>
+            in this batch.
+          </p>
+        <% end %>
+
        <% end %>
 
        <%= tb.tab("Raw") do %>
