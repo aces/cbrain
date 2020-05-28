@@ -219,7 +219,7 @@
            <% Message.send_internal_error_message(nil,"Show summary of params for task #{@task.name}",ex) rescue true %>
          <% end %>
 
-         <% if @task.batch_id %>
+         <% if @task.batch_id && @task_batch_count > 1 %>
           <p>
             In the task manager, you can view the full
             <%= link_to "list of tasks (#{@task_batch_count})", tasks_path(scope_filter_params(@scope, :set, {
