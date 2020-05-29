@@ -126,8 +126,11 @@ class TasksController < ApplicationController
   # GET /tasks/1.xml
   def show #:nodoc:
     task_id     = params[:id]
+    @scope      = scope_from_session('tasks#index')
 
     @task              = current_user.available_tasks.find(task_id)
+    @task_batch_count  = current_user.available_tasks.where(:batch_id => @task.batch_id).count
+
     @task.add_new_params_defaults # auto-adjust params with new defaults if needed
     @run_number        = params[:run_number] || @task.run_number
 
@@ -1599,7 +1602,7 @@ class TasksController < ApplicationController
       "Status: #{@value.to_s.humanize}"
     end
 
-    # The methods below are TagFilter specific versions of the Scope::Filter
+    # The methods below are StatusFilter specific versions of the Scope::Filter
     # interface. See Scope::Filter for more details on how these methods
     # operate and for detailed parameter information.
 

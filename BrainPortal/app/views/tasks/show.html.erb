@@ -47,6 +47,7 @@
 <% if @task.bourreau.online? %>
 
   <div class="menu_bar">
+
     <!-- EDIT -->
     <% if (@task.status =~ /Completed|Failed|Duplicated|Terminated/) && (! @task.class.properties[:cannot_be_edited]) %>
       <%= link_to 'Edit Parameters', { :action => 'edit', :id => @task.id }, :class  => "button menu_button"  %>
@@ -217,7 +218,20 @@
            <pre>Problem loading summary view (template error).</pre>
            <% Message.send_internal_error_message(nil,"Show summary of params for task #{@task.name}",ex) rescue true %>
          <% end %>
+
+         <% if @task.batch_id && @task_batch_count > 1 %>
+          <p>
+            In the task manager, you can view the full
+            <%= link_to "list of tasks (#{@task_batch_count})", tasks_path(scope_filter_params(@scope, :set, {
+              :attribute => 'batch_id',
+              :value     => @task.batch_id
+            })) %>
+            in this batch.
+          </p>
+        <% end %>
+
        <% end %>
+
        <%= tb.tab("Raw") do %>
          <% yamltext = @task.params.to_yaml(
                          :root        => "Params", # no longer supported

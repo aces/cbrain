@@ -47,17 +47,5 @@
   <% end %>
   </ul>
 
-  <p>
-  In the task manager, you can view the full
-  <%=
-    scope_filter_link('list of tasks',
-      'tasks', :replace, { :a => 'batch_id', :v => @task.batch_id },
-      url:  { :controller => :tasks },
-      link: { :ajax       => false  }
-    )
-  %>
-  in this batch.
-  </p>
-
 </fieldset>
 
