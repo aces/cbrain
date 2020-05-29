@@ -34,14 +34,16 @@ class SiteManager < User
   end
 
   def available_groups  #:nodoc:
-    group_scope = Group.where(["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?) OR groups.site_id=?", self.id, self.site_id])
+    group_scope = Group.where(["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?)", self.id]
+    ).or(Group.where(:public => true))
+
     group_scope = group_scope.where("groups.type <> 'EveryoneGroup'").where(:invisible => false)
 
     group_scope
   end
 
   def available_tasks  #:nodoc:
-    CbrainTask.where( ["cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", self.group_ids, self.site.user_ids] )
+    CbrainTask.where( ["cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", self.available_groups, self.site.user_ids] )
   end
 
   def available_users  #:nodoc:

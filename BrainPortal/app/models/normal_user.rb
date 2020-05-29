@@ -32,11 +32,15 @@ class NormalUser < User
   end
 
   def available_groups  #:nodoc:
-    self.groups.where("groups.type <> 'EveryoneGroup'").where(:invisible => false)
-  end
+    group_scope = Group.where(["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?)", self.id]
+                    ).or(Group.where(:public => true))
 
+    group_scope = group_scope.where("groups.type <> 'EveryoneGroup'").where(:invisible => false)
+
+    group_scope
+  end
   def available_tasks  #:nodoc:
-    CbrainTask.where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, self.group_ids] )
+    CbrainTask.where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, self.available_groups.pluck(:id)] )
   end
 
   def available_users  #:nodoc:
