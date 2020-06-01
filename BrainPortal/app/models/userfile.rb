@@ -275,20 +275,17 @@ class Userfile < ApplicationRecord
   # Returns whether or not +user+ has access to this
   # userfile.
   def can_be_accessed_by?(user, requested_access = :write)
-    if user.has_role? :admin_user
-      return true
-    end
-    if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
-      return true
-    end
-    if user.id == self.user_id
-      return true
-    end
-    if user.is_member_of_group(self.group_id) && (self.group_writable || requested_access == :read)
-      return true
-    end
+    return true if user.has_role? :admin_user
+    return true if user.id == self.user_id
+    return true if user.has_role?(:site_manager) &&
+                   self.user.site_id == user.site_id &&
+                   self.group.site_id == user.site_id
+    return true if user.is_member_of_group(self.group_id) &&
+                   (self.group_writable || requested_access == :read)
 
-    false
+    return true if self.group.public && requested_access == :read
+
+    return false
   end
 
   # Returns whether or not +user+ has owner access to this
@@ -342,7 +339,9 @@ class Userfile < ApplicationRecord
   # [For regular users:] all files that belong to the user all
   #                      files assigned to a group to which the user belongs.
   def self.find_all_accessible_by_user(user, options = {})
-    self.accessible_for_user(user, options)
+    self.accessible_for_user(user, options).where(
+      :data_provider_id => DataProvider.find_all_accessible_by_user(user).pluck(:id)
+    )
   end
 
   # This method takes in an array to be used as the :+conditions+
@@ -354,13 +353,21 @@ class Userfile < ApplicationRecord
 
     data_provider_ids   = DataProvider.find_all_accessible_by_user(user).raw_first_column("#{DataProvider.table_name}.id")
 
+    # If file is in public group
+    scope        = scope.joins(:group)
+    query_string = "(groups.public = ? )"
+    query_array  = [true]
+
     query_user_string  = "userfiles.user_id = ?"
     query_group_string = "userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)"
+
     if access_requested.to_sym != :read
       query_group_string += " AND userfiles.group_writable = 1"
     end
-    query_string = "(#{query_user_string}) OR (#{query_group_string})"
-    query_array  = [user.id, user.group_ids, data_provider_ids]
+
+    query_string += "OR (#{query_user_string}) OR (#{query_group_string})"
+    query_array  += [user.id, user.group_ids, data_provider_ids]
+
     if user.has_role? :site_manager
       scope = scope.joins(:user).readonly(false)
       query_string += "OR (users.site_id = ?)"
