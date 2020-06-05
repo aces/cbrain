@@ -298,19 +298,21 @@ class PortalController < ApplicationController
        end
     end
 
-    # Add all locked/unlocked users.
-    results = []
-    if params[:show_users].presence === "locked"
-      locked_users = User.where(:account_locked => true).all
-      results.concat locked_users
-      params[:user_id]  = results
-    end
+    r = []
 
-    if params[:show_users].presence === "active"
-      unlocked_users = User.where(:account_locked => false).all
-      results.concat unlocked_users
-      params[:user_id]  = results
-    end
+    params[:user_id].presence && params[:user_id].map{ |u|
+      return nil if u.empty?
+
+      value = JSON.parse(u)
+
+      if value.is_a?(Array)
+        r.concat(value)
+      else
+        r.push(value)
+      end
+    }
+
+    params[:user_id] = r
 
     # Add fixed values
     @filter_fixed = {}

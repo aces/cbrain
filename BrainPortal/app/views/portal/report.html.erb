@@ -420,12 +420,7 @@ in a tabular layout. Proceed as follow:
             <tr class="report_fix_attributes">
             <th>Users:</th>
             <td colspan="2">
-              <%= user_select            :user_id,          { :selector => params[:user_id] },                                  :multiple => true, :size => 5 %>
-              <div>
-                <%= radio_button_tag(:show_users, "default", params[:show_users]==="default" || (params[:show_users]!="active" && params[:show_users]!="locked")) %> Show All Users         <br/>
-                <%= radio_button_tag(:show_users, "active" , params[:show_users]==="active")                                                                      %> Show Only Active Users <br/>
-                <%= radio_button_tag(:show_users, "locked" , params[:show_users]==="locked")                                                                      %> Show Only Locked Users <br/>
-              </div>
+              <%= user_select            'user_id',         { :selector => params[:user_id], :include_all => { :users => true, :locked => true, :active => true} }, :multiple => true, :size => 5 %>
             </td>
             </tr>
           <% end %>

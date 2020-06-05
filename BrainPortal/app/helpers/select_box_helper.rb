@@ -50,15 +50,64 @@ module SelectBoxHelper
     end
 
     # Final HTML rendering of the options for select
-    user_by_lock_status = regroup_users_by_lock_status(users)
-    grouped_options     = grouped_options_for_select user_by_lock_status, selected
-    blank_label         = select_tag_options.delete(:include_blank) || options[:include_blank]
+    grouped_options = ""
+    blank_label    = select_tag_options.delete(:include_blank) || options[:include_blank]
+
     if blank_label
       blank_label = "" if blank_label == true
       grouped_options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + grouped_options
     end
 
+    # Option for show all users
+    show_all_users_label = options[:include_all][:users]
+
+    if show_all_users_label
+      show_all_users_label = "All Users" if show_all_users_label == true
+      all_users            = users.map(&:id)
+
+      show_all_users       = params[:user_id] && (all_users - params[:user_id]).empty?
+      grouped_options      = "<option #{show_all_users && "selected"} value=\"#{all_users.to_json}\">#{h(show_all_users_label)}</option>".html_safe + grouped_options
+
+      # Sets the selected value of the other grouped_options to nil
+      # so that we only have the "All Users" tag appear.
+      selected = show_all_users && selected && nil
+    end
+
+    # Option for show all locked users
+    show_all_locked_label = options[:include_all][:locked]
+
+    if show_all_locked_label
+      show_all_locked_label = "All Locked Users" if show_all_locked_label == true
+      locked_users          = (users.select{|u| u.account_locked? }).map(&:id)
+
+      show_all_locked       = params[:user_id] && !show_all_users && (locked_users - params[:user_id]).empty?
+      grouped_options       = "<option #{show_all_locked && "selected"} value=\"#{locked_users.to_json}\">#{h(show_all_locked_label)}</option>".html_safe + grouped_options
+
+      # Sets the selected value of the other grouped_options so that individual
+      # options that also belong to locked_users don't appear as 'selected' in the select box.
+      show_all_locked && selected && selected -= locked_users
+    end
+
+    # Option for show all active users
+    show_all_active_label = options[:include_all][:active]
+
+    if show_all_active_label
+      show_all_active_label = "All Active Users" if show_all_active_label == true
+      active_users          = (users.select{|u| !u.account_locked? }).map(&:id)
+
+      show_all_active       = params[:user_id] && !show_all_users && (active_users - params[:user_id]).empty?
+      grouped_options       = "<option #{show_all_active && "selected"} value=\"#{active_users.to_json}\">#{h(show_all_active_label)}</option>".html_safe + grouped_options
+
+      # Sets the selected value of the other grouped_options so that individual
+      # options that also belong to active_users don't appear as 'selected' in the select box.
+      show_all_active && selected && selected -= active_users
+    end
+
+    user_by_lock_status = regroup_users_by_lock_status(users)
+    grouped_options     = grouped_options + grouped_options_for_select(user_by_lock_status, selected)
+
     select_tag parameter_name, grouped_options, select_tag_options
+
   end
 
   # Create a standard site select box for selecting a site id for a form.
