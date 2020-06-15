@@ -298,22 +298,6 @@ class PortalController < ApplicationController
        end
     end
 
-    r = []
-
-    params[:user_id].presence && params[:user_id].map{ |u|
-      return nil if u.empty?
-
-      value = JSON.parse(u)
-
-      if value.is_a?(Array)
-        r.concat(value)
-      else
-        r.push(value)
-      end
-    }
-
-    params[:user_id] = r
-
     # Add fixed values
     @filter_fixed = {}
     @model_atts.each do |att|

@@ -1,4 +1,3 @@
-
 /*
 #
 # CBRAIN Project
@@ -22,33 +21,39 @@
 #
 */
 
-(function() {
+(function () {
   "use strict";
 
   /* Generic AJAX error handler */
   $(document).ajaxError(function (event, xhr, settings, error) {
-    var flash = $('.flash_error'),
-        xml   = $(xhr.responseXML);
+    var flash = $(".flash_error"),
+      xml = $(xhr.responseXML);
 
     if (xhr.status === 0) return true;
 
     if (!flash.length)
-      flash = $('<div class="flash_error">')
-        .prependTo('#main');
+      flash = $('<div class="flash_error">').prependTo("#main");
 
-    if (xhr.responseXML && xml.find('errors > error').length)
+    if (xhr.responseXML && xml.find("errors > error").length)
       flash.html(
-        'Error performing request: <br />' +
-        xml.find('errors > error')
-          .map(function () { return $(this).text(); })
-          .get()
-          .join('<br />')
+        "Error performing request: <br />" +
+          xml
+            .find("errors > error")
+            .map(function () {
+              return $(this).text();
+            })
+            .get()
+            .join("<br />")
       );
     else
       flash.html(
-        'Error sending background request: <br />' +
-        'HTTP ' + xhr.status + ' ' + xhr.statusText + '<br />' +
-        'The CBRAIN administrators have been alerted about this problem.'
+        "Error sending background request: <br />" +
+          "HTTP " +
+          xhr.status +
+          " " +
+          xhr.statusText +
+          "<br />" +
+          "The CBRAIN administrators have been alerted about this problem."
       );
 
     return true;
@@ -56,8 +61,12 @@
 
   /* Generic AJAX loading indicator */
   $(document)
-    .ajaxStart(function () { $('#loading_image').show(); })
-    .ajaxStop( function () { $('#loading_image').hide(); });
+    .ajaxStart(function () {
+      $("#loading_image").show();
+    })
+    .ajaxStop(function () {
+      $("#loading_image").hide();
+    });
 
   // This function assigns 'data' to a 'target' in the DOM and is used mainly after
   // an ajax request returns successfully.
@@ -74,14 +83,17 @@
       if (target === "__OVERLAY__") {
         width = parseInt(options["width"], 10); // || 800;
         height = parseInt(options["height"], 10); // || 500;
-        $("<div class='overlay_content'></div>").html(new_content).appendTo($("body")).dialog({
-          position: 'center',
-          width:  width  || 'auto',
-          height: height || 'auto',
-          close: function() {
-            $(this).remove();
-          }
-        });
+        $("<div class='overlay_content'></div>")
+          .html(new_content)
+          .appendTo($("body"))
+          .dialog({
+            position: "center",
+            width: width || "auto",
+            height: height || "auto",
+            close: function () {
+              $(this).remove();
+            },
+          });
       } else {
         current_target = $(target);
 
@@ -115,70 +127,75 @@
     //
     /////////////////////////////////////////////////////////////////////
 
-    loaded_element.find(".scroll_bottom").each(function() {
+    loaded_element.find(".scroll_bottom").each(function () {
       $(this).scrollTop(this.scrollHeight);
     });
 
     //All elements with the accordion class will be changed to accordions.
-    loaded_element.find(".accordion").each(function() {
+    loaded_element.find(".accordion").each(function () {
       $(this).accordion({
         active: false,
         collapsible: true,
-        autoHeight: false
+        autoHeight: false,
       });
     });
-
 
     //Sortable list of elements
-    loaded_element.find(".sortable_list").each(function() {
+    loaded_element.find(".sortable_list").each(function () {
       $(this).sortable();
-    })
-    loaded_element.find(".sortable_list").each(function() {
+    });
+    loaded_element.find(".sortable_list").each(function () {
       $(this).disableSelection();
     });
 
-    loaded_element.find(".slider_field").each( function() {
+    loaded_element.find(".slider_field").each(function () {
       var slider_text_field = $(this).children().filter("input");
-      $(this).children().filter(".slider").slider({
-        change: function(event, ui) {
-          $(slider_text_field).val(ui.value);
-        }
-      });
+      $(this)
+        .children()
+        .filter(".slider")
+        .slider({
+          change: function (event, ui) {
+            $(slider_text_field).val(ui.value);
+          },
+        });
     });
 
-    loaded_element.find(".draggable_element").each( function() {
+    loaded_element.find(".draggable_element").each(function () {
       $(this).draggable({
-        connectToSortable: '#sortable',
-        helper: 'clone',
-        revert: 'invalid'
+        connectToSortable: "#sortable",
+        helper: "clone",
+        revert: "invalid",
       });
     });
 
-    loaded_element.find(".sortable_list ul, sortable_list li").each( function() {
-      $(this).disableSelection();
-    });
+    loaded_element
+      .find(".sortable_list ul, sortable_list li")
+      .each(function () {
+        $(this).disableSelection();
+      });
 
     // Tab Bar, div's of type tabs become tab_bars
     // See TabBar class
-    loaded_element.find(".tabs").each( function() {
+    loaded_element.find(".tabs").each(function () {
       $(this).tabs();
     });
 
-    loaded_element.find(".inline_text_field").each(function() {
+    loaded_element.find(".inline_text_field").each(function () {
       var inline_text_field = $(this);
       var data_type = inline_text_field.data("type") || "script";
       var target = inline_text_field.data("target");
       var method = inline_text_field.data("method") || "POST";
 
-      var form = inline_text_field.children("form")
-      .hide()
-      .ajaxForm({
-        type: method,
-        dataType: data_type,
-        success: function(data) {
-          modify_target(data, target);
-        }
-      });
+      var form = inline_text_field
+        .children("form")
+        .hide()
+        .ajaxForm({
+          type: method,
+          dataType: data_type,
+          success: function (data) {
+            modify_target(data, target);
+          },
+        });
 
       var input_field = form.find(".inline_text_input");
       var text = inline_text_field.find(".current_text");
@@ -188,7 +205,7 @@
       var target = inline_text_field.data("target");
       var method = inline_text_field.data("method") || "POST";
 
-      trigger.click(function(event) {
+      trigger.click(function (event) {
         text.hide();
         form.show();
         input_field.focus();
@@ -196,56 +213,65 @@
         return false;
       });
 
-      form.focusout(function(event) {
+      form.focusout(function (event) {
         text.show();
         form.hide();
       });
-
     });
 
     //Turns the element into a button looking thing
-    loaded_element.find(".button").each( function() {
+    loaded_element.find(".button").each(function () {
       $(this).button();
     });
 
     //Makes a button set, buttons that are glued together
-    loaded_element.find(".button_set").each( function() {
+    loaded_element.find(".button_set").each(function () {
       $(this).buttonset();
     });
 
+    loaded_element
+      .find(".button_with_drop_down > div.drop_down_menu")
+      .each(function (e) {
+        var menu = $(this);
+        var button = menu.closest(".button_with_drop_down");
+        var keep_open = button.data("open");
+        if (keep_open !== "true") {
+          menu.hide();
+        }
+      });
 
-    loaded_element.find(".button_with_drop_down > div.drop_down_menu").each(function(e) {
-      var menu    = $(this);
-      var button  = menu.closest(".button_with_drop_down");
-      var keep_open = button.data("open");
-      if (keep_open !== "true") {
-        menu.hide();
-      }
-    });
+    loaded_element
+      .find(".button_with_drop_down > div.drop_down_menu")
+      .find(".hijacker_submit_button")
+      .click(function (e) {
+        loaded_element
+          .find(".drop_down_menu:visible")
+          .siblings(".button_menu")
+          .click();
+      });
 
-    loaded_element.find(".button_with_drop_down > div.drop_down_menu").find(".hijacker_submit_button").click(function(e) {
-      loaded_element.find(".drop_down_menu:visible").siblings(".button_menu").click();
-    });
-
-
-    loaded_element.find(".button_with_drop_down").children(".button_menu").button({
-      icons: {
-        secondary: 'ui-icon-triangle-1-s'
-      }
-    }).click(function(event) {
-      var menu = $(this).siblings(".drop_down_menu");
-      if (menu.is(":visible")) {
-        menu.hide();
-      } else {
-        loaded_element.find(".drop_down_menu:visible").hide();
-        menu.show();
-      }
-    });
+    loaded_element
+      .find(".button_with_drop_down")
+      .children(".button_menu")
+      .button({
+        icons: {
+          secondary: "ui-icon-triangle-1-s",
+        },
+      })
+      .click(function (event) {
+        var menu = $(this).siblings(".drop_down_menu");
+        if (menu.is(":visible")) {
+          menu.hide();
+        } else {
+          loaded_element.find(".drop_down_menu:visible").hide();
+          menu.show();
+        }
+      });
 
     // This create a switch to have one or two panels (side by side)
     // when performiming QC
-    loaded_element.find(".hide_qc_panel").click(function(event) {
-      var qc_right  = loaded_element.find(".qc_right_panel");
+    loaded_element.find(".hide_qc_panel").click(function (event) {
+      var qc_right = loaded_element.find(".qc_right_panel");
       var qc_button = $(this)[0];
       if (qc_right.is(":visible")) {
         qc_button.innerHTML = "2 panels";
@@ -262,31 +288,35 @@
     //
     /////////////////////////////////////////////////////////////////////
 
-    loaded_element.find(".project_button").each(function(event) {
-      var project_button = $(this);
-      var project_details = project_button.find(".project_button_details");
+    loaded_element
+      .find(".project_button")
+      .each(function (event) {
+        var project_button = $(this);
+        var project_details = project_button.find(".project_button_details");
 
-      project_details.hide();
-
-      project_button.mouseenter(function() {
-        project_details.show();
-      }).mouseleave(function() {
         project_details.hide();
+
+        project_button
+          .mouseenter(function () {
+            project_details.show();
+          })
+          .mouseleave(function () {
+            project_details.hide();
+          });
+      })
+      .click(function (event) {
+        if (event.target.nodeName === "A") {
+          return true;
+        }
+
+        var project_button = $(this);
+        var url = project_button.data("href");
+        var method = project_button.data("method");
+        var link = $('<a href="' + url + '" data-method="' + method + '"></a>');
+
+        link.appendTo("body");
+        link.click();
       });
-    }).click(function(event) {
-      if (event.target.nodeName === "A") {
-        return true;
-      }
-
-      var project_button = $(this);
-      var url = project_button.data("href");
-      var method = project_button.data("method");
-      var link = $("<a href=\"" + url + "\" data-method=\"" + method + "\"></a>");
-
-      link.appendTo("body");
-      link.click();
-    });
-
 
     /////////////////////////////////////////////////////////////////////
     //
@@ -294,13 +324,21 @@
     //
     /////////////////////////////////////////////////////////////////////
 
-    function fetch_update(current_element, method, url, error_message, replace, data, scroll_bottom) {
+    function fetch_update(
+      current_element,
+      method,
+      url,
+      error_message,
+      replace,
+      data,
+      scroll_bottom
+    ) {
       jQuery.ajax({
         type: method,
         url: url,
-        dataType: 'html',
+        dataType: "html",
         data: data,
-        success: function(data) {
+        success: function (data) {
           var new_content = $(data);
           if (replace) {
             current_element.replaceWith(new_content);
@@ -312,9 +350,10 @@
             current_element.scrollTop(current_element[0].scrollHeight);
           }
         },
-        error: function(e) {
+        error: function (e) {
           if (!error_message) {
-            error_message = "<span class='loading_message'>Error loading element</span>";
+            error_message =
+              "<span class='loading_message'>Error loading element</span>";
           }
           if (replace) {
             current_element.replaceWith(error_message);
@@ -322,41 +361,56 @@
             current_element.html(error_message);
           }
         },
-        timeout: 50000
+        timeout: 50000,
       });
     }
 
     function update_ajax_element(element) {
       var current_element = $(element);
-      var method          = current_element.data("method") || "GET";
-      var url             = current_element.data("url");
-      var error_message   = current_element.data("error");
-      var replace         = current_element.data("replace");
-      var data            = current_element.data("data");
-      var interval        = current_element.data("interval");
-      var scroll_bottom   = current_element.data("scroll-bottom");
+      var method = current_element.data("method") || "GET";
+      var url = current_element.data("url");
+      var error_message = current_element.data("error");
+      var replace = current_element.data("replace");
+      var data = current_element.data("data");
+      var interval = current_element.data("interval");
+      var scroll_bottom = current_element.data("scroll-bottom");
 
       if (interval) {
         interval = parseInt(interval, 10) * 1000;
-        setInterval(function() {
-          fetch_update(current_element, method, url, error_message, replace, data, scroll_bottom);
+        setInterval(function () {
+          fetch_update(
+            current_element,
+            method,
+            url,
+            error_message,
+            replace,
+            data,
+            scroll_bottom
+          );
         }, interval);
       } else {
-        fetch_update(current_element, method, url, error_message, replace, data, scroll_bottom);
+        fetch_update(
+          current_element,
+          method,
+          url,
+          error_message,
+          replace,
+          data,
+          scroll_bottom
+        );
       }
     }
-
 
     //See ajax_element() in application_helper.rb
     //The ajax element will have its contents loaded by the response from an
     //ajax request (so the element's conents will be loaded later with respect
     //to the rest of the page). If the "data-replace" attribute is set to "true"
     //the entire element will be replace an not just its contents.
-    loaded_element.find(".ajax_element").each(function(index, element) {
+    loaded_element.find(".ajax_element").each(function (index, element) {
       update_ajax_element(element);
     });
 
-    loaded_element.find(".ajax_element_refresh_button").click(function() {
+    loaded_element.find(".ajax_element_refresh_button").click(function () {
       var button = $(this);
       var target = $(button.data("target"));
       update_ajax_element(target);
@@ -366,27 +420,27 @@
 
     //Overlay dialogs
     //See overlay_dialog_with_button()
-    loaded_element.find(".overlay_dialog").each( function(index,element) {
+    loaded_element.find(".overlay_dialog").each(function (index, element) {
       var enclosing_div = $(this);
-      var dialog_link = enclosing_div.children('.overlay_content_link');
-      var dialog = enclosing_div.children(".overlay_content")
+      var dialog_link = enclosing_div.children(".overlay_content_link");
+      var dialog = enclosing_div.children(".overlay_content");
       var content_width = parseInt(dialog_link.data("width"), 10);
       var content_height = parseInt(dialog_link.data("height"), 10);
 
       dialog.dialog({
         autoOpen: false,
         position: "center",
-        width:  content_width  || 'auto',
-        height: content_height || 'auto'
+        width: content_width || "auto",
+        height: content_height || "auto",
       });
 
-      dialog_link.click(function() {
-        dialog.dialog('open');
+      dialog_link.click(function () {
+        dialog.dialog("open");
         return false;
       });
     });
 
-    loaded_element.find(".show_toggle_checkbox").each(function() {
+    loaded_element.find(".show_toggle_checkbox").each(function () {
       var checkbox = $(this);
       var show = checkbox.is(":checked");
       var target_element = $(checkbox.data("target"));
@@ -408,7 +462,7 @@
         target_element.hide();
       }
 
-      checkbox.change(function() {
+      checkbox.change(function () {
         show = checkbox.is(":checked");
         if (invert) {
           show = !show;
@@ -428,14 +482,12 @@
           }
         }
       });
-
     });
   }
 
-  $(function() {
+  $(function () {
     $("body").bind("new_content", load_behaviour);
     $("body").trigger("new_content");
-
 
     /////////////////////////////////////////////////////////////////////
     //
@@ -452,66 +504,78 @@
       return page;
     }
 
-    $(document).delegate(".page_links > a", "click", function() {
+    $(document).delegate(".page_links > a", "click", function () {
       var link = $(this);
       var url = link.attr("href");
       var page_param = get_page_parameter(url);
       var pagination_div = link.closest(".pagination");
 
-      url = window.location.protocol + "//" + window.location.host + window.location.pathname + "?" + page_param;
+      url =
+        window.location.protocol +
+        "//" +
+        window.location.host +
+        window.location.pathname +
+        "?" +
+        page_param;
 
-      var title  = "";
+      var title = "";
       if (page_param) {
         var page_num = page_param.match(/\d+/);
         if (page_num) title = "Page: " + page_num[0];
       }
 
-      history.pushState({"paginating" : true}, "", url);
+      history.pushState({ paginating: true }, "", url);
       $.ajax({
         url: url,
-        dataType: "script"
+        dataType: "script",
       });
 
       return false;
     });
 
-    $(window).bind("popstate", function(evt) {
+    $(window).bind("popstate", function (evt) {
       var state = evt.originalEvent.state || {};
 
       if (state.paginating) {
         var url = location.href;
         var page_param = get_page_parameter(url);
 
-        url = window.location.protocol + "//" + window.location.host + window.location.pathname + "?" + page_param;
+        url =
+          window.location.protocol +
+          "//" +
+          window.location.host +
+          window.location.pathname +
+          "?" +
+          page_param;
         $.ajax({
           url: url,
-          dataType: "script"
+          dataType: "script",
         });
       }
     });
 
-    $(document).delegate(".hover_open", "mouseenter", function() {
+    $(document).delegate(".hover_open", "mouseenter", function () {
       var header = $(this);
       var target = $(header.data("target"));
 
       target.show();
-      header.mouseleave(function() {
+      header.mouseleave(function () {
         target.hide();
         return false;
       });
 
       return false;
-     });
+    });
 
-    $(document).delegate(".show_toggle", "click", function() {
+    $(document).delegate(".show_toggle", "click", function () {
       var current_element = $(this);
       var target_element = $(current_element.data("target"));
       var alternate_text = current_element.data("alternate-text");
-      var slide_effect   = current_element.data("slide-effect");
-      var slide_duration   = current_element.data("slide-duration");
+      var slide_effect = current_element.data("slide-effect");
+      var slide_duration = current_element.data("slide-duration");
       var current_text;
 
-      if (slide_duration !== 'slow' && slide_duration !== 'fast') {
+      if (slide_duration !== "slow" && slide_duration !== "fast") {
         slide_duration = parseInt(slide_duration, 10);
       }
 
@@ -538,7 +602,7 @@
       return false;
     });
 
-    $(document).delegate(".inline_edit_field_link", "click", function() {
+    $(document).delegate(".inline_edit_field_link", "click", function () {
       var link = $(this);
       var visible = link.data("visible");
       var current_text = link.html();
@@ -559,41 +623,41 @@
     });
 
     //Highlighting on resource list tables.
-    $(document).delegate(".row_highlight", "mouseenter", function() {
+    $(document).delegate(".row_highlight", "mouseenter", function () {
       var element = $(this);
       element.data("original-color", element.css("background-color"));
       element.css("background-color", "#FFFFE5");
     });
 
-    $(document).delegate(".row_highlight", "mouseleave", function() {
+    $(document).delegate(".row_highlight", "mouseleave", function () {
       var element = $(this);
       element.css("background-color", element.data("original-color"));
     });
 
     // This is a jquery_ujs event
-    $(".ajax_link").on("ajax:success", function(event, data, status, xhr) {
-      var link          = $(this);
-      var target        = link.data("target");
-      var datatype      = link.data("type");
+    $(".ajax_link").on("ajax:success", function (event, data, status, xhr) {
+      var link = $(this);
+      var target = link.data("target");
+      var datatype = link.data("type");
       var remove_target = link.data("remove-target");
       var other_options = {};
 
-      if (link.data("width"))   other_options["width"]   = link.data("width");
-      if (link.data("height"))  other_options["height"]  = link.data("height");
+      if (link.data("width")) other_options["width"] = link.data("width");
+      if (link.data("height")) other_options["height"] = link.data("height");
       if (link.data("replace")) other_options["replace"] = link.data("replace");
 
       if (remove_target) {
-         $(remove_target).remove();
+        $(remove_target).remove();
       } else if (datatype !== "script") {
         modify_target(data, target, other_options);
       }
     });
 
     // This is a jquery_ujs event
-    $(".ajax_link").on("ajax:beforeSend", function(event, xhr, settings) {
-      var link            = $(this);
+    $(".ajax_link").on("ajax:beforeSend", function (event, xhr, settings) {
+      var link = $(this);
       var loading_message = link.data("loading-message");
-      var target          = link.data("target");
+      var target = link.data("target");
       if (loading_message) {
         var loading_message_target = link.data("loading-message-target");
         if (!loading_message_target) loading_message_target = target;
@@ -601,50 +665,58 @@
       }
     });
 
-    $(document).delegate(".select_all", "click", function() {
+    $(document).delegate(".select_all", "click", function () {
       var header_box = $(this);
       var checkbox_class = header_box.data("checkbox-class");
 
-      $('.' + checkbox_class).each(function(index, element) {
-        element.checked = header_box.prop('checked');
+      $("." + checkbox_class).each(function (index, element) {
+        element.checked = header_box.prop("checked");
       });
     });
 
-    $(document).delegate(".select_master", "change", function() {
+    $(document).delegate(".select_master", "change", function () {
       var master_select = $(this);
       var select_class = master_select.data("select-class");
       var selection = master_select.find(":selected").text();
 
-      $('.' + select_class).each(function(index, elem) {
-        $(elem).find("option").attr("selected", false).each(function(index, elem) {
-          var element = $(elem);
-          if (element.html() === selection) element.attr("selected", "selected");
-        });
+      $("." + select_class).each(function (index, elem) {
+        $(elem)
+          .find("option")
+          .attr("selected", false)
+          .each(function (index, elem) {
+            var element = $(elem);
+            if (element.html() === selection)
+              element.attr("selected", "selected");
+          });
       });
     });
 
-    $(document).on("change", ".request_on_change", function() {
-      var input_element        = $(this);
-      var param_name           = input_element.attr("name");
-      var current_value        = input_element.val(); // input_element.attr("value");
-      var url                  = input_element.data("url");
-      var method               = input_element.data("method");
-      var target               = input_element.data("target");
-      var data_type            = input_element.data("type");
-      var update_text          = input_element.data("loading-message");
-      var optgroup_change      = input_element.data("optgroup-change")
-      var old_onchange_value   = input_element.data("old-onchange-value");
-      var selected             = input_element.find("option:selected").parent();
-      var optgroup_label       = selected.attr("label");
+    $(document).on("change", ".request_on_change", function () {
+      var input_element = $(this);
+      var param_name = input_element.attr("name");
+      var current_value = input_element.val(); // input_element.attr("value");
+      var url = input_element.data("url");
+      var method = input_element.data("method");
+      var target = input_element.data("target");
+      var data_type = input_element.data("type");
+      var update_text = input_element.data("loading-message");
+      var optgroup_change = input_element.data("optgroup-change");
+      var old_onchange_value = input_element.data("old-onchange-value");
+      var selected = input_element.find("option:selected").parent();
+      var optgroup_label = selected.attr("label");
       var parameters = {};
 
       method = method || "GET";
       data_type = data_type || "html";
 
-      if (optgroup_change && optgroup_label && optgroup_label === old_onchange_value) {
+      if (
+        optgroup_change &&
+        optgroup_label &&
+        optgroup_label === old_onchange_value
+      ) {
         return false;
       } else {
-        input_element.data("old-onchange-value",optgroup_label);
+        input_element.data("old-onchange-value", optgroup_label);
       }
 
       if (target && update_text) {
@@ -654,60 +726,63 @@
       parameters[param_name] = current_value;
 
       $.ajax({
-        url       : url,
-        type      : method,
-        dataType  : data_type,
-        success: function(data) {
+        url: url,
+        type: method,
+        dataType: data_type,
+        success: function (data) {
           modify_target(data, target);
         },
-        data: parameters
+        data: parameters,
       });
 
       return false;
     });
 
-    $(document).delegate(".submit_onchange", "change", function() {
+    $(document).delegate(".submit_onchange", "change", function () {
       var select = $(this);
       var commit_value = select.data("commit");
-      var form   = select.closest("form");
+      var form = select.closest("form");
 
       if (commit_value) {
-        $("<input name=\"commit\" type=\"hidden\" value=\"" + commit_value +  "\">").appendTo(form);
+        $(
+          '<input name="commit" type="hidden" value="' + commit_value + '">'
+        ).appendTo(form);
       }
 
       form.submit();
     });
 
-
     //html_tool_tip_code based on xstooltip provided by
     //http://www.texsoft.it/index.php?%20m=sw.js.htmltooltip&c=software&l=it
-    $(document).delegate(".html_tool_tip_trigger", "mouseenter", function(event) {
-      var trigger = $(this);
-      var tool_tip_id = trigger.data("tool-tip-id");
-      var tool_tip = $("#" + tool_tip_id);
-      var offset_x = trigger.data("offset-x");
-      var offset_y = trigger.data("offset-y") || '0';
-      if (typeof offset_x == 'undefined') {
-        offset_x = '30';
-      }
+    $(document)
+      .delegate(".html_tool_tip_trigger", "mouseenter", function (event) {
+        var trigger = $(this);
+        var tool_tip_id = trigger.data("tool-tip-id");
+        var tool_tip = $("#" + tool_tip_id);
+        var offset_x = trigger.data("offset-x");
+        var offset_y = trigger.data("offset-y") || "0";
+        if (typeof offset_x == "undefined") {
+          offset_x = "30";
+        }
 
-      var x = trigger.position().left + parseInt(offset_x, 10);
-      var y = trigger.position().top  + parseInt(offset_y, 10);
+        var x = trigger.position().left + parseInt(offset_x, 10);
+        var y = trigger.position().top + parseInt(offset_y, 10);
 
-      // Fixed position bug.
-      tool_tip.remove().appendTo(trigger.parent());
+        // Fixed position bug.
+        tool_tip.remove().appendTo(trigger.parent());
 
-      tool_tip.css('top',  y + 'px');
-      tool_tip.css('left', x + 'px');
+        tool_tip.css("top", y + "px");
+        tool_tip.css("left", x + "px");
 
-      tool_tip.show();
-    }).delegate(".html_tool_tip_trigger", "mouseleave", function(event) {
-      var trigger = $(this);
-      var tool_tip_id = trigger.data("tool-tip-id");
-      var tool_tip = $("#" + tool_tip_id);
+        tool_tip.show();
+      })
+      .delegate(".html_tool_tip_trigger", "mouseleave", function (event) {
+        var trigger = $(this);
+        var tool_tip_id = trigger.data("tool-tip-id");
+        var tool_tip = $("#" + tool_tip_id);
 
-      tool_tip.hide();
-    });
+        tool_tip.hide();
+      });
 
     /////////////////////////////////////////////////////////////////////
     //
@@ -717,24 +792,28 @@
 
     //Forms with the class "ajax_form" will be submitted as ajax requests.
     //Datatype and target can be set with appropriate "data" attributes.
-    $(document).delegate(".ajax_form", "ajax:success", function(event, data, status, xhr) {
-      var current_form  =  $(this);
-      var target        = current_form.data("target");
-      var reset_form    = current_form.data("reset-form");
-      var scroll_bottom = current_form.data("scroll-bottom")
+    $(document).delegate(".ajax_form", "ajax:success", function (
+      event,
+      data,
+      status,
+      xhr
+    ) {
+      var current_form = $(this);
+      var target = current_form.data("target");
+      var reset_form = current_form.data("reset-form");
+      var scroll_bottom = current_form.data("scroll-bottom");
 
       if (reset_form) {
         current_form.resetForm();
       }
 
-      modify_target(data, target, {scroll_bottom : scroll_bottom});
-
-     });
+      modify_target(data, target, { scroll_bottom: scroll_bottom });
+    });
 
     //Allows a textfield to submit an ajax request independently of
     //the surrounding form. Submission is triggered when the ENTER
     //key is pressed.
-    $(document).delegate(".search_box", "keypress", function(event) {
+    $(document).delegate(".search_box", "keypress", function (event) {
       if (event.keyCode !== 13) return true;
 
       var text_field = $(this);
@@ -750,10 +829,10 @@
         type: method,
         url: url,
         dataType: data_type,
-        success: function(data) {
+        success: function (data) {
           modify_target(data, target);
         },
-        data: parameters
+        data: parameters,
       });
 
       return false;
@@ -762,10 +841,10 @@
     //Allows for the creation of form submit buttons that can hijack
     //the form and send its contents elsewhere, changing the datatype,
     //target, http method as needed.
-    $(document).delegate(".hijacker_submit_button", "click", function() {
+    $(document).delegate(".hijacker_submit_button", "click", function () {
       var button = $(this);
-      var submit_name   = button.attr("name");
-      var submit_value  = button.val();
+      var submit_name = button.attr("name");
+      var submit_value = button.val();
       var data_type = button.data("type");
       var url = button.data("url");
       var method = button.data("method");
@@ -781,7 +860,8 @@
       method = method || enclosing_form.data("method") || "POST";
 
       if (button.data("width")) other_options["width"] = button.data("width");
-      if (button.data("height")) other_options["height"] = button.data("height");
+      if (button.data("height"))
+        other_options["height"] = button.data("height");
 
       data[submit_name] = submit_value;
 
@@ -790,13 +870,12 @@
           url: url,
           type: method,
           dataType: data_type,
-          success: function(data) {
+          success: function (data) {
             modify_target(data, target, other_options);
           },
           data: data,
-          resetForm: false
-          }
-        );
+          resetForm: false,
+        });
       } else {
         enclosing_form.attr("action", url);
         enclosing_form.attr("method", method);
@@ -807,21 +886,27 @@
       return false;
     });
 
-    $(document).delegate('.external_submit_button', 'click', function(e) {
+    $(document).delegate(".external_submit_button", "click", function (e) {
       var button = $(this);
-      var submit_name   = button.attr("name");
-      var submit_value  = button.val();
+      var submit_name = button.attr("name");
+      var submit_value = button.val();
       var form = $("#" + button.data("associated-form"));
       var confirm_message = button.data("confirm");
-      var hidden_field  = $("<input type=\'hidden\' name=\'"+submit_name+"\' value=\'"+submit_value+"\'>");
-      var submit_button = $("<input type=\'submit\'>");
-      submit_button.attr('style', 'display: none');
+      var hidden_field = $(
+        "<input type='hidden' name='" +
+          submit_name +
+          "' value='" +
+          submit_value +
+          "'>"
+      );
+      var submit_button = $("<input type='submit'>");
+      submit_button.attr("style", "display: none");
       if (confirm_message) {
-        submit_button.data('confirm', confirm_message);
+        submit_button.data("confirm", confirm_message);
       }
 
       form.append(hidden_field);
-      form.append(submit_button)
+      form.append(submit_button);
 
       submit_button.click();
 
@@ -842,7 +927,7 @@
       var replace_elem;
 
       if (!parents) {
-        parents = ""
+        parents = "";
       }
 
       parents += " __cbrain_parent_" + onclick_elem.attr("id");
@@ -868,13 +953,13 @@
       }
 
       onclick_elem.removeClass("ajax_onclick_show_element");
-      onclick_elem.unbind('click');
+      onclick_elem.unbind("click");
       onclick_elem.addClass("ajax_onclick_hide_element");
       $.ajax({
-        type: 'GET',
+        type: "GET",
         url: $(onclick_elem).data("url"),
-        dataType: 'html',
-        success: function(data) {
+        dataType: "html",
+        success: function (data) {
           var new_data = $(data);
 
           new_data.data("parents", parents);
@@ -884,7 +969,7 @@
           onclick_elem.find(".ajax_onclick_show_child").hide();
           onclick_elem.find(".ajax_onclick_hide_child").show();
         },
-        error:function(e) {
+        error: function (e) {
           var new_data = $("Error occurred while processing this request");
 
           new_data.data("parents", parents);
@@ -895,10 +980,9 @@
           onclick_elem.find(".ajax_onclick_hide_child").show();
         },
         async: true,
-        timeout: 50000
+        timeout: 50000,
       });
-
-    };
+    }
 
     //For loading content into an element after it is clicked.
     //See on_click_ajax_replace() in application_helper.rb
@@ -908,14 +992,22 @@
 
       $("." + parental_id).remove();
       onclick_elem.removeClass("ajax_onclick_hide_element");
-      onclick_elem.unbind('click');
+      onclick_elem.unbind("click");
       onclick_elem.addClass("ajax_onclick_show_element");
       onclick_elem.find(".ajax_onclick_hide_child").hide();
       onclick_elem.find(".ajax_onclick_show_child").show();
     }
 
-    $(document).delegate(".ajax_onclick_show_element", "click", ajax_onclick_show);
-    $(document).delegate(".ajax_onclick_hide_element", "click", ajax_onclick_hide);
+    $(document).delegate(
+      ".ajax_onclick_show_element",
+      "click",
+      ajax_onclick_show
+    );
+    $(document).delegate(
+      ".ajax_onclick_hide_element",
+      "click",
+      ajax_onclick_hide
+    );
 
     // For checking the alive status of all DataProviders
     // The sequential_loading function is called recursively
@@ -938,60 +1030,63 @@
       var replace_elem = $("#" + current_element.data("replace"));
 
       jQuery.ajax({
-        dataType: 'html',
+        dataType: "html",
         url: url,
         timeout: 50000,
-        success: function(data) {
+        success: function (data) {
           replace_elem.html(data);
         },
-        error: function(e) {
+        error: function (e) {
           if (!error_message) {
             error_message = "<span class='loading_message'>???</span>";
           }
           replace_elem.html(error_message);
         },
-        complete: function(e) {
-          sequential_loading(index+1, element_array);
-        }
+        complete: function (e) {
+          sequential_loading(index + 1, element_array);
+        },
       });
     }
 
     // Allows to submit an interval of two dates, uses
     // datepicker of jquery-ui, see:
     // http://jqueryui.com/demos/datepicker/#date-range
-    $(document).delegate('.daterangepicker', 'click', function (event) {
+    $(document).delegate(".daterangepicker", "click", function (event) {
       var datepicker = $(this);
 
-      $(".daterangepicker").not(".hasDatepicker").datepicker({
-        defaultDate: "+1w",
-        changeMonth: true,
-        dateFormat: "dd/mm/yy",
-        onSelect: function( selectedDate ) {
-          var type  = datepicker.data("datefieldtype");
-          var option = type === "from" ? "minDate" : "maxDate";
-          var dates;
+      $(".daterangepicker")
+        .not(".hasDatepicker")
+        .datepicker({
+          defaultDate: "+1w",
+          changeMonth: true,
+          dateFormat: "dd/mm/yy",
+          onSelect: function (selectedDate) {
+            var type = datepicker.data("datefieldtype");
+            var option = type === "from" ? "minDate" : "maxDate";
+            var dates;
 
-          instance = datepicker.data( "datepicker" ),
-          date = $.datepicker.parseDate(
-            instance.settings.dateFormat || $.datepicker._defaults.dateFormat,
-            selectedDate,
-            instance.settings
-          );
+            (instance = datepicker.data("datepicker")),
+              (date = $.datepicker.parseDate(
+                instance.settings.dateFormat ||
+                  $.datepicker._defaults.dateFormat,
+                selectedDate,
+                instance.settings
+              ));
 
-          dates = datepicker.parent().children(".daterangepicker");
+            dates = datepicker.parent().children(".daterangepicker");
 
-          $(dates).each(function(n) {
-            if ($(this).data("datefieldtype") !== type) {
-              $(this).datepicker("option",option,date);
-            }
-          });
-        }
-      });
+            $(dates).each(function (n) {
+              if ($(this).data("datefieldtype") !== type) {
+                $(this).datepicker("option", option, date);
+              }
+            });
+          },
+        });
 
       datepicker.focus();
     });
 
-    $(document).delegate('.datepicker', 'click', function (event) {
+    $(document).delegate(".datepicker", "click", function (event) {
       $(".datepicker").not(".hasDatepicker").datepicker({
         defaultDate: "+1w",
         changeMonth: true,
@@ -1000,19 +1095,39 @@
 
       $(this).focus();
     });
-
   });
 
   // Unable chosen functionality for select box
   // from chosen JavaScript librairy
-  $('select').each(function(){
+  $("select").each(function () {
     var select = $(this);
 
-    var defined_width = (select.context.style.width);
-    if ( defined_width !== '' ){
+    var defined_width = select.context.style.width;
+    if (defined_width !== "") {
       select.chosen({ width: defined_width });
     } else {
-      select.chosen({ width: '25em' });
+      select.chosen({ width: "25em" });
+    }
+  });
+
+  // Add select/deselect all toggle to optgroups in chosen
+  $(document).on("click", ".group-result", function () {
+    // Get unselected items in this group
+    var unselected = $(this).nextUntil(".group-result").not(".result-selected");
+    if (unselected.length) {
+      // Select all items in this group
+      unselected.trigger("mouseup");
+    } else {
+      $(this)
+        .nextUntil(".group-result")
+        .each(function () {
+          // Deselect all items in this group
+          $(
+            'a.search-choice-close[data-option-array-index="' +
+              $(this).data("option-array-index") +
+              '"]'
+          ).trigger("click");
+        });
     }
   });
 
@@ -1023,27 +1138,25 @@
     var last_update = new Date();
     setInterval(function () {
       var diff = Math.floor((new Date() - last_update) / (60 * 1000)),
-          part = undefined,
-          text = [];
+        part = undefined,
+        text = [];
 
       part = Math.round(diff % 60);
       diff = Math.floor(diff / 60);
-      text.unshift(part + 'm');
+      text.unshift(part + "m");
 
       part = Math.round(diff % 24);
       diff = Math.floor(diff / 24);
-      if (part) text.unshift(part + 'h');
+      if (part) text.unshift(part + "h");
 
-      if (diff) text.unshift(diff + 'd');
+      if (diff) text.unshift(diff + "d");
 
-      $('span.last_updated > span.elapsed').text(text.join(' '));
+      $("span.last_updated > span.elapsed").text(text.join(" "));
     }, 5 * 1000);
 
     // The only times we need to reset it is when AJAX request are made.
-    $( document ).ajaxStart(function() {
+    $(document).ajaxStart(function () {
       last_update = new Date();
     });
   })();
-
 })();
-
