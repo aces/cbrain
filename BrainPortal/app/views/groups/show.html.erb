@@ -54,7 +54,12 @@
 
     <% t.edit_cell(:creator_id, :content => link_to_user_with_tooltip(@group.creator), :header => "Maintainer") do %>
       <%= user_select "group[creator_id]", { :users => ( current_user.available_users | @group.users), :selector => @group.creator } %>
-      <div class="field_explanation"><span class="warning">Warning</span>: If you change the maintainer to someone else you won't be able to edit this project any more</div>
+      <div class="field_explanation">
+        <span class="warning">Warning</span>:
+          If you change the maintainer to someone else you won't be able to retrieve control over the project
+      </div>
+      <%# the text outdate. at the moment any editor can set a new maintainer (and remove old maintainer from ) %>
+      <%# to do may be block editors from this the text update. at the moment any editor can set a new maintainer (and remove old maintainer from ) %>
     <% end %>
 
     <% t.edit_cell(:site_id, :content => link_to_site_if_accessible(@group.site), :disabled => !current_user.has_role?(:admin_user)) do %>
@@ -110,6 +115,8 @@
 
   <%
     group_members  = @group.users
+    group_editors  = @group.editors || []
+    group_viewers  = group_members - group_editors
     open_invites   = Invitation.where(sender_id: current_user.id, group_id: @group.id, active: true).to_a
   %>
 
@@ -121,10 +128,31 @@
                              :no_header  => 'Members',
                              :content    => default_text) do %>
       <% if current_user.has_role? :normal_user %>
+        <table border="0">
+          <tr>
+            <th>Username</th>
+            <th>Can edit?</th>
+            <th>Revoke membership </th>
+          </tr>
+
         <% group_members.each do |u| %>
-          <%= link_to_user_with_tooltip u %><%= link_to(": Remove", group_path(@group, "group[user_ids]" => (@group.user_ids - [u.id]), update_users: true ), :method => :put, :class => "action_link") unless u == current_user %>
-          <br>
+          <tr>
+            <td>
+              <%= link_to_user_with_tooltip u %>
+            </td>
+            <td>
+              <%= check_box_tag("group[editor_ids][]", u.id, @group.editor_ids.include?(u.id),
+                      :checked => u.id == @group.creator.id, :disabled=> u.id == @group.creator.id ) %>
+            </td>
+            <td>
+              <%= link_to(": Remove", group_path(@group, "group[user_ids]" => (@group.user_ids - [u.id]), update_users: true ), :method => :put, :class => "action_link") unless u == current_user %>
+            </td>
+          </tr>
+
         <% end %>
+
+        </table>
+        <%= hidden_field_tag("group[editor_ids][]", []) %>
       <% else %>
         <div class="generalbox" style="width: 100%">
           <%= render :partial => 'users_form' %><br>
@@ -132,6 +160,7 @@
         </div>
       <% end %>
     <% end %>
+
     <% if open_invites.present? %>
       <% default_text = array_to_table(open_invites.map(&:user).sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| u.login } %>
 
