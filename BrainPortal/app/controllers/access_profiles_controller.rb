@@ -52,6 +52,10 @@ class AccessProfilesController < ApplicationController
 
   def new #:nodoc:
     @access_profile = AccessProfile.new
+    respond_to do |format|
+      format.html { render :action => :show           }  # show is also new/create
+      format.xml  { render :xml    => @access_profile }
+    end
   end
 
   def create #:nodoc:
@@ -62,7 +66,7 @@ class AccessProfilesController < ApplicationController
         flash[:notice] = 'AccessProfile was successfully created.'
         format.html  { redirect_to :action => :index }
       else
-        format.html  { render :action  => :new }
+        format.html  { render :action  => :show }
       end
     end
   end

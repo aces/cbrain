@@ -27,11 +27,16 @@ module AccessProfilesHelper
 
   # Generates a pretty colored label for an access profile
   def access_profile_label(access_profile, options={})
+    if access_profile.name.blank?
+      return ''
+    end
+
     color  = access_profile.color.presence || "white";
     label  = "<span class=\"access_profile_label\" style=\"background: #{color}\">"
     label += options[:with_link] ? link_to_access_profile_if_accessible(access_profile) : access_profile.name
     label += "</span>"
     label.html_safe
+
   end
 
 end

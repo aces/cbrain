@@ -22,21 +22,20 @@
 #
 -%>
 
-<% title "Access Profile" %>
-
-<div class="menu_bar">
-  <%= link_to 'Delete', access_profile_path(@access_profile),  {
-        :data => { :confirm => "Are you sure you want to delete '#{@access_profile.name}' ?" } ,
-        :method  => :delete,
-        :class => "button"
-        }
-  %>
-  <%= overlay_ajax_link "Help", "/doc/access_profiles/access_profiles.html", :class  => "button" %>
-</div>
-
+<% title @access_profile.new_record? ? "Add New Access Profile" : "Access Profile" %>
+<% if @access_profile.id %>
+  <div class="menu_bar">
+    <%= link_to 'Delete', access_profile_path(@access_profile),  {
+          :data => { :confirm => "Are you sure you want to delete '#{@access_profile.name}' ?" } ,
+          :method  => :delete,
+          :class => "button"
+          }
+    %>
+    <%= overlay_ajax_link "Help", "/doc/access_profiles/access_profiles.html", :class  => "button" %>
+  </div>
+<% end %>
 <br>
-
-<%= error_messages_for @acces_profile, :header_message => "Access profile could not be updated." %>
+<%= error_messages_for @access_profile, :header_message => "Access profile could not be #{@access_profile.new_record? ? 'saved':'updated'}." %>
 
 <div class="display_inline_block" style="min-width: 50%">
 
@@ -44,11 +43,11 @@
 
   <%= show_table(@access_profile, :form_helper => cf, :edit_condition => check_role(:admin_user)) do |t| %>
 
-    <% t.edit_cell(:name, :content => access_profile_label(@access_profile)) do |f| %>
+    <% t.edit_cell(:name, :content => access_profile_label(@access_profile), :show_width => 2) do |f| %>
       <%= f.text_field :name, :class => "cb_colorpick_bg_target" %>
     <% end %>
 
-    <% t.edit_cell(:color) do |f| %>
+    <% t.edit_cell(:color, :show_width => 2) do |f| %>
       <%= f.text_field :color, :class => "cb_colorpick_val_target" %><br>
       <span class="field_explanation">Use a CSS-compliant <strong>pale</strong> color:<br>
       e.g. <em>#ff0</em> or <em>yellow</em> etc.</span><br>
@@ -64,7 +63,7 @@
 
   <% myusers = @access_profile.users.all.sort_by(&:login) %>
 
-  <%= show_table(@access_profile, :form_helper => cf, :edit_condition => check_role(:admin_user), :header => 'Projects In This Profile') do |t| %>
+  <%= show_table(@access_profile, :form_helper => cf, :edit_condition => check_role(:admin_user), :header =>  @access_profile.new_record? ? 'Project Membership' : 'Projects In This Profile') do |t| %>
     <% group_names = (@access_profile.groups.sort_by(&:name).map { |g| link_to_group_if_accessible(g) }.join(", ").html_safe.presence) || "(None)" %>
     <% t.edit_cell(:group_ids, :show_width => 2, :no_header => "Projects", :content => group_names) do %>
 
@@ -88,35 +87,37 @@
     <% end %>
   <% end %>
 
-  <%= show_table(@access_profile, :form_helper => cf, :edit_condition => check_role(:admin_user), :header => 'Users With This Profile') do |t| %>
+  <% if !@access_profile.new_record? %>
+    <%= show_table(@access_profile, :form_helper => cf, :edit_condition => check_role(:admin_user), :header => 'Users With This Profile') do |t| %>
 
-    <% if myusers.present? && myusers.count > 0 %>
-      <% user_names = (array_to_table(myusers.map { |u| link_to_user_if_accessible(u) }, :table_class => 'simple', :cols => 12).html_safe) %>
-    <% else %>
-      <% user_names = "(None)" %>
-    <% end %>
+      <% if myusers.present? && myusers.count > 0 %>
+        <% user_names = (array_to_table(myusers.map { |u| link_to_user_if_accessible(u) }, :table_class => 'simple', :cols => 12).html_safe) %>
+      <% else %>
+        <% user_names = "(None)" %>
+      <% end %>
 
-    <% t.edit_cell(:user_ids, :show_width => 2, :no_header => "Users", :content => user_names) do %>
+      <% t.edit_cell(:user_ids, :show_width => 2, :no_header => "Users", :content => user_names) do %>
 
-      Normal Users<br>
-      <%= render :partial => 'shared/users_checkbox_table',
-                 :locals => {
-                              :users         => User.where(:account_locked => false).order(:login).all,
-                              :checked       => myusers,
-                              :variable_name => "access_profile[user_ids][]",
-                            }
-      %>
+        Normal Users<br>
+        <%= render :partial => 'shared/users_checkbox_table',
+                  :locals => {
+                                :users         => User.where(:account_locked => false).order(:login).all,
+                                :checked       => myusers,
+                                :variable_name => "access_profile[user_ids][]",
+                              }
+        %>
 
-      <br>
-      Locked Users<br>
-      <%= render :partial => 'shared/users_checkbox_table',
-                 :locals => {
-                              :users         => User.where(:account_locked => true).order(:login).all,
-                              :checked       => myusers,
-                              :variable_name => "access_profile[user_ids][]",
-                            }
-      %>
+        <br>
+        Locked Users<br>
+        <%= render :partial => 'shared/users_checkbox_table',
+                  :locals => {
+                                :users         => User.where(:account_locked => true).order(:login).all,
+                                :checked       => myusers,
+                                :variable_name => "access_profile[user_ids][]",
+                              }
+        %>
 
+      <% end %>
     <% end %>
   <% end %>
 
