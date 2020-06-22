@@ -418,8 +418,8 @@ in a tabular layout. Proceed as follow:
 
           <% if @model_atts.include?(:user_id) %>
             <tr class="report_fix_attributes">
-            <th>Users:</th>
-            <td><%= user_select          :user_id,          { :selector => params[:user_id] },                                  :multiple => true, :size => 5 %></td>
+              <th>Users:</th>
+              <td><%= user_select          :user_id,          { :selector => params[:user_id] },                                  :multiple => true, :size => 5 %></td>
             </tr>
           <% end %>
 
