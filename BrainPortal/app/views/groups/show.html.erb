@@ -120,18 +120,23 @@
     open_invites   = Invitation.where(sender_id: current_user.id, group_id: @group.id, active: true).to_a
   %>
 
-  <%= show_table(@group, :as => :group, :header => 'Members', :edit_condition => @group.can_be_edited_by?(current_user) && (!current_user.has_role?(:normal_user) || group_members.count > 1 || open_invites.count > 0 )) do |t| %>
+  <% members_header = 'Members' unless @group.is_a?(WorkGroup)  %>
+  <% members_header = 'Members Roles' if @group.is_a?(WorkGroup) %>
 
-    <% default_text = array_to_table(group_members.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u) } %>
+  <% default_text = array_to_table(group_members.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u) } %>
+
+  <%= show_table(@group, :as => :group, :header => members_header, :edit_condition => @group.can_be_edited_by?(current_user) && (!current_user.has_role?(:normal_user) || group_members.count > 1 || open_invites.count > 0 )) do |t| %>
 
     <% t.edit_cell(:user_id, :show_width => 2,
                              :no_header  => 'Members',
                              :content    => default_text) do %>
-      <% if current_user.has_role? :normal_user %>
-        <table border="0">
+      <% if current_user.has_role? :normal_user or @group.is_a?(WorkGroup) %>
+        <table>
           <tr>
             <th>Username</th>
-            <th>Can edit?</th>
+            <% if @group.is_a?(WorkGroup) %>
+              <th>Can edit?</th>
+            <% end %>
             <th>Revoke membership </th>
           </tr>
 
@@ -140,10 +145,12 @@
             <td>
               <%= link_to_user_with_tooltip u %>
             </td>
-            <td>
-              <%= check_box_tag("group[editor_ids][]", u.id, @group.editor_ids.include?(u.id),
+            <%  if @group.is_a?(WorkGroup) %>
+              <td>
+                <%= check_box_tag("group[editor_ids][]", u.id, @group.editor_ids.include?(u.id),
                       :checked => u.id == @group.creator.id, :disabled=> u.id == @group.creator.id ) %>
-            </td>
+              </td>
+            <% end %>
             <td>
               <%= link_to(": Remove", group_path(@group, "group[user_ids]" => (@group.user_ids - [u.id]), update_users: true ), :method => :put, :class => "action_link") unless u == current_user %>
             </td>
@@ -153,11 +160,6 @@
 
         </table>
         <%= hidden_field_tag("group[editor_ids][]", []) %>
-      <% else %>
-        <div class="generalbox" style="width: 100%">
-          <%= render :partial => 'users_form' %><br>
-          <%= hidden_field_tag :update_users, true %>
-        </div>
       <% end %>
     <% end %>
 
@@ -176,6 +178,22 @@
   <% end %>
 
 </div>
+<% if not current_user.has_role? :normal_user %>
+  <%
+    group_members  = @group.users
+    default_text = array_to_table(group_members.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u) }
+  %>
+  <%= show_table(@group, :as => :group, :header => "Members", :edit_condition => true ) do |t| %>
+    <% default_text = array_to_table(group_members.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u) } %>
+
+    <% t.edit_cell(:user_id, :show_width => 2, :no_header  => 'Members',  :content => default_text) do %>
+      <div class="generalbox" style="width: 100%">
+        <%= render :partial => 'users_form' %><br>
+      <%= hidden_field_tag :update_users, true %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
 
 <% if @group.can_be_edited_by?(current_user) %>
   <P>
