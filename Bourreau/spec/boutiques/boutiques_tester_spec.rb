@@ -381,6 +381,7 @@ describe "Bourreau Boutiques Tests" do
       # This is because some checks by e.g. save_results expect files from the task to be in the pwd
       # Passing a block to chdir would be preferable but then one would have to do it in every test
       Dir.chdir TempStore
+      allow( @task ).to receive( :full_cluster_workdir ).and_return( Dir.pwd )
       # Add a local input file to the data provider (allows smarter lookup in userfile_exists)
       @file_c, @ft     = 'c', @ftype.(@file_c)
       newFile          = @task.safe_userfile_find_or_new(@ft, name: @file_c, data_provider_id: DPID, user_id: UID, group_id: GID)

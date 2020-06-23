@@ -458,9 +458,6 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
         succeeded = false
         return
       end
-      return if File.exists?(path)
-      self.addlog("Missing output file #{path}")
-      succeeded = false
     end
     ensure_matches = lambda do |glob|
       paths = Dir.glob(glob)
@@ -505,8 +502,6 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
       paths = [paths] unless paths.is_a?(Enumerable)
       paths.each do |path|
 
-        next unless path_is_in_workdir?(path) # addlog message already added earlier
-
         # Print a warning if the file is not present
         # Note that, since the output may be optional, the process may still be successful
         unless path.present? && File.exists?(path)
@@ -514,6 +509,8 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
           succeeded = false if ! isOptional.(param)
           next
         end
+
+        next unless path_is_in_workdir?(path) # addlog message already added earlier
 
         # Get name and filetype
         self.addlog("Attempting to save result file #{path}")
