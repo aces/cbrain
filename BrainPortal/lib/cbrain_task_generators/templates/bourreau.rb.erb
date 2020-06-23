@@ -453,14 +453,26 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     # Make sure that every required output +path+ actually exists
     # (or that its +glob+ matches something).
     ensure_exists = lambda do |path|
+      if ! path_is_in_workdir?(path) # this also checks the existence
+        self.addlog("Output file is missing or outside of task work directory: #{path}")
+        succeeded = false
+        return
+      end
       return if File.exists?(path)
       self.addlog("Missing output file #{path}")
       succeeded = false
     end
     ensure_matches = lambda do |glob|
-      return unless Dir.glob(glob).empty?
-      self.addlog("No output files matching #{glob}")
-      succeeded = false
+      paths = Dir.glob(glob)
+      if paths.empty?
+        self.addlog("No output files matching #{glob}")
+        succeeded = false
+      end
+      paths.each do |path|
+        next if path_is_in_workdir?(path)
+        self.addlog("Output doesn't exist or is outside of task work directory: #{path}")
+        succeeded = false
+      end
     end
 
 %     required.select { |o| ! o['list'] }.each do |output|
@@ -492,6 +504,8 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     outputs.each do |param, paths|
       paths = [paths] unless paths.is_a?(Enumerable)
       paths.each do |path|
+
+        next unless path_is_in_workdir?(path) # addlog message already added earlier
 
         # Print a warning if the file is not present
         # Note that, since the output may be optional, the process may still be successful
