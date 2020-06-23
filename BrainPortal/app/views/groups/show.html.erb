@@ -58,8 +58,6 @@
         <span class="warning">Warning</span>:
           If you change the maintainer to someone else you won't be able to retrieve control over the project
       </div>
-      <%# the text outdate. at the moment any editor can set a new maintainer (and remove old maintainer from ) %>
-      <%# to do may be block editors from this the text update. at the moment any editor can set a new maintainer (and remove old maintainer from ) %>
     <% end %>
 
     <% t.edit_cell(:site_id, :content => link_to_site_if_accessible(@group.site), :disabled => !current_user.has_role?(:admin_user)) do %>
@@ -116,22 +114,36 @@
   <%
     group_members  = @group.users
     group_editors  = @group.editors || []
+    group_editors << @group.creator unless group_editors.include? @group.creator
     group_viewers  = group_members - group_editors
     open_invites   = Invitation.where(sender_id: current_user.id, group_id: @group.id, active: true).to_a
+
+    if @group.is_a?(WorkGroup) then # for now editors are only allowed on WorkGroups
+      members_header = 'Members and Their Project Roles'
+      default_text = ''
+      if group_editors.any? then
+        default_text += '<label> Can edit: </label>'
+        default_text += array_to_table(group_editors.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u)}
+      end
+      if group_viewers.any? then
+        default_text += '<label> Cannot edit: </label>'
+        default_text += array_to_table(group_viewers.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u)}
+      end
+      default_text = default_text.html_safe
+    else
+      members_header = 'Members'
+      default_text = array_to_table(group_members.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u)}
+    end
+
   %>
 
-  <% members_header = 'Members' unless @group.is_a?(WorkGroup)  %>
-  <% members_header = 'Members Roles' if @group.is_a?(WorkGroup) %>
-
-  <% default_text = array_to_table(group_members.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u) } %>
-
   <%= show_table(@group, :as => :group, :header => members_header, :edit_condition => @group.can_be_edited_by?(current_user) && (!current_user.has_role?(:normal_user) || group_members.count > 1 || open_invites.count > 0 )) do |t| %>
-
     <% t.edit_cell(:user_id, :show_width => 2,
                              :no_header  => 'Members',
                              :content    => default_text) do %>
       <% if current_user.has_role? :normal_user or @group.is_a?(WorkGroup) %>
-        <table>
+        <table class="button_table">
+          #todo personally I like more the look of access_profile_label style than button table, to discuss
           <tr>
             <th>Username</th>
             <% if @group.is_a?(WorkGroup) %>
@@ -139,7 +151,6 @@
             <% end %>
             <th>Revoke membership </th>
           </tr>
-
         <% group_members.each do |u| %>
           <tr>
             <td>
@@ -152,12 +163,10 @@
               </td>
             <% end %>
             <td>
-              <%= link_to(": Remove", group_path(@group, "group[user_ids]" => (@group.user_ids - [u.id]), update_users: true ), :method => :put, :class => "action_link") unless u == current_user %>
+              <%= link_to("Remove", group_path(@group, "group[user_ids]" => (@group.user_ids - [u.id]), update_users: true ), :method => :put, :class => "action_link") unless u == current_user %>
             </td>
           </tr>
-
         <% end %>
-
         </table>
         <%= hidden_field_tag("group[editor_ids][]", []) %>
       <% end %>
@@ -176,14 +185,14 @@
       <% end %>
     <% end %>
   <% end %>
-
 </div>
+
 <% if not current_user.has_role? :normal_user %>
   <%
     group_members  = @group.users
     default_text = array_to_table(group_members.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u) }
   %>
-  <%= show_table(@group, :as => :group, :header => "Members", :edit_condition => true ) do |t| %>
+  <%= show_table(@group, :as => :group, :header => "Quick Member Administration", :edit_condition => @group.can_be_edited_by?(current_user) ) do |t| %>
     <% default_text = array_to_table(group_members.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u) } %>
 
     <% t.edit_cell(:user_id, :show_width => 2, :no_header  => 'Members',  :content => default_text) do %>
