@@ -122,11 +122,11 @@
       members_header = 'Members and Their Project Roles'
       default_text = ''
       if group_editors.any? then
-        default_text += '<label> Can edit: </label>'
+        default_text += '<label>Can edit:</label>'
         default_text += array_to_table(group_editors.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u)}
       end
       if group_viewers.any? then
-        default_text += '<label> Cannot edit: </label>'
+        default_text += '<label>Cannot edit:</label>'
         default_text += array_to_table(group_viewers.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u)}
       end
       default_text = default_text.html_safe
@@ -149,7 +149,7 @@
             <% if @group.is_a?(WorkGroup) %>
               <th>Can edit?</th>
             <% end %>
-            <th>Revoke membership </th>
+            <th>Revoke membership</th>
           </tr>
         <% group_members.each do |u| %>
           <tr>
@@ -190,11 +190,9 @@
 <% if not current_user.has_role? :normal_user %>
   <%
     group_members  = @group.users
-    default_text = array_to_table(group_members.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u) }
   %>
-  <%= show_table(@group, :as => :group, :header => "Quick Member Administration", :edit_condition => @group.can_be_edited_by?(current_user) ) do |t| %>
+  <%= show_table(@group, :as => :group, :header => "Quick Membership Control", :edit_condition => @group.can_be_edited_by?(current_user) ) do |t| %>
     <% default_text = array_to_table(group_members.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u) } %>
-
     <% t.edit_cell(:user_id, :show_width => 2, :no_header  => 'Members',  :content => default_text) do %>
       <div class="generalbox" style="width: 100%">
         <%= render :partial => 'users_form' %><br>
