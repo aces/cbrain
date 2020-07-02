@@ -40,12 +40,20 @@ class NhInvitationsController < NeurohubApplicationController
     user_emails     = (params[:emails].presence.try(:strip) || "").split(/[\s,]+/)
     user_emails     = user_emails.map(&:presence).compact
     cb_error "Please specify at least one email address", :redirect => nh_project_path(@nh_project) if user_emails.empty?
-    user_ids        = User.where(:email => user_emails).pluck(:id)
+    users           = User.where(:email => user_emails)
+    user_ids        = users.pluck(:id)
+    found_emails    = users.pluck(:email)
+    wrong_emails    = user_emails - found_emails
+
+    flash_messages = []
+    if wrong_emails.present?
+      flash_messages << "\nWe are not able to invite user(s) with email(s) #{wrong_emails.join(", ")}. At the moment users are matched by email that they are used to register in NeuroHub. Please confirm with them which email they provided to NeuroHub. "
+    end
 
     already_sent_to = Invitation.where(active: true, user_id: user_ids, group_id: @nh_project.id).pluck(:user_id)
     rejected_ids    = user_ids & already_sent_to
     if rejected_ids.present?
-      flash_message = "\n#{User.find(rejected_ids).map(&:login).join(", ")} already invited."
+      flash_messages <<  "\n#{User.find(rejected_ids).map(&:login).join(", ")} already invited."
     end
 
     @users = User.find(user_ids - already_sent_to - @nh_project.user_ids)
@@ -57,9 +65,8 @@ class NhInvitationsController < NeurohubApplicationController
       flash[:error] = "No new users were found to invite."
     end
 
-    if rejected_ids.present?
-      flash[:notice] ||= ""
-      flash[:notice] += flash_message
+    if flash_messages.present?
+      flash[:notice] = flash_messages.join
     end
 
     redirect_to nh_project_path(@nh_project)
