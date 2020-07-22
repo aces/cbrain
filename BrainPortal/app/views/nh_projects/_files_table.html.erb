@@ -1,0 +1,56 @@
+
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<div class="nh_table_scroll">
+  <table>
+    <thead>
+      <tr>
+        <th><p class="text">name</p></th>
+        <th><p class="text">owner</p></th>
+        <th><p class="text">type</p></th>
+        <th data-type="int"><p class="text">size</p></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% files.each do |file| %>
+        <tr>
+            <th>
+              <p class="text">
+                <%= link_to_userfile_if_accessible(file, current_user, :html_options => {:class => "text btn-text cbrain external", :'data-link' => "true", :target => "_blank"}) %>
+              </p>
+            </th>
+            <td>
+              <p class="text"><%= link_to_user_if_accessible(file.user, current_user, :html_options => {:class => "btn-text cbrain external", :'data-link' => "true", :target => "_blank"}) %></p>
+            </td>
+            <td>
+              <p class="text"><%= file.pretty_type %></p>
+            </td>
+            <td data-type="int">
+              <p class="text"><%= colored_pretty_size(file.size) %></p>
+            </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

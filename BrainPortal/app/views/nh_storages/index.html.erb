@@ -1,0 +1,91 @@
+
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title "Storage" %>
+
+<div id="nh_storages" class="nh_content">
+
+  <% if @nh_dps.empty? %>
+    <%- # empty state -%>
+    <div class="empty-wrapper">
+      <div class="empty">
+        <div>
+          <div class="empty-icon">
+            <%= nh_empty_storage %>
+          </div>
+          <p class="empty-text">No storage is configured yet.</p>
+          <%= link_to "Create new storage configuration", new_nh_storage_path, :class => "btn-solid primary" %>
+        </div>
+      </div>
+      </div>
+    </div>
+
+  <% else %>
+    <%- # actions -%>
+    <div class="nh_actions">
+        <%= link_to nh_icon_add + "Storage Configuration", new_nh_storage_path, :class => "btn-solid primary nh_action" %>
+    </div>
+
+    <%- # dp storage table -%>
+    <div class="nh_table_scroll">
+      <table>
+        <thead>
+          <tr>
+            <th><p class="text">Name</p></th>
+            <th><p class="text">User</p></th>
+            <th><p class="text">Host</p></th>
+            <th data-type="int"><p class="text">Port</p></th>
+            <th data-trim="true"><p class="text">Directory</p></th>
+            <th data-trim="true"><p class="text">Associated project</p></th>
+            <th data-trim="true"><p class="text">SSH specification</p></th>
+            <th data-action="true"><p class="text">actions</p></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @nh_dps.each do |dp| %>
+            <tr>
+              <th><%= link_to dp.name, nh_storage_path(dp), :class=>"text btn-text primary", :'data-link' => "true" %></th>
+              <td><p class="text"><%= dp.remote_user %></p></td>
+              <td><p class="text"><%= dp.remote_host %></p></td>
+              <td data-type="int"><p class="text"><%= dp.remote_port %></p></td>
+              <td data-trim="true"><p class="text"><%= dp.remote_dir %></p></td>
+              <td data-trim="true"><%= link_to dp.group.name, nh_project_path(dp.group), :class=>"text btn-text primary", :'data-link' => "true" %></td>
+              <td data-trim="true">
+                <p class="text">
+                  <%= "-p #{dp.remote_port}" if dp.remote_port.present?%>
+                  <%= "#{dp.remote_user}@#{dp.remote_host}:#{dp.remote_dir}" %>
+                </p>
+              </td>
+              <td data-action="true">
+                <div>
+                  <%= link_to nh_icon_edit, edit_nh_storage_path(dp), :class=>"text btn-solid primary", :'data-link'=>"true" %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>

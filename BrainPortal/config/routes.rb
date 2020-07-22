@@ -72,6 +72,7 @@ Rails.application.routes.draw do
     collection do
       post 'unregister'
       post 'switch'
+      get 'switch'
     end
   end
 
@@ -249,5 +250,55 @@ Rails.application.routes.draw do
   #get   '/platform/licence',        :controller => :service, :action => :licence
   #get   '/platform/provenance',     :controller => :service, :action => :provenance
   #get   '/platform/factsheet',      :controller => :service, :action => :factsheet
+
+
+
+  ####################################################################################
+  # NeuroHub routes
+  ####################################################################################
+
+    # Special named routes
+    get   '/neurohub'               => 'neurohub_portal#welcome'
+    get   '/styleguide'             => 'neurohub_portal#styleguide'
+    get   '/nh_search'              => 'neurohub_portal#search'
+    get   '/signin'                 => 'nh_sessions#new'
+    get   '/signout'                => 'nh_sessions#destroy'
+    get   '/myaccount'              => 'nh_users#myaccount'
+
+    # ORCID authentication
+    get   '/orcid'                  => 'nh_sessions#orcid'
+
+    # Sessions
+    resource  :nh_session,   :only => [ :new, :create, :destroy ] do
+      collection do
+        get  'request_password'
+        post 'send_password'
+      end
+    end
+
+    # NeuroHub Resources
+    resources :nh_invitations, :only => [ :new, :create, :index, :update, :destroy]
+    resources :nh_signups
+    resources :nh_users,       :only => [ :myaccount, :edit, :update]
+    resources :nh_storages do # yeah pluralized, looks weird because it's uncountable
+      member do
+        post :check
+        post :autoregister
+      end
+    end
+    resources :nh_projects do
+      member do
+        get  :files
+        get  :new_license
+        post :add_license
+        get  :show_license
+        post :sign_license
+        get  :new_file
+        post :upload_file
+      end
+    end
+
+    # Temporary development route
+    get   '/reboot', :controller => :neurohub_portal, :action => :reboot
 
 end

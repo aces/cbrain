@@ -1,0 +1,68 @@
+
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title("Files", '') %>
+
+<div id="nh_icon_cb" class="nh_content">
+  <% if @files.exists? %>
+
+    <%- # actions -%>
+    <div class="nh_actions">
+      <% if @can_upload %>
+        <%= link_to nh_icon_upload + "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid primary nh_action", :method => :get %>
+      <% end %>
+
+      <%- # pagination -%>
+      <div class="nh_pagination">
+        <%== pagy_nav(@pagy) %>
+        <div class="nh_per_page">
+          <%= form_tag files_nh_project_path(@nh_project, :page => @page), :method => :get do %>
+            <%= label_tag :per_page, 'show' %>
+            <%= number_field_tag :per_page, @per_page, min: 5, max: 100, step: 1, size: 5 %>
+            <span> of <%= @files_count || @files.count %> </span>
+          <% end %>
+        </div>
+      </div>
+
+    </div>
+
+    <%= render :partial => 'files_table', :locals => { files: @files } %>
+
+  <% else %>
+    <%- # empty state -%>
+    <div class="empty-wrapper">
+      <div class="empty">
+        <div>
+          <div class="empty-icon">
+            <%= nh_empty_files %>
+          </div>
+          <p class="empty-text">There are currently no files in this project.</p>
+          <% if @can_upload %>
+            <%= link_to "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid primary", :method => :get %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

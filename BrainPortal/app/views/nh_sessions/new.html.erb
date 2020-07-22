@@ -1,0 +1,77 @@
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+
+<% title 'Login' %>
+
+<div id="nh_sessions_new">
+
+  <div class="nh_login">
+    <div class="nh_logo"></div>
+    <%= form_tag nh_session_path, :class=>"nh_login_form" do %>
+      <fieldset>
+       <label>Username</label>
+       <%= text_field_tag 'username', nil, tabindex: 1, :class=>"login_input nh_form_input" %>
+      </fieldset>
+      <fieldset>
+        <label>Password</label>
+        <%= password_field_tag 'password', nil, tabindex: 2, :class=>"login_input nh_form_input" %>
+      </fieldset>
+      <%= submit_tag  "Sign in", :class => 'btn-solid secondary' %>
+      <%= link_to "Forgot your password?", request_password_users_path, :class => "btn-text cbrain external" %>
+      <% if @orcid_uri %>
+        <p class="text-center heading-sm grey-400 pb-4">OR</p>
+        <%= link_to "Login with your ORCID account", @orcid_uri, :class => "btn-solid orcid" %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="nh_features">
+    <div class="nh_features_header mb-7"></div>
+    <div class="nh_features_list">
+      <p class="heading-sm pb-7">NEUROHUB connects researchers with:</p>
+
+      <div class="nh_feature">
+        <img class="nh_feature_icon" src="/images/neurohub/NH_features_tools.svg">
+        <p class="nh_feature_text">Connect to computational and analytical tools.</p>
+      </div>
+
+      <div class="nh_feature">
+        <img class="nh_feature_icon" src="/images/neurohub/NH_features_readable.svg">
+        <p class="nh_feature_text">A repository of standardized, machine-readable data.</p>
+      </div>
+
+      <div class="nh_feature">
+        <img class="nh_feature_icon" src="/images/neurohub/NH_features_discoverable.svg">
+        <p class="nh_feature_text">Discoverable, accessible and reusable data.</p>
+      </div>
+
+      <%= link_to 'Request an account',
+                  url_for(:controller => :nh_signups, :action => :new),
+                  { :tabindex => 4, :class => "btn-text secondary underline nh_register" }
+      %>
+    </div>
+  </div>
+
+</div>
+

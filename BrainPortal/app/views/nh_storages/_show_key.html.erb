@@ -1,0 +1,54 @@
+
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<div class="nh_show_key">
+  <div class="pb-2">
+    <div class="label">Configuration Information</div>
+    <div class="text">
+      This is your own public SSH key that must be installed on the storage host.
+    </div>
+  </div>
+  <div class="pb-2">
+    <div class="label">SSH Key installation Instructions</div>
+    <div class="text">
+       A public SSH key needs to be added to the authorized keys of the user on the host. Paste the ssh key bellow in a text file the use the following command to add it to the authorized_keys file on the host.
+      <div class="label">Command line</div>
+      <div class="text">
+        <pre>
+$ cat mykey.txt | ssh user@host "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >>  ~/.ssh/authorized_keys"
+        </pre>
+      </div>
+      <div class="text-italic">
+        Note that revealing this key's content to other people causes <em>no security risks at all</em>.
+        The information in this key is meant to be public and people cannot use it to access your information.
+      </div>
+    </div>
+  </div>
+  <div class="pb-2">
+    <div class="label">Public SSH key</div>
+    <div class="text">
+      <pre><%= current_user.ssh_key(create_it: true).public_key rescue "Error fetching public key" %></pre>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,107 @@
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<!-- ******************************** -->
+<!-- PARTIAL: SEARCH + NAVBAR SECTION -->
+<!-- ******************************** -->
+
+<%-
+# Secondary navbar, contains a search bar and breadcrumbs.
+# Breadcrumbs are loaded based on the user's path and
+# should be reimplemented properly in the future.
+-%>
+
+<% if current_user %>
+  <div class="nh_secondary_navbar" data-controller data-welcome="<%= params[:controller].include?("neurohub_portal")&&params[:action].include?("welcome") %>">
+
+    <div class="nh_breadcrumbs">
+
+      <%- # welcome -%>
+      <% if(params[:controller].include?("neurohub_portal")) %>
+        <% if action_name=="welcome" %>
+          <p class="nh_welcome">Welcome <%= @username %></p>
+        <% end %>
+        <% if action_name=="search" %>
+          <div class="nh_breadcrumbs_item" data-active="true">Search</div>
+        <% end %>
+      <% end %>
+
+      <%- # account -%>
+      <% if(params[:controller].include?('nh_users')||params[:action].include?('myaccount')) %>
+          <%= link_to 'My Account', myaccount_path, { :class => "nh_breadcrumbs_item", "data-active"=> controller_name === "nh_users" && action_name === "myaccount"} %>
+          <% if action_name!="myaccount" %>
+            <div class="nh_breadcrumbs_icon"><%= nh_icon_caret_right %></div>
+            <div class="nh_breadcrumbs_item" data-active="true"><%= yield(:title) %></div>
+          <% end %>
+      <% end %>
+
+      <%- # invites -%>
+      <% if(params[:controller].include?('nh_invitations') && params[:action].include?('index')) %>
+        <%= link_to 'Invitations', nh_invitations_path, { :class => "nh_breadcrumbs_item", "data-active"=> controller_name === "nh_invitations" && action_name === "index"} %>
+      <% end %>
+
+      <%- # projects -%>
+      <% if(params[:controller].include?('nh_projects')||(params[:controller].include?('nh_invitations') && params[:action].include?('new'))) %>
+        <%= link_to "Projects", nh_projects_path, { :class => "nh_breadcrumbs_item", "data-active"=> controller_name === 'nh_projects' && action_name==="index"  }%>
+
+        <% if(@nh_project && @nh_project.id)%>
+            <div class="nh_breadcrumbs_icon"><%= nh_icon_caret_right %></div>
+            <%= link_to @nh_project.name, {:controller=> "nh_projects",:action => :show, :id => @nh_project.id }, :method  => :get, :class => "nh_breadcrumbs_item", "data-active"=> controller_name === 'nh_projects' && action_name === "show"  %>
+        <% end %>
+
+        <% if action_name!="index" && action_name!="show" %>
+          <div class="nh_breadcrumbs_icon"><%= nh_icon_caret_right %></div>
+          <div class="nh_breadcrumbs_item" data-active="true"><%= yield(:title) %></div>
+        <% end %>
+      <% end %>
+
+      <%- # storage -%>
+      <% if(params[:controller].include?('nh_storages')) %>
+        <%= link_to 'Storage', nh_storages_path, { :class => "nh_breadcrumbs_item", "data-active"=> controller_name === "nh_storages" && action_name === "index"} %>
+        <% if(@nh_dp && @nh_dp.id)%>
+            <div class="nh_breadcrumbs_icon"><%= nh_icon_caret_right %></div>
+            <%= link_to @nh_dp.name, {:controller=> "nh_storages",:action => :show, :id => @nh_dp.id }, :method  => :get, :class => "nh_breadcrumbs_item", "data-active"=> controller_name === 'nh_storages' && action_name === "show"  %>
+        <% end %>
+        <% if action_name != "index" && action_name != "show"%>
+          <div class="nh_breadcrumbs_icon"><%= nh_icon_caret_right %></div>
+          <div class="nh_breadcrumbs_item" data-active="true"><%= yield(:title) %></div>
+        <% end %>
+      <% end %>
+
+      <%- # styleguide -%>
+      <% if(params[:controller].include?('neurohub_portal') && action_name === "styleguide") %>
+        <%= link_to 'Styleguide', styleguide_path, { :class => "nh_breadcrumbs_item", "data-active"=> controller_name === "neurohub_portal" && action_name === "styleguide"} %>
+      <% end %>
+
+    </div>
+
+
+    <div class="nh_search">
+      <%= form_tag(nh_search_path, :method => :get) do %>
+          <div class="icon"><%= nh_icon_search %></div>
+          <%= text_field_tag :search, @search.presence, :placeholder => "Search files, tasks, projects", :class => "text-xs" %>
+      <% end %>
+    </div>
+
+  </div>
+<% end %>

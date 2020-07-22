@@ -29,6 +29,8 @@ class GroupsController < ApplicationController
 
   before_action :login_required
 
+  before_action :license_check, :only => [:show, :create, :switch, :edit, :update, :unregister, :destroy]
+
   # GET /groups
   # GET /groups.xml
   def index  #:nodoc:
@@ -44,7 +46,7 @@ class GroupsController < ApplicationController
     @scope.custom[:button] = true if
       current_user.has_role?(:normal_user) && @scope.custom[:button].nil?
 
-    @base_scope = current_user.available_groups.includes(:site)
+    @base_scope = current_user.assignable_groups.includes(:site)
     @view_scope = @scope.apply(@base_scope)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 50 })
@@ -52,13 +54,13 @@ class GroupsController < ApplicationController
     @groups = (@groups.to_a << 'ALL') if @scope.custom[:button]
 
     # For regular groups
-    @group_id_2_userfile_counts      = Userfile.group("group_id").count
-    @group_id_2_task_counts          = CbrainTask.group("group_id").count
+    @group_id_2_userfile_counts      = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read).group("group_id").count
+    @group_id_2_task_counts          = CbrainTask.find_all_accessible_by_user(current_user).group("group_id").count
     @group_id_2_user_counts          = User.joins(:groups).group("group_id").count.convert_keys!(&:to_i) # .joins make keys as string
-    @group_id_2_tool_counts          = Tool.group("group_id").count
-    @group_id_2_data_provider_counts = DataProvider.group("group_id").count
-    @group_id_2_bourreau_counts      = Bourreau.group("group_id").count
-    @group_id_2_brain_portal_counts  = BrainPortal.group("group_id").count
+    @group_id_2_tool_counts          = Tool.find_all_accessible_by_user(current_user).group("group_id").count
+    @group_id_2_data_provider_counts = DataProvider.find_all_accessible_by_user(current_user).group("group_id").count
+    @group_id_2_bourreau_counts      = Bourreau.find_all_accessible_by_user(current_user).group("group_id").count
+    @group_id_2_brain_portal_counts  = BrainPortal.find_all_accessible_by_user(current_user).group("group_id").count
 
     # For `ALL` group
     @group_id_2_userfile_counts[nil] = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read).count
@@ -78,7 +80,9 @@ class GroupsController < ApplicationController
   # GET /groups/1.xml
   # GET /groups/1.json
   def show #:nodoc:
-    @group = current_user.available_groups.find(params[:id])
+    @group = current_user.viewable_groups
+    @group = @group.without_everyone if ! current_user.has_role? :admin_user
+    @group = @group.find(params[:id])
     raise ActiveRecord::RecordNotFound unless @group.can_be_accessed_by?(current_user)
     @users = current_user.available_users.order(:login).reject { |u| u.class == CoreAdmin }
 
@@ -133,7 +137,7 @@ class GroupsController < ApplicationController
   # PUT /groups/1.xml
   # PUT /groups/1.json
   def update #:nodoc:
-    @group = current_user.available_groups.find(params[:id])
+    @group = current_user.modifiable_groups.find(params[:id])
 
     unless @group.can_be_edited_by?(current_user)
        flash[:error] = "You don't have permission to edit this project."
@@ -181,6 +185,7 @@ class GroupsController < ApplicationController
         if new_group_attr[:creator_id].present?
           @group.addlog_object_list_updated("Creator", User, original_creator, @group.creator_id, current_user, :login)
         end
+        @group.user_ids |= [ @group.creator.id ]
         @group.addlog_object_list_updated("Users", User, original_user_ids, @group.user_ids, current_user, :login)
         flash[:notice] = 'Project was successfully updated.'
         format.html { redirect_to :action => "show" }
@@ -197,7 +202,7 @@ class GroupsController < ApplicationController
 
   # Used in order to remove a user from a group.
   def unregister
-    @group = current_user.available_groups.where( :type => "WorkGroup" ).find(params[:id])
+    @group = current_user.assignable_groups.where( :type => "WorkGroup" ).find(params[:id])
 
     respond_to do |format|
       if current_user.id == @group.creator_id
@@ -222,7 +227,10 @@ class GroupsController < ApplicationController
   # DELETE /groups/1.xml
   # DELETE /groups/1.json
   def destroy  #:nodoc:
-    @group = current_user.available_groups.find(params[:id])
+    @group = current_user.modifiable_groups.find(params[:id])
+    if ! current_user.has_role?(:admin_user)
+      cb_error "Cannot destroy this project: you are not its creator." if current_user.id != @group.creator_id
+    end
     @group.destroy
 
     respond_to do |format|
@@ -248,7 +256,9 @@ class GroupsController < ApplicationController
     elsif params[:id] == "all"
       cbrain_session[:active_group_id] = "all"
     else
-      @group = current_user.available_groups.find(params[:id])
+      @group = current_user.viewable_groups
+      @group = @group.without_everyone if ! current_user.has_role? :admin_user
+      @group = @group.find(params[:id])
       cbrain_session[:active_group_id] = @group.id
     end
 
@@ -263,6 +273,13 @@ class GroupsController < ApplicationController
     end
   end
 
+  def license_redirect #:nodoc:
+    respond_to do |format|
+      format.html { redirect_to :action       => :index }
+      format.any  { head        :unauthorized           }
+    end
+  end
+
   private
 
   def group_params #:nodoc:
@@ -273,4 +290,20 @@ class GroupsController < ApplicationController
     end
   end
 
+  def license_check
+    return true if params[:id].blank?
+    return true if params[:id] == 'all'
+    # if unexpected id - let the action method handle the error message
+    begin
+      @group = current_user.viewable_groups.find(params[:id])
+    rescue ActiveRecord::RecordNotFound
+      return true
+    end
+    if current_user.unsigned_custom_licenses(@group).present?
+      flash[:error] = "Access to the project #{@group.name} is blocked due to licensing issues. Please consult with the project maintainer or support for details"
+      license_redirect
+    end
+  end
+
 end
+

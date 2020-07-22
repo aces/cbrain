@@ -295,6 +295,7 @@ describe Userfile do
      it "should return true if user is site_manager of the site" do
        allow(userfile).to receive_message_chain(:user, :site_id).and_return(site_manager.site_id)
        allow(userfile).to receive_message_chain(:group, :site_id).and_return(site_manager.site_id)
+       allow(userfile).to receive_message_chain(:group, :public).and_return(false)
        expect(userfile.can_be_accessed_by?(site_manager)).to be_truthy
      end
 
@@ -329,6 +330,7 @@ describe Userfile do
     it "should return true if user is site_manager of the site" do
        allow(userfile).to receive_message_chain(:user, :site_id).and_return(site_manager.site_id)
        allow(userfile).to receive_message_chain(:group, :site_id).and_return(site_manager.site_id)
+       allow(userfile).to receive_message_chain(:group, :public).and_return(false)
        expect(userfile.can_be_accessed_by?(site_manager)).to be_truthy
     end
 
@@ -392,7 +394,7 @@ describe Userfile do
     let!(:userfile3) { create(:single_file, :user_id => user1.id,        :group_id => group.id, :data_provider_id => userfile1.data_provider_id) }
 
     before(:each) do
-      allow(DataProvider).to receive_message_chain(:find_all_accessible_by_user, :raw_first_column).and_return([userfile1.data_provider_id])
+      allow(DataProvider).to receive_message_chain(:find_all_accessible_by_user, :pluck).and_return([userfile1.data_provider_id])
     end
 
     it "should return scope if user is admin" do
@@ -548,40 +550,6 @@ describe Userfile do
       allow(userfile).to receive(:children).and_return([child])
       expect(child).to receive(:descendants).and_return([])
       userfile.descendants
-    end
-
-  end
-
-  describe "#next_available_file" do
-    let(:user) {create(:normal_user)}
-    let(:userfile1) {create(:single_file, :user_id => user.id, :id => (userfile.id + 1).to_i)}
-    let(:userfile2) {create(:single_file, :user_id => user.id, :id => (userfile.id + 2).to_i)}
-
-    it "should return next available file" do
-      userfile.user_id = user.id
-      userfile1; userfile2
-      expect(userfile.next_available_file(user).id).to eq(userfile1.id)
-    end
-
-    it "should return nil if no next available file" do
-      userfile.user_id = user.id
-      userfile1; userfile2
-      expect(userfile2.next_available_file(user)).to be_nil
-    end
-
-  end
-
-  describe "#previous_available_file" do
-    let(:user) {mock_model(NormalUser)}
-
-    it "should only check files available to the user" do
-      expect(Userfile).to receive(:accessible_for_user).with(user, anything).and_return(double("files").as_null_object)
-      userfile.previous_available_file(user).id
-    end
-
-    it "should return the last element it finds" do
-      allow(Userfile).to receive_message_chain(:accessible_for_user, :order, :where).and_return(["file1", "file2"])
-      expect(userfile.previous_available_file(user)).to eq("file2")
     end
 
   end

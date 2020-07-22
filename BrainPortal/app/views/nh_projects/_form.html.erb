@@ -1,0 +1,77 @@
+
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+  <%= form_for @nh_project, :as => :nh_project, :url => { :action => action }, :datatype => "script" do |f| -%>
+
+    <fieldset >
+      <%= f.label :name, "Name"%>
+      <%= f.text_field :name %>
+    </fieldset>
+
+    <fieldset>
+      <%= f.label :description, "Description"%>
+      <%= f.text_field :description  %>
+    </fieldset>
+
+    <% if action != :create %>
+      <fieldset>
+          <label>Maintainer</label>
+          <p class="text"><%= @nh_project.creator.name %></p>
+      </fieldset>
+    <% end %>
+
+    <fieldset>
+      <div class="d-flex align-center">
+      <%= f.label :public, "Public", :class => "mr-2" %>
+      <%= f.check_box :public %>
+      </div>
+      <p class="field_note"><b>Note:</b> A <em>public</em> project makes all its files visible to all NeuroHub users.
+      <b>Be careful with this option!</b></p>
+    </fieldset>
+
+    <% if @nh_project.can_be_edited_by?(current_user) %>
+      <% if (@nh_project.users.count > 1) %>
+            <div>
+              <div class="label">Members</div>
+              <p class="field_note">Editors have more privileges than members.</p>
+              <div class="list">
+                <div class="list-row">
+                  <div class="list-item list-header"><p>Members</p></div>
+                  <div class="list-item list-header" type="checkbox"><p>Enable edit access</p></div>
+                </div>
+                <% @nh_project.users.each do |user| %>
+                    <div class="list-row">
+                      <div class="list-item"><p><%= user.name %></p></div>
+                      <div class="list-item" type="checkbox"><%= check_box_tag("nh_project[editor_ids][]", user.id, @nh_project.editor_ids.include?(user.id), :checked => user.id == @nh_project.creator.id, :disabled=> user.id == @nh_project.creator.id ) %></div>
+                    </div>
+                <% end %>
+              </div>
+            </div>
+      <% end %>
+    <% end %>
+
+    <div class="btn-section">
+      <%= f.submit "#{action.to_s.capitalize}", :class=>"btn-solid primary" %>
+    </div>
+  <% end %>

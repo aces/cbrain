@@ -1,0 +1,62 @@
+
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% route_path = @nh_dp.new_record? ? nh_storages_path : nh_storage_path(@nh_dp) %>
+
+<%= error_messages_for @nh_dp, :header_message => "This storage configuration is invalid." %>
+
+<%= form_for(@nh_dp, :as => :nh_dp, :url => route_path ) do |f| %>
+  <fieldset >
+    <%= f.label :name, "Name", "data-required"=>"true" %>
+    <%= f.text_field :name %>
+  </fieldset>
+  <fieldset >
+    <%= f.label :remote_host, "Hostname", "data-required"=>"true" %>
+    <%= f.text_field :remote_host %>
+  </fieldset>
+  <fieldset>
+    <%= f.label :remote_port, "Port"%>
+    <%= f.text_field :remote_port %>
+  </fieldset>
+  <fieldset>
+    <%= f.label :remote_user, "Username", "data-required"=>"true"%>
+    <%= f.text_field :remote_user %>
+  </fieldset>
+  <fieldset>
+    <%= f.label :remote_dir, "Path", "data-required"=>"true" %>
+    <%= f.text_field :remote_dir %>
+  </fieldset>
+  <fieldset >
+    <%= f.label('nh_dp[group_id]', "Choose a Project", "data-required"=>"true") %>
+    <p class="field-description">The project associated with this storage
+    will control who has access to the content of the files (regardless
+    of the projects that the files are associated with), and will
+    also be used as the default project for new files when using
+    the 'autoregister' function.</p>
+    <%= group_select('nh_dp[group_id]', { :groups => @nh_projects, :selector => (@nh_dp.group_id || @def_proj_id) }, { :include_blank => '(Select project)' } ) %>
+  </fieldset> <div class="btn-section">
+    <%= f.submit "Save configuration", :class=>"btn-solid primary"
+    %>
+  </div>
+<% end %>

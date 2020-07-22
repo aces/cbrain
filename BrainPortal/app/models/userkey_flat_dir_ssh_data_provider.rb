@@ -28,6 +28,8 @@ class UserkeyFlatDirSshDataProvider < FlatDirSshDataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  validates_presence_of :remote_user, :remote_host, :remote_dir
+
   def impl_is_alive? #:nodoc:
     user = self.user # we use the owner as the way to check if it's alive
     return false unless self.master(user, nil).is_alive?

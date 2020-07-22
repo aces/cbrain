@@ -180,6 +180,39 @@ class User < ApplicationRecord
     self.meta[:all_licenses_signed] = x
   end
 
+  #############################################################
+  #
+  # Custom, user-created licenses for misc objects
+  #
+  #############################################################
+
+  # This function lists custom licenses that user still has to sign in order to access to the object
+  def unsigned_custom_licenses(obj)
+    obj.custom_license_agreements - self.custom_licenses_signed
+  end
+
+  # This function lists all the already signed custom licenses
+  def custom_licenses_signed #:nodoc:
+    self.meta.reload
+    Array(self.meta[:custom_licenses_signed].presence)
+  end
+
+  # This function records custom licenses signed by the user.
+  def custom_licenses_signed=(licenses) #:nodoc:
+    self.meta.reload
+    self.meta[:custom_licenses_signed] = Array(licenses)
+  end
+
+  # Records that a custom license agreement has
+  # been signed by adding it to the list of signed ones.
+  def add_signed_custom_license(license_file)
+    cb_error "A license file is supposed to be a TextFile" unless license_file.is_a?(TextFile)
+    signed  = self.custom_licenses_signed
+    signed |= [ license_file.id ]
+    signed = TextFile.where(:id => signed).pluck(:id) # clean up dead IDs
+    self.custom_licenses_signed = signed
+  end
+
   ###############################################
   #
   # Password and login gestion
@@ -247,9 +280,34 @@ class User < ApplicationRecord
     self.available_tools.where( :category  => "conversion tool" ).order( "tools.select_menu_text" )
   end
 
-  # Returns the list of groups available to this user based on role.
-  def available_groups
-    cb_error "#available_groups called from User base class! Method must be implemented in a subclass."
+  # List of groups which provide view access to resources.
+  # It is possible for the user not to be a member of one of those groups.
+  def viewable_groups
+    cb_error "#viewable_groups called from User base class! Method must be implemented in a subclass."
+  end
+
+  def viewable_group_ids
+    viewable_groups.pluck('groups.id')
+  end
+
+  # List of groups that the user can assign to resources.
+  # The user must be a member of one of these groups. Subset
+  # of viewable_groups
+  def assignable_groups
+    cb_error "#assignable_groups called from User base class! Method must be implemented in a subclass."
+  end
+
+  def assignable_group_ids
+    assignable_groups.pluck('groups.id')
+  end
+
+  # List of groups that the user can modify (the group's attributes themselves, not the resources)
+  def modifiable_groups
+    cb_error "#modifiable_groups called from User base class! Method must be implemented in a subclass."
+  end
+
+  def modifiable_group_ids
+    modifiable_groups.pluck('groups.id')
   end
 
   # Returns the list of tags available to this user.
@@ -293,12 +351,6 @@ class User < ApplicationRecord
      group_id = group_id.id if group_id.is_a?(Group)
      @group_ids_hash ||= self.group_ids.index_by { |gid| gid }
      @group_ids_hash[group_id] ? true : false
-  end
-
-  # Returns the IDs of the groups this user
-  # is a member of.
-  def cached_group_ids
-    @_cached_gids ||= self.group_ids
   end
 
   # Destroy all sessions for user

@@ -1,0 +1,84 @@
+
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+    if @nh_invitations.exists?
+      new_invites = Invitation.where(user_id: current_user.id, active: true, read: false).all
+      pending_invites = Invitation.where(user_id: current_user.id, active: true, read: true).all
+    else
+      new_invites = []
+      pending_invites = []
+    end
+%>
+
+<div id="nh_invitations" class="nh_content nh_invitations">
+  <% if new_invites.count > 0 %>
+    <div class="section primary">
+      <p class="section-title">New Invitations | <%= new_invites.count %></p>
+      <% new_invites.each do |invitation| %>
+        <div class="card">
+          <div class="card-row header">
+            <p class="card-item"><%= invitation.header.html_safe %></p>
+          </div>
+          <div class="btn-section">
+          <%= button_to 'Accept', nh_invitation_path(invitation.id), :method => :put, :class => "btn-solid primary btn" %>
+          <%= button_to 'Decline', nh_invitation_path(invitation.id), :method => :delete, :class => "btn-solid secondary wash btn" %>
+          <%= button_to 'Save for Later', nh_invitation_path(invitation.id, :read => true), :method => :put, :class => "btn-solid primary wash btn" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+  <% elsif pending_invites.count > 0 %>
+    <div class="section primary my-4">
+      <p class="section-title">Pending Invitations | <%= pending_invites.count %></p>
+      <% pending_invites.each do |invitation| %>
+        <div class="card">
+          <div class="card-row header">
+            <p class="card-item"><%= invitation.header.html_safe %></p>
+          </div>
+          <div class="btn-section">
+            <%= button_to 'Accept', nh_invitation_path(invitation.id), :method => :put, :class => "btn-solid primary btn" %>
+            <%= button_to 'Decline', nh_invitation_path(invitation.id), :method => :delete, :class => "btn-solid secondary wash btn" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+  <% else %>
+    <%- # empty state -%>
+      <div class="empty-wrapper">
+        <div class="empty">
+          <div>
+            <div class="empty-icon">
+              <%= nh_empty_invites %>
+            </div>
+            <p class="empty-text">You currently have no invitations.</p>
+          </div>
+        </div>
+      </div>
+  <% end %>
+</div>
+
+

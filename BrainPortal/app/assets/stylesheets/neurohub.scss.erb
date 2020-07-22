@@ -1,0 +1,2968 @@
+@import "<%= asset_path './normalize.css' %>";
+/*
+  LEGEND
+  ├── BREAKPOINTS
+  ├── SPACE
+  ├── PALETTE
+  ├── TYPOGRAPHY
+  ├── LOGOS
+  ├── SHADOWS
+  ├── TRANSITIONS
+  ├── BUTTONS
+  ├── BANNERS
+  ├── ERRORS
+  ├── EMPTY
+  ├── FORMS
+  ├── CARDS
+  ├── TABLES
+  ├── NAVIGATION BAR
+  ├── SECONDARY NAVIGATION BAR
+  ├── FOOTER
+  ├── PAGES
+    ├── BASE
+    ├── SESSIONS
+    ├── SIGNUPS
+    ├── PROJECTS
+    ├── USERS
+    ├── INVITATIONS
+    ├── WELCOME
+    ├── SEARCH
+    ├── LICENSE
+    ├── STORAGES
+  └──
+
+/*
+=============================================================
+| BREAKPOINTS
+=============================================================
+*/
+
+$BREAKPOINT_XS: 20em; // 320px
+$BREAKPOINT_SM: 30em; // 480px
+$BREAKPOINT_MD: 48em; // 768px
+$BREAKPOINT_LG: 64em; // 1024px
+
+/*
+=============================================================
+| SPACE
+=============================================================
+$index : where 0 <= index < length of sizes array.
+
+This generates bootstrap-like padding and margin classes.
+They following classes are available:
+
+%p, %px, %py, %pt, %pb, %pl, %prs
+%m, %mx, %my, %mt, %mb, %ml, %mr
+
+followed by an integer that represents the index of the
+desired size from the sizes array e.g. py-2 = 0.5rem.
+
+Note: @mixin is used in favour of not using @extend, but
+classes are generated for inline style needs.
+*/
+
+$sizes: 0rem, 0.25rem, 0.5rem, 0.75rem, 1rem, 1.25rem, 1.5rem, 2rem, 2.5rem,
+  3rem, 4rem, 5rem, 6rem, 8rem;
+
+@function space($index) {
+  @return nth($sizes, $index + 1);
+}
+
+@mixin p($index) {
+  padding: space($index); // lists in scss are not zero-indexed.
+}
+
+@mixin px($index) {
+  padding-left: space($index);
+  padding-right: space($index);
+}
+
+@mixin pl($index) {
+  padding-left: space($index);
+}
+
+@mixin pr($index) {
+  padding-right: space($index);
+}
+
+@mixin py($index) {
+  padding-top: space($index);
+  padding-bottom: space($index);
+}
+
+@mixin pt($index) {
+  padding-top: space($index);
+}
+
+@mixin pb($index) {
+  padding-bottom: space($index);
+}
+
+@mixin m($index) {
+  margin: space($index); // lists in sass are not zero-indexed.
+}
+
+@mixin mx($index) {
+  margin-left: space($index);
+  margin-right: space($index);
+}
+
+@mixin ml($index) {
+  margin-left: space($index);
+}
+
+@mixin mr($index) {
+  margin-right: space($index);
+}
+
+@mixin my($index) {
+  margin-top: space($index);
+  margin-bottom: space($index);
+}
+
+@mixin mt($index) {
+  margin-top: space($index);
+}
+
+@mixin mb($index) {
+  margin-bottom: space($index);
+}
+
+@each $size in $sizes {
+  .p-#{index($sizes,$size)-1} {
+    @include p(index($sizes, $size)-1);
+  }
+  .px-#{index($sizes,$size)-1} {
+    @include px(index($sizes, $size)-1);
+  }
+  .py-#{index($sizes,$size)-1} {
+    @include py(index($sizes, $size)-1);
+  }
+  .pt-#{index($sizes,$size)-1} {
+    @include pt(index($sizes, $size)-1);
+  }
+  .pb-#{index($sizes,$size)-1} {
+    @include pb(index($sizes, $size)-1);
+  }
+  .pr-#{index($sizes,$size)-1} {
+    @include pr(index($sizes, $size)-1);
+  }
+  .pl-#{index($sizes,$size)-1} {
+    @include pl(index($sizes, $size)-1);
+  }
+  .m-#{index($sizes,$size)-1} {
+    @include m(index($sizes, $size)-1);
+  }
+  .mx-#{index($sizes,$size)-1} {
+    @include mx(index($sizes, $size)-1);
+  }
+  .my-#{index($sizes,$size)-1} {
+    @include my(index($sizes, $size)-1);
+  }
+  .mt-#{index($sizes,$size)-1} {
+    @include mt(index($sizes, $size)-1);
+  }
+  .mb-#{index($sizes,$size)-1} {
+    @include mb(index($sizes, $size)-1);
+  }
+  .mr-#{index($sizes,$size)-1} {
+    @include mr(index($sizes, $size)-1);
+  }
+  .ml-#{index($sizes,$size)-1} {
+    @include ml(index($sizes, $size)-1);
+  }
+}
+
+/*
+=============================================================
+| PALETTE
+=============================================================
+*/
+
+$DEFAULT_BG: #ffffff;
+$DEFAULT_WASH: #f9fcfe;
+$DEFAULT_ALT: #e4e8eb;
+$DEFAULT_TEXT: #000000;
+
+$GREY_100: #f5f5f5;
+$GREY_200: #e5e5e5;
+$GREY_300: #787a7a;
+$GREY_400: #343434;
+
+$PRIMARY_BG: #25bfc1;
+$PRIMARY_WASH: #effafa;
+$PRIMARY_ALT: #00a1a0;
+$PRIMARY_DK: #003943;
+$PRIMARY_TEXT: #008484;
+
+$SECONDARY_BG: #ff0000;
+$SECONDARY_WASH: #ffeeee;
+$SECONDARY_ALT: #e8182b;
+$SECONDARY_DK: #9b0000;
+$SECONDARY_TEXT: #b91f20;
+
+$SUCCESS_BG: #51b83c;
+$SUCCESS_WASH: #bbe5b3;
+$SUCCESS_ALT: #04b069;
+$SUCCESS_DK: #00663c;
+
+$ERROR_BG: #e22f2f;
+$ERROR_WASH: #fcc2c2;
+$ERROR_ALT: #be4040;
+$ERROR_DK: #85000c;
+
+$ORCID_BG: #31789b;
+$ORCID_ALT: #a6ce39;
+
+$CBRAIN_BG: #29b9e8;
+$CBRAIN_WASH: #ecf7fc;
+$CBRAIN_ALT: #05a3d6;
+
+.grey-400 {
+  color: $GREY_400;
+}
+
+.default-bg {
+  color: $DEFAULT_BG;
+}
+
+.success-dk {
+  color: $SUCCESS_DK;
+}
+
+.bg-default-bg {
+  background: $DEFAULT_BG;
+}
+
+.bg-default-wash {
+  background: $DEFAULT_WASH;
+}
+
+.bg-default-alt {
+  background: $DEFAULT_ALT;
+}
+
+.bg-default-text {
+  background: $DEFAULT_TEXT;
+}
+
+.bg-grey-100 {
+  background-color: $GREY_100;
+}
+
+.bg-grey-200 {
+  background-color: $GREY_200;
+}
+
+.bg-grey-300 {
+  background-color: $GREY_300;
+}
+
+.bg-grey-400 {
+  background-color: $GREY_400;
+}
+
+.bg-primary-bg {
+  background-color: $PRIMARY_BG;
+}
+
+.bg-primary-wash {
+  background-color: $PRIMARY_WASH !important;
+}
+
+.bg-primary-alt {
+  background-color: $PRIMARY_ALT;
+}
+
+.bg-primary-dk {
+  background-color: $PRIMARY_DK;
+}
+
+.bg-primary-text {
+  background-color: $PRIMARY_TEXT;
+}
+
+.bg-secondary-bg {
+  background-color: $SECONDARY_BG;
+}
+
+.bg-secondary-wash {
+  background-color: $SECONDARY_WASH;
+}
+
+.bg-secondary-alt {
+  background-color: $SECONDARY_ALT;
+}
+
+.bg-secondary-dk {
+  background-color: $SECONDARY_DK;
+}
+
+.bg-secondary-text {
+  background-color: $SECONDARY_TEXT;
+}
+
+.bg-success-bg {
+  background-color: $SUCCESS_BG;
+}
+
+.bg-success-wash {
+  background-color: $SUCCESS_WASH;
+}
+
+.bg-success-alt {
+  background-color: $SUCCESS_ALT;
+}
+
+.bg-success-dk {
+  background-color: $SUCCESS_DK;
+}
+
+.bg-error-bg {
+  background-color: $ERROR_BG;
+}
+
+.bg-error-wash {
+  background-color: $ERROR_WASH;
+}
+
+.bg-error-alt {
+  background-color: $ERROR_ALT;
+}
+
+.bg-error-dk {
+  background-color: $ERROR_DK;
+}
+
+.bg-orcid-bg {
+  background-color: $ORCID_BG;
+}
+
+.bg-orcid-alt {
+  background-color: $ORCID_ALT;
+}
+
+.bg-cbrain-bg {
+  background-color: $CBRAIN_BG;
+}
+
+.bg-cbrain-wash {
+  background-color: $CBRAIN_WASH;
+}
+
+.bg-cbrain-alt {
+  background-color: $CBRAIN_ALT;
+}
+
+/*
+=============================================================
+| TYPOGRAPHY
+=============================================================
+$variant : xs, sm, md, lg, xl.
+*/
+
+@mixin heading($variant) {
+  font-family: "system-ui", sans-serif;
+  font-weight: 600;
+  line-height: 1.5;
+  -webkit-font-smoothing: auto;
+  letter-spacing: 0;
+
+  @if $variant == "xxs" {
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  @if $variant == "xs" {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  @if $variant == "sm" {
+    font-size: 1rem;
+  }
+  @if $variant == "md" {
+    font-size: 1.25rem;
+  }
+  @if $variant == "lg" {
+    font-size: 1.5rem;
+  }
+  @if $variant == "xl" {
+    font-size: 2rem;
+  }
+}
+
+@mixin text($variant) {
+  font-family: "system-ui", sans-serif;
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: auto;
+  letter-spacing: 0;
+  @if $variant == "xxs" {
+    font-size: 0.65rem;
+  }
+  @if $variant == "xs" {
+    font-size: 0.75rem;
+  }
+  @if $variant == "sm" {
+    font-size: 0.875rem;
+  }
+  @if $variant == "md" {
+    font-size: 1rem;
+  }
+  @if $variant == "lg" {
+    font-size: 1.25rem;
+  }
+  @if $variant == "xl" {
+    font-size: 1.5rem;
+  }
+}
+
+.heading-xxs {
+  @include heading("xxs");
+}
+
+.heading-xs {
+  @include heading("xs");
+}
+
+.heading-sm {
+  @include heading("sm");
+}
+
+.heading-md {
+  @include heading("md");
+}
+
+.heading-lg {
+  @include heading("lg");
+}
+
+.heading-xl {
+  @include heading("xl");
+}
+
+.text-xxs {
+  @include text("xxs");
+}
+
+.text-xs {
+  @include text("xs");
+}
+
+.text-sm {
+  @include text("sm");
+}
+
+.text-md {
+  @include text("md");
+}
+
+.text-lg {
+  @include text("lg");
+}
+
+.text-xl {
+  @include text("xl");
+}
+
+.text-ellipsis {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.text-uppercase {
+  text-transform: uppercase !important;
+}
+
+.text-underline {
+  text-decoration: underline !important;
+}
+
+em {
+  font-style: italic;
+}
+
+.text-italic {
+  font-style: italic;
+}
+
+/*
+=============================================================
+| LAYOUT
+=============================================================
+A few shortcut often-used alignment classes.
+*/
+
+.d-flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-space-between {
+  justify-content: space-between;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+/*
+=============================================================
+| LOGOS
+=============================================================
+$variant : wordmark, lettermark, icon.
+$color   : black, white, RGB, grayscale.
+$size    : xs, ssm, md, lg
+*/
+
+@mixin logoImg($variant, $color) {
+  background-image: url(<%=asset_path"/images/neurohub/NH_hbhl_\#{$variant}_\#{$color}.png"%>);
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+@mixin icon($size: "xxs", $stroke: "none", $fill: "none") {
+  @if $stroke != "none" {
+    stroke: $stroke;
+  }
+  @if $fill != "none" {
+    fill: $fill;
+  }
+  @if $size == "xxs" {
+    width: 1rem;
+    height: 1rem;
+  }
+  @if $size == "xs" {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  @if $size == "sm" {
+    width: 2rem;
+    height: 2rem;
+  }
+  @if $size == "md" {
+    width: 4rem;
+    height: 4rem;
+  }
+  @if $size == "lg" {
+    width: 5rem;
+    height: 5rem;
+  }
+}
+
+@mixin logo($variant: "wordmark", $color: "RGB", $size: "md") {
+  @include logoImg($variant, $color);
+  @if $variant != "icon" {
+    @if $size == "xs" {
+      width: 5rem;
+      height: 2rem;
+    }
+    @if $size == "sm" {
+      width: 8rem;
+      height: 3rem;
+    }
+    @if $size == "md" {
+      width: 10rem;
+      height: 4rem;
+    }
+    @if $size == "lg" {
+      width: 12rem;
+      height: 4rem;
+    }
+  } @else {
+    @if $size == "xxs" {
+      width: 1rem;
+      height: 1rem;
+    }
+    @if $size == "xs" {
+      width: 2rem;
+      height: 2rem;
+    }
+    @if $size == "sm" {
+      width: 3rem;
+      height: 3rem;
+    }
+    @if $size == "md" {
+      width: 4rem;
+      height: 4rem;
+    }
+    @if $size == "lg" {
+      width: 5rem;
+      height: 5rem;
+    }
+  }
+}
+
+/*
+=============================================================
+| SHADOWS
+=============================================================
+$variant : xlow, low, mid, high.
+*/
+
+@mixin shadow($variant) {
+  @if $variant == "xlow" {
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
+  }
+  @if $variant== "low" {
+    box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.14),
+      0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+  }
+  @if $variant == "mid" {
+    box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
+      0px 4px 5px 0px rgba(0, 0, 0, 0.14);
+  }
+  @if $variant == "high" {
+    box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
+      0px 4px 5px 0px rgba(0, 0, 0, 0.24);
+  }
+}
+
+.shadow-xlow {
+  @include shadow("xlow");
+}
+
+.shadow-low {
+  @include shadow("low");
+}
+
+.shadow-mid {
+  @include shadow("mid");
+}
+
+.shadow-high {
+  @include shadow("high");
+}
+
+/*
+=============================================================
+| TRANSITIONS
+=============================================================
+$variant : hover
+$state   : on, off
+*/
+
+$TRANSITION_HOVER_ON: all 0.2s ease-in;
+$TRANSITION_HOVER_OFF: all 0.2s ease-out;
+
+/*
+=============================================================
+| BUTTONS
+=============================================================
+Button variants: solid, text, and nav.
+*/
+
+@mixin btn($variant: "none") {
+  @include px(5);
+  @include py(2);
+  @include heading("xs");
+  outline: none;
+  transition: $TRANSITION_HOVER_OFF;
+  text-decoration: none;
+  justify-content: center;
+  -webkit-font-smoothing: antialiased;
+  text-transform: uppercase;
+  letter-spacing: 0.089em;
+  color: $DEFAULT_BG;
+
+  &:hover {
+    cursor: pointer;
+    transition: $TRANSITION_HOVER_ON;
+  }
+  @if $variant == "solid" {
+    @include shadow("low");
+    border-radius: 2px;
+    border: none;
+    transition: $TRANSITION_HOVER_OFF;
+
+    &:hover {
+      @include shadow("mid");
+      transition: $TRANSITION_HOVER_ON;
+    }
+  }
+  @if $variant == "text" {
+    text-transform: unset;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    color: $GREY_300;
+
+    &.no-hover {
+      text-decoration: none;
+      cursor: default;
+      pointer-events: none;
+    }
+  }
+  @if $variant == "disabled" {
+    color: $DEFAULT_TEXT;
+    opacity: 0.5;
+
+    &:hover {
+      @include shadow("low");
+      cursor: not-allowed;
+    }
+  }
+}
+
+.btn-solid {
+  @include btn("solid");
+  transition: $TRANSITION_HOVER_OFF;
+  display: flex;
+  align-items: center;
+  .icon {
+    @include mr(2);
+    @include icon("xxs", null, $DEFAULT_BG);
+    display: inline-block;
+    vertical-align: middle;
+  }
+  &[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.btn-solid.primary {
+  background-color: $PRIMARY_ALT;
+  border-color: $PRIMARY_ALT;
+  color: $DEFAULT_BG;
+  &:hover {
+    background-color: $PRIMARY_BG;
+    border-color: $PRIMARY_BG;
+    transition: $TRANSITION_HOVER_ON;
+  }
+  &.wash {
+    background-color: $DEFAULT_BG;
+    border-color: $PRIMARY_ALT;
+    color: $PRIMARY_ALT;
+    &:hover {
+      background-color: $PRIMARY_WASH;
+      border-color: $PRIMARY_ALT;
+      transition: $TRANSITION_HOVER_ON;
+    }
+  }
+}
+
+.btn-solid.secondary {
+  background-color: $SECONDARY_ALT;
+  border-color: $SECONDARY_ALT;
+  color: $DEFAULT_BG;
+  &:hover {
+    background-color: $SECONDARY_BG;
+    border-color: $SECONDARY_BG;
+    transition: $TRANSITION_HOVER_ON;
+  }
+  &.wash {
+    background: $SECONDARY_WASH;
+    color: $SECONDARY_BG;
+    border-color: transparent;
+    opacity: 0.6;
+    box-shadow: none;
+    &:hover {
+      opacity: 1;
+      box-shadow: none;
+      z-index: 100;
+      transition: $TRANSITION_HOVER_ON;
+    }
+  }
+}
+
+.btn-solid.orcid {
+  background-color: $ORCID_BG;
+  border-color: $ORCID_BG;
+  color: $DEFAULT_BG;
+  &:hover {
+    background-color: $ORCID_ALT;
+    border-color: $ORCID_ALT;
+    color: $DEFAULT_BG;
+    transition: $TRANSITION_HOVER_ON;
+  }
+}
+
+.btn-solid.cbrain {
+  background-color: $CBRAIN_ALT;
+  border-color: $CBRAIN_ALT;
+  color: $DEFAULT_BG;
+  &:hover {
+    background-color: $CBRAIN_BG;
+    border-color: $CBRAIN_BG;
+    transition: $TRANSITION_HOVER_ON;
+  }
+  &.external,
+  .external {
+    display: flex;
+    align-items: center;
+    &::after {
+      @include mx(2);
+      content: "";
+      display: inline-block;
+      width: 1rem;
+      min-width: 1rem;
+      height: 1rem;
+      background-repeat: no-repeat;
+      background-size: contain;
+      background-image: url("/images/neurohub/NH_cb_external.png");
+      transition: $TRANSITION_HOVER_OFF;
+    }
+  }
+}
+
+.btn-text {
+  @include btn("text");
+  transition: $TRANSITION_HOVER_OFF;
+  text-decoration: underline;
+  background: transparent;
+  &:hover {
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .icon {
+    @include mr(2);
+    display: inline-block;
+    vertical-align: middle;
+  }
+  &[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.btn-text.primary {
+  color: $PRIMARY_TEXT;
+  .icon {
+    @include icon("xxs", null, $PRIMARY_TEXT);
+  }
+  &[data-active="true"],
+  &:not(.no-hover):hover {
+    background-color: $PRIMARY_WASH;
+    color: $PRIMARY_BG;
+    transition: $TRANSITION_HOVER_ON;
+    .icon {
+      @include icon("xxs", null, $PRIMARY_BG);
+    }
+  }
+}
+
+.btn-text.secondary {
+  color: $SECONDARY_TEXT;
+  .icon {
+    @include icon("xxs", null, $SECONDARY_TEXT);
+  }
+  &:hover {
+    background-color: $SECONDARY_WASH;
+    color: $SECONDARY_BG;
+    transition: $TRANSITION_HOVER_ON;
+    .icon {
+      @include icon("xxs", null, $SECONDARY_BG);
+    }
+  }
+}
+
+.btn-text.cbrain {
+  color: $CBRAIN_ALT;
+  .icon {
+    @include icon("xxs", null, $CBRAIN_ALT);
+  }
+  .icon-cb {
+    @include mx(2);
+  }
+  .icon-cb,
+  .icon-cb svg {
+    @include icon("xxs", none, $CBRAIN_ALT);
+  }
+  &.external,
+  .external {
+    display: flex;
+    align-items: center;
+    &::after {
+      @include mx(2);
+      content: "";
+      display: inline-block;
+      width: 0.9rem;
+      min-width: 0.9rem;
+      height: 1rem;
+      background-repeat: no-repeat;
+      background-size: contain;
+      background-image: url("/images/neurohub/NH_cb_external_blue.png");
+    }
+  }
+
+  &:hover {
+    background-color: $CBRAIN_WASH;
+    border-color: $CBRAIN_WASH;
+    color: $CBRAIN_BG;
+    transition: $TRANSITION_HOVER_ON;
+    .icon {
+      @include icon("xxs", null, $CBRAIN_BG);
+      transition: $TRANSITION_HOVER_ON;
+    }
+    .icon-cb,
+    .icon-cb svg {
+      @include icon("xxs", none, $CBRAIN_BG);
+      transition: $TRANSITION_HOVER_ON;
+    }
+  }
+}
+
+.btn-nav {
+  @extend .btn-text;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: $TRANSITION_HOVER_OFF;
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.btn-nav.secondary {
+  color: $GREY_300;
+  .icon {
+    @include icon("xxs", null, $GREY_300);
+  }
+  &:hover,
+  &[data-active="true"] {
+    transition: $TRANSITION_HOVER_ON;
+    background: $SECONDARY_WASH;
+    border-color: $SECONDARY_BG;
+    color: $SECONDARY_BG;
+  }
+}
+
+.btn-nav.primary {
+  color: $GREY_300;
+  .icon {
+    @include icon("xxs", null, $GREY_300);
+  }
+  &:hover,
+  &[data-active="true"] {
+    background: $PRIMARY_WASH;
+    border-color: $PRIMARY_BG;
+    color: $PRIMARY_BG;
+    transition: $TRANSITION_HOVER_ON;
+  }
+}
+
+.btn-section {
+  @include py(7);
+  @include mt(4);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $DEFAULT_WASH;
+  flex-direction: column;
+  > * {
+    flex: 1;
+    width: 100%;
+  }
+}
+
+/*
+=============================================================
+| BANNERS
+=============================================================
+$variant : error, notice
+*/
+
+@mixin banner($variant: "error") {
+  @include p(2);
+  @include text("sm");
+  @include shadow("low");
+  width: 100%;
+  @if ($variant == "notice") {
+    background-color: $SUCCESS_WASH;
+    color: $SUCCESS_DK;
+    border: 1px solid $SUCCESS_BG;
+  }
+  @if ($variant == "error") {
+    background-color: $ERROR_WASH;
+    color: $ERROR_DK;
+    border: 1px solid $ERROR_ALT;
+  }
+}
+
+.flash_error {
+  @include banner("error");
+  @include px(7);
+}
+
+.flash_notice {
+  @include banner("notice");
+  @include px(7);
+  z-index: 1000;
+}
+
+/*
+=============================================================
+| ERRORS
+=============================================================
+*/
+
+.errorExplanation {
+  @include banner("error");
+  h2 {
+    font-weight: 700;
+  }
+  ul {
+    @include mx(4);
+    list-style: disc;
+    li {
+      @include mx(4);
+    }
+  }
+}
+
+/*
+=============================================================
+| EMPTY
+=============================================================
+*/
+
+.empty-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.empty {
+  @include p(4);
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .empty-icon {
+      @include py(4);
+      width: 100%;
+      min-width: 300px;
+      max-height: 200px;
+    }
+    .empty-text {
+      @include py(4);
+      @include text("sm");
+      color: $GREY_300;
+      text-align: center;
+    }
+    .btn-solid.primary {
+      text-align: center;
+    }
+  }
+}
+
+/*
+=============================================================
+| FORMS
+=============================================================
+*/
+
+.field-description {
+  @include py(2);
+  @include text("sm");
+  color: $GREY_400;
+}
+
+@mixin form-layout() {
+  @include py(4);
+  @include px(4);
+  @media (min-width: $BREAKPOINT_SM) {
+    @include px(7);
+  }
+  @media (min-width: $BREAKPOINT_MD) {
+    padding-left: 15%;
+    padding-right: 15%;
+  }
+  @media (min-width: $BREAKPOINT_LG) {
+    padding-left: 20%;
+    padding-right: 20%;
+  }
+}
+
+@mixin form($theme: "secondary") {
+  @include heading("sm");
+  > * {
+    @include form-layout();
+  }
+
+  width: 100%;
+  left: 0;
+  background: $DEFAULT_BG;
+
+  fieldset {
+    @include field($theme);
+  }
+}
+
+@mixin field($theme: "default") {
+  @include text("sm");
+  display: flex;
+  flex-direction: column;
+  label {
+    @include label();
+  }
+  select {
+    @include select($theme);
+  }
+  input:not([type="submit"]) {
+    @include input($theme);
+  }
+  textarea {
+    @include textarea($theme);
+  }
+  p {
+    border: 0;
+    cursor: auto;
+  }
+
+  &:hover,
+  &:focus-within {
+    background: $DEFAULT_WASH;
+    border-radius: 4px;
+  }
+  &:focus-within {
+    label {
+      @include label($theme);
+    }
+    input {
+      @include input($theme);
+    }
+    textarea {
+      @include textarea($theme);
+    }
+  }
+}
+
+@mixin label($theme: "default") {
+  @include mt(1);
+  @include heading("xxs");
+  color: $GREY_300;
+  text-transform: uppercase;
+
+  @if $theme == "secondary" {
+    color: $PRIMARY_TEXT;
+  }
+  @if $theme == "primary" {
+    color: $SECONDARY_TEXT;
+  }
+  &[data-required] {
+    position: relative;
+    &:after {
+      content: "*";
+      position: absolute;
+    }
+  }
+}
+
+@mixin input($theme: "default") {
+  @include mt(1);
+  @include p(1);
+  @include text("sm");
+  width: 100%;
+  background: none;
+  border: 1px solid $DEFAULT_WASH;
+  cursor: pointer;
+  &[type="file"] {
+    border-bottom: 0;
+  }
+
+  @if ($theme == "primary") {
+    border: 0;
+    border-bottom: 1px solid $GREY_200;
+    border-radius: 2px;
+    outline: 0;
+
+    &:focus {
+      outline: 0;
+      border-color: $SECONDARY_ALT;
+      box-shadow: none;
+    }
+  }
+
+  @if ($theme == "secondary") {
+    border: 0;
+    border-bottom: 1px solid $GREY_200;
+    border-radius: 2px;
+    outline: 0;
+
+    &:focus {
+      outline: 0;
+      border-color: $PRIMARY_ALT;
+      box-shadow: none;
+    }
+  }
+}
+
+@mixin select($theme: "default") {
+  @include mt(1);
+  @include p(1);
+  @include text("sm");
+  background: $DEFAULT_BG;
+  width: 100%;
+  height: 2rem;
+  border-color: $GREY_200;
+
+  &:focus {
+    outline: auto $GREY_200 5px;
+    box-shadow: none;
+    @if $theme == "secondary" {
+      outline: auto $PRIMARY_ALT 5px;
+      border-color: $PRIMARY_ALT;
+      box-shadow: none;
+    }
+  }
+}
+
+@mixin textarea($theme: "default") {
+  @include input($theme);
+  border: 1px solid $GREY_200;
+  &:focus {
+    outline: auto $GREY_200 5px;
+    border-color: $DEFAULT_WASH;
+    box-shadow: none;
+
+    @if $theme == "secondary" {
+      outline: auto $PRIMARY_ALT 5px;
+      border-color: $PRIMARY_ALT;
+      box-shadow: none;
+    }
+  }
+}
+
+.nh_form {
+  @include heading("sm");
+  @include shadow("low");
+  width: 100%;
+  background: $DEFAULT_BG;
+  position: relative;
+
+  .nh_form_title {
+    @include form-layout();
+    @include heading("sm");
+    @include py(7);
+    background: $DEFAULT_WASH;
+  }
+  > .field-description {
+    @include form-layout();
+  }
+  form {
+    @include form("secondary");
+  }
+}
+
+form {
+  .field_note {
+    @include text("xs");
+    @include p(0);
+    @include pt(1);
+    font-style: italic;
+  }
+  .btn-section {
+    @include py(7);
+    > * {
+      &:nth-child(2) {
+        @include mt(2);
+      }
+    }
+  }
+}
+
+.field_with_errors {
+  label {
+    color: $ERROR_BG !important;
+    position: relative;
+    &:after {
+      content: "*";
+      position: absolute;
+    }
+  }
+  color: $ERROR_WASH !important;
+  > * {
+    border-color: $ERROR_BG !important;
+  }
+}
+
+.label {
+  @include label();
+}
+
+/*
+=============================================================
+| CARDS
+=============================================================
+Cards used for simple "show"-type views
+*/
+
+.card {
+  @include shadow("mid");
+  background: $DEFAULT_BG;
+  .card-heading {
+    @include heading("xs");
+    @include p(4);
+  }
+  .card-row {
+    @include px(4);
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 1px solid $GREY_200;
+    &.header {
+      @include px(0);
+    }
+  }
+  .card-label {
+    @include label();
+  }
+  .card-item {
+    @include text("sm");
+    @include p(4);
+    display: flex;
+    flex: 1 1 50%;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    .empty {
+      align-self: center;
+    }
+    &.heading {
+      background: $DEFAULT_WASH;
+    }
+    .text-ellipsis {
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      display: block;
+      text-align: left;
+    }
+  }
+  .header {
+    flex-direction: column;
+    .card-item {
+      @include p(0);
+      a,
+      .card-link a {
+        @include p(0);
+        width: 100%;
+        .label {
+          color: inherit;
+        }
+      }
+      .card-stat {
+        @include px(7);
+        @include py(7);
+        display: flex;
+        flex: 1;
+        width: 100%;
+        .card-icon {
+          @include icon("sm", $DEFAULT_TEXT);
+          align-self: center;
+        }
+        .card-details {
+          @include heading("lg");
+          @include ml(4);
+          line-height: normal;
+          height: 100%;
+          text-align: left;
+        }
+      }
+    }
+  }
+  @media (min-width: $BREAKPOINT_SM) {
+    .card-row {
+      &.header {
+        flex-direction: row;
+      }
+    }
+  }
+  @media (min-width: $BREAKPOINT_MD) {
+    .card-item {
+      flex: 1;
+      .card-stat {
+        justify-content: center;
+      }
+    }
+  }
+}
+
+/*
+=============================================================
+| TABLES
+=============================================================
+*/
+
+.nh_pagination {
+  @include p(2);
+  @include text("xs");
+  background: $DEFAULT_BG;
+  border-top: 1px solid $PRIMARY_WASH;
+  border-bottom: 1px solid $PRIMARY_WASH;
+  color: $PRIMARY_TEXT;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column-reverse;
+  > * {
+    @include my(1);
+  }
+  .pagination {
+    user-select: none;
+
+    .page,
+    .disabled {
+      @include px(1);
+      opacity: 0.7;
+    }
+    .page:not(.active, .disabled):hover {
+      color: $PRIMARY_BG;
+      cursor: pointer;
+    }
+
+    .active,
+    .prev:not(.disabled),
+    .next:not(.disabled) {
+      opacity: 1;
+    }
+
+    .active {
+      text-decoration: underline;
+    }
+  }
+  .nh_per_page {
+    @include text("xs");
+    #per_page {
+      @include mx(1);
+      @include p(1);
+      text-align: right;
+      border: 1px solid $DEFAULT_ALT;
+      outline-color: $PRIMARY_BG;
+      transition: $TRANSITION_HOVER_ON;
+      opacity: 1;
+    }
+  }
+  @media (min-width: $BREAKPOINT_SM) {
+    flex-direction: row;
+    > * {
+      @include my(0);
+    }
+  }
+}
+
+table {
+  width: 100%;
+  margin: auto;
+  border-collapse: collapse;
+  border-spacing: 0;
+  background: $DEFAULT_BG;
+  border-radius: 4px;
+  border: 0;
+  .error_link {
+    @extend .btn-text;
+    @extend .cbrain;
+    @extend .external;
+  }
+  th,
+  td {
+    display: table-cell;
+    min-width: 150px;
+    .text {
+      display: block;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      text-align: left;
+      justify-content: flex-start;
+    }
+    &[data-trim="true"] {
+      max-width: 250px;
+    }
+    &[data-type="int"],
+    &[data-action="true"] {
+      min-width: 75px;
+      width: 75px;
+      > * {
+        text-align: center;
+        justify-content: center;
+      }
+    }
+  }
+  thead {
+    th {
+      @include p(2);
+      border: 1px solid $GREY_100;
+      .text {
+        @include heading("xxs");
+        color: $GREY_300;
+        text-transform: uppercase;
+      }
+    }
+  }
+  tbody {
+    th,
+    td {
+      position: relative;
+      border-right: 1px solid $GREY_100;
+      color: $GREY_300;
+      vertical-align: top; // removes table cell default padding
+      .text {
+        @include heading("xxs");
+        @include p(2);
+        align-items: flex-start;
+        .btn-text.primary,
+        .btn-text.cbrain {
+          background: inherit;
+          text-align: left;
+          display: block;
+          &:hover {
+            background: inherit;
+          }
+        }
+      }
+      .text[data-link="true"],
+      [data-link="true"] {
+        @include heading("xxs");
+        @include p(2);
+        flex: 1;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        min-height: 34px;
+        top: 0;
+        left: 0;
+        justify-content: inherit;
+        align-items: inherit;
+      }
+      &[data-action="true"] {
+        min-width: 75px;
+        max-width: 100px;
+        width: 100px;
+        div {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: flex-start;
+          height: 100%;
+          top: 0;
+          left: 0;
+          width: inherit;
+          max-width: inherit;
+          min-width: inherit;
+        }
+        .text[data-link="true"],
+        [data-link="true"] {
+          width: unset;
+          position: unset;
+          max-height: 34px;
+          margin: 1px;
+          border-radius: 0;
+          flex: 1 1 48%;
+          display: flex;
+          justify-content: center;
+          &:nth-child(even) {
+            margin-right: 0;
+          }
+          &:not(:first-child):last-child:nth-child(odd) {
+            margin-right: 0;
+          }
+          svg {
+            width: 1rem;
+            height: 1rem;
+            fill: $DEFAULT_BG;
+            stroke: $DEFAULT_BG;
+          }
+        }
+      }
+    }
+
+    tr:nth-child(even) {
+      th,
+      td {
+        background: $DEFAULT_WASH;
+        transition: $TRANSITION_HOVER_OFF;
+      }
+    }
+    tr:nth-child(odd) {
+      th,
+      td {
+        background: $DEFAULT_BG;
+        transition: $TRANSITION_HOVER_OFF;
+      }
+    }
+    tr {
+      display: table-row;
+
+      &:hover {
+        th,
+        td {
+          background: $PRIMARY_WASH;
+          transition: $TRANSITION_HOVER_ON;
+        }
+      }
+    }
+  }
+}
+
+.nh_table_scroll {
+  @include shadow("mid");
+  width: 100%;
+  z-index: 1;
+  margin: auto;
+  overflow: auto;
+  flex: 1;
+  table {
+    thead,
+    tbody {
+      tr {
+        th:first-child {
+          position: -webkit-sticky;
+          position: sticky;
+          left: 0;
+        }
+      }
+    }
+    thead {
+      th {
+        position: -webkit-sticky;
+        position: sticky;
+        background: $DEFAULT_BG;
+        top: -1px;
+        z-index: 3;
+        overflow: hidden;
+        &:first-child {
+          background: $DEFAULT_WASH;
+          z-index: 4;
+        }
+        &::before {
+          content: ""; // bottom border;
+          width: 100%;
+          height: 1px;
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          background: $DEFAULT_ALT;
+        }
+      }
+    }
+    tbody {
+      tr:not(:hover) {
+        th:first-child {
+          background: $DEFAULT_WASH;
+        }
+      }
+    }
+    th:first-child {
+      z-index: 2;
+      &::after {
+        content: "";
+        width: 1px;
+        height: 100%;
+        position: absolute;
+        right: 0;
+        top: 0;
+        background: $DEFAULT_ALT;
+      }
+    }
+  }
+}
+
+/*
+=============================================================
+| NAVIGATION BAR
+=============================================================
+*/
+
+$NAVBAR_HEIGHT: 3.5;
+$NAVBAR_ZINDEX: 1000;
+
+#nh_navbar {
+  @include shadow("mid");
+  display: flex;
+  align-items: center;
+  position: fixed;
+  width: 100%;
+  height: $NAVBAR_HEIGHT + rem;
+  background: $DEFAULT_BG;
+  overflow: auto;
+  z-index: $NAVBAR_ZINDEX;
+  .nh_navbar_logo {
+    @include logo("lettermark", "RGB", "xs");
+    @include ml(4);
+    @include mr(2);
+  }
+  .nh_navbar_account {
+    @include text("xs");
+    @include px(2);
+    color: $GREY_300;
+    border-left: 1px solid $PRIMARY_ALT;
+  }
+  .nh_navbar_buttons {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+.badge[data-badge] {
+  position: relative;
+
+  &::after {
+    @include text("xxs");
+    @include m(1);
+
+    content: attr(data-badge);
+    background: $SECONDARY_BG;
+    width: auto;
+    min-width: 1rem;
+    padding: 1px;
+    border-radius: 50%;
+    color: $DEFAULT_BG;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+}
+
+/*
+=============================================================
+| SECONDARY NAVIGATION BAR
+=============================================================
+Secondary navbar with application-wide search + breadcrumbs
+*/
+
+.nh_secondary_navbar {
+  background: $GREY_100;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  .nh_breadcrumbs {
+    display: flex;
+    align-items: center;
+    .nh_welcome {
+      @include heading("md");
+      @include px(4);
+      margin: 0 auto;
+    }
+    .nh_breadcrumbs_icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      svg {
+        width: 1rem;
+        height: 1rem;
+        fill: $GREY_300;
+        stroke: $GREY_300;
+        opacity: 0.5;
+      }
+    }
+    .nh_breadcrumbs_item {
+      @extend .btn-nav;
+      @extend .primary;
+      opacity: 0.5;
+      color: $GREY_300;
+      transition: $TRANSITION_HOVER_OFF;
+      display: flex;
+      flex-direction: row-reverse;
+      white-space: nowrap;
+
+      &:hover,
+      &[data-active="true"] {
+        background: transparent !important;
+        transition: $TRANSITION_HOVER_ON;
+        opacity: 1;
+        svg {
+          width: 1rem;
+          height: 1rem;
+          fill: $PRIMARY_BG;
+          stroke: $PRIMARY_BG;
+        }
+      }
+    }
+  }
+  .nh_search {
+    @include m(2);
+    @include p(2);
+    form {
+      display: flex;
+      width: 100%;
+      .icon {
+        @include mr(1);
+        @include icon("xs", $PRIMARY_ALT, $PRIMARY_ALT);
+        opacity: 0.35;
+        transition: $TRANSITION_HOVER_OFF;
+      }
+      &:focus-within {
+        .icon {
+          opacity: 0.8;
+          transition: $TRANSITION_HOVER_ON;
+        }
+      }
+      input {
+        @include px(2);
+        flex: 1;
+        border: 1px solid $DEFAULT_ALT;
+        outline-color: $PRIMARY_BG;
+        transition: $TRANSITION_HOVER_ON;
+
+        &::placeholder {
+          opacity: 0.35;
+          color: $PRIMARY_TEXT;
+        }
+      }
+    }
+  }
+  &[data-welcome="true"] {
+    @include py(4);
+    background: $PRIMARY_ALT;
+    color: $DEFAULT_BG;
+    .nh_search {
+      .icon {
+        @include icon("xs", $DEFAULT_BG, $DEFAULT_BG);
+      }
+      input {
+        outline-color: $PRIMARY_BG;
+      }
+    }
+  }
+  @media (min-width: $BREAKPOINT_MD) {
+    &[data-welcome="true"] {
+      @include py(0);
+    }
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    .nh_search {
+      @include my(0);
+      form {
+        input {
+          min-width: 18rem;
+        }
+      }
+    }
+  }
+}
+
+/*
+=============================================================
+| FOOTER
+=============================================================
+*/
+
+#nh_footer {
+  background: $GREY_400;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  &[data-controller="nh_sessions"][data-action="new"] {
+    position: absolute;
+    bottom: 0;
+    background: transparent;
+  }
+  .powered_by_cbrain {
+    @include text("xs");
+    @include p(2);
+    display: flex;
+    align-items: center;
+    opacity: 0.75;
+    color: $DEFAULT_BG;
+    transition: $TRANSITION_HOVER_OFF;
+    svg {
+      @include mr(2);
+      @include icon("xxs", $DEFAULT_BG, $DEFAULT_BG);
+    }
+    &:hover {
+      transition: $TRANSITION_HOVER_ON;
+      opacity: 1;
+    }
+  }
+}
+
+/*
+=============================================================
+| PAGES
+=============================================================
+Base styles for all pages.
+*/
+
+* {
+  box-sizing: border-box;
+}
+html {
+  display: flex;
+  min-height: 100vh;
+}
+
+html,
+body {
+  font-size: 16px;
+  min-width: 18rem;
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  position: relative;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+}
+
+.nh_content {
+  @include p(4);
+  position: relative;
+  flex: 1;
+  background: $DEFAULT_WASH;
+  height: 100%;
+  @media (min-width: $BREAKPOINT_SM) {
+    @include p(7);
+  }
+}
+
+.nh_page {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  &[data-isLoggedIn="true"] {
+    padding-top: $NAVBAR_HEIGHT + rem;
+    background: $DEFAULT_WASH;
+  }
+}
+
+$ACTION_BAR_HEIGHT: 2.5;
+
+.nh_actions {
+  @include shadow("mid");
+  background: $DEFAULT_BG;
+  display: flex;
+  flex-wrap: wrap;
+  overflow: hidden;
+}
+
+.nh_action {
+  flex: 1;
+  border-radius: 0px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  text-transform: uppercase;
+  text-decoration: none;
+  min-height: $ACTION_BAR_HEIGHT + rem;
+  &:last-child {
+    @include mr(0);
+  }
+  svg {
+    @include mr(2);
+    width: 1rem;
+    height: 1rem;
+    stroke: $DEFAULT_BG;
+    fill: $DEFAULT_BG;
+  }
+  a {
+    width: 100%;
+    height: 100%;
+    border-radius: unset;
+    display: flex;
+    align-items: center;
+  }
+
+  &.btn-text.primary {
+    border-right: 1px solid $PRIMARY_WASH;
+  }
+}
+
+.nh_actions {
+  @media (min-width: $BREAKPOINT_MD) {
+    .nh_action {
+      @include mr(1);
+      max-width: max-content;
+      &:last-child {
+        @include mr(0);
+      }
+    }
+  }
+}
+
+/*
+=============================================================
+| SESSIONS
+=============================================================
+*/
+
+#nh_sessions_new {
+  height: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  .nh_login {
+    @extend .nh_content;
+    background: $DEFAULT_BG;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    height: 100%;
+    .nh_logo {
+      @include logo();
+    }
+    .nh_login_form {
+      @include p(7);
+      align-self: center;
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      fieldset {
+        @include field("primary");
+        @include mb(4);
+        &:hover,
+        &:focus-within {
+          background: none;
+        }
+        label {
+          text-transform: uppercase;
+        }
+      }
+      input[type="submit"] {
+        @include mt(4);
+      }
+    }
+  }
+
+  .nh_features {
+    @extend .nh_content;
+    @include heading("sm");
+    background: $SECONDARY_DK;
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+    height: 100%;
+
+    &:before {
+      content: "";
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      background-image: url(<%=asset_path"/images/neurohub/NH_login_backsplash.png"%>);
+      background-size: cover;
+      top: 0;
+      left: 0;
+      opacity: 0.15;
+      z-index: 0;
+    }
+    .nh_features_header {
+      @include logo("lettermark", "white");
+      background-position-x: center;
+      width: 100%;
+      z-index: 1;
+    }
+    .nh_features_list {
+      color: $DEFAULT_BG;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      align-items: center;
+      align-self: center;
+      z-index: 1;
+      p {
+        text-align: center;
+      }
+      .nh_feature {
+        @include pb(7);
+        display: flex;
+        flex: 1;
+        align-items: center;
+        flex-direction: column;
+        .nh_feature_icon {
+          @include m(2);
+          width: 5rem;
+          height: 5rem;
+        }
+        .nh_feature_text {
+          @include pl(4);
+          max-width: 15rem;
+        }
+      }
+      .nh_register {
+        @include my(2);
+        color: $DEFAULT_BG;
+        &:hover {
+          color: $SECONDARY_BG;
+        }
+      }
+    }
+  }
+  @media (min-width: $BREAKPOINT_MD) {
+    flex-direction: row;
+    .nh_login {
+      .nh_logo {
+        position: absolute;
+      }
+    }
+    .nh_features {
+      .nh_features_header {
+        position: absolute;
+      }
+      .nh_features_list {
+        .nh_feature {
+          @include pb(7);
+          margin: 0 auto;
+          justify-content: space-around;
+          flex-direction: row;
+          .nh_feature_text {
+            @include pl(7);
+            text-align: left;
+          }
+        }
+      }
+    }
+  }
+}
+
+#nh_sessions_request_password {
+  flex: 1;
+  .nh_logo {
+    @include logo();
+    @include mb(4);
+  }
+}
+
+/*
+=============================================================
+| SIGNUPS
+=============================================================
+*/
+
+#nh_signups_new,
+#nh_signups_show {
+  @extend .nh_content;
+  flex: 1;
+  .nh_logo {
+    @include logo();
+    @include mb(4);
+  }
+  .empty {
+    position: unset;
+  }
+}
+
+/*
+=============================================================
+| PROJECTS
+=============================================================
+*/
+
+$MAX_CARD_LIST_HEIGHT: 15;
+$BAR_HEIGHT: 2.3;
+
+.nh_projects_public {
+  @include text("xxs");
+  @include p(1);
+  @include px(2);
+  border-radius: 2px;
+  background: $PRIMARY_WASH;
+  color: $PRIMARY_ALT;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translate(0, -50%);
+  text-transform: uppercase;
+}
+
+#nh_projects {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  .nh_actions {
+    min-height: 5rem;
+  }
+  .grid {
+    @include py(4);
+    display: grid;
+    grid-gap: 1rem;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    .card {
+      display: flex;
+      flex-wrap: wrap;
+      flex-direction: column;
+      > * {
+        width: 100%;
+      }
+      .card_heading {
+        background: $DEFAULT_WASH;
+        &:hover {
+          background: $PRIMARY_WASH;
+          text-decoration: underline;
+        }
+      }
+      a {
+        text-decoration: none;
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+      .card_text {
+        @include text("xs");
+        color: $GREY_400;
+      }
+      .card_creator {
+        height: $BAR_HEIGHT + rem; // patch that sets height for link_to element that does not return a link
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        a {
+          @extend .btn-text;
+          @extend .cbrain;
+          @extend .external;
+          @include text("xs");
+          height: 100%;
+          text-decoration: none;
+          width: 100%;
+        }
+      }
+
+      .card_description {
+        @include p(4);
+        flex: 1 1 5rem;
+        overflow: hidden;
+        position: relative;
+        &::after {
+          // overflow gradient
+          content: "";
+          background: linear-gradient(rgba(255, 255, 255, 0), $DEFAULT_BG);
+          width: 100%;
+          height: 1rem;
+          position: absolute;
+          bottom: 0;
+          left: 0;
+        }
+      }
+      .card_stats {
+        display: flex;
+        justify-content: center;
+        background: $DEFAULT_WASH;
+        > * {
+          @include p(2);
+          @include heading("xxs");
+          flex: 1;
+          border-right: 1px solid $DEFAULT_BG;
+          white-space: nowrap;
+          &:last-child {
+            border-right: none;
+          }
+        }
+      }
+      .card_footer {
+        @include p(2);
+        @include m(0);
+        height: $BAR_HEIGHT + rem;
+        display: flex;
+
+        .nh_projects_public {
+          position: relative;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        .card_actions {
+          flex: 1;
+          align-items: center;
+          display: flex;
+          justify-content: flex-end;
+        }
+
+        &[data-actions="true"] {
+          .icon {
+            opacity: 0.25;
+            transition: $TRANSITION_HOVER_OFF;
+          }
+        }
+
+        &[data-actions="true"]:hover {
+          background: $PRIMARY_WASH;
+          transition: $TRANSITION_HOVER_ON;
+
+          .icon {
+            opacity: 1;
+            transition: $TRANSITION_HOVER_ON;
+          }
+        }
+        .icon {
+          @include m(1);
+          @include icon("xxs", $PRIMARY_ALT, $PRIMARY_ALT);
+          align-self: flex-end;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          svg {
+            width: 1rem;
+            height: 1rem;
+          }
+          &:hover {
+            svg {
+              fill: $PRIMARY_BG;
+              stroke: $PRIMARY_BG;
+            }
+          }
+        }
+      }
+    }
+  }
+  @media (min-width: $BREAKPOINT_SM) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: $BREAKPOINT_MD) {
+    .grid {
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+    }
+  }
+  @media (min-width: $BREAKPOINT_LG) {
+    .grid {
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+    }
+  }
+}
+
+.list {
+  @include shadow("low");
+  @include my(2);
+  border-radius: 2px;
+  max-height: $MAX_CARD_LIST_HEIGHT + rem;
+  overflow: scroll;
+  .list-row {
+    @include text("sm");
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+    &:nth-child(odd) {
+      background: $DEFAULT_WASH;
+    }
+    &:hover {
+      background: $PRIMARY_WASH;
+    }
+    .list-item {
+      @include text("xs");
+      @include m(0);
+      flex: 1;
+      text-transform: none;
+      border-right: 1px solid;
+      border-color: $PRIMARY_WASH;
+      display: flex;
+      justify-content: space-between;
+      > * {
+        @include p(2);
+      }
+      &:last-child {
+        border: none;
+      }
+      input {
+        width: unset;
+      }
+      &[type="checkbox"] {
+        width: 10rem;
+        display: flex;
+        justify-content: center;
+        flex: unset;
+      }
+      .secondary {
+        display: flex;
+        justify-content: center;
+        flex: 1;
+        background: $PRIMARY_WASH;
+        color: $PRIMARY_ALT;
+      }
+    }
+    .list-header {
+      @include label();
+      @include m(0);
+      background: $PRIMARY_BG;
+      color: white;
+      border-color: $DEFAULT_BG;
+    }
+  }
+}
+
+/*
+=============================================================
+| INVITATIONS
+=============================================================
+*/
+
+.section {
+  @include p(2);
+  @include px(4);
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  color: $GREY_400;
+
+  .section-title {
+    @include heading("xs");
+    @include pb(2);
+    width: 100%;
+    opacity: 1;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid $GREY_400;
+
+    img {
+      @include mr(2);
+      height: 1rem;
+      width: 1rem;
+    }
+  }
+  &.default {
+    background: $DEFAULT_ALT;
+  }
+  &.primary {
+    background: $PRIMARY_WASH;
+    .section-title {
+      color: $PRIMARY_ALT;
+      border-bottom: 1px solid $PRIMARY_ALT;
+    }
+  }
+  &.secondary {
+    background: $SECONDARY_WASH;
+    .section-title {
+      color: $SECONDARY_ALT;
+      border-bottom: 1px solid $SECONDARY_ALT;
+    }
+  }
+}
+
+.nh_invitations {
+  .card {
+    @include mb(2);
+    flex-wrap: wrap;
+
+    &:hover {
+      @include shadow("high");
+    }
+    .header {
+      @include p(2);
+      border: none;
+    }
+    .card-item {
+      @include p(1);
+      align-items: center;
+      text-overflow: ellipsis;
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      display: block;
+    }
+
+    .btn-section {
+      @include p(0);
+      @include mt(0);
+      flex-direction: column;
+      > * {
+        flex: unset;
+        width: auto;
+        width: 100%;
+        height: 100%;
+      }
+      .btn {
+        @include px(4);
+        @include py(3);
+        border-radius: 0px;
+        width: 100%;
+        height: 100%;
+        box-shadow: none;
+      }
+    }
+    @media (min-width: $BREAKPOINT_SM) {
+      display: flex;
+      .btn-section {
+        flex-direction: row;
+        flex: 1;
+        > * {
+          width: auto;
+          flex: 1;
+          .btn {
+            width: 100%;
+          }
+        }
+      }
+    }
+    @media (min-width: $BREAKPOINT_MD) {
+      .btn-section {
+        width: auto;
+        flex: unset;
+
+        > * {
+          .btn {
+            @include py(1);
+          }
+        }
+      }
+    }
+  }
+}
+
+/*
+=============================================================
+| WELCOME
+=============================================================
+*/
+
+$DASHBOARD_CARD_MIN_WIDTH: 25;
+
+#nh_neurohub_portal_welcome {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  .main {
+    display: flex;
+    flex-wrap: wrap;
+    flex: 1;
+    > * {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .notifications {
+      .section {
+        background: transparent;
+        .card {
+          @include mb(4);
+          .header {
+            @include px(5);
+            @include py(2);
+            min-width: 200px;
+          }
+          .btn-section {
+            flex: 1;
+          }
+        }
+      }
+    }
+    .section.user {
+      @include mt(7);
+      width: 100%;
+      background: transparent;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+
+      .card {
+        @include m(0);
+        @include mb(1);
+        flex: 1 1 $DASHBOARD_CARD_MIN_WIDTH + rem;
+        display: flex;
+        flex-direction: column;
+        .card-heading {
+          @include p(4);
+          background: $DEFAULT_WASH;
+          text-decoration: none;
+        }
+        .card-row {
+          padding: 0;
+          &:nth-child(even) {
+            background: $DEFAULT_WASH;
+          }
+          .card-section {
+            flex: 1;
+          }
+          .card-item {
+            @include px(4);
+            @include py(2);
+            justify-content: flex-start;
+            max-height: 2.3rem;
+            .empty {
+              align-self: center;
+            }
+            .card-icon {
+              display: flex;
+
+              svg {
+                @include mr(2);
+                width: 1rem;
+                stroke-width: 1.5px;
+              }
+            }
+
+            &.title {
+              background: $DEFAULT_WASH;
+            }
+            &.btn-text.primary,
+            &.btn-text.cbrain {
+              text-align: left;
+              text-decoration: none;
+              cursor: default;
+              a {
+                @extend .text-ellipsis;
+                @extend .external;
+                text-decoration: underline;
+                cursor: pointer;
+              }
+            }
+
+            &.btn-text.primary {
+              svg {
+                fill: $PRIMARY_TEXT;
+                stroke: $PRIMARY_TEXT;
+              }
+              &:hover {
+                svg {
+                  fill: $PRIMARY_BG;
+                  stroke: $PRIMARY_BG;
+                  transition: $TRANSITION_HOVER_ON;
+                }
+              }
+            }
+            &.btn-text.cbrain {
+              .card-icon {
+                fill: $CBRAIN_ALT;
+                stroke: $CBRAIN_ALT;
+              }
+              &:hover {
+                .card-icon {
+                  fill: $CBRAIN_BG;
+                  stroke: $CBRAIN_BG;
+                  transition: $TRANSITION_HOVER_ON;
+                }
+              }
+            }
+          }
+        }
+        a {
+          justify-content: flex-start;
+          text-decoration: none;
+        }
+      }
+    }
+  }
+  @media (min-width: $BREAKPOINT_MD) {
+    .main {
+      flex-direction: row;
+      .section.user {
+        @include mt(0);
+        flex-direction: column;
+        .card {
+          flex: 1;
+
+          .card-row {
+            flex-direction: row;
+            flex-wrap: nowrap;
+            .card-section {
+              flex: unset;
+              width: 50%;
+              display: flex;
+              flex-direction: row;
+            }
+            .card-item {
+              text-align: left;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/*
+=============================================================
+| SEARCH
+=============================================================
+*/
+
+#nh_search {
+  .section {
+    @include my(2);
+    @include px(0);
+    background-color: transparent;
+  }
+}
+
+/*
+=============================================================
+| LICENSE
+=============================================================
+*/
+
+#nh_show_license {
+  .status {
+    @include text("xs");
+    svg {
+      @include mr(1);
+      width: 1rem;
+    }
+    &.success {
+      color: $SUCCESS_ALT;
+      svg {
+        fill: $SUCCESS_ALT;
+        stroke: $SUCCESS_ALT;
+      }
+    }
+    &.error {
+      color: $ERROR_BG;
+      svg {
+        fill: $ERROR_BG;
+        stroke: $ERROR_BG;
+      }
+    }
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    .card-section {
+      @include form-layout();
+      @include p(0);
+      flex: 2;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      &.license-list {
+        flex: 1;
+      }
+      .card-item {
+        display: block;
+      }
+    }
+    .card-heading {
+      @include p(4);
+      text-align: center;
+    }
+  }
+  .license-text {
+    @include p(2);
+    @include my(2);
+    width: 100%;
+    border: 1px solid $DEFAULT_ALT;
+    border-radius: 2px;
+    overflow: scroll;
+  }
+  .license-list {
+    background: $PRIMARY_WASH;
+    .card-heading {
+      color: $PRIMARY_DK;
+    }
+    .card-item {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  .nh_form {
+    width: 100%;
+    box-shadow: none;
+    height: 100%;
+    form {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .btn-section {
+      align-self: flex-end;
+      > * {
+        white-space: normal;
+        &:nth-child(2) {
+          @include mt(2);
+        }
+      }
+      .btn-text.primary {
+        text-transform: uppercase;
+      }
+    }
+  }
+  @media (min-width: $BREAKPOINT_MD) {
+    .card {
+      flex-direction: row;
+      .card-section {
+        @include p(0);
+      }
+    }
+  }
+}
+
+/*
+=============================================================
+| STORAGES
+=============================================================
+*/
+
+.nh_show_key {
+  @include form-layout();
+  background: $DEFAULT_WASH;
+  .label {
+    @include label();
+    @include mt(2);
+  }
+  .text {
+    @include text("sm");
+    @include my(1);
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  }
+}
+
+#nh_storages_show {
+  .nh_show_key {
+    @include p(0);
+    width: 100%;
+    background: transparent;
+  }
+  .btn-text.primary {
+    background: $PRIMARY_WASH;
+  }
+}
+
+/*
+=============================================================
+| STYLEGUIDE
+=============================================================
+*/
+
+.styleguide {
+  @include shadow("xlow");
+  background: white;
+  display: flex;
+  flex-wrap: wrap;
+  .title {
+    @include p(4);
+    @include heading("xs");
+    text-transform: uppercase;
+    width: 100%;
+    background: $GREY_100;
+  }
+  .section {
+    @include p(4);
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    overflow: auto;
+    .description {
+      @include text("sm");
+      color: $GREY_300;
+      font-weight: 600;
+      max-width: $BREAKPOINT_LG;
+    }
+    .row {
+      @include my(4);
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .column {
+      @include my(4);
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+    }
+    .bar {
+      > * {
+        position: unset !important;
+        width: 100%;
+      }
+    }
+    .label {
+      @include mb(2);
+      @include heading("xxs");
+      width: 100%;
+      text-transform: uppercase;
+      color: $GREY_300;
+    }
+    .item {
+      @include m(2);
+      flex: 1;
+      max-width: 200px;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+      .label {
+        color: #cccccc;
+      }
+      > *:not(.label) {
+        @include m(1);
+      }
+    }
+    .icon {
+      max-width: 60px;
+    }
+    .swatch {
+      @include mr(3);
+      min-width: 50px;
+      min-height: 50px;
+      border: 1px solid $GREY_400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      svg {
+        width: 1rem;
+        height: 1rem;
+        fill: $GREY_400;
+        stroke: $GREY_400;
+      }
+    }
+    .sample {
+      flex: 1;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      max-width: 200px;
+
+      .label {
+        @include ml(2);
+
+        display: flex;
+        flex-direction: column;
+      }
+    }
+  }
+
+  @media (min-width: $BREAKPOINT_MD) {
+    .title {
+      @include px(7);
+    }
+    .section {
+      @include px(7);
+
+      .item {
+        @include m(4);
+      }
+      .sample {
+        @include m(1);
+      }
+    }
+  }
+}

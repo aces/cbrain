@@ -1,0 +1,218 @@
+
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+
+<% title("Summary", '') %>
+
+<div id="nh_projects_show" class="nh_content">
+
+  <%- # actions -%>
+    <div class="nh_actions">
+
+      <% if @nh_project.can_be_edited_by?(current_user) %>
+        <%= link_to nh_icon_invite + "Invite Other Users", new_nh_invitation_path(nh_project_id: @nh_project.id), :class => "btn-solid primary nh_action"  %>
+      <% end %>
+
+      <% if @can_upload %>
+        <%= link_to nh_icon_upload + "Upload File", new_file_nh_project_path(@nh_project), :class => "btn-solid primary nh_action", :method => :get %>
+      <% end %>
+
+      <% if @nh_project.can_be_edited_by?(current_user) %>
+        <%= link_to nh_icon_edit + "Edit", {:action => :edit, :id => @nh_project.id}, :method  => :get, :class => "btn-solid primary nh_action"  %>
+      <% end %>
+
+      <% if @can_add_license %>
+        <%= link_to nh_icon_add + "Add License", new_license_nh_project_path(nh_project_id: @nh_project.id), :class => "btn-solid primary nh_action" %>
+      <% end %>
+
+      <% if @nh_project.can_be_edited_by?(current_user) %>
+        <%= link_to nh_icon_add + "Add Storage", new_nh_storage_path(:group_id => @nh_project.id), :class => "btn-solid primary nh_action" %>
+      <% end %>
+
+    </div>
+
+  <%- # project details -%>
+  <div class="card">
+    <%
+      group_members  = @nh_project.users   || []
+      group_editors  = @nh_project.editors || []
+      open_invites   = Invitation.where(sender_id: current_user.id, group_id: @nh_project.id, active: true)
+    %>
+
+      <div class="card-row header">
+        <div class="card-item">
+          <%= link_to(files_nh_project_path(@nh_project.id), :class=>"btn-text primary") do %>
+            <div class="card-stat">
+              <div class="card-icon"><%= nh_stats_files %></div>
+              <div class="card-details">
+                <p><%= @nh_project.userfiles.count %></p>
+                <p class="label"><%= "File#{@nh_project.userfiles.count != 1 ? "s": ""}" %></p>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="card-item">
+          <% task_stat = ("<div class='card-stat external middle'><div class='card-icon'>#{nh_stats_tasks}</div><div class='card-details'><p>#{@nh_project.cbrain_tasks.count}</p><p class='label'>Task#{@nh_project.cbrain_tasks.count != 1 ? 's': ''}</p></div></div>").html_safe %>
+          <%=
+            scope_link(task_stat,
+              'tasks#index', { :filters => [{ :a => 'group_id', :v => @nh_project.id }], },
+              url: { :controller => :tasks, :action => :index },
+              link: { class:"btn-text cbrain", target: "_blank" }
+            )
+          %>
+        </div>
+
+        <div class="card-item">
+            <div class="card-stat">
+              <div class="card-icon"><%= nh_stats_members %></div>
+              <div class="card-details text-ellipsis">
+                <p><%= group_members.count %></p>
+                <p class="label text-ellipsis"><%= "Member#{group_members.count != 1 ? "s": ""}" %> | Editors: <span class="grey-400"><%= group_editors.count %></span></p>
+              </div>
+            </div>
+        </div>
+
+        <div class="card-item">
+            <div class="card-stat">
+              <div class="card-icon"><%= nh_stats_invites %></div>
+              <div class="card-details">
+                <p><%= open_invites.count %></p>
+                <p class="label text-ellipsis"><%= "Pending Invite#{open_invites.count != 1 ? "s": ""}" %></p>
+              </div>
+            </div>
+        </div>
+      </div>
+
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Name</p>
+          <p class="card-text"><%= @nh_project.name %></p>
+        </div>
+      </div>
+    </div>
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Maintainer</p>
+          <p class="card-text"><%= @nh_project.creator.name %></p>
+        </div>
+      </div>
+    </div>
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Type</p>
+          <p class="card-text"><%= @nh_project.pretty_category_name(current_user) %></p>
+        </div>
+      </div>
+    </div>
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Description</p>
+          <p class="card-text"><%= @nh_project.description.presence || "-" %></p>
+        </div>
+      </div>
+    </div>
+    <% if group_members.exists? %>
+      <div class="card-row">
+        <div class="card-item">
+          <div style="width:100%;">
+            <p class="card-label">Members</p>
+            <div class="list">
+              <div class="list-row">
+                <div class="list-item list-header"><p>Members</p></div>
+                <div class="list-item list-header" type="checkbox"><p>Access</p></div>
+              </div>
+              <% group_members.each do |member| %>
+                <% if ((group_editors.include? member) || (@nh_project.creator.id == member.id) ) %>
+                  <div class="list-row">
+                    <div class="list-item">
+                      <p><%= member.name %></p>
+                    </div>
+                    <div class="list-item" type="checkbox">
+                      <p class="secondary text-uppercase"><%= @nh_project.creator.id == member.id ? "Maintainer" : "Editor" %></p>
+                    </div>
+                  </div>
+                <% else %>
+                  <div class="list-row">
+                    <div class="list-item"><p><%= member.name %></p></div>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <% if open_invites.exists? %>
+      <div class="card-row">
+        <div class="card-item">
+          <div>
+            <p class="card-label">Pending Invites</p>
+              <ul>
+                <% open_invites.each do |invite| %>
+                    <li class="card-text"><%= invite.user.name %> </li>
+                <% end %>
+              </ul>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @current_licenses.present? %>
+      <div class="card-row">
+        <div class="card-item">
+          <div>
+            <p class="card-label">Licenses | <%= @current_licenses.count %></p>
+            <div class="card-text pt-2">
+              <% @current_licenses.each do |id| %>
+                <%= link_to "License ##{id}", show_license_nh_project_path(@nh_project, :license_id => id), :class=>"btn-text primary bg-primary-wash mt-1" %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @proj_dps.present? %>
+      <div class="card-row">
+        <div class="card-item">
+          <div>
+            <p class="card-label">Storages | <%= @proj_dps.count %></p>
+            <div class="card-text pt-2">
+              <% @proj_dps.each do |dp| %>
+                <%= link_to dp.name, nh_storage_path(dp), :class=>"btn-text primary bg-primary-wash mt-1" %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+  </div>
+</div>

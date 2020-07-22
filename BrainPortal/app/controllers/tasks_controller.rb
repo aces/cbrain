@@ -407,7 +407,7 @@ class TasksController < ApplicationController
 
     # Security checks
     @task.user_id  = @task.changed_attributes['user_id']  || @task.user_id   unless current_user.available_users.map(&:id).include?(@task.user_id)
-    @task.group_id = @task.changed_attributes['group_id'] || @task.group_id  unless current_user.available_groups.map(&:id).include?(@task.group_id)
+    @task.group_id = @task.changed_attributes['group_id'] || @task.group_id  unless current_user.assignable_groups.map(&:id).include?(@task.group_id)
 
     # Give a task the ability to do a refresh of its form
     commit_name = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ], :whatever)
@@ -493,7 +493,7 @@ class TasksController < ApplicationController
         when :update_group_id
           new_group_id = new_task_attr[:group_id].to_i
           unable_to_update = "project" if
-          ! current_user.available_groups.where(:id => new_group_id).exists?
+          ! current_user.assignable_groups.where(:id => new_group_id).exists?
           :group
         when :update_results_data_provider_id
           new_dp_id = new_task_attr[:results_data_provider_id].to_i
@@ -547,7 +547,7 @@ class TasksController < ApplicationController
             new_tasklist.reject! do |task|
               t_uid = task.user_id
               # Task user need to have access to new group
-              user_to_avail_group_ids[t_uid] ||= User.find(t_uid).available_groups.map(&:id).index_by { |id| id }
+              user_to_avail_group_ids[t_uid] ||= User.find(t_uid).assignable_groups_ids.index_by { |id| id }
               (! user_to_avail_group_ids[t_uid][new_group_id])
             end
             failed_tasks = tasklist - new_tasklist
@@ -1295,7 +1295,7 @@ class TasksController < ApplicationController
 
     # Security checks
     task.user     = current_user           unless current_user.available_users.map(&:id).include?(task.user_id)
-    task.group    = current_user.own_group unless current_user.available_groups.map(&:id).include?(task.group_id)
+    task.group    = current_user.own_group unless current_user.assignable_group_ids.include?(task.group_id)
 
     # Log revision number of portal.
     task.addlog_current_resource_revision
@@ -1545,8 +1545,7 @@ class TasksController < ApplicationController
       .where(
         :bourreau_id => Bourreau
           .find_all_accessible_by_user(current_user)
-          .raw_rows("#{Bourreau.quoted_table_name}.id")
-          .flatten
+          .pluck("#{Bourreau.quoted_table_name}.id")
       )
   end
 

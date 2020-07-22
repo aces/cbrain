@@ -1,0 +1,154 @@
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+
+<% title 'New Account Request' %>
+
+<div id="nh_signups_new" class="nh_content">
+  <% if !current_user %>
+    <a href="/signin">
+      <div class="nh_logo"></div>
+    </a>
+  <% end %>
+  <div class="nh_form">
+    <%= error_messages_for @signup %>
+    <%= form_for @signup, :url => { :action => (@signup.new_record? ? "create" : "update"), :id => @signup.id } do |f|%>
+      <div class="nh_form_title">
+        Register
+        <p class="text-xs text-italic">Fields with an asterisk (*) are mandatory.</p>
+      </div>
+      <fieldset>
+        <%= f.label(:title, "Title") %>
+        <div>
+          <%= f.text_field(:title, :size => 10) %>
+          <span class="field_note">(e.g. 'Mr.', 'Dr.', etc.)</span>
+        </div>
+      </fieldset>
+      <fieldset >
+        <%= f.label(:first, "First Name", "data-required"=>"true") %>
+        <%= f.text_field :first, :size => 20%>
+      </fieldset>
+      <fieldset >
+        <%= f.label(:middle, "Middle Name") %>
+        <%= f.text_field :middle, :size => 20 %>
+      </fieldset>
+      <fieldset >
+        <%= f.label(:last, "Last Name", "data-required"=>"true") %>
+        <%= f.text_field :last, :size => 20 %>
+      </fieldset>
+      <fieldset >
+        <%= f.label(:login, "Preferred 'login' name") %>
+        <div>
+          <%= f.text_field :login, :size => 15 %>
+          <span class="field_note">(one letter + alphanums)</span>
+        </div>
+      </fieldset>
+      <fieldset >
+        <%= f.label(:institution, "Name of Institution/Organization", "data-required"=>"true") %>
+        <%= f.text_field :institution, :size => 60%>
+      </fieldset>
+      <fieldset >
+        <%= f.label(:department, "Department", "data-required"=>"true") %>
+        <%= f.text_field :department, :size => 60 %>
+      </fieldset>
+      <fieldset >
+        <%= f.label(:position, "Current position or role", "data-required"=>"true") %>
+        <%= f.select :position, options_for_select(
+                [ [ "(select one)", "" ], "Faculty",
+                                          "Postdoctoral",
+                                          "PhD. candidate",
+                                          "Masters student",
+                                          "Student",
+                                          "Researcher",
+                                          "Other"
+                ],
+                @signup.position)
+            %>
+      </fieldset>
+      <fieldset >
+        <%= f.label(:affiliation, "Current affiliation", "data-required"=>"true") %>
+        <%= f.select :affiliation, options_for_select(
+                [ [ "(select one)", "" ], "Academic",
+                                          "Private sector",
+                                          "Government",
+                                          "Non-profit",
+                                          "Other",
+                ],
+                @signup.affiliation)
+            %>
+      </fieldset>
+
+      <fieldset >
+        <%= f.label(:email, "Institutional email address", "data-required"=>"true") %>
+        <%= f.text_field :email, :size => 60 %>
+        <span class="field_note">Please supply an email address from your research institution.
+        Requests made with non-institutional addresses will be ignored.</span>
+
+      </fieldset>
+      <fieldset >
+        <%= f.label(:street1, "Street Address (line 1)") %>
+        <%= f.text_field :street1, :size => 60 %>
+
+        <%= f.label(:street2, "Street Address (line 2)") %>
+        <%= f.text_field :street2, :size => 60 %>
+      </fieldset>
+      <fieldset >
+        <%= f.label(:city, "City") %>
+        <%= f.text_field :city, :size => 30 %>
+      </fieldset>
+      <fieldset >
+        <%= f.label(:province, "Province/State", "data-required"=>"true") %>
+        <%= f.text_field :province, :size => 30 %>
+      </fieldset>
+      <fieldset >
+        <%= f.label(:country, "Country", "data-required"=>"true") %>
+        <%= f.text_field :country, :size => 30 %>
+      </fieldset>
+      <fieldset >
+        <%= f.label(:postal_code, "Postal/ZIP Code", "data-required"=>"true") %>
+        <%= f.text_field :postal_code, :size => 8 %>
+      </fieldset>
+      <fieldset >
+        <%= f.label(:time_zone, "Time Zone") %>
+        <%= f.time_zone_select :time_zone,
+            ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
+            { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'], :include_blank => true }
+        %>
+      </fieldset>
+      <fieldset >
+        <%= f.label(:comment, "Comments or special requests") %>
+          <%= f.text_area :comment, :cols => 80, :rows => 5 %>
+          <span class="field_note">
+            <b>Privacy note</b>: The information you supply in this form is only used in order to review your application and, when approved, to automatically generate your user account.
+              This information will not be used in any other way, or passed on to any other entities or persons.
+          </span>
+      </fieldset>
+      <div class="btn-section">
+        <%= f.submit(@signup.new_record? ? "Request Account" : "Update Request", { :class => "btn-solid primary" })  %>
+        <%= link_to 'Already Have An Account',
+        url_for(:controller => :nh_sessions, :action => :new),
+        { tabindex: 4, :class => "btn-text primary mt-2" }%>
+      </div>
+    <% end %>
+  </div>
+</div>

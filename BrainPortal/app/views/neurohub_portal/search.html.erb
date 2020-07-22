@@ -1,0 +1,65 @@
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title("Search", '') %>
+
+<div id="nh_search" class="nh_content">
+  <p class="text-xs">
+    Results are based on search by ID, name and description and are limited to <%= @limit %> items per section (files, tasks, projects).
+  </p>
+
+  <%- # empty state -%>
+  <% if @files.size === 0 && @tasks.size === 0 && @projects.size === 0 %>
+    <div class="empty-wrapper">
+      <div class="empty">
+        <div>
+          <div class="empty-icon">
+            <%= nh_empty_search %>
+          </div>
+          <p class="empty-text">The search returned no results.</p>
+        </div>
+      </div>
+      </div>
+    </div>
+  <% end %>
+
+  <%- # search results -%>
+  <% if @files.size > 0 %>
+    <div class="section primary">
+      <div class="section-title">Files</div>
+      <%= render :partial => 'nh_projects/files_table', :locals => { files: @files, pagination: false } %>
+    </div>
+  <% end %>
+  <% if @tasks.size > 0 %>
+    <div class="section primary">
+      <div class="section-title">Tasks</div>
+      <%= render :partial => 'tasks_table', :locals => { tasks: @tasks } %>
+    </div>
+  <% end %>
+  <% if @projects.size > 0 %>
+    <div class="section primary">
+      <div class="section-title">Projects</div>
+      <%= render :partial => './nh_projects/projects_table', :locals => { projects: @projects, pagination: false } %>
+    </div>
+  <% end %>
+</div>
