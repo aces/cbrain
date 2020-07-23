@@ -45,15 +45,16 @@ class NhInvitationsController < NeurohubApplicationController
     found_emails    = users.pluck(:email)
     wrong_emails    = user_emails - found_emails
 
-    flash_messages = []
+    flash_warnings = []
+    flash_errors = []
     if wrong_emails.present?
-      flash_messages << "\nWe are not able to invite user(s) with email(s) #{wrong_emails.join(", ")}. At the moment users are matched by email that they are used to register in NeuroHub. Please confirm with them which email they provided to NeuroHub. "
+      flash_errors << "\nWe are not able to invite user(s) with email(s) #{wrong_emails.join(", ")}. \nAt the moment users are matched by email that they are used to register in NeuroHub.\n Please confirm with them which email they provided to NeuroHub. "
     end
 
     already_sent_to = Invitation.where(active: true, user_id: user_ids, group_id: @nh_project.id).pluck(:user_id)
     rejected_ids    = user_ids & already_sent_to
     if rejected_ids.present?
-      flash_messages <<  "\n#{User.find(rejected_ids).map(&:login).join(", ")} already invited."
+      flash_warnings <<  "\n#{User.find(rejected_ids).map(&:login).join(", ")} already invited."
     end
 
     @users = User.find(user_ids - already_sent_to - @nh_project.user_ids)
@@ -62,12 +63,12 @@ class NhInvitationsController < NeurohubApplicationController
       Invitation.send_out(current_user, @nh_project, @users)
       flash[:notice] = "Your invitations were successfully sent."
     else
-      flash[:error] = "No new users were found to invite."
+      flash_errors << "No new users were found to invite."
     end
 
-    if flash_messages.present?
-      flash[:notice] = flash_messages.join
-    end
+    flash[:warning] = flash_warnings.join "\n"      if flash_warnings.present?
+    flash[:error]   = flash_errors.join   "\n"      if flash_errors.present?
+
 
     redirect_to nh_project_path(@nh_project)
   end
