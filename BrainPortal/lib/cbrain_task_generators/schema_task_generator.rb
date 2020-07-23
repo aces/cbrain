@@ -140,7 +140,11 @@ module SchemaTaskGenerator
       # (Otherwise the source wouldn't be available to write down the generated
       # templates). This forces the use of eval instead of the much nicer,
       # faster and easier to maintain alternatives. :(
-      eval @source[Rails.root.to_s =~ /BrainPortal\z/ ? :portal : :bourreau]
+      app_type     = Rails.root.to_s =~ /BrainPortal\z/ ? :portal : :bourreau
+      rb_source    = @source[app_type]
+      fake_rb_name = "generated/#{@name}/#{app_type}/" +
+                     Pathname.new(@descriptor_path).basename.to_s + ".rb" # .json.rb !!!
+      eval rb_source, binding, fake_rb_name
 
       # Try and retrieve the just-generated task class
       task = "CbrainTask::#{name}".constantize
