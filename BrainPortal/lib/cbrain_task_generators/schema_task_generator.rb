@@ -143,7 +143,7 @@ module SchemaTaskGenerator
       app_type     = Rails.root.to_s =~ /BrainPortal\z/ ? :portal : :bourreau
       rb_source    = @source[app_type]
       fake_rb_name = "generated/#{@name}/#{app_type}/" +
-                     Pathname.new(@descriptor_path).basename.to_s + ".rb" # .json.rb !!!
+                     Pathname.new(@descriptor_path || "internal_#{@name}.json").basename.to_s + ".rb" # .json.rb !!!
       eval rb_source, binding, fake_rb_name
 
       # Try and retrieve the just-generated task class
