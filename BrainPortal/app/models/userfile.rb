@@ -361,7 +361,7 @@ class Userfile < ApplicationRecord
     scope = scope
       .where('userfiles.user_id' => user_ids) # if owner, or site manager, you CAN, period.
       .or(
-        Userfile.where( # the files are in the user's groups and their DPs too
+        scope.model.where( # the files are in the user's groups and their DPs too
              'userfiles.group_id'         => group_ids,
              'userfiles.data_provider_id' => data_provider_ids,
         ).where( # and if we want to write, it's allowed by the file's attributes
