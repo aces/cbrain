@@ -26,7 +26,6 @@
 <!-- ****************************** -->
 
 
-<div class="my-2">
   <%- flash.each do |name, msg| -%>
     <% next if msg.blank? %>
     <div class="flash_<%= name %>">
@@ -36,4 +35,3 @@
       <%= (h(msg.to_s.strip).gsub(/\n/, '<BR/>')).html_safe %>
     </div>
   <%- end -%>
-</div>
