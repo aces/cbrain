@@ -1479,6 +1479,32 @@ Cards used for simple "show"-type views
       opacity: 1;
     }
   }
+  .nh_layout {
+    @include ml(4);
+    @include pl(4);
+    display: flex;
+    border-left: 1px solid $DEFAULT_ALT;
+    a {
+      display: flex;
+      align-items: center;
+      opacity: 0.5;
+      cursor: pointer;
+      &:hover {
+        opacity: 0.8;
+      }
+      &[data-active="true"] {
+        opacity: 1;
+        pointer-events: none;
+      }
+      svg {
+        @include mr(2);
+        width: 1rem;
+        height: 1rem;
+        stroke: $PRIMARY_ALT;
+        fill: $PRIMARY_ALT;
+      }
+    }
+  }
   @media (min-width: $BREAKPOINT_SM) {
     flex-direction: row;
     > * {
