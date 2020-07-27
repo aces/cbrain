@@ -205,6 +205,16 @@ module NeurohubViewHelper
     SVG
   end
 
+  def nh_icon_notice
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 32 32"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#checkmark"></use>
+    </svg>
+    SVG
+  end
+
   def nh_icon_project
     <<-SVG.html_safe
     <svg xmlns="http://www.w3.org/2000/svg"
@@ -251,6 +261,16 @@ module NeurohubViewHelper
       viewBox="0 0 32 32"
     >
       <use xlink:href="#{image_path("neurohub.svg")}#user"></use>
+    </svg>
+    SVG
+  end
+
+  def nh_icon_warning
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 32 32"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#warning"></use>
     </svg>
     SVG
   end

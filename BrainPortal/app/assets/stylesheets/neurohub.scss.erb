@@ -211,10 +211,10 @@ $ERROR_WASH: #fcc2c2;
 $ERROR_ALT: #be4040;
 $ERROR_DK: #85000c;
 
-$WARNING_BG: #FFB97B;
-$WARNING_WASH: #FFF8DC;
-$WARNING_ALT: #FFAA1D;
-$WARNING_DK: #FFA500;
+$WARNING_BG: #ff9800;
+$WARNING_WASH: #fff4e5;
+$WARNING_ALT: #db8402;
+$WARNING_DK: #653c02;
 
 $ORCID_BG: #31789b;
 $ORCID_ALT: #a6ce39;
@@ -988,24 +988,26 @@ $variant : error, notice
 
 @mixin banner($variant: "error") {
   @include p(2);
-  @include text("sm");
-  @include shadow("low");
+  @include mb(1);
+  @include heading("xxs");
+  @include shadow("mid");
   width: 100%;
+  color: $DEFAULT_BG;
+  display: flex;
   @if ($variant == "notice") {
-    background-color: $SUCCESS_WASH;
-    color: $SUCCESS_DK;
-    border: 1px solid $SUCCESS_BG;
+    background-color: $SUCCESS_BG;
   }
   @if ($variant == "error") {
-    background-color: $ERROR_WASH;
-    color: $ERROR_DK;
-    border: 1px solid $ERROR_ALT;
+    background-color: $ERROR_BG;
   }
-  @if ($variant == "warning"){
-    background-color: $WARNING_WASH;
-    color: $WARNING_DK;
-    border: 1px solid $WARNING_ALT;
+  @if ($variant == "warning") {
+    background-color: $WARNING_BG;
   }
+}
+
+.flash_icon {
+  @include mr(2);
+  @include icon("xxs", $DEFAULT_BG, $DEFAULT_BG);
 }
 
 .flash_error {
@@ -2076,7 +2078,7 @@ $ACTION_BAR_HEIGHT: 2.5;
     background: $SECONDARY_DK;
     flex: 1;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     position: relative;
     height: 100%;
 
@@ -2095,10 +2097,12 @@ $ACTION_BAR_HEIGHT: 2.5;
     .nh_features_header {
       @include logo("lettermark", "white");
       background-position-x: center;
+      position: unset !important;
       width: 100%;
       z-index: 1;
     }
     .nh_features_list {
+      @include my(10);
       color: $DEFAULT_BG;
       display: flex;
       flex-direction: column;
@@ -2106,6 +2110,7 @@ $ACTION_BAR_HEIGHT: 2.5;
       align-items: center;
       align-self: center;
       z-index: 1;
+
       p {
         text-align: center;
       }
