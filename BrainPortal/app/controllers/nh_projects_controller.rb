@@ -36,7 +36,7 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def create #:nodoc:
-    attributes             = params.require_as_params(:nh_project).permit(:name, :description, :public, :editor_ids => [])
+    attributes             = params.require_as_params(:nh_project).permit(:name, :description, :public, :not_assignable, :editor_ids => [])
 
     @nh_project            = WorkGroup.new(attributes)
     @nh_project.creator_id = current_user.id
@@ -84,7 +84,7 @@ class NhProjectsController < NeurohubApplicationController
       return
     end
 
-    attr_to_update = params.require_as_params(:nh_project).permit(:name, :description, :public, :editor_ids => [])
+    attr_to_update = params.require_as_params(:nh_project).permit(:name, :description, :public, :not_assignable, :editor_ids => [])
     attr_to_update["editor_ids"] = [] if !attr_to_update["editor_ids"]
     success        = @nh_project.update_attributes_with_logging(attr_to_update,current_user)
 
