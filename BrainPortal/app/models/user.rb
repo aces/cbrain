@@ -265,20 +265,11 @@ class User < ApplicationRecord
     return self.is_a?(role.to_s.classify.constantize)
   end
 
-  # Find the tools that this user has access to.
-  def available_tools
-    cb_error "#available_tools called from User base class! Method must be implemented in a subclass."
-  end
-
-  # Find the scientific tools that this user has access to.
-  def available_scientific_tools
-    self.available_tools.where( :category  => "scientific tool" ).order( "tools.select_menu_text" )
-  end
-
-  # Find the conversion tools that this user has access to.
-  def available_conversion_tools
-    self.available_tools.where( :category  => "conversion tool" ).order( "tools.select_menu_text" )
-  end
+  ###############################################
+  #
+  # Group lists
+  #
+  ###############################################
 
   # List of groups which provide view access to resources.
   # It is possible for the user not to be a member of one of those groups.
@@ -288,6 +279,16 @@ class User < ApplicationRecord
 
   def viewable_group_ids
     viewable_groups.pluck('groups.id')
+  end
+
+  # List of groups that the user can list in the interface. Normally, groups that are invisible
+  # are not listed
+  def listable_groups
+    cb_error "#listable_groups called from User base class! Method must be implemented in a subclass."
+  end
+
+  def listable_group_ids
+    listable_groups.pluck('groups.id')
   end
 
   # List of groups that the user can assign to resources.
@@ -308,6 +309,27 @@ class User < ApplicationRecord
 
   def modifiable_group_ids
     modifiable_groups.pluck('groups.id')
+  end
+
+  ###############################################
+  #
+  # Model access lists
+  #
+  ###############################################
+
+  # Find the tools that this user has access to.
+  def available_tools
+    cb_error "#available_tools called from User base class! Method must be implemented in a subclass."
+  end
+
+  # Find the scientific tools that this user has access to.
+  def available_scientific_tools
+    self.available_tools.where( :category  => "scientific tool" ).order( "tools.select_menu_text" )
+  end
+
+  # Find the conversion tools that this user has access to.
+  def available_conversion_tools
+    self.available_tools.where( :category  => "conversion tool" ).order( "tools.select_menu_text" )
   end
 
   # Returns the list of tags available to this user.

@@ -76,6 +76,11 @@
       <% t.empty_cell %>
     <% end %>
 
+    <% t.edit_cell("Not assignable", :content => check_box_tag(nil ,nil, @group.not_assignable?, :disabled => true)) do |f| %>
+      <%= f.check_box :not_assignable %>
+      <div class="field_explanation">When checked, only the creator and editors can assign resource to this project.</div>
+    <% end %>
+
   <% end %>
 
   <%= show_table(@group, :header => 'Resources') do |t| %>

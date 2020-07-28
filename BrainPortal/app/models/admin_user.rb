@@ -36,6 +36,12 @@ class AdminUser < User
     Group.where(nil)
   end
 
+  # List of groups that the user can list in the interface. Normally, groups that are invisible
+  # are not listed
+  def listable_groups
+    Group.where(nil)
+  end
+
   # List of groups that the user can assign to resources.
   # The user must be a member of one of these groups. Subset
   # of viewable_groups
