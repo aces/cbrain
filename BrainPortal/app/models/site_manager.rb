@@ -34,7 +34,7 @@ class SiteManager < User
   end
 
   # List of groups which provide view access to resources.
-  # It is possible for the user not to be a member of one of those groups.
+  # It is possible for the user not to be a member of one of those groups (e.g. public groups)
   def viewable_groups
     Group.where(:id => (self.group_ids + Group.public_group_ids + self.site.group_ids))
   end
@@ -46,12 +46,13 @@ class SiteManager < User
   end
 
   # List of groups that the user can assign to resources.
-  # The user must be a member of one of these groups.
+  # This is similar to the list returned for NormalUser but
+  # also includes other workgroups associated with the site.
   def assignable_groups
     all_gids        = self.group_ids + self.site.group_ids - [ Group.everyone.id ]
     assignable_gids = Group.where(:id => all_gids).where(:not_assignable => false).pluck(:id)
-    creat_edit_gids = self.editable_group_ids + Group.where(:creator_id => self.id).pluck(:id)
-    Group.where(:id => (assignable_gids | creat_edit_gids).uniq)
+    edit_creat_gids = self.editable_group_ids + Group.where(:creator_id => self.id).pluck(:id)
+    Group.where(:id => (assignable_gids | edit_creat_gids).uniq)
   end
 
   # List of groups that the user can modify (the group's attributes themselves, not the resources)

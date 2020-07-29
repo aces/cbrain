@@ -35,7 +35,7 @@ Content:
    and 8 WorkGroups, all possible combinations of the
    three boolean flags :invisible, :public, :not_assignable
 
-   Ralationships are established as:
+   Relationships are established as:
 
      * All groups are created by creator,
      * All groups have creator and editor as editors.

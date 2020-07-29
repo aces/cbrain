@@ -272,7 +272,7 @@ class User < ApplicationRecord
   ###############################################
 
   # List of groups which provide view access to resources.
-  # It is possible for the user not to be a member of one of those groups.
+  # It is possible for the user not to be a member of one of those groups (e.g. public groups)
   def viewable_groups
     cb_error "#viewable_groups called from User base class! Method must be implemented in a subclass."
   end
@@ -282,7 +282,7 @@ class User < ApplicationRecord
   end
 
   # List of groups that the user can list in the interface. Normally, groups that are invisible
-  # are not listed
+  # are not listed.
   def listable_groups
     cb_error "#listable_groups called from User base class! Method must be implemented in a subclass."
   end
@@ -292,8 +292,6 @@ class User < ApplicationRecord
   end
 
   # List of groups that the user can assign to resources.
-  # The user must be a member of one of these groups. Subset
-  # of viewable_groups
   def assignable_groups
     cb_error "#assignable_groups called from User base class! Method must be implemented in a subclass."
   end

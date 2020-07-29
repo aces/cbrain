@@ -78,7 +78,10 @@
 
     <% t.edit_cell("Not assignable", :content => check_box_tag(nil ,nil, @group.not_assignable?, :disabled => true)) do |f| %>
       <%= f.check_box :not_assignable %>
-      <div class="field_explanation">When checked, only the creator and editors can assign resource to this project.</div>
+      <div class="field_explanation">
+         If checked, normal members will not be able to assign files or other
+         things to this project (but editors are always allowed to do so).
+      </div>
     <% end %>
 
   <% end %>
