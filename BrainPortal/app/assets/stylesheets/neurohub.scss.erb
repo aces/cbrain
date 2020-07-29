@@ -729,6 +729,7 @@ Button variants: solid, text, and nav.
   transition: $TRANSITION_HOVER_OFF;
   display: flex;
   align-items: center;
+
   .icon {
     @include mr(2);
     @include icon("xxs", null, $DEFAULT_BG);
@@ -2135,6 +2136,18 @@ $ACTION_BAR_HEIGHT: 2.5;
       align-items: center;
       align-self: center;
       z-index: 1;
+      .btn-solid.request-account {
+        background-color: $DEFAULT_BG;
+        border-color: $DEFAULT_BG;
+        color: $SECONDARY_DK;
+        &:hover {
+          border-color: #f5e5e5;
+          background-color: #f5e5e5;
+          color: $SECONDARY_ALT;
+
+          transition: $TRANSITION_HOVER_ON;
+        }
+      }
 
       p {
         text-align: center;

@@ -37,6 +37,7 @@
         <label>Password</label>
         <%= password_field_tag 'password', nil, tabindex: 2, :class=>"login_input nh_form_input" %>
       </fieldset>
+      <p class="field_note">Note: You may use your CBRAIN account credentials to log in to Neurohub. </p>
       <%= submit_tag  "Sign in", :class => 'btn-solid secondary' %>
       <%= link_to "Forgot your password?", request_password_users_path, :class => "btn-text cbrain external" %>
       <% if @orcid_uri %>
@@ -66,9 +67,9 @@
         <p class="nh_feature_text">Discoverable, accessible and reusable data.</p>
       </div>
 
-      <%= link_to 'Request an account',
+      <%= link_to 'Request an Account',
                   url_for(:controller => :nh_signups, :action => :new),
-                  { :tabindex => 4, :class => "btn-text secondary underline nh_register" }
+                  { :tabindex => 4, :class => "btn-solid request-account" }
       %>
     </div>
   </div>
