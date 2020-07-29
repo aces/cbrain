@@ -298,7 +298,4 @@ Rails.application.routes.draw do
       end
     end
 
-    # Temporary development route
-    get   '/reboot', :controller => :neurohub_portal, :action => :reboot
-
 end
