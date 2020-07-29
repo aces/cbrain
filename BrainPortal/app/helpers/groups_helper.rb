@@ -50,7 +50,7 @@ module GroupsHelper
 
     center_legend(nil, groups.map { |g| css_group_type(g) }.uniq.map { |g|
       # 9675: UTF8 white circle, 9679: UTF8 black circle
-      ["<span class=\"#{g}_project_point\">&##{g == "all" ? 9675 : 9679};</span>", "#{g.titleize} Project"]
+      ["<span class=\"#{g}_project_point\">&##{g == "all" ? "x25ef" : "x2b24"};</span>", "#{g.titleize} Project"]
     })
   end
 end

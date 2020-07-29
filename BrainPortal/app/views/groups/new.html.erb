@@ -52,7 +52,8 @@
     <% end %>
 
     <p>
-    Only the maintainers (creator and editors) can assign resources to this project:
+    Normal members will not be able to assign files or other resources
+    to this project (but editors are always allowed to do so):
     <%= f.check_box :not_assignable %>
 
     <% if current_user.has_role?(:normal_user) %>
