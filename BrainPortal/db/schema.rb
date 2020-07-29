@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200309142414) do
+ActiveRecord::Schema.define(version: 20200727133517) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -145,19 +145,21 @@ ActiveRecord::Schema.define(version: 20200309142414) do
     t.string   "type"
     t.integer  "site_id"
     t.integer  "creator_id"
-    t.boolean  "invisible",                 default: false
-    t.text     "description", limit: 65535
-    t.boolean  "public", default: false
+    t.boolean  "invisible",                    default: false
+    t.text     "description",    limit: 65535
+    t.boolean  "public",                       default: false
+    t.boolean  "not_assignable",               default: false
     t.index ["invisible"], name: "index_groups_on_invisible", using: :btree
     t.index ["public"], name: "index_groups_on_public", using: :btree
     t.index ["name"], name: "index_groups_on_name", using: :btree
+    t.index ["not_assignable"], name: "index_groups_on_not_assignable", using: :btree
     t.index ["type"], name: "index_groups_on_type", using: :btree
   end
 
-  create_table "groups_editors", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1" do |t|
+  create_table "groups_editors", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer "group_id"
     t.integer "user_id"
-    t.index ["group_id", "user_id"], name: "index_groups_editors_on_group_id_and_user_id", unique: true
+    t.index ["group_id", "user_id"], name: "index_groups_editors_on_group_id_and_user_id", unique: true, using: :btree
   end
 
   create_table "groups_users", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
@@ -175,7 +177,7 @@ ActiveRecord::Schema.define(version: 20200309142414) do
     t.index ["key"], name: "index_help_documents_on_key", unique: true, using: :btree
   end
 
-  create_table "large_session_infos", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "large_session_infos", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "session_id",                               null: false
     t.text     "data",       limit: 65535
     t.datetime "created_at"
@@ -264,7 +266,7 @@ ActiveRecord::Schema.define(version: 20200309142414) do
     t.index ["type"], name: "index_remote_resources_on_type", using: :btree
   end
 
-  create_table "resource_usage", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1" do |t|
+  create_table "resource_usage", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "type"
     t.decimal  "value",                    precision: 24
     t.integer  "user_id"

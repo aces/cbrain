@@ -32,7 +32,6 @@ module NeurohubHelpers
     id      = id_or_project.is_a?(Group) ? id_or_project.id : id_or_project
     project = user.viewable_groups
                   .where(:type => 'WorkGroup')
-                  .where(:invisible => false)
                   .find(id)
 
     raise ActiveRecord::RecordNotFound unless project.can_be_accessed_by?(user)
@@ -47,9 +46,8 @@ module NeurohubHelpers
   # For the user +user+, this method will return
   # neurohub projects ('available' groups of class WorkGroup)
   def find_nh_projects(user)
-    user.viewable_groups
-        .where(:type      => 'WorkGroup')
-        .where(:invisible => false)
+    user.listable_groups
+        .where(:type => 'WorkGroup')
   end
 
   # Make sure +projects+ are all assignable

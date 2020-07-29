@@ -46,7 +46,7 @@ class GroupsController < ApplicationController
     @scope.custom[:button] = true if
       current_user.has_role?(:normal_user) && @scope.custom[:button].nil?
 
-    @base_scope = current_user.assignable_groups.includes(:site)
+    @base_scope = current_user.listable_groups.includes(:site)
     @view_scope = @scope.apply(@base_scope)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 50 })
@@ -256,7 +256,7 @@ class GroupsController < ApplicationController
     elsif params[:id] == "all"
       cbrain_session[:active_group_id] = "all"
     else
-      @group = current_user.viewable_groups
+      @group = current_user.listable_groups
       @group = @group.without_everyone if ! current_user.has_role? :admin_user
       @group = @group.find(params[:id])
       cbrain_session[:active_group_id] = @group.id
@@ -284,9 +284,9 @@ class GroupsController < ApplicationController
 
   def group_params #:nodoc:
     if current_user.has_role?(:admin_user)
-      params.require_as_params(:group).permit(:name, :description, :site_id, :creator_id, :invisible, :user_ids => [])
+      params.require_as_params(:group).permit(:name, :description, :not_assignable, :site_id, :creator_id, :invisible, :user_ids => [])
     else
-      params.require_as_params(:group).permit(:name, :description, :user_ids => [])
+      params.require_as_params(:group).permit(:name, :description, :not_assignable, :user_ids => [])
     end
   end
 
