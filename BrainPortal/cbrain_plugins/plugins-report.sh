@@ -18,6 +18,8 @@ if ! test -d installed-plugins ; then
   exit 2
 fi
 
+unset LANG # to make sorting deterministic in the reports
+
 for dir in * ; do
   test $dir = 'cbrain-plugins-base' && continue
   #test $dir = 'installed-plugins'   && continue

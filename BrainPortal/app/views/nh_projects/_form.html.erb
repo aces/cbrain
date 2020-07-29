@@ -50,6 +50,17 @@
       <b>Be careful with this option!</b></p>
     </fieldset>
 
+    <fieldset>
+      <div class="d-flex align-center">
+      <%= f.label :not_assignable, "Not&nbsp;assignable".html_safe, :class => "mr-2" %>
+      <%= f.check_box :not_assignable %>
+      </div>
+      <p class="field_note"><b>Note:</b>
+      If checked, normal members will not be able to assign files or other
+      resources to this project (but editors are always allowed to do so).
+      </p>
+    </fieldset>
+
     <% if @nh_project.can_be_edited_by?(current_user) %>
       <% if (@nh_project.users.count > 1) %>
             <div>

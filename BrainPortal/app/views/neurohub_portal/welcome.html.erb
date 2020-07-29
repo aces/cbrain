@@ -215,11 +215,4 @@
 
   </div>
 
-  <% if @reboot_manager_user_ids.include?(current_user.id) %>
-    <div class="section footer">
-      <p class="section-title">For Development:</p>
-      <div class="py-4 d-flex justify-center"><%= link_to 'Reboot Manager', reboot_path, { :class => "btn-solid secondary" } %></div>
-    </div>
-  <% end %>
-
 </div>

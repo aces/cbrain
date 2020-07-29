@@ -513,8 +513,7 @@ class DataProvidersController < ApplicationController
           :user_id          => @as_user.id,
           :data_provider_id => target_dp.id
         )
-        .raw_first_column('userfiles.name')
-        .to_set
+        .pluck('userfiles.name')
 
       userfiles = registered.reject { |r| collisions.include?(r.name) }
       if collisions.present?

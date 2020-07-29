@@ -92,17 +92,5 @@ class NeurohubApplicationController < ApplicationController
     @nh_new_invites_count = nh_new_invites.count
   end
 
-  # ------------------
-
-  # Code below is temporary, while in development.
-  # Will be removed at the same time as the rest of the reboot mechanism.
-  before_action :check_if_rebooting
-  def check_if_rebooting #:nodoc:
-    if File.exists?("public/reboot_in_progress")
-      render :plain => File.read('public/reboot.txt').gsub(/\e\[[\d;]+m/,"")
-    end
-    true
-  end
-
 end
 

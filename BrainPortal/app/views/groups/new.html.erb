@@ -41,17 +41,20 @@
     <%= f.label :description, "Description" %><br />
     <%= f.text_area :description, :rows => 4, :cols => 40 %>
     <div class="field_explanation">The first line should be a short summary, and the rest are for details.</div>
-    </p>
+
     <% if current_user.has_role?(:admin_user) %>
       <p>
       <%= f.label :site_id, "Site:" %>
       <%= site_select "group[site_id]",{}, :prompt => "(Select a site)" %>
-      </p>
       <p>
       Make this a system group invisible to normal users:
       <%= f.check_box :invisible %>
-      <p/>
     <% end %>
+
+    <p>
+    Normal members will not be able to assign files or other resources
+    to this project (but editors are always allowed to do so):
+    <%= f.check_box :not_assignable %>
 
     <% if current_user.has_role?(:normal_user) %>
       <%= hidden_field_tag("group[user_ids][]", current_user.id.to_s) %>

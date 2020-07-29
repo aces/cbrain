@@ -32,16 +32,30 @@ class NormalUser < User
   end
 
   # List of groups which provide view access to resources.
-  # It is possible for the user not to be a member of one of those groups.
+  # It is possible for the user not to be a member of one of those groups (e.g. public groups)
   def viewable_groups
     Group.where(:id => (self.group_ids + Group.public_group_ids))
   end
 
+  # List of groups that the user can list in the interface. Normally, groups that are invisible
+  # are not listed
+  def listable_groups
+    viewable_groups.where(:invisible => false).without_everyone
+  end
+
   # List of groups that the user can assign to resources.
-  # The user must be a member of one of these groups. Subset
-  # of viewable_groups
+  # The user must be a member of one of these groups.
+  # Removed from the list:
+  # * the singleton EveryoneGroup
+  # * groups that are marked as "not_assignable" (attribute)
+  # Always on the list:
+  # * groups that the user created themselves (creator_id == user.id)
+  # * groups that the user is an editor
   def assignable_groups
-    Group.where(:id => (self.group_ids - [ Group.everyone.id ])).where(:invisible => false)
+    all_gids        = self.group_ids - [ Group.everyone.id ]
+    assignable_gids = Group.where(:id => all_gids).where(:not_assignable => false).pluck(:id)
+    edit_creat_gids = self.editable_group_ids + Group.where(:creator_id => self.id).pluck(:id)
+    Group.where(:id => (assignable_gids | edit_creat_gids).uniq)
   end
 
   # List of groups that the user can modify (the group's attributes themselves, not the resources)

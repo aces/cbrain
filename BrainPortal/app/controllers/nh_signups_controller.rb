@@ -26,7 +26,7 @@ class NhSignupsController < NeurohubApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  before_action :login_required, :except => [:new, :create, :show]
+  before_action :login_required, :except => [:new, :create, :show, :confirm]
 
   def new #:nodoc:
     @signup = Signup.new
@@ -62,6 +62,27 @@ class NhSignupsController < NeurohubApplicationController
     redirect_to nh_signup_path(@signup)
   end
 
+  # Confirms that a signup person's email address actually belongs to them
+  def confirm #:nodoc:
+    @signup = Signup.find(params[:id]) rescue nil
+    token   = params[:token] || ""
+
+    # Params properly confirms the request? Then record that and show a nice message to user.
+    if @signup.present? && token.present? && @signup.confirm_token == token
+      @signup.confirmed = true
+      @signup.save
+      return # renders confirm.html.erb
+    end
+
+    # If not, bluntly send user back to someplace else.
+    if current_user && current_user.has_role?(:admin_user)
+      redirect_to signups_path
+    else
+      redirect_to login_path
+    end
+  end
+
+
 
   private
 
@@ -84,7 +105,7 @@ class NhSignupsController < NeurohubApplicationController
   private 
 
   def send_nh_confirm_email(signup) #:nodoc:
-    confirm_url = url_for(:controller => :signups, :action => :confirm, :id => signup.id, :only_path => false, :token => signup.confirm_token)
+    confirm_url = url_for(:controller => :nh_signups, :action => :confirm, :id => signup.id, :only_path => false, :token => signup.confirm_token)
     CbrainMailer.signup_nh_request_confirmation(signup, confirm_url).deliver
     return true
   rescue => ex
