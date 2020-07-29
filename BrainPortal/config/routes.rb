@@ -173,6 +173,15 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :nh_signups do
+    member do
+      get  'confirm'
+    end
+    collection do
+      post 'multi_action'
+    end
+  end
+
   # Special named routes
   root  :to                       => 'portal#welcome'
   get   '/home'                   => 'portal#welcome'
