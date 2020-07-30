@@ -37,6 +37,7 @@
         <label>Password</label>
         <%= password_field_tag 'password', nil, tabindex: 2, :class=>"login_input nh_form_input" %>
       </fieldset>
+      <p class="field_note">Note: You may use your CBRAIN account credentials to log in to Neurohub. </p>
       <%= submit_tag  "Sign in", :class => 'btn-solid secondary' %>
       <%= link_to "Forgot your password?", request_password_users_path, :class => "btn-text cbrain external" %>
       <% if @orcid_uri %>
@@ -47,18 +48,18 @@
   </div>
 
   <div class="nh_features">
-    <div class="nh_features_header mb-7"></div>
+    <div class="nh_features_header"></div>
     <div class="nh_features_list">
-      <p class="heading-sm pb-7">NEUROHUB connects researchers with:</p>
+      <p class="heading-sm pb-7">Neurohub connects researchers with:</p>
 
       <div class="nh_feature">
         <img class="nh_feature_icon" src="/images/neurohub/NH_features_tools.svg">
-        <p class="nh_feature_text">Connect to computational and analytical tools.</p>
+        <p class="nh_feature_text">Computational and analytical tools.</p>
       </div>
 
       <div class="nh_feature">
         <img class="nh_feature_icon" src="/images/neurohub/NH_features_readable.svg">
-        <p class="nh_feature_text">A repository of standardized, machine-readable data.</p>
+        <p class="nh_feature_text">Repositories of standardized, machine-readable data.</p>
       </div>
 
       <div class="nh_feature">
@@ -66,9 +67,9 @@
         <p class="nh_feature_text">Discoverable, accessible and reusable data.</p>
       </div>
 
-      <%= link_to 'Request an account',
+      <%= link_to 'Request an Account',
                   url_for(:controller => :nh_signups, :action => :new),
-                  { :tabindex => 4, :class => "btn-text secondary underline nh_register" }
+                  { :tabindex => 4, :class => "btn-solid request-account" }
       %>
     </div>
   </div>

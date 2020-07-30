@@ -25,8 +25,13 @@
 <!-- PARTIAL: FLASH MESSAGE SECTION -->
 <!-- ****************************** -->
 
-<%- flash.each do |name, msg| -%>
-  <% next if msg.blank? %>
-  <%= content_tag :div, (h(msg.to_s.strip).gsub(/\n/, '<BR/>')).html_safe, :class => "flash_#{name}" %>
-<%- end -%>
 
+  <%- flash.each do |name, msg| -%>
+    <% next if msg.blank? %>
+    <div class="flash_<%= name %>">
+       <div class="flash_icon">
+        <%= send("nh_icon_#{name}") %>
+       </div>
+      <%= (h(msg.to_s.strip).gsub(/\n/, '<BR/>')).html_safe %>
+    </div>
+  <%- end -%>
