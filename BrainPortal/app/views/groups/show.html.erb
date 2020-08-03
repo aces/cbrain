@@ -124,6 +124,7 @@
       if group_editors.any? then
         default_text += '<label>Can edit:</label>'
         default_text += array_to_table(group_editors.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u)}
+        default_text += ' '
       end
       if group_viewers.any? then
         default_text += '<label>Cannot edit:</label>'
@@ -143,7 +144,6 @@
                              :content    => default_text) do %>
       <% if current_user.has_role? :normal_user or @group.is_a?(WorkGroup) %>
         <table class="button_table">
-          #todo personally I like more the look of access_profile_label style than button table, to discuss
           <tr>
             <th>Username</th>
             <% if @group.is_a?(WorkGroup) %>
