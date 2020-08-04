@@ -37,38 +37,57 @@ class NhInvitationsController < NeurohubApplicationController
 
   def create #:nodoc:
     @nh_project     = find_nh_project(current_user, params[:nh_project_id])
-    user_emails     = (params[:emails].presence.try(:strip) || "").split(/[\s,]+/)
-    user_emails     = user_emails.map(&:presence).compact
-    cb_error "Please specify at least one email address", :redirect => nh_project_path(@nh_project) if user_emails.empty?
-    users           = User.where(:email => user_emails)
-    user_ids        = users.pluck(:id)
-    found_emails    = users.pluck(:email)
-    wrong_emails    = user_emails - found_emails
 
-    flash_warnings = []
-    flash_errors = []
-    if wrong_emails.present?
-      flash_errors << "\nWe are not able to invite user(s) with email(s) #{wrong_emails.join(", ")}. \nAt the moment users are matched by email that they are used to register in NeuroHub.\n Please confirm with them which email they provided to NeuroHub. "
+    # The form allows users to invite by emails or usernames, even though
+    # the parameter is only called :emails
+    user_specs      = (params[:emails].presence.try(:strip) || "").split(/[\s,]+/)
+    user_specs      = user_specs.map(&:presence).compact
+
+    if user_specs.empty?
+      cb_error "Please specify at least one email address or username", :redirect => nh_project_path(@nh_project)
     end
 
+    # Fetch the users
+    uids_by_email   = User.where(:email => user_specs).pluck(:id)
+    uids_by_uname   = User.where(:login => user_specs).pluck(:id)
+    user_ids        = uids_by_email | uids_by_uname
+    found_users     = User.where(:id => user_ids).to_a
+    found_specs     = user_specs.select do |spec|
+      found_users.any? { |u| u.login == spec || u.email == spec }
+    end
+
+    # Ok, which ones are not found?
+    not_found_specs = user_specs - found_specs
+
+    flash_warnings = []
+    flash_errors   = []
+    if not_found_specs.present?
+      flash_errors.push <<-MESSAGE
+        We are not able to invite user(s) identified by: #{not_found_specs.join(", ")}.
+        At the moment users are matched by emails or usernames.
+        Please confirm with your collaborators which email or username they use in NeuroHub.
+      MESSAGE
+    end
+
+    # Which invitations are pending?
     already_sent_to = Invitation.where(active: true, user_id: user_ids, group_id: @nh_project.id).pluck(:user_id)
     rejected_ids    = user_ids & already_sent_to
     if rejected_ids.present?
-      flash_warnings <<  "\n#{User.find(rejected_ids).map(&:login).join(", ")} already invited."
+      already_logins = User.where(:id => rejected_ids).pluck(:login).join(", ")
+      flash_warnings.push "Already invited: #{already_logins}"
     end
 
-    @users = User.find(user_ids - already_sent_to - @nh_project.user_ids)
-
-    if @users.present?
-      Invitation.send_out(current_user, @nh_project, @users)
-      flash[:notice] = "Your invitations were successfully sent."
+    # List of newly invited users
+    invited_users = User.find(user_ids - already_sent_to - @nh_project.user_ids)
+    if invited_users.present?
+      Invitation.send_out(current_user, @nh_project, invited_users)
+      flash[:notice] = "Your invitation was successfully sent to #{view_pluralize(invited_users.size,"user")}"
     else
       flash_errors << "No new users were found to invite."
     end
 
     flash[:warning] = flash_warnings.join "\n"      if flash_warnings.present?
     flash[:error]   = flash_errors.join   "\n"      if flash_errors.present?
-
 
     redirect_to nh_project_path(@nh_project)
   end
@@ -99,7 +118,7 @@ class NhInvitationsController < NeurohubApplicationController
 
     unless @nh_project
       @nh_invitation.destroy
-      
+
       flash[:notice] = "This project does not exist anymore."
       redirect_to nh_projects_path
       return

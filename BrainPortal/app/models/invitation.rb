@@ -36,7 +36,7 @@ class Invitation < Message
   def self.send_out(sender, group, users)
     self.send_message(users,
       :message_type => "notice",
-      :header       =>  "You've been invited to join project #{group.name}",
+      :header       =>  "You've been invited by #{sender.full_name} to join project #{group.name}",
       :group_id     =>  group.id,
       :send_email   =>  true,
       :sender_id    =>  sender.id,
@@ -58,8 +58,12 @@ will allow you to join.
   end
 
   def add_description #:nodoc:
-    self.description = "You've been invited to join project #{group.name}.\n\n"+
-                       "[[Accept][/invitations/#{self.id}][put]]"
+    self.description = <<-CB_MARKUP
+      You've been invited to join project #{group.name} by
+      your colleague #{self.sender.full_name}.
+
+      [[Accept][/invitations/#{self.id}][put]]
+    CB_MARKUP
     self.save!
   end
 
