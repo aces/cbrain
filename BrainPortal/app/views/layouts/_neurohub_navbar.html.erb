@@ -27,11 +27,11 @@
 
 <% if current_user %>
     <div id="nh_navbar">
-        <%= link_to alternate_page_or_dashboard_path do %>
+        <%= link_to(alternate_page_or_dashboard_path, :class=>"nh_navbar_icon cb") do %>
           <img src="images/custom_logos/cb-large_white_blue.png" style="height: 2em">
         <% end %>
-        <%= link_to neurohub_path do %>
-          <div class="nh_navbar_logo"></div>
+        <%= link_to(neurohub_path, :class=>"nh_navbar_icon") do %>
+          <div class="nh"></div>
         <% end %>
         <div class="nh_navbar_account">
           <div class="text-ellipsis"><%= current_user.full_name %></div>
