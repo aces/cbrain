@@ -62,6 +62,9 @@ class SessionsController < ApplicationController
       return
     end
 
+    # Record that the user connected using the NeuroHub login page
+    cbrain_session[:login_page] = 'CBRAIN'
+
     respond_to do |format|
       format.html { redirect_back_or_default(start_page_path) }
       format.json { render :json => json_session_info, :status => 200 }
@@ -207,6 +210,7 @@ class SessionsController < ApplicationController
     from_host ||= 'unknown'
     cbrain_session[:guessed_remote_ip]   = from_ip
     cbrain_session[:guessed_remote_host] = from_host
+    cbrain_session.remote_resource_id    = portal.id # for general navigation help
 
     # Record the user agent
     raw_agent = reqenv['HTTP_USER_AGENT'] || 'unknown/unknown'

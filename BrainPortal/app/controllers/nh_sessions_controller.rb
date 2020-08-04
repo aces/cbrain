@@ -72,6 +72,9 @@ class NhSessionsController < NeurohubApplicationController
       return
     end
 
+    # Record that the user connected using the NeuroHub login page
+    cbrain_session[:login_page] = 'NeuroHub'
+
     redirect_to neurohub_path
   end
 

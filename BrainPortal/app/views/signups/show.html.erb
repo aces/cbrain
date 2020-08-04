@@ -27,6 +27,14 @@
 
 <% if current_user.present? && current_user.has_role?(:admin_user) %>
 
+  <% if @signup.remote_resource %>
+    This account request was made from portal
+    <%= link_to_bourreau_if_accessible(@signup.remote_resource) %>
+    using the form located on
+    <%= @signup.form_page %>
+    .<p>
+  <% end %>
+
   As an administrator, you can <%= link_to "edit", :action => :edit %> this request.<p>
 
   <% if ! @signup.approved? %>

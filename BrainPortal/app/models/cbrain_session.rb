@@ -117,6 +117,18 @@ class CbrainSession
     @modified      = true
   end
 
+  # The remote_resource_id attribute
+  # is used to record which portal the user
+  # originally connected from, to aid in navigation.
+  def remote_resource_id
+    self[:remote_resource_id]
+  end
+
+  # See the getter method.
+  def remote_resource_id=(rr_id)
+    self[:remote_resource_id] = rr_id
+  end
+
   ###########################################
   # Hash-like interface to session attributes
   ###########################################
