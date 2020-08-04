@@ -73,6 +73,7 @@ module CustomLicense
     textfile.addlog("License added to #{self.class} \"#{self.name}\" (ID #{self.id})")
     add_custom_license_agreement(textfile)
     register_custom_license_agreements  # save
+    return textfile
   end
 
   protected
