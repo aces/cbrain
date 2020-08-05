@@ -548,24 +548,26 @@ $(function() {
     };
 
     /* Generic dialog properties and handlers */
-    $('.dlg-dialog').dialog({
-      autoOpen:    false,
-      resizable:   false,
-      modal:       true,
-      width:       'auto',
-      height:      'auto',
-      dialogClass: 'dlg-ovfl',
-      open: function () {
-        $(this)
-          .siblings('.ui-dialog-buttonpane')
-          .find('button')
-          .each(function () {
-            var icon = icons[$(this).text()];
+    if (typeof $('.dlg-dialog').dialog === "function" ) {
+      $('.dlg-dialog').dialog({
+       autoOpen:    false,
+       resizable:   false,
+       modal:       true,
+       width:       'auto',
+       height:      'auto',
+       dialogClass: 'dlg-ovfl',
+       open: function () {
+         $(this)
+           .siblings('.ui-dialog-buttonpane')
+           .find('button')
+           .each(function () {
+             var icon = icons[$(this).text()];
 
-            if (icon) $(this).button({ icons: { primary: icon } });
-          });
-      }
-    });
+             if (icon) $(this).button({ icons: { primary: icon } });
+           });
+       }
+      });
+    }
 
     /* Open/close events */
     $('body')
@@ -593,10 +595,13 @@ $(function() {
       });
 
     /* Chosen select box plugin */
-    $('#up-tag, #pp-tag').chosen({
-      no_results_text: "Press Enter to add: ",
-      width: '200px'
-    });
+    if (typeof $('#up-tag, #pp-tag').chosen === "function" ) {
+      $('#up-tag, #pp-tag').chosen({
+       no_results_text: "Press Enter to add: ",
+       width: '200px'
+      });
+    }
+
 
     /* Tri-state checkboxes (unset, unchecked, checked) */
     $('.dlg-dialog')
@@ -657,6 +662,7 @@ $(function() {
     (function () {
       var upload_button = undefined;
 
+    if (typeof $('#upload-dialog').dialog === "function" ) {
       $('#upload-dialog')
         .dialog('option', 'buttons', {
           'Cancel': function (event) {
@@ -670,6 +676,8 @@ $(function() {
               .then(userfiles.refresh);
           }
         })
+      }
+      $('#upload-dialog')
         .unbind('open.uf.up-open')
         .bind(  'open.uf.up-open', function () {
           if (!upload_button)
@@ -738,9 +746,11 @@ $(function() {
               visibility: bad_file ? 'visible' : 'hidden'
             });
 
-            upload_button
-              .toggleClass('ui-state-disabled', bad_file || !selected)
-              .prop('disabled', bad_file || !selected);
+            if (upload_button !== undefined ) {
+              upload_button
+                .toggleClass('ui-state-disabled', bad_file || !selected)
+                .prop('disabled', bad_file || !selected);
+            }
           });
 
       $('#upload-dialog')
@@ -802,13 +812,17 @@ $(function() {
       });
 
     /* Tags dialog */
+    if (typeof $('#tag-dialog').dialog === "function" ) {
+      $('#tag-dialog')
+        .dialog('option', 'buttons', {
+          'Done': function (event) {
+            $(this).trigger('close.uf');
+          }
+        })
+    }
+
+    /* remove the initial button focus */
     $('#tag-dialog')
-      .dialog('option', 'buttons', {
-        'Done': function (event) {
-          $(this).trigger('close.uf');
-        }
-      })
-      /* remove the initial button focus */
       .unbind('open.uf.tag-button-focus')
       .bind(  'open.uf.tag-button-focus', function () {
         $(this).find('button').blur();
@@ -949,18 +963,22 @@ $(function() {
       });
 
     /* Properties dialog */
-    $('#prop-dialog')
-      .dialog('option', 'buttons', {
-        'Cancel': function (event) {
-          $(this).trigger('close.uf');
-        },
-        'Apply': function (event) {
-          var dialog = $(this);
+    if (typeof $('#prop-dialog').dialog === "function" ) {
+      $('#prop-dialog')
+        .dialog('option', 'buttons', {
+          'Cancel': function (event) {
+            $(this).trigger('close.uf');
+          },
+          'Apply': function (event) {
+            var dialog = $(this);
 
-          dialog.trigger('close.uf');
-          userfiles.update(dialog.children('form')[0]);
-        }
-      })
+            dialog.trigger('close.uf');
+            userfiles.update(dialog.children('form')[0]);
+          }
+        })
+    }
+
+    $('#prop-dialog')
       .unbind('open.uf.prop-open')
       .bind(  'open.uf.prop-open', function () {
         $(this).dialog('option', 'title',
@@ -979,18 +997,23 @@ $(function() {
       });
 
     /* New collection dialog */
-    $('#collection-dialog')
-      .dialog('option', 'buttons', {
-        'Cancel': function (event) {
-          $(this).trigger('close.uf');
-        },
-        'Create': function (event) {
-          var dialog = $(this);
+    if (typeof $('#collection-dialog').dialog === "function" ) {
+      $('#collection-dialog')
+        .dialog('option', 'buttons', {
+          'Cancel': function (event) {
+            $(this).trigger('close.uf');
+          },
+          'Create': function (event) {
+            var dialog = $(this);
 
-          dialog.trigger('close.uf');
-          userfiles.create_collection(dialog.children('form')[0]);
-        }
-      })
+            dialog.trigger('close.uf');
+            userfiles.create_collection(dialog.children('form')[0]);
+          }
+        })
+    }
+
+
+    $('#collection-dialog')
       .unbind('open.uf.col-open')
       .bind(  'open.uf.col-open', function () {
         $(this).dialog('option', 'title',
