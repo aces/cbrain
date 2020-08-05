@@ -34,7 +34,8 @@ class Signup < ApplicationRecord
 
   validate              :login_match_user_format
 
-  belongs_to            :user, :optional => true # link filled after approval
+  belongs_to            :user,            :optional => true # link filled after approval
+  belongs_to            :remote_resource, :optional => true # link filled at creation; older signups miss it
 
   def strip_blanks #:nodoc:
     [

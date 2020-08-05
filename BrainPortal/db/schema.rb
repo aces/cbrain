@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200727133517) do
+ActiveRecord::Schema.define(version: 20200804163321) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -323,14 +323,14 @@ ActiveRecord::Schema.define(version: 20200727133517) do
 
   create_table "signups", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "title"
-    t.string   "first",                                       null: false
+    t.string   "first",                                            null: false
     t.string   "middle"
-    t.string   "last",                                        null: false
-    t.string   "institution",                                 null: false
+    t.string   "last",                                             null: false
+    t.string   "institution",                                      null: false
     t.string   "department"
     t.string   "position"
     t.string   "affiliation"
-    t.string   "email",                                       null: false
+    t.string   "email",                                            null: false
     t.string   "website"
     t.string   "street1"
     t.string   "street2"
@@ -341,17 +341,19 @@ ActiveRecord::Schema.define(version: 20200727133517) do
     t.string   "time_zone"
     t.string   "service"
     t.string   "login"
-    t.text     "comment",       limit: 65535
+    t.text     "comment",            limit: 65535
     t.string   "session_id"
     t.string   "confirm_token"
     t.boolean  "confirmed"
     t.string   "approved_by"
     t.datetime "approved_at"
-    t.datetime "created_at",                                  null: false
-    t.datetime "updated_at",                                  null: false
-    t.text     "admin_comment", limit: 65535
+    t.datetime "created_at",                                       null: false
+    t.datetime "updated_at",                                       null: false
+    t.text     "admin_comment",      limit: 65535
     t.integer  "user_id"
-    t.boolean  "hidden",                      default: false
+    t.boolean  "hidden",                           default: false
+    t.integer  "remote_resource_id"
+    t.string   "form_page"
   end
 
   create_table "sites", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|

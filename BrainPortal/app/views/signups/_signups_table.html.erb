@@ -173,7 +173,24 @@
           "(None)"
         end
       end
-     %>
+    %>
+
+    <%
+      t.column("Portal", :remote_resource) do |d|
+        portal = d.remote_resource
+        if (portal)
+          link_to_bourreau_if_accessible(portal)
+        else
+          "(None)"
+        end
+      end
+    %>
+
+    <%
+      t.column("Origin", :form_page,
+        :sortable => true
+      )
+    %>
 
     <%
       t.column("Created", :created_at,

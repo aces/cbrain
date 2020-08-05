@@ -1,35 +1,35 @@
 @import "<%= asset_path './normalize.css' %>";
 /*
   LEGEND
-  ├── BREAKPOINTS
-  ├── SPACE
-  ├── PALETTE
-  ├── TYPOGRAPHY
-  ├── LOGOS
-  ├── SHADOWS
-  ├── TRANSITIONS
-  ├── BUTTONS
-  ├── BANNERS
-  ├── ERRORS
-  ├── EMPTY
-  ├── FORMS
-  ├── CARDS
-  ├── TABLES
-  ├── NAVIGATION BAR
-  ├── SECONDARY NAVIGATION BAR
-  ├── FOOTER
-  ├── PAGES
-    ├── BASE
-    ├── SESSIONS
-    ├── SIGNUPS
-    ├── PROJECTS
-    ├── USERS
-    ├── INVITATIONS
-    ├── WELCOME
-    ├── SEARCH
-    ├── LICENSE
-    ├── STORAGES
-  └──
+   - BREAKPOINTS
+   - SPACE
+   - PALETTE
+   - TYPOGRAPHY
+   - LOGOS
+   - SHADOWS
+   - TRANSITIONS
+   - BUTTONS
+   - BANNERS
+   - ERRORS
+   - EMPTY
+   - FORMS
+   - CARDS
+   - TABLES
+   - NAVIGATION BAR
+   - SECONDARY NAVIGATION BAR
+   - FOOTER
+   - PAGES
+     - BASE
+     - SESSIONS
+     - SIGNUPS
+     - PROJECTS
+     - USERS
+     - INVITATIONS
+     - WELCOME
+     - SEARCH
+     - LICENSE
+     - STORAGES
+   -
 
 /*
 =============================================================
@@ -1749,16 +1749,27 @@ $NAVBAR_ZINDEX: 1000;
   background: $DEFAULT_BG;
   overflow: auto;
   z-index: $NAVBAR_ZINDEX;
-  .nh_navbar_logo {
-    @include logo("lettermark", "RGB", "xs");
-    @include ml(4);
-    @include mr(2);
+  .nh_navbar_icon {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    &.cb {
+      background-color: $CBRAIN_ALT;
+      min-width: 60px;
+    }
+    .nh {
+      @include logo("lettermark", "RGB", "xs");
+      @include ml(4);
+      @include mr(2);
+    }
   }
   .nh_navbar_account {
     @include text("xs");
     @include px(2);
+    @include ml(2);
     color: $GREY_300;
-    border-left: 1px solid $PRIMARY_ALT;
+    border-left: 2px solid $GREY_200;
   }
   .nh_navbar_buttons {
     flex: 1;

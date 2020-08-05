@@ -44,8 +44,10 @@ class SignupsController < ApplicationController
   end
 
   def create #:nodoc:
-    @signup = Signup.new(signup_params)
-    @signup.session_id = request.session_options[:id]
+    @signup                    = Signup.new(signup_params)
+    @signup.session_id         = request.session_options[:id]
+    @signup.remote_resource_id = RemoteResource.current_resource.id
+    @signup.form_page          = 'CBRAIN' # Just a keyword that IDs the signup page
     @signup.generate_token
 
     unless can_edit?(@signup)
