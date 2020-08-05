@@ -24,8 +24,6 @@
 
 <% title("License #{@license_id}", '') %>
 
-<% is_signed = current_user.custom_licenses_signed.include?(@license_id) %>
-
 <div id="nh_show_license" class="nh_content">
 
   <%- # actions -%>
@@ -41,13 +39,13 @@
       <div class="card-heading">
         License <%= @license_id %>
       </div>
-      <% if is_signed %>
-        <%= render :partial => 'show_license_text', :locals => { is_signed: is_signed } %>
+      <% if @is_signed %>
+        <%= render :partial => 'show_license_text' %>
       <% else %>
         <div class="nh_form">
           <%= form_tag sign_license_nh_project_path(@nh_project) do %>
             <%= hidden_field_tag :license_id, @license_id %>
-            <%= render :partial => 'show_license_text', :locals => { is_signed: is_signed } %>
+            <%= render :partial => 'show_license_text' %>
             <div class="btn-section">
               <%= submit_tag "I agree with the above statement", :name => :agree,     :class => "btn-solid primary m-1" %>
               <%= submit_tag "I do not agree",               :name => :not_agree, :class => "btn-text primary bg-primary-wash m-1"  %>

@@ -25,13 +25,15 @@
   <div class="card-item">
     <p class="card-label">Carefully read this license agreement.</p>
     <pre class="card-text license-text"><%= @license_text %></pre>
-    <% if is_signed %>
-      <div class="status success"><%= nh_icon_checkmark %>You have already signed this license agreement. </div>
+    <% if @is_signed %>
+      <% if @is_author %>
+        <div class="status success"><%= nh_icon_checkmark %>As the author of the license you have implicitely signed this agreement.</div>
+      <% else %>
+        <div class="status success"><%= nh_icon_checkmark %>You have already signed this license agreement. </div>
+      <% end %>
     <% end %>
-    <% if !is_signed %>
+    <% if !@is_signed %>
       <div class="status error"><%= nh_icon_error %> This license agreement is not yet signed. </div>
-    <% end %>
-    <% if !is_signed %>
       <div class="d-flex">
         <%= check_box_tag :license_check, 1, nil, :class => "my-2" %>
         <%= label_tag(:license_check,"By clicking here, I agree with all the conditions above.", :class=>"ml-2  card-label") %>

@@ -176,6 +176,11 @@ class NhProjectsController < NeurohubApplicationController
     userfile = Userfile.find(@license_id)
     userfile.sync_to_cache
     @license_text = userfile.cache_readhandle { |fh| fh.read }
+
+    # Identifies if the current user has already signed it,
+    # and whether they are the author
+    @is_signed = current_user.custom_licenses_signed.include?(@license_id)
+    @is_author = Userfile.where(:id => @license_id, :user_id => current_user.id).exists?
   end
 
   def sign_license #:nodoc:
