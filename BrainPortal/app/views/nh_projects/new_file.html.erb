@@ -27,10 +27,10 @@
 <%= javascript_include_tag 'jquery'    %>
 <%= javascript_include_tag 'userfiles' %>
 
-<% 
-  upload_size_limit = RemoteResource.current_resource.meta[:upload_size_limit] 
+<%
+  upload_size_limit = RemoteResource.current_resource.meta[:upload_size_limit]
   site_url_prefix   = RemoteResource.current_resource.site_url_prefix
-  large_upload_url  = RemoteResource.current_resource.meta[:large_upload_url]  
+  large_upload_url  = RemoteResource.current_resource.meta[:large_upload_url]
 %>
 
 <div id="userfiles_menus_and_filelist">
@@ -55,12 +55,17 @@
               <%= label_tag :upload_file, "Select file to upload", "data-required" => "true" %>
               <%= file_field_tag 'up-file' %> <span id="up-file-warn" style="color:red"></span>
 
-              <% if upload_size_limit && 
+              <% if upload_size_limit &&
                     site_url_prefix  &&
                     large_upload_url
               %>
                 <br>
-                <small><b>Note:</b> To upload multiple files or to upload file greater than <%= upload_size_limit %> please see the <%= link_to "user manual", "#{site_url_prefix}#{large_upload_url}", :class => "text btn-text cbrain external" %></small>
+                <div class="d-flex align-center flex-wrap field_note">
+                  <p>
+                    <b>Note:</b> To upload multiple files or to upload file greater than <%= upload_size_limit %> please see the
+                  </p>
+                    <%= link_to "user manual", "#{site_url_prefix}#{large_upload_url}", :class => "btn-text cbrain external link mx-1" %>
+                </div>
               <% end %>
             </fieldset>
 

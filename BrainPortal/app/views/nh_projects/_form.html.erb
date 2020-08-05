@@ -44,7 +44,7 @@
     <fieldset>
       <div class="d-flex align-center">
       <%= f.label :public, "Public", :class => "mr-2" %>
-      <%= f.check_box :public %>
+      <%= f.check_box :public, :style=>"width: unset" %>
       </div>
       <p class="field_note"><b>Note:</b> A <em>public</em> project makes all its files visible to all NeuroHub users.
       <b>Be careful with this option!</b></p>
@@ -53,7 +53,7 @@
     <fieldset>
       <div class="d-flex align-center">
       <%= f.label :not_assignable, "Not&nbsp;assignable".html_safe, :class => "mr-2" %>
-      <%= f.check_box :not_assignable %>
+      <%= f.check_box :not_assignable, :style=>"width: unset" %>
       </div>
       <p class="field_note"><b>Note:</b>
       If checked, normal members will not be able to assign files or other
