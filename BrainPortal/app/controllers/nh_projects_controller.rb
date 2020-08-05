@@ -138,7 +138,8 @@ class NhProjectsController < NeurohubApplicationController
     timestamp  = Time.zone.now.strftime("%Y-%m-%dT%H:%M:%S")
     group_name = @nh_project.name.gsub(/[^\w]+/,"")
     file_name  = "license_#{group_name}_#{timestamp}.txt"
-    @nh_project.register_custom_license(license_text, current_user, file_name)
+    license    = @nh_project.register_custom_license(license_text, current_user, file_name)
+    user_signs_license_for_project(current_user, license, @nh_project)
 
     flash[:notice] = 'A license is added. You can force users to sign multiple license agreements if needed.'
     redirect_to :action => :show
@@ -175,6 +176,11 @@ class NhProjectsController < NeurohubApplicationController
     userfile = Userfile.find(@license_id)
     userfile.sync_to_cache
     @license_text = userfile.cache_readhandle { |fh| fh.read }
+
+    # Identifies if the current user has already signed it,
+    # and whether they are the author
+    @is_signed = current_user.custom_licenses_signed.include?(@license_id)
+    @is_author = Userfile.where(:id => @license_id, :user_id => current_user.id).exists?
   end
 
   def sign_license #:nodoc:
@@ -206,10 +212,7 @@ class NhProjectsController < NeurohubApplicationController
     end
 
     license = Userfile.find(@license_id)
-
-    current_user.add_signed_custom_license(license)
-    current_user.addlog("Signed custom license agreement '#{license.name}' (ID #{@license_id}) for project '#{@nh_project.name}' (ID #{@nh_project.id}).")
-    @nh_project.addlog("User #{current_user.login} signed license agreement '#{license.name}' (ID #{@license_id}).")
+    user_signs_license_for_project(current_user, license, @nh_project)
 
     if current_user.unsigned_custom_licenses(@nh_project).empty?
       flash[:notice] = 'You signed all the project licenses'
@@ -303,6 +306,15 @@ class NhProjectsController < NeurohubApplicationController
     else
       redirect_to nh_projects_path
     end
+  end
+
+  # Records that +user+ signed the +license+ file for +project+
+  # with nice log messages to that effect.
+  def user_signs_license_for_project(user, license, project)
+    user.add_signed_custom_license(license)
+
+    user.addlog("Signed custom license agreement '#{license.name}' (ID #{license.id}) for project '#{project.name}' (ID #{project.id}).")
+    project.addlog("User #{user.login} signed license agreement '#{license.name}' (ID #{license.id}).")
   end
 
 end
