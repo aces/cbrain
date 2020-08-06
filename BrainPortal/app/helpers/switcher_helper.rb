@@ -93,7 +93,7 @@ module SwitcherHelper
       when %w( userfiles   index )
         cur_proj_id = current_project.try(:id)
         if cur_proj_id
-          files_nh_project_path(:id => cur_pro_id)
+          files_nh_project_path(:id => cur_proj_id)
         else
           nh_projects_path
         end
