@@ -62,7 +62,12 @@
                     large_upload_url
               %>
                 <br>
-                <small><b>Note:</b> To upload multiple files or to upload file greater than <%= upload_size_limit %> please see the <%= link_to "user manual", "#{site_url_prefix}#{large_upload_url}", :class => "text btn-text cbrain external" %></small>
+                <div class="d-flex align-center flex-wrap field_note">
+                  <p>
+                    <b>Note:</b> To upload multiple files or to upload file greater than <%= upload_size_limit %> please see the
+                  </p>
+                  <%= link_to "user manual", "#{site_url_prefix}#{large_upload_url}", :class => "btn-text cbrain external link mx-1" %>
+                </div>
               <% end %>
             </fieldset>
 
