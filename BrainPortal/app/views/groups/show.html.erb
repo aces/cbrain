@@ -159,11 +159,11 @@
             <%  if @group.is_a?(WorkGroup) %>
               <td>
                 <%= check_box_tag("group[editor_ids][]", u.id, @group.editor_ids.include?(u.id),
-                      :checked => u.id == @group.creator.id, :disabled=> u.id == @group.creator.id ) %>
+                      :checked => u.id == @group.creator.id, :disabled=> u.id == @group.creator) %>
               </td>
             <% end %>
             <td>
-              <%= link_to("Remove", group_path(@group, "group[user_ids]" => (@group.user_ids - [u.id]), update_users: true ), :method => :put, :class => "action_link") unless u == current_user %>
+              <%= link_to("Remove", remove_users_group_path(@group, "user_ids" => ([u.id])), :method => :put, :class => "action_link") unless u == current_user || u==@group.creator %>
             </td>
           </tr>
         <% end %>

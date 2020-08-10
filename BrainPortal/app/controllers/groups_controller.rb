@@ -158,6 +158,7 @@ class GroupsController < ApplicationController
       new_group_attr[:user_ids] = @group.user_ids.map(&:to_s)
     end
 
+
     new_group_attr[:user_ids] ||= []
 
     unless new_group_attr[:user_ids].blank?
@@ -195,13 +196,54 @@ class GroupsController < ApplicationController
     end
   end
 
+  # used to remove users from a group/ an alternative to update
+  def remove_users
+
+    @group = current_user.available_groups.where( :type => "WorkGroup" ).find(params[:id])
+    unless @group.can_be_edited_by?(current_user)
+      flash[:error] = "You don't have permission to edit this project."
+      respond_to do |format|
+        format.html { redirect_to :action => :show }
+        format.xml  { head :forbidden }
+        format.json { head :forbidden }
+      end
+      return
+    end
+    remove_ids = params['user_ids']
+    original_user_ids = @group.user_ids
+    Rails.logger.info("Removing user from a group params #{params}")
+    found_remove_users = User.where(:id => remove_ids)
+    found_remove_ids = found_remove_users.pluck(:id)
+    
+    respond_to do |format|
+      if found_remove_ids.include? @group.creator_id
+        flash[:error] = "You cannot remove the maintainer from a group"
+        format.html { redirect_to :action => :show }
+        format.xml  { head :unprocessable_entity }
+        format.json { head :unprocessable_entity }
+      elsif   found_remove_ids.empty?
+        flash[:error] = 'member(s) not found'
+        format.html { redirect_to :action => :show }
+        format.xml  { head :unprocessable_entity }
+        format.json { head :unprocessable_entity }
+      else
+        @group.user_ids   = @group.user_ids - found_remove_users.pluck(:id)
+        @group.addlog_object_list_updated("Users", User, original_user_ids, @group.user_ids, current_user, :login)
+        flash[:notice] = "You have removed user #{found_remove_users.pluck(:login)} from project #{@group.name}."
+        format.html { render :action => "show" }
+        format.xml  { head :ok }
+        format.json { head :ok}
+      end
+    end
+  end
+
   # Used in order to remove a user from a group.
   def unregister
     @group = current_user.available_groups.where( :type => "WorkGroup" ).find(params[:id])
 
     respond_to do |format|
       if current_user.id == @group.creator_id
-        flash[:error] = "You cannot be unregistered from a project you created."
+        flash[:error] = "You cannot be unregistered from a project which you maintain."
         format.html { redirect_to group_path(@group) }
         format.xml  { head :unprocessable_entity }
         format.json { head :unprocessable_entity }

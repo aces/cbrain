@@ -73,6 +73,9 @@ Rails.application.routes.draw do
       post 'unregister'
       post 'switch'
     end
+    member do
+      put 'remove_users'
+    end
   end
 
   resources :invitations,     :only => [ :new, :create, :update, :destroy ]
