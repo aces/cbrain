@@ -96,6 +96,15 @@
                   { :include_blank => '(Use project of selected storage)' } )
               %>
             </fieldset>
+
+            <div id="div_loader" class="hidden"> 
+              <fieldset>
+                <center>
+                  <div class="spinner"></div>
+                </center>
+              </fieldset>
+            </div>
+            
             <div class="btn-section">
               <%= submit_tag "Upload File", :class => "btn-solid primary", :id => "upload_file_btn" %>
               <div class="py-4">

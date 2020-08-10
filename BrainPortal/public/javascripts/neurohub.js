@@ -61,69 +61,13 @@
 
       document.getElementById("up-file-warn").textContent      = warning_text;
       document.getElementById("up-file-warn").style.visibility = bad_file ? 'visible' : 'hidden';
-    });
+
+    }, false);
 
 
-    document.getElementById("upload_file_btn").addEventListener('click', function (event) {
-      
-      // var progressBar = document.getElementById("progressBar");
-      // var form        = $(document.getElementById("upload"));
-      // var form        = form[0];  
-      
-      // var xhr         = new XMLHttpRequest();
-      // if (('upload' in xhr) && ('onprogress' in xhr)){
-        
-      //   $.ajax({ 
-      //     url:         form.action,
-      //     type:        form.method,
-      //     data:        new FormData(form),
-      //     cache:       false,
-      //     contentType: false,
-      //     processData: false,
-      //     headers:     { 'Accept': 'application/json' },
-      //     xhr: function () {
-      //       var xhr = $.ajaxSettings.xhr();
-      //       xhr.upload.onloadstart = onloadstart;
-      //       xhr.upload.onprogress  = onprogress;
-      //       xhr.upload.onloadend   = onloadend;
-      //       return xhr;
-      //     }
-      //   })
-
-      //   /* The upload started; show a nice progress bar. */
-      //   function onloadstart(event) {
-      //     // alert("IN onloadstart");
-      //     onprogress(event);
-      //   };
-
-      //   // Some progress has been made on the upload; update the progress bar. 
-      //   function onprogress(event) {
-      //     // alert("IN onprogress");
-      //     alert(event.lengthComputable);
-
-      //     if (!event.lengthComputable) return;
-
-      //     // alert("loaded");
-      //     // alert(event.loaded);
-      //     // alert("total");
-      //     // alert(event.total);
-          
-      //     progressBar.value = (event.loaded / event.total * 100);
-
-
-      //     onloadend(event);
-      //   };
-
-      //   /* The upload is done; remove the progress bar. */
-      //   function onloadend(event) {
-      //     // alert("IN onloadend");
-      //   };
-
-      // }
-
-      // form.submit();
-
-    });
-  });
+    document.getElementById("upload").addEventListener('submit', function (event) {
+      document.getElementById('div_loader').style.display  = "block";
+    }, false);
+  }, false);
 
 })();
