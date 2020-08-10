@@ -64,66 +64,66 @@
     });
 
 
-    // document.getElementById("upload_file_btn").addEventListener('click', function (event) {
+    document.getElementById("upload_file_btn").addEventListener('click', function (event) {
       
-    //   var progressBar = document.getElementById("progressBar");
-    //   var form        = $(document.getElementById("upload"));
-    //   var form        = form[0];  
+      // var progressBar = document.getElementById("progressBar");
+      // var form        = $(document.getElementById("upload"));
+      // var form        = form[0];  
       
-    //   var xhr         = new XMLHttpRequest();
-    //   // alert("bfr if");
-    //   if (('upload' in xhr) && ('onprogress' in xhr)){
-    //     // alert("after if");
-
-    //     xhr.addEventListener('progress', handleEvent);
+      // var xhr         = new XMLHttpRequest();
+      // if (('upload' in xhr) && ('onprogress' in xhr)){
         
-    //     function handleEvent(e) {
-    //       alert("in he");
-    //       progressBar.value =  event.loaded / event.total * 100;
-    //     };
+      //   $.ajax({ 
+      //     url:         form.action,
+      //     type:        form.method,
+      //     data:        new FormData(form),
+      //     cache:       false,
+      //     contentType: false,
+      //     processData: false,
+      //     headers:     { 'Accept': 'application/json' },
+      //     xhr: function () {
+      //       var xhr = $.ajaxSettings.xhr();
+      //       xhr.upload.onloadstart = onloadstart;
+      //       xhr.upload.onprogress  = onprogress;
+      //       xhr.upload.onloadend   = onloadend;
+      //       return xhr;
+      //     }
+      //   })
+
+      //   /* The upload started; show a nice progress bar. */
+      //   function onloadstart(event) {
+      //     // alert("IN onloadstart");
+      //     onprogress(event);
+      //   };
+
+      //   // Some progress has been made on the upload; update the progress bar. 
+      //   function onprogress(event) {
+      //     // alert("IN onprogress");
+      //     alert(event.lengthComputable);
+
+      //     if (!event.lengthComputable) return;
+
+      //     // alert("loaded");
+      //     // alert(event.loaded);
+      //     // alert("total");
+      //     // alert(event.total);
+          
+      //     progressBar.value = (event.loaded / event.total * 100);
 
 
-    //     $.ajax({
-    //       url:         form.action,
-    //       type:        form.method,
-    //       data:        new FormData(form),
-    //       cache:       false,
-    //       contentType: false,
-    //       processData: false,
-    //       headers:     { 'Accept': 'application/json' },
-    //       xhr: function () {
-    //         var xhr = $.ajaxSettings.xhr();
-    //         // xhr.upload.onloadstart = function(){
-    //           // alert("in onloadstart");
-    //         xhr.addEventListener('progress', handleEvent());
+      //     onloadend(event);
+      //   };
 
-    //         function handleEvent(e) {
-    //           // alert("in he");
-    //           var elapsed = (new Date() - start_time) / 1000,
-    //               loaded  = human_readable(event.loaded),
-    //               total   = human_readable(event.total),
-    //               speed   = elapsed ? human_readable(event.loaded / elapsed) + "/s" : "?";
+      //   /* The upload is done; remove the progress bar. */
+      //   function onloadend(event) {
+      //     // alert("IN onloadend");
+      //   };
 
-    //           progressBar.value =  event.loaded / event.total * 100;
+      // }
 
-    //         };
-    //         // };
+      // form.submit();
 
-
-
-    //         // xhr.upload.onprogress = function(){alert("in onprogress")};
-
-    //         // xhr.upload.onprogress  = onprogress;
-    //         // xhr.upload.onloadend   = onloadend;
-    //         return xhr;
-    //       }
-    //     });
-
-    //     form.submit();
-    //   };
-
-
-    // });
+    });
   });
 
 })();
