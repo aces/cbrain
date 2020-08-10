@@ -526,6 +526,10 @@ A few shortcut often-used alignment classes.
   flex: 1;
 }
 
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
 /*
 =============================================================
 | LOGOS
@@ -1296,6 +1300,11 @@ form {
     @include p(0);
     @include pt(1);
     font-style: italic;
+    .link {
+      @include text("xs");
+      @include p(1);
+      font-style: inherit;
+    }
   }
   .btn-section {
     @include py(7);
