@@ -29,7 +29,7 @@
 
     document.getElementById("upload_file").addEventListener('input', function (event) {
       var warning_text = "";
-      var max          = parseInt(document.getElementById('upload-dialog').dataset["maxUploadSize"]);
+      var max          = parseInt(document.getElementById('upload-info').dataset["maxUploadSize"]);
       var select_file  = document.getElementById("upload_file").files[0]
       var filename     = select_file && select_file.name;
       var filesize     = select_file && select_file.size;
