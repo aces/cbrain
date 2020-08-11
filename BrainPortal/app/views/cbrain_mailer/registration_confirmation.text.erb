@@ -10,7 +10,7 @@ Access CBRAIN here:
 Access NEUROHUB here:
 
    <% if RemoteResource.current_resource.site_url_prefix.presence %>
-	 <%= RemoteResource.current_resource.site_url_prefix + "neurohub" %>
+	 <%= File.join(RemoteResource.current_resource.site_url_prefix + "/neurohub") %>
    <% else %>
      <%= "(NEUROHUB Site URL Not Configured!)" %>
    <% end %>
