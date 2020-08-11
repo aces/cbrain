@@ -1,5 +1,5 @@
 
-Welcome to CBRAIN and NEUROHUB, <%= @user.full_name %>,
+Welcome to CBRAIN and NeuroHub, <%= @user.full_name %>,
 
 Your account has been set up.
 
@@ -7,12 +7,12 @@ Access CBRAIN here:
 
     <%= RemoteResource.current_resource.site_url_prefix || "(CBRAIN Site URL Not Configured!)" %>
 
-Access NEUROHUB here:
+Access NeuroHub here:
 
    <% if RemoteResource.current_resource.site_url_prefix.presence %>
 	 <%= File.join(RemoteResource.current_resource.site_url_prefix + "/neurohub") %>
    <% else %>
-     <%= "(NEUROHUB Site URL Not Configured!)" %>
+     <%= "(NeuroHub Site URL Not Configured!)" %>
    <% end %>
 
 Your username for logging in is: <%= @user.login %>
@@ -24,5 +24,5 @@ You will be asked to change your password upon first log in.
 
 Sincerely,
 
-The CBRAIN and NEUROHUB administrators.
+The CBRAIN and NeuroHub administrators.
 
