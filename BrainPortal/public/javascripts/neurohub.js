@@ -66,7 +66,8 @@
 
 
     document.getElementById("upload").addEventListener('submit', function (event) {
-      document.getElementById('div_loader').style.display  = "block";
+      document.getElementById('div_loader').style.display = "block";
+      document.getElementById('upload_file_btn').disabled = true;
     }, false);
   }, false);
 
