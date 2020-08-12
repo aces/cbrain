@@ -24,56 +24,95 @@
 
 <% title("Upload File", '') %>
 
-<div id="nh_projects_new_file" class="nh_content">
-  <div class="nh_form">
-    <div class="nh_form_title">
-      Upload File
-    </div>
-    <%= form_tag upload_file_nh_project_path(@nh_project), :multipart => true do %>
-      <%= error_messages_for @nh_project, :header_message => "File could not be created." %>
-      <fieldset>
-        <%= label_tag :upload_file, "Select file to upload", "data-required" => "true" %>
-        <%= file_field_tag :upload_file %>
-      </fieldset>
-      <fieldset>
-        <%= label_tag :nh_dp_id, "Select storage for file content", "data-required" => "true" %>
-        <p class="field-description">
-          The storage configuration selected here will control who has access to the content of
-          the file. Each storage configuration is associated with a particular project, and
-          the members of that project are the ones who can access the file's content.
-        <p>
-        <%= data_provider_select(:nh_dp_id,
-            { :data_providers => @nh_dps },
-            { :include_blank  => '(Select storage)' } )
-        %>
-      </fieldset>
-      <fieldset>
-        <%= label_tag :nh_project_id, "Assign file to a project" %>
-        <p class="field-description">
-          The project name selected here will control who can see the file.
-          The members of that project are the ones who will be granted access to the file's information.
-          The file's content is controlled by the storage configuration, above.
-        <p>
-        <%= group_select(:file_nh_project_id,
-            { :groups => @nh_projects, :selector => @nh_project.id },
-            { :include_blank => '(Use project of selected storage)' } )
-        %>
-      </fieldset>
-      <div class="btn-section">
-        <%= submit_tag "Upload File", :class => "btn-solid primary" %>
-        <div class="py-4">
-          <div class="label ">
-            For more advanced upload options:
-            <% cbrain_text= ("<p class='d-flex'>CBRAIN File Manager <span class='icon-cb'>#{nh_icon_cb_external}</span></p>").html_safe %>
-            <%= link_to cbrain_text,
-                switch_groups_path(id: @nh_project.id),
-                :class => "btn-text cbrain bg-cbrain-wash",
-                :method => :post,
-                :target => "_blank"
-            %>
+<%= javascript_include_tag 'nh_upload' %>
+
+<%
+  upload_size_limit = RemoteResource.current_resource.meta[:upload_size_limit].presence
+  site_url_prefix   = RemoteResource.current_resource.site_url_prefix.presence
+  large_upload_url  = RemoteResource.current_resource.meta[:large_upload_url].presence
+%>
+
+<div id="upload-info"
+  title="Upload - Single file"
+  data-max-upload-size="<%= upload_size_limit.to_i.megabytes %>"
+  data-type-detect-url="<%= detect_file_type_userfiles_path %>"
+>
+
+  <div id="nh_projects_new_file" class="nh_content">
+    <div class="nh_form">
+
+      <div class="nh_form_title">
+        Upload File
+      </div>
+      <%= form_tag upload_file_nh_project_path(@nh_project), :id => "upload", :multipart => true do %>
+        <%= error_messages_for @nh_project, :header_message => "File could not be created." %>
+        <fieldset>
+          <%= label_tag :upload_file, "Select file to upload", "data-required" => "true" %>
+          <%= file_field_tag 'upload_file' %> <span id="up-file-warn" style="color:red"></span>
+
+          <% if upload_size_limit &&
+                site_url_prefix  &&
+                large_upload_url
+          %>
+            <br>
+            <div class="d-flex align-center flex-wrap field_note">
+              <p>
+                <b>Note:</b> To upload multiple files or to upload file greater than <%= upload_size_limit %> please see the
+              </p>
+              <%= link_to "user manual", "#{site_url_prefix}#{large_upload_url}", :class => "btn-text cbrain external link mx-1" %>
+            </div>
+          <% end %>
+        </fieldset>
+
+
+        <fieldset>
+          <%= label_tag :nh_dp_id, "Select storage for file content", "data-required" => "true" %>
+          <p class="field-description">
+            The storage configuration selected here will control who has access to the content of
+            the file. Each storage configuration is associated with a particular project, and
+            the members of that project are the ones who can access the file's content.
+          <p>
+          <%= data_provider_select(:nh_dp_id,
+              { :data_providers => @nh_dps },
+              { :include_blank  => '(Select storage)' } )
+          %>
+        </fieldset>
+        <fieldset>
+          <%= label_tag :nh_project_id, "Assign file to a project" %>
+          <p class="field-description">
+            The project name selected here will control who can see the file.
+            The members of that project are the ones who will be granted access to the file's information.
+            The file's content is controlled by the storage configuration, above.
+          <p>
+          <%= group_select(:file_nh_project_id,
+              { :groups => @nh_projects, :selector => @nh_project.id },
+              { :include_blank => '(Use project of selected storage)' } )
+          %>
+        </fieldset>
+        <div id="div_loader" class="hidden"> 
+          <fieldset>
+            <center>
+              <div class="spinner"></div>
+              Uploading your file...
+            </center>
+          </fieldset>
+        </div>
+        <div class="btn-section">
+          <%= submit_tag "Upload File", :class => "btn-solid primary", :id => "upload_file_btn" %>
+          <div class="py-4">
+            <div class="label ">
+              For more advanced upload options:
+              <% cbrain_text= ("<p class='d-flex'>CBRAIN File Manager <span class='icon-cb'>#{nh_icon_cb_external}</span></p>").html_safe %>
+              <%= link_to cbrain_text,
+                  switch_groups_path(id: @nh_project.id),
+                  :class => "btn-text cbrain bg-cbrain-wash",
+                  :method => :post,
+                  :target => "_blank"
+              %>
+            </div>
           </div>
         </div>
-      </div>
-    <% end %>
+      <% end %>
+    </div>
   </div>
 </div>
