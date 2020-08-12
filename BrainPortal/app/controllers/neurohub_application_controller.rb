@@ -32,7 +32,6 @@ class NeurohubApplicationController < ApplicationController
   before_action :switch_to_neurohub_layout
   before_action :prepare_invites
 
-
   # This before_action callback sets a instance
   # variable @_NeuroHubLayout_ which is used by
   # the views to render pages with the NeuroHub
@@ -90,6 +89,20 @@ class NeurohubApplicationController < ApplicationController
     nh_new_invites        = Invitation.where(user_id: current_user.id, active: true, read: false).all || [];
     @nh_invites_count     = nh_invites.count
     @nh_new_invites_count = nh_new_invites.count
+  end
+
+  # Check if password need to be reset.
+  # This method is identical to (and overrides) the one in
+  # ApplicationController excepts it uses the NeuroHub password reset form.
+  def check_password_reset #:nodoc:
+    if current_user.password_reset
+      unless params[:controller] == "nh_users" && (params[:action] == "change_password" || params[:action] == "update")
+        flash[:error] = "Please reset your password."
+        redirect_to change_password_nh_users_path
+        return false
+      end
+    end
+    return true
   end
 
 end

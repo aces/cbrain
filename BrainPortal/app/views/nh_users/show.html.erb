@@ -30,6 +30,7 @@
   <%- # actions -%>
   <div class="nh_actions">
     <%= link_to nh_icon_edit + 'Edit', {:action => :edit, :id => @user.id}, :method  => :get, :class => "btn-solid primary nh_action"  %>
+    <%= link_to nh_icon_edit + 'Change Password', change_password_nh_users_path, :method  => :get, :class => "btn-solid primary nh_action"  %>
     <% if invites.count > 0 %>
       <a class="btn-solid primary nh_action" href="/nh_invitations"> <%= nh_icon_invite %> View Invitations | <%= invites.count %> </a>
     <% end %>
