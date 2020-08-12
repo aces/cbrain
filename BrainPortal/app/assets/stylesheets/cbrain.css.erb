@@ -864,30 +864,34 @@ pre {
 .account {
   background: #0471B4;  /* can be overridden in .account_git_branch_NNNN later in this file */
   color: #fff;
-  height:1.8em;
   font-size: 0.9em;
-  padding: 2px 2px 0px 6px;
   margin: 0px;
 }
 
 .account a {
   color: #fff;
-  padding: 0 1em 0 0.8em;
+  padding: 2px 1em;
   font-weight: bold;
   text-decoration: none;
+}
+
+.account .home_credits-neurohub {
+  background-color:#ffeeee;
+  color: #ff0000
 }
 
 .message_count {
   color: red;
 }
 
-.home_credits {
-  display: inline;
-}
-
 .loggedas {
   float: right;
   margin-right: 0.5em;
+}
+
+.home_credits, .loggedas {
+  display: inline-flex;
+  align-items:center;
 }
 
 .last_updated {

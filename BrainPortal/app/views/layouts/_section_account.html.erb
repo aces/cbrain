@@ -35,7 +35,7 @@
 <div class="account account_git_branch_<%= git_branch.gsub(/\W/,"_") %>">
 
   <span class="home_credits">
-    <%= link_to 'NeuroHub', alternate_page_or_dashboard_path %>
+    <%= link_to 'NeuroHub', alternate_page_or_dashboard_path, :class => "home_credits-neurohub" %>
     <% if current_user %>
       <%= link_to "Dashboard", home_path %>
       <%= link_to 'My Account', user_path(current_user) %>
