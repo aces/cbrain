@@ -35,3 +35,16 @@
       <%= (h(msg.to_s.strip).gsub(/\n/, '<BR/>')).html_safe %>
     </div>
   <%- end -%>
+
+  <div class="card">
+  <%- unless @display_messages.blank? %>
+
+    <%- for mess in @display_messages -%>
+      <p>
+      <div class="nh-invitations card-item">
+      <%= render(:partial  => "nh_invitations/message_details", :locals  => { :mess  => mess } ) rescue "Oh oh. your message was not rendered. Talk to devs!" %>
+      </div>
+    <% end %>
+
+  <% end %>
+  </div>

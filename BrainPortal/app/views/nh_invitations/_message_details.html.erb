@@ -1,0 +1,52 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+-%>
+<% messtype = mess.message_type # disguise confirmation for a flash notice until better styling added
+   prefix = "flash"
+   messclass = "#{prefix}_#{messtype}"
+%>
+
+<% unless mess.description.blank? %>
+  <p class=<%= messclass %>>
+    <%= Message.parse_markup( mess.description ).gsub(/\n/,"<BR>").html_safe %>
+  </p>
+<% end %>
+
+<% unless mess.variable_text.blank? %>
+    <p class=<%= messclass %>>
+      <%= Message.parse_markup( mess.variable_text ).gsub(/\n/,"<BR>").html_safe -%>
+    </p>
+<% end %>
+
+<% unless mess.expiry.blank? %>
+    <p class=<%= messclass %>>
+      Expires: <%=to_localtime(mess.expiry, :datetime) %>
+    </p>
+<% end %>
+
+<% if mess.description.blank? && mess.variable_text.blank? && mess.expiry.blank? %>
+  <p>
+    (No Details)
+  </p>
+<% end %>
+

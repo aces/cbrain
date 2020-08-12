@@ -105,6 +105,13 @@ class InvitationsController < ApplicationController
     @invitation.save
 
     flash[:notice] = "You have been added to project #{@group.name}."
+
+    Message.send_message(@invitation.sender,
+                         :message_type   => 'notice',
+                         :header         => "Invitation Accepted",
+                         :variable_text  => "User #{current_user.login} accepted your invitation and joined project #{@invitation.group.name}"
+    )
+
     respond_to do |format|
       format.html { redirect_to groups_path }
       format.xml  { head :ok }

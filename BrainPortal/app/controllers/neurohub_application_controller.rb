@@ -31,6 +31,7 @@ class NeurohubApplicationController < ApplicationController
 
   before_action :switch_to_neurohub_layout
   before_action :prepare_invites
+  before_action :prepare_messages
 
   # This before_action callback sets a instance
   # variable @_NeuroHubLayout_ which is used by
@@ -80,6 +81,36 @@ class NeurohubApplicationController < ApplicationController
       format.json  { render :json => {:message => message}, :status => :service_unavailable }
     end
 
+  end
+
+  ########################################################################
+  # Messaging System Filters (presently only invite acceptance)
+  ########################################################################
+
+  # Find new messages to be displayed at the top of the page.
+  def prepare_messages #:nodoc:
+    return unless current_user
+    return if     current_user.all_licenses_signed.blank?
+    return if     request.format.blank? || request.xhr?
+    return unless request.format.to_sym == :html || params[:controller] == 'messages'
+
+    @display_messages = []
+
+    unread_messages = current_user.messages.where( :read => false, :header => 'Invitation Accepted' ).order( "last_sent DESC" )
+    @unread_message_count = unread_messages.count
+
+    unread_messages.each do |mess|
+      if mess.expiry.blank? || mess.expiry > Time.now
+        if mess.critical? || mess.display?
+          @display_messages << mess
+          unless mess.critical?
+            mess.update_attributes(:display  => false)
+          end
+        end
+      else
+        mess.update_attributes(:read  => true)
+      end
+    end
   end
 
   # Find the number of new invitations to be displayed at the top of the page.
