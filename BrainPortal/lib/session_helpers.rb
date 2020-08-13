@@ -77,6 +77,15 @@ module SessionHelpers
     orig_ip   = large_info.data[:guessed_remote_ip]
     # The method cbrain_request_remote_ip comes from RequestHelpers module
     remote_ip = cbrain_request_remote_ip rescue "UnknownIP-#{rand(1000000)}"
+
+    # If orig_ip is blank, it's probably the first use of
+    # this token, so we just record it.
+    if orig_ip.blank?
+      orig_ip                             = remote_ip
+      large_info.data[:guessed_remote_ip] = remote_ip
+    end
+
+    # If they differ, log and invalidate the session
     if orig_ip != remote_ip
       # Log the error in many places
       user = large_info.user

@@ -30,7 +30,7 @@ class UsersController < ApplicationController
   api_available :only => [ :index, :create, :show, :destroy, :update]
 
   before_action :login_required,        :except => [:request_password, :send_password]
-  before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password, :push_keys]
+  before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password, :push_keys, :new_token]
 
   def index #:nodoc:
     @scope = scope_from_session
@@ -82,6 +82,11 @@ class UsersController < ApplicationController
 
     # If needed, create a SSH key for the user
     @ssh_key = @user.ssh_key(create_it: true) rescue nil
+
+    @active_sessions = LargeSessionInfo
+      .where(:user_id => @user.id, :active => true)
+      .where( "updated_at > ?", SessionHelpers::SESSION_API_TOKEN_VALIDITY.ago )
+      .order(:updated_at)
 
     respond_to do |format|
       format.html # show.html.erb
@@ -375,6 +380,13 @@ class UsersController < ApplicationController
     end
 
     redirect_to :action => :show
+  end
+
+  # POST /users/new_token
+  def new_token
+    new_session = cbrain_session.duplicate_with_new_token
+    @new_token  = new_session.cbrain_api_token
+    sleep 1 # dissuade large numbers of sim requests
   end
 
   private
