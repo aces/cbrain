@@ -69,6 +69,7 @@ class NhUsersController < NeurohubApplicationController
     attr_to_update.delete(:zenodo_sandbox_token) if attr_to_update[:zenodo_sandbox_token].blank?
     attr_to_update.delete(:zenodo_main_token)    if attr_to_update[:zenodo_main_token].blank?
 
+    last_update = @user.updated_at
     if @user.update_attributes_with_logging(attr_to_update, current_user)
       add_meta_data_from_form(@user, [:orcid])
       if attr_to_update[:password].present?
@@ -76,7 +77,7 @@ class NhUsersController < NeurohubApplicationController
         @user.update_column(:password_reset, false)
         redirect_to nh_projects_path
       else
-        flash[:notice] = "User #{@user.login} was successfully updated."
+        flash[:notice] = "User #{@user.login} was successfully updated." if @user.updated_at != last_update
         redirect_to :action => :myaccount
       end
     else
