@@ -109,6 +109,7 @@ class NhLorisHooksController < NeurohubApplicationController
       :cbrain_url         => userfile_url(result),
     }
 
+    response.headers["Location"] = userfile_url(result)
     render :json => json_report, :status => :created
 
   end
