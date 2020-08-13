@@ -26,9 +26,10 @@ class FilenameFormatValidator < ActiveModel::EachValidator #:nodoc:
 
   # Iterator that validates attributes to be legal filenames.
   def validate_each(object, attribute, value)
-    unless value.blank? || value =~ /\A[a-zA-Z0-9][\w\~\!\@\#\%\^\&\*\(\)\-\+\=\:\[\]\{\}\|\<\>\,\.\?]*\z/
-      object.errors[attribute] << (options[:message] || "contains invalid characters")
-    end
+    return if value.blank? # allowed during validation, disallowed elsewhere
+    return if Userfile.is_legal_filename?(value)
+    object.errors[attribute] << (options[:message] || "contains invalid characters")
   end
+
 end
 
