@@ -88,7 +88,7 @@ class ApplicationRecord < ActiveRecord::Base #:nodoc:
   # This scope returns records where the ID is +x+
   # if x seems numeric, otherwise records where NAME is x
   scope :where_id_or_name, -> (x) do
-    if x.to_s =~ /^\d+/
+    if x.to_s =~ /\A\d+\z/
       where "#{self.table_name}.id"   => x
     else
       where "#{self.table_name}.name" => x

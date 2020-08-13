@@ -30,7 +30,7 @@ class NhLorisHooksController < NeurohubApplicationController
   before_action :login_required
   api_available :file_list_maker
 
-  # POST /loris_hooks/file_match
+  # POST /loris_hooks/file_list_maker
   def file_list_maker
 
     # Parameters for source files
@@ -40,7 +40,7 @@ class NhLorisHooksController < NeurohubApplicationController
     # Parameters for result file list
     result_dp_id     = params[:result_data_provider_id].presence # can be nil, can be id or name
     result_filename  = params[:result_filename].presence
-    result_group_id  = params[:result_group_id].presence
+    result_group_id  = params[:result_group_id].presence # nil, id or name
 
     user_dps = DataProvider.find_all_accessible_by_user(current_user)
                            .where(:online => true)
@@ -61,7 +61,7 @@ class NhLorisHooksController < NeurohubApplicationController
       cb_error "Could not find an exact match for the files. Found #{file_count} of #{exp_count} files"
     end
 
-    # Contruct attributes for result file
+    # Construct attributes for result file
     pref_dp_id  = current_user.meta[:pref_data_provider_id].presence
     result_dp   = user_dps.where_id_or_name(result_dp_id).first if result_dp_id
     result_dp ||= user_dps.where(:id => pref_dp_id).first       if pref_dp_id
@@ -81,7 +81,7 @@ class NhLorisHooksController < NeurohubApplicationController
       :name             => result_filename,
       :user_id          => current_user.id,
       :data_provider_id => result_dp.id,
-      :group_id         => result_group.id
+      :group_id         => result_group.id,
     )
     if ! result.save
       messages = result.errors.full_messages.join(", ")
@@ -99,10 +99,14 @@ class NhLorisHooksController < NeurohubApplicationController
 
     # All good, let's report back to client
     json_report = {
-      :message       => 'Result file created',
-      :userfile_id   => result.id,
-      :userfile_name => result.name,
-      :cbrain_url    => userfile_url(result),
+      :message            => "CbrainFileList file created",
+      :userfile_id        => result.id,
+      :userfile_name      => result.name,
+      :group_id           => result_group.id,
+      :group_name         => result_group.name,
+      :data_provider_id   => result_dp.id,
+      :data_provider_name => result_dp.name,
+      :cbrain_url         => userfile_url(result),
     }
 
     render :json => json_report, :status => :created
