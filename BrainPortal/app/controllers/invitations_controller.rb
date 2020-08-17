@@ -109,8 +109,8 @@ class InvitationsController < ApplicationController
     Message.send_message(@invitation.sender,
                          :message_type   => 'notice',
                          :header         => "Invitation Accepted",
-                         :description    => "A user joined project #{@nh_invitation.group.name}",
-                         :variable_text  => "#{current_user.login} accepted your invitation and joined project #{@invitation.group.name}"
+                         :description    => "A user joined project #{@group.name}",
+                         :variable_text  => "#{current_user.login} accepted your invitation and joined project #{@group.name}"
     )
 
     respond_to do |format|
