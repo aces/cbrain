@@ -36,15 +36,15 @@
     </div>
   <%- end -%>
 
-  <div class="card">
-  <%- unless @display_messages.blank? %>
 
+  <%- if @display_messages.present? %>
+    <div class="card">
     <%- for mess in @display_messages -%>
       <p>
       <div class="nh-invitations card-item">
-      <%= render(:partial  => "nh_invitations/message_details", :locals  => { :mess  => mess } ) rescue "Oh oh. your message was not rendered. Talk to devs!" %>
+      <%= render(:partial  => "nh_invitations/message_details", :locals  => { :mess  => mess } ) %>
       </div>
     <% end %>
-
+   </div>
   <% end %>
-  </div>
+
