@@ -92,12 +92,11 @@ class NeurohubApplicationController < ApplicationController
     return unless current_user
     return if     current_user.all_licenses_signed.blank?
     return if     request.format.blank? || request.xhr?
-    return unless request.format.to_sym == :html || params[:controller] == 'messages'
+    return unless request.format.to_sym == :html
 
     @display_messages = []
 
     unread_messages = current_user.messages.where( :read => false, :header => 'Invitation Accepted' ).order( "last_sent DESC" )
-    @unread_message_count = unread_messages.count
 
     unread_messages.each do |mess|
       if mess.expiry.blank? || mess.expiry > Time.now
