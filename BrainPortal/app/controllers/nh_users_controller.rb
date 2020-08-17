@@ -49,6 +49,10 @@ class NhUsersController < NeurohubApplicationController
     end
   end
 
+  def change_password #:nodoc:
+    @user = current_user
+  end
+
   def update
     @user = User.find(params[:id])
 
@@ -56,20 +60,32 @@ class NhUsersController < NeurohubApplicationController
       cb_error "You don't have permission to edit this user or user does not exists.", :redirect  => :neurohub
     end
 
-    attr_to_update = params.require_as_params(:user).permit([ :full_name, :email, :time_zone,
-           :city, :country, :affiliation, :position, :zenodo_sandbox_token, :zenodo_main_token ] )
+    attr_to_update = params.require_as_params(:user).permit( [
+      :full_name, :email, :time_zone, :password, :password_confirmation,
+      :city, :country, :affiliation, :position, :zenodo_sandbox_token, :zenodo_main_token
+    ])
 
     # Do not zap tokens if the user left them blank
     attr_to_update.delete(:zenodo_sandbox_token) if attr_to_update[:zenodo_sandbox_token].blank?
     attr_to_update.delete(:zenodo_main_token)    if attr_to_update[:zenodo_main_token].blank?
 
+    last_update = @user.updated_at
     if @user.update_attributes_with_logging(attr_to_update, current_user)
       add_meta_data_from_form(@user, [:orcid])
-      flash[:notice] = "User #{@user.login} was successfully updated."
-      #todo confirm email
-      redirect_to :action => :myaccount
+      if attr_to_update[:password].present?
+        flash[:notice] = "Your password was changed."
+        @user.update_column(:password_reset, false)
+        redirect_to nh_projects_path
+      else
+        flash[:notice] = "User #{@user.login} was successfully updated." if @user.updated_at != last_update
+        redirect_to :action => :myaccount
+      end
     else
-      flash.now[:error] = "User #{@user.login} was not successfully updated." #unuser anyways
+      if attr_to_update[:password].present?
+        render :action => :change_password
+      else
+        render :action => :edit
+      end
     end
   end
 
