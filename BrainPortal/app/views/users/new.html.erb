@@ -83,6 +83,14 @@
     <% end %>
 
     <p>
+    <%= label_tag 'meta_pref_data_provider_id', "Default Data Provider" %>
+    <%= data_provider_select("meta[pref_data_provider_id]",
+                             { :selector => (params[:meta] || {})[:pref_data_provider_id] },
+                             { :include_blank => true } ) %>
+    <br>
+    <span class="field_explanation">If set, make sure it is a Data Provider that will be accessible to the user</span>
+
+    <p>
     <%= f.label :password, "Password" %><br/>
     <%= f.password_field :password, :value => @random_pass, :autocomplete => "new-password" %>
 

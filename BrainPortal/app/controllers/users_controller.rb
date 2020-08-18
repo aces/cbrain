@@ -106,8 +106,12 @@ class UsersController < ApplicationController
     # Pre-load attributes based on signup ID given in path.
     if params[:signup_id].present?
       if signup = Signup.where(:id => params[:signup_id]).first # assignment, not comparison!
-        @user  = signup.to_user
-        flash.now[:notice] = "Fields have been filled from a signup request."
+        @user  = signup.to_user # turn signup record into a pre-filled user object
+        portal = signup.remote_resource
+        form   = signup.form_page # a keyword like CBRAIN or NeuroHub
+        flash.now[:notice]  = "Fields have been filled from a signup request.\n"
+        flash.now[:notice] += "That request was performed on portal '#{portal.name}'.\n" if portal
+        flash.now[:notice] += "The form used for the request was '#{form}'.\n"           if form
       end
     end
   end
@@ -136,6 +140,10 @@ class UsersController < ApplicationController
     @user.password_reset = no_password_reset_needed ? false : true
 
     if @user.save
+
+      # This is not a real attribute of the model, and must be added after user is created
+      add_meta_data_from_form(@user, [:pref_data_provider_id])
+
       flash[:notice] = "User successfully created.\n"
 
       # Find signup record matching login name, and log creation and transfer some info.
