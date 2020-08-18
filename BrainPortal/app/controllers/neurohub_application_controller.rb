@@ -95,7 +95,7 @@ class NeurohubApplicationController < ApplicationController
     @nh_new_invites_count = nh_new_invites.count
   end
 
-  # below a method is overwrited to allow to render only invitation confirmation, filtered by header (for now)
+  # below a method is overwriten to render only invitation confirmation, filtered by header (for now)
   
   def unread_messages_to_display #:nodoc:
     current_user.messages.where( :read => false, :header => 'Invitation Accepted' ).order( "last_sent DESC" )
