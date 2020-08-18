@@ -42,7 +42,7 @@
     <%- for mess in @display_messages -%>
       <p>
       <div class="nh-invitations card-item">
-      <%= render(:partial  => "nh_invitations/message_details", :locals  => { :mess  => mess } ) %>
+      <%= render(:partial  => "nh_invitations/message_details", :locals  => { :mess  => mess } ) rescue "A message to you was not delivered. Talk to support!"%>
       </div>
     <% end %>
    </div>
