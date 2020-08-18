@@ -31,7 +31,6 @@ class NeurohubApplicationController < ApplicationController
 
   before_action :switch_to_neurohub_layout
   before_action :prepare_invites
-  before_action :prepare_messages
 
   # This before_action callback sets a instance
   # variable @_NeuroHubLayout_ which is used by
