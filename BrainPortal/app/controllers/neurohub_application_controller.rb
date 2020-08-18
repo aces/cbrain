@@ -96,11 +96,9 @@ class NeurohubApplicationController < ApplicationController
     @nh_new_invites_count = nh_new_invites.count
   end
 
-  # this patches prepare_message method
-  # to display 'Invitation Accepted' entitled messages. They will be show separately from Invitations
-  # and only kind of message to be shown for now.
-
-  def unread_messages_to_display
+  # below a method is overwrited to allow to render only invitation confirmation, filtered by header (for now)
+  
+  def unread_messages_to_display #:nodoc:
     current_user.messages.where( :read => false, :header => 'Invitation Accepted' ).order( "last_sent DESC" )
   end
 

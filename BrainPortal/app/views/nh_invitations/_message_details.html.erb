@@ -27,19 +27,19 @@
 %>
 
 <% if mess.description.present? %>
-  <p class=<%= messclass %>>
+  <p class="<%= messclass %>">
     <%= Message.parse_markup( mess.description ).gsub(/\n/,"<BR>").html_safe %>
   </p>
 <% end %>
 
 <% if mess.variable_text.present? %>
-    <p class=<%= messclass %>>
+    <p class="<%= messclass %>">
       <%= Message.parse_markup( mess.variable_text ).gsub(/\n/,"<BR>").html_safe -%>
     </p>
 <% end %>
 
 <% if mess.expiry.present? %>
-    <p class=<%= messclass %>>
+    <p class="<%= messclass %>">
       Expires: <%=to_localtime(mess.expiry, :datetime) %>
     </p>
 <% end %>

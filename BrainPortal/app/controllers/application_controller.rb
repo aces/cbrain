@@ -297,8 +297,7 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  # a query for unread messages
-  def unread_messages_to_display
+  def unread_messages_to_display #:nodoc:
     current_user.messages.where( :read => false ).order( "last_sent DESC" )
   end
 
