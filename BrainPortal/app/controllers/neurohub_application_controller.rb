@@ -87,31 +87,6 @@ class NeurohubApplicationController < ApplicationController
   # Messaging System Filters (presently only invite acceptance)
   ########################################################################
 
-  # Find new messages to be displayed at the top of the page.
-  def prepare_messages #:nodoc:
-    return unless current_user
-    return if     current_user.all_licenses_signed.blank?
-    return if     request.format.blank? || request.xhr?
-    return unless request.format.to_sym == :html
-
-    @display_messages = []
-
-    unread_messages = current_user.messages.where( :read => false, :header => 'Invitation Accepted' ).order( "last_sent DESC" )
-
-    unread_messages.each do |mess|
-      if mess.expiry.blank? || mess.expiry > Time.now
-        if mess.critical? || mess.display?
-          @display_messages << mess
-          unless mess.critical?
-            mess.update_attributes(:display  => false)
-          end
-        end
-      else
-        mess.update_attributes(:read  => true)
-      end
-    end
-  end
-
   # Find the number of new invitations to be displayed at the top of the page.
   def prepare_invites
     return unless current_user
@@ -119,6 +94,14 @@ class NeurohubApplicationController < ApplicationController
     nh_new_invites        = Invitation.where(user_id: current_user.id, active: true, read: false).all || [];
     @nh_invites_count     = nh_invites.count
     @nh_new_invites_count = nh_new_invites.count
+  end
+
+  # this patches prepare_message method
+  # to display 'Invitation Accepted' entitled messages. They will be show separately from Invitations
+  # and only kind of message to be shown for now.
+
+  def unread_messages_to_display
+    current_user.messages.where( :read => false, :header => 'Invitation Accepted' ).order( "last_sent DESC" )
   end
 
   # Check if password need to be reset.

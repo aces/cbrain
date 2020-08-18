@@ -271,7 +271,7 @@ class ApplicationController < ActionController::Base
   # CBRAIN Messaging System Filters
   ########################################################################
 
-  # Find new messages to be displayed at the top of the page.
+  # Find new messages and prepare them to be displayed at the top of the page.
   def prepare_messages #:nodoc:
     return unless current_user
     return if     current_user.all_licenses_signed.blank?
@@ -280,7 +280,7 @@ class ApplicationController < ActionController::Base
 
     @display_messages = []
 
-    unread_messages = current_user.messages.where( :read => false ).order( "last_sent DESC" )
+    unread_messages = unread_messages_to_display
     @unread_message_count = unread_messages.count
 
     unread_messages.each do |mess|
@@ -295,6 +295,11 @@ class ApplicationController < ActionController::Base
         mess.update_attributes(:read  => true)
       end
     end
+  end
+
+  # a query for unread messages
+  def unread_messages_to_display
+    current_user.messages.where( :read => false ).order( "last_sent DESC" )
   end
 
   # Utility method that allows a controller to add
