@@ -65,6 +65,7 @@ Rails.application.routes.draw do
     collection do
       get  'request_password'
       post 'send_password'
+      post 'new_token'
     end
   end
 

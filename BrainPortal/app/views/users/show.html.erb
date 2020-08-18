@@ -155,6 +155,30 @@
 
   <% end %>
 
+  <%= show_table(@user, :as => :user, :header => 'Sessions And Tokens', :edit_condition => false) do |t| %>
+    <% t.cell "Active Sessions", :show_width => 2 do %>
+
+       <table class="simple">
+         <tr>
+           <th>IP</th><th>Last access</th>
+         </tr>
+         <% @active_sessions.to_a.each do |sess| %>
+         <tr>
+           <td><%= sess.data[:guessed_remote_ip].presence || '(None yet)' %></td>
+           <td>
+             <%= to_localtime(sess.updated_at, :datetime) %> (<%= pretty_elapsed(Time.now - sess.updated_at, :num_components => 3) %> ago)
+           </td>
+         </tr>
+         <% end %>
+       </table>
+
+       <% if @user.id == current_user.id %>
+         <p>
+         <%= link_to('Generate new API token', new_token_users_path, :class => "button", :method => :post ) %>
+       <% end %>
+    <% end %>
+  <% end %>
+
   <%= show_table(@user, :as => :user, :header => 'Zenodo Publishing', :edit_condition => edit_permission?(@user)) do |t| %>
 
     <% t.edit_cell(:zenodo_sandbox_token,

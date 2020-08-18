@@ -130,6 +130,26 @@ class CbrainSession
   end
 
   ###########################################
+  # Session duplication
+  ###########################################
+
+  # Returns a duplicate of the current session
+  # but with a new token and a cleaned-up session
+  # (no filters etc). Usually this is for users
+  # to generate their own API token in the interface.
+  def duplicate_with_new_token
+    new_model = @model.dup
+    new_model.session_id = SecureRandom.hex
+    new_sess = self.class.new(new_model)
+    new_sess.clear
+    new_sess.delete :guessed_remote_ip
+    new_sess.delete :guessed_remote_host
+    new_sess[:api] = 'yes'
+    new_sess.touch_unless_recent
+    new_sess
+  end
+
+  ###########################################
   # Hash-like interface to session attributes
   ###########################################
 

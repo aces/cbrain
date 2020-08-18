@@ -1,0 +1,59 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title 'New API Token' %>
+
+<h2>New API Token</h2>
+
+We have just generated a new API token for you.
+<p>
+<pre><%= @new_token %></pre>
+<p>
+If you are a developer and want to automate working
+with CBRAIN or NeuroHub, this token will be needed
+to access the APIs.
+<p>
+Refer to the CBRAIN API documentation
+for more information.
+<p>
+<strong>A note about this token</strong>:
+
+<% pretty_how_long = SessionHelpers::SESSION_API_TOKEN_VALIDITY.inspect %>
+<ul>
+  <li>
+    This token will only be valid for <%= pretty_how_long %>.
+  </li>
+  <li>
+    Every time a request is made with it, it becomes valid for another <%= pretty_how_long %>.
+  </li>
+  <li>
+    The first time it is used, the IP address of the connecting client will be
+    recorded and only connections from that IP address will be valid.
+  </li>
+  <li>
+    If a subsequent connection comes from any other IP address at any time,
+    the token will immediately be invalidated.
+  </li>
+</ul>
+
