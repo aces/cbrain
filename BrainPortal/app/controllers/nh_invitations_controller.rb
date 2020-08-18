@@ -132,6 +132,13 @@ class NhInvitationsController < NeurohubApplicationController
     @nh_invitation.save
 
     flash[:notice] = "You have been added to project #{@nh_project.name}."
+
+    Message.send_message(@nh_invitation.sender,
+                         :message_type   => 'notice',
+                         :header         => "Invitation Accepted",
+                         :description    => "A user joined project #{@nh_project.name}",
+                         :variable_text  => "#{current_user.login} accepted your invitation to join project #{@nh_project.name} via NeuroHub"
+    )
     redirect_to nh_projects_path
   end
 

@@ -82,6 +82,10 @@ class NeurohubApplicationController < ApplicationController
 
   end
 
+  ########################################################################
+  # Messaging System Filters (presently only invite acceptance)
+  ########################################################################
+
   # Find the number of new invitations to be displayed at the top of the page.
   def prepare_invites
     return unless current_user
@@ -89,6 +93,12 @@ class NeurohubApplicationController < ApplicationController
     nh_new_invites        = Invitation.where(user_id: current_user.id, active: true, read: false).all || [];
     @nh_invites_count     = nh_invites.count
     @nh_new_invites_count = nh_new_invites.count
+  end
+
+  # below a method is overwriten to render only invitation confirmation, filtered by header (for now)
+  
+  def unread_messages_to_display #:nodoc:
+    current_user.messages.where( :read => false, :header => 'Invitation Accepted' ).order( "last_sent DESC" )
   end
 
   # Check if password need to be reset.
