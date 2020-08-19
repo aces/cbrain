@@ -1,5 +1,71 @@
 
-## CBRAIN Release Notes
+## CBRAIN/NeuroHub Release Notes
+
+#### Version 6.0.0 Released 2020-08-19
+
+More than 8 months have passed since the previous release, 5.3.0!
+
+This release introduces the new GUI interface called `NeuroHub`.
+The original CBRAIN interface is still all there; NeuroHub
+is an additional set of pages providing a new look and feel, and
+new capabilities. NeuroHub is still rather restricted in what
+it can do, but users can easily switch back and forth between
+the two interfaces at the push of a button (located at the top
+and left on each interface).
+
+New CBRAIN features: (some of these apply to NeuroHub too)
+
+* Projects can be tagged as 'un-assignable", so that a member
+  of the project cannot assign userfiles or tasks or other resources
+  to it (except for the project's creator). This is mostly
+  useful for projects that represent fixed datasets that are
+  meant to be used but not extended further.
+* CBRAIN (and NeuroHub) now creates a single pair of SSH keys
+  (one private, one public) for each user that the system can
+  use to access external resources. The private key is never
+  made visible. Right now this is mostly useful for the new
+  UserkeyFlatDirSshDataProvider class in NeuroHub.
+* These keys (full pair) can be pushed to a Bourreau so that
+  the CBRAIN code running there can connect as the user. Users
+  have control over which bourreau to push their key pair to.
+* CBRAIN can generate a new API token and show it to the user
+  in their 'my account' page.
+* When a user accepts an invitation to join a project, the
+  person who made the invitation is notified.
+* When an admin reviews a signup request, they can tell
+  if the request was made using the CBRAIN or the NeuroHub
+  signup page.
+* Users can see how many active sessions they have (including
+  API sessions), and from what IP they connected.
+* Admins can set a user's default data provider when creating
+  their account.
+
+NeuroHub exclusive features:
+
+* If a user enters their ORCID ID in their profile, they
+  can log in using the ORCID authentication platform.
+* Projects are limited to "Work" projects; the other special
+  projects that CBRAIN supplies by default are hidden.
+* Projects can have special members designated as 'editors'.
+* Project editors have much the same powers as the project's creator.
+* A project's creator can assign a license to it; members will
+  have to agree to the license before they can access it.
+* Projects can be configured as 'public'. Things assigned to public
+  projects can be accessed by any user.
+* User can create their own Data Providers. This is limited right
+  now to DPs of type 'UserkeyFlatDirSshDataProvider'. The provider
+  side will be accessed using the personal SSH key of the user
+  who created the DP. Mostly useful for power users who want to
+  access remote filesystems.
+* Specialized API hooks for LORIS integrations. Right now, only
+  one such hook is implemented, `file_list_maker`.
+
+Other:
+
+* Much code refactoring (e.g. FileInfo class, BrowseProviderFileCaching,
+  SshDataProviderBase...).
+* Selection boxes are shown with the chosen.jquery.js framework.
+* DP consistency checkers improved.
 
 #### Version 5.3.0 Released 2019-12-10
 

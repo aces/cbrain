@@ -7,7 +7,16 @@ access, transfer, caching and provenence for distributed data, as
 well as mediating interactions with high-performance computing
 centres (HPCs).
 
-CBRAIN consists of two Ruby on Rails Applications: BrainPortal and Bourreau
+## NeuroHub
+
+NeuroHub is an alternative interface to CBRAIN. It provides a few
+special capabilities that are not accessible in CBRAIN, while also
+lacking many of CBRAIN's features (because it is fairly new, as of
+August 2020). Users can switch back and forth between the two
+interfaces, since they share the same authentication and database
+systems.
+
+CBRAIN (and NeuroHub) consists of two Ruby on Rails Applications: BrainPortal and Bourreau
 
 ## BrainPortal
 

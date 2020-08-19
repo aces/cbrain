@@ -89,16 +89,17 @@ class Group < ApplicationRecord
 
   # Can this group be accessed by +user+?
   def can_be_accessed_by?(user, access_requested = :read)
-    @can_be_accessed_cache       ||= {}
+    @can_be_accessed_cache ||= {}
+    key = "#{user.id}-#{access_requested}"
     # Check for cached value
-    return @can_be_accessed_cache[user.id] unless @can_be_accessed_cache[user.id].nil?
+    return @can_be_accessed_cache[key] unless @can_be_accessed_cache[key].nil?
     # Case by case
-    return @can_be_accessed_cache[user.id] = true if user.has_role?(:admin_user)
-    return @can_be_accessed_cache[user.id] = true if self.creator_id == user.id
-    return @can_be_accessed_cache[user.id] = true if user.is_member_of_group(self) # maybe restrict on acces_req?
-    return @can_be_accessed_cache[user.id] = true if user.has_role?(:site_manager) && user.site.group_ids.include?(self.id)
-    return @can_be_accessed_cache[user.id] = (access_requested == :read) if self.public?
-    return @can_be_accessed_cache[user.id] = false
+    return @can_be_accessed_cache[key] = true if user.has_role?(:admin_user)
+    return @can_be_accessed_cache[key] = true if self.creator_id == user.id
+    return @can_be_accessed_cache[key] = true if user.is_member_of_group(self) # maybe restrict on acces_req?
+    return @can_be_accessed_cache[key] = true if user.has_role?(:site_manager) && user.site.group_ids.include?(self.id)
+    return @can_be_accessed_cache[key] = (access_requested == :read) if self.public?
+    return @can_be_accessed_cache[key] = false
   end
 
   # Can this group be edited by +user+?

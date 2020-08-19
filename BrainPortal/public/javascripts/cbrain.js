@@ -1003,8 +1003,8 @@
 
   });
 
-  // Unable chosen functionality for select box
-  // from chosen JavaScript librairy
+  // Enable chosen functionality for select boxes.
+  // From chosen JavaScript library
   $('select').each(function(){
     var select = $(this);
 
@@ -1016,7 +1016,7 @@
     }
   });
 
-  // Credit to Jeff Hays (GitHub: @jphase) for the selec/deselect toogle.
+  // Credit to Jeff Hays (GitHub: @jphase) for the select/deselect toggle.
   // (http://jsfiddle.net/jphase/A6LBv/)
   // Add select/deselect all toggle to optgroups in chosen
   $(document).on("click", ".group-result", function () {

@@ -150,9 +150,9 @@ ActiveRecord::Schema.define(version: 20200804163321) do
     t.boolean  "public",                       default: false
     t.boolean  "not_assignable",               default: false
     t.index ["invisible"], name: "index_groups_on_invisible", using: :btree
-    t.index ["public"], name: "index_groups_on_public", using: :btree
     t.index ["name"], name: "index_groups_on_name", using: :btree
     t.index ["not_assignable"], name: "index_groups_on_not_assignable", using: :btree
+    t.index ["public"], name: "index_groups_on_public", using: :btree
     t.index ["type"], name: "index_groups_on_type", using: :btree
   end
 
