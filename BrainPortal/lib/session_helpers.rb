@@ -79,14 +79,19 @@ module SessionHelpers
     remote_ip = cbrain_request_remote_ip rescue "UnknownIP-#{rand(1000000)}"
 
     # If orig_ip is blank, it's probably the first use of
-    # this token, so we just record it.
+    # this token, so we we can handle some stuff here.
+    # Note: a callback in ApplicationController will set
+    # the values for :guessed_remote_ip and :guessed_remote_host
     if orig_ip.blank?
-      orig_ip                             = remote_ip
-      large_info.data[:guessed_remote_ip] = remote_ip
+      # Record the current user agent
+      large_info.data[:orig_raw_user_agent] = large_info.data[:raw_user_agent] if large_info.data[:raw_user_agent]
+      reqenv    = request.env || {}
+      raw_agent = reqenv['HTTP_USER_AGENT'] || 'unknown/unknown'
+      large_info.data[:raw_user_agent] = raw_agent
     end
 
     # If they differ, log and invalidate the session
-    if orig_ip != remote_ip
+    if orig_ip.present? && orig_ip != remote_ip
       # Log the error in many places
       user = large_info.user
       userlogin = user.try(:login) || 'Unknown'

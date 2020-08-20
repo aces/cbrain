@@ -70,7 +70,7 @@ class ApplicationController < ActionController::Base
 
   # Re-compute the host and IP from the request (when not logged in, or changed)
   def adjust_remote_ip_and_host #:nodoc:
-    from_ip = cbrain_session[:guessed_remote_ip] # what we had previously
+    from_ip = cbrain_session[:guessed_remote_ip].presence || '(None)' # what we had previously
     cur_ip  = cbrain_request_remote_ip rescue nil
     if cur_ip.present? && from_ip != cur_ip # changed?
       cur_host = hostname_from_ip(cur_ip)

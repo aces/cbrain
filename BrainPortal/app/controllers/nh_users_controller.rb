@@ -89,4 +89,11 @@ class NhUsersController < NeurohubApplicationController
     end
   end
 
+  # POST /users/new_token
+  def new_token
+    new_session = cbrain_session.duplicate_with_new_token
+    @new_token  = new_session.cbrain_api_token
+    sleep 1 # dissuade large numbers of sim requests
+  end
+
 end
