@@ -29,10 +29,13 @@
 <div id="nh_users_show" class="nh_content">
   <%- # actions -%>
   <div class="nh_actions">
-    <%= link_to nh_icon_edit + 'Edit', {:action => :edit, :id => @user.id}, :method  => :get, :class => "btn-solid primary nh_action"  %>
-    <%= link_to nh_icon_edit + 'Change Password', change_password_nh_users_path, :method  => :get, :class => "btn-solid primary nh_action"  %>
+    <%= link_to nh_icon_edit + 'Edit',            edit_nh_user_path(@user),      :class => "btn-solid primary nh_action" %>
+    <%= link_to nh_icon_edit + 'Change Password', change_password_nh_users_path, :class => "btn-solid primary nh_action" %>
+    <%= button_to new_token_nh_users_path, :class => "max-width-none btn-solid primary nh_action" do %>
+      <%= nh_icon_add %> New API Token
+    <% end %>
     <% if invites.count > 0 %>
-      <a class="btn-solid primary nh_action" href="/nh_invitations"> <%= nh_icon_invite %> View Invitations | <%= invites.count %> </a>
+      <%= link_to nh_icon_invite + "View Invitations | #{invites.count}", nh_invitations_path, :class => "btn-solid primary nh_action" %>
     <% end %>
   </div>
 

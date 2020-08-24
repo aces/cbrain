@@ -522,6 +522,10 @@ A few shortcut often-used alignment classes.
   text-align: center;
 }
 
+.max-width-none {
+  max-width: none !important;
+}
+
 .flex-1 {
   flex: 1;
 }
@@ -1348,6 +1352,15 @@ Cards used for simple "show"-type views
   .card-heading {
     @include heading("xs");
     @include p(4);
+  }
+  .card-section {
+    @include form-layout();
+  }
+  .card-footer {
+    @include form-layout();
+    @include p(0);
+    width: 100%;
+    background: $DEFAULT_WASH;
   }
   .card-row {
     @include px(4);

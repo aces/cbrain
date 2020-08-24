@@ -292,6 +292,7 @@ Rails.application.routes.draw do
     resources :nh_users,       :only => [ :myaccount, :edit, :update] do
       collection do
         get  'change_password'
+        post 'new_token'
       end
     end
     resources :nh_storages do # yeah pluralized, looks weird because it's uncountable
