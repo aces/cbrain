@@ -760,7 +760,7 @@ class UserfilesController < ApplicationController
           .where(:id => userfiles.pluck(:user_id).uniq)
           .all.partition do |user|
             user
-              .assignable_groups_ids
+              .assignable_group_ids
               .include?(changes[:group_id])
           end
 

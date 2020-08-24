@@ -547,7 +547,7 @@ class TasksController < ApplicationController
             new_tasklist.reject! do |task|
               t_uid = task.user_id
               # Task user need to have access to new group
-              user_to_avail_group_ids[t_uid] ||= User.find(t_uid).assignable_groups_ids.index_by { |id| id }
+              user_to_avail_group_ids[t_uid] ||= User.find(t_uid).assignable_group_ids.index_by { |id| id }
               (! user_to_avail_group_ids[t_uid][new_group_id])
             end
             failed_tasks = tasklist - new_tasklist
