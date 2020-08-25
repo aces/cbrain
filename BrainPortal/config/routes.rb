@@ -315,6 +315,7 @@ Rails.application.routes.draw do
     resources :nh_loris_hooks, :only => [] do
       collection do
         post :file_list_maker
+        post :csv_data_maker
       end
     end
 
