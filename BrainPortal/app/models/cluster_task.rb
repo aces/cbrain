@@ -1413,12 +1413,21 @@ class ClusterTask < CbrainTask
       end
 
       system("chmod","-R","u+rwX",".") # uppercase X mode affects only directories
-      system("tar -czf '#{temp_tar_file}' --exclude '*#{temp_tar_file}' . </dev/null >'#{tar_capture}' 2>&1")
-      out = File.read(tar_capture) rescue ""
+      status = with_stdout_stderr_capture(tar_capture) do
+        system("tar","-czf", temp_tar_file, "--exclude", "*#{temp_tar_file}", ".")
+        $? # a Process::Status object
+      end
+
+      # Note: we cannot rely on the return code of the tar command.
+      if status.termsig
+        self.addlog("Error creating TAR archive: got signal #{status.termsig}")
+        return false
+      end
 
       # Remove some common warnings
       # "tar: something.sock: socket ignored"
       # "tar: .: file changed as we read it"
+      out = File.read(tar_capture) rescue ""
       out.gsub!(/tar.*ignored|tar.*changed as we read it/,"")
 
       if ! out.blank?
@@ -1454,11 +1463,13 @@ class ClusterTask < CbrainTask
 
     true
 
+  # Error handling
   rescue => ex
     self.addlog_exception(ex, "Archiving process exception:")
     File.unlink(full_tar_file) rescue true
     return false
 
+  # General cleanup
   ensure
     File.unlink(tar_capture)        rescue true
     File.unlink(full_temp_tar_file) rescue true
@@ -1500,16 +1511,28 @@ class ClusterTask < CbrainTask
 
       self.addlog("Attempting to unarchive work directory.")
 
-      ret = system("tar -xzf '#{tar_file}' </dev/null >'#{tar_capture}' 2>&1")
-      out = File.read(tar_capture) rescue ""
+      status = with_stdout_stderr_capture(tar_capture) do
+        system("tar", "-xzf", tar_file)
+        $?
+      end
 
-      if ! out.blank? || ! ret
+      if status.termsig
+        self.addlog("Error extracting TAR archive: got signal #{status.termsig}")
+        return false
+      end
+
+      out = File.read(tar_capture) rescue ""
+      if ! out.blank?
         outlines = out.split(/\n/)
-        if outlines.size > 10
-          outlines[10..99999] = [ "(#{outlines.size-10} more lines)" ]
+        if outlines.size > 5
+          outlines[5..99999] = [ "(#{outlines.size-5} more lines)" ]
         end
-        outlines = [ "(No output; tar command only returned false)" ] if outlines.empty?
         self.addlog("Error extracting TAR archive. Output of tar:\n#{outlines.join("\n")}")
+        return false
+      end
+
+      if ! status.success?
+        self.addlog("Error extracting TAR archive: tar command returned false.")
         return false
       end
 
@@ -2706,6 +2729,31 @@ chmod o+x . .. ../.. ../../..
       :tool_id            => self.tool.id,
       :tool_config_id     => self.tool_config_id,
     )
+  end
+
+  # Utility that should go in a separate framework.
+  # This allows the caller to invoke system()
+  # in a block with an argument list and not have to
+  # go through an intermediate shell to capture
+  # the output and error. This makes the $?
+  # process status more reliably represent what
+  # happened to the subprocess.
+  #
+  # This is unfortunately not thread-safe.
+  def with_stdout_stderr_capture(outfilename, errfilename=nil)
+    outfh = File.new(outfilename,"w")
+    errfh = File.new(errfilename,"w") if errfilename
+    prev_out = STDOUT.dup
+    prev_err = STDERR.dup
+    STDOUT.reopen(outfh)
+    STDERR.reopen(errfh || outfh)
+    yield
+  rescue
+    File.unlink(outfilename) rescue nil
+    File.unlink(errfilename) rescue nil
+  ensure
+    STDOUT.reopen(prev_out) if prev_out
+    STDERR.reopen(prev_err) if prev_err
   end
 
 end

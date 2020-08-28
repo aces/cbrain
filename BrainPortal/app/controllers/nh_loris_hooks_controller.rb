@@ -36,7 +36,7 @@ class NhLorisHooksController < NeurohubApplicationController
   #  {
   #    source_basenames:  [ "abc.nii.gz", "def.mnc.gz" ],
   #    source_data_provider_id:  123, # optiona, can be name
-  #    result_filenname:  "hello.csv",
+  #    result_filename:   "hello.csv",
   #    result_dp_id:      123, # optional, can be name
   #    result_group_id:   123, # optional, can be name
   #  }
@@ -86,7 +86,7 @@ class NhLorisHooksController < NeurohubApplicationController
   # Receives:
   #  {
   #    table_content:     [ [a, b, c], [d, e, f]... ],
-  #    result_filenname:  "hello.csv",
+  #    result_filename:   "hello.csv",
   #    result_dp_id:      123, # optional, can be name
   #    result_group_id:   123, # optional, can be name
   #  }

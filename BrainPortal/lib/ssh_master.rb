@@ -97,11 +97,14 @@ class SshMaster
   # will be inserted in the ssh command line as a series of "-o key=value". These options
   # are used for both permanent SSH masters and transient ones too.
   DEFAULT_SSH_CONFIG_OPTIONS = {
+    :ConnectTimeout                 => 10,
     :BatchMode                      => :yes,
     :StrictHostKeyChecking          => :no,
     :PasswordAuthentication         => :no,
     :KbdInteractiveAuthentication   => :no,
     :KbdInteractiveDevices          => :none,
+    :ExitOnForwardFailure           => :yes,
+    :IPQoS                          => 'throughput',
   }.with_indifferent_access
 
   # ---------------------------------------------
@@ -521,12 +524,11 @@ class SshMaster
     # Base options that are always present
     args_string  = " -p #{@port}"
     args_string += " -A"
-    args_string += " -o ConnectTimeout=10"
-    args_string += " -o ExitOnForwardFailure=yes"
     args_string += " " + ssh_config_options_as_string()
 
     # When @nomaster is true, it means we're not even building
-    # the options for an existing master.
+    # the options for an existing master. The client probably
+    # just need this object to issue one-shot commands.
     if ! @nomaster
       args_string += " -o ServerAliveInterval=30"
       args_string += " -o ServerAliveCountMax=5"
