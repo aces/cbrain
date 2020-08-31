@@ -42,6 +42,8 @@ namespace :cbrain do
       #####################################################
       task :dps => :environment do
 
+        CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
+
         # Restores STDOUT and STDERR so that nagios
         # can capture our pretty message at the end.
         STDOUT.reopen(nagios_out) if nagios_out
