@@ -31,7 +31,6 @@ require 'socket'
 CbrainSystemChecks.print_intro_info # general information printed to STDOUT
 
 # Try extracting what it is we are booting based on the set of loaded ruby files.
-first_arg      = ARGV[0]
 program_name   = Regexp.last_match[1] if $PROGRAM_NAME =~ /(puma|rspec|rake)$/
 program_name ||= $LOADED_FEATURES.detect do |pathname|
   break Regexp.last_match[2] if pathname =~ %r[
@@ -83,7 +82,9 @@ elsif program_name =~ /rake/
   #
   # Rake Exceptions By First Argument
   #
-  skip_validations_for = [ /^db:/, /^cbrain:plugins/, /^cbrain:test/, /^route/, /^assets/ ]
+  skip_validations_for = [ /^db:/, /^cbrain:plugins/, /^cbrain:test/, /^route/, /^assets/, /^cbrain:nagios/ ]
+  first_arg   = ARGV.detect { |x| x =~ /^[\w:]+$/i } # first thing that looks like abc:def:ghi
+  first_arg ||= '(none)'
   if skip_validations_for.any? { |p| first_arg =~ p }
     #------------------------------------------------------------------------------
     puts "C> \t- No validations needed for rake task '#{first_arg}'. Skipping."
@@ -102,6 +103,7 @@ elsif program_name =~ /generators/ # probably 'generate', 'destroy', 'plugin' et
 
 # ----- OTHER -----
 else # any other case is something we've not yet thought about, so we crash until we fix it.
+  first_arg = ARGV[0]
   #puts_red "PN=#{$PROGRAM_NAME} P0=$0"
   #puts_yellow $LOADED_FEATURES.sort.join("\n")
   raise "Unknown boot situation: program=#{program_name}, first arg=#{first_arg}"
