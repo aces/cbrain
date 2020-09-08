@@ -1353,9 +1353,6 @@ Cards used for simple "show"-type views
     @include heading("xs");
     @include p(4);
   }
-  .card-section {
-    @include form-layout();
-  }
   .card-footer {
     @include form-layout();
     @include p(0);
@@ -2087,7 +2084,7 @@ $ACTION_BAR_HEIGHT: 2.5;
 
 .spinner {
   border: 6px solid #f3f3f3; /* Light grey */
-  border-top: 6px solid #25BFC1; /* Blue */
+  border-top: 6px solid #25bfc1; /* Blue */
   border-radius: 50%;
   width: 30px;
   height: 30px;
@@ -2098,10 +2095,13 @@ $ACTION_BAR_HEIGHT: 2.5;
   display: none;
 }
 
-
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /*
