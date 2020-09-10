@@ -52,6 +52,25 @@ class NhProjectsController < NeurohubApplicationController
     end
   end
 
+  def destroy #:nodoc:
+    @nh_project = current_user.modifiable_groups.find(params[:id])
+
+    if ! current_user.has_role?(:admin_user)
+      if current_user.id != @nh_project.creator_id
+        cb_error "Cannot destroy this project: you are not its creator.", :redirect => nh_project_path(@nh_project)
+      end
+    end
+    
+    @nh_project.destroy
+
+    respond_to do |format|
+      format.html { redirect_to :action => :index }
+      format.js   { redirect_to :action => :index, :format => :js}
+      format.xml  { head :ok }
+      format.json { head :ok }
+    end
+  end
+
   def index  #:nodoc:
     @nh_projects        = find_nh_projects(current_user)
     @project_count      = @nh_projects.count
