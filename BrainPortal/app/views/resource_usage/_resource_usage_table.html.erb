@@ -158,7 +158,7 @@
         $(document).ready(function() {
           $('input[name="date_range[date_attribute]"]').on('click change', function(e) {
             if ($('input[name="date_range[date_attribute]"]:checked').val() === "") {
-              $('input[id="refresh_data_table"]').prop( "disabled", true )
+              $('#refresh_data_table').prop( "disabled", true )
             } else {
               $('#refresh_data_table').prop( "disabled", false )
             };
