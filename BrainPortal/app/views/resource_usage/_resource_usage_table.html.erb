@@ -160,7 +160,7 @@
             if ($('input[name="date_range[date_attribute]"]:checked').val() === "") {
               $('input[id="refresh_data_table"]').prop( "disabled", true )
             } else {
-              $('input[id="refresh_data_table"]').prop( "disabled", false )
+              $('#refresh_data_table').prop( "disabled", false )
             };
           });
         });
