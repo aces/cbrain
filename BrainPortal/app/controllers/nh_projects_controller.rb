@@ -57,17 +57,22 @@ class NhProjectsController < NeurohubApplicationController
 
     if ! current_user.has_role?(:admin_user)
       if current_user.id != @nh_project.creator_id
-        cb_error "Cannot destroy this project: you are not its creator.", :redirect => nh_project_path(@nh_project)
+        cb_error "Cannot destroy this project: you are not its maintainer.", :redirect => nh_project_path(@nh_project)
       end
     end
     
     @nh_project.destroy
 
+    flash[:notice] = "Project successfully deleted."
+
     respond_to do |format|
       format.html { redirect_to :action => :index }
-      format.js   { redirect_to :action => :index, :format => :js}
-      format.xml  { head :ok }
-      format.json { head :ok }
+    end
+  rescue ActiveRecord::DeleteRestrictionError => e
+    flash[:error]  = "Project not destroyed: #{e.message}"
+
+    respond_to do |format|
+      format.html { redirect_to :action => :index }
     end
   end
 
