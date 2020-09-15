@@ -23,6 +23,9 @@
 -%>
 
 
+<script src="/assets/jquery.js"></script> 
+<script src="/assets/jquery_ujs.js"></script>
+
 <% title("Summary", '') %>
 
 <div id="nh_projects_show" class="nh_content">
@@ -51,8 +54,9 @@
       <% end %>
 
       <% if current_user.id == @nh_project.creator.id || current_user.has_role?(:admin_user) %>
-        <%= button_to 'Delete', nh_project_path(@nh_project), {:confirm => "Are you sure you want to delete '#{@nh_project.name}'?", :method => :delete, :class => "btn-solid primary nh_action" }
+        <%= link_to nh_icon_dash + "Delete", nh_project_path(@nh_project), :method => :delete, :class => "btn-solid primary nh_action" , data: {:confirm => "Are you sure you want to delete '#{@nh_project.name}'?" }
         %>
+
       <% end %>
 
     </div>
