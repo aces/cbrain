@@ -51,7 +51,7 @@ $index : where 0 <= index < length of sizes array.
 This generates bootstrap-like padding and margin classes.
 They following classes are available:
 
-%p, %px, %py, %pt, %pb, %pl, %prs
+%p, %px, %py, %pt, %pb, %pl, %pr
 %m, %mx, %my, %mt, %mb, %ml, %mr
 
 followed by an integer that represents the index of the
@@ -59,17 +59,28 @@ desired size from the sizes array e.g. py-2 = 0.5rem.
 
 Note: @mixin is used in favour of not using @extend, but
 classes are generated for inline style needs.
+
+example:
+  <div class="m-2">
+    <div class="bg-grey-300"></div>
+  </div>
+
+example:
+ .table{
+   @include my(2)
+ }
 */
 
 $sizes: 0rem, 0.25rem, 0.5rem, 0.75rem, 1rem, 1.25rem, 1.5rem, 2rem, 2.5rem,
   3rem, 4rem, 5rem, 6rem, 8rem;
 
 @function space($index) {
+  // lists in scss are not zero-indexed.
   @return nth($sizes, $index + 1);
 }
 
 @mixin p($index) {
-  padding: space($index); // lists in scss are not zero-indexed.
+  padding: space($index);
 }
 
 @mixin px($index) {
@@ -128,6 +139,7 @@ $sizes: 0rem, 0.25rem, 0.5rem, 0.75rem, 1rem, 1.25rem, 1.5rem, 2rem, 2.5rem,
   margin-bottom: space($index);
 }
 
+// Creates a class for each size in p and m.
 @each $size in $sizes {
   .p-#{index($sizes,$size)-1} {
     @include p(index($sizes, $size)-1);
@@ -339,6 +351,22 @@ $CBRAIN_ALT: #05a3d6;
   background-color: $ERROR_DK;
 }
 
+.bg-warning-bg {
+  background-color: $WARNING_BG;
+}
+
+.bg-warning-wash {
+  background-color: $WARNING_WASH;
+}
+
+.bg-warning-alt {
+  background-color: $WARNING_ALT;
+}
+
+.bg-warning-dk {
+  background-color: $WARNING_DK;
+}
+
 .bg-orcid-bg {
   background-color: $ORCID_BG;
 }
@@ -540,15 +568,17 @@ A few shortcut often-used alignment classes.
 =============================================================
 $variant : wordmark, lettermark, icon.
 $color   : black, white, RGB, grayscale.
-$size    : xs, ssm, md, lg
+$size    : xs, sm, md, lg
 */
 
+// neurohub logo as a background image
 @mixin logoImg($variant, $color) {
   background-image: url(<%=asset_path"/images/neurohub/NH_hbhl_\#{$variant}_\#{$color}.png"%>);
   background-repeat: no-repeat;
   background-size: contain;
 }
 
+// for svg icons
 @mixin icon($size: "xxs", $stroke: "none", $fill: "none") {
   @if $stroke != "none" {
     stroke: $stroke;
@@ -578,6 +608,7 @@ $size    : xs, ssm, md, lg
   }
 }
 
+// neurohub logo
 @mixin logo($variant: "wordmark", $color: "RGB", $size: "md") {
   @include logoImg($variant, $color);
   @if $variant != "icon" {
@@ -666,8 +697,6 @@ $variant : xlow, low, mid, high.
 =============================================================
 | TRANSITIONS
 =============================================================
-$variant : hover
-$state   : on, off
 */
 
 $TRANSITION_HOVER_ON: all 0.2s ease-in;
@@ -976,7 +1005,6 @@ Button variants: solid, text, and nav.
 .btn-section {
   @include py(7);
   @include mt(4);
-  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1038,6 +1066,7 @@ $variant : error, notice
 =============================================================
 | ERRORS
 =============================================================
+Error banner with bullet-points for explaining issues.
 */
 
 .errorExplanation {
@@ -1058,6 +1087,7 @@ $variant : error, notice
 =============================================================
 | EMPTY
 =============================================================
+Empty field with icon + text.
 */
 
 .empty-wrapper {
@@ -1103,6 +1133,8 @@ $variant : error, notice
 =============================================================
 | FORMS
 =============================================================
+Styles for form + form elements
+Note: form-layout() is responsible for the padded layout.
 */
 
 .field-description {
@@ -1358,6 +1390,7 @@ Cards used for simple "show"-type views
     @include p(0);
     width: 100%;
     background: $DEFAULT_WASH;
+    align-items: center;
   }
   .card-row {
     @include px(4);
@@ -1447,7 +1480,13 @@ Cards used for simple "show"-type views
 =============================================================
 | TABLES
 =============================================================
+All table elements.
 */
+
+$TABLE_TD_MIN_WIDTH: 10;
+$TABLE_TD_INT_WIDTH: 4.5;
+$TABLE_TD_MAX_WIDTH: 15.5;
+$TABLE_BUTTON_HEIGHT: 2;
 
 .nh_pagination {
   @include p(2);
@@ -1549,7 +1588,7 @@ table {
   th,
   td {
     display: table-cell;
-    min-width: 150px;
+    min-width: $TABLE_TD_MIN_WIDTH + rem;
     .text {
       display: block;
       text-overflow: ellipsis;
@@ -1559,12 +1598,12 @@ table {
       justify-content: flex-start;
     }
     &[data-trim="true"] {
-      max-width: 250px;
+      max-width: $TABLE_TD_MAX_WIDTH + rem;
     }
     &[data-type="int"],
     &[data-action="true"] {
-      min-width: 75px;
-      width: 75px;
+      min-width: $TABLE_TD_INT_WIDTH + rem;
+      width: $TABLE_TD_INT_WIDTH + rem;
       > * {
         text-align: center;
         justify-content: center;
@@ -1611,16 +1650,15 @@ table {
         width: 100%;
         height: 100%;
         position: absolute;
-        min-height: 34px;
         top: 0;
         left: 0;
         justify-content: inherit;
         align-items: inherit;
       }
       &[data-action="true"] {
-        min-width: 75px;
-        max-width: 100px;
-        width: 100px;
+        min-width: $TABLE_TD_INT_WIDTH + rem;
+        max-width: 6.25rem; //100px
+        width: 6.25rem; //100px
         div {
           display: flex;
           flex-wrap: wrap;
@@ -1636,7 +1674,7 @@ table {
         [data-link="true"] {
           width: unset;
           position: unset;
-          max-height: 34px;
+          max-height: $TABLE_BUTTON_HEIGHT;
           margin: 1px;
           border-radius: 0;
           flex: 1 1 48%;
@@ -1753,6 +1791,7 @@ table {
 =============================================================
 | NAVIGATION BAR
 =============================================================
+Main top Navigation Bar
 */
 
 $NAVBAR_HEIGHT: 3.5;
@@ -1981,11 +2020,26 @@ Secondary navbar with application-wide search + breadcrumbs
 | PAGES
 =============================================================
 Base styles for all pages.
+nh_content mixin is responsible the base layout of pages
+(setting the background and padding) and as such, should
+be included in every new page.
 */
 
-* {
-  box-sizing: border-box;
+$MIN_BODY_WIDTH: 18;
+
+$ACTION_BAR_HEIGHT: 1.5;
+
+@mixin nh_content {
+  @include p(4);
+  position: relative;
+  flex: 1;
+  background: $DEFAULT_WASH;
+  height: 100%;
+  @media (min-width: $BREAKPOINT_SM) {
+    @include p(7);
+  }
 }
+
 html {
   display: flex;
   min-height: 100vh;
@@ -1994,7 +2048,7 @@ html {
 html,
 body {
   font-size: 16px;
-  min-width: 18rem;
+  min-width: $MIN_BODY_WIDTH + rem;
   flex: 1;
   display: flex;
   flex-direction: row;
@@ -2004,15 +2058,9 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+// Responsible for page layout
 .nh_content {
-  @include p(4);
-  position: relative;
-  flex: 1;
-  background: $DEFAULT_WASH;
-  height: 100%;
-  @media (min-width: $BREAKPOINT_SM) {
-    @include p(7);
-  }
+  @include nh_content();
 }
 
 .nh_page {
@@ -2028,14 +2076,15 @@ body {
   }
 }
 
-$ACTION_BAR_HEIGHT: 2.5;
-
 .nh_actions {
   @include shadow("mid");
   background: $DEFAULT_BG;
   display: flex;
   flex-wrap: wrap;
   overflow: hidden;
+  > form {
+    display: flex;
+  }
 }
 
 .nh_action {
@@ -2110,13 +2159,16 @@ $ACTION_BAR_HEIGHT: 2.5;
 =============================================================
 */
 
+$FEATURE_ICON: 5;
+$FEATURE_MAX: 15;
+
 #nh_sessions_new {
   height: 100%;
   flex: 1;
   display: flex;
   flex-direction: column;
   .nh_login {
-    @extend .nh_content;
+    @include nh_content();
     background: $DEFAULT_BG;
     flex: 1;
     display: flex;
@@ -2149,9 +2201,8 @@ $ACTION_BAR_HEIGHT: 2.5;
       }
     }
   }
-
   .nh_features {
-    @extend .nh_content;
+    @include nh_content();
     @include heading("sm");
     background: $SECONDARY_DK;
     flex: 1;
@@ -2212,12 +2263,12 @@ $ACTION_BAR_HEIGHT: 2.5;
         flex-direction: column;
         .nh_feature_icon {
           @include m(2);
-          width: 5rem;
-          height: 5rem;
+          width: $FEATURE_ICON + rem;
+          height: $FEATURE_ICON + rem;
         }
         .nh_feature_text {
           @include pl(4);
-          max-width: 15rem;
+          max-width: $FEATURE_MAX + rem;
         }
       }
       .nh_register {
@@ -2272,7 +2323,7 @@ $ACTION_BAR_HEIGHT: 2.5;
 
 #nh_signups_new,
 #nh_signups_show {
-  @extend .nh_content;
+  @include nh_content();
   flex: 1;
   .nh_logo {
     @include logo();
@@ -2323,9 +2374,6 @@ $BAR_HEIGHT: 2.3;
       display: flex;
       flex-wrap: wrap;
       flex-direction: column;
-      > * {
-        width: 100%;
-      }
       .card_heading {
         background: $DEFAULT_WASH;
         &:hover {
@@ -2353,6 +2401,7 @@ $BAR_HEIGHT: 2.3;
           @extend .cbrain;
           @extend .external;
           @include text("xs");
+          padding: 0;
           height: 100%;
           text-decoration: none;
           width: 100%;
@@ -2410,6 +2459,7 @@ $BAR_HEIGHT: 2.3;
         }
 
         &[data-actions="true"] {
+          align-items: center;
           .icon {
             opacity: 0.25;
             transition: $TRANSITION_HOVER_OFF;
@@ -2671,6 +2721,9 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
         background: transparent;
         .card {
           @include mb(4);
+          .card-item {
+            width: unset;
+          }
           .header {
             @include px(5);
             @include py(2);
@@ -2899,6 +2952,7 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
       height: 100%;
     }
     .btn-section {
+      width: unset;
       align-self: flex-end;
       > * {
         white-space: normal;
