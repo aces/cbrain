@@ -82,6 +82,12 @@ class NeurohubApplicationController < ApplicationController
 
   end
 
+  # For the moment on the NeuroHub side, we bypass checking the site-wide
+  # licenses. They'll still be required if the user switch to CBRAIN.
+  def check_license_agreements
+    true
+  end
+
   ########################################################################
   # Messaging System Filters (presently only invite acceptance)
   ########################################################################
