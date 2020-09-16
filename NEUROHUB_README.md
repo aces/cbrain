@@ -6,6 +6,6 @@ The platform brings together established data and computational infrastructure w
 
 ## Styleguide
 
-Style specifications are documented in the [Neurohub styleguide](https://github.com/cbrain/tree/master/BrainPortal/app/assets) and rendered components can be viewed in the browser at `/styleguide`.
+Style specifications are documented in the [Neurohub styleguide](https://github.com/aces/cbrain/tree/master/BrainPortal/app/assets) and rendered components can be viewed in the browser at `/styleguide`.
 <br>
 Neurohub uses SCSS for styling, you can also learn more about how we use it here: [SCSS tutorial](https://github.com/aces/cbrain/tree/master/BrainPortal/app/assets/stylesheets/SCSS_intro_tutorial.md)
