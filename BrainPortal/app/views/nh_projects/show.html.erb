@@ -49,7 +49,7 @@
         <%= link_to nh_icon_add + "Add Storage", new_nh_storage_path(:group_id => @nh_project.id), :class => "btn-solid primary nh_action" %>
       <% end %>
 
-      <% if current_user.id == @nh_project.creator.id || current_user.has_role?(:admin_user) %>
+      <% if current_user.id == @nh_project.creator_id || current_user.has_role?(:admin_user) %>
         <%= link_to nh_icon_dash + "Delete", nh_project_path(@nh_project), :method => :delete, :class => "btn-solid primary nh_action" , data: {:confirm => "Are you sure you want to delete '#{@nh_project.name}'?" }
         %>
 
