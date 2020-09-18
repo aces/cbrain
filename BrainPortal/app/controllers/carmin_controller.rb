@@ -93,7 +93,7 @@ class CarminController < ApplicationController
 
     all_ok, new_cb_session = eval_in_controller(::SessionsController) do
       user = User.authenticate(username,password) # can be nil if it fails
-      ok   = create_from_user(user)
+      ok   = create_from_user(user, 'CARMIN')
       [ok, cbrain_session]
     end
     @cbrain_session = new_cb_session # crush the session object that was created for the CarminController

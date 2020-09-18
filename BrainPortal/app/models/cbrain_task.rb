@@ -61,6 +61,9 @@ class CbrainTask < ApplicationRecord
   # Resource usage is kept forever even if task is destroyed.
   has_many              :resource_usage
 
+  # Returns the set of tasks in the same batch
+  has_many :batch_tasks, :class_name => 'CbrainTask', :foreign_key => :batch_id, :primary_key => :batch_id
+
   # Pseudo Attributes (not saved in DB)
   # These are filled in by calling capture_job_out_err().
   attr_accessor  :cluster_stdout, :cluster_stderr, :script_text, :runtime_info

@@ -55,7 +55,7 @@ class SessionsController < ApplicationController
       verify_authenticity_token  # from Rails; will raise exception if not present.
     end
     user = User.authenticate(params[:login], params[:password]) # can be nil if it fails
-    all_ok = create_from_user(user)
+    all_ok = create_from_user(user, 'CBRAIN')
 
     if ! all_ok
       auth_failed()
@@ -137,7 +137,9 @@ class SessionsController < ApplicationController
 
   # Does all sort of housekeeping and checks when +user+ logs in.
   # If user is nil, tells the framework the authentication has failed.
-  def create_from_user(user) #:nodoc:
+  # +origin+ is a keyword describing the origin of the authentication
+  # for the user.
+  def create_from_user(user, origin='CBRAIN') #:nodoc:
 
     # Bad login/password?
     unless user
@@ -165,9 +167,9 @@ class SessionsController < ApplicationController
     end
 
     # Everything OK
-    self.current_user = user # this ALSO ACTIVATE THE SESSION
+    self.current_user = user # this ALSO ACTIVATES THE SESSION
     session[:user_id] = user.id  if request.format.to_sym == :html
-    user_tracking(portal) # Figures out IP address, user agent, etc, once.
+    user_tracking(portal, origin) # Figures out IP address, user agent, etc, once.
 
     return true
 
@@ -198,7 +200,7 @@ class SessionsController < ApplicationController
     return ""
   end
 
-  def user_tracking(portal) #:nodoc:
+  def user_tracking(portal,origin='CBRAIN') #:nodoc:
     user   = current_user
     cbrain_session.activate(user.id)
 
@@ -237,8 +239,10 @@ class SessionsController < ApplicationController
       authentication_mechanism = 'password/api'
     end
 
-    user.addlog("Logged in with #{authentication_mechanism} on #{portal.name} from #{pretty_host} using #{pretty_brow}")
-    portal.addlog("User #{user.login} logged in with #{authentication_mechanism} from #{pretty_host} using #{pretty_brow}")
+    # The following two log lines differ at their beginning but provides
+    # the same information afterwards. Thus the weird style alignment.
+    user.addlog(      "Logged in on #{portal.name}/#{origin} with #{authentication_mechanism} from #{pretty_host} using #{pretty_brow}")
+    portal.addlog("User #{user.login} logged in on #{origin} with #{authentication_mechanism} from #{pretty_host} using #{pretty_brow}")
     user.update_attribute(:last_connected_at, Time.now)
 
     # Admin users start with some differences in behavior

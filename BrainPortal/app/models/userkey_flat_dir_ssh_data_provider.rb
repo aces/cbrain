@@ -23,7 +23,7 @@
 # This provider type is basically identical to
 # the FlatDirSshDataProvider, but authenticates
 # to the remote site using the SshKey of the
-# user associated with the file.
+# owner of the data provider.
 class UserkeyFlatDirSshDataProvider < FlatDirSshDataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
