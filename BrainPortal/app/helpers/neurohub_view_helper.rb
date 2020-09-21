@@ -325,4 +325,24 @@ module NeurohubViewHelper
     SVG
   end
 
+  def nh_icon_close
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 32 32"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#close"></use>
+    </svg>
+    SVG
+  end  
+
+  def nh_icon_dash
+    <<-SVG.html_safe
+    <svg xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 32 32"
+    >
+      <use xlink:href="#{image_path("neurohub.svg")}#dash"></use>
+    </svg>
+    SVG
+  end
+
 end
