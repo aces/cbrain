@@ -63,8 +63,9 @@ describe "Bourreau Boutiques Tests" do
       @boutiquesTask = SchemaTaskGenerator.generate(schema, descriptor)
       @boutiquesTask.integrate if File.exists?(descriptor)
       # Create a new instance of the generated task class
-      @task          = CbrainTask::BoutiquesTest.new
-      @task.params   = {}
+      @task             = CbrainTask::BoutiquesTest.new
+      @task.tool_config = ToolConfig.new
+      @task.params      = {}
       # Assign it a bourreau
       resource = RemoteResource.current_resource
       @task.bourreau_id = resource.id
