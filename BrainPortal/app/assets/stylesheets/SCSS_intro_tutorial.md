@@ -2,7 +2,7 @@
 
 A superset of css.
 
-You can view the NeuroHUB styleguide live at `/styleguide`
+You can view the NeuroHub styleguide live at `/styleguide`
 
 ## Topics
 
@@ -176,7 +176,7 @@ You can view the NeuroHUB styleguide live at `/styleguide`
 
 ```
 
-## General Neurohub Style Conventions
+## General NeuroHub Style Conventions
 
 - Never set a px arbitrarily. If you absolutely must have something be a certain size or whatever, set it in a variable first.
 
@@ -190,4 +190,4 @@ You can view the NeuroHUB styleguide live at `/styleguide`
 
 - Variables that are not global, I personally prefer to put them at the top of whatever section they're dealing with. So if `$NAV_BAR_WIDTH: 250px`, I would put that at the top of the nav bar section.
 
-- In Neurohub, we have all our mixins set in sections that are not considered "pages". While there may be a case for a mixin to appear in a page section, up until now there hasn't been a need when we consider that by nature, mixins are to be repeated and therefore usually belong in sections that are re-used aka not individual pages.
+- In NeuroHub, we have all our mixins set in sections that are not considered "pages". While there may be a case for a mixin to appear in a page section, up until now there hasn't been a need when we consider that by nature, mixins are to be repeated and therefore usually belong in sections that are re-used aka not individual pages.
