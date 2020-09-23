@@ -42,7 +42,7 @@ class CbrainMailer < ActionMailer::Base
     mail(
       :from    => from,
       :to      => user.email,
-      :subject => 'Welcome to CBRAIN and NEUROHUB!'
+      :subject => 'Welcome to CBRAIN and NeuroHub!'
     )
   end
 
