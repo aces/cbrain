@@ -45,6 +45,7 @@
                 <%= link_to 'Invitations', nh_invitations_path, { :class => "btn-nav secondary badge", "data-badge"=> @nh_new_invites_count > 0 ? @nh_new_invites_count : nil, "data-active"=> request.path_info.include?('nh_invitations') && action_name==="index" } %>
             <% end %>
             <%= link_to 'My Account', myaccount_path, { :class => "btn-nav secondary", "data-active"=> request.path_info.include?('myaccount')} %>
+            <%= link_to 'Documentation', 'https://github.com/neurohub/neurohub_documentation/wiki', :class => "btn-nav secondary badge", :target => :_blank %>
             <a class="btn-nav secondary" href="/signout">Logout</a>
         </div>
     </div>
