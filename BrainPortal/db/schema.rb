@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200804163321) do
+ActiveRecord::Schema.define(version: 20200922162525) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -430,6 +430,7 @@ ActiveRecord::Schema.define(version: 20200804163321) do
     t.string   "containerhub_image_name"
     t.string   "container_engine"
     t.string   "container_index_location"
+    t.text     "singularity_overlays_specs",  limit: 65535
     t.index ["bourreau_id"], name: "index_tool_configs_on_bourreau_id", using: :btree
     t.index ["tool_id"], name: "index_tool_configs_on_tool_id", using: :btree
   end
