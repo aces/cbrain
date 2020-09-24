@@ -427,8 +427,22 @@ class ClusterTask < CbrainTask
     base_dir = start_dir || self.full_cluster_workdir
 
     # Fetch and sync the requested userfile
-    userfile      = Userfile.find(userfile) unless userfile.is_a?(Userfile)
-    userfile.sync_to_cache
+    userfile = Userfile.find(userfile) unless userfile.is_a?(Userfile)
+
+    # Detect if we're trying to access a userfile content that is
+    # containerized in a singularity overlay.
+    is_local = nil
+    if self.tool_config
+           .data_providers_with_overlays
+           .map(&:id)
+           .include? userfile.data_provider_id
+      userfile_path = Pathname.new(userfile.provider_full_path) # path inside container
+      is_local      = true
+      self.addlog("Input file '#{userfile.name}' is on a local Singularity overlay")
+    else
+      userfile.sync_to_cache
+      userfile_path  = Pathname.new(userfile.cache_full_path)
+    end
 
     # Compute the final absolute path to the target file symlink
     file_path     = Pathname.new(file_path.to_s)
@@ -438,14 +452,19 @@ class ClusterTask < CbrainTask
     # Pathname objects for the userfile and bourreau directories
     workdir_path   = Pathname.new(self.cluster_shared_dir)
     dp_cache_path  = Pathname.new(RemoteResource.current_resource.dp_cache_dir)
-    userfile_path  = Pathname.new(userfile.cache_full_path)
+
+    # Pathname for the target value of the symlink with subpath
     userfile_path += Pathname.new(userfile_sub_path) if userfile_sub_path.to_s.present?
 
     # Try to figure out if the DataProvider of userfile is local, or remote.
     # SmartDataProviders supply the real implementation under a real_provider method;
     # other providers don't have that.
-    userfile_real_dp = userfile.data_provider.real_provider rescue userfile.data_provider
-    is_local = userfile_real_dp.is_a?(LocalDataProvider)
+    if is_local.nil?
+      userfile_real_dp = userfile.data_provider.real_provider rescue userfile.data_provider
+      is_local = userfile_real_dp.is_a?(LocalDataProvider)
+      self.addlog("Input file '#{userfile.name}' is on a local provider")  if   is_local
+      self.addlog("Input file '#{userfile.name}' is on a remote provider") if ! is_local
+    end
 
     # Files on local data providers are symlinked directly
     if is_local
@@ -2311,23 +2330,39 @@ docker_image_name=#{full_image_name.bash_escape}
   # is the raw scientific bash script.
   def singularity_commands(command_script)
 
-    # Values we substitute in our script:
-    # 1) The path to the task's work directory
-    task_workdir        = self.full_cluster_workdir
-
-    # 2) The root of the DataProvider cache
-    cache_dir          = self.bourreau.dp_cache_dir
-
-    # 3) The root of the shared area for all CBRAIN tasks
-    gridshare_dir      = self.bourreau.cms_shared_dir
-
-    # 4) Basename of the singularity wrapper script
+    # Basename of the singularity wrapper script
     singularity_wrapper_basename = ".singularity.#{self.run_id}.sh"
 
-    # 5) More -B (bind mounts) for all the local data providers.
+    # Values we substitute in our script:
+    # Numbers in (paren) correspond to the comment
+    # block in the script, well below.
+
+    # (1) The root of the shared area for all CBRAIN tasks
+    gridshare_dir = self.bourreau.cms_shared_dir
+
+    # (2) The root of the DataProvider cache
+    cache_dir     = self.bourreau.dp_cache_dir
+
+    # (5) The path to the task's work directory
+    task_workdir  = self.full_cluster_workdir
+
+    # (3) More -B (bind mounts) for all the local data providers.
     # This will be a string "-B path1 -B path2 -B path3" etc.
     esc_local_dp_mountpoints = local_dp_storage_paths.inject("") do |sing_opts,path|
       "#{sing_opts} -B #{path.bash_escape}"
+    end
+
+    # (4) Overlays defined in the ToolConfig
+    # Some of them might be patterns (e.g. /a/b/data*.squashfs) that need to
+    # be resolved locally.
+    # This will be a string "--overlay=path:ro --overlay=path:ro" etc.
+    overlay_paths = self.tool_config.singularity_overlays_full_paths.map do |path|
+      paths = Dir.glob(path) # checks on the local file system
+      cb_error "Can't find any overlays matching '#{path}'" if paths.blank?
+      paths
+    end.flatten
+    overlay_mounts = overlay_paths.inject("") do |sing_opts,path|
+      "#{sing_opts} --overlay=#{path.bash_escape}:ro"
     end
 
     # Set singularity command
@@ -2384,12 +2419,14 @@ chmod o+x . .. ../.. ../../..
 # 1) we mount the gridshare root directory
 # 2) we mount the local data provider cache root directory
 # 3) we mount each (if any) of the root directory for local data providers
-# 4) with -H we mount the task's work directory as the $HOME directory
+# 4) we mount (if any) file system overlays
+# 5) with -H we set the task's work directory as the singularity $HOME directory
 #{singularity_executable_name}                  \\
     exec                                        \\
     -B #{gridshare_dir.bash_escape}             \\
     -B #{cache_dir.bash_escape}                 \\
     #{esc_local_dp_mountpoints}                 \\
+    #{overlay_mounts}                           \\
     -H #{task_workdir.bash_escape}              \\
     #{container_image_name.bash_escape}         \\
     ./#{singularity_wrapper_basename.bash_escape}
