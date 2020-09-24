@@ -58,7 +58,8 @@ class ToolConfig < ApplicationRecord
                                    :message => "must be unique per pair [tool, server]" },
                   :if         => :applies_to_bourreau_and_tool?
 
-  validate        :container_rules
+  validate        :validate_container_rules
+  validate        :validate_overlays_specs
 
   scope           :global_for_tools     , -> { where( { :bourreau_id => nil } ) }
   scope           :global_for_bourreaux , -> { where( { :tool_id => nil } ) }
@@ -323,14 +324,48 @@ class ToolConfig < ApplicationRecord
     self.tool.cbrain_task_class
   end
 
+  # Returns an array of full paths to the Singularity overlay files that
+  # need to be mounted, as configured by the admin. Some of them might
+  # be patterns and will need to be resolved at run time.
+  def singularity_overlays_full_paths
+    specs = self.singularity_overlays_specs.presence
+    return [] if specs.blank?
 
+    specs = specs.split(/[\s,]+/).map(&:presence).compact
+    specs.map do |spec|
+      # Full path or pattern
+      next spec if spec =~ /^\// # just use that
+      # DP spec dp:123 or dp:name
+      id_or_name = spec.sub(/^dp:/i,"")
+      dp = DataProvider.where_id_or_name(id_or_name).first
+      cb_error "Can't find DataProvider #{id_or_name} for fetching overlays" if ! dp
+      dp_ovs = dp.singularity_overlays_full_paths rescue nil
+      cb_error "DataProvider #{id_or_name} does not have any overlays configured." if dp_ovs.blank?
+      next dp_ovs
+    end.flatten.uniq
+  end
+
+  # Returns an array of the data providers that are
+  # specified in the attribute singularity_overlays_specs,
+  # ignoring all other overlay specs for normal files.
+  def data_providers_with_overlays
+    return @_data_providers_with_overlays_ if @_data_providers_with_overlays_
+    specs = self.singularity_overlays_specs.presence
+    return [] if specs.blank?
+    specs = specs.split(/[\s,]+/).map(&:presence).compact
+    @_data_providers_with_overlays_ = specs.map do |spec|
+      next nil unless spec =~ /^dp:/i
+      id_or_name = spec.sub(/^dp:/i,"")
+      DataProvider.where_id_or_name(id_or_name).first
+    end.compact
+  end
 
   #################################################################
   # Validation methods
   #################################################################
 
   # Validate some rules for container_engine, container_image_userfile_id, containerhub_image_name
-  def container_rules #:nodoc:
+  def validate_container_rules #:nodoc:
     # Should only have one container_engine of particular type
     available_engine = ["Singularity","Docker"]
     if self.container_engine.present? && available_engine.exclude?(self.container_engine)
@@ -360,6 +395,46 @@ class ToolConfig < ApplicationRecord
       end
     end
     return errors.empty?
+  end
+
+  # Verify that the admin has entered a set of
+  # overlay specifications properly. One or several of:
+  #
+  #    /full/path/to/something.squashfs
+  #    /full/path/to/pattern*/data?.squashfs
+  #    dp:123
+  #    dp:dp_name
+  def validate_overlays_specs #:nodoc:
+    specs = self.singularity_overlays_specs.presence
+    return if specs.blank?
+
+    specs = specs.split(/[\s,]+/).map(&:presence).compact
+
+    # Iterare over each spec and validate them
+    specs.each do |spec|
+      # Full paths
+      if spec =~ /^\//
+        next if spec =~ /^\/\S+\.(sqs|squashfs)$/i # full paths ok
+        self.errors.add(:singularity_overlays_specs, "contains invalid specification '#{spec}'. It should be a full path that ends in .squashfs or .sqs")
+        next
+      end
+
+      # DP specs: "dp:name" or "dp:ID"
+      if spec =~ /\Adp:(\S+)\z/i
+        dp_name_or_id=Regexp.last_match[1]
+        dp=DataProvider.where_id_or_name(dp_name_or_id).first
+        if !dp
+          self.errors.add(:singularity_overlays_specs, "contains invalid DP specification '#{spec}' (no such DP)")
+        end
+        if ! dp.is_a?(SingSquashfsDataProvider)
+          self.errors.add(:singularity_overlays_specs, "DataProvider '#{spec}' is not a SingSquashfsDataProvider")
+        end
+        next
+      end
+
+      # Other
+      self.errors.add(:singularity_overlays_specs, "contains invalid specification '#{spec}'")
+    end
   end
 
   ##################################################################

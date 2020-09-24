@@ -189,6 +189,20 @@
       </div>
     <% end %>
 
+    <% t.edit_cell(:singularity_overlays_specs, :header => "Singularity Overlays", :show_width => 2) do |f| %>
+      <%= f.text_area :singularity_overlays_specs, :rows => 4, :cols => 120 %>
+        <div class="wide_field_explanation">
+        This field can contain one or several specifications for data overlays
+        to be included when the task is started with Singularity.
+        A specification can be either
+        a full path (e.g. <em>/a/b/data.squashfs</em>),
+        a path with a pattern (e.g. <em>/a/b/data*.squashfs</em>),
+        or a SquashFS Data Provider identified by its ID or name (e.g. <em>dp:123</em>, <em>dp:DpNameHere</em>).
+        In the case of a Data Provider, the overlays will be the files that the provider uses.
+        Separate specifications with blank, commas, or newlines.
+        </div>
+    <% end %>
+
   <% end %>
 
 

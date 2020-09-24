@@ -225,6 +225,15 @@ class SingSquashfsDataProvider < SshDataProvider
   # Internal support methods
   ########################################################
 
+  public
+
+  # Returns the full paths to the overlays
+  def singularity_overlays_full_paths #:nodoc:
+    self.get_squashfs_basenames.map do |basename|
+      Pathname.new(self.remote_dir) + basename
+    end.map(&:to_s)
+  end
+
   protected
 
   # Returns true if we have to use 'ssh' to
@@ -260,10 +269,10 @@ class SingSquashfsDataProvider < SshDataProvider
     @sq_files ||= self.meta[:squashfs_basenames] # cached_values
 
     if @sq_files.blank? || force
-      remote_cmd  = "cd #{self.remote_dir.bash_escape} && ls -1 | grep '\.squashfs$'"
+      remote_cmd  = "cd #{self.remote_dir.bash_escape} && ls -1'"
       text        = self.remote_bash_this(remote_cmd)
       lines       = text.split("\n")
-      @sq_files   = lines.select { |l| l =~ /\A\S+\.squashfs\z/ }.sort
+      @sq_files   = lines.select { |l| l =~ /\A\S+\.(squashfs|sqs)\z/ }.sort
       self.meta[:squashfs_basenames] = @sq_files
     end
 
