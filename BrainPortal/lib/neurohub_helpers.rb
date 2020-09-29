@@ -106,10 +106,9 @@ module NeurohubHelpers
   end
 
   # Returns a list of other data providers made availabel to NeuroHub users
-  # by the admin (requires setting mmeta[:neurohub_service_dp_ids] on the
-  # BrainPortal object of the NeuroHub server)
+  # by the admin (requires setting mmeta[:pref_data_provider_id])
   def nh_service_storages(user)
-    svc_ids = RemoteResource.current_resource.meta[:neurohub_service_dp_ids].presence || [ -999 ]
+    svc_ids = RemoteResource.current_resource.meta[:pref_data_provider_id].presence || [ -999 ]
     DataProvider.find_all_accessible_by_user(user).where(:id => svc_ids)
   end
 
