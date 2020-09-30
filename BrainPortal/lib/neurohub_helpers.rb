@@ -145,4 +145,11 @@ module NeurohubHelpers
     return report
   end
 
+  # filter NeuroHub messages (no invites)
+  def neurohub_messages
+    Message.where(:user_id        => current_user.available_users.map(&:id),
+                  :type           => nil  #  filter out invites
+                  ).order( "last_sent DESC" )
+  end
+
 end

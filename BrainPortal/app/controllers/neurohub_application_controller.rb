@@ -30,7 +30,7 @@ class NeurohubApplicationController < ApplicationController
   include NeurohubHelpers
 
   before_action :switch_to_neurohub_layout
-  before_action :prepare_invites
+  before_action :prepare_nh_messages
 
   # This before_action callback sets a instance
   # variable @_NeuroHubLayout_ which is used by
@@ -92,20 +92,18 @@ class NeurohubApplicationController < ApplicationController
   # Messaging System Filters (presently only invite acceptance)
   ########################################################################
 
-  # Find the number of new invitations to be displayed at the top of the page.
-  def prepare_invites
+  # Find the number of new invitations and messages to be displayed at the top of the page.
+  def prepare_nh_messages
     return unless current_user
     nh_invites            = Invitation.where(user_id: current_user.id, active: true).all || [];
     nh_new_invites        = Invitation.where(user_id: current_user.id, active: true, read: false).all || [];
     @nh_invites_count     = nh_invites.count
     @nh_new_invites_count = nh_new_invites.count
+    @nh_message_count     = neurohub_messages.count
+    @nh_new_message_count = neurohub_messages.where(:read => false).count  # differs from cbrain, as invites are shown separately
+    @nh_new_invites_ack   = current_user.messages.where( :read => false, :header => 'Invitation Accepted' ).order( "last_sent DESC" ).all()
   end
-
-  # below a method is overwriten to render only invitation confirmation, filtered by header (for now)
-  def unread_messages_to_display #:nodoc:
-    current_user.messages.where( :read => false, :header => 'Invitation Accepted' ).order( "last_sent DESC" )
-  end
-
+  
   # Check if password need to be reset.
   # This method is identical to (and overrides) the one in
   # ApplicationController excepts it uses the NeuroHub password reset form.

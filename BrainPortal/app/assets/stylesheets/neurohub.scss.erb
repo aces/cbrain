@@ -235,6 +235,15 @@ $CBRAIN_BG: #29b9e8;
 $CBRAIN_WASH: #ecf7fc;
 $CBRAIN_ALT: #05a3d6;
 
+$SYSTEM_BG: $CBRAIN_BG;
+$SYSTEM_WASH: $CBRAIN_WASH;
+$SYSTEM_ALT: $CBRAIN_ALT;
+
+$COMMUNICATION_BG: rgba(161, 106, 72, 0.92);
+$COMMUNICATION_WASH: #BAB2B5;
+$COMMUNICATION_ALT: #EDC7B7;
+$COMMUNICATION_DK: #AC3B61;
+
 .grey-400 {
   color: $GREY_400;
 }
@@ -1039,6 +1048,12 @@ $variant : error, notice
   @if ($variant == "warning") {
     background-color: $WARNING_BG;
   }
+  @if ($variant == "communication") {
+    background-color: $COMMUNICATION_BG;
+  }
+  @if ($variant == "system") {
+    background-color: $SYSTEM_BG;
+  }
 }
 
 .flash_icon {
@@ -1059,6 +1074,16 @@ $variant : error, notice
 
 .flash_warning {
   @include banner("warning");
+  @include px(7);
+}
+
+.flash_system {
+  @include banner("system");
+  @include px(7);
+}
+
+.flash_communication {
+  @include banner("communication");
   @include px(7);
 }
 

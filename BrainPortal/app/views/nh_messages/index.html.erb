@@ -1,0 +1,91 @@
+
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<div id="nh_messages" class="nh_content nh_invitations">
+
+  <%- # actions   -%>
+  <div class="nh_actions">
+    <%= link_to nh_icon_add + "New message", {:action => :new}, :method => :get, :class => "btn-solid primary nh_action" %>
+  </div>
+  <div class="section primary">
+
+    <% if @messages_count > 0 %>
+
+      <%- # pagination   -%>
+      <div class="nh_pagination">
+        <%== pagy_nav(@pagy) %>
+        <div class="d-flex">
+          <div class="nh_per_page">
+            <%= form_for nh_messages_path(:page => @page), :method => :get do %>
+              <%= label_tag :per_page, "show" %>
+              <%= number_field_tag :per_page, @per_page, min: 5, max: 100, step: 1, size: 5 %>
+              <span> of <%= @messages_count || messages.count %> </span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <% @messages.each do |message| %>
+        <div class="card">
+          <div class="card-row header">
+            <% if message.read %>
+              <p class="card-item"> <%= message.header.html_safe %> </p>
+            <% else %>
+              <p class="card-item"><em> <%= message.header.html_safe %> </em></p>
+            <% end %>
+            <% if message.read %>
+              <p class="card-item"> Read </p>
+            <% else %>
+              <p class="card-item"> Not read </p>
+            <% end %>
+            <p class="card-item"> from  <%= message.sender || "unknown" %> </p>
+            <div class="card-item">
+              <%= button_to 'Delete', nh_message_path(message.id), :method => :delete, :class => "btn-solid secondary wash btn" %>
+            </div>
+          </div>
+          <div class=<%= "flash_#{message.message_type}" %>
+                 <%= render :partial => 'messages/message_details', :locals => {:mess => message} %>
+          </div>
+        </div>
+
+      <% end %>
+      </div>
+    <% else %>
+      <%- # empty state -%>
+      <div class="empty-wrapper">
+        <div class="empty">
+          <div>
+            <div class="empty-icon">
+              <%= nh_empty_invites %>
+            </div>
+            <p class="empty-text">You currently have no messages.</p>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+  </div>
+</div>
+
+

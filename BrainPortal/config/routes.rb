@@ -312,6 +312,8 @@ Rails.application.routes.draw do
         post :upload_file
       end
     end
+    resources :nh_messages,        :except => [ :edit, :show ] do
+    end
     resources :nh_loris_hooks, :only => [] do
       collection do
         post :file_list_maker

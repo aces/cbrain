@@ -276,7 +276,8 @@ class ApplicationController < ActionController::Base
     return unless current_user
     return if     current_user.all_licenses_signed.blank?
     return if     request.format.blank? || request.xhr?
-    return unless request.format.to_sym == :html || params[:controller] == 'messages'
+    return unless request.format.to_sym == :html || params[:controller] == 'messages' ||
+        params[:controller] == 'nh_messages'
 
     @display_messages = []
 
