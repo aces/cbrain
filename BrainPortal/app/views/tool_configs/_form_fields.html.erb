@@ -179,10 +179,9 @@
         for now.
         </div>
     <% end %>
-
-    <% t.edit_cell(:container_image_userfile_id, :header => "ID of the container image") do |f| %>
+      
+    <% t.edit_cell :containerhub_image_name, :content => link_to_userfile_if_accessible(@tool_config.container_image), :header => "ID of the container image" do |f| %>
       <%= f.text_field :container_image_userfile_id %> :
-      <%= link_to_userfile_if_accessible(@tool_config.container_image) %>
       <div class="field_explanation">
         The ID number of the container image in which the tool is installed.
         This ID refers to a proper image file registered in CBRAIN by the admin.
