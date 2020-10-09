@@ -1,9 +1,9 @@
 
 <%-
 #
-# CBRAIN Project
+# NeuroHub Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2020
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -18,35 +18,25 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
-<% messtype = mess.message_type
-   prefix = "flash"  # disguise an invite confirmation message for a flash notice until proper styling defined
-   messclass = "#{prefix}_#{messtype}"
-%>
 
 <% if mess.description.present? %>
-  <p class="<%= messclass %>">
-    <%= mess.parse_links( :description ).gsub(/\n/,"<BR>").html_safe %>
+  <p class="flash_<%= mess.message_type.to_s %>">
+    <%= mess.parse_links(:description).gsub(/\n/, "<BR>") %>
   </p>
 <% end %>
 
 <% if mess.variable_text.present? %>
-    <p class="<%= messclass %>">
-      <%= mess.parse_links( :variable_text ).gsub(/\n/,"<BR>").html_safe -%>
-    </p>
+  <p class="flash_<%= mess.message_type.to_s %>">
+    <%= mess.parse_links(:variable_text).gsub(/\n/, "<BR>") %>
+  </p>
 <% end %>
 
-<% if mess.expiry.present? %>
-    <p class="<%= messclass %>">
-      Expires: <%=to_localtime(mess.expiry, :datetime) %>
-    </p>
-<% end %>
-
-<% if mess.description.blank? && mess.variable_text.blank? && mess.expiry.blank? %>
+<% if mess.description.blank? && mess.variable_text.blank? %>
   <p>
-    (No Details)
+    (Empty message)
   </p>
 <% end %>
 

@@ -145,4 +145,38 @@ module NeurohubHelpers
     return report
   end
 
+  # filter NeuroHub messages (no invites)
+  def find_nh_messages(user = current_user)
+    q =     Message.where(:user_id     => user.available_users.map(&:id),
+                         :type         => nil,
+                         :message_type =>  [:system,
+                                            :error,
+                                            :notice] )
+
+    q = q.or(Message.where(:user_id => user.id, # hind personal communicatione from peeking admins and managers
+                           :type => nil,
+                           :message_type => :communication
+        )).order("last_sent DESC")
+  end
+
+  def comembers_query(user) # query NeuroHub comembers/teammates (for restricted types of groups only)
+    User.joins(:groups).where(:groups => {:id => user.assignable_group_ids, :type => 'WorkGroup'})
+  end
+
+  def find_nh_contacts(user) # lists own groups for all the NeuroHub collaborators/comembers of a user
+    comembers_query(user).map { |u| u.own_group }
+  end
+
+  # finds groups user belongs to and commemebers user can send message
+  def find_nh_destinations(user = current_user)
+    user.assignable_groups.where(:type => 'WorkGroup').all | find_nh_contacts(user)
+  end
+
+  # finds a message destination group by id todo discuss may be drop it,
+  # it fails rarely, say user removed from group while typing the message so no form field hightlight
+  def find_nh_destination(destination_group_id, user = current_user)
+    user.assignable_groups.where(:type => 'WorkGroup', :id => destination_group_id).first ||
+      comembers_query(user).where(:login => Group.select(:name).where(:type =>
+                                   'UserGroup', :id => destination_group_id).pluck(:name).first).first!.own_group
+  end
 end
