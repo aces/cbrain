@@ -48,10 +48,13 @@ class InvitationsController < ApplicationController
   # Send an invitation
   def create #:nodoc:
     @group          = Group.find(params[:group_id])
-    user_ids        = params[:user_ids].map(&:to_i)
+    user_ids        = (params[:user_ids] || []).map(&:to_i)
     already_sent_to = Invitation.where(sender_id: current_user.id, active: true, user_id: user_ids, group_id: @group.id).all.map(&:user_id)
     rejected_ids    = user_ids & already_sent_to
-    if rejected_ids.present?
+
+    if user_ids.empty?
+      flash_message = "\nYou should select at the least one user."
+    elsif rejected_ids.present?
       flash_message = "\n#{User.find(rejected_ids).map(&:login).join(", ")} already invited."
     end
 
@@ -59,7 +62,7 @@ class InvitationsController < ApplicationController
 
     unless @group.can_be_edited_by?(current_user) && @users.present?
       flash[:error]  = "Could not send the requested invitations."
-      flash[:error] += flash_message if rejected_ids.present?
+      flash[:error] += flash_message if defined? flash_message
       respond_to do |format|
        format.html { redirect_to group_path(@group) }
        format.xml  { head :forbidden }
