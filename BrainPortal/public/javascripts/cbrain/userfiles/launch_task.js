@@ -55,40 +55,12 @@ $(document).delegate('div#tool_version_selector', 'new_content', function (event
       event.preventDefault();
       event.stopPropagation();
 
-      /* Remove old launch bars from previous selections */
-      $('.launch_bar').remove();
+      var file_status_text = "No files selected";
+      var url              = launch_button.data('url');
 
-      $('#menu_bar').after(
-        $('<div class="launch_bar">')
-          .append($('<span class="info">Select some files to launch ' + tool_name + '</span>'))
-          .append($('<span class="file_status">No files selected</span>'))
-          .append($('<button>Launch</button>').button({ disabled: true }))
-      );
-
-      /* Launch the task when the launch bar's button is clicked */
-      $('.launch_bar button').click(function () {
-        $('#userfiles_menus_and_filelist').children('form')
-          .append($('#tool_version_selector').hide())
-          .attr('action', launch_button.data('url'))
-          .attr('method', 'POST')
-          .submit();
-      });
+      launch_bar(tool_name, file_status_text, false, url);
     });
 
-  userfile_checkboxes
-    .unbind('change.launch_task')
-    .bind('change.launch_task', function () {
-      var checked = userfile_checkboxes.filter(':checked').length;
-
-      /* Update the button in the dialog */
-      launch_button.val((checked ? "Launch " : "Prepare ") + tool_name);
-
-      /* And the launch_bar, if it exists */
-      $('.launch_bar span.file_status')
-        .text(checked ? "Launch with " + checked + " file(s)" : "No files selected");
-
-      $('.launch_bar button')
-        .button(checked ? 'enable' : 'disable');
-    });
+  userfile_checkboxes_attach(userfile_checkboxes);
 });
 
