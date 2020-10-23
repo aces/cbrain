@@ -145,38 +145,24 @@ module NeurohubHelpers
     return report
   end
 
-  # filter NeuroHub messages (no invites)
+  # filter proper NeuroHub messages (no invites)
   def find_nh_messages(user = current_user)
-    q =     Message.where(:user_id     => user.available_users.map(&:id),
-                         :type         => nil,
-                         :message_type =>  [:system,
-                                            :error,
-                                            :notice] )
-
-    q = q.or(Message.where(:user_id => user.id, # hind personal communicatione from peeking admins and managers
-                           :type => nil,
-                           :message_type => :communication
-        )).order("last_sent DESC")
+    Message.where(:user_id => user.id,
+                  :type => nil   # show only basic messages not invitations
+                  ).order("last_sent DESC")
   end
 
-  def comembers_query(user) # query NeuroHub comembers/teammates (for restricted types of groups only)
-    User.joins(:groups).where(:groups => {:id => user.assignable_group_ids, :type => 'WorkGroup'})
-  end
-
-  def find_nh_contacts(user) # lists own groups for all the NeuroHub collaborators/comembers of a user
-    comembers_query(user).map { |u| u.own_group }
-  end
-
-  # finds groups user belongs to and commemebers user can send message
-  def find_nh_destinations(user = current_user)
-    user.assignable_groups.where(:type => 'WorkGroup').all | find_nh_contacts(user)
-  end
-
-  # finds a message destination group by id todo discuss may be drop it,
-  # it fails rarely, say user removed from group while typing the message so no form field hightlight
-  def find_nh_destination(destination_group_id, user = current_user)
-    user.assignable_groups.where(:type => 'WorkGroup', :id => destination_group_id).first ||
-      comembers_query(user).where(:login => Group.select(:name).where(:type =>
-                                   'UserGroup', :id => destination_group_id).pluck(:name).first).first!.own_group
+  # valid possible message recipients (only co-members)
+  def find_nh_message_recipients(user = current_user)
+    # Projects that the user can assign to resources
+    projs = find_nh_projects(user)
+    projs = ensure_assignable_nh_projects(user, projs)
+    # List of users in these projects
+    user_ids    = (projs.to_a.map(&:user_ids).flatten + [user.id]).uniq
+    user_logins = User.where(:id => user_ids).pluck(:login)
+    # Same list as a set of UserGroup
+    user_projs  = UserGroup.where(:name => user_logins)
+    # The possible destinations are described by a set of Groups
+    projs.to_a + user_projs.to_a
   end
 end

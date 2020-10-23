@@ -48,13 +48,10 @@
         <%= f.text_field :header, :size => 92 %>
       </fieldset>
       <fieldset>
-        <%= f.label :description, 'Brief Topic Description' %>
+        <%= f.label :description, 'Message' %>
         <%= f.text_area :description, :rows => 5, :cols => 80 %>
       </fieldset>
-      <fieldset>
-        <%= f.label :variable_text, 'Message' %>
-        <%= f.text_area :variable_text, :rows => 5, :cols => 80 %>
-      </fieldset>
+
       <div class="btn-section">
         <%= f.submit "Send", :class => "btn-solid primary" %>
       </div>

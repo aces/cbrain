@@ -18,7 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-
 # NeuroHub controller for Messages.
 class NhMessagesController < NeurohubApplicationController
   Revision_info = CbrainFileRevision[__FILE__] #:nodoc:
@@ -41,7 +40,7 @@ class NhMessagesController < NeurohubApplicationController
   def new #:nodoc:
     @message        = Message.new # blank object for new() form.
     @message.header = "A personal message from #{current_user.full_name.presence || current_user.login}"
-    @recipients     = find_nh_destinations(current_user)
+    @recipients     = find_nh_message_recipients(current_user)
   end
 
   # POST /messages
@@ -51,12 +50,16 @@ class NhMessagesController < NeurohubApplicationController
     @message.message_type = :communication
     @message.sender_id    = current_user.id
 
-    @recipients = find_nh_destinations(current_user)
+    @recipients = find_nh_message_recipients(current_user)
 
     @message.validate_input
     @destination_group_id = params['destination_group_id']
     if @destination_group_id.present?
-      destination_group = find_nh_destination(@destination_group_id)
+      if @recipients.map(&:id).include?(@destination_group_id.to_i)
+        destination_group = Group.find(@destination_group_id)
+      else
+        @message.errors.add(:destination_group_id, '(the selected destination is not available, perhaps, a project membership changed recently)' )
+      end
     else
       @message.errors.add(:destination_group_id, 'You have to select message recipient(s)' )
     end

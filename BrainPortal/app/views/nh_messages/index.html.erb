@@ -24,15 +24,13 @@
 
 <div id="nh_messages" class="nh_content nh_invitations">
 
-  <%- # actions   -%>
-  <div class="nh_actions">
-    <%= link_to nh_icon_add + "New message", {:action => :new}, :method => :get, :class => "btn-solid primary nh_action" %>
-  </div>
-  <div class="section primary">
+  <%- # actions    -%>
 
-    <% if @messages_count > 0 %>
+  <% if @messages_count > 0 %>
+    <div class="nh_actions">
+      <%= link_to nh_icon_add + "New message", {:action => :new}, :method => :get, :class => "btn-solid primary nh_action" %>
 
-      <%- # pagination   -%>
+      <%- # pagination    -%>
       <div class="nh_pagination">
         <%== pagy_nav(@pagy) %>
         <div class="d-flex">
@@ -46,48 +44,49 @@
         </div>
       </div>
 
-      <% @messages.each do |message| %>
-        <div class="card">
-          <div class="card-row header">
-            <%
-              header = message.header
-              header.html_safe unless message.message_type == "communication"
-            %>
-            <% if message.read %>
-              <p class="card-item"> <%= header %> </p>
-            <% else %>
-              <p class="card-item"><em> <%= header %> </em></p>
-            <% end %>
-            <% if message.read %>
-              <p class="card-item"> Read </p>
-            <% else %>
-              <p class="card-item"> Not read </p>
-            <% end %>
-            <p class="card-item"> from  <%= message.sender.try(:login) || "system" %> </p>
-            <div class="card-item">
-              <%= button_to 'Delete', nh_message_path(message.id), :method => :delete, :class => "btn-solid secondary wash btn" %>
+      <div class="section primary">
+        <% @messages.each do |message| %>
+          <div class="card">
+            <div class="card-row header">
+              <%
+                header = message.header
+                header.html_safe unless message.message_type == "communication"
+              %>
+              <% if message.read %>
+                <p class="card-item"> <%= header %> </p>
+              <% else %>
+                <p class="card-item"><em> <%= header %> </em></p>
+              <% end %>
+              <% if message.read %>
+                <p class="card-item"> Read </p>
+              <% else %>
+                <p class="card-item"> Not read </p>
+              <% end %>
+              <p class="card-item"> from  <%= message.sender.try(:login) || "system" %> </p>
+              <div class="card-item">
+                <%= button_to 'Delete', nh_message_path(message.id), :method => :delete, :class => "btn-solid secondary wash btn" %>
+              </div>
+            </div>
+            <div class=<%= "flash_#{message.message_type}" %>>
+              <%= render :partial => 'messages/message_details', :locals => {:mess => message} %>
             </div>
           </div>
-          <div class=<%= "flash_#{message.message_type}" %>
-                 <%= render :partial => 'messages/message_details', :locals => {:mess => message} %>
-          </div>
-        </div>
-
-      <% end %>
+        <% end %>
       </div>
-    <% else %>
-      <%- # empty state -%>
-      <div class="empty-wrapper">
-        <div class="empty">
-          <div>
-            <div class="empty-icon">
-              <%= nh_empty_invites %>
-            </div>
-            <p class="empty-text">You currently have no messages.</p>
+    </div>
+  <% else %>
+    <%- # empty state  -%>
+    <div class="empty-wrapper">
+      <div class="empty">
+        <div>
+          <div class="empty-icon">
+            <%= nh_empty_invites %>
           </div>
+          <p class="empty-text">You currently have no messages.</p>
+          <%= link_to nh_icon_add + "New message", {:action => :new}, :method => :get, :class => "btn-solid primary nh_action" %>
         </div>
       </div>
-    <% end %>
+    </div>
+  <% end %>
 
-  </div>
 </div>
