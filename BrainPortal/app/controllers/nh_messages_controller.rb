@@ -18,6 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+
 # NeuroHub controller for Messages.
 class NhMessagesController < NeurohubApplicationController
   Revision_info = CbrainFileRevision[__FILE__] #:nodoc:
