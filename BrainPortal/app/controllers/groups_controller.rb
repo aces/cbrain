@@ -121,7 +121,7 @@ class GroupsController < ApplicationController
       if @group.save
         @group.addlog_context(self,"Created by #{current_user.login}")
         flash[:notice] = 'Project was successfully created.'
-        format.html { redirect_to :action => :index, :format => :html}
+        format.html { redirect_to :action => :index }
         format.xml  { render :xml  => @group.for_api, :status => :created }
         format.json { render :json => @group.for_api, :status => :created }
       else

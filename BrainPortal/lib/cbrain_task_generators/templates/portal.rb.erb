@@ -154,13 +154,23 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 %   .select { |i| ! i['optional'] && i['type'] == 'File' }
 %   .map    { |i| i['cbrain-file-type'] }
 %   .uniq
+%
+% input_infos = descriptor['inputs']
+%   .select { |i| i['type'] == 'File' }
+%   .map    { |i|
+%     iname     = i['name']
+%     ioptional = i['optional'] ? '(optional)' : '(mandatory)'
+%     itype     = i['cbrain-file-type'].presence || '(any)'
+%     "#{iname} #{ioptional} Type: #{itype}\\n"
+%   }.join("")
+%
 % unless file_types.empty?
     # Resolve interface_userfile_ids to actual userfile objects
     files = Userfile.where(:id => self.params[:interface_userfile_ids]).all.to_a
 
 %   if file_types.length == 1 && !file_types.first
     # At least one file is required.
-    cb_error "Error: this task requires at least one input file" if files.empty?
+    cb_error "Error: this task requires some input files:\n<%= input_infos %>" if files.empty?
 %   else
     # Some input files are not optional and specific file types are
     # required. Make sure the given input files are adequate.
@@ -686,7 +696,11 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
       # Nothing special required for strings, bar for symbols being acceptable strings.
       when :string
         value = value.to_s if value.is_a?(Symbol)
-        params_errors.add(name, " not a string (#{value})") unless value.is_a?(String)
+        params_errors.add(name, " not a string (#{value})")       unless value.is_a?(String)
+        # The following two checks are to prevent cases when
+        # a string param is used as a path
+        params_errors.add(name, " cannot contain newlines")            if value.to_s =~ /[\n\r]/
+        params_errors.add(name, " cannot start with these characters") if value.to_s =~ /^[\.\/]+/
 
       # Try to match against various common representation of true and false
       when :flag

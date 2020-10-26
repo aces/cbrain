@@ -233,7 +233,7 @@ describe "BrainPortal Boutiques Tests" do
           @task.params = {}
         end
         it "should fail when no input files are given" do
-          expect { @task.before_form }.to raise_error(CbrainError, "Error: this task requires at least one input file")
+          expect { @task.before_form }.to raise_error(CbrainError, /Error: this task requires/)
         end
       end
 

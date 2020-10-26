@@ -809,15 +809,29 @@ class DataProvidersController < ApplicationController
   private
 
   def data_provider_params #:nodoc:
-    params.require_as_params(:data_provider).permit(
-      :name, :user_id, :group_id, :remote_user, :remote_host, :alternate_host,
-      :remote_port, :remote_dir, :online, :read_only, :description, :type,
-      :not_syncable, :time_zone, :cloud_storage_client_identifier,
-      :cloud_storage_client_token, :cloud_storage_client_bucket_name,
-      :cloud_storage_client_path_start, :datalad_repository_url,
-      :datalad_relative_path, :license_agreements,
-      :containerized_path
-    )
+    if current_user.has_role?(:admin_user)
+      params.require_as_params(:data_provider).permit(
+        :name, :user_id, :group_id, :remote_user, :remote_host, :alternate_host,
+        :remote_port, :remote_dir, :online, :read_only, :description, :type,
+        :not_syncable, :time_zone, :cloud_storage_client_identifier,
+        :cloud_storage_client_token, :cloud_storage_client_bucket_name,
+        :cloud_storage_client_path_start, :datalad_repository_url,
+        :datalad_relative_path, :license_agreements,
+        :containerized_path
+      )
+    else
+      # Normal users are not allowed to change
+      # some parameters that would allow them to access things
+      # they don't control.
+      params.require_as_params(:data_provider).permit(
+        :name, :description, :group_id, :time_zone,
+        :alternate_host,
+        :online, :read_only, :not_syncable,
+        :datalad_repository_url, :datalad_relative_path,
+        :license_agreements,
+        :containerized_path
+      )
+    end
   end
 
   def get_type_list #:nodoc:
