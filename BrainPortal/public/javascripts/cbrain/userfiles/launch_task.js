@@ -55,9 +55,10 @@ $(document).delegate('div#tool_version_selector', 'new_content', function (event
       event.preventDefault();
       event.stopPropagation();
 
+      // Generate the launch_bar div
       cbrain_userfile_launch_bar(tool_name, "No files selected", false, launch_button.data('url'));
     });
-
+  //  Attach action on the userfile_checkboxes
   cbrain_attach_userfile_checkboxes(userfile_checkboxes, tool_name, launch_button);
 });
 
