@@ -32,7 +32,7 @@ function cbrain_userfile_launch_bar(tool_name, file_status_text, have_selection,
 
   $('#menu_bar').after(
     $('<div class="launch_bar">')
-      .append($('<span class="info">Select some files to launch' + tool_name + '</span>'))
+      .append($('<span class="info">Select some files to launch ' + tool_name + '</span>'))
       .append($('<span class="file_status">' + file_status_text + '</span>'))
       .append($('<button>Launch</button>').button({ disabled: !have_selection }))
   );
@@ -444,6 +444,7 @@ $(function() {
         var launch_button = $(this).find('input.launch_tool');
 
         var prepare_tool_id = undefined
+
         for (var i = 0; i < parameters.length; i++) {
           var [name, id]     = parameters[i].split(/=/);
           var userfile_checkboxes = $("input[name='file_ids[]']");
@@ -453,19 +454,22 @@ $(function() {
           }
 
           prepare_tool_id = id;
+          break;
         }
 
         if (!prepare_tool_id) {
           return;
         }
 
-        var name_by_tool_id = {};
+        var tool_name       = undefined;
         for (let tool of document.getElementsByClassName("toolsLink")) {
           var id                  = tool.dataset.toolId;
           var name                = tool.childNodes[0].data;
-              name_by_tool_id[id] = name;
+          if (id === prepare_tool_id) {
+            tool_name = name;
+            break;
+          }
         }
-        var tool_name   = name_by_tool_id[prepare_tool_id]
 
         /* Do we have some files selected to launch the task on? */
         var nb_selected_files = parseInt($('.psel-count').text())
