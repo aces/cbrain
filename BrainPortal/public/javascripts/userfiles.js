@@ -29,7 +29,7 @@
 
 
 
-function userfile_checkboxes_attach(userfile_checkboxes){
+function cbrain_userfile_checkboxes_attach(userfile_checkboxes){
   userfile_checkboxes
     .unbind('change.launch_task')
     .bind('change.launch_task', function () {
@@ -47,7 +47,7 @@ function userfile_checkboxes_attach(userfile_checkboxes){
     });
 }
 
-function launch_bar(tool_name, file_status_text, have_selection, url){
+function cbrain_userfile_launch_bar(tool_name, file_status_text, have_selection, url){
   console.log("In launch_bar");
   /* Remove old launch bars from previous selections */
   $('.launch_bar').remove();
@@ -452,7 +452,7 @@ $(function() {
           var [name, tool_id]     = parameters[i].split(/=/);
           var userfile_checkboxes = $("input[name='file_ids[]']");
 
-          if (name != "tool_id") {
+          if (name != "prepare_tool_id") {
             continue;
           }
 
@@ -475,8 +475,8 @@ $(function() {
           var file_status_text  = have_selection ? "Launch with " + nb_selected_files + " file(s)" : "No files selected"
           var url               = "tasks/new?tool_id=" + tool_id
 
-          launch_bar(tool_name, file_status_text, !have_selection, url);
-          userfile_checkboxes_attach(userfile_checkboxes);
+          cbrain_userfile_launch_bar(tool_name, file_status_text, !have_selection, url);
+          cbrain_userfile_checkboxes_attach(userfile_checkboxes);
         }
       }
 

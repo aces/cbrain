@@ -58,9 +58,9 @@ $(document).delegate('div#tool_version_selector', 'new_content', function (event
       var file_status_text = "No files selected";
       var url              = launch_button.data('url');
 
-      launch_bar(tool_name, file_status_text, false, url);
+      cbrain_userfile_launch_bar(tool_name, file_status_text, false, url);
     });
 
-  userfile_checkboxes_attach(userfile_checkboxes);
+  cbrain_userfile_checkboxes_attach(userfile_checkboxes);
 });
 
