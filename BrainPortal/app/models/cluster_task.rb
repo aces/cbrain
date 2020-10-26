@@ -2707,26 +2707,47 @@ chmod o+x . .. ../.. ../../..
   # Add up CPU usage when a task goes to "Data Ready" state
   def track_resource_usage_cpu(prevstate) #:nodoc:
 
-    num_seconds_info = nil
-    recorded_status  = self.status
+    # We have to potential sources of information: the CBRAIN launch script and the scheduler
+    cb_num_seconds_info    = nil
+    sched_num_seconds_info = nil
+
+    recorded_status        = self.status
 
     # Extract info from the captured qsub script output
+    # The CBRAIN wrapper creates special tokens with the
+    # outputs of the bash 'times' command.
     task_workdir = self.full_cluster_workdir
     if task_workdir.present?
       qsub_file = Pathname.new(task_workdir) + qsub_stdout_basename
-      num_seconds_info = extract_cpu_times_from_qsub_wrapper(qsub_file)
+      cb_num_seconds_info = extract_cpu_times_from_qsub_wrapper(qsub_file)
     end
 
-    # Extract info by querying the scheduler (not always implemented)
+    # If we can't read the CBRAIN info, it means the task was killed
+    # outright before completing, so we should log that with a special token.
     # This happens usually when the scheduler killed the job,
     # so our wrapper script was not able to finish with its 'times' command.
-    if num_seconds_info.blank?
-      num_seconds_info = self.scir_session.job_cpu_info(self.cluster_jobid) rescue nil
-      recorded_status  = 'KilledByScheduler' # not a real status
+    recorded_status = 'KilledByScheduler' if cb_num_seconds_info.blank? # not a real status
+
+    # Extract info by querying the scheduler (not always implemented)
+    sched_num_seconds_info = self.scir_session.job_cpu_info(self.cluster_jobid) rescue nil
+
+    # Well, maybe we have nothing at all...
+    return if cb_num_seconds_info.blank? && sched_num_seconds_info.blank?
+
+    # Create a record with the max of each struct
+    cb_num_seconds_info    ||= sched_num_seconds_info
+    sched_num_seconds_info ||= cb_num_seconds_info
+    max = ->(key) do
+      cb_num_seconds_info[key] > sched_num_seconds_info[key] ?
+      cb_num_seconds_info[key] : sched_num_seconds_info[key]
     end
+    num_seconds_info = {
+      :user_tot => max.(:user_tot),
+      :syst_tot => max.(:syst_tot),
+      :walltime => max.(:walltime),
+    }
 
-    return unless num_seconds_info.present?
-
+    # Create CPU time record
     cpu_time  = num_seconds_info[:user_tot] + num_seconds_info[:syst_tot]
 
     CputimeResourceUsageForCbrainTask.create(
@@ -2740,6 +2761,7 @@ chmod o+x . .. ../.. ../../..
       :tool_config_id     => self.tool_config_id,
     )
 
+    # Create walltime record
     wall_time = num_seconds_info[:walltime]
 
     WalltimeResourceUsageForCbrainTask.create(
