@@ -475,7 +475,7 @@ $(function() {
           var file_status_text  = have_selection ? "Launch with " + nb_selected_files + " file(s)" : "No files selected"
           var url               = "tasks/new?tool_id=" + tool_id
 
-          cbrain_userfile_launch_bar(tool_name, file_status_text, !have_selection, url);
+          cbrain_userfile_launch_bar(tool_name, file_status_text, have_selection, url);
           cbrain_userfile_checkboxes_attach(userfile_checkboxes);
         }
       }
