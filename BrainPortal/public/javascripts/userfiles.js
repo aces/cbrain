@@ -441,6 +441,7 @@ $(function() {
 
     /* Show/Hide dynamic actions/menu elements according to current selection */
     (function () {
+      // Generate the launch_task div if prepare_tool_id present as a parameter
       function launch_task() {
         var parameters          = window.location.search.split(/\?|&/);
         var launch_button       = $(this).find('input.launch_tool');
@@ -495,7 +496,8 @@ $(function() {
 
         $('#ren-btn, #ren-ctx').toggle(checked == 1);
 
-        launch_task()
+        // Generate the launch_task div if prepare_tool_id present as a parameter
+        launch_task();
       };
 
       $('#userfiles_table')
