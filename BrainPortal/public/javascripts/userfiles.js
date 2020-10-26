@@ -473,15 +473,15 @@ $(function() {
         }
 
         /* Do we have some files selected to launch the task on? */
-        var nb_selected_files = parseInt($('.psel-count').text())
-        var have_selection    = nb_selected_files > 0
+        var nb_selected_files = parseInt($('.psel-count').text());
+        var have_selection    = nb_selected_files > 0;
 
-        var file_status_text  = have_selection ? "Launch with " + nb_selected_files + " file(s)" : "No files selected"
-        var url               = "tasks/new?tool_id=" + prepare_tool_id
+        var file_status_text  = have_selection ? "Launch with " + nb_selected_files + " file(s)" : "No files selected";
+        var url               = "tasks/new?tool_id=" + prepare_tool_id;
 
         // Generate the launch_bar div and attach action on the userfile_checkboxes
         cbrain_userfile_launch_bar(tool_name, file_status_text, have_selection, url);
-        cbrain_attach_userfile_checkboxes(userfile_checkboxes, tool_name, launch_button)
+        cbrain_attach_userfile_checkboxes(userfile_checkboxes, tool_name, launch_button);
       }
 
       function toggle(checked, persistent) {
