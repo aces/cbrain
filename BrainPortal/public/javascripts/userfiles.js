@@ -27,6 +27,44 @@
  * Event namespace: .uf
  */
 
+function cbrain_userfile_launch_bar(tool_name, file_status_text, have_selection, url) {
+  $('.launch_bar').remove();
+
+  $('#menu_bar').after(
+    $('<div class="launch_bar">')
+      .append($('<span class="info">Select some files to launch' + tool_name + '</span>'))
+      .append($('<span class="file_status">' + file_status_text + '</span>'))
+      .append($('<button>Launch</button>').button({ disabled: !have_selection }))
+  );
+
+  /* Launch the task when the launch bar's button is clicked */
+  $('.launch_bar button').click(function () {
+    $('#userfiles_menus_and_filelist').children('form')
+      .append($('#tool_version_selector').hide())
+      .attr('action', url)
+      .attr('method', 'POST')
+      .submit();
+  });
+}
+
+function cbrain_attach_userfile_checkboxes(userfile_checkboxes, tool_name, launch_button) {
+  userfile_checkboxes
+    .unbind('change.launch_task')
+    .bind('change.launch_task', function () {
+      var checked = userfile_checkboxes.filter(':checked').length;
+
+      /* Update the button in the dialog */
+      launch_button.val((checked ? "Launch " : "Prepare ") + tool_name);
+
+      /* And the launch_bar, if it exists */
+      $('.launch_bar span.file_status')
+        .text(checked ? "Launch with " + checked + " file(s)" : "No files selected");
+
+      $('.launch_bar button')
+        .button(checked ? 'enable' : 'disable');
+    });
+}
+
 $(function() {
   "use strict";
 
@@ -405,66 +443,39 @@ $(function() {
         var parameters    = window.location.search.split(/\?|&/);
         var launch_button = $(this).find('input.launch_tool');
 
+        var prepare_tool_id = undefined
         for (var i = 0; i < parameters.length; i++) {
-          var [name, tool_id]     = parameters[i].split(/=/);
+          var [name, id]     = parameters[i].split(/=/);
           var userfile_checkboxes = $("input[name='file_ids[]']");
 
-          if (name != "tool_id") {
+          if (name != "prepare_tool_id") {
             continue;
           }
 
-          var name_by_tool_id = {};
-          for (let tool of document.getElementsByClassName("toolsLink")) {
-            var id                  = tool.dataset.toolId;
-            var name                = tool.childNodes[0].data;
-                name_by_tool_id[id] = name;
-          }
-          var tool_name   = name_by_tool_id[tool_id]
-
-          if (tool_name === undefined) {
-            continue;
-          }
-
-          /* Do we have some files selected to launch the task on? */
-          var nb_selected_files = parseInt($('.psel-count').text())
-          var have_selection    = nb_selected_files > 0
-
-          var file_status_text  = have_selection ? "Launch with " + nb_selected_files + " file(s)" : "No files selected"
-
-          $('.launch_bar').remove();
-
-          $('#menu_bar').after(
-            $('<div class="launch_bar">')
-              .append($('<span class="info">Select some files to launch' + tool_name + '</span>'))
-              .append($('<span class="file_status">' + file_status_text + '</span>'))
-              .append($('<button>Launch</button>').button({ disabled: !have_selection }))
-          );
-
-          /* Launch the task when the launch bar's button is clicked */
-          $('.launch_bar button').click(function () {
-            $('#userfiles_menus_and_filelist').children('form')
-              .append($('#tool_version_selector').hide())
-              .attr('action', "tasks/new?tool_id=" + tool_id)
-              .attr('method', 'POST')
-              .submit();
-          });
-
-          userfile_checkboxes
-            .unbind('change.launch_task')
-            .bind('change.launch_task', function () {
-              var checked = userfile_checkboxes.filter(':checked').length;
-
-              /* Update the button in the dialog */
-              launch_button.val((checked ? "Launch " : "Prepare ") + tool_name);
-
-              /* And the launch_bar, if it exists */
-              $('.launch_bar span.file_status')
-                .text(checked ? "Launch with " + checked + " file(s)" : "No files selected");
-
-              $('.launch_bar button')
-                .button(checked ? 'enable' : 'disable');
-            });
+          prepare_tool_id = id;
         }
+
+        if (!prepare_tool_id) {
+          return;
+        }
+
+        var name_by_tool_id = {};
+        for (let tool of document.getElementsByClassName("toolsLink")) {
+          var id                  = tool.dataset.toolId;
+          var name                = tool.childNodes[0].data;
+              name_by_tool_id[id] = name;
+        }
+        var tool_name   = name_by_tool_id[prepare_tool_id]
+
+        /* Do we have some files selected to launch the task on? */
+        var nb_selected_files = parseInt($('.psel-count').text())
+        var have_selection    = nb_selected_files > 0
+
+        var file_status_text  = have_selection ? "Launch with " + nb_selected_files + " file(s)" : "No files selected"
+        var url               = "tasks/new?tool_id=" + prepare_tool_id
+
+        cbrain_userfile_launch_bar(tool_name, file_status_text, have_selection, url);
+        cbrain_attach_userfile_checkboxes(userfile_checkboxes, tool_name, launch_button)
       }
 
       function toggle(checked, persistent) {
