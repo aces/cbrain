@@ -62,21 +62,16 @@ class InvitationsController < ApplicationController
 
     unless @group.can_be_edited_by?(current_user) && @users.present?
       flash[:error]  = "Could not send the requested invitations."
-      flash[:error] += flash_message if defined? flash_message
+      flash[:error] += flash_message if flash_message.present?
       respond_to do |format|
-       format.html { redirect_to group_path(@group) }
-       format.xml  { head :forbidden }
+        format.html { redirect_to group_path(@group) }
+        format.xml  { head :forbidden }
       end
       return
     end
 
-    if @users.present?
-      Invitation.send_out(current_user, @group, @users)
-      flash[:notice] = "Your invitations were successfully sent."
-    else
-      flash[:notice] = "No new users were found to invite."
-    end
-
+    Invitation.send_out(current_user, @group, @users)
+    flash[:notice] = "Your invitations were successfully sent."
     flash[:notice] += flash_message if rejected_ids.present?
 
     respond_to do |format|
