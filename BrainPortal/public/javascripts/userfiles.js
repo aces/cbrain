@@ -448,7 +448,7 @@ $(function() {
         var userfile_checkboxes = $("input[name='file_ids[]']");
 
         // scan the query params in the URL, trying to find "prepare_tool_id=NNN"
-        var prepare_tool_id = undefined
+        var prepare_tool_id = undefined;
         for (var i = 0; i < parameters.length; i++) {
           var [name, id]     = parameters[i].split(/=/);
           if (name === "prepare_tool_id") {
