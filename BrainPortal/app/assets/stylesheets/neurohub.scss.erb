@@ -25,6 +25,7 @@
      - PROJECTS
      - USERS
      - INVITATIONS
+     - MESSAGES
      - WELCOME
      - SEARCH
      - LICENSE
@@ -2727,7 +2728,6 @@ $BAR_HEIGHT: 2.3;
 ============================================================
  */
 
-
 .section {
   @include p(2);
   @include px(4);
@@ -2770,11 +2770,10 @@ $BAR_HEIGHT: 2.3;
   }
 }
 
-.nh_messagess {
+.nh_messages {
   .card {
     @include mb(2);
     flex-wrap: wrap;
-
     &:hover {
       @include shadow("high");
     }
@@ -2789,6 +2788,7 @@ $BAR_HEIGHT: 2.3;
       width: 100%;
       overflow: hidden;
       white-space: normal;
+      word-break: break-word;
       display: block;
     }
 
@@ -2838,6 +2838,14 @@ $BAR_HEIGHT: 2.3;
       }
     }
   }
+}
+
+.nh_messages .card .flash_notice, .flash_communication, .flash_system, .flash_error {
+  display: block;
+  padding-right: 10px;
+  padding:3px 5px;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 /*
