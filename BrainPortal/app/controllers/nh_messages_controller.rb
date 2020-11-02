@@ -90,6 +90,6 @@ class NhMessagesController < NeurohubApplicationController
   private
 
   def message_params
-    params.require(:message).permit(:header, :description, :variable_text)
+    params.require(:message).permit(:header, :description)
   end
 end

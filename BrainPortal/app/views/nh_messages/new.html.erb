@@ -45,11 +45,11 @@
       </fieldset>
       <fieldset>
         <%= f.label :header %>
-        <%= f.text_field :header, :size => 92 %>
+        <%= f.text_field :header, :size => 92, :maxlength => 100  %>
       </fieldset>
       <fieldset>
-        <%= f.label :description, 'Message' %>
-        <%= f.text_area :description, :rows => 5, :cols => 80 %>
+        <%= f.label :description, 'Description' %>
+        <%= f.text_area :description, :rows => 5, :cols => 80, :maxlength => 8000 %>
       </fieldset>
 
       <div class="btn-section">

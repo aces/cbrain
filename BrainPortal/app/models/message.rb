@@ -38,7 +38,6 @@ class Message < ApplicationRecord
 
   has_many                :resource_usage
   before_create           :track_resource_usage_create
-  after_destroy           :track_resource_usage_destroy
 
   # Send a new message to a user, the users of a group, or a site.
   #
@@ -296,7 +295,9 @@ class Message < ApplicationRecord
   end
 
   def validate_input  # checks user input for empty field in the header, add error messages (presently used in nh only)
-    self.errors.add(:header, "cannot be left blank.") if self.header.blank?    
+    self.errors.add(:header,      "cannot be left blank")                      if self.header.blank?
+    self.errors.add(:header,      "is too long, it cannot exceed 255 byte")    if self.header.bytesize > 255
+    self.errors.add(:description, "is too long, it cannot exceed 64 Kb")       if self.header.bytesize > 64000
   end
 
   private
@@ -357,18 +358,12 @@ class Message < ApplicationRecord
   # before_destroy callback
   def track_resource_usage_create
     return true if self.message_type != "communication"  # only user to user communication is counted so far
-    CountResourceUsageForUserMessage.create(
-      :value              => 1,
-      :user_id            => self.sender_id
-    )
-    true
-  end
+    message_size = 0
+    message_size += self.header.bytesize if self.header.present?
+    message_size += self.description.bytesize if self.description.present?
 
-  # before_destroy callback
-  def track_resource_usage_destroy
-    return true if self.message_type != "communication"
     CountResourceUsageForUserMessage.create(
-      :value              => -1,
+      :value              => message_size,
       :user_id            => self.sender_id
     )
     true
