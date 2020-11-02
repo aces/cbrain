@@ -145,4 +145,24 @@ module NeurohubHelpers
     return report
   end
 
+  # filter proper NeuroHub messages (no invites)
+  def find_nh_messages(user = current_user)
+    Message.where(:user_id => user.id,
+                  :type => nil   # show only basic messages not invitations
+                  ).order("last_sent DESC")
+  end
+
+  # valid possible message recipients (only co-members)
+  def find_nh_message_recipients(user = current_user)
+    # Projects that the user can assign to resources
+    projs = find_nh_projects(user)
+    projs = ensure_assignable_nh_projects(user, projs)
+    # List of users in these projects
+    user_ids    = (projs.to_a.map(&:user_ids).flatten + [user.id]).uniq
+    user_logins = User.where(:id => user_ids).pluck(:login)
+    # Same list as a set of UserGroup
+    user_projs  = UserGroup.where(:name => user_logins)
+    # The possible destinations are described by a set of Groups
+    projs.to_a + user_projs.to_a
+  end
 end

@@ -25,6 +25,7 @@
      - PROJECTS
      - USERS
      - INVITATIONS
+     - MESSAGES
      - WELCOME
      - SEARCH
      - LICENSE
@@ -234,6 +235,15 @@ $ORCID_ALT: #a6ce39;
 $CBRAIN_BG: #29b9e8;
 $CBRAIN_WASH: #ecf7fc;
 $CBRAIN_ALT: #05a3d6;
+
+$SYSTEM_BG: $CBRAIN_BG;
+$SYSTEM_WASH: $CBRAIN_WASH;
+$SYSTEM_ALT: $CBRAIN_ALT;
+
+$COMMUNICATION_BG: peru;
+$COMMUNICATION_WASH: #BAB2B5;
+$COMMUNICATION_ALT: #EDC7B7;
+$COMMUNICATION_DK: #AC3B61;
 
 .grey-400 {
   color: $GREY_400;
@@ -1039,6 +1049,12 @@ $variant : error, notice
   @if ($variant == "warning") {
     background-color: $WARNING_BG;
   }
+  @if ($variant == "communication") {
+    background-color: $COMMUNICATION_BG;
+  }
+  @if ($variant == "system") {
+    background-color: $SYSTEM_BG;
+  }
 }
 
 .flash_icon {
@@ -1059,6 +1075,16 @@ $variant : error, notice
 
 .flash_warning {
   @include banner("warning");
+  @include px(7);
+}
+
+.flash_system {
+  @include banner("system");
+  @include px(7);
+}
+
+.flash_communication {
+  @include banner("communication");
   @include px(7);
 }
 
@@ -2694,6 +2720,132 @@ $BAR_HEIGHT: 2.3;
       }
     }
   }
+}
+
+/*
+============================================================
+| MESSAGES
+============================================================
+ */
+
+.section {
+  @include p(2);
+  @include px(4);
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  color: $GREY_400;
+
+  .section-title {
+    @include heading("xs");
+    @include pb(2);
+    width: 100%;
+    opacity: 1;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid $GREY_400;
+
+    img {
+      @include mr(2);
+      height: 1rem;
+      width: 1rem;
+    }
+  }
+  &.default {
+    background: $DEFAULT_ALT;
+  }
+  &.primary {
+    background: $PRIMARY_WASH;
+    .section-title {
+      color: $PRIMARY_ALT;
+      border-bottom: 1px solid $PRIMARY_ALT;
+    }
+  }
+  &.secondary {
+    background: $SECONDARY_WASH;
+    .section-title {
+      color: $SECONDARY_ALT;
+      border-bottom: 1px solid $SECONDARY_ALT;
+    }
+  }
+}
+
+.nh_messages {
+  .card {
+    @include mb(2);
+    flex-wrap: wrap;
+    &:hover {
+      @include shadow("high");
+    }
+    .header {
+      @include p(2);
+      border: none;
+    }
+    .card-item {
+      @include p(1);
+      align-items: center;
+      text-overflow: ellipsis;
+      width: 100%;
+      overflow: hidden;
+      white-space: normal;
+      word-break: break-word;
+      display: block;
+    }
+
+    .btn-section {
+      @include p(0);
+      @include mt(0);
+      flex-direction: column;
+      > * {
+        flex: unset;
+        width: auto;
+        width: 100%;
+        height: 100%;
+      }
+      .btn {
+        @include px(4);
+        @include py(3);
+        border-radius: 0px;
+        width: 100%;
+        height: 100%;
+        box-shadow: none;
+      }
+    }
+    @media (min-width: $BREAKPOINT_SM) {
+      display: flex;
+      .btn-section {
+        flex-direction: row;
+        flex: 1;
+        > * {
+          width: auto;
+          flex: 1;
+          .btn {
+            width: 100%;
+          }
+        }
+      }
+    }
+    @media (min-width: $BREAKPOINT_MD) {
+      .btn-section {
+        width: auto;
+        flex: unset;
+
+        > * {
+          .btn {
+            @include py(1);
+          }
+        }
+      }
+    }
+  }
+}
+
+.nh_messages .card .flash_notice, .flash_communication, .flash_system, .flash_error {
+  display: block;
+  padding-right: 10px;
+  padding:3px 5px;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 /*

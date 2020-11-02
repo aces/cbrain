@@ -37,12 +37,12 @@
   <%- end -%>
 
 
-  <%- if @display_messages.present? %>
+  <%- if @nh_new_invite_ack.present? %>
     <div class="card">
-    <%- for mess in @display_messages -%>
-      <p>
+    <%- for mess in @nh_new_invites_ack -%>
       <div class="nh-invitations card-item">
-      <%= render(:partial  => "nh_invitations/message_details", :locals  => { :mess  => mess } ) rescue "A message to you was not delivered. Talk to support!"%>
+        <h4> <%= mess.header %> </h4>
+        <%= render(:partial  => "nh_invitations/message_details", :locals  => { :mess  => mess } ) rescue "A message to you was not delivered. Talk to support!"%>
       </div>
     <% end %>
    </div>
