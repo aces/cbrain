@@ -37,6 +37,9 @@ class MessagesController < ApplicationController
     @base_scope = Message.where(nil)
     @base_scope = @base_scope.where(:user_id => current_user.available_users.map(&:id)) unless
       current_user.has_role?(:admin_user)
+    # no need to distract admins and managers with personal communicaitons
+    @base_scope = @base_scope.where.not( :message_type =>  :communication).or(
+      @base_scope.where( :message_type =>  :communication, :user_id => current_user.id))
     @view_scope = @messages = @scope.apply(@base_scope)
 
     @read_count   = @view_scope.where(:user_id => current_user.id, :read => true).count

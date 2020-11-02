@@ -32,7 +32,7 @@
 
 <tr class="<%= "message_display_#{mess.id} #{css_read} #{css_type}"%>">
   <td class="wrap left" style="white-space:normal">
-    <%= show_hide_toggle(Message.parse_markup(mess.header), "#message_table_details_#{mess.id}") %>
+    <%= show_hide_toggle(mess.parse_links(:header), "#message_table_details_#{mess.id}") %>
     <div id="message_table_details_<%= mess.id %>" style="display: none">
       <%= render :partial  => 'messages/message_details', :locals  => { :mess  => mess } %>
     </div>

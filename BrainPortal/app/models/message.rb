@@ -36,6 +36,9 @@ class Message < ApplicationRecord
 
   attr_accessor :send_email
 
+  has_many                :resource_usage
+  before_create           :track_resource_usage_create
+
   # Send a new message to a user, the users of a group, or a site.
   #
   # The +destination+ argument can be a User, a Group, a Site,
@@ -245,6 +248,23 @@ class Message < ApplicationRecord
     return true
   end
 
+  # rendering text attributes with square brackets link markup to html
+  # for trusted (admins' and systems') messages types. Namely,
+  # parses a string and replaces special markup with HTML links:
+  #   'abcde [[name][/my/path]] def'
+  # will return
+  #   'abcde <a href="/my/path" class="action_link">name</a> def'
+  def render_attr(attr)
+    return sefl.attr unless %w[description variable_text header].include?(attr.to_s)
+    if self.message_type == 'communication'
+      self[attr] || ''
+    else
+      self.class.parse_markup(self[attr] || '')
+    end
+  end
+
+  alias_method :parse_links, :render_attr  # more idiosyncratic synonym to render_attr
+
   # Will prepend the text document in argument to the
   # variable_text attribute, prefixing it with a
   # timestamp.
@@ -272,6 +292,12 @@ class Message < ApplicationRecord
 
     # Update and create message
     self.variable_text = current_text
+  end
+
+  def validate_input  # checks user input for empty field in the header, add error messages (presently used in nh only)
+    self.errors.add(:header,      "cannot be left blank")                      if self.header.blank?
+    self.errors.add(:header,      "is too long, it cannot exceed 255 byte")    if self.header.bytesize > 255
+    self.errors.add(:description, "is too long, it cannot exceed 64 Kb")       if self.header.bytesize > 64000
   end
 
   private
@@ -327,6 +353,20 @@ class Message < ApplicationRecord
       arr[i] = "<a href=\"#{link}\" data-method=\"#{method.downcase}\" class=\"action_link\">#{name}</a>"
     end
     arr.join.html_safe
+  end
+
+  # before_destroy callback
+  def track_resource_usage_create
+    return true if self.message_type != "communication"  # only user to user communication is counted so far
+    message_size = 0
+    message_size += self.header.bytesize if self.header.present?
+    message_size += self.description.bytesize if self.description.present?
+
+    CountResourceUsageForUserMessage.create(
+      :value              => message_size,
+      :user_id            => self.sender_id
+    )
+    true
   end
 
 end

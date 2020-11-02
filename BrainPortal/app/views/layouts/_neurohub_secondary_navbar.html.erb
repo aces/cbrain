@@ -60,6 +60,11 @@
         <%= link_to 'Invitations', nh_invitations_path, { :class => "nh_breadcrumbs_item", "data-active"=> controller_name === "nh_invitations" && action_name === "index"} %>
       <% end %>
 
+      <%- # messages -%>
+      <% if(params[:controller].include?('nh_messages') && params[:action].include?('index')) %>
+        <%= link_to 'Messages', nh_messages_path, { :class => "nh_breadcrumbs_item", "data-active"=> controller_name === "nh_messages" && action_name === "index"} %>
+      <% end %>
+      
       <%- # projects -%>
       <% if(params[:controller].include?('nh_projects')||(params[:controller].include?('nh_invitations') && params[:action].include?('new'))) %>
         <%= link_to "Projects", nh_projects_path, { :class => "nh_breadcrumbs_item", "data-active"=> controller_name === 'nh_projects' && action_name==="index"  }%>
