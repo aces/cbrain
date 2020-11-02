@@ -64,7 +64,9 @@
               <% end %>
               <p class="card-item"> from  <%= message.sender.try(:login) || "system" %> </p>
               <div class="card-item">
-                <%= button_to 'Delete', nh_message_path(message.id), :method => :delete, :class => "btn-solid secondary wash btn" %>
+              <%= button_to 'Delete', nh_message_path(message.id), :method => :delete,
+                                       :data => { :confirm => "Are you sure you want to delete this message?" },
+                                       :class => "btn-solid secondary wash btn" %>
               </div>
             </div>
             <div class=<%= "flash_#{message.message_type}" %>>
