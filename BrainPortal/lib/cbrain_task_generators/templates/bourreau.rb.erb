@@ -494,7 +494,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     # Helper for checking whether outputs are optional
 %   optionalFiles = outputs.select { |o| o['optional'] }
     isOptional = lambda do |f|
-      [<%= optionalFiles.map{ |x| ":'"+x['id']+"'" }.join(",") %>].include?(f)
+      [<%= optionalFiles.map{ |x| ":'"+x['id']+"'" }.join(",") %>].include?( f.to_sym )
     end
 
     # Save (and register) all generated files to the results data provider
