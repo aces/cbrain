@@ -30,6 +30,7 @@ module SwitcherHelper
     %w( groups         nh_projects ),
     %w( data_providers nh_storages ),
     %w( users          nh_users    ),
+    %w( messages       nh_messages ),
   ]
 
   # Returns the dashboard path depending on which
