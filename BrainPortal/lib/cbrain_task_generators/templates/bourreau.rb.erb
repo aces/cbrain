@@ -494,7 +494,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     # Helper for checking whether outputs are optional
 %   optionalFiles = outputs.select { |o| o['optional'] }
     isOptional = lambda do |f|
-      [<%= optionalFiles.map{ |x| ":#{x['id'].to_sym}" }.join(",") %>].include?(f)
+      [<%= optionalFiles.map{ |x| ":'"+x['id']+"'" }.join(",") %>].include?( f.to_sym )
     end
 
     # Save (and register) all generated files to the results data provider
@@ -505,8 +505,8 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
         # Print a warning if the file is not present
         # Note that, since the output may be optional, the process may still be successful
         unless path.present? && File.exists?(path)
-          self.addlog("Unable to find optional output file: #{path}") if isOptional.(param.to_sym)
-          succeeded = false if ! isOptional.(param.to_sym)
+          self.addlog("Unable to find optional output file: #{path}") if isOptional.(param)
+          succeeded = false if ! isOptional.(param)
           next
         end
 
