@@ -2337,8 +2337,7 @@ docker_image_name=#{full_image_name.bash_escape}
     # Numbers in (paren) correspond to the comment
     # block in the script, well below.
 
-    # (1) additional singularity execution command options and parameters as defined in ToolConfig
-    #
+    # (1) additional singularity execution command options defined in ToolConfig
     container_params = self.tool_config.container_params
 
     # (2) The root of the shared area for all CBRAIN tasks
@@ -2420,7 +2419,7 @@ chmod o+x . .. ../.. ../../..
 
 # Invoke Singularity with our wrapper script above.
 # Tricks used here:
-# 1) we supply additional options for the exec command (if any) 
+# 1) we supply (if any) additional options for the exec command 
 # 2) we mount the gridshare root directory
 # 3) we mount the local data provider cache root directory
 # 4) we mount each (if any) of the root directory for local data providers
