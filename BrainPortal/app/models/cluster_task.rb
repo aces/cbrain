@@ -2343,7 +2343,7 @@ docker_image_name=#{full_image_name.bash_escape}
     # (2) The root of the DataProvider cache
     cache_dir     = self.bourreau.dp_cache_dir
 
-    # (5) The path to the task's work directory
+    # (6) The path to the task's work directory
     task_workdir  = self.full_cluster_workdir
 
     # (3) More -B (bind mounts) for all the local data providers.
@@ -2364,6 +2364,10 @@ docker_image_name=#{full_image_name.bash_escape}
     overlay_mounts = overlay_paths.inject("") do |sing_opts,path|
       "#{sing_opts} --overlay=#{path.bash_escape}:ro"
     end
+
+    # (5) additional singularity execution command options and parameters as defined in ToolConfig
+    #
+    container_params = self.tool_config.container_params
 
     # Set singularity command
     singularity_commands = <<-SINGULARITY_COMMANDS
@@ -2420,9 +2424,11 @@ chmod o+x . .. ../.. ../../..
 # 2) we mount the local data provider cache root directory
 # 3) we mount each (if any) of the root directory for local data providers
 # 4) we mount (if any) file system overlays
-# 5) with -H we set the task's work directory as the singularity $HOME directory
+# 5) we supply additional options for the exec command 
+# 6) with -H we set the task's work directory as the singularity $HOME directory
 #{singularity_executable_name}                  \\
     exec                                        \\
+    #{container_params.bash_escape}             \\
     -B #{gridshare_dir.bash_escape}             \\
     -B #{cache_dir.bash_escape}                 \\
     #{esc_local_dp_mountpoints}                 \\
