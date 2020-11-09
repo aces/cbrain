@@ -2337,22 +2337,26 @@ docker_image_name=#{full_image_name.bash_escape}
     # Numbers in (paren) correspond to the comment
     # block in the script, well below.
 
-    # (1) The root of the shared area for all CBRAIN tasks
+    # (1) additional singularity execution command options and parameters as defined in ToolConfig
+    #
+    container_params = self.tool_config.container_params
+
+    # (2) The root of the shared area for all CBRAIN tasks
     gridshare_dir = self.bourreau.cms_shared_dir
 
-    # (2) The root of the DataProvider cache
+    # (3) The root of the DataProvider cache
     cache_dir     = self.bourreau.dp_cache_dir
 
     # (6) The path to the task's work directory
     task_workdir  = self.full_cluster_workdir
 
-    # (3) More -B (bind mounts) for all the local data providers.
+    # (4) More -B (bind mounts) for all the local data providers.
     # This will be a string "-B path1 -B path2 -B path3" etc.
     esc_local_dp_mountpoints = local_dp_storage_paths.inject("") do |sing_opts,path|
       "#{sing_opts} -B #{path.bash_escape}"
     end
 
-    # (4) Overlays defined in the ToolConfig
+    # (5) Overlays defined in the ToolConfig
     # Some of them might be patterns (e.g. /a/b/data*.squashfs) that need to
     # be resolved locally.
     # This will be a string "--overlay=path:ro --overlay=path:ro" etc.
@@ -2364,10 +2368,6 @@ docker_image_name=#{full_image_name.bash_escape}
     overlay_mounts = overlay_paths.inject("") do |sing_opts,path|
       "#{sing_opts} --overlay=#{path.bash_escape}:ro"
     end
-
-    # (5) additional singularity execution command options and parameters as defined in ToolConfig
-    #
-    container_params = self.tool_config.container_params
 
     # Set singularity command
     singularity_commands = <<-SINGULARITY_COMMANDS
@@ -2420,11 +2420,11 @@ chmod o+x . .. ../.. ../../..
 
 # Invoke Singularity with our wrapper script above.
 # Tricks used here:
-# 1) we mount the gridshare root directory
-# 2) we mount the local data provider cache root directory
-# 3) we mount each (if any) of the root directory for local data providers
-# 4) we mount (if any) file system overlays
-# 5) we supply additional options for the exec command (if any)
+# 1) we supply additional options for the exec command (if any) 
+# 2) we mount the gridshare root directory
+# 3) we mount the local data provider cache root directory
+# 4) we mount each (if any) of the root directory for local data providers
+# 5) we mount (if any) file system overlays
 # 6) with -H we set the task's work directory as the singularity $HOME directory
 #{singularity_executable_name}                  \\
     exec                                        \\
