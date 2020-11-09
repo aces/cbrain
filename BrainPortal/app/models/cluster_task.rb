@@ -2424,11 +2424,11 @@ chmod o+x . .. ../.. ../../..
 # 2) we mount the local data provider cache root directory
 # 3) we mount each (if any) of the root directory for local data providers
 # 4) we mount (if any) file system overlays
-# 5) we supply additional options for the exec command 
+# 5) we supply additional options for the exec command (if any)
 # 6) with -H we set the task's work directory as the singularity $HOME directory
 #{singularity_executable_name}                  \\
     exec                                        \\
-    #{container_params.bash_escape}             \\
+    #{container_params.bash_escape || ''}       \\
     -B #{gridshare_dir.bash_escape}             \\
     -B #{cache_dir.bash_escape}                 \\
     #{esc_local_dp_mountpoints}                 \\
