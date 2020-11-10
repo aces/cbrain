@@ -2427,7 +2427,7 @@ chmod o+x . .. ../.. ../../..
 # 6) with -H we set the task's work directory as the singularity $HOME directory
 #{singularity_executable_name}                  \\
     exec                                        \\
-    #{container_params.bash_escape || ''}       \\
+    #{container_params || '            '}       \\
     -B #{gridshare_dir.bash_escape}             \\
     -B #{cache_dir.bash_escape}                 \\
     #{esc_local_dp_mountpoints}                 \\

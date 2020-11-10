@@ -34,7 +34,7 @@ module CBRAINExtensions #:nodoc:
       #
       #   puts "".bash_escape                     => ''
       #   puts "abcd".bash_escape                 => abcd
-      #   puts "Mike O'Connor".bash_escape        => 'Mike O'\'Connor
+      #   puts "Mike O'Connor".bash_escape        => 'Mike O'\'Connor'
       #   puts "abcd".bash_escape(true)           => 'abcd'
       #   puts "Mike O'Connor".bash_escape(true)  => 'Mike O'\''Connor'
       #
