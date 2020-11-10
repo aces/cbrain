@@ -2338,7 +2338,7 @@ docker_image_name=#{full_image_name.bash_escape}
     # block in the script, well below.
 
     # (1) additional singularity execution command options defined in ToolConfig
-    container_params = self.tool_config.container_params
+    container_exec_args = self.tool_config.container_exec_args.presence
 
     # (2) The root of the shared area for all CBRAIN tasks
     gridshare_dir = self.bourreau.cms_shared_dir
@@ -2427,7 +2427,7 @@ chmod o+x . .. ../.. ../../..
 # 6) with -H we set the task's work directory as the singularity $HOME directory
 #{singularity_executable_name}                  \\
     exec                                        \\
-    #{container_params || '            '}       \\
+    #{container_exec_args}                      \\
     -B #{gridshare_dir.bash_escape}             \\
     -B #{cache_dir.bash_escape}                 \\
     #{esc_local_dp_mountpoints}                 \\
