@@ -1249,7 +1249,7 @@ class ClusterTask < CbrainTask
     syst_tot = (syst_tot_m.to_i * 60.0) + syst_tot_s.to_f
 
     {
-      :walltime => walltime,
+      :walltime => walltime.to_i,
       :user_loc => user_loc, # cpu time of wrapper process only, not useful
       :syst_loc => syst_loc, # cpu time of wrapper process only, not useful
       :user_tot => user_tot, # cpu time of wrapper and subprocesses

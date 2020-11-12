@@ -145,7 +145,7 @@ class ToolsController < ApplicationController
       if @tool.update_attributes_with_logging(tool_params, current_user,
            %w( category cbrain_task_class_name select_menu_text url application_package_name application_type application_tags ) )
         flash[:notice] = 'Tool was successfully updated.'
-        format.html { redirect_to(tools_path) }
+        format.html { redirect_to(tool_path(@tool)) }
         format.xml  { head :ok }
       else
         format.html { render :action => "edit" }
