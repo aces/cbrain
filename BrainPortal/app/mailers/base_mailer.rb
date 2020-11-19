@@ -121,7 +121,7 @@ class BaseMailer < ApplicationMailer
     @external_url = external_url
     admin_email   = support_email
     return if admin_email.blank?
-    subject  = "#{@service_name} Account Request from '#{@signup.full}'"
+    subject  = "#{@service_name} Account Request from '#{@signup.full_name}'"
     subject += " at '#{@signup.institution}'" if @signup.institution.present?
     from = build_from
     return unless from
