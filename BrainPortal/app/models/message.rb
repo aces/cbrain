@@ -140,7 +140,7 @@ class Message < ApplicationRecord
       begin
         body = (description.presence || "") + ( var_text.blank? ? "" : "\n#{var_text.strip}" )
         body = "This CBRAIN email message has no further content.\n" if body.blank?
-        CbrainMailer.cbrain_message(allusers,
+        CbrainMailer.general_message(allusers,
           :subject  => header.strip,
           :body     => body
         ).deliver

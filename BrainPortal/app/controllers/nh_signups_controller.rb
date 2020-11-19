@@ -104,11 +104,11 @@ class NhSignupsController < NeurohubApplicationController
     false
   end
 
-  private 
+  private
 
   def send_nh_confirm_email(signup) #:nodoc:
     confirm_url = url_for(:controller => :nh_signups, :action => :confirm, :id => signup.id, :only_path => false, :token => signup.confirm_token)
-    CbrainMailer.signup_nh_request_confirmation(signup, confirm_url).deliver
+    signup.action_mailer_class.signup_request_confirmation(signup, confirm_url).deliver
     return true
   rescue => ex
     Rails.logger.error ex.to_s
