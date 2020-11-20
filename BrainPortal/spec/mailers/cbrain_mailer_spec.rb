@@ -23,7 +23,20 @@
 require 'rails_helper'
 
 describe CbrainMailer do
-  let(:user) { create(:normal_user) }
+  let(:user)   { create(:normal_user) }
+  let(:portal) { double("portal",
+                   :support_email        => 'support@example.com',
+                   :system_from_email    => 'sysfrom@example.com',
+                   :site_url_prefix      => 'fake://cbrain.site/',
+                   :nh_support_email     => 'nh_support@example.com',
+                   :nh_system_from_email => 'nh_sysfrom@example.com',
+                   :nh_site_url_prefix   => 'nh_fake://cbrain.site/',
+                 ).as_null_object
+               }
+
+  before(:each) do
+    allow(RemoteResource).to receive(:current_resource).and_return(portal)
+  end
 
   describe "#registration_confirmation" do
 
@@ -57,15 +70,15 @@ describe CbrainMailer do
 
   end
 
-  describe "#cbrain_message" do
+  describe "#general_message" do
 
     it "should return true if user is blank" do
-    @email = CbrainMailer.cbrain_message([]).deliver
-    expect(@email).to be_nil
+      @email = CbrainMailer.general_message([]).deliver
+      expect(@email).to be_nil
     end
 
     it "should call mail with :to => [user].map(&:email)" do
-      @email = CbrainMailer.cbrain_message([user]).deliver
+      @email = CbrainMailer.general_message([user]).deliver
       expect(@email.to.to_a).to match_array([user].map(&:email))
     end
 

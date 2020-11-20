@@ -30,8 +30,8 @@ class CbrainMailer < BaseMailer
   end
 
   def cbrain_message(*args) #:nodoc:
-    Rails.logger.warning "DEPRECATED: Warning: Method #{self.class}#cbrain_message() should be replaced by general_message() instead."
-    general_message(*args)
+    Rails.logger.warn "DEPRECATED: Warning: Method #{self.class}#cbrain_message() should be replaced by general_message() instead."
+    self.class.general_message(*args) # we need to re-post the args to the class method
   end
 
   private
