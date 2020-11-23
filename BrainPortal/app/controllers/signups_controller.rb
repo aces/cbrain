@@ -318,7 +318,7 @@ class SignupsController < ApplicationController
 
   def send_confirm_email(signup) #:nodoc:
     confirm_url = url_for(:controller => :signups, :action => :confirm, :id => signup.id, :only_path => false, :token => signup.confirm_token)
-    CbrainMailer.signup_request_confirmation(signup, confirm_url).deliver
+    signup.action_mailer_class.signup_request_confirmation(signup, confirm_url).deliver
     return true
   rescue => ex
     Rails.logger.error ex.to_s
@@ -326,7 +326,7 @@ class SignupsController < ApplicationController
   end
 
   def send_account_created_email(user, plain_password) #:nodoc:
-    CbrainMailer.registration_confirmation(user, plain_password).deliver
+    signup.action_mailer_class.registration_confirmation(user, plain_password).deliver
     return true
   rescue => ex
     Rails.logger.error ex.to_s
@@ -336,7 +336,7 @@ class SignupsController < ApplicationController
   def send_admin_notification(signup) #:nodoc:
     return unless RemoteResource.current_resource.support_email
     show_url  = url_for(:controller => :signups, :action => :show, :id => signup.id, :only_path => false)
-    CbrainMailer.signup_notify_admin(signup, show_url).deliver
+    signup.action_mailer_class.signup_notify_admin(signup, show_url).deliver
     return true
   rescue => ex
     Rails.logger.error ex.to_s

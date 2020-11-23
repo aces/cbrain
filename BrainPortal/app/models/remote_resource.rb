@@ -63,6 +63,12 @@ class RemoteResource < ApplicationRecord
 
   serialize             :dp_ignore_patterns
 
+  # These are the ActionMailer's delivery_method_options, and for the moment
+  # can only be set by the admin using the Rails console; leaving them blank
+  # means the mailers use whatever is configured in the Rails environment config.
+  serialize             :email_delivery_options
+  serialize             :nh_email_delivery_options
+
   validates             :name,
                         :uniqueness        => true,
                         :presence          => true,

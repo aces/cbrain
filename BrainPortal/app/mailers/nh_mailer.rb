@@ -21,35 +21,30 @@
 #
 
 #ActionMailer subclass for sending system e-mails.
-class CbrainMailer < BaseMailer
+class NhMailer < BaseMailer
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def service_name
-    "CBRAIN"
-  end
-
-  def cbrain_message(*args) #:nodoc:
-    Rails.logger.warn "DEPRECATED: Warning: Method #{self.class}#cbrain_message() should be replaced by general_message() instead."
-    self.class.general_message(*args) # we need to re-post the args to the class method
+    "NeuroHub"
   end
 
   private
 
   def build_from #:nodoc:
-    RemoteResource.current_resource.system_from_email.presence.try(:strip) || super
+    RemoteResource.current_resource.nh_system_from_email.presence.try(:strip) || super
   end
 
   def support_email #:nodoc:
-    RemoteResource.current_resource.support_email.presence.try(:strip) || super
+    RemoteResource.current_resource.nh_support_email.presence.try(:strip) || super
   end
 
   def external_url #:nodoc:
-    RemoteResource.current_resource.site_url_prefix.presence.try(:strip) || super
+    RemoteResource.current_resource.nh_site_url_prefix.presence.try(:strip) || super
   end
 
   def override_delivery_options #:nodoc:
-    RemoteResource.current_resource.email_delivery_options.presence.try(:strip) || super
+    RemoteResource.current_resource.nh_email_delivery_options.presence.try(:strip) || super
   end
 
 end

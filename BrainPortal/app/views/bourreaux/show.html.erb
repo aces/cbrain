@@ -102,22 +102,30 @@
 
     <% if is_portal %>
 
+      <% t.edit_cell(:help_url, :header => "User Manual URL", :show_width => 1) do |f| %>
+        <%= f.text_field :help_url, :size => 40 %><br/>
+        <div class="field_explanation">If set, the portal will show a link called 'User Manual' in the account bar at the top.</div>
+      <% end %>
+
       <% t.edit_cell :site_url_prefix,
                      :header => "Base Portal URL",
                      :content => (@bourreau.site_url_prefix.blank? ? "(None)" : @bourreau.site_url_prefix),
-                     :show_width => 1 do |f| %>
+                     :show_width => 2 do |f| %>
         <%= f.text_field :site_url_prefix, :size => 40 %><br/>
         <div class="field_explanation">
           Required to direct new users to the portal, this should be filled in with the <em>base</em> URL of the portal
         </div>
       <% end %>
 
-      <% t.edit_cell(:help_url, :header => "User Manual URL", :show_width => 1) do |f| %>
-        <%= f.text_field :help_url, :size => 40 %><br/>
-        <div class="field_explanation">If set, the portal will show a link called 'User Manual' in the account bar at the top.</div>
+      <% t.edit_cell :nh_site_url_prefix,
+                     :header => "NeuroHub Base Portal URL",
+                     :content => (@bourreau.nh_site_url_prefix.blank? ? "(None)" : @bourreau.nh_site_url_prefix),
+                     :show_width => 2 do |f| %>
+        <%= f.text_field :nh_site_url_prefix, :size => 40 %><br/>
+        <div class="field_explanation">
+          Required to direct new users to the NeuroHub portal, this should be filled in with the <em>base</em> URL of the portal
+        </div>
       <% end %>
-
-      <% t.empty_cell %>
 
       <% t.edit_cell :small_logo,
                      :header => "Small logo",
@@ -168,6 +176,14 @@
       <% t.edit_cell(:system_from_email, :header => "System 'From' reply address") do |f| %>
         <%= f.text_field :system_from_email, :size => 30 %><br/>
         <div class="field_explanation">If set, messages sent automatically by this system will contain this return address.</div>
+      <% end %>
+      <% t.edit_cell(:nh_support_email, :header => "NeuroHub Support email address") do |f| %>
+        <%= f.text_field :nh_support_email, :size => 30 %><br/>
+        <div class="field_explanation">If set, the portal will show a <em>mailto:</em> link for letting users contact NeuroHub support.</div>
+      <% end %>
+      <% t.edit_cell(:nh_system_from_email, :header => "NeuroHub System 'From' reply address") do |f| %>
+        <%= f.text_field :nh_system_from_email, :size => 30 %><br/>
+        <div class="field_explanation">If set, NeuroHub messages sent automatically by this system will contain this return address.</div>
       <% end %>
       <% t.edit_cell("meta[error_message_mailing_list]", :header => "Error notifications sent to members of project", :content => link_to_group_if_accessible(@bourreau.meta[:error_message_mailing_list])) do %>
         <%= group_select("meta[error_message_mailing_list]", {:include_blank => "All admins", :selector => @bourreau.meta[:error_message_mailing_list], :groups => WorkGroup.where(:creator_id => AdminUser.all.map(&:id)) } ) %>

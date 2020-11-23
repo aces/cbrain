@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20201105184731) do
+ActiveRecord::Schema.define(version: 20201119174821) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -243,6 +243,7 @@ ActiveRecord::Schema.define(version: 20201105184731) do
     t.datetime "time_of_death"
     t.string   "time_zone"
     t.string   "site_url_prefix"
+    t.string   "nh_site_url_prefix"
     t.string   "dp_cache_dir"
     t.string   "dp_ignore_patterns"
     t.string   "cms_class"
@@ -258,6 +259,10 @@ ActiveRecord::Schema.define(version: 20201105184731) do
     t.string   "proxied_host"
     t.string   "support_email"
     t.string   "system_from_email"
+    t.text     "email_delivery_options",      limit: 65535
+    t.string   "nh_support_email"
+    t.string   "nh_system_from_email"
+    t.text     "nh_email_delivery_options",   limit: 65535
     t.string   "external_status_page_url"
     t.string   "docker_executable_name"
     t.string   "singularity_executable_name"
