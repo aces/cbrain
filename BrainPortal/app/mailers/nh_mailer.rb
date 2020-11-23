@@ -44,7 +44,7 @@ class NhMailer < BaseMailer
   end
 
   def override_delivery_options #:nodoc:
-    RemoteResource.current_resource.nh_email_delivery_options.presence.try(:strip) || super
+    RemoteResource.current_resource.nh_email_delivery_options.presence || super
   end
 
 end
