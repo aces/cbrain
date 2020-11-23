@@ -67,6 +67,14 @@
         </div>
       <% end %>
 
+      <% t.edit_cell(:inputs_readonly, :header => "Read only input files", :show_width => 2) do |f| %>
+        <%= f.check_box :inputs_readonly %>
+        <div class="wide_field_explanation">
+          Are you sure that input files are not mutated by any task? It will allow execution with data
+          users cannot write to.
+        </div>
+      <% end %>
+
     <% end %>
 
   <% end %>

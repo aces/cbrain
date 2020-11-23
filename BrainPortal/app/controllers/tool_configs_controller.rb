@@ -200,6 +200,7 @@ class ToolConfigsController < ApplicationController
            @tool_config.version_name                = other_tc.version_name
            @tool_config.group                       = other_tc.group
            @tool_config.ncpus                       = other_tc.ncpus
+           @tool_config.inputs_readonly             = other_tc.inputs_readonly
            @tool_config.container_engine            = other_tc.container_engine
            @tool_config.containerhub_image_name     = other_tc.containerhub_image_name
            @tool_config.container_image_userfile_id = other_tc.container_image_userfile_id
@@ -283,6 +284,7 @@ class ToolConfigsController < ApplicationController
     params.require(:tool_config).permit(
       :version_name, :description, :tool_id, :bourreau_id, :env_array, :script_prologue, :script_epilogue,
       :group_id, :ncpus, :container_image_userfile_id, :containerhub_image_name, :container_index_location,
+      :inputs_readonly,
       :container_engine, :extra_qsub_args, :singularity_overlays_specs, :container_exec_args,
       # The configuration of a tool in a VM managed by a
       # ScirCloud Bourreau is defined by the following
