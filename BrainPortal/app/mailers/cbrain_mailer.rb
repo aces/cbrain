@@ -49,7 +49,9 @@ class CbrainMailer < BaseMailer
   end
 
   def override_delivery_options #:nodoc:
-    RemoteResource.current_resource.email_delivery_options.presence || super
+    custom = RemoteResource.current_resource.email_delivery_options.presence
+    return super if custom.blank?
+    custom['CBRAIN'] || custom[:CBRAIN] || {}
   end
 
 end
