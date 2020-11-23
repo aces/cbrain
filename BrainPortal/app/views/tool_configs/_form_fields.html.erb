@@ -202,6 +202,14 @@
         </div>
     <% end %>
 
+    <% t.edit_cell(:container_exec_args, :header => "Misc Singularity Options", :show_width => 2) do |f| %>
+      <%= f.text_field :container_exec_args, :size => 60 %>
+      <div class="field_explanation">
+        This field can contain singularity exec command options. Please use appropriate quotation or escaping
+        For example, <em>--cleanenv --env MYPATH='/My Documents'</em>.
+      </div>
+    <% end %>
+
   <% end %>
 
 

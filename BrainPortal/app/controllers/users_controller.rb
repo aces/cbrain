@@ -163,7 +163,7 @@ class UsersController < ApplicationController
       if @user.email.blank? || @user.email =~ /example/i || @user.email !~ /@/
         flash[:notice] += "Since this user has no proper email address, no welcome email was sent."
       else
-        if send_welcome_email(@user, new_user_attr[:password], no_password_reset_needed)
+        if send_welcome_email(@user, signup, new_user_attr[:password], no_password_reset_needed)
           flash[:notice] += "A welcome email is being sent to '#{@user.email}'."
         else
           flash[:error] = "Could not send email to '#{@user.email}' informing them that their account was created."
@@ -413,8 +413,9 @@ class UsersController < ApplicationController
   end
 
   # Sends email and returns true/false if it succeeds/fails
-  def send_welcome_email(user, password, no_password_reset_needed) #:nodoc:
-    CbrainMailer.registration_confirmation(user,password,no_password_reset_needed).deliver
+  def send_welcome_email(user, signup, password, no_password_reset_needed) #:nodoc:
+    mailer = signup.present? ? signup.action_mailer_class : CbrainMailer
+    mailer.registration_confirmation(user,password,no_password_reset_needed).deliver
     return true
   rescue => ex
     Rails.logger.error ex.to_s
@@ -429,7 +430,5 @@ class UsersController < ApplicationController
     Rails.logger.error ex.to_s
     return false
   end
-
-
 
 end

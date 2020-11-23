@@ -115,6 +115,12 @@ class Signup < ApplicationRecord
     end
   end
 
+  # Returns a ActionMailer class for notifying users.
+  # This is based on the value of the form_page attribute.
+  def action_mailer_class
+    self.form_page.presence == 'NeuroHub' ? NhMailer : CbrainMailer
+  end
+
   #===============================================
   # ActiveRecord Callbacks
   #===============================================

@@ -203,6 +203,7 @@ class ToolConfigsController < ApplicationController
            @tool_config.container_engine            = other_tc.container_engine
            @tool_config.containerhub_image_name     = other_tc.containerhub_image_name
            @tool_config.container_image_userfile_id = other_tc.container_image_userfile_id
+           @tool_config.container_exec_args         = other_tc.container_exec_args.presence
            @tool_config.container_index_location    = other_tc.container_index_location
            @tool_config.singularity_overlays_specs  = other_tc.singularity_overlays_specs
            @tool_config.extra_qsub_args             = other_tc.extra_qsub_args
@@ -282,7 +283,7 @@ class ToolConfigsController < ApplicationController
     params.require(:tool_config).permit(
       :version_name, :description, :tool_id, :bourreau_id, :env_array, :script_prologue, :script_epilogue,
       :group_id, :ncpus, :container_image_userfile_id, :containerhub_image_name, :container_index_location,
-      :container_engine, :extra_qsub_args, :singularity_overlays_specs,
+      :container_engine, :extra_qsub_args, :singularity_overlays_specs, :container_exec_args,
       # The configuration of a tool in a VM managed by a
       # ScirCloud Bourreau is defined by the following
       # parameters which specify the disk image where the
