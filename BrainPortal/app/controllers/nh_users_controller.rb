@@ -28,9 +28,8 @@ class NhUsersController < NeurohubApplicationController
   before_action :login_required
 
   def show #:nodoc:
-    @user = User.find(params[:id])
-    puts 'HELLO HELLO HELLO '
-    unless current_user.available_users.to_a.include?(@user)
+   @user = User.find(params[:id])
+   unless current_user.available_users.to_a.include?(@user)
       cb_error "You don't have permission to view this user.", :redirect => :neurohub
       # probably not needed until admin/manager etc added...
     end
