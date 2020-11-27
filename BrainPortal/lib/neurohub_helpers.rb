@@ -165,4 +165,20 @@ module NeurohubHelpers
     # The possible destinations are described by a set of Groups
     projs.to_a + user_projs.to_a
   end
+
+  # shortens ORCID iD by dropping url
+  def orcid_digits(orcid)
+    orcid.gsub(%r{ https:/orcid.org/ |
+                   https://orcid.org/|
+                   http://orcid.org/ |
+                   http://orcid.org/ |
+                   orchid:\          |
+                   orchid:}ix, '')    if orcid.present?
+  end
+
+  # normalizes ORCID iD into the standard/canonical form (the url)
+  def orcid_canonize(s)
+    "https://orcid.org/#{orcid_digits(s)}" if s.present?
+  end
+
 end

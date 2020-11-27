@@ -67,8 +67,10 @@
   </fieldset>
 
   <fieldset>
-    <%= f.label(:orcid, "Orcid Id") %>
+    <%= f.label(:orcid, "ORCID iD") %>
     <%= text_field_tag "meta[orcid]", @user.meta['orcid'], :size => 30 %><br />
+    <p class="field_note"><b>Note:</b> Enter <em>only</em> 16 digits of your ORCID iD with dashes between each four digits, for example 1234-5678-9012-3456, do not enter the url prefix.
+
   </fieldset>
 
   <fieldset >
