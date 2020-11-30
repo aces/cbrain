@@ -1332,7 +1332,7 @@ class UserfilesController < ApplicationController
     # Create the new file list
     file_list = CbrainFileList.new(
       :user_id          => current_user.id,
-      :group_id         => current_project.try(:id) || current_user.own_group.id,
+      :group_id         => current_assignable_project || current_user.own_group.id,
       :name             => "file_list.#{Process.pid}.#{Time.now.to_i}.cbcsv",
       :data_provider_id => dest_dp_id,
     )
