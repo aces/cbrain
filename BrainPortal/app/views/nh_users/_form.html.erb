@@ -68,8 +68,8 @@
 
   <fieldset>
     <%= f.label(:orcid, "ORCID iD") %>
-    <%= text_field_tag "meta[orcid]", @user.meta['orcid'], :size => 30 %><br />
-    <p class="field_note"><b>Note:</b> The url prefix is not required just enter all the 16 last symbols of your ORCID iD with dashes between each group of four, for example, 1234-5678-9098-765X
+    <%= text_field_tag "meta[orcid]", @orcid_canonical, :size => 30 %><br />
+    <p class="field_note">You can enter the full ORCID URI, which starts with <strong>https://</strong>, or just the numerical part, e.g. <strong>1234-5678-9012-345X</strong>
 
   </fieldset>
 

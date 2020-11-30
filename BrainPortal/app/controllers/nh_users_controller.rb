@@ -28,8 +28,8 @@ class NhUsersController < NeurohubApplicationController
   before_action :login_required
 
   def show #:nodoc:
-   @user = User.find(params[:id])
-   unless current_user.available_users.to_a.include?(@user)
+    @user = User.find(params[:id])
+    unless current_user.available_users.to_a.include?(@user)
       cb_error "You don't have permission to view this user.", :redirect => :neurohub
       # probably not needed until admin/manager etc added...
     end
@@ -43,6 +43,7 @@ class NhUsersController < NeurohubApplicationController
 
   def edit #:nodoc:
     @user = User.find(params[:id])
+    @orcid_canonical = orcid_canonize(@user.meta[:orcid])
     unless @user.id == current_user.id
       cb_error "You don't have permission to view this user.", :redirect => :neurohub
       # to change if admin/manager etc added...
