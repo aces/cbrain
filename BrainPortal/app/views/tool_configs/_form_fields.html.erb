@@ -67,11 +67,11 @@
         </div>
       <% end %>
 
-      <% t.edit_cell(:inputs_readonly, :header => "Read only input files", :show_width => 2) do |f| %>
+      <% t.edit_cell(:inputs_readonly, :header => "Does not modify its inputs files", :show_width => 2) do |f| %>
         <%= f.check_box :inputs_readonly %>
         <div class="wide_field_explanation">
-          Are you sure that input files are not mutated by any task? It will allow execution with data
-          users cannot write to.
+          Check this if the tool is known <strong>not to modify its input files </strong>.
+          This will allow a user to launch the tool on files that are not marked as group-writable in the file manager.
         </div>
       <% end %>
 
