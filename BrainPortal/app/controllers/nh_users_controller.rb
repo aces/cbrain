@@ -37,11 +37,13 @@ class NhUsersController < NeurohubApplicationController
 
   def myaccount #:nodoc:
     @user=current_user
+    @orcid_canonical = orcid_canonize(@user.meta[:orcid])
     render :show
   end
 
   def edit #:nodoc:
     @user = User.find(params[:id])
+    @orcid_canonical = orcid_canonize(@user.meta[:orcid])
     unless @user.id == current_user.id
       cb_error "You don't have permission to view this user.", :redirect => :neurohub
       # to change if admin/manager etc added...
@@ -71,7 +73,8 @@ class NhUsersController < NeurohubApplicationController
 
     last_update = @user.updated_at
     if @user.update_attributes_with_logging(attr_to_update, current_user)
-      add_meta_data_from_form(@user, [:orcid])
+      mparam = {orcid: orcid_digits(params['meta']['orcid'])}
+      add_meta_data_from_form(@user, [:orcid], mparam)
       if attr_to_update[:password].present?
         flash[:notice] = "Your password was changed."
         @user.update_column(:password_reset, false)

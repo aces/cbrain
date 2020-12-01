@@ -109,7 +109,7 @@ class NhSessionsController < NeurohubApplicationController
       return
     end
 
-    # Query ORCID, get a JSON record with an ORCID ID.
+    # Query ORCID, get a JSON record with an ORCID iD.
     response = Typhoeus.post(ORCID_TOKEN_URI,
       :body   => {
                    :code          => code,
@@ -121,7 +121,7 @@ class NhSessionsController < NeurohubApplicationController
       :headers => { :Accept       => 'application/json' }
     )
 
-    # Extract the ORCID ID of the user
+    # Extract the ORCID iD of the user
     body  = response.response_body
     json  = JSON.parse(body)
     orcid = json['orcid'].presence || User.random_string # the random string will lead to 'no match'
@@ -130,11 +130,11 @@ class NhSessionsController < NeurohubApplicationController
     users = User.find_all_by_meta_data(:orcid, orcid)
 
     if users.size == 0
-      flash[:error] = "No NeuroHub user matches your ORCID ID. Create a NeuroHub account, or add your ORCID ID to your account."
+      flash[:error] = "No NeuroHub user matches your ORCID iD. Create a NeuroHub account, or add your ORCID ID to your account."
       redirect_to signin_path
       return
     elsif users.size > 1
-      flash[:notice] = "Several NeuroHub user accounts matches your ORCID ID. Using the most recently updated one."
+      flash[:notice] = "Several NeuroHub user accounts matches your ORCID iD. Using the most recently updated one."
       users = [ users.sort_by(&:updated_at).last ]
     end
     user = users.first
