@@ -455,7 +455,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     # Check that the validation of the other columns goes through
     validateCols = lambda do |cbcsv,id|
       # Error-check the remainder of the file with max_errors = 1 and non-strict (so zero rows can have anything in them)
-      allGood   = cbcsv.validate_extra_attributes(self.user, 1, false) rescue false # returns true if no errors
+      allGood   = cbcsv.validate_extra_attributes(self.user, 1, false, file_access) rescue false # returns true if no errors
       allGood ||= cbcsv.errors # If there were errors, we want to look at them
       params_errors.add(id, "has attributes (in cbcsv: #{cbcsv.name}) that are invalid (Received error: #{allGood.messages})") unless (allGood == true)
       allGood
