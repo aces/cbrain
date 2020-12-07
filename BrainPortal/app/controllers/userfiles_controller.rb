@@ -223,6 +223,7 @@ class UserfilesController < ApplicationController
       send_file path
     end
   end
+
   # Transfer contents of a file.
   # If no relevant parameters are given, the controller
   # will simply attempt to send the entire file.
