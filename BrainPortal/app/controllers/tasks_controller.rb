@@ -201,7 +201,7 @@ class TasksController < ApplicationController
       @task.tool_config  = lastest_toolconfig if lastest_toolconfig
     end
 
-    @tool_config = @task.tool_config # for acces in view
+    @tool_config = @task.tool_config # for access in view
 
     # Filter list of files as provided by the get request
     file_ids = params[:file_ids] || []
