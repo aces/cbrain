@@ -189,7 +189,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     envVars = [
 %    eVars.each do |v|
 %# The value is escaped for bash; the whole cmd is then escaped to be written into the ruby code
-      <%= ("export %s=%s" % [v['name'], v['value'].bash_escape(always_quote=true)]).inspect %>,
+      <%= ("export %s=%s" % [v['name'], v['value'].bash_escape(true)]).inspect %>,
 %    end
     ]
 % end
@@ -438,16 +438,19 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 % end
     # Additional checks to see if <%= name %> succeeded would belong here.
 
-% if outputs.empty?
-    # No output files to save; nothing else to do
-    true
-% else
+% if outputs.present?
     # Identify the output files parameters from params.
     outputs = params.slice(*[
 %   outputs.each do |output|
       :'<%= output['id'] %>',
 %   end
     ])
+
+    # Helper for checking if an output is to be ignored outright
+%   ignoredOutputs = (descriptor['custom'] || {})['cbrain:ignore_outputs'] || []
+    isIgnoredOutput = lambda do |f|
+      [<%= ignoredOutputs.map{ |x| ":'#{x}'" }.join(",") %>].include?( f.to_sym )
+    end
 
 %   unless required.empty?
     # Make sure that every required output +path+ actually exists
@@ -473,9 +476,11 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     end
 
 %     required.select { |o| ! o['list'] }.each do |output|
+%       next if ignoredOutputs.include?(output['id'].to_s)
     ensure_exists.(outputs[:'<%= output['id'] %>'])
 %     end
 %     required.select { |o|   o['list'] }.each do |output|
+%       next if ignoredOutputs.include?(output['id'].to_s)
     ensure_matches.(outputs[:'<%= output['id'] %>'])
 %     end
 
@@ -499,6 +504,10 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 
     # Save (and register) all generated files to the results data provider
     outputs.each do |param, paths|
+      if isIgnoredOutput.(param)
+        self.addlog("Output parameter '#{param}' is meant to be ignored")
+        next
+      end
       paths = [paths] unless paths.is_a?(Enumerable)
       paths.each do |path|
 
@@ -556,9 +565,27 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 %   end
       end
     end
-
-    succeeded
 % end
+
+% # This block saves back inputs back to their provider side
+% # if the descriptor specifies that a successful task should do that.
+% resync_inputs = (descriptor['custom'] || {})['cbrain:save_back_inputs'] || []
+% if resync_inputs.present?
+    # Resync inputs back to provider
+    if succeeded
+      rsync_input_ids = [ <%= resync_inputs.map { |x| ":'#{x}'" }.join(", ") %> ]
+      rsync_input_ids.each do |input_id|
+        userfile_id = params[input_id].presence
+        next if ! userfile_id
+        userfile = Userfile.find(userfile_id)
+        self.addlog "Attempting to save back input '#{userfile.name}' on DataProvider '#{userfile.data_provider.name}'"
+        userfile.cache_is_newer
+        userfile.sync_to_provider
+      end
+    end
+
+% end
+    succeeded
   end
 
 % if descriptor['cbrain:walltime-estimate'] or descriptor['suggested-resources'].try(:[],'walltime-estimate')
