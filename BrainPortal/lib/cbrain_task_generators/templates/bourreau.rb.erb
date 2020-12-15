@@ -581,6 +581,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
         self.addlog "Attempting to save back input '#{userfile.name}' on DataProvider '#{userfile.data_provider.name}'"
         userfile.cache_is_newer
         userfile.sync_to_provider
+        self.addlog_to_userfiles_processed(userfile, "(content modified in place)")
       end
     end
 
