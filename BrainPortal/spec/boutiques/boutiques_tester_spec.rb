@@ -151,7 +151,6 @@ describe "BrainPortal Boutiques Tests" do
     before(:each) do
       # Create environment
       execer         = FactoryBot.create(:bourreau)
-      @task.tool_config = FactoryBot.create(:tool_config)
       schema         = SchemaTaskGenerator.default_schema
       descriptor     = File.join(__dir__, TestScriptDescriptor)
       @boutiquesTask = SchemaTaskGenerator.generate(schema, descriptor)
@@ -159,6 +158,7 @@ describe "BrainPortal Boutiques Tests" do
       # Instantiate a task object
       @task          = CbrainTask::BoutiquesTest.new
       @task.bourreau = execer
+      @task.tool_config = FactoryBot.create(:tool_config)
       @task.user_id, @task.group_id, @task.params = @user.id, @group.id, {}
       # Setup for holding the files the user had selected in the UI
       @task.params[:interface_userfile_ids] = []
