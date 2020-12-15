@@ -201,11 +201,15 @@ class TasksController < ApplicationController
       @task.tool_config  = lastest_toolconfig if lastest_toolconfig
     end
 
-    @tool_config = @task.tool_config # for acces in view
+    @tool_config = @task.tool_config # for access in view
 
     # Filter list of files as provided by the get request
     file_ids = params[:file_ids] || []
-    access   = @task.class.properties[:readonly_input_files] ? :read : :write
+    if @tool_config.inputs_readonly || @task.class.properties[:readonly_input_files]
+      access = :read
+    else
+      access = :write
+    end
     @files   = Userfile.find_accessible_by_user(file_ids, current_user, :access_requested => access) rescue []
     if @files.empty?
       flash[:error] = "You must select at least one file to which you have write access."
