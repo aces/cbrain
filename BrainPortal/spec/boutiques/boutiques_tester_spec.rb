@@ -151,6 +151,7 @@ describe "BrainPortal Boutiques Tests" do
     before(:each) do
       # Create environment
       execer         = FactoryBot.create(:bourreau)
+      @task.tool_config = FactoryBot.create(:tool_config)
       schema         = SchemaTaskGenerator.default_schema
       descriptor     = File.join(__dir__, TestScriptDescriptor)
       @boutiquesTask = SchemaTaskGenerator.generate(schema, descriptor)
@@ -443,6 +444,7 @@ describe "BrainPortal Boutiques Tests" do
         @task.bourreau = FactoryBot.create(:bourreau)
         @task.user_id, @task.group_id, @task.params = @user.id, @group.id, {}
         @task.params[:interface_userfile_ids] = []
+        @task.tool_config = FactoryBot.create(:tool_config)
         # Generate some userfiles for testing
         @f1, @f2, @f3 = @addUserFile.('f1.cpp',@task,false), @addUserFile.('f2.java',@task,false), @addUserFile.('f3.j',@task,false)
       end
