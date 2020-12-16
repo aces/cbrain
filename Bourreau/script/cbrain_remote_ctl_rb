@@ -1,0 +1,273 @@
+#!/usr/bin/env ruby
+
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+
+# This script is a wrapper that launches the normal Rails server,
+# but with the added ability of receiving the content of the database.yml
+# file in standard output before it does so. Also, once the server is
+# started, the database.yml is deleted outright, closing a security hole.
+#
+# This script it NOT usually executed by a human, instead it is
+# invoked by the Portal when trying to start or stop a Bourreau.
+#
+# The command-line args are to be provided strictly in the order shown
+# below, and all of them should be present (this is done simply so that
+# this bash script is kept simple, as anyway this script is not meant
+# to be started manually by users).
+#
+#
+# To start the Rails app:
+#
+#   $0 start -e <environment> -p <port>
+#
+# which will result in reading the database.yml from stdin, installing
+# it, executing this command
+#
+#   script/rails server thin -d -e <environment> -p <port> -b 127.0.0.1 -P pidfile
+#
+# and finally removing the database.yml file. Any database.yml file
+# already present before doing all this will be erased.
+#
+#
+# To stop the Rails app:
+#
+#   $0 stop
+#
+# which will result in killing the rails app.
+#
+#
+# To start a console
+#
+#   $0 console -e <environment>
+
+
+
+require 'rubygems'
+require 'active_support'
+require 'active_support/core_ext.rb'
+require 'etc'
+require File.dirname(__FILE__) + '/../lib/cbrain_file_revision.rb' # ugly
+require File.dirname(__FILE__) + '/../lib/ssh_master.rb' # ugly
+require File.dirname(__FILE__) + '/../lib/cbrain_extensions/string_extensions/utilities.rb' # SO UGLEEEEE!!!!
+require File.dirname(__FILE__) + '/../config/initializers/added_core_extensions/string.rb' # ugly
+
+
+#########################
+# S U B R O U T I N E S #
+#########################
+
+# Usage
+def usage(basename)
+    puts "Usage: #{basename} [-R host -H http_port -D db_port] start -e <environment> -p <port>\n" +
+         "       #{basename} [-R host -H http_port -D db_port] stop" +
+         "       #{basename} [-R host -H http_port -D db_port] console -e <environment>"
+    Kernel.exit(10)
+end
+
+# Fatal error message
+def fatal(message)
+    puts message
+    Kernel.exit(20)
+end
+
+# Establish a SSH tunnel to a secondary host
+# where this script will be effectively run.
+def tunnel_to_secondary_host(host, http_port, db_port, args)
+  puts "Establishing tunnel from login host '#{`hostname`.strip}' to backend '#{host}'."
+  myuid   = Process.uid
+  mylogin = Etc.getpwuid(myuid).name
+  proxymaster = SshMaster.find_or_create(mylogin,host,22)
+  proxymaster.add_tunnel(:forward, http_port.to_i, 'localhost', http_port.to_i)
+  proxymaster.add_tunnel(:reverse,   db_port.to_i, 'localhost',   db_port.to_i)
+  unless proxymaster.start('Proxy')
+    puts "Cannot start proxy master channel to '#{host}'."
+    Kernel.exit(20)
+  end
+  myscript = __FILE__
+  myscript = (Pathname.getwd + myscript).to_s if myscript !~ /^\//
+  mydir = Pathname.getwd
+  proxymaster.remote_shell_command_writer("cd #{mydir.to_s.bash_escape}; bundle exec ruby #{myscript.bash_escape} #{args.map(&:bash_escape).join(" ")} 2>&1" ) do |fh|
+    fh.write(STDIN.read) unless args.size == 1 && args[0] == 'stop'
+  end
+  if args.size == 1 && args[0] == 'stop'
+    proxymaster.stop
+  end
+  Kernel.exit(0)
+end
+
+# Run-time paths
+cwd      = Dir.getwd
+basename = $PROGRAM_NAME
+fullprog = basename =~ /^\// ? basename : cwd + "/" + basename
+
+# Rails-specific paths
+rails_home = fullprog.sub(/\/script\/.+$/,"")
+pidfile    = "#{rails_home}/tmp/pids/server.pid"
+
+# Automatic redirection to a secondary host
+if ARGV.size > 6 && ARGV[0] == '-R' && ARGV[2] == '-H' && ARGV[4] == '-D'
+  remhost   = ARGV[1]
+  httpport  = ARGV[3]
+  dbport    = ARGV[5]
+  ARGV.shift(6)
+  tunnel_to_secondary_host(remhost, httpport, dbport, ARGV)
+  exit 0
+end
+
+# To help diagnose problems, print Ruby's version.
+puts "You are using Ruby #{RUBY_VERSION}"
+if RUBY_VERSION =~ /^1\.[0-8]/
+  puts "Warning! This Ruby version seems to be way too old. Maybe your environment wasn't initialized properly?"
+end
+
+# Check usage
+usage(basename) if ARGV.size != 1 && ARGV.size != 3 && ARGV.size != 5    # 1, 3 or 5 args!
+
+#############################################################
+# Stop
+#############################################################
+
+if ARGV.size == 1
+    usage(basename) if ARGV[0] != "stop"
+    fp = File.open(pidfile,"r") rescue nil
+    if fp
+        pid = fp.read.to_i
+        fp.close
+        Process.kill("TERM", pid)
+        puts "Bourreau Stopped"
+        Kernel.exit(0)
+    end
+    fatal "Could not find/open PID file '#{pidfile}'."
+end
+
+#############################################################
+# Start or Console
+#############################################################
+
+if ARGV[0] == "start"      # start -e env -p port
+  usage(basename) if ARGV.size != 5 || ARGV[1] != "-e" || ARGV[3] != "-p"
+elsif ARGV[0] == "console" # console -e env
+  usage(basename) if ARGV.size != 3 || ARGV[1] != "-e"
+else
+  usage(basename)
+end
+mode = ARGV[0] # start or console
+
+if mode == "start" && File.exist?(pidfile)
+  pid = File.read(pidfile).to_i
+  # TODO make check for running process platform-independent
+  fatal("The Rails app seems to be running already (PID=#{pid}). Kill it first.") if File.exist?("/proc/#{pid}")
+  File.unlink(pidfile) rescue true
+end
+
+# Check arguments
+environment = ARGV[2]
+port        = mode == "start" ? ARGV[4].to_i : 1025 # console port number is dummy
+fatal("Environment argument must be 'production', 'development' or 'test'") unless
+   environment =~ /^(production|development|test)$/
+fatal("Port argument must be a number greater than 1024 and less than 65530") unless
+   port > 1024 && port < 65535
+
+db_yml_text = mode == "start" ? (STDIN.read || "") : ""
+db_file     = rails_home + "/config/database.yml"
+
+# Install or restore database.yml if necessary
+db_exists  = File.exist?(db_file)
+blank_yml  = db_yml_text !~ /\S/
+
+if blank_yml #  blank? use what db.yml is already here
+  if ! db_exists
+    fatal("Could not find a database.yml file for the Rails application!")
+  end
+else # db text is provided to us
+  # Optional: change stuff in it, depending on the environment
+  unless ENV['CBRAIN_FRONTEND_HOSTNAME'].nil? || ENV['CBRAIN_FRONTEND_HOSTNAME'] =~ /^\s*$/
+    db_yml_text.sub!(/hostname:\s*\S+/,"hostname: #{ENV['CBRAIN_FRONTEND_HOSTNAME']}")
+  end
+  File.open(db_file,"w") { |fh| fh.write(db_yml_text) }
+end
+
+start_success        = false
+# Rename log file if it's too big
+start_log_file       = "#{rails_home}/log/server_start.log"
+environment_log_file = "#{rails_home}/log/#{environment}.log"
+date_extension       = Time.now.strftime("%Y-%m-%d")
+File.rename(start_log_file, start_log_file.sub(/\.log$/,"_#{date_extension}.log")) if
+  File.exists?( start_log_file ) && File.size( start_log_file ) > 1_048_576
+File.rename(environment_log_file, environment_log_file.sub(/\.log$/,"_#{date_extension}.log") ) if
+  File.exists?( environment_log_file ) && File.size( environment_log_file ) > 1_048_576
+# Start the server or the console
+raw_system_cmd       = ""
+Dir.chdir(rails_home) do
+  ENV["SECRET_KEY_BASE"] ||= "JUNK-NOT-USED-IN-BOURREAU-THERE-ARE-NO-SESSIONS-ANYWAY"
+  rails_cmd_ar = (mode == "start") ?
+        [
+          "script/rails", "server", "puma",
+          #"puma",
+          "-d", # the -d will start it in background
+          "-p", "#{port}",
+          "-e", "#{environment}",
+          "-b", "127.0.0.1",
+          "-P", "#{pidfile}",
+          #"--pidfile", "#{pidfile}",
+          #"--redirect-stdout", "log/stdout.tmp",
+          #"--redirect-stderr", "log/stderr.tmp",
+        ] :
+        [
+          "script/rails", "console", "#{environment}",
+        ]
+  raw_system_cmd = (mode == "start") ?
+      "set -o pipefail ; exec 6>&- ; exec 255>&- ; " + rails_cmd_ar.map(&:bash_escape).join(" ") + " </dev/null 2>&1 | tee -a #{start_log_file.bash_escape}" :
+      rails_cmd_ar.map(&:bash_escape).join(" ")
+  start_success=system("bash","-c",raw_system_cmd) # this will BLOCK if console, NOT BLOCK if start
+end
+
+# If we were provided with a database.yml, we need
+# to wait a bit and delete it once the server has read
+# it.
+if (! blank_yml) || mode == "console"
+  File.unlink(db_file) rescue true
+end
+
+if mode == "start"
+  # Return a message to indicate to our calling context
+  # whether or not the server started.
+  if start_success
+    puts "Bourreau Started." # This string is used by the Portal controller!
+  else
+    puts "Bourreau Failed."
+    puts "Raw BASH command: #{raw_system_cmd}"
+    #if File.exists?(start_log_file)
+    #  puts "Here are the last 100 lines of the server's log:"
+    #  system("tail -100 '#{start_log_file}'")
+    #else
+    #  puts "No server log file found to help you out of this one :-("
+    #end
+  end
+else
+  puts "\nBourreau Console Exited."
+end
+
+Kernel.exit(start_success ? 0 : 10)
+
