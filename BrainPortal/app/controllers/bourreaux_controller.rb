@@ -88,7 +88,7 @@ class BourreauxController < ApplicationController
   end
 
   def new #:nodoc:
-    bourreau_group_id = ( current_project && current_project.id ) || current_user.own_group.id
+    bourreau_group_id = current_assignable_project_id || current_user.own_group.id
     @users    = current_user.available_users
     @groups   = current_user.assignable_groups
     @bourreau = Bourreau.new( :user_id   => current_user.id,

@@ -76,7 +76,7 @@ class DataProvidersController < ApplicationController
   end
 
   def new #:nodoc:
-    provider_group_id = ( current_project && current_project.id ) || current_user.own_group.id
+    provider_group_id = current_assignable_project_id || current_user.own_group.id
     @provider = DataProvider.new( :user_id   => current_user.id,
                                   :group_id  => provider_group_id,
                                   :online    => true,
@@ -89,7 +89,7 @@ class DataProvidersController < ApplicationController
   def create #:nodoc:
     @provider = DataProvider.sti_new(data_provider_params)
     @provider.user_id  ||= current_user.id # disabled field in form DOES NOT send value!
-    @provider.group_id ||= (( current_project && current_project.id ) || current_user.own_group.id)
+    @provider.group_id ||current_assignable_project_id || current_user.own_group.id
 
     if @provider.save
       add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid])
@@ -418,7 +418,7 @@ class DataProvidersController < ApplicationController
 
     # The new file(s)'s default project is the currently active project, if
     # available.
-    group_id = current_project.try(:id) || current_user.own_group.id
+    group_id = current_assignable_project_id || current_user.own_group.id
 
     # Unless one was specified explicitly via :other_group_id
     group_id = params[:other_group_id].to_i unless

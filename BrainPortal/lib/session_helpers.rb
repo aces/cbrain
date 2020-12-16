@@ -53,8 +53,8 @@ module SessionHelpers
   end
 
   # return currently active project if user can assign to
-  def current_assignable_project
-    return current_project && current_user.assignable_group_ids.include?(current_project.id)
+  def current_assignable_project_id
+    return current_project.id && current_user.assignable_group_ids.include?(current_project.id)
   end
 
   private
