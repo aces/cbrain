@@ -36,7 +36,8 @@ fi
 this_script_dir=$(dirname $this_script)
 
 if test "$#" -lt 6 -o "X$1" != "X-R" -o "X$3" != "X-H" -o "X$5" != "X-D" ; then
-  exec "$this_script_dir"/cbrain_remote_ctl_rb "$*"
+  echo "Transfering control from $this_script to cbrain_remote_ctl_rb"
+  exec "$this_script_dir"/cbrain_remote_ctl_rb "$@"
   exit 10 # should never get here
 fi
 
@@ -64,23 +65,37 @@ if ! test -S $controlsocket ; then
     -o BatchMode=yes                     \
     -o ControlMaster=yes                 \
     -o ControlPath=$controlsocket        \
+    -o ExitOnForwardFailure=yes          \
     -L ${httpport}:localhost:${httpport} \
     -R ${dbport}:localhost:${dbport}     \
     -p 22                                \
     $remhost
 
   ssh_status=$?
-  if $ssh_status -gt 0 ; then
+  if test $ssh_status -gt 0 ; then
     echo "Could not start SSH master: status $ssh_status" 1>&2
     exit $ssh_status
   fi
 fi
 
-ssh -o ControlPath=$controlsocket $remhost \
-  "cd \"$this_script_dir\"; bundle exec ruby \"$this_script\" $@ 2>&1" # will read from STDIN too
+# Invoke the RB version of the control script, on the remote side, using
+# the master. The current STDIN will be connected to the remote
+# STDIN for transmission of the DB config file, if necessary.
+echo ssh -A -x                          \
+    -o ExitOnForwardFailure=true        \
+    -o ControlMaster=no                 \
+    -o ControlPath=$controlsocket       \
+    $remhost                            \
+    "cd \"$this_script_dir\"; bundle exec \"$this_script\"_rb $@ 2>&1"
 
+# If the command is "stop", we also stop the local master
 if test "X$1" = "Xstop" ; then
   echo "Stopping master from login host $myhost to backend $remhost"
-  ssh -N -o ControlPath=$controlsocket -O exit $remhost # this is nice, this -O option for controlling the master
+  # This is nice, this -O option for controlling the master
+  ssh -n -N -x \
+    -o ControlPath=$controlsocket \
+    -O exit                       \
+    $remhost
 fi
 
+exit 0

@@ -80,7 +80,7 @@ require File.dirname(__FILE__) + '/../config/initializers/added_core_extensions/
 # Usage
 def usage(basename)
     puts "Usage: #{basename} [-R host -H http_port -D db_port] start -e <environment> -p <port>\n" +
-         "       #{basename} [-R host -H http_port -D db_port] stop" +
+         "       #{basename} [-R host -H http_port -D db_port] stop\n" +
          "       #{basename} [-R host -H http_port -D db_port] console -e <environment>"
     Kernel.exit(10)
 end
