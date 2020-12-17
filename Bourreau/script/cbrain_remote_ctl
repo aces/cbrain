@@ -22,7 +22,17 @@
 #
 
 #
-# Description here
+# This small wrapper is a replacement for the
+# 'establish a secondary tunnel to submit host'
+# feature of cbrain_remote_ctl_rb (which was the
+# original content of this file here, but required
+# a lot more ruby libs). Since in the case where
+# we need a secondary tunnel, we are often on a
+# very plain login node, this script requires no
+# ruby and just works with plain bash commands.
+# In MOST situations in fact, this script's content
+# is not used and the arguments are completely all
+# delegated to the original cbrain_remote_ctl_rb.
 #
 
 this_script=$(readlink -e "$0" 2>/dev/null)
@@ -35,17 +45,21 @@ if test -z "$this_script" ; then
 fi
 this_script_dir=$(dirname $this_script)
 
+# This is the most common case
 if test "$#" -lt 6 -o "X$1" != "X-R" -o "X$3" != "X-H" -o "X$5" != "X-D" ; then
   echo "Transfering control from $this_script to cbrain_remote_ctl_rb"
   exec "$this_script_dir"/cbrain_remote_ctl_rb "$@"
   exit 10 # should never get here
 fi
 
+# The less common case: we are on a plain login node with
+# none of the ruby libs needed by cbrain_remote_ctl_rb.
+
 # Arguments all have a hardcoded index number in this mode.
-myhost=$(hostname)
 remhost="$2"
 httpport="$4"
 dbport="$6"
+myhost=$(hostname)
 shift 6
 
 umask 077 # for socket access permissions
@@ -81,14 +95,14 @@ fi
 # Invoke the RB version of the control script, on the remote side, using
 # the master. The current STDIN will be connected to the remote
 # STDIN for transmission of the DB config file, if necessary.
-echo ssh -A -x                          \
+ssh -A -x                               \
     -o ExitOnForwardFailure=true        \
     -o ControlMaster=no                 \
     -o ControlPath=$controlsocket       \
     $remhost                            \
     "cd \"$this_script_dir\"; bundle exec \"$this_script\"_rb $@ 2>&1"
 
-# If the command is "stop", we also stop the local master
+# If the main command ($1) is "stop", we also stop the local master
 if test "X$1" = "Xstop" ; then
   echo "Stopping master from login host $myhost to backend $remhost"
   # This is nice, this -O option for controlling the master
