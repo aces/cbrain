@@ -93,7 +93,7 @@ class UserfilesController < ApplicationController
     @current_offset = (@scope.pagination.page - 1) * @scope.pagination.per_page
 
     # Special case; only userfile IDs are required (API request)
-    if params[:ids_only] && api_request?
+    if params[:ids_only] && (api_request? || request.headers["X-Requested-With"] == "XMLHttpRequest")
       @userfiles = @view_scope.raw_first_column('userfiles.id')
 
     # Tree sort
@@ -160,7 +160,7 @@ class UserfilesController < ApplicationController
       format.html
       format.js
       format.xml  { render :xml  => (params[:ids_only].present? && api_request?) ? @userfiles.to_a : @userfiles.for_api }
-      format.json { render :json => (params[:ids_only].present? && api_request?) ? @userfiles.to_a : @userfiles.for_api }
+      format.json { render :json => (params[:ids_only].present? && (api_request? || request.headers["X-Requested-With"] == "XMLHttpRequest"))  ? @userfiles.to_a : @userfiles.for_api }
       format.csv
     end
   end
@@ -1727,7 +1727,7 @@ class UserfilesController < ApplicationController
     @scope.custom[:view_all] = !current_user.has_role?(:admin_user) if
       @scope.custom[:view_all].nil?
 
-    if ((! api_request?) && (@scope.custom[:view_all] == "false" || !@scope.custom[:view_all]))
+    if (! api_request? && (@scope.custom[:view_all] == "false" || !@scope.custom[:view_all]))
       base = base.where(:user_id => current_user.id)
     else # api request, or view_all is true
       base = Userfile.restrict_access_on_query(current_user, base, :access_requested => :read)

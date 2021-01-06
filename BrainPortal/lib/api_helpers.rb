@@ -40,8 +40,8 @@ module ApiHelpers
     #  puts_yellow "-------"
     #end
     return true if @cbrain_api_token
-    return true if request.format.json?
-    return true if request.format.xml?
+    return true if request.format.json? && request.headers["X-Requested-With"] != "XMLHttpRequest"
+    return true if request.format.xml?  && request.headers["X-Requested-With"] != "XMLHttpRequest"
     false
   end
 
