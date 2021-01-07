@@ -93,7 +93,7 @@ class UserfilesController < ApplicationController
     @current_offset = (@scope.pagination.page - 1) * @scope.pagination.per_page
 
     # Special case; only userfile IDs are required (API request)
-    if params[:ids_only] && (api_request? || request.headers["X-Requested-With"] == "XMLHttpRequest")
+    if params[:ids_only] && (api_request? || jQuery_request?)
       @userfiles = @view_scope.raw_first_column('userfiles.id')
 
     # Tree sort
@@ -159,8 +159,8 @@ class UserfilesController < ApplicationController
     respond_to do |format|
       format.html
       format.js
-      format.xml  { render :xml  => (params[:ids_only].present? && api_request?) ? @userfiles.to_a : @userfiles.for_api }
-      format.json { render :json => (params[:ids_only].present? && (api_request? || request.headers["X-Requested-With"] == "XMLHttpRequest"))  ? @userfiles.to_a : @userfiles.for_api }
+      format.xml  { render :xml  => (params[:ids_only].present? && api_request?)                      ? @userfiles.to_a : @userfiles.for_api }
+      format.json { render :json => (params[:ids_only].present? && (api_request? || jQuery_request?)) ? @userfiles.to_a : @userfiles.for_api }
       format.csv
     end
   end
