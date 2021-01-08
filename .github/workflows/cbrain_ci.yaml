@@ -34,4 +34,6 @@ jobs:
         run: |
           echo PWD is $PWD
           ls -la
+          cd BrainPortal
+          ls -l
 
