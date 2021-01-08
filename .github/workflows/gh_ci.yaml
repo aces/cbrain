@@ -10,7 +10,17 @@ on:   [ push, pull_request ]
 jobs:
   build:
     name: CI
-    runs-on: centos/mariadb-101-centos7
+    runs-on: ubuntu-latest
+    services:
+      - mariadb:
+         image: mariadb/server
+         env:
+           MARIADB_ROOT_PASSWORD: root
+           MARIADB_DATABASE: cbrain_test
+           MARIADB_USER:     cbrain_user
+           MARIADB_PASSWORD: fake.pw.of.course
+         ports:
+         - 3306
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-ruby@v1
