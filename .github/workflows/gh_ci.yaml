@@ -1,0 +1,24 @@
+
+# GitHub Actions Continuous Integration
+#
+# This runs rspec and other test suites for the CBRAIN platform codebase
+#
+# Pierre Rioux, January 2021
+
+name: gh_ci
+on:   [ push, pull_request ]
+jobs:
+  build:
+    name: CI
+    runs-on: centos/mariadb-101-centos7
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: 2.6.4
+      - name: Invoke test script
+        env:
+          RAILS_ENV: test
+        run: |
+          echo PWD is $PWD
+
