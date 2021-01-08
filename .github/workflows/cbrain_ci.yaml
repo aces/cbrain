@@ -33,4 +33,5 @@ jobs:
           RAILS_ENV: test
         run: |
           echo PWD is $PWD
+          ls -la
 
