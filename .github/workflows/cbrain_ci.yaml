@@ -5,12 +5,12 @@
 #
 # Pierre Rioux, January 2021
 
-name: gh_ci
+name: cbrain_ci
 on:   [ push, pull_request ]
 jobs:
   build:
-    name: CI
-    runs-on: ubuntu-latest
+    name: Continuous Integration Tests
+    runs-on: ubuntu-20.04
 
     services:
       mariadb:
@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions/setup-ruby@v1
         with:
-          ruby-version: 2.6.4
+          ruby-version: 2.6.6
       - name: Invoke test script
         env:
           RAILS_ENV: test
