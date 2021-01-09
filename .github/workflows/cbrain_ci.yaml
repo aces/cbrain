@@ -32,8 +32,6 @@ jobs:
         env:
           RAILS_ENV: test
         run: |
-          echo PWD is $PWD
-          ls -la
           cd BrainPortal
-          ls -l
+          bundle install
 
