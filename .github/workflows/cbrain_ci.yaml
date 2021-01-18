@@ -43,7 +43,15 @@ jobs:
           cd BrainPortal || exit 2
           bundle exec rake db:setup  || exit 2
       - name: Portal Tests
+        run: |
+          echo TODO
       - name: Bourreaux Tests
+        run: |
+          echo TODO
       - name: Curl API tests
+        run: |
+          echo TODO
       - name: Ruby CodeGen API tests
+        run: |
+          echo TODO
 
