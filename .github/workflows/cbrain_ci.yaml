@@ -119,7 +119,7 @@ jobs:
           sleep 5
           perl curl_req_tester.pl -h localhost -p 3000 -s http -v${CBRAIN_CURL_TEST_VERBOSE_LEVEL:-1} -R
           status=$?
-          kill $(cat $cb_test/BrainPortal/tmp/pids/server.pid)
+          kill $(cat ../tmp/pids/server.pid)
           exit $status
 
       ###########################################################
@@ -132,6 +132,6 @@ jobs:
           sleep 5
           rake "cbrain:test:api:client" -v "${CBRAIN_GEM_TEST_VERBOSE_LEVEL:-1}"
           status=$?
-          kill $(cat $cb_test/BrainPortal/tmp/pids/server.pid)
+          kill $(cat ../tmp/pids/server.pid)
           exit $status
 
