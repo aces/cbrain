@@ -1,4 +1,6 @@
 
+![cbrain_ci](https://github.com/prioux/cbrain/workflows/cbrain_ci/badge.svg)
+
 ## CBRAIN
 
 CBRAIN is a collaborative, web-enabled grid platform built to

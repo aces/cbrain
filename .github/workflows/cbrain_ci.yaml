@@ -60,31 +60,31 @@ jobs:
       - name: Configure Plugins
         run: |
           cd BrainPortal || exit 2
-          bundle rake cbrain:plugins:install:plugins || exit 2
+          rake cbrain:plugins:install:plugins || exit 2
 
       ###########################################################
       - name: Setup Database
         run: |
           cd BrainPortal || exit 2
-          bundle rake db:schema:load                 || exit 2
+          rake db:schema:load                 || exit 2
 
       ###########################################################
       - name: Seed Database
         run: |
           cd BrainPortal || exit 2
-          bundle rake db:seed                        || exit 2
+          rake db:seed                        || exit 2
 
       ###########################################################
       - name: Seed Boureau Test Data
         run: |
           cd BrainPortal || exit 2
-          bundle rake db:seed:test:bourreau          || exit 2
+          rake db:seed:test:bourreau          || exit 2
 
       ###########################################################
       - name: Perform Sanity Checks
         run: |
           cd BrainPortal || exit 2
-          bundle rake db:sanity:check                || exit 2
+          rake db:sanity:check                || exit 2
 
       ###########################################################
       - name: Portal Tests
