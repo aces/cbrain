@@ -1,0 +1,48 @@
+.display_userfile .control-heading {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+
+.display_userfile .control-heading:not(:first-child) {
+  margin-top: 12px;
+}
+
+.display_userfile .slider {
+  margin-top: 2em!important;
+}
+
+.display_userfile .thresh-inputs {
+  position: relative;
+  height: 1em;
+}
+
+.display_userfile .thresh-input-left {
+  position: absolute;
+  left: 3px;
+  margin-bottom: 2em;
+}
+
+.display_userfile .thresh-input-right {
+  position: absolute;
+  right: 10px;
+  margin-bottom: 2em;
+}
+
+
+.display_userfile .volume-controls {
+  width: 700px;
+}
+
+.display_userfile .volume-viewer-controls {
+  font-size: 12px;
+  padding: 10px;
+  margin: 3px 5px;
+  padding-bottom: 18px;
+}
+
+.display_userfile .volume-viewer-controls > div {
+  margin-bottom: 10px;
+}
+
+
