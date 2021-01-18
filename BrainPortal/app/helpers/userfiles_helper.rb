@@ -92,7 +92,27 @@ module UserfilesHelper
 
     matched_class = SingleFile.descendants.unshift(SingleFile).find { |c| file_name =~ c.file_name_pattern }
 
-    if matched_class && matched_class <= TextFile
+    # binding.pry
+    if matched_class && matched_class <= NiftiFile
+      # overlay_ajax_link h(display_name),
+      #                 display_userfile_path(userfile,
+      #                     :content_loader        => :collection_file,
+      #                     :arguments             => file_name,
+      #                     :viewer                => :volume_viewer,
+      #                     :viewer_userfile_class => :FileCollection,
+      #                 ),
+      #                 :class => "action_link"
+
+      link_to h(display_name),
+              display_userfile_path(userfile,
+                :content_loader        => :collection_file,
+                :arguments             => file_name,
+                :viewer                => :volume_viewer,
+                :viewer_userfile_class => :FileCollection,
+                :content_viewer        => "off",
+              ),
+              :target => "_blank"
+    elsif matched_class && matched_class <= TextFile
       link_to h(display_name),
               display_userfile_path(userfile,
                 :content_loader        => :collection_file,
