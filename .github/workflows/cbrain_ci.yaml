@@ -28,10 +28,22 @@ jobs:
       - uses: actions/setup-ruby@v1
         with:
           ruby-version: 2.6.6
-      - name: Invoke test script
+      - name: Prepare Ruby Gems
         env:
           RAILS_ENV: test
         run: |
-          cd BrainPortal
-          bundle install
+          cd BrainPortal || exit 2
+          bundle install || exit 2
+          cd ../Bourreau || exit 2
+          bundle install || exit 2
+      - name: Setup Database
+        env:
+          RAILS_ENV: test
+        run: |
+          cd BrainPortal || exit 2
+          bundle exec rake db:setup  || exit 2
+      - name: Portal Tests
+      - name: Bourreaux Tests
+      - name: Curl API tests
+      - name: Ruby CodeGen API tests
 
