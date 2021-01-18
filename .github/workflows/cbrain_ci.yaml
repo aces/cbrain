@@ -28,11 +28,22 @@ jobs:
 
     ###########################################################
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-ruby@v1
         with:
           ruby-version: 2.6.6
-          #bundler-cache: true  # rails app is down one level
+      - uses: actions/cache@v1
+        with:
+          path: BrainPortal/vendor/bundle
+          key: ${{ runner.os }}-portal-gems-${{ hashFiles('BrainPortal/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-portal-gems-
+      - uses: actions/cache@v1
+        with:
+          path: Bourreau/vendor/bundle
+          key: ${{ runner.os }}-bourreau-gems-${{ hashFiles('Bourreau/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bourreau-gems-
 
       ###########################################################
       - name: Setup BrainPortal And Bourreau Names
@@ -50,27 +61,17 @@ jobs:
           MARIADB_PORT:          3306
         run: |
           bash .github/workflows/scripts/make_database_yml.sh | tee BrainPortal/config/database.yml || exit 2
-
-      ###########################################################
-      - name: Test Database Connection
-        env: # keep in sync with the values in the 'services' section above
-          MARIADB_ROOT_PASSWORD: that_is_nothing
-          MARIADB_DATABASE:      cbrain_test
-          MARIADB_USER:          cbrain_user
-          MARIADB_PASSWORD:      fake_pw_of_course
-          MARIADB_HOST:          127.0.0.1
-          MARIADB_PORT:          3306
-        run: |
-          echo mysql --host ${MARIADB_HOST} --port ${MARIADB_PORT} -u ${MARIADB_USER} -p${MARIADB_PASSWORD} -D ${MARIADB_DATABASE} -e "SHOW TABLES;"
-          sleep 5 # darn
+          sleep 5 # darn...
           mysql --host ${MARIADB_HOST} --port ${MARIADB_PORT} -u ${MARIADB_USER} -p${MARIADB_PASSWORD} -D ${MARIADB_DATABASE} -e "SHOW TABLES;"
 
       ###########################################################
       - name: Prepare Ruby Gems
         run: |
           cd BrainPortal || exit 2
+          bundle config path vendor/bundle || exit 2
           bundle install || exit 2
           cd ../Bourreau || exit 2
+          bundle config path vendor/bundle || exit 2
           bundle install || exit 2
 
       ###########################################################
