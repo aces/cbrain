@@ -8,7 +8,7 @@
 name: cbrain_ci
 on:   [ push, pull_request ]
 jobs:
-  build:
+  run-tests:
     name: Continuous Integration Tests
     runs-on: ubuntu-20.04
     env:
@@ -130,8 +130,19 @@ jobs:
           bundle exec rails server puma -p 3000 -d || exit 3
           cd test_api
           sleep 5
-          rake "cbrain:test:api:client" -v "${CBRAIN_GEM_TEST_VERBOSE_LEVEL:-1}"
+          bundle exec rake "cbrain:test:api:client" -v "${CBRAIN_GEM_TEST_VERBOSE_LEVEL:-1}"
           status=$?
           kill $(cat ../tmp/pids/server.pid)
           exit $status
 
+      ###########################################################
+      - name: Notify Slack Of Success
+        if: ${{ success() }}
+        run: |
+          echo All good TODO
+
+      ###########################################################
+      - name: Notify Slack Of Failure
+        if: ${{ cancelle() }}
+        run: |
+          echo Oh Noooo TODO
