@@ -19,10 +19,10 @@ jobs:
       mariadb:
         image: mariadb/server
         env:
-          MARIADB_ROOT_PASSWORD: root
-          MARIADB_DATABASE: cbrain_test
-          MARIADB_USER:     cbrain_user
-          MARIADB_PASSWORD: fake.pw.of.course
+          MARIADB_ROOT_PASSWORD: that_is_nothing
+          MARIADB_DATABASE:      cbrain_test
+          MARIADB_USER:          cbrain_user
+          MARIADB_PASSWORD:      fake_pw_of_course
         ports:
         - 3306
 
@@ -34,15 +34,7 @@ jobs:
           ruby-version: 2.6.6
 
       ###########################################################
-      - name: Prepare Ruby Gems
-        run: |
-          cd BrainPortal || exit 2
-          bundle install || exit 2
-          cd ../Bourreau || exit 2
-          bundle install || exit 2
-
-      ###########################################################
-      - name: Setup BrainPortal and Bourreau names
+      - name: Setup BrainPortal And Bourreau Names
         run: |
           bash .github/workflows/scripts/make_cbrain_app_name_rb.sh > BrainPortal/config/initializers/config_portal.rb || exit 2
 
@@ -55,6 +47,25 @@ jobs:
           MARIADB_PORT:     ${{ job.services.mariadb.ports[0]             }}
         run: |
           bash .github/workflows/scripts/make_database_yml.sh | tee BrainPortal/config/database.yml || exit 2
+
+      ###########################################################
+      - name: Test Database Connection
+        env: # keep in sync with the values in the 'services' section above
+          MARIADB_DATABASE: ${{ job.services.mariadb.env.MARIADB_DATABASE }}
+          MARIADB_USER:     ${{ job.services.mariadb.env.MARIADB_USER     }}
+          MARIADB_PASSWORD: ${{ job.services.mariadb.env.MARIADB_PASSWORD }}
+          MARIADB_PORT:     ${{ job.services.mariadb.ports[0]             }}
+        run: |
+          echo mysql --host 127.0.0.1 --port $MARIADB_PORT -u MARIADB_USER -p$MARIADB_PASSWORD -D $MARIADB_DATABASE -e "SHOW TABLES;"
+          mysql --host 127.0.0.1 --port $MARIADB_PORT -u MARIADB_USER -p$MARIADB_PASSWORD -D $MARIADB_DATABASE -e "SHOW TABLES;"
+
+      ###########################################################
+      - name: Prepare Ruby Gems
+        run: |
+          cd BrainPortal || exit 2
+          bundle install || exit 2
+          cd ../Bourreau || exit 2
+          bundle install || exit 2
 
       ###########################################################
       - name: Configure Plugins
