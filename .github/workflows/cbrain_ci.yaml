@@ -14,14 +14,14 @@ jobs:
 
     services:
       mariadb:
-       image: mariadb/server
-       env:
-         MARIADB_ROOT_PASSWORD: root
-         MARIADB_DATABASE: cbrain_test
-         MARIADB_USER:     cbrain_user
-         MARIADB_PASSWORD: fake.pw.of.course
-       ports:
-       - 3306
+        image: mariadb/server
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: cbrain_test
+          MARIADB_USER:     cbrain_user
+          MARIADB_PASSWORD: fake.pw.of.course
+        ports:
+        - 3306
 
     steps:
       - uses: actions/checkout@v1
@@ -36,12 +36,33 @@ jobs:
           bundle install || exit 2
           cd ../Bourreau || exit 2
           bundle install || exit 2
-      - name: Setup Database
+      - name: Setup BrainPortal and Bourreau names
+        run: |
+          bash .github/workflows/scripts/make_cbrain_app_name_rb.sh > BrainPortal/config/initializers/config_portal.rb || exit 2
+      - name: Configure Database Connection
         env:
           RAILS_ENV: test
+          MARIADB_DATABASE: cbrain_test
+          MARIADB_USER:     cbrain_user
+          MARIADB_PASSWORD: fake.pw.of.course
         run: |
           cd BrainPortal || exit 2
-          bundle exec rake db:setup  || exit 2
+          bash .github/workflows/scripts/make_database_yml.sh > BrainPortal/config/database.yml || exit 2
+      - name: Configure Plugins
+        run: |
+          bundle rake cbrain:plugins:install:plugins || exit 2
+      - name: Setup Database
+        run: |
+          bundle rake db:schema:load                 || exit 2
+      - name: Seed Database
+        run: |
+          bundle rake db:seed                        || exit 2
+      - name: Seed Boureau Test Data
+        run: |
+          bundle rake db:seed:test:bourreau          || exit 2
+      - name: Perform Sanity Checks
+        run: |
+          bundle rake db:sanity:check                || exit 2
       - name: Portal Tests
         run: |
           echo TODO
