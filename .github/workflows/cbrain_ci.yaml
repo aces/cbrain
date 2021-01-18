@@ -12,6 +12,7 @@ jobs:
     name: Continuous Integration Tests
     runs-on: ubuntu-20.04
 
+    ###########################################################
     services:
       mariadb:
         image: mariadb/server
@@ -23,11 +24,14 @@ jobs:
         ports:
         - 3306
 
+    ###########################################################
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-ruby@v1
         with:
           ruby-version: 2.6.6
+
+      ###########################################################
       - name: Prepare Ruby Gems
         env:
           RAILS_ENV: test
@@ -36,9 +40,13 @@ jobs:
           bundle install || exit 2
           cd ../Bourreau || exit 2
           bundle install || exit 2
+
+      ###########################################################
       - name: Setup BrainPortal and Bourreau names
         run: |
           bash .github/workflows/scripts/make_cbrain_app_name_rb.sh > BrainPortal/config/initializers/config_portal.rb || exit 2
+
+      ###########################################################
       - name: Configure Database Connection
         env:
           RAILS_ENV: test
@@ -46,33 +54,59 @@ jobs:
           MARIADB_USER:     cbrain_user
           MARIADB_PASSWORD: fake.pw.of.course
         run: |
-          cd BrainPortal || exit 2
           bash .github/workflows/scripts/make_database_yml.sh > BrainPortal/config/database.yml || exit 2
+
+      ###########################################################
       - name: Configure Plugins
         run: |
+          cd BrainPortal || exit 2
           bundle rake cbrain:plugins:install:plugins || exit 2
+
+      ###########################################################
       - name: Setup Database
         run: |
+          cd BrainPortal || exit 2
           bundle rake db:schema:load                 || exit 2
+
+      ###########################################################
       - name: Seed Database
         run: |
+          cd BrainPortal || exit 2
           bundle rake db:seed                        || exit 2
+
+      ###########################################################
       - name: Seed Boureau Test Data
         run: |
+          cd BrainPortal || exit 2
           bundle rake db:seed:test:bourreau          || exit 2
+
+      ###########################################################
       - name: Perform Sanity Checks
         run: |
+          cd BrainPortal || exit 2
           bundle rake db:sanity:check                || exit 2
+
+      ###########################################################
       - name: Portal Tests
         run: |
+          cd BrainPortal || exit 2
           echo TODO
+
+      ###########################################################
       - name: Bourreaux Tests
         run: |
+          cd Bourreau || exit 2
           echo TODO
+
+      ###########################################################
       - name: Curl API tests
         run: |
+          cd BrainPortal || exit 2
           echo TODO
+
+      ###########################################################
       - name: Ruby CodeGen API tests
         run: |
+          cd BrainPortal || exit 2
           echo TODO
 
