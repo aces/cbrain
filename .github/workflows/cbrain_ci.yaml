@@ -32,6 +32,7 @@ jobs:
       - uses: actions/setup-ruby@v1
         with:
           ruby-version: 2.6.6
+          #bundler-cache: true  # rails app is down one level
 
       ###########################################################
       - name: Setup BrainPortal And Bourreau Names
@@ -56,8 +57,8 @@ jobs:
           MARIADB_PASSWORD: ${{ job.services.mariadb.env.MARIADB_PASSWORD }}
           MARIADB_PORT:     ${{ job.services.mariadb.ports[0]             }}
         run: |
-          echo mysql --host 127.0.0.1 --port $MARIADB_PORT -u MARIADB_USER -p$MARIADB_PASSWORD -D $MARIADB_DATABASE -e "SHOW TABLES;"
-          mysql --host 127.0.0.1 --port $MARIADB_PORT -u MARIADB_USER -p$MARIADB_PASSWORD -D $MARIADB_DATABASE -e "SHOW TABLES;"
+          echo mysql --host 127.0.0.1 --port ${MARIADB_PORT} -u ${MARIADB_USER} -p${MARIADB_PASSWORD} -D ${MARIADB_DATABASE} -e "SHOW TABLES;"
+          mysql --host 127.0.0.1 --port ${MARIADB_PORT} -u ${MARIADB_USER} -p${MARIADB_PASSWORD} -D ${MARIADB_DATABASE} -e "SHOW TABLES;"
 
       ###########################################################
       - name: Prepare Ruby Gems
