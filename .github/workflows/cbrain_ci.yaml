@@ -18,11 +18,11 @@ jobs:
     services:
       mariadb:
         image: mariadb/server
-        env:
-          MARIADB_ROOT_PASSWORD: that_is_nothing
-          MARIADB_DATABASE:      cbrain_test
-          MARIADB_USER:          cbrain_user
-          MARIADB_PASSWORD:      fake_pw_of_course
+        env: # the docker container's autosetup use MYSQL_ variables
+          MYSQL_ROOT_PASSWORD: that_is_nothing
+          MYSQL_DATABASE:      cbrain_test
+          MYSQL_USER:          cbrain_user
+          MYSQL_PASSWORD:      fake_pw_of_course
         ports:
         - 3306:3306
 
