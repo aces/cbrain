@@ -10,5 +10,6 @@ ${RAILS_ENV:-test}:
   database: ${MARIADB_DATABASE:-cbrain_test}
   username: ${MARIADB_USER:-cbrain_user}
   password: ${MARIADB_PASSWORD:-no.such.thing}
+  port: ${MARIADB_PORT:-3306}
 RAILS_DB_CONFIG_YML
 

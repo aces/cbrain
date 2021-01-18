@@ -48,10 +48,11 @@ jobs:
 
       ###########################################################
       - name: Configure Database Connection
-        env:
+        env: # keep in sync with the values in the 'services' section above
           MARIADB_DATABASE: cbrain_test
           MARIADB_USER:     cbrain_user
           MARIADB_PASSWORD: fake.pw.of.course
+          MARIADB_PORT:     3306
         run: |
           bash .github/workflows/scripts/make_database_yml.sh > BrainPortal/config/database.yml || exit 2
 
