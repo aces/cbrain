@@ -49,12 +49,12 @@ jobs:
       ###########################################################
       - name: Configure Database Connection
         env: # keep in sync with the values in the 'services' section above
-          MARIADB_DATABASE: cbrain_test
-          MARIADB_USER:     cbrain_user
-          MARIADB_PASSWORD: fake.pw.of.course
-          MARIADB_PORT:     3306
+          MARIADB_DATABASE: ${{ job.services.mariadb.env.MARIADB_DATABASE }}
+          MARIADB_USER:     ${{ job.services.mariadb.env.MARIADB_USER     }}
+          MARIADB_PASSWORD: ${{ job.services.mariadb.env.MARIADB_PASSWORD }}
+          MARIADB_PORT:     ${{ job.services.mariadb.ports[0]             }}
         run: |
-          bash .github/workflows/scripts/make_database_yml.sh > BrainPortal/config/database.yml || exit 2
+          bash .github/workflows/scripts/make_database_yml.sh | tee BrainPortal/config/database.yml || exit 2
 
       ###########################################################
       - name: Configure Plugins
@@ -65,8 +65,9 @@ jobs:
       ###########################################################
       - name: Setup Database
         run: |
-          cd BrainPortal || exit 2
-          rake db:schema:load                 || exit 2
+          cd BrainPortal      || exit 2
+          rake db:create      || exit 2
+          rake db:schema:load || exit 2
 
       ###########################################################
       - name: Seed Database

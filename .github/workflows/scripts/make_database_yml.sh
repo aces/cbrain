@@ -6,7 +6,7 @@
 cat <<RAILS_DB_CONFIG_YML
 ${RAILS_ENV:-test}:
   adapter: mysql2
-  host: localhost
+  host: 127.0.0.1
   database: ${MARIADB_DATABASE:-cbrain_test}
   username: ${MARIADB_USER:-cbrain_user}
   password: ${MARIADB_PASSWORD:-no.such.thing}
