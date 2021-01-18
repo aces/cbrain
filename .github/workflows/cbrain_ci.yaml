@@ -35,12 +35,12 @@ jobs:
       - uses: actions/cache@v1
         with:
           path: gem-cache
-          key: ${{ runner.os }}-gems-${{ hashFiles('*/Gemfile.lock') }}
+          key: ${{ runner.os }}-gems-${{ hashFiles('*/Gemfile') }}
 
       ###########################################################
       - name: Setup BrainPortal And Bourreau Names
         run: |
-          bash .github/workflows/scripts/make_cbrain_app_name_rb.sh > BrainPortal/config/initializers/config_portal.rb || exit 2
+          bash .github/workflows/scripts/make_cbrain_app_name_rb.sh > BrainPortal/config/initializers/config_portal.rb
 
       ###########################################################
       - name: Configure Database Connection
@@ -68,56 +68,70 @@ jobs:
 
       ###########################################################
       - name: Configure Plugins
+        working-directory: BrainPortal
         run: |
-          cd BrainPortal                                  || exit 2
-          bundle exec rake cbrain:plugins:install:plugins || exit 3
+          bundle exec rake cbrain:plugins:install:plugins
 
       ###########################################################
       - name: Setup Database
+        working-directory: BrainPortal
         run: |
-          cd BrainPortal                  || exit 2
           bundle exec rake db:create      || exit 3
           bundle exec rake db:schema:load || exit 4
 
       ###########################################################
       - name: Seed Database
+        working-directory: BrainPortal
         run: |
-          cd BrainPortal           || exit 2
-          bundle exec rake db:seed || exit 3
+          bundle exec rake db:seed
 
       ###########################################################
       - name: Seed Boureau Test Data
+        working-directory: BrainPortal
         run: |
-          cd BrainPortal                         || exit 2
-          bundle exec rake db:seed:test:bourreau || exit 3
+          bundle exec rake db:seed:test:bourreau
 
       ###########################################################
       - name: Perform Sanity Checks
+        working-directory: BrainPortal
         run: |
-          cd BrainPortal                   || exit 2
-          bundle exec rake db:sanity:check || exit 3
+          bundle exec rake db:sanity:check
 
       ###########################################################
       - name: Portal Tests
+        working-directory: BrainPortal
         run: |
-          cd BrainPortal || exit 2
-          echo TODO
+          bundle exec rspec spec
 
       ###########################################################
       - name: Bourreaux Tests
+        working-directory: Bourreau
         run: |
-          cd Bourreau || exit 2
-          echo TODO
+          bundle exec rspec spec/boutiques
 
       ###########################################################
       - name: Curl API tests
+        working-directory: BrainPortal
         run: |
-          cd BrainPortal || exit 2
-          echo TODO
+          bundle exec rake "db:seed:test:api"      || exit 2
+          bundle exec rails server puma -p 3000 -d || exit 3
+          cd test_api
+          sleep 5
+          perl curl_req_tester.pl -h localhost -p 3000 -s http -v${CBRAIN_CURL_TEST_VERBOSE_LEVEL:-1} -R
+          status=$?
+          kill $(cat $cb_test/BrainPortal/tmp/pids/server.pid)
+          exit $status
 
       ###########################################################
       - name: Ruby CodeGen API tests
+        working-directory: BrainPortal
         run: |
-          cd BrainPortal || exit 2
-          echo TODO
+          bundle exec rake "db:seed:test:api"      || exit 2
+          bundle exec rails server puma -p 3000 -d || exit 3
+          cd test_api
+          sleep 5
+          rake "cbrain:test:api:client" -v "${CBRAIN_GEM_TEST_VERBOSE_LEVEL:-1}"
+          status=$?
+          kill $(cat $cb_test/BrainPortal/tmp/pids/server.pid)
+          exit $status
 
