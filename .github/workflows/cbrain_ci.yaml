@@ -24,7 +24,7 @@ jobs:
           MARIADB_USER:          cbrain_user
           MARIADB_PASSWORD:      fake_pw_of_course
         ports:
-        - 3306
+        - 3306:3306
 
     ###########################################################
     steps:

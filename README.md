@@ -1,5 +1,5 @@
 
-![cbrain_ci](workflows/cbrain_ci/badge.svg)
+![Continuous Integration](https://github.com/aces/cbrain/workflows/cbrain_ci/badge.svg)
 
 ## CBRAIN
 
