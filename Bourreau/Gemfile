@@ -44,6 +44,7 @@ gem "puma"
 gem "pbkdf2-ruby"
 gem "json-schema"
 gem "aws-sdk-s3", '~> 1'
+gem "rake"
 
 # ActiveResource channel gems
 gem "activeresource", require: 'active_resource'

@@ -45,6 +45,7 @@ gem "pbkdf2-ruby"
 gem "json-schema"
 gem "aws-sdk-s3", '~> 1'
 gem 'zenodo_client', '>= 1.0.0', :git => 'https://github.com/aces/zenodo-client-gem'
+gem 'rake'
 
 # User interface gems
 gem "will_paginate"
