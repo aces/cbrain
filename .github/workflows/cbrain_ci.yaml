@@ -34,16 +34,8 @@ jobs:
           ruby-version: 2.6.6
       - uses: actions/cache@v1
         with:
-          path: BrainPortal/vendor/bundle
-          key: ${{ runner.os }}-portal-gems-${{ hashFiles('BrainPortal/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-portal-gems-
-      - uses: actions/cache@v1
-        with:
-          path: Bourreau/vendor/bundle
-          key: ${{ runner.os }}-bourreau-gems-${{ hashFiles('Bourreau/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bourreau-gems-
+          path: gem-cache
+          key: ${{ runner.os }}-gems-${{ hashFiles('*/Gemfile.lock') }}
 
       ###########################################################
       - name: Setup BrainPortal And Bourreau Names
@@ -60,50 +52,50 @@ jobs:
           MARIADB_HOST:          127.0.0.1
           MARIADB_PORT:          3306
         run: |
-          bash .github/workflows/scripts/make_database_yml.sh | tee BrainPortal/config/database.yml || exit 2
-          sleep 5 # darn...
+          bash .github/workflows/scripts/make_database_yml.sh > BrainPortal/config/database.yml || exit 2
+          sleep 10 # darn...
           mysql --host ${MARIADB_HOST} --port ${MARIADB_PORT} -u ${MARIADB_USER} -p${MARIADB_PASSWORD} -D ${MARIADB_DATABASE} -e "SHOW TABLES;"
 
       ###########################################################
       - name: Prepare Ruby Gems
         run: |
-          cd BrainPortal || exit 2
-          bundle config path vendor/bundle || exit 2
-          bundle install || exit 2
-          cd ../Bourreau || exit 2
-          bundle config path vendor/bundle || exit 2
-          bundle install || exit 2
+          cd BrainPortal                   || exit 2
+          bundle config path ../gem-cache  || exit 3
+          bundle install                   || exit 4
+          cd ../Bourreau                   || exit 2
+          bundle config path ../gem-cache  || exit 3
+          bundle install                   || exit 4
 
       ###########################################################
       - name: Configure Plugins
         run: |
-          cd BrainPortal || exit 2
-          bundle exec rake cbrain:plugins:install:plugins || exit 2
+          cd BrainPortal                                  || exit 2
+          bundle exec rake cbrain:plugins:install:plugins || exit 3
 
       ###########################################################
       - name: Setup Database
         run: |
-          cd BrainPortal      || exit 2
-          bundle exec rake db:create      || exit 2
-          bundle exec rake db:schema:load || exit 2
+          cd BrainPortal                  || exit 2
+          bundle exec rake db:create      || exit 3
+          bundle exec rake db:schema:load || exit 4
 
       ###########################################################
       - name: Seed Database
         run: |
-          cd BrainPortal || exit 2
-          rake db:seed                        || exit 2
+          cd BrainPortal           || exit 2
+          bundle exec rake db:seed || exit 3
 
       ###########################################################
       - name: Seed Boureau Test Data
         run: |
-          cd BrainPortal || exit 2
-          rake db:seed:test:bourreau          || exit 2
+          cd BrainPortal                         || exit 2
+          bundle exec rake db:seed:test:bourreau || exit 3
 
       ###########################################################
       - name: Perform Sanity Checks
         run: |
-          cd BrainPortal || exit 2
-          rake db:sanity:check                || exit 2
+          cd BrainPortal                   || exit 2
+          bundle exec rake db:sanity:check || exit 3
 
       ###########################################################
       - name: Portal Tests
