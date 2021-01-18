@@ -4,11 +4,11 @@
 # DB configuration for the test environment
 
 cat <<RAILS_DB_CONFIG_YML
-test:
+${RAILS_ENV:-test}:
   adapter: mysql2
   host: localhost
-  database: $MARIADB_DATABASE
-  username: $MARIADB_USER
-  password: $MARIADB_PASSWORD
+  database: ${MARIADB_DATABASE:-cbrain_test}
+  username: ${MARIADB_USER:-cbrain_user}
+  password: ${MARIADB_PASSWORD:-no.such.thing}
 RAILS_DB_CONFIG_YML
 

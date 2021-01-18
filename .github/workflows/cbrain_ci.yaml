@@ -11,6 +11,8 @@ jobs:
   build:
     name: Continuous Integration Tests
     runs-on: ubuntu-20.04
+    env:
+      RAILS_ENV: test
 
     ###########################################################
     services:
@@ -33,8 +35,6 @@ jobs:
 
       ###########################################################
       - name: Prepare Ruby Gems
-        env:
-          RAILS_ENV: test
         run: |
           cd BrainPortal || exit 2
           bundle install || exit 2
@@ -49,7 +49,6 @@ jobs:
       ###########################################################
       - name: Configure Database Connection
         env:
-          RAILS_ENV: test
           MARIADB_DATABASE: cbrain_test
           MARIADB_USER:     cbrain_user
           MARIADB_PASSWORD: fake.pw.of.course
