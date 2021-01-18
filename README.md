@@ -1,5 +1,5 @@
 
-![cbrain_ci](https://github.com/prioux/cbrain/workflows/cbrain_ci/badge.svg)
+![cbrain_ci](workflows/cbrain_ci/badge.svg)
 
 ## CBRAIN
 

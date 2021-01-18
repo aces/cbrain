@@ -5,11 +5,11 @@
 
 cat <<RAILS_DB_CONFIG_YML
 ${RAILS_ENV:-bad_test}:
-  adapter: mysql2
-  host: 127.0.0.1
+  adapter:  mysql2
+  host:     ${MARIADB_HOST:-localhost}
   database: ${MARIADB_DATABASE:-bad_cbrain_test}
   username: ${MARIADB_USER:-bad_cbrain_user}
   password: ${MARIADB_PASSWORD:-bad_no_such_thing}
-  port: ${MARIADB_PORT:-13306}
+  port:     ${MARIADB_PORT:-13306}
 RAILS_DB_CONFIG_YML
 
