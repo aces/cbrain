@@ -62,6 +62,7 @@ jobs:
           MARIADB_PORT:          3306
         run: |
           echo mysql --host ${MARIADB_HOST} --port ${MARIADB_PORT} -u ${MARIADB_USER} -p${MARIADB_PASSWORD} -D ${MARIADB_DATABASE} -e "SHOW TABLES;"
+          sleep 5 # darn
           mysql --host ${MARIADB_HOST} --port ${MARIADB_PORT} -u ${MARIADB_USER} -p${MARIADB_PASSWORD} -D ${MARIADB_DATABASE} -e "SHOW TABLES;"
 
       ###########################################################
