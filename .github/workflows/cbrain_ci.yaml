@@ -181,9 +181,9 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: ""
           SLACK_ICON: https://github.com/aces/cbrain/raw/master/BrainPortal/public/images/custom_logos/cb-small_white_blue.png
-          SLACK_MESSAGE: >
+          SLACK_MESSAGE: |
             ```
-            BrainPoral rspec tests         : ${{ steps.rspec_portal.outcome }}
+            BrainPortal rspec tests        : ${{ steps.rspec_portal.outcome }}
             Bourreau rspec tests           : ${{ steps.rspec_bourreau.outcome }}
             Curl API tests                 : ${{ steps.curl_api.outcome }}
             Swagger CodeGEN Ruby API tests : ${{ steps.codegen_api.outcome }}
