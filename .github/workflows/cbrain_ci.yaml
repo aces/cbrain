@@ -32,10 +32,6 @@ jobs:
       - uses: actions/setup-ruby@v1
         with:
           ruby-version: 2.6.6
-      - uses: actions/cache@v1
-        with:
-          path: gem-cache
-          key: ${{ runner.os }}-gems-${{ hashFiles('*/Gemfile') }}
 
       ###########################################################
       - name: Setup BrainPortal And Bourreau Names
@@ -55,6 +51,12 @@ jobs:
           bash .github/workflows/scripts/make_database_yml.sh > BrainPortal/config/database.yml || exit 2
           sleep 10 # darn...
           mysql --host ${MARIADB_HOST} --port ${MARIADB_PORT} -u ${MARIADB_USER} -p${MARIADB_PASSWORD} -D ${MARIADB_DATABASE} -e "SHOW TABLES;"
+
+      ###########################################################
+      - uses: actions/cache@v1 # speeds up 'Prepare Ruby Gems' below
+        with:
+          path: gem-cache
+          key: ${{ runner.os }}-gems-${{ hashFiles('*/Gemfile') }}
 
       ###########################################################
       - name: Prepare Ruby Gems
@@ -105,7 +107,7 @@ jobs:
         if: ${{ failure() || success() }}
         working-directory: BrainPortal
         run: |
-          echo temporarily disabled bundle exec rspec spec
+          bundle exec rspec spec
 
       ###########################################################
       # MAIN TEST #2: BOURREAU
@@ -115,7 +117,7 @@ jobs:
         if: ${{ failure() || success() }}
         working-directory: Bourreau
         run: |
-          echo temporarily disabled bundle exec rspec spec/boutiques
+          bundle exec rspec spec/boutiques
 
       ###########################################################
       # MAIN TEST #3: API TESTS WITH CURL
@@ -125,14 +127,13 @@ jobs:
         if: ${{ failure() || success() }}
         working-directory: BrainPortal
         run: |
-          echo temporarily disabled bundle exec rake "db:seed:test:api"      || exit 2
-          echo temporarily disabled bundle exec rails server puma -p 3000 -d || exit 3
-          echo temporarily disabled cd test_api
-          echo temporarily disabled sleep 5
-          echo temporarily disabled perl curl_req_tester.pl -h localhost -p 3000 -s http -v${CBRAIN_CURL_TEST_VERBOSE_LEVEL:-1} -R
+          bundle exec rake "db:seed:test:api"      || exit 2
+          bundle exec rails server puma -p 3000 -d || exit 3
+          cd test_api
+          sleep 5
+          perl curl_req_tester.pl -h localhost -p 3000 -s http -v${CBRAIN_CURL_TEST_VERBOSE_LEVEL:-1} -R
           status=$?
-          echo temporarily disabled kill $(cat ../tmp/pids/server.pid)
-          exit 3 # fake to test stuff
+          kill $(cat ../tmp/pids/server.pid)
           exit $status
 
       ###########################################################
@@ -143,15 +144,17 @@ jobs:
         if: ${{ failure() || success() }}
         working-directory: BrainPortal
         run: |
-          echo temporarily disabled bundle exec rake "db:seed:test:api"      || exit 2
-          echo temporarily disabled bundle exec rails server puma -p 3000 -d || exit 3
-          echo temporarily disabled cd test_api
-          echo temporarily disabled sleep 5
-          echo temporarily disabled bundle exec rake "cbrain:test:api:client" -v "${CBRAIN_GEM_TEST_VERBOSE_LEVEL:-1}"
+          bundle exec rake "db:seed:test:api"      || exit 2
+          bundle exec rails server puma -p 3000 -d || exit 3
+          cd test_api
+          sleep 5
+          bundle exec rake "cbrain:test:api:client" -v "${CBRAIN_GEM_TEST_VERBOSE_LEVEL:-1}"
           status=$?
-          echo temporarily disabled kill $(cat ../tmp/pids/server.pid)
+          kill $(cat ../tmp/pids/server.pid)
           exit $status
 
+      ###########################################################
+      # Final notification
       ###########################################################
       - name: Notify Slack
         if: ${{ failure() || success() }}
@@ -161,7 +164,7 @@ jobs:
           SLACK_CHANNEL: cbrain_travis
           SLACK_COLOR: ${{ job.status == 'success' && '#00ff00' || job.status == 'cancelled' && '#ffff00' || '#ff0000' }}
           SLACK_TITLE: "Integration tests: ${{ job.status }}"
-          SLACK_USERNAME: ${{ github.actor }}  # Doesn't have to be a real slack user
+          SLACK_USERNAME: "GitHub CI" # Doesn't have to be a real slack user
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: ""
           SLACK_ICON: https://github.com/aces/cbrain/raw/master/BrainPortal/public/images/custom_logos/cb-small_white_blue.png
