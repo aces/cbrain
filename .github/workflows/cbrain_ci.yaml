@@ -136,21 +136,14 @@ jobs:
           exit $status
 
       ###########################################################
-      - name: Notify Slack Of Success
-        if: ${{ success() }}
+      - name: Notify Slack
         continue-on-error: true
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: cbrain_travis
-          SLACK_COLOR: 'green'
+          SLACK_COLOR: ${{ job.status == 'success' && 'green' || job.status == 'cancelled' && 'grey' || 'red' }}
           SLACK_TITLE: GitHub Action
           SLACK_MESSAGE: 'Integration test successful'
           SLACK_USERNAME: prioux
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
 
-      ###########################################################
-      - name: Notify Slack Of Failure
-        if: ${{ cancelled() }}
-        continue-on-error: true
-        run: |
-          echo Oh Noooo TODO
