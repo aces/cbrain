@@ -1,9 +1,16 @@
 
+###############################################################
 # GitHub Actions Continuous Integration
 #
-# This runs rspec and other test suites for the CBRAIN platform codebase
+# This runs rspec and other test suites for
+# the CBRAIN platform codebase.
+#
+# At the end, a Slack notification can be sent if the
+# GitHub repo secret "SLACK_WEBHOOK" is set to a URL
+# (which you can generate within your SLACK config webpage)
 #
 # Pierre Rioux, January 2021
+###############################################################
 
 name: cbrain_ci
 on:   [ push, pull_request ]
