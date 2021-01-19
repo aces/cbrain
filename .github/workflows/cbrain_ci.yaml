@@ -99,40 +99,44 @@ jobs:
 
       ###########################################################
       - name: Portal Tests
+        id: rspec_portal
         working-directory: BrainPortal
         run: |
-          bundle exec rspec spec
+          echo temporarily disabled bundle exec rspec spec
 
       ###########################################################
       - name: Bourreaux Tests
+        id: rspec_bourreau
         working-directory: Bourreau
         run: |
-          bundle exec rspec spec/boutiques
+          echo temporarily disabled bundle exec rspec spec/boutiques
 
       ###########################################################
       - name: Curl API tests
+        id: curl_api
         working-directory: BrainPortal
         run: |
-          bundle exec rake "db:seed:test:api"      || exit 2
-          bundle exec rails server puma -p 3000 -d || exit 3
-          cd test_api
-          sleep 5
-          perl curl_req_tester.pl -h localhost -p 3000 -s http -v${CBRAIN_CURL_TEST_VERBOSE_LEVEL:-1} -R
+          echo temporarily disabled bundle exec rake "db:seed:test:api"      || exit 2
+          echo temporarily disabled bundle exec rails server puma -p 3000 -d || exit 3
+          echo temporarily disabled cd test_api
+          echo temporarily disabled sleep 5
+          echo temporarily disabled perl curl_req_tester.pl -h localhost -p 3000 -s http -v${CBRAIN_CURL_TEST_VERBOSE_LEVEL:-1} -R
           status=$?
-          kill $(cat ../tmp/pids/server.pid)
+          echo temporarily disabled kill $(cat ../tmp/pids/server.pid)
           exit $status
 
       ###########################################################
       - name: Ruby CodeGen API tests
+        id: codegen_api
         working-directory: BrainPortal
         run: |
-          bundle exec rake "db:seed:test:api"      || exit 2
-          bundle exec rails server puma -p 3000 -d || exit 3
-          cd test_api
-          sleep 5
-          bundle exec rake "cbrain:test:api:client" -v "${CBRAIN_GEM_TEST_VERBOSE_LEVEL:-1}"
+          echo temporarily disabled bundle exec rake "db:seed:test:api"      || exit 2
+          echo temporarily disabled bundle exec rails server puma -p 3000 -d || exit 3
+          echo temporarily disabled cd test_api
+          echo temporarily disabled sleep 5
+          echo temporarily disabled bundle exec rake "cbrain:test:api:client" -v "${CBRAIN_GEM_TEST_VERBOSE_LEVEL:-1}"
           status=$?
-          kill $(cat ../tmp/pids/server.pid)
+          echo temporarily disabled kill $(cat ../tmp/pids/server.pid)
           exit $status
 
       ###########################################################
@@ -141,9 +145,16 @@ jobs:
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: cbrain_travis
-          SLACK_COLOR: ${{ job.status == 'success' && 'green' || job.status == 'cancelled' && 'grey' || 'red' }}
-          SLACK_TITLE: GitHub Action
-          SLACK_MESSAGE: 'Integration test successful'
-          SLACK_USERNAME: prioux
+          SLACK_COLOR: ${{ job.status == 'success' && 'green' || job.status == 'cancelled' && 'yellow' || 'red' }}
+          SLACK_TITLE: GitHub Action ${{ job.status }}
+          SLACK_USERNAME: ${{ github.actor }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_MESSAGE: >
+            job.status ${{ job.status }}
+            github.event_name ${{ github.event_name }}
+            github.repository ${{ github.repository }}
+            portal tests ${{ steps.rspec_portal.outcome }}
+            bourreau tests ${{ steps.rspec_bourreau.outcome }}
+            curl api tests ${{ steps.curl_api.outcome }}
+            codegen api tests ${{ steps.codegen_api.outcome }}
 
