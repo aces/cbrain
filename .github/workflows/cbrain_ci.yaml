@@ -146,7 +146,7 @@ jobs:
         env:
           SLACK_CHANNEL: cbrain_travis
           SLACK_COLOR: ${{ job.status == 'success' && '#00ff00' || job.status == 'cancelled' && '#ffff00' || '#ff0000' }}
-          SLACK_TITLE: Integration tests: ${{ job.status }}
+          SLACK_TITLE: "Integration tests: ${{ job.status }}"
           SLACK_USERNAME: ${{ github.actor }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: ""
