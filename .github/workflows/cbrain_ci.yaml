@@ -139,7 +139,8 @@ jobs:
       - name: Notify Slack Of Success
         if: ${{ success() }}
         run: |
-          echo All good TODO
+          echo All good
+          echo TODO
 
       ###########################################################
       - name: Notify Slack Of Failure
