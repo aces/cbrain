@@ -98,24 +98,33 @@ jobs:
           bundle exec rake db:sanity:check
 
       ###########################################################
+      # MAIN TEST #1: PORTAL
+      ###########################################################
       - name: Portal Tests
         id: rspec_portal
+        if: ${{ failure() || success() }}
         continue-on-error: true
         working-directory: BrainPortal
         run: |
           echo temporarily disabled bundle exec rspec spec
 
       ###########################################################
+      # MAIN TEST #2: BOURREAU
+      ###########################################################
       - name: Bourreaux Tests
         id: rspec_bourreau
+        if: ${{ failure() || success() }}
         continue-on-error: true
         working-directory: Bourreau
         run: |
           echo temporarily disabled bundle exec rspec spec/boutiques
 
       ###########################################################
+      # MAIN TEST #3: API TESTS WITH CURL
+      ###########################################################
       - name: Curl API tests
         id: curl_api
+        if: ${{ failure() || success() }}
         continue-on-error: true
         working-directory: BrainPortal
         run: |
@@ -130,8 +139,11 @@ jobs:
           exit $status
 
       ###########################################################
+      # MAIN TEST #4: API TESTS WITH SWAGGER CODEGEN RUBY LIB
+      ###########################################################
       - name: Ruby CodeGen API tests
         id: codegen_api
+        if: ${{ failure() || success() }}
         continue-on-error: true
         working-directory: BrainPortal
         run: |
@@ -145,6 +157,8 @@ jobs:
           exit $status
 
       ###########################################################
+      # Overall status
+      ###########################################################
       - name: Generate Status For Job
         id: job_status
         run: |
@@ -156,6 +170,7 @@ jobs:
 
       ###########################################################
       - name: Notify Slack
+        if: ${{ failure() || success() }}
         continue-on-error: true
         uses: rtCamp/action-slack-notify@v2
         env:
