@@ -150,10 +150,10 @@ jobs:
           SLACK_USERNAME: ${{ github.actor }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: ""
-          SLACK_ICON: ""
+          SLACK_ICON: https://github.com/aces/cbrain/raw/master/BrainPortal/public/images/custom_logos/cb-small_white_blue.png
           SLACK_MESSAGE: >
-            portal tests ${{ steps.rspec_portal.outcome }}<br>
-            bourreau tests ${{ steps.rspec_bourreau.outcome }}<br>
-            curl api tests ${{ steps.curl_api.outcome }}<br>
+            portal tests ${{ steps.rspec_portal.outcome }}\n
+            bourreau tests ${{ steps.rspec_bourreau.outcome }}\\n
+            curl api tests ${{ steps.curl_api.outcome }}\\\n
             codegen api tests ${{ steps.codegen_api.outcome }}
 
