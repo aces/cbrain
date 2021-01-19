@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This scripts outputs in STDOUT the Rails
+# This script outputs in STDOUT the Rails
 # initializer for the CBRAIN config file,
 # which only contains a name.
 

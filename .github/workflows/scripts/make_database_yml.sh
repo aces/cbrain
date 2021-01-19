@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This scripts outputs in STDOUT the Rails
+# This script outputs in STDOUT the Rails
 # DB configuration for the test environment
 
 cat <<RAILS_DB_CONFIG_YML
@@ -10,6 +10,6 @@ ${RAILS_ENV:-bad_test}:
   database: ${MARIADB_DATABASE:-bad_cbrain_test}
   username: ${MARIADB_USER:-bad_cbrain_user}
   password: ${MARIADB_PASSWORD:-bad_no_such_thing}
-  port:     ${MARIADB_PORT:-13306}
+  port:     ${MARIADB_PORT:-bad_port}
 RAILS_DB_CONFIG_YML
 
