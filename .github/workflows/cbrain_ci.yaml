@@ -145,16 +145,15 @@ jobs:
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: cbrain_travis
-          SLACK_COLOR: ${{ job.status == 'success' && 'green' || job.status == 'cancelled' && 'yellow' || 'red' }}
-          SLACK_TITLE: GitHub Action ${{ job.status }}
+          SLACK_COLOR: ${{ job.status == 'success' && '#00ff00' || job.status == 'cancelled' && '#ffff00' || '#ff0000' }}
+          SLACK_TITLE: Integration tests: ${{ job.status }}
           SLACK_USERNAME: ${{ github.actor }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_FOOTER: ""
+          SLACK_ICON: ""
           SLACK_MESSAGE: >
-            job.status ${{ job.status }}
-            github.event_name ${{ github.event_name }}
-            github.repository ${{ github.repository }}
-            portal tests ${{ steps.rspec_portal.outcome }}
-            bourreau tests ${{ steps.rspec_bourreau.outcome }}
-            curl api tests ${{ steps.curl_api.outcome }}
+            portal tests ${{ steps.rspec_portal.outcome }}<br>
+            bourreau tests ${{ steps.rspec_bourreau.outcome }}<br>
+            curl api tests ${{ steps.curl_api.outcome }}<br>
             codegen api tests ${{ steps.codegen_api.outcome }}
 
