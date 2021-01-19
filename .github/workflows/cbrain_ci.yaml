@@ -100,6 +100,7 @@ jobs:
       ###########################################################
       - name: Portal Tests
         id: rspec_portal
+        continue-on-error: true
         working-directory: BrainPortal
         run: |
           echo temporarily disabled bundle exec rspec spec
@@ -107,6 +108,7 @@ jobs:
       ###########################################################
       - name: Bourreaux Tests
         id: rspec_bourreau
+        continue-on-error: true
         working-directory: Bourreau
         run: |
           echo temporarily disabled bundle exec rspec spec/boutiques
@@ -114,6 +116,7 @@ jobs:
       ###########################################################
       - name: Curl API tests
         id: curl_api
+        continue-on-error: true
         working-directory: BrainPortal
         run: |
           echo temporarily disabled bundle exec rake "db:seed:test:api"      || exit 2
@@ -123,11 +126,13 @@ jobs:
           echo temporarily disabled perl curl_req_tester.pl -h localhost -p 3000 -s http -v${CBRAIN_CURL_TEST_VERBOSE_LEVEL:-1} -R
           status=$?
           echo temporarily disabled kill $(cat ../tmp/pids/server.pid)
+          exit 3 # fake to test stuff
           exit $status
 
       ###########################################################
       - name: Ruby CodeGen API tests
         id: codegen_api
+        continue-on-error: true
         working-directory: BrainPortal
         run: |
           echo temporarily disabled bundle exec rake "db:seed:test:api"      || exit 2
@@ -152,8 +157,10 @@ jobs:
           SLACK_FOOTER: ""
           SLACK_ICON: https://github.com/aces/cbrain/raw/master/BrainPortal/public/images/custom_logos/cb-small_white_blue.png
           SLACK_MESSAGE: >
-            portal tests ${{ steps.rspec_portal.outcome }}\n
-            bourreau tests ${{ steps.rspec_bourreau.outcome }}\\n
-            curl api tests ${{ steps.curl_api.outcome }}\\\n
+            `
+            portal tests ${{ steps.rspec_portal.outcome }}
+            bourreau tests ${{ steps.rspec_bourreau.outcome }}
+            curl api tests ${{ steps.curl_api.outcome }}
             codegen api tests ${{ steps.codegen_api.outcome }}
+            `
 
