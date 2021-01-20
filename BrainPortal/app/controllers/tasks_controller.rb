@@ -205,7 +205,7 @@ class TasksController < ApplicationController
 
     # Filter list of files as provided by the get request
     file_ids = params[:file_ids] || []
-    if @tool_config.inputs_readonly || @task.class.properties[:readonly_input_files]
+    if @tool_config.try(:inputs_readonly) || @task.class.properties[:readonly_input_files]
       access = :read
     else
       access = :write
