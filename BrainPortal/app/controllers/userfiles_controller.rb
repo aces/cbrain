@@ -129,7 +129,7 @@ class UserfilesController < ApplicationController
     # General case
     else
       @userfiles = @view_scope
-      @userfiles = @scope.pagination.apply(@userfiles) if request.format != :csv
+      @userfiles = @scope.pagination.apply(@userfiles)
     end
 
     # Save the modified scope object
