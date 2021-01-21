@@ -39,10 +39,16 @@ module ApiHelpers
     #  puts_yellow (Rails.backtrace_cleaner.clean caller).join("\n")
     #  puts_yellow "-------"
     #end
-    return true if @cbrain_api_token
-    return true if request.format.json?
-    return true if request.format.xml?
+    return true  if @cbrain_api_token
+    return false if jQuery_request?
+    return true  if request.format.json?
+    return true  if request.format.xml?
     false
+  end
+
+  # Return true if X-Requested-With indicate a jQuery request
+  def jQuery_request?
+    request.headers["X-Requested-With"] == "XMLHttpRequest"
   end
 
   # Before filter that blocks certain actions from the API
