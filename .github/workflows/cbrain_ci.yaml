@@ -66,7 +66,8 @@ jobs:
           mysql --host ${MARIADB_HOST} --port ${MARIADB_PORT} -u ${MARIADB_USER} -p${MARIADB_PASSWORD} -D ${MARIADB_DATABASE} -e "SHOW TABLES;"
 
       ###########################################################
-      - uses: actions/cache@v1 # speeds up 'Prepare Ruby Gems' below
+      - name: Reload Cached Gems
+        uses: actions/cache@v1 # speeds up 'Prepare Ruby Gems' below
         with:
           path: gem-cache
           key: ${{ runner.os }}-gems-${{ hashFiles('*/Gemfile') }}
