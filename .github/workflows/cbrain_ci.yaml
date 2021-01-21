@@ -1,0 +1,191 @@
+
+###############################################################
+# GitHub Actions Continuous Integration
+#
+# This runs rspec and other test suites for
+# the CBRAIN platform codebase.
+#
+# At the end, a Slack notification can be sent if the
+# GitHub repo secret "SLACK_WEBHOOK" is set to a URL
+# (which you can generate within your SLACK config webpage)
+#
+# Pierre Rioux, January 2021
+###############################################################
+
+name: cbrain_ci
+on:   [ push, pull_request ]
+jobs:
+  run-tests:
+    name: Continuous Integration Tests
+    runs-on: ubuntu-20.04
+    env:
+      RAILS_ENV: test
+
+    ###########################################################
+    services:
+      mariadb:
+        image: mariadb/server
+        env: # the docker container's autosetup use MYSQL_ variables
+          MYSQL_ROOT_PASSWORD: that_is_nothing
+          MYSQL_DATABASE:      cbrain_test
+          MYSQL_USER:          cbrain_user
+          MYSQL_PASSWORD:      fake_pw_of_course
+        ports:
+        - 3306:3306
+
+    ###########################################################
+    steps:
+
+      ###########################################################
+      - name: Checkout CBRAIN Codebase
+        uses: actions/checkout@v2
+
+      ###########################################################
+      - name: Setup Ruby
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: 2.6.6
+
+      ###########################################################
+      - name: Setup BrainPortal And Bourreau Names
+        run: |
+          bash .github/workflows/scripts/make_cbrain_app_name_rb.sh > BrainPortal/config/initializers/config_portal.rb
+
+      ###########################################################
+      - name: Configure Database Connection
+        env: # keep in sync with the values in the 'services' section above
+          MARIADB_ROOT_PASSWORD: that_is_nothing
+          MARIADB_DATABASE:      cbrain_test
+          MARIADB_USER:          cbrain_user
+          MARIADB_PASSWORD:      fake_pw_of_course
+          MARIADB_HOST:          127.0.0.1
+          MARIADB_PORT:          3306
+        run: |
+          bash .github/workflows/scripts/make_database_yml.sh > BrainPortal/config/database.yml || exit 2
+          sleep 10 # darn...
+          mysql --host ${MARIADB_HOST} --port ${MARIADB_PORT} -u ${MARIADB_USER} -p${MARIADB_PASSWORD} -D ${MARIADB_DATABASE} -e "SHOW TABLES;"
+
+      ###########################################################
+      - uses: actions/cache@v1 # speeds up 'Prepare Ruby Gems' below
+        with:
+          path: gem-cache
+          key: ${{ runner.os }}-gems-${{ hashFiles('*/Gemfile') }}
+
+      ###########################################################
+      - name: Prepare Ruby Gems
+        run: |
+          cd BrainPortal                   || exit 2
+          bundle config path ../gem-cache  || exit 3
+          bundle install                   || exit 4
+          cd ../Bourreau                   || exit 2
+          bundle config path ../gem-cache  || exit 3
+          bundle install                   || exit 4
+
+      ###########################################################
+      - name: Configure Plugins
+        working-directory: BrainPortal
+        run: |
+          bundle exec rake cbrain:plugins:install:plugins
+
+      ###########################################################
+      - name: Setup Database
+        working-directory: BrainPortal
+        run: |
+          bundle exec rake db:create      || exit 3
+          bundle exec rake db:schema:load || exit 4
+
+      ###########################################################
+      - name: Seed Database
+        working-directory: BrainPortal
+        run: |
+          bundle exec rake db:seed
+
+      ###########################################################
+      - name: Seed Boureau Test Data
+        working-directory: BrainPortal
+        run: |
+          bundle exec rake db:seed:test:bourreau
+
+      ###########################################################
+      - name: Perform Sanity Checks
+        working-directory: BrainPortal
+        run: |
+          bundle exec rake db:sanity:check
+
+      ###########################################################
+      # MAIN TEST #1: PORTAL
+      ###########################################################
+      - name: Portal Tests
+        id: rspec_portal
+        if: ${{ failure() || success() }}
+        working-directory: BrainPortal
+        run: |
+          bundle exec rspec spec
+
+      ###########################################################
+      # MAIN TEST #2: BOURREAU
+      ###########################################################
+      - name: Bourreaux Tests
+        id: rspec_bourreau
+        if: ${{ failure() || success() }}
+        working-directory: Bourreau
+        run: |
+          bundle exec rspec spec/boutiques
+
+      ###########################################################
+      # MAIN TEST #3: API TESTS WITH CURL
+      ###########################################################
+      - name: Curl API tests
+        id: curl_api
+        if: ${{ failure() || success() }}
+        working-directory: BrainPortal
+        run: |
+          bundle exec rake "db:seed:test:api"      || exit 2
+          bundle exec rails server puma -p 3000 -d || exit 3
+          cd test_api
+          sleep 5
+          perl curl_req_tester.pl -h localhost -p 3000 -s http -v${CBRAIN_CURL_TEST_VERBOSE_LEVEL:-1} -R
+          status=$?
+          kill $(cat ../tmp/pids/server.pid)
+          exit $status
+
+      ###########################################################
+      # MAIN TEST #4: API TESTS WITH SWAGGER CODEGEN RUBY LIB
+      ###########################################################
+      - name: Ruby CodeGen API tests
+        id: codegen_api
+        if: ${{ failure() || success() }}
+        working-directory: BrainPortal
+        run: |
+          bundle exec rake "db:seed:test:api"      || exit 2
+          bundle exec rails server puma -p 3000 -d || exit 3
+          cd test_api
+          sleep 5
+          bundle exec rake "cbrain:test:api:client" -v "${CBRAIN_GEM_TEST_VERBOSE_LEVEL:-1}"
+          status=$?
+          kill $(cat ../tmp/pids/server.pid)
+          exit $status
+
+      ###########################################################
+      # Final notification
+      ###########################################################
+      - name: Notify Slack
+        if: ${{ failure() || success() }}
+        continue-on-error: true
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: cbrain_travis
+          SLACK_COLOR: ${{ job.status == 'success' && '#00ff00' || job.status == 'cancelled' && '#ffff00' || '#ff0000' }}
+          SLACK_TITLE: "Integration tests: ${{ job.status }}"
+          SLACK_USERNAME: "GitHub CI" # Doesn't have to be a real slack user
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_FOOTER: ""
+          SLACK_ICON: https://github.com/aces/cbrain/raw/master/BrainPortal/public/images/custom_logos/cb-small_white_blue.png
+          SLACK_MESSAGE: |
+            ```
+            BrainPortal rspec tests        : ${{ steps.rspec_portal.outcome }}
+            Bourreau rspec tests           : ${{ steps.rspec_bourreau.outcome }}
+            Curl API tests                 : ${{ steps.curl_api.outcome }}
+            Swagger CodeGEN Ruby API tests : ${{ steps.codegen_api.outcome }}
+            ```
+
