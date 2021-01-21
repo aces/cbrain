@@ -175,9 +175,9 @@ jobs:
         continue-on-error: true
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_CHANNEL: cbrain_travis
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL || 'cbrain_travis' }}
           SLACK_COLOR: ${{ job.status == 'success' && '#00ff00' || job.status == 'cancelled' && '#ffff00' || '#ff0000' }}
-          SLACK_TITLE: "Integration tests: ${{ job.status }}"
+          SLACK_TITLE: "${{ github.repository }} CI tests: ${{ job.status }}"
           SLACK_USERNAME: "GitHub CI" # Doesn't have to be a real slack user
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_FOOTER: ""
