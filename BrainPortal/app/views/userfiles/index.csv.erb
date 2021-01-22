@@ -27,10 +27,10 @@
 -%>
 <% quote_marker = params[:quote]     || "\"" -%>
 <% @userfiles.each do |u| -%>
-  <%= [u.name,
+  <%= [quote_marker + u.name                                + quote_marker,
        u.size,
-       u.type,
-       u.user.try(:login),
+       quote_marker + u.type                                + quote_marker,
+       quote_marker + u.user.try(:login)                    + quote_marker,
        quote_marker + u.group.try(:name)                    + quote_marker,
        quote_marker + to_localtime(u.created_at, :datetime) + quote_marker,
        quote_marker + to_localtime(u.updated_at, :datetime) + quote_marker,
