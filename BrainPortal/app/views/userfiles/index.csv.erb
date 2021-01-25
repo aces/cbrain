@@ -27,7 +27,7 @@
 -%>
 <% quote_marker = params[:quote]     || "\"" -%>
 <% @userfiles.each do |u| -%>
-  <%= [quote_marker + u.name                                + quote_marker,
+<%= [quote_marker + u.name                                + quote_marker,
        u.size,
        quote_marker + u.type                                + quote_marker,
        quote_marker + u.user.try(:login)                    + quote_marker,
