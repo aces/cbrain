@@ -187,7 +187,7 @@ class TasksController < ApplicationController
     @task.bourreau_id    = params[:bourreau_id]     # Just for compatibility with old code
     @task.tool_config_id = params[:tool_config_id]  # Normally sent by interface but it's optional
     @task.user           = current_user
-    @task.group_id       = current_project.try(:id) || current_user.own_group.id
+    @task.group_id       = current_assignable_project_id || current_user.own_group.id
     @task.status         = "New"
 
     if @task.tool_config_id.present?
@@ -1287,7 +1287,7 @@ class TasksController < ApplicationController
     task_class       = tool_config ? tool_config.tool.cbrain_task_class : tool.cbrain_task_class
     task             = task_class.new(new_task_info)
     task.user_id   ||= current_user.id
-    task.group_id  ||= current_project.try(:id) || current_user.own_group.id
+    task.group_id  ||= current_assignable_project_id || current_user.own_group.id
     task.status      = "New" if task.status.blank? || task.status !~ /Standby/ # Standby is special.
 
     # Extract the Bourreau ID from the ToolConfig

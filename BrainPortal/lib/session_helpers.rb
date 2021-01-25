@@ -52,6 +52,11 @@ module SessionHelpers
     @current_project
   end
 
+  # return currently active project id if user can assign to it. Serves as default destination project for many operation
+  def current_assignable_project_id
+    return current_project.try(:id) && current_user.assignable_group_ids.include?(current_project.id)
+  end
+
   private
 
   # For API calls. A +cbrain_api_token+ is expected in the params.
