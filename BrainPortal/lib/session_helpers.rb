@@ -52,9 +52,13 @@ module SessionHelpers
     @current_project
   end
 
-  # return currently active project id if user can assign to it. Serves as default destination project for many operation
-  def current_assignable_project_id
-    return current_project.try(:id) if current_user.assignable_group_ids.include?(current_project.try(:id))
+  # return currently active project id if user can assign to it or own group id. Serves as default destination project for many operation
+  def default_target_group_id
+    if current_user.assignable_group.include? current_project
+      current_project.id
+    else
+      current_user.own_group.id
+    end
   end
 
   private
