@@ -613,5 +613,14 @@ module SelectBoxHelper
     return uploadable_data_providers
   end
 
+  # returns currently active project if user can assign to it or own group id. Serves as default destination project
+  def current_assignable_group
+    if current_user.assignable_groups.include? current_project
+      current_project
+    else
+      current_user.own_group
+    end
+  end
+
 end
 
