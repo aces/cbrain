@@ -1342,8 +1342,8 @@ class UserfilesController < ApplicationController
     if file_list.save
       csv_text = CbrainFileList.create_csv_file_from_userfiles(userfiles)
       file_list.cache_writehandle { |fh| fh.write(csv_text) }
-      flash[:notice] = "Created file list named '#{file_list.name}' in '#{file_list.group.name}' project."\
-                       " Make sure that it is what you need and, if needed, change the filename or project below."
+      flash[:notice] = "Created file list named '#{file_list.name}' in '#{file_list.group.name}' project.  Make sure "\
+                       "that it is what you want and, if needed, change the file name, project or any other attributes below."
       redirect_to(:controller => :userfiles, :action => :show, :id => file_list.id)
     else
       flash[:error] = "Could not create file list. Contact the admins."
