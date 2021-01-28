@@ -905,7 +905,7 @@ class UserfilesController < ApplicationController
     filelist         = params[:file_ids]
     data_provider_id = params[:data_provider_id_for_collection]
     collection_name  = params[:collection_name]
-    file_group       = current_project ? current_project.id : current_user.own_group.id
+    file_group       = current_assignable_group_id
 
     if data_provider_id.blank?
       flash[:error] = "No data provider selected.\n"
@@ -1029,7 +1029,7 @@ class UserfilesController < ApplicationController
             raise "not owner" unless u.has_owner_access?(current_user)
             res = u.provider_move_to_otherprovider(new_provider, :crush_destination => crush_destination)
           else # task is :copy
-            my_group_id  = current_project ? current_project.id : current_user.own_group.id
+            my_group_id  = current_assignable_group_id
             res = u.provider_copy_to_otherprovider(new_provider,
                      :user_id           => current_user.id,
                      :group_id          => my_group_id,
@@ -1333,7 +1333,7 @@ class UserfilesController < ApplicationController
     # Create the new file list
     file_list = CbrainFileList.new(
       :user_id          => current_user.id,
-      :group_id         => current_project.try(:id) || current_user.own_group.id,
+      :group_id         => current_assignable_group_id,
       :name             => "file_list.#{Process.pid}.#{Time.now.to_i}.cbcsv",
       :data_provider_id => dest_dp_id,
     )
