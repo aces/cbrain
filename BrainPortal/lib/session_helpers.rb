@@ -62,6 +62,16 @@ module SessionHelpers
     end
   end
 
+  # Returns currently active project  or, if the current project is not assignable for the user, own group.
+  # Serves as default destination project id for many operation
+  def current_assignable_group
+    if current_user.assignable_groups.include? current_project
+      current_project
+    else
+      current_user.own_group
+    end
+  end
+
   private
 
   # For API calls. A +cbrain_api_token+ is expected in the params.
