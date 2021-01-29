@@ -52,7 +52,8 @@ module SessionHelpers
     @current_project
   end
 
-  # return currently active project id if user can assign to it or own group id. Serves as default destination project for many operation
+  # Returns currently active project id or, if the current project is not assignable for the user, own group id.
+  # Serves as default destination project id for many operation
   def current_assignable_group_id
     if current_user.assignable_groups.include? current_project
       current_project.id
