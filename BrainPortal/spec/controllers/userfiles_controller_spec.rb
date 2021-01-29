@@ -681,12 +681,11 @@ RSpec.describe UserfilesController, :type => :controller do
     describe "export_file_list" do
       before(:each) do
         session[:session_id] = 'session_id'
-        allow(controller).to      receive(:current_project).and_return(1010)
+        allow(controller).to      receive(:current_project).and_return(public_group)
       end
       it "admin file list is not assigned to public project" do
         allow(controller).to      receive(:current_user).and_return(admin)
         post :export_file_list, params: {:file_ids => [public_group_file.id]}
-        # Message.last.delete if Message.last
         expect Userfile.last.group_id == admin.own_group.id
       end
       it "common user file list is not assigned to public project and gets message about it" do
