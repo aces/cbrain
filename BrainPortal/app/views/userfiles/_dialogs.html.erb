@@ -23,7 +23,7 @@
 -%>
 
 <%
-  default_project = current_assignable_group
+  default_project = current_project || current_user.own_group
   writable_dps    = writable_data_providers(current_user)
   uploadable_dps  = uploadable_data_providers(current_user)
 %>
