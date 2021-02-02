@@ -528,7 +528,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
         userfile_class ||= ( File.directory?(path) ? FileCollection : SingleFile )
 
         # Add a run ID to the file name, to make sure the file doesn't exist.
-        name.sub!( /(\.\w+(\.gz|\.z|\.bz2|\.zip)?)\z/i )  { |ext| "-#{self.run_id}" + ext }
+        name.sub!( /(\.\w+(\.gz|\.z|\.bz2|\.zip)?)?\z/i )  { |ext| "-#{self.run_id}" + ext }
 
         # Save the file (possible overwrite if race condition)
         output = safe_userfile_find_or_new(userfile_class, :name => name)
