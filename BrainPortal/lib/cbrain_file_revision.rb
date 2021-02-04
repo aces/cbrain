@@ -407,34 +407,9 @@ class CbrainFileRevision
     rails_root = Pathname.new(Rails.root)
     what_root  = what == 'CBRAIN' ? rails_root.parent : Pathname.new(CBRAIN::Plugins_Dir) + what
 
-    # Unfortunately, in multithreaded versions of this app (puma server maybe?)
-    # we get into problems with chdirs being active in multiple threads.
-    # So the Dir.chdir() block below is commented out and all bash statements
-    # are prefixed with a "cd" command. It's ugly but eh.
     cd_bash    = "cd #{what_root.to_s.bash_escape} ; " # Prefix for all bash commands below
 
-    #Dir.chdir(what_root.to_s) do
-      return DEFAULT_TAG if `#{cd_bash} git rev-parse --show-toplevel 2>/dev/null`.strip != what_root.to_s
-      tags_set = `#{cd_bash} git tag -l`.split.shuffle # initial list: all tags we can find
-      git_tag = tags_set.shift unless tags_set.empty? # extract one as a starting point
-      seen[git_tag] = true
-      while tags_set.size > 0
-        tags_set = `#{cd_bash} git tag --contains #{git_tag.bash_escape}`.split.shuffle.reject { |v| seen[v] }
-        git_tag = tags_set.shift unless tags_set.empty? # new first
-        seen[git_tag] = true
-      end
-      if git_tag
-        num_new_commits = `#{cd_bash} git rev-list '#{git_tag}..HEAD'`.split.size
-      elsif DEFAULT_TAG # fallback for plugins
-        num_new_commits = `#{cd_bash} git rev-list HEAD`.split.size
-        git_tag = DEFAULT_TAG
-      end
-      if git_tag
-        git_tag += "-#{num_new_commits}" if num_new_commits > 0
-      end
-    #end
-
-    git_tag # not cached, so it's really live
+    git_tag = `#{cd_bash} git describe --tags --long | sed 's/\\(.*\\)-.*/\\1/'`# not cached, so it's really live
 
   end
 
