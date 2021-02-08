@@ -621,6 +621,7 @@
           if (element.html() === selection) element.attr("selected", "selected");
         });
       });
+      $('.' + select_class).trigger("chosen:updated");
     });
 
     $(document).on("change", ".request_on_change", function() {
