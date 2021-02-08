@@ -35,8 +35,9 @@ end
 # Code lifted almost as-is from cbrain_file_revision.rb
 
     Dir.chdir(top) do
-      git_tag = `git describe --tags --long | sed 's/\\(.*\\)-.*/\\1/'`
-      if git_tag
+      out = `git describe --tags --long`
+      if out
+        _, _, git_tag = out.rpartition('-')
         puts git_tag
         Kernel.exit(0)
       end

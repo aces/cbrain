@@ -408,8 +408,12 @@ class CbrainFileRevision
     what_root  = what == 'CBRAIN' ? rails_root.parent : Pathname.new(CBRAIN::Plugins_Dir) + what
 
     cd_bash    = "cd #{what_root.to_s.bash_escape} ; " # Prefix for all bash commands below
+    return DEFAULT_TAG if `#{cd_bash} git rev-parse --show-toplevel 2>/dev/null`.strip != what_root.to_s
+    out = `git describe --tags --long`
+    git_tag = out.rpartition('-') if out
 
-    git_tag = `#{cd_bash} git describe --tags --long | sed 's/\\(.*\\)-.*/\\1/'`# not cached, so it's really live
+
+    # not cached, so it's really live
 
   end
 
