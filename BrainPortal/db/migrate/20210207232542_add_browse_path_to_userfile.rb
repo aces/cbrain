@@ -1,9 +1,8 @@
 
-<%-
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2021
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -20,22 +19,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<% title 'Browse Data Provider' %>
-
-<%= form_tag(url_for(:controller => 'data_providers', :id => @provider.id, :action => 'register'), :method => :post, :id => "browse_form") do %>
-
-  <div class="menu_bar">
-    <%= render :partial => "register_button" %>
-    <%= render :partial => "unregister_button" %>
-    <%= render :partial => "delete_button" %>
-    <%= render :partial => "view_option_button" %>
-  </div>
-
-  <div class="resource_list" id="dp_browse_table">
-    <%= render :partial => 'dp_browse_table' %>
-  </div>
-
-<% end %>
-
+class AddBrowsePathToUserfile < ActiveRecord::Migration[5.0]
+  def change
+    add_column :userfiles, :browse_path, :string, :null => true
+    add_index  :userfiles, [ :data_provider_id, :browse_path ]
+  end
+end

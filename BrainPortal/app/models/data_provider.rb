@@ -158,7 +158,7 @@ require 'file_info'
 # * provider_collection_index(userfile, directory, allowed_types)
 # * provider_readhandle(userfile, rel_path)
 # * provider_full_path(userfile)
-# * provider_list_all(user=nil)
+# * provider_list_all(user=nil,browse_path=nil)
 #
 # Note that all of these except for provider_list_all() are
 # also present in the Userfile model.
@@ -185,7 +185,7 @@ require 'file_info'
 # * impl_sync_to_provider(userfile)
 # * impl_provider_erase(userfile)
 # * impl_provider_rename(userfile,newname)
-# * impl_provider_list_all(user=nil)
+# * impl_provider_list_all(user=nil,browse_path=nil)
 # * impl_provider_collection_index(userfile, directory, allowed_types)
 # * impl_provider_readhandle(userfile, rel_path)
 #
@@ -334,6 +334,16 @@ class DataProvider < ApplicationRecord
   # This true/false value of this method is to be redefined
   # in subclasses to trigger the proper Userfile behavior.
   def content_storage_shared_between_users?
+    false
+  end
+
+  # Indicates if the data provider has the capability
+  # to register/access files under a 'browse path', which
+  # is a relative path "a/b/c" stored in each userfile
+  # in the attribute 'browse_path'. This path is used to
+  # build the full location of the userfile's content on
+  # that DP. Most DPs do NOT support this capability.
+  def has_browse_path_capabilities?
     false
   end
 
@@ -905,11 +915,14 @@ class DataProvider < ApplicationRecord
   # or file location).
   #
   # Note that not all data providers are meant to be browsable.
-  def provider_list_all(user=nil)
+  def provider_list_all(user=nil, browse_path=nil)
     cb_error "Error: provider #{self.name} is offline."       unless self.online?
     cb_error "Error: provider #{self.name} is not browsable." unless self.is_browsable?
+    if browse_path.present? && ! self.has_browse_path_capabilities?
+      cb_error "Error: a browse path was used with provider #{self.name} but it does not support the feature."
+    end
     rr_allowed_syncing!("list content from")
-    impl_provider_list_all(user)
+    impl_provider_list_all(user, browse_path)
   end
 
   # Provides information about the files associated with a Userfile entry
@@ -1382,7 +1395,7 @@ class DataProvider < ApplicationRecord
     raise "Error: method not yet implemented in subclass."
   end
 
-  def impl_provider_list_all(user=nil) #:nodoc:
+  def impl_provider_list_all(user=nil, browse_path=nil) #:nodoc:
     raise "Error: method not yet implemented in subclass."
   end
 

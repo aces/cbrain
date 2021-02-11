@@ -48,21 +48,26 @@ class Userfile < ApplicationRecord
   before_destroy          :erase_data_provider_content_and_cache, :nullify_children
   after_destroy           :remove_spurious_sync_status
 
-  validates :type, :subclass => true  # actually this will prevent files of class Userfile to be saved
+  validates               :type, :subclass => true  # this will prevent files of class Userfile to be saved
 
   validates               :name,
                           :presence => true,
-                          :uniqueness =>  { :scope => [ :user_id, :data_provider_id ] },
+                          :uniqueness =>  { :scope => [ :user_id, :data_provider_id, :browse_path ] },
                           :filename_format => true
 
+  # Callbacks specific to some DataProvider properties
   before_create           :flat_dir_dp_name_uniqueness # this method is also used as a validator (see below)
   validate                :flat_dir_dp_name_uniqueness # this method is also used as a before_create callback (see above)
+  before_save             :browse_path_nullify
+  validate                :validate_browse_path
 
+  # Attributes
   validates_presence_of   :user_id
   validates_presence_of   :data_provider_id
   validates_presence_of   :group_id
   validate                :validate_associations
 
+  # Associations
   belongs_to              :user
   belongs_to              :data_provider
   belongs_to              :group
@@ -87,32 +92,33 @@ class Userfile < ApplicationRecord
   attr_accessor           :tree_children
   attr_accessor           :rank_order
 
-  scope                   :name_like,     -> (n)       {where("userfiles.name LIKE ?", "%#{n.strip}%")}
+  # Utility named scopes
+  scope :name_like,     -> (n) { where("userfiles.name LIKE ?", "%#{n.strip}%") }
 
-  scope                   :has_no_parent, ->           {where(parent_id: nil)}
+  scope :has_no_parent, ->     { where(parent_id: nil) }
 
-  scope                   :has_no_child,  lambda { |ignored|
-                                            parents_ids = Userfile.where("parent_id IS NOT NULL").raw_first_column(:parent_id).uniq
-                                            parents_ids.blank? ? where({}) : where("userfiles.id NOT IN (?)", parents_ids)
-                                          }
+  scope :has_no_child,     lambda { |ignored|
+                             parents_ids = Userfile.where("parent_id IS NOT NULL").raw_first_column(:parent_id).uniq
+                             parents_ids.blank? ? where({}) : where("userfiles.id NOT IN (?)", parents_ids)
+                           }
 
-  scope                   :parent_name_like, lambda { |n|
-                                            matching_parents_ids = Userfile.where("name like ?", "%#{n.strip}%").raw_first_column(:id).uniq
-                                            where(:parent_id => matching_parents_ids)
-                                          }
+  scope :parent_name_like, lambda { |n|
+                             matching_parents_ids = Userfile.where("name like ?", "%#{n.strip}%").raw_first_column(:id).uniq
+                             where(:parent_id => matching_parents_ids)
+                           }
 
-  scope                  :child_name_like, lambda { |n|
-                                             matching_children_ids = Userfile.where("name like ?", "%#{n.strip}%").where("parent_id IS NOT NULL").raw_first_column(:id).uniq
-                                             matching_parents_ids  = Userfile.where(:id => matching_children_ids).raw_first_column(:parent_id).uniq
-                                             where(:id => matching_parents_ids)
-                                            }
+  scope :child_name_like,  lambda { |n|
+                             matching_children_ids = Userfile.where("name like ?", "%#{n.strip}%").where("parent_id IS NOT NULL").raw_first_column(:id).uniq
+                             matching_parents_ids  = Userfile.where(:id => matching_children_ids).raw_first_column(:parent_id).uniq
+                             where(:id => matching_parents_ids)
+                           }
 
-  scope                   :contain_tags, -> (n) {joins(:tags).where("tag_id IN (?)", n)}
+  scope :contain_tags, -> (n) { joins(:tags).where("tag_id IN (?)", n) }
 
   api_attr_visible :name, :size, :user_id, :parent_id, :type, :group_id, :data_provider_id, :group_writable, :num_files, :hidden, :immutable, :archived, :description
 
   ##############################################
-  # Miscelleneous methods
+  # Miscellaneous methods
   ##############################################
 
   # The site with which this userfile is associated.
@@ -149,6 +155,24 @@ class Userfile < ApplicationRecord
   def self.is_legal_filename?(basename)
     return true if basename.present? && basename.match(/\A[a-zA-Z0-9][\w\~\!\@\#\%\^\(\)\-\+\=\:\[\]\{\}\,\.\?]*\z/)
     false
+  end
+
+  # Validates and cleans up a non-blank browse path
+  # Returns nil if the path is invalid; returns
+  # the cleaned up path otherwise.
+  # This method does not consider '.' to be a valid
+  # browse path; it has to be a 'x' or 'x/y/z' etc.
+  def self.is_legal_browse_path?(path)
+    return nil if path.blank?
+    # Clean and validate each path component
+    pn = Pathname.new(path).cleanpath
+    return nil if pn.absolute?
+    pn = pn.to_s
+    return nil if pn.bytesize > 240
+    components = pn.split("/")
+    bad = components.detect { |x| ! self.is_legal_filename?(x) } # class method
+    return nil if bad
+    pn
   end
 
   # Returns the name of the Userfile in an array (only here to
@@ -198,6 +222,15 @@ class Userfile < ApplicationRecord
     gz_extension_pos = (name =~ /(\.gz)$/i)
     gz_extension_pos.present?  # if no .gz extension found, file not zipped
   end
+
+  # If the userfile has a browse_path attribute set,
+  # then value returned here is a concatenation of that
+  # browse_path and the name: "a/b/c/name". Otherwise, this
+  # method returns just the name.
+  def browse_name
+    (self.browse_path.blank? ? self.name : "#{self.browse_path}/#{self.name}")
+  end
+
 
 
   ##############################################
@@ -1077,15 +1110,48 @@ class Userfile < ApplicationRecord
   def flat_dir_dp_name_uniqueness #:nodoc:
     return true if self.data_provider_id.blank? # no check to make
     return true if ! self.data_provider.content_storage_shared_between_users?
-    check_dup = Userfile.where(:name => self.name, :data_provider_id => self.data_provider_id)
+    check_dup = Userfile.where(
+      :name             => self.name,
+      :data_provider_id => self.data_provider_id,
+      :browse_path      => self.browse_path,
+    )
     check_dup = check_dup.where(["id <> ?", self.id]) if self.id # if current file is registered, ignore that one
     return true unless check_dup.exists?
     errors.add(:name, "already exists on data provider (and may belong to another user)")
     false
   end
 
-end
+  # This method is used as a before_save callback.
+  # If a userfile record has a browse_path present, nullify it if
+  # the associated data provider does not have the browse_path capability
+  # (most DPs don't have this capability).
+  # This rarely happens when a file record is reassigned/duped to a new DP.
+  def browse_path_nullify #:nodoc:
+    return true if self.data_provider_id.blank? # no check to make
+    return true if self.browse_path.nil?        # also
+    return true if self.data_provider.has_browse_path_capabilities? # we keep browse_path as-is
+    self.browse_path = nil
+    true
+  end
 
+  # Make sure that browse_path has a proper value; this
+  # depends on which DataProvider is associated with the userfile.
+  def validate_browse_path
+    return true if self.data_provider_id.blank? # no check to make
+    return true if self.browse_path.nil?
+    if ! self.data_provider.has_browse_path_capabilities? # it's not supposed to be set
+      self.errors.add(:browse_path, 'has a value when it should not')
+      return false
+    end
+    cleaned = self.class.is_legal_browse_path?(self.browse_path)
+    if ! cleaned
+      self.errors.add(:browse_path, 'is invalid')
+      return false
+    end
+    true
+  end
+
+end
 
 # Patch: pre-load all model files for the subclasses
 Dir.chdir(CBRAIN::UserfilesPlugins_Dir) do

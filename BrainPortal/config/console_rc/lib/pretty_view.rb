@@ -72,7 +72,7 @@ class Userfile
   CachePath: %s
     VIEW
     sprintf report,
-      self.class.to_s, self.id, self.name,
+      self.class.to_s, self.id, self.browse_name,
       user_id, user.login,
       group_id, group.try(:name),
       (size ? "#{size.to_s} (#{ConsoleCtx.send(:pretty_size,size)})" : "(unk)"),

@@ -22,20 +22,32 @@
 #
 -%>
 
-<% title 'Browse Data Provider' %>
+<% components = ['(top)'] + (@browse_path.presence || "").split('/') %>
+<% cumul      = "" %>
+<div name="show_path" class="groupentry">
+  Browse Path:
+  <% components.each_with_index do |comp,i| %>
 
-<%= form_tag(url_for(:controller => 'data_providers', :id => @provider.id, :action => 'register'), :method => :post, :id => "browse_form") do %>
+    <% if i > 0 %>
+      <span>&nbsp;/&nbsp;</span>
+      <% cumul += "/" if cumul.present? %>
+    <% end %>
+    <% cumul += (i == 0 ? "" : comp) %>
 
-  <div class="menu_bar">
-    <%= render :partial => "register_button" %>
-    <%= render :partial => "unregister_button" %>
-    <%= render :partial => "delete_button" %>
-    <%= render :partial => "view_option_button" %>
-  </div>
+    <span>
+      <% if i+1 == components.size %>
+         <%= comp %>
+      <% else %>
+        <%=
+          ajax_link(comp,
+            browse_data_provider_path(@provider, :browse_path => cumul),
+            :datatype => 'script', :class => 'action_link',
+          )
+        %>
+      <% end %>
+    </span>
 
-  <div class="resource_list" id="dp_browse_table">
-    <%= render :partial => 'dp_browse_table' %>
-  </div>
-
-<% end %>
-
+  <% end %>
+</div>
+<%= hidden_field_tag :browse_path, @browse_path %>
+<br>

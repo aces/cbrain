@@ -156,7 +156,7 @@ class S3DataProvider < DataProvider
     s3_connection.rename_object(old_path,new_path)
   end
 
-  def impl_provider_list_all(user) #:nodoc:
+  def impl_provider_list_all(user=nil,browse_path=nil) #:nodoc:
     raise "Disabled"
   end
 

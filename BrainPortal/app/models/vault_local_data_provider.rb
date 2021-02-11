@@ -63,7 +63,7 @@ class VaultLocalDataProvider < LocalDataProvider
     Pathname.new(remote_dir) + username + basename
   end
 
-  def impl_provider_list_all(user=nil) #:nodoc:
+  def impl_provider_list_all(user=nil,browse_path=nil) #:nodoc:
     cb_error "This data provider cannot be browsed." unless self.is_browsable?(user)
     super(user)
   end

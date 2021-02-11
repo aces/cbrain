@@ -291,27 +291,26 @@ class DataProvidersController < ApplicationController
     end
 
     # Load up the default scope for DP browsing and handle 'name_like'.
-    @scope = scope_from_session
+    @scope = scope_from_session(browse_scope_name(@provider))
     scope_filter_from_params(@scope, :name_like, {
       :attribute => 'name',
       :operator  => 'match'
     })
 
     # Browsing as a different user? Make sure the target user is set.
-    @as_user = current_user
-      .available_users
-      .where(:id => (
-        params['as_user_id'] ||
-        @scope.custom['as_user_id'] ||
-        current_user.id
-      ))
-      .first
-    @as_user ||= current_user
-    @scope.custom['as_user_id'] = @as_user.id
+    @as_user = browse_as(@provider, params['as_user_id'])
+
+    # Browsing under a different path? Validate that.
+    # This browse path is always nil for data provider classes that
+    # do not support the capability. For those that do, the browse path
+    # can also be nil when browsing at the top of the DP. Otherwise it's
+    # a relative path "a/b/c"
+    @browse_path = current_browse_path(@provider, params['browse_path'])
+    @scope.custom['browse_path'] = @browse_path
 
     begin
       # [ base, size, type, mtime ]
-      @fileinfolist = BrowseProviderFileCaching.get_recent_provider_list_all(@provider, @as_user, params[:refresh])
+      @fileinfolist = BrowseProviderFileCaching.get_recent_provider_list_all(@provider, @as_user, @browse_path, params[:refresh])
     rescue => e
       flash[:error] = 'Cannot get list of files. Maybe the remote directory doesn\'t exist or is locked?' #emacs fails to parse this properly so I switched to single quotes.
       Message.send_internal_error_message(User.find_by_login('admin'), "Browse DP exception", e, params) rescue nil
@@ -329,6 +328,13 @@ class DataProvidersController < ApplicationController
     # search of what's registered to only those belonging to @as_user;
     # otherwise we must report when files are registered by other users too.
     registered_files = registered_files.where( :user_id => @as_user.id ) if ! @provider.content_storage_shared_between_users?
+
+    # On data providers where files are stored along with a browse_path (a remote
+    # relative path 'under' the DP's configured root), we must consider only
+    # the files with the same browse_path. Files with the same basename but in
+    # a different browse_path are considered distinct. (Note: One day users will create
+    # hard links and everthing will be messed up)
+    registered_files = registered_files.where( :browse_path => @browse_path ) if @provider.has_browse_path_capabilities?
 
     # Add attributes and cross-reference with previously registered files
     # - Adds: the userfile and userfile_id if the file is already registered
@@ -376,8 +382,9 @@ class DataProvidersController < ApplicationController
   # happens in background for HTML & JS requests.
   def register
     # Extract key parameters & make sure the provider is browsable
-    @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
-    @as_user  = browse_as(params['as_user_id'])
+    @provider    = DataProvider.find_accessible_by_user(params[:id], current_user)
+    @as_user     = browse_as(@provider, params['as_user_id'])
+    @browse_path = current_browse_path(@provider, params['browse_path'])
     unless @provider.is_browsable?(current_user)
       flash[:error] = "You cannot register files from this provider."
       respond_to do |format|
@@ -435,7 +442,7 @@ class DataProvidersController < ApplicationController
       @as_user != current_user
 
     # Register the given userfiles in background.
-    userfiles = userfiles_from_basenames(@provider, @as_user, params[:basenames])
+    userfiles = userfiles_from_basenames(@provider, @as_user, params[:basenames], @browse_path)
     userfiles_count = userfiles.count # Avoids a cute race condition
 
     registered, already_registered = [], []
@@ -468,7 +475,8 @@ class DataProvidersController < ApplicationController
             :name             => basename,
             :user_id          => @as_user.id,
             :group_id         => group_id,
-            :data_provider_id => @provider.id
+            :data_provider_id => @provider.id,
+            :browse_path      => @browse_path, # nil => top, or nil => N/A, depends on DP
           )
 
           # And save it
@@ -477,7 +485,7 @@ class DataProvidersController < ApplicationController
             registered << (userfiles[basename] = userfile)
             succeeded << basename
           else
-            (failed["Unspecified error"] ||= []) << basename
+            (failed["Unspecified error"] ||= []) << "#{userfile.name} : #{userfile.errors.full_messages.join(", ")}"
           end
 
         rescue => e
@@ -486,7 +494,7 @@ class DataProvidersController < ApplicationController
       end
 
       # If files actually got registered, clear the browsing cache
-      BrowseProviderFileCaching.clear_cache(@as_user, @provider) if
+      BrowseProviderFileCaching.clear_cache(@provider, @as_user, @browse_path) if
         succeeded.present? && [:html, :js].include?(request.format.to_sym)
 
       # No need to move or copy? Just set the file sizes and exit.
@@ -569,8 +577,9 @@ class DataProvidersController < ApplicationController
   # Note that unregistration will happen in background for HTML & JS requests.
   def unregister
     # Extract key parameters & make sure the provider is browsable
-    @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
-    @as_user  = browse_as(params['as_user_id'])
+    @provider    = DataProvider.find_accessible_by_user(params[:id], current_user)
+    @as_user     = browse_as(@provider, params['as_user_id'])
+    @browse_path = current_browse_path(@provider, params['browse_path'])
     unless @provider.is_browsable?(current_user)
       flash[:error] = "You cannot unregister files from this provider."
       respond_to do |format|
@@ -584,7 +593,7 @@ class DataProvidersController < ApplicationController
     flash[:notice] ||= ''
 
     # Unregister the given userfiles in background.
-    userfiles = userfiles_from_basenames(@provider, @as_user, params[:basenames])
+    userfiles = userfiles_from_basenames(@provider, @as_user, params[:basenames], @browse_path)
     succeeded, failed = [], {}
     erasing = params[:delete].present?
 
@@ -622,7 +631,7 @@ class DataProvidersController < ApplicationController
       end
 
       # If files actually got erased, clear the browsing cache
-      BrowseProviderFileCaching.clear_cache(@as_user, @provider) if
+      BrowseProviderFileCaching.clear_cache(@provider, @as_user, @browse_path) if
         erasing && succeeded.present? && [:html, :js].include?(request.format.to_sym)
 
       generic_notice_messages('unregister', succeeded, failed)
@@ -648,8 +657,9 @@ class DataProvidersController < ApplicationController
   # the deletion occurs in background.
   def delete
     # Extract key parameters & make sure the provider is browsable
-    @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
-    @as_user  = browse_as(params['as_user_id'])
+    @provider    = DataProvider.find_accessible_by_user(params[:id], current_user)
+    @as_user     = browse_as(@provider, params['as_user_id'])
+    @browse_path = current_browse_path(@provider, params['browse_path'])
     unless @provider.is_browsable?(current_user)
       flash[:error] = "You cannot delete files from this provider."
       respond_to do |format|
@@ -663,7 +673,7 @@ class DataProvidersController < ApplicationController
     flash[:notice] ||= ''
 
     # Erase the given userfiles in background.
-    userfiles = userfiles_from_basenames(@provider, @as_user, params[:basenames])
+    userfiles = userfiles_from_basenames(@provider, @as_user, params[:basenames], @browse_path)
     succeeded, failed = [], {}
 
     CBRAIN.spawn_with_active_records_if(
@@ -693,6 +703,7 @@ class DataProvidersController < ApplicationController
               :name          => basename,
               :data_provider => @provider,
               :user_id       => @as_user.id,
+              :browse_path   => @browse_path,
               :group_id      => current_user.own_group.id
             ).freeze
 
@@ -706,7 +717,7 @@ class DataProvidersController < ApplicationController
       end
 
       # If files actually got erased, clear the browsing cache
-      BrowseProviderFileCaching.clear_cache(@as_user, @provider) if
+      BrowseProviderFileCaching.clear_cache(@provider, @as_user, @browse_path) if
         succeeded.present? && [:html, :js].include?(request.format.to_sym)
 
       generic_notice_messages('delet', succeeded, failed)
@@ -844,30 +855,62 @@ class DataProvidersController < ApplicationController
     grouped_options.keys.sort.map { |type| [ type, grouped_options[type].sort ] }
   end
 
+  # A name to store the scope for the browsing page;
+  # a distinct scope is used for each distinct DP
+  def browse_scope_name(provider) #:nodoc:
+    "data_providers#browse##{provider.id}"
+  end
+
   # Quick/small methods to avoid duplication in register/unregister/delete
 
   # Fetch the user the browse the DP as, based on the provided +as_user_id+
-  # and the 'data_providers#browse' scope.
-  def browse_as(as_user_id) #:nodoc:
-    scope      = scope_from_session('data_providers#browse')
-    @as_user   = current_user
-      .available_users
-      .where(:id => scope.custom['as_user_id'] ||= (
-        params['as_user_id'] || current_user.id
-      ))
-      .first
-    @as_user ||= current_user
+  # or the 'data_providers#browse##{id}' scope.
+  def browse_as(provider, as_user_id) #:nodoc:
+    scope     = scope_from_session(browse_scope_name(provider))
+    users     = current_user.available_users
+    as_user   = users.where(:id => as_user_id).first
+    as_user ||= users.where(:id => scope.custom['as_user_id']).first
+    as_user ||= current_user
+    scope.custom['as_user_id'] = as_user.id
+    as_user
+  end
+
+  # Returns a browse_path value for the current action
+  # (this is used in the actions for browsing, registering,
+  # (unregistering and deleting). The +path+ argument is
+  # usually fetched from the action's params; if it is set
+  # to anything non-nil (including the empty string) then
+  # that value is used. Otherwise we fetch the latest value
+  # recorded in the session's scope. The method always
+  # transforms "" and "." into nil, returning that nil.
+  def current_browse_path(provider, path)
+    return nil if ! provider.has_browse_path_capabilities?
+    path = "." if path == "" # we distinguish between nil (unset) and "" (meaning top dir)
+
+    # Find the browse_path in priority order:
+    # 1) from the method's argument, 2) from the scope,
+    scope    = scope_from_session(browse_scope_name(provider))
+    mypath   = path.presence.try(:strip).try(:presence)
+    mypath ||= scope.custom['browse_path'].presence
+    mypath.try(:strip)
+    return nil if mypath.blank? || mypath == '.'
+
+    # Clean and validate each path component
+    clean = Userfile.is_legal_browse_path?(mypath)
+    cb_error "Browse path is invalid" if ! clean
+    clean
   end
 
   # Fetch the userfiles corresponding to the given +basenames+ for
   # +user+ on +provider+. If the data provider's storage puts
   # files of multiple users together, then the fetched list will
   # also include files from other users! This is to detect and prevent
-  # registration of files with clashing names by different users.
+  # registration of files with same (colliding) names by different users
+  # on such providers.
   #
   # Returns a hash with a basename for key, and a userfile as value.
-  def userfiles_from_basenames(provider, user, basenames) #:nodoc:
-    userfiles = provider.userfiles.where(:name => basenames)
+  def userfiles_from_basenames(provider, user, basenames, browse_path) #:nodoc:
+    userfiles = provider.userfiles.where(:name => basenames, :browse_path => browse_path)
     userfiles = userfiles.where(:user_id => user.id) if ! provider.content_storage_shared_between_users?
     userfiles = userfiles.index_by(&:name)
 

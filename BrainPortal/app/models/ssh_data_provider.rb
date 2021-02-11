@@ -170,7 +170,7 @@ class SshDataProvider < DataProvider
     end
   end
 
-  def impl_provider_list_all(user=nil) #:nodoc:
+  def impl_provider_list_all(user=nil,browse_path=nil) #:nodoc:
     self.remote_dir_entries(self.browse_remote_dir(user), user)
   end
 
