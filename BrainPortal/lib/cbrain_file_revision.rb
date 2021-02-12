@@ -410,10 +410,7 @@ class CbrainFileRevision
     cd_bash    = "cd #{what_root.to_s.bash_escape} ; " # Prefix for all bash commands below
     return DEFAULT_TAG if `#{cd_bash} git rev-parse --show-toplevel 2>/dev/null`.strip != what_root.to_s
     out = `git describe --tags --long`
-    git_tag = out.rpartition('-') if out
-
-
-    # not cached, so it's really live
+    git_tag = out.rpartition('-')[0] if out.present?
 
   end
 

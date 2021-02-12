@@ -37,7 +37,7 @@ end
     Dir.chdir(top) do
       out = `git describe --tags --long`
       if out
-        _, _, git_tag = out.rpartition('-')
+        git_tag, _, _ = out.rpartition('-')
         puts git_tag
         Kernel.exit(0)
       end
