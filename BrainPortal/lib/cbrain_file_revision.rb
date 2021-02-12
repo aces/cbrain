@@ -420,8 +420,7 @@ class CbrainFileRevision
       out = `git describe --tags --long`
       if out.present?
         git_tag = out.rpartition('-')[0]
-        git_tag = git_tag[0..-2] if git_tag.end_with?('-0')  #   ruby 2.4 does not support        .delete_suffix('-0')
-        git_tag
+        git_tag.end_with?('-0') ? git_tag.rpartition('-')[0] : git_tag   #   ruby 2.4 does not support        .delete_suffix('-0')
       end
   end
 
