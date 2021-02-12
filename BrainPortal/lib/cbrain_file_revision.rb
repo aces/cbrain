@@ -407,10 +407,18 @@ class CbrainFileRevision
     rails_root = Pathname.new(Rails.root)
     what_root  = what == 'CBRAIN' ? rails_root.parent : Pathname.new(CBRAIN::Plugins_Dir) + what
 
-    cd_bash    = "cd #{what_root.to_s.bash_escape} ; " # Prefix for all bash commands below
+    # Unfortunately, in multithreaded versions of this app (puma server maybe?)
+    # we get into problems with chdirs being active in multiple threads.
+    # So the Dir.chdir() block below is commented out and bash statements
+    # are prefixed with a "cd" command. It's ugly but eh.
+
+    cd_bash = "cd #{what_root.to_s.bash_escape} ; " # Prefix for all bash commands below
+
     return DEFAULT_TAG if `#{cd_bash} git rev-parse --show-toplevel 2>/dev/null`.strip != what_root.to_s
-    out = `git describe --tags --long`
-    git_tag = out.rpartition('-')[0] if out.present?
+
+    #Dir.chdir(what_root.to_s) do
+      out = `git describe --tags --long`
+      git_tag = out.rpartition('-')[0] if out.present?
 
   end
 
