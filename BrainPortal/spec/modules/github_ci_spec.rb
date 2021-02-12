@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2020
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -24,7 +24,7 @@ require 'rails_helper'
 
 # This test file is meant to test stuff that are particular to
 # being in a Travis CI testing environment.
-describe "TravisCI" do
+describe "GithubCI" do
 
   describe "environment" do
 
