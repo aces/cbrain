@@ -37,8 +37,9 @@ end
     Dir.chdir(top) do
       out = `git describe --tags --long`
       if out
-        git_tag, _, _ = out.rpartition('-')
-        puts git_tag.delete_suffix('-0')
+        git_tag = out.rpartition('-')[0]
+        git_tag = git_tag[0..-2] if git_tag.end_with?('-0')  #   ruby 2.4 does not support        .delete_suffix('-0')
+        git_tag
         Kernel.exit(0)
       end
     end
