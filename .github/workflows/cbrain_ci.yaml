@@ -121,7 +121,7 @@ jobs:
         if: ${{ failure() || success() }}
         working-directory: BrainPortal
         env:
-          CBRAIN_FAILTEST: ${{ secrets.CBRAIN_FAILTEST || "" }} # force a test to fail
+          CBRAIN_FAILTEST: ${{ secrets.CBRAIN_FAILTEST || '' }} # force a test to fail
         run: |
           bundle exec rspec spec
 
@@ -133,7 +133,7 @@ jobs:
         if: ${{ failure() || success() }}
         working-directory: Bourreau
         env:
-          CBRAIN_FAILTEST: ${{ secrets.CBRAIN_FAILTEST || "" }} # force a test to fail
+          CBRAIN_FAILTEST: ${{ secrets.CBRAIN_FAILTEST || '' }} # force a test to fail
         run: |
           bundle exec rspec spec/boutiques
 
