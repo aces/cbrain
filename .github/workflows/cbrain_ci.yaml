@@ -135,7 +135,7 @@ jobs:
         env:
           CBRAIN_FAILTEST: ${{ secrets.CBRAIN_FAILTEST || '' }} # force a test to fail
         run: |
-          bundle exec rspec spec/boutiques
+          bundle exec rspec spec
 
       ###########################################################
       # MAIN TEST #3: API TESTS WITH CURL

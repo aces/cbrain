@@ -231,7 +231,7 @@ class Message < ApplicationRecord
                         "Hostname: #{Socket.gethostname}\n" +
                         "Process ID: #{Process.pid}\n" +
                         "Process Name: #{$0.sub(/[\s\0]+\z/,"")}\n" +
-                        "Params: #{request_params.hide_filtered.inspect}\n" +
+                        "Params: #{request_params.inspect}\n" +
                         "Exception: #{exception.class.to_s}: #{exception.message}\n" +
                         "\n" +
                         exception.backtrace[0..30].join("\n") +
