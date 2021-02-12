@@ -411,10 +411,8 @@ class CbrainFileRevision
     return DEFAULT_TAG if `#{cd_bash} git rev-parse --show-toplevel 2>/dev/null`.strip != what_root.to_s
 
     out = `#{cd_bash} git describe --tags --long 2>/dev/null`
-    if out.present?
-      git_tag = out.rpartition('-')[0]
-      git_tag.end_with?('-0') ? git_tag.rpartition('-')[0] : git_tag   #   ruby 2.4 does not support        .delete_suffix('-0')
-    end
+    out.rpartition('-')[0]
+       .chomp('-0')        if out.present?
   end
 
   protected
