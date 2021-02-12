@@ -38,7 +38,7 @@ end
       out = `git describe --tags --long`
       if out
         git_tag, _, _ = out.rpartition('-')
-        puts git_tag
+        puts git_tag.delete_suffix('-0')
         Kernel.exit(0)
       end
     end

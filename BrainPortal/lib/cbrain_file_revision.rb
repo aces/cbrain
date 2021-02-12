@@ -418,8 +418,10 @@ class CbrainFileRevision
 
     #Dir.chdir(what_root.to_s) do
       out = `git describe --tags --long`
-      git_tag = out.rpartition('-')[0] if out.present?
-
+      if out.present?
+        git_tag, _, _ = out.rpartition('-')
+        git_tag.delete_suffix('-0')
+      end
   end
 
   protected
