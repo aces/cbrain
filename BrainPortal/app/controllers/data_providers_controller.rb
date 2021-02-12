@@ -299,6 +299,7 @@ class DataProvidersController < ApplicationController
 
     # Browsing as a different user? Make sure the target user is set.
     @as_user = browse_as(@provider, params['as_user_id'])
+    @scope.custom['as_user_id'] = @as_user.id # can also be current user
 
     # Browsing under a different path? Validate that.
     # This browse path is always nil for data provider classes that
@@ -871,7 +872,6 @@ class DataProvidersController < ApplicationController
     as_user   = users.where(:id => as_user_id).first
     as_user ||= users.where(:id => scope.custom['as_user_id']).first
     as_user ||= current_user
-    scope.custom['as_user_id'] = as_user.id
     as_user
   end
 
