@@ -35,7 +35,7 @@ class ExceptionLog < ApplicationRecord
 
   # Create an exception record based on exception, user, current request.
   def self.log_exception(exception, user, request)
-    params  = request.params.hide_filtered
+    params  = request.params.hide_filtered # this is not a ActionController::Parameters obj
     session = request.session
     hdrs    = request.headers.to_h.select { |k| k =~ /\A[A-Z]/ }
 
