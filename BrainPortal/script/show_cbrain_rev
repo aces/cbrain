@@ -35,10 +35,16 @@ end
 # Code lifted almost as-is from cbrain_file_revision.rb
 
     Dir.chdir(top) do
-      out = `git describe --tags --long`
-      if out
+      out = `git describe --tags --long 2>/dev/null`
+      if out && !out.empty?
         git_tag = out.rpartition('-')[0]
                      .chomp('-0')
+      elsif default_tag # fallback for plugins, when -z option used
+        num_commits = `git rev-list HEAD 2>/dev/null`.split.size
+        git_tag = "#{default_tag}-#{num_commits}"
+      end
+
+      if git_tag
         puts git_tag
         Kernel.exit(0)
       end
