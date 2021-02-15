@@ -34,25 +34,17 @@ end
 
 # Code lifted almost as-is from cbrain_file_revision.rb
 
-    git_tag = nil
-    seen    = {}
     Dir.chdir(top) do
-      tags_set = `git tag -l`.split.shuffle # initial list: all tags we can find
-      git_tag = tags_set.shift unless tags_set.empty? # extract one as a starting point
-      seen[git_tag]=true
-      while tags_set.size > 0
-        tags_set = `git tag --contains '#{git_tag}'`.split.shuffle.reject { |v| seen[v] }
-        git_tag = tags_set.shift unless tags_set.empty? # new first
-        seen[git_tag]=true
+      out = `git describe --tags --long 2>/dev/null`
+      if out && !out.empty?
+        git_tag = out.rpartition('-')[0]
+                     .chomp('-0')
+      elsif default_tag # fallback for plugins, when -z option used
+        num_commits = `git rev-list HEAD 2>/dev/null`.split.size
+        git_tag = "#{default_tag}-#{num_commits}"
       end
+
       if git_tag
-        num_new_commits = `git rev-list '#{git_tag}..HEAD'`.split.size
-      elsif default_tag # fallback for plugins, when -z used
-        num_new_commits = `git rev-list HEAD`.split.size
-        git_tag = default_tag
-      end
-      if git_tag
-        git_tag += "-#{num_new_commits}" if num_new_commits > 0
         puts git_tag
         Kernel.exit(0)
       end
