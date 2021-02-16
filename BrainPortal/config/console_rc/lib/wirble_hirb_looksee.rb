@@ -81,9 +81,9 @@ def tv(*args)
     to_show = args.flatten
     to_show.each_with_index do |obj,idx|
       if obj.respond_to?(:attributes)
-        table obj.attributes, :unicode => true
+        table obj.attributes, :unicode => true, :headers => false
       else
-        table obj, :unicode => true
+        table obj, :unicode => true, :headers => false
       end
       if idx+1 >= $_PV_MAX_SHOW && to_show.size > $_PV_MAX_SHOW
         puts "Not showing #{to_show.size - $_PV_MAX_SHOW} other entries..."
@@ -94,13 +94,18 @@ def tv(*args)
   true
 end
 
+# Table view of things with pretty borders and no headers
+def htable(thingie, options={})
+  table thingie, options.merge(:unicode => true, :headers => false)
+end
+
 (CbrainConsoleFeatures ||= []) << <<FEATURES
 ========================================================
 Feature: Hirb pretty model tables, and table helpers
 ========================================================
   Models have pretty unicode tables: User.limit(4)
   Full attributes in tables with: 'tv obj'
-  Console commands 'table' and 'view'
+  Console commands: 'table', 'htable' and 'view'
   Toggle with: Hirb.enable ; Hirb.disable
   (See the doc for the gem Hirb for more info)
 FEATURES

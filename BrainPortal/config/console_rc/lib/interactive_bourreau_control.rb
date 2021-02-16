@@ -271,6 +271,7 @@ Operations Mode : #{@mode == "each_command" ?
             res, mess = apply_operation(op, bou)
             # currently we don't do anything with res and mess
             #break if ! res
+            res.nil? ; mess.nil? # just to silence a warning with ruby -c
           end
         end
       end
@@ -280,6 +281,7 @@ Operations Mode : #{@mode == "each_command" ?
           #puts "==== Bourreau: #{bou.name} ===="
           op_list.each do |op|
             res, mess = apply_operation(op, bou)
+            res.nil? # just to silence a warning with ruby -c
             # If stopping workers fail for any reason, we skip all other actions for this bourreau
             break if op =~ /StopWorkers/ && mess.present? && mess =~ /still active/i
           end
@@ -376,7 +378,7 @@ Operations Mode : #{@mode == "each_command" ?
     ntimes.times do |i|
       mess = " (Wait #{i+1}/#{ntimes})"
       print mess + ( "\b" * mess.size )
-      output = b.ssh_master.remote_shell_command_reader(
+      output = bash_command_on_one_bourreau(b,
         "ps -u $USER -o pid,command | grep 'Worker #{b.name}' | grep -v grep"
       ) { |fh| fh.read.split(/\n/) }
       break if output.blank? # no lines mean all workers have exited
@@ -435,12 +437,16 @@ Operations Mode : #{@mode == "each_command" ?
     end
   end
 
-  def bash_command_on_one_bourreau(b,comm) #:nodoc:
+  def bash_command_on_one_bourreau(b,comm,&block) #:nodoc:
     if b.proxied_host.present? # another level of remote host... ?
       # ... then we prefix the remote command with another ssh call.
       comm = "ssh #{b.proxied_host.bash_escape} #{comm.bash_escape}"
     end
-    b.ssh_master.remote_shell_command_reader(comm) # run it
+    if block_given?
+      b.ssh_master.remote_shell_command_reader(comm,&block)
+    else
+      b.ssh_master.remote_shell_command_reader(comm)
+    end
   end
 
 end

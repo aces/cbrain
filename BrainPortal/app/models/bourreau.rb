@@ -156,7 +156,7 @@ class Bourreau < RemoteResource
     # SSH command to start it up; we pipe to it either a new database.yml file
     # which will be installed, or "" which means to use whatever
     # yml file is already configured at the other end.
-    start_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec ruby #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} start -e #{myrailsenv.to_s.bash_escape} -p #{port.to_s.bash_escape} 2>&1"
+    start_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} start -e #{myrailsenv.to_s.bash_escape} -p #{port.to_s.bash_escape} 2>&1"
     self.write_to_remote_shell_command(start_command, :stdout => captfile) { |io| io.write(db_yml) }
 
     out = File.read(captfile) rescue ""
@@ -192,7 +192,7 @@ class Bourreau < RemoteResource
       proxy_args = "-R #{self.proxied_host.to_s.bash_escape} -H #{port.to_s.bash_escape} -D #{self.tunnel_mysql_port.to_s.bash_escape}"
     end
 
-    stop_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec ruby #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} stop"
+    stop_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} stop"
     confirm = self.read_from_remote_shell_command(stop_command) {|io| io.read}
 
     return true if confirm =~ /Bourreau Stopped/i # output of 'cbrain_remote_ctl'
@@ -241,7 +241,7 @@ class Bourreau < RemoteResource
     self.write_to_remote_shell_command(copy_command) { |io| io.write(db_yml) }
 
     # SSH command to start the console.
-    start_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec ruby #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} console -e #{myrailsenv.to_s.bash_escape}"
+    start_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} console -e #{myrailsenv.to_s.bash_escape}"
     self.read_from_remote_shell_command(start_command, :force_pseudo_ttys => true) # no block, so that ttys gets connected to remote stdin, stdout and stderr
   end
 

@@ -502,7 +502,7 @@ class ClusterTask < CbrainTask
   # Returns true if +path+ points to a file or
   # directory that is inside the work directory
   # of the task. +path+ can be absolute or relative.
-  # This method assumes the current directory if
+  # This method assumes the current directory of
   # the task's work directory, which is usually
   # the common case for invoking it.
   def path_is_in_workdir?(path) #:nodoc:

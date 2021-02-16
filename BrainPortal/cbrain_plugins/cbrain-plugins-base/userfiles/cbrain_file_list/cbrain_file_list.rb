@@ -128,7 +128,7 @@ class CbrainFileList < CSVFile
 
     # Caching system, since this method is expensive
     @userfiles ||= {}
-    cache_key = [user.id,missing,invalid]
+    cache_key = [user.id,missing,invalid,access_requested]
     return @userfiles[cache_key] if @userfiles[cache_key]
 
     # Compute everything
@@ -174,8 +174,8 @@ class CbrainFileList < CSVFile
   # the number of erroneous rows that are reported using +max_errors+
   #
   # Returns true if no rows were found in error.
-  def validate_extra_attributes(as_user = User.admin, max_errors=5, strict=false)
-    userfiles = userfiles_accessible_by_user!(as_user, nil, "INVALID") # sets @rows as side-effect
+  def validate_extra_attributes(as_user = User.admin, max_errors=5, strict=false, access_requested = :write)
+    userfiles = userfiles_accessible_by_user!(as_user, nil, "INVALID", access_requested) # sets @rows as side-effect
     @rows.each_with_index do |row,idx|
       break if self.errors.size >= max_errors
       userfile  = userfiles[idx]

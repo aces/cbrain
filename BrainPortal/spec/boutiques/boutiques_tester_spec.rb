@@ -158,6 +158,7 @@ describe "BrainPortal Boutiques Tests" do
       # Instantiate a task object
       @task          = CbrainTask::BoutiquesTest.new
       @task.bourreau = execer
+      @task.tool_config = FactoryBot.create(:tool_config)
       @task.user_id, @task.group_id, @task.params = @user.id, @group.id, {}
       # Setup for holding the files the user had selected in the UI
       @task.params[:interface_userfile_ids] = []
@@ -443,6 +444,7 @@ describe "BrainPortal Boutiques Tests" do
         @task.bourreau = FactoryBot.create(:bourreau)
         @task.user_id, @task.group_id, @task.params = @user.id, @group.id, {}
         @task.params[:interface_userfile_ids] = []
+        @task.tool_config = FactoryBot.create(:tool_config)
         # Generate some userfiles for testing
         @f1, @f2, @f3 = @addUserFile.('f1.cpp',@task,false), @addUserFile.('f2.java',@task,false), @addUserFile.('f3.j',@task,false)
       end

@@ -149,6 +149,7 @@ class BaseMailer < ApplicationMailer
     cb_error "Must be provided in subclass"
   end
 
+  # Returns a hash of delivery_options for the mail objects
   def override_delivery_options #:nodoc:
     {}
   end

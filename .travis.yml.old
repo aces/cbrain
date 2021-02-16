@@ -1,3 +1,7 @@
+#
+# This used to be our Travis CI test script.
+# This has been replaced by GitHub actions.
+#
 services:
 - docker
 script:

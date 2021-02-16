@@ -1,4 +1,6 @@
 
+![Continuous Integration](https://github.com/aces/cbrain/workflows/cbrain_ci/badge.svg)
+
 ## CBRAIN
 
 CBRAIN is a collaborative, web-enabled grid platform built to

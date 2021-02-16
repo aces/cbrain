@@ -143,8 +143,8 @@
     <div class="card-row">
       <div class="card-item">
         <div>
-          <p class="card-label">Orcid ID</p>
-          <p class="card-text"><%=@user.meta['orcid'].presence || "-" %></p>
+          <p class="card-label">ORCID iD</p>
+          <p class="card-text"><%= @orcid_canonical || "-" %></p>
         </div>
       </div>
     </div>

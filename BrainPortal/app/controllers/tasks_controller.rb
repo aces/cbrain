@@ -187,7 +187,7 @@ class TasksController < ApplicationController
     @task.bourreau_id    = params[:bourreau_id]     # Just for compatibility with old code
     @task.tool_config_id = params[:tool_config_id]  # Normally sent by interface but it's optional
     @task.user           = current_user
-    @task.group_id       = current_project.try(:id) || current_user.own_group.id
+    @task.group_id       = current_assignable_group.id
     @task.status         = "New"
 
     if @task.tool_config_id.present?
@@ -201,11 +201,15 @@ class TasksController < ApplicationController
       @task.tool_config  = lastest_toolconfig if lastest_toolconfig
     end
 
-    @tool_config = @task.tool_config # for acces in view
+    @tool_config = @task.tool_config # for access in view
 
     # Filter list of files as provided by the get request
     file_ids = params[:file_ids] || []
-    access   = @task.class.properties[:readonly_input_files] ? :read : :write
+    if @tool_config.try(:inputs_readonly) || @task.class.properties[:readonly_input_files]
+      access = :read
+    else
+      access = :write
+    end
     @files   = Userfile.find_accessible_by_user(file_ids, current_user, :access_requested => access) rescue []
     if @files.empty?
       flash[:error] = "You must select at least one file to which you have write access."
@@ -1283,7 +1287,7 @@ class TasksController < ApplicationController
     task_class       = tool_config ? tool_config.tool.cbrain_task_class : tool.cbrain_task_class
     task             = task_class.new(new_task_info)
     task.user_id   ||= current_user.id
-    task.group_id  ||= current_project.try(:id) || current_user.own_group.id
+    task.group_id  ||= current_assignable_group.id
     task.status      = "New" if task.status.blank? || task.status !~ /Standby/ # Standby is special.
 
     # Extract the Bourreau ID from the ToolConfig
