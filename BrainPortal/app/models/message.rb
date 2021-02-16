@@ -219,6 +219,11 @@ class Message < ApplicationRecord
 
     admin_list = WorkGroup.find_by_id(RemoteResource.current_resource.meta[:error_message_mailing_list]) || User.all_admins.to_a
 
+    # Filter the request params to make things pretty and safe, even for admins.
+    filtered_params = request_params.is_a?(ActionController::Parameters) ?
+                      request_params.to_unsafe_hash.hide_filtered        :
+                      request_params.hide_filtered
+
     # Message for developers/admin
     Message.send_message(admin_list,
       :message_type  => :error,
@@ -231,7 +236,7 @@ class Message < ApplicationRecord
                         "Hostname: #{Socket.gethostname}\n" +
                         "Process ID: #{Process.pid}\n" +
                         "Process Name: #{$0.sub(/[\s\0]+\z/,"")}\n" +
-                        "Params: #{request_params.hide_filtered.inspect}\n" +
+                        "Params: #{filtered_params.inspect}\n" +
                         "Exception: #{exception.class.to_s}: #{exception.message}\n" +
                         "\n" +
                         exception.backtrace[0..30].join("\n") +
