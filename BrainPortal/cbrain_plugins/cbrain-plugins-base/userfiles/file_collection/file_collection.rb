@@ -34,8 +34,6 @@ class FileCollection < Userfile
 
   has_viewer :name => 'Directory Content', :partial => :file_collection, :if => :is_locally_synced?
 
-  has_viewer MincFile.find_viewer(:volume_viewer)
-
   has_content :collection_file
 
   # Basename of the archiving mechanism's tar file.

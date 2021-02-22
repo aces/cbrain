@@ -22,23 +22,8 @@
 #
 -%>
 
-<%
-  if params[:content_loader] == "collection_file" && params[:arguments]
-    collection_file = params[:arguments]
-    collection_file = collection_file.first if collection_file.is_a?(Array)
-    collection_file = @userfile.list_files.find { |f| f.name == collection_file }.name
-    extension  = Userfile.file_extension(collection_file)
-    parameters = "?content_loader=collection_file&arguments=#{collection_file}"
-  else
-    extension = @userfile.file_extension
-  end
-%>
-
 <% if params[:content_viewer] == "off" %>
-  <%= image_tag "/userfiles/#{@userfile.id}/content#{extension}#{parameters}" %>
+  <%= image_tag "/userfiles/#{@userfile.id}/content#{@userfile.file_extension}#{parameters}" %>
 <% else %>
-  <%= overlay_content_link "Show Displayable Content", :class => "action_link" do %>
-    <%= image_tag "/userfiles/#{@userfile.id}/content#{extension}#{parameters}" %>
-  <% end %>
+    <%= image_tag url_for(:action  => :content, :content_loader => :collection_file, :arguments => params[:file_name]) %>
 <% end %>
-

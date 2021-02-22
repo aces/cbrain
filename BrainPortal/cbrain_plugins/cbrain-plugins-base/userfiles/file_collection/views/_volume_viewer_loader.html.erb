@@ -19,7 +19,7 @@ viewer.loadVolumes({
   volumes: [
     {
       type: "nifti1",
-      nii_url:     "<%= content_userfile_path(@userfile) %>?content_loader=collection_file&arguments=<%= params["arguments"] %>",
+      nii_url:     "<%= content_userfile_path(@userfile) %>?content_loader=collection_file&arguments=<%= params["file_name"] %>",
     },
   ],
   complete: function() {
