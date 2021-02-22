@@ -23,13 +23,8 @@
 -%>
 
 <%
-  if params[:content_loader] == "collection_file" && params[:arguments]
-    argument_list = params[:arguments]
-    argument_list = [argument_list] unless argument_list.is_a?(Array)
-    path = @userfile.collection_file(*argument_list)
-  else
-    path = @userfile.cache_full_path
-  end
+    path = params[:file_name].nil? ? @userfile.cache_full_path :
+                                    "#{File.dirname(@userfile.cache_full_path)}/#{params[:file_name]}"
 %>
 
 <% if @userfile.is_locally_synced? %>

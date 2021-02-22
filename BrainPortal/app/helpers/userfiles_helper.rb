@@ -91,47 +91,21 @@ module UserfilesHelper
     return h(display_name) unless file_lstat.file?
 
     matched_class = SingleFile.descendants.unshift(SingleFile).find { |c| file_name =~ c.file_name_pattern }
+    viewer        = matched_class.class_viewers.first.partial rescue nil
 
-    # binding.pry
-    if matched_class && matched_class <= NiftiFile
-      # overlay_ajax_link h(display_name),
-      #                 display_userfile_path(userfile,
-      #                     :content_loader        => :collection_file,
-      #                     :arguments             => file_name,
-      #                     :viewer                => :volume_viewer,
-      #                     :viewer_userfile_class => :FileCollection,
-      #                 ),
-      #                 :class => "action_link"
-
-      link_to h(display_name),
-              display_userfile_path(userfile,
-                :content_loader        => :collection_file,
-                :arguments             => file_name,
-                :viewer                => :volume_viewer,
-                :viewer_userfile_class => :FileCollection,
-                :content_viewer        => "off",
-              ),
-              :target => "_blank"
-    elsif matched_class && matched_class <= TextFile
-      link_to h(display_name),
-              display_userfile_path(userfile,
-                :content_loader        => :collection_file,
-                :arguments             => file_name,
-                :viewer                => :text_file,
-                :viewer_userfile_class => :TextFile,
-                :content_viewer        => "off",
-              ),
-              :target => "_blank"
-    elsif matched_class && matched_class <= ImageFile
-      link_to h(display_name),
-              display_userfile_path(userfile,
-                :content_loader        => :collection_file,
-                :arguments             => file_name,
-                :viewer                => :image_file,
-                :viewer_userfile_class => :ImageFile,
-                :content_viewer        => "off",
-              ),
-              :target => "_blank"
+    if matched_class && viewer
+      on_click_ajax_replace(
+          { :url     => display_userfile_path(userfile,
+                                             :file_name             => file_name,
+                                             :action                => :display,
+                                             :viewer                => viewer,
+                                             :viewer_userfile_class => matched_class
+                                             ),
+            :replace => "sub_viewer",
+          }
+        ) do
+          Pathname.new(file_name).basename.to_s
+      end
     else
       link_to h(display_name),
               url_for(:action  => :content, :content_loader => :collection_file, :arguments => file_name)
