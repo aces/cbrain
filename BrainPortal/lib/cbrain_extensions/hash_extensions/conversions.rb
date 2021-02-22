@@ -59,19 +59,13 @@ module CBRAINExtensions #:nodoc:
         end.join(' ')
       end
 
-      if defined?(Rails)
-        # Remove sensitive parameters.
-        def hide_filtered!
-          keys.each do |k|
-            self[k] =  "[FILTERED]" if  Rails.configuration.filter_parameters.any? {|f| k =~ /#{f}/ }
-            self[k] = self[k].hide_filtered if self[k].respond_to?(:hide_filtered)
-          end
-          self
-        end
-
-        def hide_filtered #:nodoc:
-          clone.hide_filtered!
-        end
+      # Filter a hash to remove sensitive info. Usually for params.
+      # Will filter based on the +filter_parameters+ config of Rails.
+      # This method was removed from Hash in Rails 5.1.
+      def hide_filtered
+        filtered_keys   = Rails.application.config.filter_parameters.presence || [ :password, :token, :ssh_key ]
+        filter_object   = ActionDispatch::Http::ParameterFilter.new(filtered_keys)
+        filter_object.filter(self.clone)
       end
 
       # For API calls that receive Hash objects,
