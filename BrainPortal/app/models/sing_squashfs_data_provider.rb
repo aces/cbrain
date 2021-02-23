@@ -132,7 +132,7 @@ class SingSquashfsDataProvider < SshDataProvider
   end
 
   # Returns (and caches for 6 months) the entries in the DP. +user+ is not used here.
-  # Note that the DataProvider controller also caches this list in a YAML file in /tmp,
+  # Note that the DataProvider controller also caches this list in fast living cache
   # and it considers it valid for only one minute, so it will refresh that way more
   # often than our 6 months long caching here. The thing is, fetching the list from the
   # DP side is the real expensive operation, but also we don't expect the list to change
