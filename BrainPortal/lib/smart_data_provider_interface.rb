@@ -170,8 +170,8 @@ module SmartDataProviderInterface
     @real_provider.provider_copy_to_otherprovider(userfile, otherprovider, options)
   end
 
-  def provider_list_all(user=nil) #:nodoc:
-    @real_provider.provider_list_all(user)
+  def provider_list_all(user=nil,browse_path=nil) #:nodoc:
+    @real_provider.provider_list_all(user,browse_path)
   end
 
   def provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:

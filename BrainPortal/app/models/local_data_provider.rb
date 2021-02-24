@@ -104,7 +104,7 @@ class LocalDataProvider < DataProvider
     true
   end
 
-  def impl_provider_list_all(user=nil) #:nodoc:
+  def impl_provider_list_all(user = nil, browse_path = nil) #:nodoc:
     list         = []
 
     uid_to_owner = {}

@@ -250,7 +250,7 @@ class S3FlatDataProvider < DataProvider
     true
   end
 
-  def impl_provider_list_all(user=nil) #:nodoc:
+  def impl_provider_list_all(user=nil,browse_path=nil) #:nodoc:
     dp_list = s3_connection.list_objects_one_level(add_start("")) # top level
     s3_objlist_to_fileinfos(dp_list)
   end

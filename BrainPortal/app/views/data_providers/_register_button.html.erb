@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -71,17 +71,20 @@
     </tr>
     <tr>
       <td><%= group_select :other_group_id, {}, { :include_blank => "(Select a project)" } %></td>
-  
+
     <td>
     <% auto_do_options = [
                             [ "... MOVE the files to Data Provider ->", "MOVE" ],
                             [ "... COPY the files to Data Provider ->", "COPY" ]
                          ]
+      # Disable the MOVE option if the DP is read only
+      auto_do_options[0].push({:disabled => true}) if @provider.read_only?
+      # Add an option to leave files on the DP if the DP allows it.
       auto_do_options.unshift( ["... do nothing else!", "" ] ) unless @provider.meta[:must_move].present?
     %>
     <%= select_tag :auto_do, options_for_select( auto_do_options ) %>
     </td>
-  
+
     <td>
     <%= data_provider_select :other_data_provider_id,
         { :data_providers => main_dp_set },

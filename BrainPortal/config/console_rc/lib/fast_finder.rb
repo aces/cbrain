@@ -99,7 +99,7 @@ class Userfile
       self.class.to_s, self.id,
       user.login,      group.name,
       size ? size : "unk",
-      name,            data_provider.name
+      browse_name, data_provider.name
   end
 end
 

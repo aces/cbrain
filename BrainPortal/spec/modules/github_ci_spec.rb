@@ -1,9 +1,8 @@
 
-<%-
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2020
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -20,22 +19,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<% title 'Browse Data Provider' %>
+require 'rails_helper'
 
-<%= form_tag(url_for(:controller => 'data_providers', :id => @provider.id, :action => 'register'), :method => :post, :id => "browse_form") do %>
+# This test file is meant to test stuff that are particular to
+# being in a Travis CI testing environment.
+describe "GithubCI" do
 
-  <div class="menu_bar">
-    <%= render :partial => "register_button" %>
-    <%= render :partial => "unregister_button" %>
-    <%= render :partial => "delete_button" %>
-    <%= render :partial => "view_option_button" %>
-  </div>
+  describe "environment" do
 
-  <div class="resource_list" id="dp_browse_table">
-    <%= render :partial => 'dp_browse_table' %>
-  </div>
+    # This code allows us to FAIL a test for sure
+    # if the CBRAIN_FAILTEST is set to something other
+    # than blank, or the string 'false'.
+    it "should fail this test if CBRAIN_FAILTEST is set" do
+      envvar = ENV["CBRAIN_FAILTEST"].presence
+      envvar = nil if envvar =~ /^false$/i # a particular string value we can use too
+      expect(envvar).to be_falsey
+    end
 
-<% end %>
+  end
 
+end

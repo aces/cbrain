@@ -42,7 +42,7 @@ jobs:
 
       ###########################################################
       - name: Setup Ruby
-        uses: actions/setup-ruby@v1
+        uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.6.6
 
@@ -120,6 +120,8 @@ jobs:
         id: rspec_portal
         if: ${{ failure() || success() }}
         working-directory: BrainPortal
+        env:
+          CBRAIN_FAILTEST: ${{ secrets.CBRAIN_FAILTEST || '' }} # force a test to fail
         run: |
           bundle exec rspec spec
 
@@ -130,8 +132,10 @@ jobs:
         id: rspec_bourreau
         if: ${{ failure() || success() }}
         working-directory: Bourreau
+        env:
+          CBRAIN_FAILTEST: ${{ secrets.CBRAIN_FAILTEST || '' }} # force a test to fail
         run: |
-          bundle exec rspec spec/boutiques
+          bundle exec rspec spec
 
       ###########################################################
       # MAIN TEST #3: API TESTS WITH CURL
@@ -175,13 +179,13 @@ jobs:
         continue-on-error: true
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL || 'cbrain_ci' }}
-          SLACK_COLOR: ${{ job.status == 'success' && '#00ff00' || job.status == 'cancelled' && '#ffff00' || '#ff0000' }}
-          SLACK_TITLE: "${{ github.repository }} CI tests: ${{ job.status }}"
+          SLACK_CHANNEL:  ${{ secrets.SLACK_CHANNEL || 'cbrain_ci' }}
+          SLACK_COLOR:    ${{ job.status == 'success' && '#00ff00' || job.status == 'cancelled' && '#ffff00' || '#ff0000' }}
+          SLACK_TITLE:    "${{ github.repository }} CI tests: ${{ job.status }}"
           SLACK_USERNAME: "GitHub CI" # Doesn't have to be a real slack user
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_FOOTER: ""
-          SLACK_ICON: https://github.com/aces/cbrain/raw/master/BrainPortal/public/images/custom_logos/cb-small_white_blue.png
+          SLACK_WEBHOOK:  ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_FOOTER:   ""
+          SLACK_ICON:     https://github.com/aces/cbrain/raw/master/BrainPortal/public/images/custom_logos/cb-small_white_blue.png
           SLACK_MESSAGE: |
             ```
             BrainPortal rspec tests        : ${{ steps.rspec_portal.outcome }}

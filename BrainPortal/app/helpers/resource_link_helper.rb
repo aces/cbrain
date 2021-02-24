@@ -43,7 +43,7 @@ module ResourceLinkHelper
   # the link (the default is the userfile's name) and a
   # :path (the default is the show path).
   def link_to_userfile_if_accessible(userfile, cur_user = current_user, options = {})
-    link_to_model_if_accessible(Userfile,userfile,:name,cur_user,options)
+    link_to_model_if_accessible(Userfile,userfile,:browse_name,cur_user,options)
   end
 
   # Creates a link to the show page of a +user+, as long
