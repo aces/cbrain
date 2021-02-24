@@ -295,7 +295,7 @@ class UserfilesController < ApplicationController
 
     # Some viewers return error(s) for some specific userfiles
     if (params[:content_viewer] != 'off')
-      @viewer.apply_conditions(@userfile) if @viewer
+      @viewer.apply_conditions(@userfile, params[:file_size]) if @viewer
     end
 
     begin

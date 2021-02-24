@@ -27,8 +27,10 @@ class TextFile < SingleFile
 
   has_viewer :name     => 'Text File',
              :partial  => :text_file,
-             :if       =>  Proc.new { |u| u.size.present? &&
-                                          u.size < 500_000
+             :if       =>  Proc.new { |u, size|
+                                          false if !(u.size.present? || size.present?);
+                                          size = size.present? ? size.to_i : u.size;
+                                          size < 500_000
                                     }
 
   def self.file_name_pattern #:nodoc:

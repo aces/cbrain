@@ -456,7 +456,7 @@ class Userfile < ApplicationRecord
   # synced to the local cache. As a side effect, if
   # the data provider is marked as 'fast syncing', then
   # the sync operation will be triggered first.
-  def is_locally_synced?
+  def is_locally_synced?(*args)
     syncstat = self.local_sync_status(:refresh)
     return true  if syncstat && syncstat.status == 'InSync'
     return false unless self.data_provider.is_fast_syncing?
@@ -719,10 +719,10 @@ class Userfile < ApplicationRecord
       false
     end
 
-    def apply_conditions(userfile) #:nodoc:
+    def apply_conditions(userfile, file_size=nil) #:nodoc:
       current_errors = []
       @conditions.each do |condition|
-        result = condition.call(userfile)
+        result = file_size.blank? ? condition.call(userfile) : condition.call(userfile, file_size)
         if result.is_a?(Array) # new convention
           next if result.empty? # no error messages
           current_errors += result # we have some error messages now

@@ -47,12 +47,13 @@
       <%= "&nbsp".html_safe %>
 
       <% if file.size > 0 %>
-        <%= data_link file.name, @userfile %>
+        <%= data_link file.name, @userfile, file.size.to_i %>
       <% else %>
         <%= Pathname.new(file.name).basename.to_s %>
       <% end %>
 
       <% if file.symbolic_type == :directory %>
+        <%= "&nbsp".html_safe %>
         <span class="ajax_onclick_show_child small warning">Expand</span>
         <span class="ajax_onclick_hide_child small warning" style="display:none">Hide</span>
       <% end %>
