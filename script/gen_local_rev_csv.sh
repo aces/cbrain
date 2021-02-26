@@ -65,6 +65,11 @@ else
   exit 10
 fi
 
+if ! test -f "$STATIC_REV_FILE" ; then
+  echo "No file $STATIC_REV_FILE exists in this repo, not updating it."
+  exit 10
+fi
+
 echo "Generating the static list of revisions for '$LOCATION_DESC'..."
 cp /dev/null "$STATIC_REV_FILE"
 

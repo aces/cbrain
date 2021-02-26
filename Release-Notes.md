@@ -1,7 +1,7 @@
 
 ## CBRAIN/NeuroHub Release Notes
 
-#### Version 6.1.0 Released 2021-20-26
+#### Version 6.1.0 Released 2021-02-26
 
 This release contains several new features and bug fixes.
 
@@ -17,8 +17,8 @@ This release contains several new features and bug fixes.
   is enabled only on some select DataProvider subclasses.
   This mechanism is meant for read-only data providers only,
   and can only be accessed by administrators. Warning: registering
-  files that are subsets of other registered files has
-  un-predictable consequences.
+  files that are subsets of other registered files can have
+  unpredictable consequences.
 * A new specialized controller for LORIS hooks has been added.
   This is used by automated operations from LORIS systems.
 * NeuroHub users can send direct messages to each other. This

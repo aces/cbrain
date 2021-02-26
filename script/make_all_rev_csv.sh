@@ -58,8 +58,13 @@ if ! test -d "BrainPortal/cbrain_plugins" ; then
 fi
 
 cd "BrainPortal/cbrain_plugins" || exit 20
-for plugindir in `ls -1 | grep "^cbrain-plugins-" | grep -v '^cbrain-plugins-base$'` ; do
-  test -d "$plugindir" || continue
+for plugindir in `ls -1 | grep -v '^cbrain-plugins-base$'` ; do
+  test -d "$plugindir"      || continue
+  test -d "$plugindir/.git" || continue
+  if ! test -e "$plugindir/cbrain_file_revisions.csv" ; then # adjust to match what gen_loc script create
+    echo "Skipping plugin directory '$plugindir' : no cbrain_file_revisions.csv file already exist. Touch to force."
+    continue
+  fi
   cd $plugindir || exit 20
   local_root=`$GIT_EXEC rev-parse --show-toplevel 2>/dev/null`
   if test "$local_root" = `pwd` ; then
