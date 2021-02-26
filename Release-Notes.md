@@ -1,6 +1,56 @@
 
 ## CBRAIN/NeuroHub Release Notes
 
+#### Version 6.1.0 Released 2021-20-26
+
+This release contains several new features and bug fixes.
+
+* The Continuous Integration system has been switched from
+  Travis CI to GitHub actions. The control script for the
+  running the test suite is under .github/workflows/cbrain_ci.yaml
+* The remote script that starts a Bourreau has been switched
+  from a ruby script to a simpler bash script; the bash script
+  is used in the most common situation of launching a Bourreau,
+  and the old ruby script is still invoked in other rarer modes
+  of operation.
+* Browsing data providers now support 'local subpaths'. This
+  is enabled only on some select DataProvider subclasses.
+  This mechanism is meant for read-only data providers only,
+  and can only be accessed by administrators. Warning: registering
+  files that are subsets of other registered files has
+  un-predictable consequences.
+* A new specialized controller for LORIS hooks has been added.
+  This is used by automated operations from LORIS systems.
+* NeuroHub users can send direct messages to each other. This
+  feature is not accessible on the CBRAIN side yet, but users
+  can switch from one interface to the other.
+* NeuroHub users can destroy their old project.
+* Different internal mailer configurations allow two sets of
+  email messages to be set to users depending on whether they
+  interact with the CBRAIN side or the NeuroHub side (for
+  registration, password recovery etc).
+* CBRAIN administrators can now explicitely indicate that
+  a tool is known not to modify its input files, allowing
+  users to launch such tools on files on which they only
+  have read access. In the past, the interface would refuse
+  to launch the tools because it didn't know if that would
+  modify the files.
+* CBRAIN admins can configure tasks that are containerized
+  in Singularity to mount specific file overlays in the container
+  (for example, for fixed datasets).
+* CBRAIN admins can specify special Singularity run-time options
+  for tasks that are containerized with Singularity.
+* The task launching system will autodetect if a CBRAIN file
+  is located on a data provider that stores files in Singularity
+  overlays and mount the overlays automatically if the task
+  is also run with Singularity.
+* NeuroHub users can generate new API tokens just like on the
+  CBRAIN side.
+* Internal version tracking is performed by `git describe`
+  instead of the old ruby code that basically did the same thing.
+* The Boutiques integrator supports a new special custom
+  option allowing a task to save back its input automatically.
+
 #### Version 6.0.0 Released 2020-08-19
 
 More than 8 months have passed since the previous release, 5.3.0!
@@ -92,7 +142,7 @@ New features:
 - Users now have an 'affiliation' field, with a controled set of values for it
 - Userfile custom viewers can return an informative error message informing the
   framework why they aren't available for a particular file
-- New built-in viewers for singularity image files, json files, xml files
+- New built-in viewers for Singularity image files, json files, xml files
 - The Diagnostics tool has options for generating busy loops (system and/or user)
 
 Bug fixes:
@@ -108,7 +158,7 @@ New features:
 - The [CARMIN API](https://github.com/CARMIN-org/CARMIN-API) has been implemented
   pretty much completely, except for some limitations (users need to find externally
   the ID of CARMIN files in order to prepare the arguments for CBRAIN tasks)
-- A new DataProvider that can connect to SquashFS files through singularity
+- A new DataProvider that can connect to SquashFS files through Singularity
 - The Travis CI control scripts have been improved and one can now selectively
   skip some test stages (e.g. just perform the Ruby curl tests...)
 - Added a Boutiques descriptor as a demonstration for developers (for the command 'du')
