@@ -105,7 +105,7 @@ module UserfilesHelper
             :replace => "sub_viewer",
           }
         ) do
-          Pathname.new(file_name).basename.to_s
+          ("<span class=\"sub_viewable_link\">"+Pathname.new(file_name).basename.to_s+"</span>").html_safe
       end
     else
       link_to h(display_name),
