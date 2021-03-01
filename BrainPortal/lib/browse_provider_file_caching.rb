@@ -47,14 +47,15 @@ class BrowseProviderFileCaching
     end
   end
 
-  # Clear the cache file.
+  # Clear the provider browse cache.
   def self.clear_cache(user, provider, browse_path = nil) #:nodoc:
     Rails.cache.delete(dp_cache_key(user, provider, browse_path))
   end
 
   private
 
-  def self.dp_cache_key(user, provider, browse_path)
+  # The cache key, which depends on user, provider and browse path.
+  def self.dp_cache_key(user, provider, browse_path) #:nodoc:
     "dp_file_list_#{user.try(:id)}-#{provider.try(:id)}-#{browse_path}"
   end
 
