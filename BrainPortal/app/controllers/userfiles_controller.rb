@@ -293,9 +293,19 @@ class UserfilesController < ApplicationController
       end
     end
 
+    viewer_userfile_class = viewer_userfile_class || @viewer.userfile_class
+    @view_userfile = viewer_userfile_class.new(
+                :id            => @userfile.id,
+                :name          => params[:file_name] || @userfile.name,
+                :data_provider => @userfile.data_provider,
+                :user_id       => @userfile.user_id,
+                :group_id      => @userfile.group_id,
+                :size          => params[:file_size] || @userfile.size
+              ).freeze
+
     # Some viewers return error(s) for some specific userfiles
     if (params[:content_viewer] != 'off')
-      @viewer.apply_conditions(@userfile, params[:file_size]) if @viewer
+      @viewer.apply_conditions(@view_userfile) if @viewer
     end
 
     begin
