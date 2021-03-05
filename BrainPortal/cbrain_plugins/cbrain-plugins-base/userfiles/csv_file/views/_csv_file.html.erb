@@ -55,13 +55,32 @@
       </span>
     <% end %>
 
-    <%= form_tag userfile_path(@userfile), :method => :get do %>
-      <span class="no_wrap">
-        <%= check_box_tag "with_header", "1", with_header %> First row contains header labels.
-        <%= hidden_field_tag :page, page %>
-        <%= hidden_field_tag :viewer, @viewer.name %>
-        <%= submit_tag "Refresh" %>
-      </span>
+    <% if !params[:file_name] %>
+      <%= form_tag userfile_path(@userfile), :method => :get do %>
+        <span class="no_wrap">
+          <%= check_box_tag "with_header", "1", with_header %> First row contains header labels.
+          <%= hidden_field_tag :page, page %>
+          <%= hidden_field_tag :viewer, @viewer.name %>
+          <%= submit_tag "Refresh" %>
+        </span>
+      <% end %>
+    <% else %>
+      <%= on_click_ajax_replace(
+          { :url     => display_userfile_path(@userfile,
+                                             :file_name             => params[:file_name],
+                                             :file_size             => params[:file_size],
+                                             :action                => :display,
+                                             :viewer                => params[:viewer],
+                                             :viewer_userfile_class => params[:viewer_userfile_class],
+                                             :with_header           => params[:with_header].present? ? nil : "1",
+                                             :page                  => page,
+                                             ),
+            :replace => "sub_viewer",
+          },
+        ) do %>
+
+          <span class="sub_viewable_link">First row <%= params[:with_header].present? ? "don't" : ""%> contains header labels.</span>
+        <% end %>
     <% end %>
 
     </br>

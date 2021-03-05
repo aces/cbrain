@@ -22,21 +22,19 @@
 #
 -%>
 
-<% userfile = @view_userfile || @userfile %>
-
-<% if userfile.is_locally_synced? %>
-  <% file_size = params[:file_size].blank? ? userfile.size : params[:file_size].to_i %>
-  <% if params[:content_viewer] == "off" || (userfile.size || 999_999) < 1000 %>
-    <% content = File.read(userfile.cache_full_path) rescue nil %>
+<% if @userfile.is_locally_synced? %>
+  <% file_size = params[:file_size].blank? ? @userfile.size : params[:file_size].to_i %>
+  <% if params[:content_viewer] == "off" || (@userfile.size || 999_999) < 1000 %>
+    <% content = File.read(@userfile.cache_full_path) rescue nil %>
     <% content = content.text_file_content_to_utf8 if content %>
     <% if content %>
       <PRE><%= content %></PRE>
     <% else %>
       <%= html_colorize("Could not load file contents.") %>
     <% end %>
-    <%= link_to h("(Show in a separate page)"), url_for(:controller  => :userfiles, :id  => userfile.id, :action  => :display, :viewer => :text_file, :content_viewer => "off", :file_name => userfile.name), :target => "_blank" if params[:action] == "show" %>
+    <%= link_to h("(Show in a separate page)"), url_for(:controller  => :userfiles, :id  => @userfile.id, :action  => :display, :viewer => :text_file, :content_viewer => "off", :file_name => @userfile.name), :target => "_blank" if params[:action] == "show" %>
   <% else %>
-    <%= link_to h("Show Displayable Content"), url_for(:controller  => :userfiles, :id  => userfile.id, :action  => :display, :viewer => :text_file, :content_viewer => "off", :file_name => userfile.name), :target => "_blank"%>
+    <%= link_to h("Show Displayable Content"), url_for(:controller  => :userfiles, :id  => @userfile.id, :action  => :display, :viewer => :text_file, :content_viewer => "off", :file_name => @userfile.name), :target => "_blank"%>
   <% end %>
 
 <% end%>
