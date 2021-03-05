@@ -236,8 +236,9 @@ class UserfilesController < ApplicationController
   #
   # GET /userfiles/1/content?option1=....optionN=...
   def content
-    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
+    @userfile      = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
 
+    @userfile      = create_fake_userfile
     content_loader = @userfile.find_content_loader(params[:content_loader])
     argument_list  = params[:arguments] || []
     argument_list  = [argument_list] unless argument_list.is_a?(Array)
@@ -294,18 +295,11 @@ class UserfilesController < ApplicationController
     end
 
     viewer_userfile_class = viewer_userfile_class || @viewer.userfile_class
-    @view_userfile = viewer_userfile_class.new(
-                :id            => @userfile.id,
-                :name          => params[:file_name] || @userfile.name,
-                :data_provider => @userfile.data_provider,
-                :user_id       => @userfile.user_id,
-                :group_id      => @userfile.group_id,
-                :size          => params[:file_size] || @userfile.size
-              ).freeze
+    @userfile             = create_fake_userfile
 
     # Some viewers return error(s) for some specific userfiles
     if (params[:content_viewer] != 'off')
-      @viewer.apply_conditions(@view_userfile) if @viewer
+      @viewer.apply_conditions(@userfile) if @viewer
     end
 
     begin
@@ -2000,6 +1994,19 @@ class UserfilesController < ApplicationController
         ]
       )
     end
+  end
+
+  def create_fake_userfile
+    viewer_userfile_class = params[:viewer_userfile_class].presence.try(:constantize) || @userfile.class
+
+    viewer_userfile_class.new(
+            :id            => @userfile.id,
+            :name          => params[:file_name] || @userfile.name,
+            :data_provider => @userfile.data_provider,
+            :user_id       => @userfile.user_id,
+            :group_id      => @userfile.group_id,
+            :size          => params[:file_size] || @userfile.size
+          ).freeze
   end
 
 end
