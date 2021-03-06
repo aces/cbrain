@@ -25,6 +25,8 @@ class NhUsersController < NeurohubApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  include OrcidHelpers
+
   before_action :login_required
 
   def show #:nodoc:
@@ -44,6 +46,7 @@ class NhUsersController < NeurohubApplicationController
   def edit #:nodoc:
     @user = User.find(params[:id])
     @orcid_canonical = orcid_canonize(@user.meta[:orcid])
+    @orcid_uri       = orcid_login_uri()
     unless @user.id == current_user.id
       cb_error "You don't have permission to view this user.", :redirect => :neurohub
       # to change if admin/manager etc added...
@@ -73,10 +76,6 @@ class NhUsersController < NeurohubApplicationController
 
     last_update = @user.updated_at
     if @user.update_attributes_with_logging(attr_to_update, current_user)
-      if params['meta'].present? && params['meta'].has_key?('orcid') # this is not in password reset form
-        mparam = {orcid: orcid_digits(params['meta']['orcid'])}
-        add_meta_data_from_form(@user, [:orcid], mparam)
-      end
       if attr_to_update[:password].present?
         flash[:notice] = "Your password was changed."
         @user.update_column(:password_reset, false)
@@ -98,6 +97,16 @@ class NhUsersController < NeurohubApplicationController
   def new_token
     new_session = cbrain_session.duplicate_with_new_token
     @new_token  = new_session.cbrain_api_token
+  end
+
+  # temporary while evaluating the integration
+  def unlink_orcid #:nodoc:
+    if current_user
+      current_user.meta[:orcid] = nil
+      redirect_to :action => :myaccount
+      return
+    end
+    redirect_to :neurohub
   end
 
 end

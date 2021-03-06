@@ -166,14 +166,4 @@ module NeurohubHelpers
     projs.to_a + user_projs.to_a
   end
 
-  # shortens ORCID iD by dropping url (possibly distorted)
-  def orcid_digits(orcid)
-    orcid.to_s[/\d\d\d\d-\d\d\d\d-\d\d\d\d-\d\d\d[\dX]/i]
-  end
-
-  # normalizes ORCID iD into the standard/canonical form (the url)
-  def orcid_canonize(s)
-    "https://orcid.org/#{orcid_digits(s)}" if s.present?
-  end
-
 end

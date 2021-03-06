@@ -66,12 +66,25 @@
     %>
   </fieldset>
 
-  <fieldset>
-    <%= f.label(:orcid, "ORCID iD") %>
-    <%= text_field_tag "meta[orcid]", @orcid_canonical, :size => 30 %><br />
-    <p class="field_note">You can enter the full ORCID URI, which starts with <strong>https://</strong>, or just the numerical part, e.g. <strong>1234-5678-9012-345X</strong>
-
-  </fieldset>
+  <% if @orcid_uri %>
+    <fieldset>
+      <%= f.label(:orcid, "ORCID iD") %>
+      <p class="btn-text">
+      <% if @orcid_canonical.blank? %>
+        Your NeuroHub account is not yet linked to an ORCID iD
+      <% else %>
+        <%= link_to(@orcid_canonical, @orcid_canonical) %>
+      <% end %>
+      </p>
+      <br>
+      <%= link_to "LINK TO ORCID", @orcid_uri, :class => "btn-solid orcid" %>
+      <p class="field_note">blha blah blah</p>
+      <!-- unlink feature temporary -->
+      <p class="btn-text">
+        <%= link_to "(Unlink ORCID)", unlink_orcid_path %>
+      </p>
+    </fieldset>
+  <% end %>
 
   <fieldset >
     <%= f.label(:country, "Zenodo Official Token") %>

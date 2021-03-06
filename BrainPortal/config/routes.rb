@@ -277,6 +277,8 @@ Rails.application.routes.draw do
 
     # ORCID authentication
     get   '/orcid'                  => 'nh_sessions#orcid'
+    # unlink button temporary maybe
+    get   '/unlink_orcid'           => 'nh_users#unlink_orcid'
 
     # Sessions
     resource  :nh_session,   :only => [ :new, :create, :destroy ] do

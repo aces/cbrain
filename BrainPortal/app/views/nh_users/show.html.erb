@@ -144,7 +144,7 @@
       <div class="card-item">
         <div>
           <p class="card-label">ORCID iD</p>
-          <p class="card-text"><%= @orcid_canonical || "-" %></p>
+          <p class="card-text btn-text"><%= link_to(@orcid_canonical, @orcid_canonical) || "Your account is not yet linked to an ORCID iD" %></p>
         </div>
       </div>
     </div>
