@@ -69,19 +69,26 @@
   <% if @orcid_uri %>
     <fieldset>
       <%= f.label(:orcid, "ORCID iD") %>
-      <p class="btn-text">
-      <% if @orcid_canonical.blank? %>
-        Your NeuroHub account is not yet linked to an ORCID iD
-      <% else %>
-        <%= link_to(@orcid_canonical, @orcid_canonical) %>
-      <% end %>
+        <% if @orcid_canonical.blank? %>
+          <p class="btn-text orcid">
+            <%= link_to @orcid_uri, :class => "btn-solid orcid" do %>
+              <%= image_tag("neurohub/ORCIDiD_iconvector.svg", :alt => "ORCID logo", :class => "orcid_logo") %>
+              Connect your NeuroHub account to your ORCID iD
+            <% end %>
+          </p>
+          <p class="field_note">blha blah blah</p>
+        <% else %>
+          <p class="btn-text orcid">
+            <%= link_to @orcid_canonical, :class => "orcid_link" do %>
+              <%= image_tag("neurohub/ORCIDiD_iconvector.svg", :alt => "ORCID logo", :class => "orcid_logo") %>
+              <%= @orcid_canonical %>
+            <% end %>
+          </p>
+        <% end %>
       </p>
-      <br>
-      <%= link_to "LINK TO ORCID", @orcid_uri, :class => "btn-solid orcid" %>
-      <p class="field_note">blha blah blah</p>
       <!-- unlink feature temporary -->
-      <p class="btn-text">
-        <%= link_to "(Unlink ORCID)", unlink_orcid_path %>
+      <p class="btn-text orcid">
+        <%= link_to "(Unlink ORCID)", unlink_orcid_path, :class => "orcid_link" %>
       </p>
     </fieldset>
   <% end %>

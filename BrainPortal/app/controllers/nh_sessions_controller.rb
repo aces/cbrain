@@ -110,6 +110,7 @@ class NhSessionsController < NeurohubApplicationController
     body  = response.response_body
     json  = JSON.parse(body)
     orcid = json['orcid'].presence
+    Rails.logger.info "ORCID reply: #{json.to_h.hide_filtered.inspect}"
 
     if orcid.blank?
       redirect_to neurohub_path
