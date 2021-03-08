@@ -69,27 +69,38 @@
   <% if @orcid_uri %>
     <fieldset>
       <%= f.label(:orcid, "ORCID iD") %>
-        <% if @orcid_canonical.blank? %>
-          <p class="btn-text orcid">
-            <%= link_to @orcid_uri, :class => "btn-solid orcid" do %>
-              <%= image_tag("neurohub/ORCIDiD_iconvector.svg", :alt => "ORCID logo", :class => "orcid_logo") %>
-              Connect your NeuroHub account to your ORCID iD
-            <% end %>
-          </p>
-          <p class="field_note">blha blah blah</p>
-        <% else %>
-          <p class="btn-text orcid">
-            <%= link_to @orcid_canonical, :class => "orcid_link" do %>
-              <%= image_tag("neurohub/ORCIDiD_iconvector.svg", :alt => "ORCID logo", :class => "orcid_logo") %>
-              <%= @orcid_canonical %>
-            <% end %>
-          </p>
-        <% end %>
-      </p>
+      <% if @orcid_canonical.blank? %>
+        <p class="btn-text orcid">
+          <%= link_to @orcid_uri, :class => "btn-solid orcid" do %>
+            <%= image_tag("neurohub/ORCIDiD_iconvector.svg", :alt => "ORCID logo", :class => "orcid_logo") %>
+            Connect your NeuroHub account to your ORCID iD
+          <% end %>
+        </p>
+        <p class="field_note">
+          ORCID is an independent non-profit organization that provides a
+          persistent identifier &mdash; an ORCID iD &mdash; that distinguishes
+          you from other researchers and a mechanism for linking your research
+          outputs and activities to your iD. ORCID is integrated into many
+          systems used by publishers, funders, institutions, and other
+          research-related services.
+        </p>
+        <p class="field_note">
+          Learn more at <%= link_to "ORCID.org", "https://ORCID.org/", :class => "orcid_home_link" %>
+        </p>
+      <% else %>
+        <p class="btn-text orcid">
+          <%= link_to @orcid_canonical, :class => "orcid_link" do %>
+            <%= image_tag("neurohub/ORCIDiD_iconvector.svg", :alt => "ORCID logo", :class => "orcid_logo") %>
+            <%= @orcid_canonical %>
+          <% end %>
+        </p>
+      <% end %>
       <!-- unlink feature temporary -->
-      <p class="btn-text orcid">
-        <%= link_to "(Unlink ORCID)", unlink_orcid_path, :class => "orcid_link" %>
-      </p>
+      <% if @orcid_canonical.present? %>
+        <p class="btn-text orcid">
+          <%= link_to "(Unlink ORCID)", unlink_orcid_path, :class => "orcid_home_link" %>
+        </p>
+      <% end %>
     </fieldset>
   <% end %>
 
