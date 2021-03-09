@@ -24,11 +24,9 @@
 module OrcidHelpers
 
   # ORCID authentication URL constants
-  # Maybe shoudl be made configurable.
-  # FIXME TODO currently contains sandbox URI ; remove 'sandbox.' once
-  # dev testing is finished
-  ORCID_AUTHORIZE_URI = "https://sandbox.orcid.org/oauth/authorize" # will be issued a GET with params
-  ORCID_TOKEN_URI     = "https://sandbox.orcid.org/oauth/token"     # will be issued a POST with a single code
+  # Maybe should be made configurable.
+  ORCID_AUTHORIZE_URI = "https://orcid.org/oauth/authorize" # will be issued a GET with params
+  ORCID_TOKEN_URI     = "https://orcid.org/oauth/token"     # will be issued a POST with a single code
 
   def orcid_login_uri
     myself              = RemoteResource.current_resource
