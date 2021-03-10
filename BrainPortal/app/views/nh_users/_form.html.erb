@@ -95,10 +95,14 @@
           <% end %>
         </p>
       <% end %>
-      <!-- unlink feature temporary -->
       <% if @orcid_canonical.present? %>
-        <p class="btn-text orcid">
-          <%= link_to "(Unlink ORCID)", unlink_orcid_path, :class => "orcid_home_link" %>
+        <p class="btn-solid orcid">
+          <%= link_to unlink_orcid_path,
+              :class => "",
+              :method  => :post,
+              :data    => { :confirm => "Are you sure you want to unlink your account from this ORCID iD?" } do %>
+              Remove this ORCID iD from your NeuroHub account
+          <% end %>
         </p>
       <% end %>
     </fieldset>

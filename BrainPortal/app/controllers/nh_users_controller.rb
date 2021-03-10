@@ -99,14 +99,13 @@ class NhUsersController < NeurohubApplicationController
     @new_token  = new_session.cbrain_api_token
   end
 
-  # temporary while evaluating the integration
+  # POST /unlink_orcid
   def unlink_orcid #:nodoc:
-    if current_user
-      current_user.meta[:orcid] = nil
-      redirect_to :action => :myaccount
-      return
-    end
-    redirect_to :neurohub
+    redirect_to :neurohub unless current_user
+
+    current_user.meta[:orcid] = nil
+    flash[:notice] = "This ORCID iD was removed from your NeuroHub account"
+    redirect_to :action => :myaccount
   end
 
 end
