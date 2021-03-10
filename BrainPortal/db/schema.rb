@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20201123133913) do
+ActiveRecord::Schema.define(version: 20210207232542) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -437,7 +437,7 @@ ActiveRecord::Schema.define(version: 20201123133913) do
     t.string   "container_index_location"
     t.text     "singularity_overlays_specs",  limit: 65535
     t.string   "container_exec_args"
-    t.boolean  "inputs_readonly",                                 default: false
+    t.boolean  "inputs_readonly",                           default: false
     t.index ["bourreau_id"], name: "index_tool_configs_on_bourreau_id", using: :btree
     t.index ["tool_id"], name: "index_tool_configs_on_tool_id", using: :btree
   end
@@ -480,7 +480,9 @@ ActiveRecord::Schema.define(version: 20201123133913) do
     t.text     "description",       limit: 65535
     t.string   "zenodo_deposit_id"
     t.string   "zenodo_doi"
+    t.string   "browse_path"
     t.index ["archived", "id"], name: "index_userfiles_on_archived_and_id", using: :btree
+    t.index ["data_provider_id", "browse_path"], name: "index_userfiles_on_data_provider_id_and_browse_path", using: :btree
     t.index ["data_provider_id"], name: "index_userfiles_on_data_provider_id", using: :btree
     t.index ["group_id"], name: "index_userfiles_on_group_id", using: :btree
     t.index ["hidden", "id"], name: "index_userfiles_on_hidden_and_id", using: :btree

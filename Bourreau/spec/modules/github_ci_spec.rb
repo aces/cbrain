@@ -1,0 +1,1 @@
+../../../BrainPortal/spec/modules/github_ci_spec.rb

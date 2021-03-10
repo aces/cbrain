@@ -31,6 +31,10 @@
     <% end %>
   </h2>
 
+  <% if @provider.has_browse_path_capabilities? %>
+    <%= render :partial => 'dp_show_path' %>
+  <% end %>
+
   <div class="pagination">
     <div class="pagination_left_side">
       Register files as:
@@ -72,6 +76,20 @@
       t.column('Name', :name,
         :sortable => true
       )
+
+      if @provider.has_browse_path_capabilities?
+        t.column('CD', :changedir) do |f|
+          if f.symbolic_type == :directory
+            newpath  = @browse_path.to_s # turns nil into ''
+            newpath += "/" if newpath.present?
+            newpath += f.name
+            ajax_link("&rdsh;".html_safe,
+              browse_data_provider_path(@provider, :browse_path => newpath),
+              :datatype => 'script', :class =>  'action_link',
+            )
+          end
+        end
+      end
 
       t.column('Size', :size,
         :sortable => true

@@ -50,7 +50,12 @@
 <div class="display_inline_block" style="min-width: 50%">
   <%= show_table(@userfile, :as => :userfile, :edit_condition => is_editable_by_current_user ) do |t| %>
 
-    <% t.edit_cell(:name, :disabled => !@userfile.has_owner_access?(current_user)) do |f| %>
+    <% t.edit_cell(:name, :content => @userfile.browse_name,
+         :disabled => ( !@userfile.has_owner_access?(current_user) ||
+                         @userfile.data_provider.read_only?        ||
+                         @userfile.immutable?
+                      )
+       ) do |f| %>
       <%= f.text_field :name %>
     <% end %>
 

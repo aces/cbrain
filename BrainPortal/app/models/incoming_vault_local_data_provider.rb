@@ -23,7 +23,7 @@
 #
 # This class is exactly like VaultLocalDataProvider, but
 # it also has the ability to browse a subdirectory named
-# after a user when calling provider_list_all(user).
+# after a user when calling provider_list_all().
 #
 class IncomingVaultLocalDataProvider < VaultLocalDataProvider
 
@@ -49,7 +49,7 @@ class IncomingVaultLocalDataProvider < VaultLocalDataProvider
     end
   end
 
-  def impl_provider_list_all(user = nil) #:nodoc:
+  def impl_provider_list_all(user = nil, browse_path = nil) #:nodoc:
     tried_mkdir = false
     begin
       super(user)
