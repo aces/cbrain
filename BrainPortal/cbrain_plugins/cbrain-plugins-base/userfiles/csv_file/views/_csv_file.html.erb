@@ -67,8 +67,7 @@
     <% else %>
       <%= on_click_ajax_replace(
           { :url     => display_userfile_path(@userfile,
-                                             :file_name             => params[:file_name],
-                                             :file_size             => params[:file_size],
+                                             :file_name             => params[:file_name] || @userfile.name,
                                              :action                => :display,
                                              :viewer                => params[:viewer],
                                              :viewer_userfile_class => params[:viewer_userfile_class],
