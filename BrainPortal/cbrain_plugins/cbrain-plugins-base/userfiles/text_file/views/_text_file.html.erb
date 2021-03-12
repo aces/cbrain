@@ -23,7 +23,6 @@
 -%>
 
 <% if @userfile.is_locally_synced? %>
-  <% file_size = params[:file_size].blank? ? @userfile.size : params[:file_size].to_i %>
   <% if params[:content_viewer] == "off" || (@userfile.size || 999_999) < 1000 %>
     <% content = File.read(@userfile.cache_full_path) rescue nil %>
     <% content = content.text_file_content_to_utf8 if content %>

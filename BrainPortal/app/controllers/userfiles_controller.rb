@@ -236,9 +236,7 @@ class UserfilesController < ApplicationController
   #
   # GET /userfiles/1/content?option1=....optionN=...
   def content
-    @userfile      = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
-
-    @userfile      = create_fake_userfile
+    @userfile      = userfile_for_viewer
     content_loader = @userfile.find_content_loader(params[:content_loader])
     argument_list  = params[:arguments] || []
     argument_list  = [argument_list] unless argument_list.is_a?(Array)
@@ -275,7 +273,7 @@ class UserfilesController < ApplicationController
   # can be provided to override which class to search for the viewer code
   # (by default, the class of +userfile+)
   def display
-    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
+    @userfile             = userfile_for_viewer
 
     viewer_name           = params[:viewer]
     viewer_userfile_class = params[:viewer_userfile_class].presence.try(:constantize) || @userfile.class
@@ -293,9 +291,6 @@ class UserfilesController < ApplicationController
         @viewer = Userfile::Viewer.new(viewer_userfile_class, :partial => viewer_name)
       end
     end
-
-    viewer_userfile_class = viewer_userfile_class || @viewer.userfile_class
-    @userfile             = create_fake_userfile
 
     # Some viewers return error(s) for some specific userfiles
     if (params[:content_viewer] != 'off')
@@ -1996,16 +1991,30 @@ class UserfilesController < ApplicationController
     end
   end
 
-  def create_fake_userfile
+  # Return the userfile itself if the viewer render
+  # the userfile itself (!params[:file_name]), or a fake
+  # userfile if the viewer render a file inside a FileCollection
+  def userfile_for_viewer
+    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
+
+    # If params[:file_name] return the userfile
+    return @userfile if !params[:file_name]
+
+    # Otherwise render a file inside a FileCollection
+    # Create a fake Userfile to pass information to the viewer
+    sub_file_info         = @userfile.provider_collection_index.select {|u| u.name == params[:file_name] }.first
     viewer_userfile_class = params[:viewer_userfile_class].presence.try(:constantize) || @userfile.class
+
+    raise ActiveRecord::RecordNotFound("Could not retrieve a file with the name #{!sub_file_info} inside the FileCollection") if
+      !sub_file_info
 
     viewer_userfile_class.new(
             :id            => @userfile.id,
-            :name          => params[:file_name] || @userfile.name,
+            :name          => sub_file_info.name,
             :data_provider => @userfile.data_provider,
             :user_id       => @userfile.user_id,
             :group_id      => @userfile.group_id,
-            :size          => params[:file_size] || @userfile.size
+            :size          => sub_file_info.size
           ).freeze
   end
 
