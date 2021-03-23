@@ -22,55 +22,51 @@
 #
 -%>
 
-<%= stylesheet_link_tag    'tablesorter_themes/blue/style' %>
-<%= javascript_include_tag 'jquery.tablesorter.min' %>
-<%= javascript_include_tag 'jquery.metadata' %>
+<div id="sub_viewer">
+  <%= stylesheet_link_tag    'tablesorter_themes/blue/style' %>
+  <%= javascript_include_tag 'jquery.tablesorter.min' %>
+  <%= javascript_include_tag 'jquery.metadata' %>
 
-<% if @userfile.is_locally_synced? %>
-  <% quote, separator, invalid_encoding = @userfile.guess_csv_quote_sep %>
+  <% if @userfile.is_locally_synced? %>
+    <% quote, separator, invalid_encoding = @userfile.guess_csv_quote_sep %>
 
-  <% if ! (quote && separator) %>
-      Can't identify CSV quote character and separator character.
-  <% else %>
-    <%
-      csv_array     = @userfile.create_csv_array(quote,separator)
-      with_header   = params[:with_header] == "1" ? true : false
-      per_page      = 500
-      nb_col        = csv_array[0].size
-      nb_row        = csv_array.size
-      do_sorting    = nb_row <= per_page
-      headers       = with_header ? csv_array.shift : do_sorting ? Array.new(nb_col, "---") : []
-      page          = (params[:page] || 1).to_i
-      page          = 1 if page < 1
-      csv_array     = WillPaginate::Collection.create(page, per_page) do |pager|
-        pager.replace(csv_array[(page-1)*per_page, per_page] || [])
-        pager.total_entries = csv_array.size
-        pager
-      end
-    %>
+    <% if ! (quote && separator) %>
+        Can't identify CSV quote character and separator character.
+    <% else %>
+      <%
+        csv_array     = @userfile.create_csv_array(quote,separator)
+        with_header   = params[:with_header] == "1" ? true : false
+        per_page      = 500
+        nb_col        = csv_array[0].size
+        nb_row        = csv_array.size
+        do_sorting    = nb_row <= per_page
+        headers       = with_header ? csv_array.shift : do_sorting ? Array.new(nb_col, "---") : []
+        page          = (params[:page] || 1).to_i
+        page          = 1 if page < 1
+        csv_array     = WillPaginate::Collection.create(page, per_page) do |pager|
+          pager.replace(csv_array[(page-1)*per_page, per_page] || [])
+          pager.total_entries = csv_array.size
+          pager
+        end
+      %>
 
-    <% if invalid_encoding %>
-      <span class="warning">
-        Warning: Invalid UTF-8 characters found. Some characters may not display correctly.
-      </span>
-    <% end %>
-
-    <% if !params[:file_name] %>
-      <%= form_tag userfile_path(@userfile), :method => :get do %>
-        <span class="no_wrap">
-          <%= check_box_tag "with_header", "1", with_header %> First row contains header labels.
-          <%= hidden_field_tag :page, page %>
-          <%= hidden_field_tag :viewer, @viewer.name %>
-          <%= submit_tag "Refresh" %>
+      <% if invalid_encoding %>
+        <span class="warning">
+          Warning: Invalid UTF-8 characters found. Some characters may not display correctly.
         </span>
       <% end %>
-    <% else %>
+
+      <%
+        file_name     = params[:file_name] || @userfile.name
+        matched_class = SingleFile.descendants.unshift(SingleFile).find { |c| file_name =~ c.file_name_pattern }
+        viewer        = matched_class.class_viewers.first.partial rescue nil
+      %>
       <%= on_click_ajax_replace(
           { :url     => display_userfile_path(@userfile,
-                                             :file_name             => params[:file_name] || @userfile.name,
+                                             :file_name             => file_name,
                                              :action                => :display,
-                                             :viewer                => params[:viewer],
-                                             :viewer_userfile_class => params[:viewer_userfile_class],
+                                             :viewer                => viewer,
+                                             :viewer_userfile_class => matched_class,
                                              :with_header           => params[:with_header].present? ? nil : "1",
                                              :page                  => page,
                                              ),
@@ -79,68 +75,68 @@
         ) do %>
 
           <span class="sub_viewable_link">First row <%= params[:with_header].present? ? "don't" : ""%> contains header labels.</span>
-        <% end %>
-    <% end %>
-
-    </br>
-
-    <div class="no_ajax_pagination">
-      <span>
-        <%= will_paginate csv_array,
-          :params => { :controller => :userfiles, :action => :show, :sort_index => @sort_index },
-          :container => false
-        %>
-        (<%= pluralize nb_row, "rows" %>)
-      </span>
-    </div>
-
-    <table id="report_table" class="tablesorter">
-      <%
-        ################################
-        # Top headers of table
-        ################################
-      %>
-
-      <% if ! headers.empty? %>
-        <thead>
-          <tr>
-            <% headers.each do |col_name| %>
-              <th><%= col_name %></th>
-            <% end %>
-          </tr>
-        </thead>
       <% end %>
 
-      <%
-        ################################
-        # Main body of table
-        ################################
-      %>
+      </br>
 
-      <tbody>
-        <% csv_array.each do |cvs_row| %>
-          <tr>
-            <% cvs_row.each do |elem|%>
-              <td><%= elem %></td>
-            <% end %>
-          </tr>
+      <div class="no_ajax_pagination">
+        <span>
+          <%= will_paginate csv_array,
+            :params => { :controller => :userfiles, :action => :show, :sort_index => @sort_index },
+            :container => false
+          %>
+          (<%= pluralize nb_row, "rows" %>)
+        </span>
+      </div>
+
+      <table id="report_table" class="tablesorter">
+        <%
+          ################################
+          # Top headers of table
+          ################################
+        %>
+
+        <% if ! headers.empty? %>
+          <thead>
+            <tr>
+              <% headers.each do |col_name| %>
+                <th><%= col_name %></th>
+              <% end %>
+            </tr>
+          </thead>
         <% end %>
-      </tbody>
-    </table>
 
-    <% if do_sorting %>
-      <%
-        ################################
-        # Table sorter
-        ################################
-      %>
+        <%
+          ################################
+          # Main body of table
+          ################################
+        %>
 
-      <script type="text/javascript">
-        $(document).ready(function() {
-            $("#report_table").tablesorter({});
-        });
-      </script>
-    <% end %>
+        <tbody>
+          <% csv_array.each do |cvs_row| %>
+            <tr>
+              <% cvs_row.each do |elem|%>
+                <td><%= elem %></td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
 
-  <%end%>
-<% end%>
+      <% if do_sorting %>
+        <%
+          ################################
+          # Table sorter
+          ################################
+        %>
+
+        <script type="text/javascript">
+          $(document).ready(function() {
+              $("#report_table").tablesorter({});
+          });
+        </script>
+      <% end %>
+
+    <%end%>
+  <% end%>
+</div>
