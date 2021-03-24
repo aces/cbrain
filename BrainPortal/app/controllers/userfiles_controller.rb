@@ -275,6 +275,7 @@ class UserfilesController < ApplicationController
   def display
     @userfile             = userfile_for_viewer
 
+    # XXXX code redendont ne devrait pas etre present ici
     viewer_name           = params[:viewer]
     viewer_userfile_class = params[:viewer_userfile_class].presence.try(:constantize) || @userfile.class
 
@@ -2002,11 +2003,14 @@ class UserfilesController < ApplicationController
 
     # Otherwise render a file inside a FileCollection
     # Create a fake Userfile to pass information to the viewer
-    sub_file_info         = @userfile.provider_collection_index.select {|u| u.name == params[:file_name] }.first
-    viewer_userfile_class = params[:viewer_userfile_class].presence.try(:constantize) || @userfile.class
-
+    sub_file_info         = @userfile.provider_collection_index.detect {|u| u.name == params[:file_name] }
     raise ActiveRecord::RecordNotFound("Could not retrieve a file with the name #{!sub_file_info} inside the FileCollection") if
       !sub_file_info
+
+    viewer_userfile_class = params[:viewer_userfile_class].presence.try(:constantize) || @userfile.class
+    binding.pry
+    # XXX finir de cleaner le viewer
+    # raise execption
 
     viewer_userfile_class.new(
             :id            => @userfile.id,
