@@ -23,8 +23,7 @@
 -%>
 
 <video controls="controls" preload="none">
-  <source src="<%= content_userfile_path(@userfile) %>?content_loader=collection_file&arguments=<%= @userfile.name %>
-" type="video/mp4" />
+  <source src="<%= content_userfile_path(@userfile, :content_loader => :collection_file, :arguments => @userfile.name) %>" type="video/mp4" />
   MP4 video not supported in this browser.
 </video>
 
