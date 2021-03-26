@@ -86,7 +86,7 @@ module AjaxWidgetHelper
   ###############################################################
   # Creates an html element which will have its or another element's
   # content updated when it is clicked on
-  #  with a ajax call to the url specified in the options hash
+  # with an ajax call to the url specified in the options hash
   #
   # example:
   #
