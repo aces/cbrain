@@ -102,7 +102,7 @@ module UserfilesHelper
                                              :viewer                => viewer,
                                              :viewer_userfile_class => matched_class
                                              ),
-            :replace => "sub_viewer",
+            :replace => "sub_viewer_filecollection_cbrain",
           }
         ) do
           ("<span class=\"sub_viewable_link\">"+Pathname.new(file_name).basename.to_s+"</span>").html_safe

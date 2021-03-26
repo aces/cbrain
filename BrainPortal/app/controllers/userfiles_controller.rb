@@ -275,9 +275,8 @@ class UserfilesController < ApplicationController
   def display
     @userfile             = userfile_for_viewer
 
-    # XXXX code redendont ne devrait pas etre present ici
     viewer_name           = params[:viewer]
-    viewer_userfile_class = params[:viewer_userfile_class].presence.try(:constantize) || @userfile.class
+    viewer_userfile_class = @userfile.class
 
     # Try to find out viewer among those registered in the classes
     @viewer      = viewer_userfile_class.find_viewer(viewer_name)
@@ -2008,9 +2007,7 @@ class UserfilesController < ApplicationController
       !sub_file_info
 
     viewer_userfile_class = params[:viewer_userfile_class].presence.try(:constantize) || @userfile.class
-    binding.pry
-    # XXX finir de cleaner le viewer
-    # raise execption
+    cb_error "Invalid params viewer #{viewer_userfile_class}" if !(viewer_userfile_class < Userfile)
 
     viewer_userfile_class.new(
             :id            => @userfile.id,
