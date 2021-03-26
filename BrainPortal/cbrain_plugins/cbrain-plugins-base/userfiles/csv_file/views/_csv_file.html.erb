@@ -22,7 +22,7 @@
 #
 -%>
 
-<div id="sub_viewer">
+<div id="sub_viewer_csvfile">
   <%= stylesheet_link_tag    'tablesorter_themes/blue/style' %>
   <%= javascript_include_tag 'jquery.tablesorter.min' %>
   <%= javascript_include_tag 'jquery.metadata' %>
@@ -70,7 +70,7 @@
                                              :with_header           => params[:with_header].present? ? nil : "1",
                                              :page                  => page,
                                              ),
-            :replace => "sub_viewer",
+            :replace => "sub_viewer_csvfile",
           },
         ) do %>
 
