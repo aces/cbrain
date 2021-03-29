@@ -32,3 +32,4 @@ class ImageFile < SingleFile
   end
 
 end
+
