@@ -343,9 +343,11 @@ class UsersController < ApplicationController
       @user.set_random_password
       if @user.save
         if send_forgot_password_email(@user)
+          @user.addlog("Password reset by user to random string and email sent.")
           flash[:notice] = "#{@user.full_name}, your new password has been sent to you via e-mail. You should receive it shortly."
           flash[:notice] += "\nIf you do not receive your new password within 24hrs, please contact your admin."
         else
+          @user.addlog("Password reset by user to random string BUT email FAILED to be sent.")
           flash[:error] = "Could not send an email with the reset password!\nPlease contact your admin."
         end
         redirect_to login_path

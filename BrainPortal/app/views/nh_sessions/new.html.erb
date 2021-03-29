@@ -42,8 +42,12 @@
       <%= link_to "Forgot your password?", request_password_users_path, :class => "btn-text cbrain external" %>
       <% if @orcid_uri %>
         <p class="text-center heading-sm grey-400 pb-4">OR</p>
-        <%= link_to "Login with your ORCID account", @orcid_uri, :class => "btn-solid orcid" %>
-        <p class="field_note">(This will work if you have already entered your ORCID iD in your NeuroHub account's settings)</p>
+        <%= link_to @orcid_uri, :class => "btn-solid orcid" do %>
+          <%= image_tag("neurohub/ORCIDiD_iconvector.svg", :alt => "ORCID logo", :class => "orcid_logo") %>
+          Sign in with ORCID
+        <% end %>
+        <p class="field_note">This will work if you have already linked your ORCID iD in your NeuroHub account.</p>
+        <p class="field_note">You can learn more about ORCID at <%= link_to 'ORCID.org', "https://orcid.org/", :class => 'orcid_home_link' %></p>
       <% end %>
     <% end %>
   </div>

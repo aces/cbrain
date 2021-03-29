@@ -835,10 +835,28 @@ Button variants: solid, text, and nav.
   }
 }
 
+.orcid_logo {
+  height: 2em;
+  width: 2em;
+  margin-right: 1em;
+  vertical-align: middle;
+}
+
+// link to user's orcid ID
+.orcid_link {
+}
+
+// link to https://orcid.org/
+.orcid_home_link {
+  text-decoration: underline;
+  color: $ORCID_ALT;
+}
+
 .btn-solid.orcid {
   background-color: $ORCID_BG;
   border-color: $ORCID_BG;
   color: $DEFAULT_BG;
+  text-decoration: none;
   &:hover {
     background-color: $ORCID_ALT;
     border-color: $ORCID_ALT;
@@ -894,6 +912,11 @@ Button variants: solid, text, and nav.
     cursor: not-allowed;
     pointer-events: none;
   }
+}
+
+.btn-text.orcid {
+  text-decoration: none;
+  color: black;
 }
 
 .btn-text.primary {
@@ -1534,7 +1557,7 @@ $TABLE_BUTTON_HEIGHT: 2;
 
     .page,
     .disabled {
-      @include px(1);
+     @include px(1);
       opacity: 0.7;
     }
     .page:not(.active, .disabled):hover {
