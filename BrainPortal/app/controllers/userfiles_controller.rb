@@ -2002,11 +2002,10 @@ class UserfilesController < ApplicationController
     # Otherwise render a file inside a FileCollection
     # Create a fake Userfile to pass information to the viewer
     sub_file_info         = @top_userfile.provider_collection_index.detect {|u| u.name == params[:file_name] }
-    raise ActiveRecord::RecordNotFound("Could not retrieve a file with the name #{!sub_file_info} inside the FileCollection") if
-      !sub_file_info
+    raise ActiveRecord::RecordNotFound("Could not retrieve a file with the name #{!sub_file_info} inside the FileCollection") if !sub_file_info
 
     viewer_userfile_class = params[:viewer_userfile_class].presence.try(:constantize) || @userfile.class
-    cb_error "Invalid params viewer #{viewer_userfile_class}" if !(viewer_userfile_class < Userfile)
+    cb_error "Invalid params viewer_userfile_class #{viewer_userfile_class}" if !(viewer_userfile_class < Userfile)
 
     viewer_userfile_class.new(
             :id            => @top_userfile.id,
@@ -2019,3 +2018,4 @@ class UserfilesController < ApplicationController
   end
 
 end
+

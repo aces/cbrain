@@ -81,6 +81,7 @@ module UserfilesHelper
   # of type TextFile or ImageFile
   # Generates download link for any other type of file
   def data_link(file_name, userfile, file_size)
+    file_size       = file_size.to_i
     full_path_name  = Pathname.new(userfile.cache_full_path.dirname + file_name)
 
     display_name  = full_path_name.basename.to_s
