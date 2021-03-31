@@ -1995,14 +1995,13 @@ class UserfilesController < ApplicationController
   # the userfile itself (!params[:file_name]), or a fake
   # userfile if the viewer render a file inside a FileCollection
   def userfile_for_viewer
-    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
-
+    @top_userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
     # If params[:file_name] return the userfile
-    return @userfile if !params[:file_name]
+    return @top_userfile if !params[:file_name]
 
     # Otherwise render a file inside a FileCollection
     # Create a fake Userfile to pass information to the viewer
-    sub_file_info         = @userfile.provider_collection_index.detect {|u| u.name == params[:file_name] }
+    sub_file_info         = @top_userfile.provider_collection_index.detect {|u| u.name == params[:file_name] }
     raise ActiveRecord::RecordNotFound("Could not retrieve a file with the name #{!sub_file_info} inside the FileCollection") if
       !sub_file_info
 
@@ -2010,11 +2009,11 @@ class UserfilesController < ApplicationController
     cb_error "Invalid params viewer #{viewer_userfile_class}" if !(viewer_userfile_class < Userfile)
 
     viewer_userfile_class.new(
-            :id            => @userfile.id,
+            :id            => @top_userfile.id,
             :name          => sub_file_info.name,
-            :data_provider => @userfile.data_provider,
-            :user_id       => @userfile.user_id,
-            :group_id      => @userfile.group_id,
+            :data_provider => @top_userfile.data_provider,
+            :user_id       => @top_userfile.user_id,
+            :group_id      => @top_userfile.group_id,
             :size          => sub_file_info.size
           ).freeze
   end
