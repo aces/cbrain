@@ -57,7 +57,7 @@
       <% end %>
 
       <%
-        file_name     = params[:file_name] || @userfile.name
+        file_name     = params[:file_name].presence || @userfile.name
         matched_class = SingleFile.descendants.unshift(SingleFile).find { |c| file_name =~ c.file_name_pattern }
         viewer        = matched_class.class_viewers.first.partial rescue nil
       %>

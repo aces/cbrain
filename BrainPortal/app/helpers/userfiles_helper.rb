@@ -80,8 +80,7 @@ module UserfilesHelper
   # Generates links to pretty file content for userfiles
   # of type TextFile or ImageFile
   # Generates download link for any other type of file
-  def data_link(file_name, userfile, file_size)
-    file_size       = file_size.to_i
+  def data_link(file_name, userfile)
     full_path_name  = Pathname.new(userfile.cache_full_path.dirname + file_name)
 
     display_name  = full_path_name.basename.to_s
@@ -98,7 +97,6 @@ module UserfilesHelper
       on_click_ajax_replace(
           { :url     => display_userfile_path(userfile,
                                              :file_name             => file_name,
-                                             :file_size             => file_size,
                                              :action                => :display,
                                              :viewer                => viewer,
                                              :viewer_userfile_class => matched_class
@@ -106,7 +104,7 @@ module UserfilesHelper
             :replace => "sub_viewer_filecollection_cbrain",
           }
         ) do
-          ("<span class=\"sub_viewable_link\">"+Pathname.new(file_name).basename.to_s+"</span>").html_safe
+          ("<span class=\"sub_viewable_link\">"+display_name+"</span>").html_safe
       end
     else
       link_to h(display_name),
