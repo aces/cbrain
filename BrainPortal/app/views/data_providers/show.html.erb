@@ -139,7 +139,7 @@
       <% end %>
     <% end %>
 
-    <% if @provider.is_a?(SingSquashfsDataProvider) %>
+    <% if @provider.is_a?(SingSquashfsDataProvider) || @provider.is_a?(SingBindmountDataProvider) %>
     <%= show_table(@provider, :as => :data_provider, :header => "Containerized Storage Configuration", :edit_condition => true) do |t| %>
       <% t.edit_cell(:containerized_path, :header => 'Containerized Data Path', :show_width => 2) do %>
         <%= text_field_tag "data_provider[containerized_path]", @provider.containerized_path, :size => 80 %>
