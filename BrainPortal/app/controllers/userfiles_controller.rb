@@ -276,7 +276,7 @@ class UserfilesController < ApplicationController
     @userfile             = userfile_for_viewer
 
     viewer_name           = params[:viewer]
-    viewer_userfile_class = @userfile.class
+    viewer_userfile_class = params[:viewer_userfile_class].presence.try(:constantize) || @userfile.class
 
     # Try to find out viewer among those registered in the classes
     @viewer      = viewer_userfile_class.find_viewer(viewer_name)
