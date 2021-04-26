@@ -110,6 +110,24 @@
 
     /////////////////////////////////////////////////////////////////////
     //
+    // Enable chosen functionality for select boxes.
+    // From chosen JavaScript library
+    //
+    /////////////////////////////////////////////////////////////////////
+
+    loaded_element.find("select").each(function(){
+      var select = $(this);
+  
+      var defined_width = (select.context.style.width);
+      if ( defined_width !== '' ){
+        select.chosen({ width: defined_width });
+      } else {
+        select.chosen({ width: '25em' });
+      }
+    });
+		  
+    /////////////////////////////////////////////////////////////////////
+    //
     // UI Helper Methods see application_helper.rb for corresponding
     // helpers.
     //
