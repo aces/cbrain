@@ -530,7 +530,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     return [] if files.nil? || files.length == 0
     files.select { |f| ! self.params[f].nil? && ! file_lists.include?(f) } # Prevent problems with file-type inputs with list=true
          .map    { |f| [f, Userfile.find_accessible_by_user(self.params[f], self.user, :access_requested => file_access)] }
-         .select { |f| f[1].name.end_with?('.cbcsv') || f[1].suggested_file_type == CbrainFileList }
+         .select { |f| f[1].name.end_with?('.cbcsv') || f[1].is_a?(CbrainFileList) }
   end
 
   # Final set of tasks to be launched based on this task's parameters. Only
