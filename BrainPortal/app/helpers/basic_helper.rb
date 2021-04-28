@@ -37,15 +37,6 @@ module BasicHelper
     render :partial => "shared/error_messages", :locals => options
   end
 
-  # Return +content+ only if condition evaluates to true.
-  def string_if(condition, content)
-    if condition
-      content
-    else
-      ""
-    end
-  end
-
   # Sets which of the menu tabs at the top of the page is
   # selected.
   def set_selected(param_controller, current_item)

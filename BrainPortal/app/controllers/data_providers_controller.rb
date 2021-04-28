@@ -706,7 +706,7 @@ class DataProvidersController < ApplicationController
               :user_id       => @as_user.id,
               :browse_path   => @browse_path,
               :group_id      => current_user.own_group.id
-            ).freeze
+            ).fake_userfile!
 
             result = @provider.provider_erase(temporary)
           end
