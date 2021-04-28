@@ -107,7 +107,7 @@ module UserfilesHelper
       end
     elsif display_name =~ /\.html$/i # TODO: this will never happen if we ever create a HtmlFile model with at least one viewer
       link_to "#{display_name}",
-        file_collection_content_userfile_path(@userfile, :disposition => 'inline'),
+        stream_userfile_path(@userfile, :disposition => 'inline'),
         :target => '_BLANK'
     else
       link_to h(display_name),
@@ -116,16 +116,16 @@ module UserfilesHelper
   end
 
   # This intercepts the standard Rails helper for the route.
-  # When userfile is a fake_userfile, it adds a query parameter :file_name
+  # When userfile is a fake_record, it adds a query parameter :file_name
   # with value userfile.name. Otherwise it acts with the standard behavior
   # of the helper.
   def content_userfile_path(userfile, options={})
     return super(userfile, options.merge(:file_name => userfile.name)) if
-      userfile.is_a?(Userfile) && userfile.fake_userfile?
+      userfile.is_a?(Userfile) && userfile.fake_record?
     super
   end
 
-  # The router does not provide a helper for the route userfiles#file_collection_content,
+  # The router does not provide a helper for the route userfiles#stream,
   # so this is a replacement. This helper can be used in three modes:
   #
   # With SingleFile, it will create a link using the file's name.
@@ -136,16 +136,16 @@ module UserfilesHelper
   # With a fake FileCollection that already has a relative path in the name,
   # this helper can be invoked without having to provide the :file_path.
   #
-  #   file_collection_content_userfile_path(myTextFile)
-  #   file_collection_content_userfile_path(myFileCollection, :file_path => "my_fc/a/b.txt")
-  #   file_collection_content_userfile_path(myFakeFileCollection) # name contains a file_path
-  def file_collection_content_userfile_path(userfile, options={})
+  #   stream_userfile_path(myTextFile)
+  #   stream_userfile_path(myFileCollection, :file_path => "my_fc/a/b.txt")
+  #   stream_userfile_path(myFakeFileCollection) # name contains a file_path
+  def stream_userfile_path(userfile, options={})
     options     = options.dup
     file_path   = options.delete(:file_path).presence
     file_path   = userfile.name if userfile.is_a?(SingleFile) # always
     file_path ||= userfile.name # hopefully contains a relative path
     query       = options.to_query
-    path        = userfile_path(userfile) + "/file_collection_content/" + file_path
+    path        = userfile_path(userfile) + "/stream/" + file_path
     path       += "?#{query}" if query.present?
     path.html_safe
   end

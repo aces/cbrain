@@ -117,7 +117,7 @@ Rails.application.routes.draw do
   resources :userfiles,       :except => [ :edit, :destroy ] do
     member do
       get  'content'
-      get  'file_collection_content/*file_path' => 'userfiles#file_collection_content'
+      get  'stream/*file_path' => 'userfiles#stream'
       get  'display'
       post 'extract_from_collection'
     end
