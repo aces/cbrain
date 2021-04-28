@@ -482,7 +482,7 @@ class ClusterTask < CbrainTask
     # not exist outside the container (and we will not have permission to make it).
     unless start_dir
       FileUtils.mkpath(full_path.dirname) unless Dir.exists?(full_path.dirname)
-      File.unlink(full_path) if File.symlink?(full_path.to_s)
+      File.unlink(full_path) if File.symlink?(full_path.to_s) # potential race condition here
     end
 
     # Create the symlink

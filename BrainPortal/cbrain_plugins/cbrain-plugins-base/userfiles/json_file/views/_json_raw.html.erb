@@ -5,5 +5,5 @@ Some modern browsers have a built-in JSON viewer.
 <p>
 
 <%= link_to "Browser-based viewer for JSON content",
-    content_userfile_path(@userfile.id, :disposition => 'inline', :file_name => params[:file_name]), :target => :_blank %>
+    stream_userfile_path(@userfile, :disposition => 'inline'), :target => :_blank %>
 

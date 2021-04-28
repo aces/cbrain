@@ -22,9 +22,5 @@
 #
 -%>
 
-<% if params[:content_viewer] == "off" %>
-  <%= image_tag "/userfiles/#{@userfile.id}/content#{@userfile.file_extension}#{parameters}" %>
-<% else %>
-  <%= image_tag url_for(:action  => :content, :content_loader => :collection_file, :arguments => @userfile.name) %>
-<% end %>
+<%= image_tag stream_userfile_path(@userfile, :disposition => 'inline'), :alt => @userfile.name %>
 
