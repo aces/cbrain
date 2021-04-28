@@ -25,7 +25,7 @@
 <p>Note: for the moment, this viewer code only works reliably in Google Chrome.</p>
 
 <audio controls="controls" preload="none">
-  <source src="<%= content_userfile_path(@userfile) %>" type="audio/mp3" />
+  <source src="<%= content_userfile_path(@userfile, :content_loader => :collection_file, :arguments => @userfile.name) %>" type="audio/mp3" />
   MP3 audio not supported in this browser.
 </audio>
 

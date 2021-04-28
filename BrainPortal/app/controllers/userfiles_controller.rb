@@ -236,8 +236,7 @@ class UserfilesController < ApplicationController
   #
   # GET /userfiles/1/content?option1=....optionN=...
   def content
-    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
-
+    @userfile      = userfile_for_viewer
     content_loader = @userfile.find_content_loader(params[:content_loader])
     argument_list  = params[:arguments] || []
     argument_list  = [argument_list] unless argument_list.is_a?(Array)
@@ -274,7 +273,7 @@ class UserfilesController < ApplicationController
   # can be provided to override which class to search for the viewer code
   # (by default, the class of +userfile+)
   def display
-    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
+    @userfile             = userfile_for_viewer
 
     viewer_name           = params[:viewer]
     viewer_userfile_class = params[:viewer_userfile_class].presence.try(:constantize) || @userfile.class
@@ -1992,4 +1991,31 @@ class UserfilesController < ApplicationController
     end
   end
 
+  # Return the userfile itself if the viewer render
+  # the userfile itself (!params[:file_name]), or a fake
+  # userfile if the viewer render a file inside a FileCollection
+  def userfile_for_viewer
+    @top_userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
+    # If params[:file_name] return the userfile
+    return @top_userfile if !params[:file_name]
+
+    # Otherwise render a file inside a FileCollection
+    # Create a fake Userfile to pass information to the viewer
+    sub_file_info         = @top_userfile.provider_collection_index.detect {|u| u.name == params[:file_name] }
+    raise ActiveRecord::RecordNotFound("Could not retrieve a file with the name #{sub_file_info} inside the FileCollection") if !sub_file_info
+
+    viewer_userfile_class = params[:viewer_userfile_class].presence.try(:constantize) || @top_userfile.class
+    cb_error "Invalid params viewer_userfile_class #{viewer_userfile_class}" if !(viewer_userfile_class < Userfile)
+
+    viewer_userfile_class.new(
+            :id            => @top_userfile.id,
+            :name          => sub_file_info.name,
+            :data_provider => @top_userfile.data_provider,
+            :user_id       => @top_userfile.user_id,
+            :group_id      => @top_userfile.group_id,
+            :size          => sub_file_info.size
+          ).freeze
+  end
+
 end
+

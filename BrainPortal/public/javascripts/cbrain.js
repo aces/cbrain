@@ -842,6 +842,18 @@
       var parents = onclick_elem.data("parents");
       var replace_elem;
 
+      var sub_viewable_links = document.getElementsByClassName('sub_viewable_link') || [];
+      for (var i = 0; i < sub_viewable_links.length; i++) {
+          var link         = $(sub_viewable_links[i]);
+          var url_link     = $(sub_viewable_links[i].parentElement).attr("data-url");
+          var onclick_link = $(onclick_elem).data("url");
+          if (url_link == onclick_link) {
+              link.css("color", "#4682B4");
+          } else {
+              link.css("color", "blue");
+          }
+      }
+
       if (!parents) {
         parents = ""
       }
