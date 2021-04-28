@@ -23,7 +23,7 @@
 -%>
 
 <video controls="controls" preload="none">
-  <source src="<%= file_collection_content_userfile_path(@userfile) %>" type="video/mp4" />
+  <source src="<%= stream_userfile_path(@userfile, :disposition => 'inline') %>" type="video/mp4" />
   MP4 video not supported in this browser.
 </video>
 

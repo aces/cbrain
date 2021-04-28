@@ -205,11 +205,11 @@ class UserfilesController < ApplicationController
   # For a SingleFile, :file_path should match the file's name (although the actual
   # value will be ignored, the browser might like to have something with a proper extension).
   #
-  # GET /userfiles/1/file_collection_content/file_collection_name/subpath/to/file/in/file_collection
+  # GET /userfiles/1/stream/file_collection_name/subpath/to/file/in/file_collection
   #
   # Can be provided with a query parameter :disposition to configure the
   # Disposition header (default is 'attachment')
-  def file_collection_content
+  def stream
     userfile_id = params[:id]
     disposition = params[:disposition].presence || 'attachment'
     format      = params[:format]
@@ -2050,7 +2050,7 @@ class UserfilesController < ApplicationController
       :user_id       => @top_userfile.user_id,
       :group_id      => @top_userfile.group_id,
       :size          => sub_file_info.size
-    ).fake_userfile!
+    ).fake_record!
   end
 
 end

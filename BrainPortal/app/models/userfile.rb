@@ -231,16 +231,6 @@ class Userfile < ApplicationRecord
     (self.browse_path.blank? ? self.name : "#{self.browse_path}/#{self.name}")
   end
 
-  # To mark a userfile object as a fake internal object not meant
-  # to be actually loaded or saved.
-  def fake_userfile! #:nodoc:
-    @fake_userfile = true
-    self.freeze
-    self
-  end
-  attr_reader :fake_userfile
-  alias fake_userfile? fake_userfile
-
 
 
   ##############################################
