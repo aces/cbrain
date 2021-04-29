@@ -241,6 +241,11 @@ RSpec.describe DataProvidersController, :type => :controller do
           allow(data_provider).to receive(:is_browsable?).and_return(true)
           allow(data_provider).to receive(:online?).and_return(true)
           allow(data_provider).to receive(:provider_list_all).and_return(file_info_list)
+
+          # bypassing caching
+          allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache.lookup_store(:memory_store))
+          allow_any_instance_of(ActiveSupport::Cache::MemoryStore).to receive(:exist?).and_return(false)
+          allow_any_instance_of(ActiveSupport::Cache::MemoryStore).to receive(:write).and_return(true)
         end
         context "provider is not browsable" do
           before(:each) do

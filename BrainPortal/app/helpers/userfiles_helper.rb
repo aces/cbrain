@@ -77,9 +77,8 @@ module UserfilesHelper
     ).html_safe
   end
 
-  # Generates links to pretty file content for userfiles
-  # of type TextFile or ImageFile
-  # Generates download link for any other type of file
+  # Generates links to pretty file content for files inside FileCollections.
+  # Generates a download link if no viewer code can be found for the files.
   def data_link(file_name, userfile)
     full_path_name  = Pathname.new(userfile.cache_full_path.dirname + file_name)
 
@@ -91,31 +90,64 @@ module UserfilesHelper
     return h(display_name) unless file_lstat.file?
 
     matched_class = SingleFile.descendants.unshift(SingleFile).find { |c| file_name =~ c.file_name_pattern }
+    viewer        = matched_class.class_viewers.first.partial rescue nil
 
-    if matched_class && matched_class <= TextFile
-      link_to h(display_name),
-              display_userfile_path(userfile,
-                :content_loader        => :collection_file,
-                :arguments             => file_name,
-                :viewer                => :text_file,
-                :viewer_userfile_class => :TextFile,
-                :content_viewer        => "off",
-              ),
-              :target => "_blank"
-    elsif matched_class && matched_class <= ImageFile
-      link_to h(display_name),
-              display_userfile_path(userfile,
-                :content_loader        => :collection_file,
-                :arguments             => file_name,
-                :viewer                => :image_file,
-                :viewer_userfile_class => :ImageFile,
-                :content_viewer        => "off",
-              ),
-              :target => "_blank"
+    if matched_class && viewer
+      on_click_ajax_replace(
+          { :url     => display_userfile_path(userfile,
+                                             :file_name             => file_name,
+                                             :action                => :display,
+                                             :viewer                => viewer,
+                                             :viewer_userfile_class => matched_class
+                                             ),
+            :replace => "sub_viewer_filecollection_cbrain",
+          }
+        ) do
+          ("<span class=\"sub_viewable_link\">"+display_name+"</span>").html_safe
+      end
+    elsif display_name =~ /\.html$/i # TODO: this will never happen if we ever create a HtmlFile model with at least one viewer
+      link_to "#{display_name}",
+        stream_userfile_path(@userfile, :file_path => file_name, :disposition => 'inline'),
+        :target => '_BLANK'
     else
       link_to h(display_name),
               url_for(:action  => :content, :content_loader => :collection_file, :arguments => file_name)
     end
+  end
+
+  # This intercepts the standard Rails helper for the route.
+  # When userfile is a fake_record, it adds a query parameter :file_name
+  # with value userfile.name. Otherwise it acts with the standard behavior
+  # of the helper.
+  def content_userfile_path(userfile, options={})
+    return super(userfile, options.merge(:file_name => userfile.name)) if
+      userfile.is_a?(Userfile) && userfile.fake_record?
+    super
+  end
+
+  # The router does not provide a helper for the route userfiles#stream,
+  # so this is a replacement. This helper can be used in three modes:
+  #
+  # With SingleFile, it will create a link using the file's name.
+  #
+  # With standard FileCollection, it will require a :file_path in argument which
+  # must start the FileCollection's own name.
+  #
+  # With a fake FileCollection that already has a relative path in the name,
+  # this helper can be invoked without having to provide the :file_path.
+  #
+  #   stream_userfile_path(myTextFile)
+  #   stream_userfile_path(myFileCollection, :file_path => "my_fc/a/b.txt")
+  #   stream_userfile_path(myFakeFileCollection) # name contains a file_path
+  def stream_userfile_path(userfile, options={})
+    options     = options.dup
+    file_path   = options.delete(:file_path).presence
+    file_path   = userfile.name if userfile.is_a?(SingleFile) # always
+    file_path ||= userfile.name # hopefully contains a relative path
+    query       = options.to_query
+    path        = userfile_path(userfile) + "/stream/" + file_path
+    path       += "?#{query}" if query.present?
+    path.html_safe
   end
 
   # Returns the HTML code that represent a symbol

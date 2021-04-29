@@ -188,6 +188,8 @@ class NhLorisHooksController < NeurohubApplicationController
       :message            => "#{result.pretty_type} created",
       :userfile_id        => result.id,
       :userfile_name      => result.name,
+      :userfile_type      => result.type,
+      :userfile_size      => result.size,
       :group_id           => result.group.id,
       :group_name         => result.group.name,
       :data_provider_id   => result.data_provider.id,

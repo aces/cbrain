@@ -101,5 +101,16 @@ class ApplicationRecord < ActiveRecord::Base #:nodoc:
   scope :uweek , -> { where [ "#{self.quoted_table_name}.updated_at >= ?", Time.now.at_beginning_of_week ] } # starts Monday
   scope :cweek , -> { where [ "#{self.quoted_table_name}.created_at >= ?", Time.now.at_beginning_of_week ] } # starts Monday
 
+  # To mark a record as a fake internal object not meant
+  # to be actually loaded or saved.
+  def fake_record! #:nodoc:
+    @fake_record = true
+    self.freeze
+    self
+  end
+  def fake_record? #:nodoc:
+    @fake_record
+  end
+
 end
 
