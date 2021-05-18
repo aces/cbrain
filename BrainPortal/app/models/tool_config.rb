@@ -326,22 +326,48 @@ class ToolConfig < ApplicationRecord
 
   # Returns an array of full paths to the Singularity overlay files that
   # need to be mounted, as configured by the admin. Some of them might
-  # be patterns and will need to be resolved at run time.
+  # be patterns and will need to be resolved at run time. The dsl is
+  #      # A file located on the cluster
+  #        file:/path/to/file.squashfs
+  #      # All overlays configured for DP 1234
+  #         dp:1234
+  #      # My special overlay in CBRAIN
+  #         userfile:1234
+  # Here file is aserver file, while dp and userfile indicate  dataprider with a given id
   def singularity_overlays_full_paths
     specs = self.singularity_overlays_specs.presence
     return [] if specs.blank?
 
-    specs = specs.split(/[\s,]+/).map(&:presence).compact
+    # break onto commands based on comas, whitespace or comments
+    specs = specs.split(/([\s,]|#.*$)+/).map(&:presence).compact
+    i = 0
     specs.map do |spec|
       # Full path or pattern
-      next spec if spec =~ /^\// # just use that
+      i += 1
+      next spec if spec =~ /^\// # just use that - FIXME remove after successful migration
+      cb_error "Spec #{spec}  starts with semicolon" if spec.start_with?(':')
+      knd, id_or_name = spec.split(':', 2)
+      cb_error "No semicolon in spec #{spec}" if spec.exclude? ":"
       # DP spec dp:123 or dp:name
-      id_or_name = spec.sub(/^dp:/i,"")
-      dp = DataProvider.where_id_or_name(id_or_name).first
-      cb_error "Can't find DataProvider #{id_or_name} for fetching overlays" if ! dp
-      dp_ovs = dp.singularity_overlays_full_paths rescue nil
-      cb_error "DataProvider #{id_or_name} does not have any overlays configured." if dp_ovs.blank?
-      next dp_ovs
+      case knd
+      when 'dp'
+        dp = DataProvider.where_id_or_name(id_or_name).first
+        cb_error "Can't find DataProvider #{id_or_name} for fetching overlays" if ! dp
+        dp_ovs = dp.singularity_overlays_full_paths rescue nil
+        cb_error "DataProvider #{id_or_name} does not have any overlays configured." if dp_ovs.blank?
+        next dp_ovs
+      when 'file'
+        cb_error "Provide absolute file path in spec #{spec}." if ! spec.start_with?('\\')
+        next id_or_name
+      when 'userfile'
+        # admin can access all files
+        userfile = Userfile.find(id_or_name) rescue nil
+        cb_error "File not found for spec #{spec}." if ! userfile
+        userfile.sync_to_cache()
+        next userfile.cache_full_path()
+      else
+        cb_error "Overlay of kind #{knd} in spec #{spec} is not supported. Use dp:, file:, userfile: followed by an id without a space " if ! userfile
+      end
     end.flatten.uniq
   end
 
@@ -400,40 +426,65 @@ class ToolConfig < ApplicationRecord
   # Verify that the admin has entered a set of
   # overlay specifications properly. One or several of:
   #
-  #    /full/path/to/something.squashfs
-  #    /full/path/to/pattern*/data?.squashfs
+  #    file:/full/path/to/something.squashfs
+  #    file:/full/path/to/pattern*/data?.squashfs
   #    dp:123
   #    dp:dp_name
+  #
   def validate_overlays_specs #:nodoc:
     specs = self.singularity_overlays_specs.presence
     return if specs.blank?
 
-    specs = specs.split(/[\s,]+/).map(&:presence).compact
+    specs = specs.split(/([\s,]|#.*$)+/).map(&:presence).compact
+    i = 0
 
-    # Iterare over each spec and validate them
+    # Iterate over each spec and validate them
     specs.each do |spec|
-      # Full paths
-      if spec =~ /^\//
-        next if spec =~ /^\/\S+\.(sqs|squashfs)$/i # full paths ok
-        self.errors.add(:singularity_overlays_specs, "contains invalid specification '#{spec}'. It should be a full path that ends in .squashfs or .sqs")
-        next
-      end
+      i += 1
 
+      self.errors.add(:singularity_overlays_specs, " contains invalid specification '#{spec}'. Semicolon in the start of line") if spec.start_with?(':')
+      knd, id_or_name = spec.split(':', 2)
+      self.errors.add(:singularity_overlays_specs, " contains invalid specification '#{spec}'. No semicolon is found") if ! id_or_name
+
+      case knd
+      when 'file'
+        if ! id_or_name =~ /^\/\S+\.(sqs|squashfs)$/i # full paths ok
+          self.errors.add(:singularity_overlays_specs,
+            " contains invalid specification '#{spec}'. It should be a full path that ends in .squashfs or .sqs")
+        end
+
+      when 'userfile'
+        userfile = Userfile.find(id_or_name) rescue nil
+        if  userfile
+          if  !(userfile.sync_to_cache() rescue nil)
+            self.errors.add(:singularity_overlays_specs,
+                   " contains invalid specification '#{spec}'. The fetching data from data provider to cache failed.")
+          else
+            name = userfile.cache_full_path()
+            if name =~ /^\/\S+\.(sqs|squashfs)$/i # full paths ok
+              self.errors.add(:singularity_overlays_specs,
+              " contains invalid specification '#{spec}'. It should be a full path that ends in .squashfs or .sqs")
+            end
+          end
+        else
+          self.errors.add(:singularity_overlays_specs,
+            " contains invalid specification '#{spec}'. This file is not found")
+        end
       # DP specs: "dp:name" or "dp:ID"
-      if spec =~ /\Adp:(\S+)\z/i
+      when 'dp'
         dp_name_or_id=Regexp.last_match[1]
         dp=DataProvider.where_id_or_name(dp_name_or_id).first
         if !dp
-          self.errors.add(:singularity_overlays_specs, "contains invalid DP specification '#{spec}' (no such DP)")
+          self.errors.add(:singularity_overlays_specs, "contains invalid DP specification '#{spec}' '#{spec}' (no such DP)")
+        elsif ! dp.is_a?(SingSquashfsDataProvider)
+          self.errors.add(:singularity_overlays_specs, "DataProvider '#{spec}' is not a SingSquashfsDataProvider '#{spec}'")
         end
-        if ! dp.is_a?(SingSquashfsDataProvider)
-          self.errors.add(:singularity_overlays_specs, "DataProvider '#{spec}' is not a SingSquashfsDataProvider")
-        end
-        next
-      end
 
-      # Other
-      self.errors.add(:singularity_overlays_specs, "contains invalid specification '#{spec}'")
+      else
+
+        # Other errors
+        self.errors.add(:singularity_overlays_specs, "contains invalid specification '#{spec}'")
+      end
     end
   end
 
