@@ -471,7 +471,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
         return ""
       end
     end
-    cbcsvs = files.map { |f| Userfile.find_accessible_by_user( f, self.user, :access_requested => file_access ) }.select { |f| f.name.end_with?('.cbcsv') || f.is_a?(CbrainFileList) }
+    cbcsvs = files.map { |f| Userfile.find_accessible_by_user( f, self.user, :access_requested => file_access ) }.select { |f| f.is_a?(CbrainFileList) || (f.suggested_file_type || Object) <= CbrainFileList }
     # Validate accessibility
     for cbcsv in cbcsvs
       # Get the id of the single_file input
@@ -530,7 +530,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     return [] if files.nil? || files.length == 0
     files.select { |f| ! self.params[f].nil? && ! file_lists.include?(f) } # Prevent problems with file-type inputs with list=true
          .map    { |f| [f, Userfile.find_accessible_by_user(self.params[f], self.user, :access_requested => file_access)] }
-         .select { |f| f[1].name.end_with?('.cbcsv') || f[1].is_a?(CbrainFileList) }
+         .select { |f| f[1].is_a?(CbrainFileList) || (f[1].suggested_file_type || Object) <= CbrainFileList }
   end
 
   # Final set of tasks to be launched based on this task's parameters. Only
