@@ -576,7 +576,7 @@ A few shortcut often-used alignment classes.
 =============================================================
 | LOGOS
 =============================================================
-$variant : wordmark, lettermark, icon.
+$variant : lettermark, icon.
 $color   : black, white, RGB, grayscale.
 $size    : xs, sm, md, lg
 */
@@ -619,7 +619,7 @@ $size    : xs, sm, md, lg
 }
 
 // neurohub logo
-@mixin logo($variant: "wordmark", $color: "RGB", $size: "md") {
+@mixin logo($variant: "lettermark", $color: "RGB", $size: "md") {
   @include logoImg($variant, $color);
   @if $variant != "icon" {
     @if $size == "xs" {
