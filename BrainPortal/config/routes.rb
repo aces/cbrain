@@ -189,6 +189,7 @@ Rails.application.routes.draw do
   post  '/home'                   => 'portal#welcome' # lock/unlock service
   get   '/credits'                => 'portal#credits'
   get   '/about_us'               => 'portal#about_us'
+  get   '/available'              => 'portal#available'
   get   '/search'                 => 'portal#search'
   get   '/login'                  => 'sessions#new'
   get   '/logout'                 => 'sessions#destroy'
