@@ -161,6 +161,9 @@
       <%= array_to_table(current_user.available_tools.where( "category <> 'background'" ).to_a.map(&:name).sort, :table_class => 'simple', :cols => 4) %>
     </p>
     <p>
+      <strong>Note:</strong> A full list of all tools and datasets is <%= link_to 'here', available_path %>
+    </p>
+    <p>
       <strong>Your default Data Provider:</strong> <%= link_to_data_provider_if_accessible(@default_data_provider) %>
     </p>
     <p>
