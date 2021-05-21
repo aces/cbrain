@@ -297,20 +297,20 @@ class ParseReq #:nodoc:
   end
 
   # Utility that can be used in a "in.rb" file.
-  # It creates a new instance of +klass+
+  # It creates a new instance of +swagger_klass+
   # and pass it, as an initialization argument,
   # a value fetched from the sibling jason file;
   # the value will be what's associated with the
   # top-level +property+ in the json.
   #
-  # Ex: given a in.json file with
+  # Ex: given a "in.json" file with content
   #
   #   {"user":{"login":"root"}}
   #
-  # Then the ruby code in in.rb could refer to
+  # Then the ruby code in "in.rb" could refer to
   # it with:
   #
-  #   from_json("user",CbrainClient::CbUser)
+  #   new_from_json("user",CbrainClient::CbUser)
   #
   # and this will have the effect of executing
   #
