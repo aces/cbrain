@@ -576,7 +576,7 @@ A few shortcut often-used alignment classes.
 =============================================================
 | LOGOS
 =============================================================
-$variant : wordmark, lettermark, icon.
+$variant : lettermark, icon.
 $color   : black, white, RGB, grayscale.
 $size    : xs, sm, md, lg
 */
@@ -619,7 +619,7 @@ $size    : xs, sm, md, lg
 }
 
 // neurohub logo
-@mixin logo($variant: "wordmark", $color: "RGB", $size: "md") {
+@mixin logo($variant: "lettermark", $color: "RGB", $size: "md") {
   @include logoImg($variant, $color);
   @if $variant != "icon" {
     @if $size == "xs" {
@@ -2863,14 +2863,15 @@ $BAR_HEIGHT: 2.3;
   }
 }
 
-.nh_messages .card .flash_notice, .flash_communication, .flash_system, .flash_error {
-  display: block;
-  padding-right: 10px;
-  padding:3px 5px;
-  word-wrap: break-word;
-  word-break: break-word;
+.nh_messages .card{
+  .flash_notice, .flash_communication, .flash_system, .flash_error {
+    display: block;
+    padding-right: 10px;
+    padding:3px 5px;
+    word-wrap: break-word;
+    word-break: break-word;
+  }
 }
-
 /*
 =============================================================
 | WELCOME
