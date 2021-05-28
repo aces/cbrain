@@ -216,9 +216,9 @@ class UserfilesController < ApplicationController
     file_path   = params[:file_path].presence
 
     # Find and validate target userfile
-    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
+    @userfile = Userfile.find_accessible_by_user(userfile_id, current_user, :access_requested => :read)
     if @userfile.nil?
-      raise ActiveRecord::RecordNotFound("Could not retrieve a userfile with ID: #{params[:id]}")
+      raise ActiveRecord::RecordNotFound("Could not retrieve a userfile with ID: #{userfile_id}")
     end
 
     # If it's a SingleFile
@@ -243,7 +243,19 @@ class UserfilesController < ApplicationController
       return
     end
 
-    # Send the info
+    # Configure security policy such that if we're
+    # rendering a web page, the page can have local
+    # scripts (inline, or loaded locally) but cannot
+    # connect to the outside world, except for images and styles.
+    response.headers["Content-Security-Policy"] = [
+        "default-src 'self'", # the default; also disables connect-src to outside
+        "img-src    *      'unsafe-inline' data:", # images can come from anywhere
+        "font-src   *      'unsafe-inline' data:",
+        "media-src  *      'unsafe-inline' data:",
+        "style-src  *      'unsafe-inline' data:",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'", # script can only be local
+      ].join("; ")
+    # Send the file content
     if format == 'html'
       render file: path, layout: false
     else
