@@ -216,9 +216,9 @@ class SshMaster
                           .merge(options[:ssh_config_options] || {})
 
     raise "SSH master's \"user\" is not a simple identifier." unless
-      @user =~ /\A[a-zA-Z0-9][a-zA-Z0-9\-\.]*\z/
+      @user =~ /\A[a-zA-Z0-9][a-zA-Z0-9_\-\.]*\z/
     raise "SSH master's \"host\" is not a simple host name." unless
-      @host =~ /\A[a-zA-Z0-9][a-zA-Z0-9\-\.]*\z/
+      @host =~ /\A[a-zA-Z0-9][a-zA-Z0-9_\-\.]*\z/
     raise "SSH master's \"port\" is not a port number." unless
       @port > 0 && @port < 65535
     raise "SSH master's \"category\" is not a simple identifer." unless
