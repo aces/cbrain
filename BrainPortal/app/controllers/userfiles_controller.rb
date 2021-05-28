@@ -31,6 +31,8 @@ class UserfilesController < ApplicationController
 
   before_action :login_required
 
+  protect_from_forgery :except => :stream
+
   skip_before_action :verify_authenticity_token, :only => [ :download ] # we check it ourselves in download()
 
   around_action :permission_check, :only => [
