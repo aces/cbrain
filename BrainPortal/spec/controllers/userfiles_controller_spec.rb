@@ -1193,6 +1193,7 @@ RSpec.describe UserfilesController, :type => :controller do
       let(:mock_collection)       { mock_model(FileCollection).as_null_object }
       let(:mock_dp)               { mock_model(DataProvider) }
       let(:mock_singlefile_class) { double("FakeSingleFileClass") }
+      let(:mock_cache_path)       { double("col_path").as_null_object }
 
       before(:each) do
         session[:session_id] = 'session_id'
@@ -1235,50 +1236,59 @@ RSpec.describe UserfilesController, :type => :controller do
         post :extract_from_collection, params: {:id => 1, :file_names => ["file_name"]}
       end
 
-      it "should create a new single file" do
-        expect(mock_singlefile_class).to receive(:new).and_return(mock_userfile)
-        post :extract_from_collection, params: {:id => 1, :file_names => ["file_name"]}
-      end
+      context "when extracting" do
 
-      it "should save the new file" do
-        expect(mock_userfile).to receive(:save).and_return(true)
-        post :extract_from_collection, params: {:id => 1, :file_names => ["file_name"]}
-      end
-
-
-
-      context "when the save is successful" do
         before(:each) do
-          allow(mock_userfile).to receive(:save).and_return(true)
+          allow(mock_collection).to receive(:cache_full_path).and_return(mock_cache_path)
+          allow(mock_cache_path).to receive(:parent).and_return(mock_cache_path)
+          allow(mock_cache_path).to receive(:+).and_return(mock_cache_path)
+          allow(File).to            receive(:realpath).and_return(mock_cache_path)
+          allow(mock_cache_path).to receive(:to_s).and_return(__FILE__)
+          allow(mock_cache_path).to receive(:start_with?).and_return(true)
         end
 
-        it "should copy the file to the cache" do
-          expect(mock_userfile).to receive(:cache_copy_from_local_file)
+        it "should create a new single file" do
+          expect(mock_singlefile_class).to receive(:new).and_return(mock_userfile)
           post :extract_from_collection, params: {:id => 1, :file_names => ["file_name"]}
         end
 
-        it "should display a flash message" do
-          post :extract_from_collection, params: {:id => 1, :file_names => ["file_name"]}
-          expect(flash[:notice]).to match("successfully extracted")
-        end
-      end
-
-
-
-      context "when the save is unsuccessful" do
-        before(:each) do
-          allow(mock_userfile).to receive(:save).and_return(false)
-        end
-
-        it "should not attempt to copy the file to the cache"do
-          expect(mock_userfile).not_to receive(:cache_copy_from_local_file)
+        it "should save the new file" do
+          expect(mock_userfile).to receive(:save).and_return(true)
           post :extract_from_collection, params: {:id => 1, :file_names => ["file_name"]}
         end
 
-        it "should display an error message" do
-          post :extract_from_collection, params: {:id => 1, :file_names => ["file_name"]}
-          expect(flash[:error]).to match("could not be extracted")
+        context "when the save is successful" do
+          before(:each) do
+            allow(mock_userfile).to receive(:save).and_return(true)
+          end
+
+          it "should copy the file to the cache" do
+            expect(mock_userfile).to receive(:cache_copy_from_local_file)
+            post :extract_from_collection, params: {:id => 1, :file_names => ["file_name"]}
+          end
+
+          it "should display a flash message" do
+            post :extract_from_collection, params: {:id => 1, :file_names => ["file_name"]}
+            expect(flash[:notice]).to match("successfully extracted")
+          end
         end
+
+        context "when the save is unsuccessful" do
+          before(:each) do
+            allow(mock_userfile).to receive(:save).and_return(false)
+          end
+
+          it "should not attempt to copy the file to the cache"do
+            expect(mock_userfile).not_to receive(:cache_copy_from_local_file)
+            post :extract_from_collection, params: {:id => 1, :file_names => ["file_name"]}
+          end
+
+          it "should display an error message" do
+            post :extract_from_collection, params: {:id => 1, :file_names => ["file_name"]}
+            expect(flash[:error]).to match("could not be extracted")
+          end
+        end
+
       end
 
       it "should redirect to the index" do
