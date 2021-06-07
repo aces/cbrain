@@ -1285,8 +1285,20 @@ class UserfilesController < ApplicationController
       return
     end
 
-    params[:file_names].each do |file|
-      basename = File.basename(file)
+    # Extract each file
+    results = params[:file_names].map do |file|
+
+      # Validations; make sure "file" is a path inside the collection
+      rel_path = Pathname.new(file)
+      next :not_relative unless rel_path.relative?
+      full_path = collection_path.parent + rel_path
+      full_path = File.realpath(full_path.to_s) rescue nil
+      next :not_resolve unless full_path
+      next :is_symlink  if     File.symlink?(full_path.to_s)
+      next :not_file    unless File.file?(full_path.to_s)
+      next :outside_col unless full_path.start_with? collection_path.to_s
+
+      basename = rel_path.basename.to_s
       file_type = Userfile.suggested_file_type(basename) || SingleFile
       userfile = file_type.new(
           :name             => basename,
@@ -1295,26 +1307,28 @@ class UserfilesController < ApplicationController
           :data_provider_id => data_provider.id
       )
       Dir.chdir(collection_path.parent) do
-        if userfile.save
-          userfile.addlog("Extracted from collection '#{collection.name}'.")
-          begin
-            userfile.cache_copy_from_local_file(file)
-            success += 1
-          rescue
-            userfile.data_provider_id = nil # nullifying will skip the provider_erase() in the destroy()
-            userfile.destroy
-            failure +=1
-          end
-        else
-          failure += 1
+        next :cannot_save_userfile unless userfile.save
+        userfile.addlog("Extracted from collection '#{collection.name}'.")
+        begin
+          userfile.cache_copy_from_local_file(full_path.to_s)
+          next :ok
+        rescue
+          userfile.data_provider_id = nil # nullifying will skip the provider_erase() in the destroy()
+          userfile.destroy
+          next :exception_copy
         end
       end
-      if success > 0
-        flash[:notice] = "#{success} files were successfully extracted."
-      end
-      if failure > 0
-        flash[:error] =  "#{failure} files could not be extracted."
-      end
+    end
+
+    success = results.count { |x| x == :ok }
+    failure = results.size - success
+    if success > 0
+      flash[:notice] = "#{success} files were successfully extracted."
+    end
+    if failure > 0
+      flash[:error] =  "#{failure} files could not be extracted."
+      # TODO report prettily the failure keywords?
+      #flash[:error] += "\n#{results.join(" ")}"
     end
 
     redirect_to :action  => :index
