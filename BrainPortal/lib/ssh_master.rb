@@ -98,13 +98,22 @@ class SshMaster
   # are used for both permanent SSH masters and transient ones too.
   DEFAULT_SSH_CONFIG_OPTIONS = {
     :ConnectTimeout                 => 10,
-    :BatchMode                      => :yes,
     :StrictHostKeyChecking          => :no,
-    :PasswordAuthentication         => :no,
-    :KbdInteractiveAuthentication   => :no,
-    :KbdInteractiveDevices          => :none,
     :ExitOnForwardFailure           => :yes,
     :IPQoS                          => 'throughput',
+    # The following options started to cause failures
+    # when remote hosts' sshd_config started to refuse
+    # key authentication even when no keyboards were detected.
+    # (First seen, around 2020)
+    # So I'm removing them from the default set of options. This
+    # problem happens even though this lib never uses password
+    # authentication, unfortunately.
+    # Maybe sshd will be fixed in the future and this will start
+    # working again.
+    #:BatchMode                      => :yes,
+    #:PasswordAuthentication         => :no,
+    #:KbdInteractiveAuthentication   => :no,
+    #:KbdInteractiveDevices          => :none,
   }.with_indifferent_access
 
   # ---------------------------------------------
@@ -511,7 +520,7 @@ class SshMaster
   # itself but we do include the user and hostname.
   # A typical return value would be something like:
   #
-  #  "-port 1234 -o ConnectTimeout=10 -o ControlMaster=no -o ControlPath=/tmp/something user@host"
+  #  "-port 1234 -A -o ConnectTimeout=10 -o ControlMaster=no -o ControlPath=/tmp/something user@host"
   #
   # which allows you to add more options at the beginning
   # and the end of any ssh command being built. Note that
@@ -522,7 +531,8 @@ class SshMaster
     socket = self.control_path
 
     # Base options that are always present
-    args_string  = " -p #{@port}"
+    args_string  = ""
+    args_string += " -p #{@port}" if @port != 22
     args_string += " -A"
     args_string += " " + ssh_config_options_as_string()
 

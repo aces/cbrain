@@ -88,10 +88,12 @@ module SshDataProviderBase
     persistent = myself.meta[:use_persistent_ssh_masters_for_dps] # true, false, or string versions
     # Default 'persistent' is TRUE for BrainPortals, FALSE for others (e.g. Bourreaux)
     persistent = myself.is_a?(BrainPortal) if persistent.to_s !~ /\A(true|false)\z/
+    ssh_config_options = self.meta[:ssh_config_options].presence || {} # sysadmin's config, if any
     @master = SshMaster.find_or_create(remote_user,remote_host,remote_port,
-                :category => "DP_#{Process.uid}",
-                :uniq     => self.id.to_s,
-                :nomaster => (persistent.to_s != 'true')
+                :category           => "DP_#{Process.uid}",
+                :uniq               => self.id.to_s,
+                :nomaster           => (persistent.to_s != 'true'),
+                :ssh_config_options => ssh_config_options,
               )
   end
 

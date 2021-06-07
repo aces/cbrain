@@ -97,25 +97,25 @@
     <fieldset class="groupentry">
       <legend>SSH parameters for remote Data Providers</legend>
 
-      <span title="Name of the remote machine on which the data provider is located (not required for VaultLocalDataProvider).">
+      <div title="Name of the remote machine on which the data provider is located.">
         <p><%= f.label :remote_host, "Remote Hostname" %><br/>
         <%= f.text_field :remote_host %></p>
-      </span>
+      </div>
 
-      <span title="Alternate name(s) (comma-separated) of the remote machine on which the data provider is located (required only for Smart data providers).">
+      <div title="Alternate name(s) (comma-separated) of the remote machine on which the data provider is located (required only for Smart data providers).">
         <p><%= f.label :alternate_host, "Alternate Hostname(s)" %><br/>
         <%= f.text_field :alternate_host %></p>
-      </span>
+      </div>
 
-      <span title="Username on the remote machine where the data provider is located (not required for VaultLocalDataProvider).">
+      <div title="Username on the remote machine where the data provider is located.">
         <p><%= f.label :remote_user, "Remote Username" %><br/>
         <%= f.text_field :remote_user %></p>
-      </span>
+      </div>
 
-      <span title="Port number used to access remote machine on which the data provider is located (not required for VaultLocalDataProvider).">
+      <div title="Port number used to access remote machine on which the data provider is located. ">
         <p><%= f.label :remote_port, "Remote Port Number" %><br/>
         <%= f.text_field :remote_port, :size => 6 %></p>
-      </span>
+      </div>
     </fieldset>
 
     <p>

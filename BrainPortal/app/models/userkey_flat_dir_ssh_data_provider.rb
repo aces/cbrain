@@ -61,14 +61,18 @@ class UserkeyFlatDirSshDataProvider < FlatDirSshDataProvider
   end
 
   def prepare_master(user = nil, userfile = nil) #:nodoc:
+    ssh_config_options = self.meta[:ssh_config_options].presence || {} # sysadmin's options, if any
+    ssh_config_options = ssh_config_options.merge(
+      {
+        :IdentityFile   => user.ssh_key.send(:private_key_path).to_s,
+        :IdentitiesOnly => :yes,
+      }
+    )
     @master = SshMaster.find_or_create(remote_user, remote_host, remote_port,
-                :category => "DP_#{Process.uid}",
-                :uniq     => self.id.to_s,
-                :nomaster => true, # we never launch a persistent SSH master for the DP
-                :ssh_config_options => {
-                  :IdentityFile   => user.ssh_key.send(:private_key_path).to_s,
-                  :IdentitiesOnly => :yes,
-                },
+                :category           => "DP_#{Process.uid}",
+                :uniq               => self.id.to_s,
+                :nomaster           => true, # we never launch a persistent SSH master for the DP
+                :ssh_config_options => ssh_config_options,
               )
     @master
   end
