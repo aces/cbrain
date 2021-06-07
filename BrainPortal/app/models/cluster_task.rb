@@ -1524,14 +1524,18 @@ class ClusterTask < CbrainTask
     Dir.chdir(full) do
 
       if ! File.exists?(tar_file)
-        self.addlog("Cannot unarchive: tar archive does not exist.")
-        return false
+        tar_file.sub!(/\.gz\z/,"") # try without the .gz
+        if ! File.exists?(tar_file)
+          self.addlog("Cannot unarchive: tar archive does not exist.")
+          return false
+        end
       end
 
       self.addlog("Attempting to unarchive work directory.")
 
+      z_opt = (tar_file =~ /\.gz\z/i) ? "z" : ""
       status = with_stdout_stderr_capture(tar_capture) do
-        system("tar", "-xzf", tar_file)
+        system("tar", "-x#{z_opt}f", tar_file)
         $?
       end
 
