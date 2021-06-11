@@ -44,10 +44,11 @@ module SmartDataProviderInterface
       @real_provider = nil
       return @real_provider
     end
+    dp_hostnames = dp_hostnames.map { |x| x.downcase }
 
     # Create only one provider object, depending on whether we want a network provider
     # or a local provider
-    if dp_hostnames.include?(Socket.gethostname) && File.directory?(dp_remote_dir)
+    if dp_hostnames.include?(Socket.gethostname.downcase) && File.directory?(dp_remote_dir)
       @real_provider = localclass.new
     else
       @real_provider = networkclass.new

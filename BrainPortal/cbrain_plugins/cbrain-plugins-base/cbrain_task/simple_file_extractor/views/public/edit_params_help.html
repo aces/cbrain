@@ -1,0 +1,125 @@
+
+<!--
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2021
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-->
+
+<h3>SimpleFileExtractor</h3>
+
+This program will extract files out of a set of FileCollections.
+The result is a new FileCollection which will be a flat set of all
+the etracted files.
+
+<p>
+
+Files are specified using standard UNIX file 'patterns' (or globs).
+These are <em>not</em> regular expressions.
+
+<p>
+
+File patterns may contain:
+<p>
+
+<dl>
+  <dt>*</dt>
+
+  <dd>
+    A asterix will match zero, one, or many characters in a filename
+    or in path. It will not matcht eh directory separator "/",
+    however.
+  </dd>
+
+  <dt>?</dt>
+
+  <dd>
+    A question mark will match a single character in a filename or
+    in a path component.
+  </dd>
+</dl>
+
+<p>
+
+File patterns will be matched with all the files in all
+the selected FileCollections in input, and files that are matched
+will be extracted and put into the output flat FileCollection.
+
+<p>
+
+All file patterns must include a first component that will be matched
+with the base name of the FileCollection itself. That means a pattern
+will always include at least on "/" character in it.
+
+<p>
+
+This program will <strong>not</strong> extract:
+
+<ul>
+  <li>Subdirectories</li>
+  <li>Symbolic links</li>
+  <li>Other types of special files</li>
+</ul>
+
+For performance reasons, the program will ensure that at execution
+time, the set of files given in input are located on a DataProvider
+that is configured as <em>local</em> storage, to avoid having to
+copy the entire file collection contents before extraction.
+
+<h3>Examples</h3>
+
+Assume we have selected three FileCollections named "Dataset1",
+"CivetOut2" and "BIDS3", and that they contain these files:
+
+<p>
+
+Content of all three collections:<br>
+<pre>
+Dataset1/README.txt
+Dataset1/sales/sales.csv
+Dataset1/sales/sales.txt
+Dataset1/reports/errors.txt
+Dataset1/reports/errors.pdf
+CivetOut2/native/subject.mnc.gz
+CivetOut2/thickness/thick_subject_30mm.txt
+CivetOut2/thickness/thick_subject_40mm.txt
+CivetOut2/surfaces/surf_subject_30mm.txt
+CivetOut2/surfaces/surf_subject_40mm.txt
+BIDS3/Report.txt
+BIDS3/sub-1234/README.txt
+BIDS3/sub-1234/anat/sub-1234.nii.gz
+</pre>
+
+<p>
+The following patterns will each extract these files:
+<p>
+Pattern: *D*/R*.txt<br>
+Files matched: Dataset1/README.txt, BIDS3/Report.txt<br>
+Resulting files in output: README.txt, report.txt
+<p>
+Pattern: */s*/*.txt<br>
+Files matched: Dataset1/sales/sales.txt, CivetOut2/surfaces/surf_subject_30mm.txt, CivetOut2/surfaces/surf_subject_40mm.txt, BIDS3/sub-1234/README.txt<br>
+Resulting files in output: sales.txt, surf_subject_30mm.txt, surf_subject_40mm.txt, README.txt
+<p>
+Pattern: */*/*30mm*<br>
+Files matched: CivetOut2/thickness/thick_subject_30mm.txt, CivetOut2/surfaces/surf_subject_30mm.txt<br>
+Extracted files: thick_subject_30mm.txt, surf_subject_30mm.txt
+<p>
+
+

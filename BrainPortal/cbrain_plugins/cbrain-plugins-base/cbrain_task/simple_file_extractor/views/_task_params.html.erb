@@ -1,0 +1,50 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2021
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<fieldset>
+  <legend>Inputs summary</legend>
+  <% file_ids = params[:interface_userfile_ids] || [] %>
+  <strong><%= file_ids.size %> files to be processed:</strong><BR>
+  <ul>
+    <% file_ids[0,10].each do |id| %>
+      <li><%= link_to_userfile_if_accessible id %></li>
+    <% end %>
+    <% if file_ids.size > 10 %>
+      <li>(<%= file_ids.size - 10 %> more files...)</li>
+    <% end %>
+  </ul>
+</fieldset>
+
+<fieldset>
+  <legend>Extraction patterns:</legend>
+  <% 10.times do |i| %>
+    <%= form.params_text_field "patterns[#{i}]", :size => 120 %><p>
+  <% end %>
+</fieldset>
+
+<fieldset>
+  <legend>Output name</legend>
+  <%= form.params_text_field :output_file_name, :size => 40 %>
+</fieldset>
+
