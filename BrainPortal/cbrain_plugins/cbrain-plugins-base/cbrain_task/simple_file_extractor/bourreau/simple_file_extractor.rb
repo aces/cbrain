@@ -38,10 +38,10 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
     dp_sizes  = Userfile.where(:id => ids).group(:data_provider_id).sum(:size)
     self.addlog("DataProvider storage summary:")
     dp_counts.each do |dp_id,count|
-      dp       = DataProvider.find(dp_id)
-      dp_size  = dp_sizes[dp_id]
-      dp_files = dp_files[dp_id]
-      self.addlog("DataProvider '#{dp.name}': #{count} entries, #{dp_files} files, #{dp_size} bytes")
+      dp        = DataProvider.find(dp_id)
+      sum_files = dp_files[dp_id]
+      sum_size  = dp_sizes[dp_id]
+      self.addlog("DataProvider '#{dp.name}': #{count} entries, #{sum_files} files, #{sum_size} bytes")
     end
 
     # Verify data providers
@@ -55,7 +55,7 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
     return false if ! ok
 
     # Sync input files
-    self.addlog "Synchronizing input collections (#{ids.size} inputs)"
+    self.addlog "Synchronizing #{ids.size} input collections; messages below will report progress only once per 10 minutes)"
     start_sync   = 1.day.ago
     tot_files    = 0
     tot_size     = 0
@@ -70,7 +70,11 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
       tot_size  += userfile.size
     end
 
-    self.addlog "Synchronized #{tot_size} bytes in #{tot_files} files"
+    self.addlog "Finished synchronizing #{tot_size} bytes in #{tot_files} files"
+
+    if File.directory?("extracted")
+      self.addlog("Warning: this task's work directory already contains some extracted files from a previous run. The final result will contain these files too.")
+    end
 
     safe_mkdir("extracted",0700)
 
@@ -105,7 +109,7 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
     }
 
     # Main loop for extracting stuff
-    self.addlog "Extracting files"
+    self.addlog "Extracting files; messages below will report progress only once per 10 minutes"
 
     start_extract = 1.day.ago
     file_cols.each_with_index do |userfile,i|
@@ -117,7 +121,7 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
       end
 
       cache_path = userfile.cache_full_path.parent
-      patterns.each do |pat|
+      patterns.each_with_index do |pat,patidx|
         pat = Pathname.new(pat).cleanpath
         # Quick safety check just like in after_form on portal side
         cb_error "Wrong pattern encountered: #{pat}" if
@@ -125,7 +129,7 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
         path_pattern = cache_path + pat
         globbed_paths=Dir.glob(path_pattern.to_s)
         if globbed_paths.empty?
-          log_it.("No files matched pattern", pat, userfile, nil)
+          log_it.("No files matched pattern ##{patidx}", pat, userfile, nil)
           next
         end
         globbed_paths.each do |filepath|
@@ -146,10 +150,24 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
             log_it.("Trying to extract a file with a name matching something already extracted", pat, userfile, filepath)
             next
           end
-          system "cp #{filepath.to_s.bash_escape} extracted/#{basename.bash_escape}"
+
+          # Make the copy
+          system "cp", "#{filepath}", "extracted/#{basename}" # no .bash_escape because no bash subshell
+          status = $? # a Process::Status object
+          if status.signaled?
+            self.addlog("Error copying file '#{basename}': got signal #{status.termsig || 'unknown'}. This is fatal.")
+            return false
+          end
+          if ! status.success?
+            self.addlog("Error copying file '#{basename}'. Exit code: #{status.exitstatus || 'unknown'}. This is fatal.")
+            return false
+          end
+
         end # each globbed file
       end # each pattern
     end # each FileCollection
+
+    self.addlog "Finished extracting from #{file_cols.count} inputs"
 
     # Log warnings and errors
     if error_examples.present?
