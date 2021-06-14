@@ -107,6 +107,12 @@ class CbrainTask::SimpleFileExtractor < PortalTask
     if fc_count != ids.size
       cb_error "This task requires all inputs to be FileCollections (or subclasses of FileCollection)"
     end
+
+    # Make sure they are not archived
+    archived_count = FileCollection.where(:id => ids, :archived => true).count
+    if archived_count > 0
+      cb_error "Some of the selected FileCollections are archived and cannot be used by this tool (#{archived_count}/#{ids.count})"
+    end
   end
 
 end

@@ -43,7 +43,7 @@ File patterns may contain:
 
   <dd>
     A asterix will match zero, one, or many characters in a filename
-    or in path. It will not matcht eh directory separator "/",
+    or in a path component. It will not match the directory separator "/",
     however.
   </dd>
 
@@ -109,17 +109,17 @@ BIDS3/sub-1234/anat/sub-1234.nii.gz
 <p>
 The following patterns will each extract these files:
 <p>
-Pattern: *D*/R*.txt<br>
-Files matched: Dataset1/README.txt, BIDS3/Report.txt<br>
-Resulting files in output: README.txt, report.txt
+Pattern: <kbd>*D*/R*.txt</kbd><br>
+Files matched: <samp>Dataset1/README.txt, BIDS3/Report.txt</samp><br>
+Resulting files in output: <samp>README.txt, report.txt</samp>
 <p>
-Pattern: */s*/*.txt<br>
-Files matched: Dataset1/sales/sales.txt, CivetOut2/surfaces/surf_subject_30mm.txt, CivetOut2/surfaces/surf_subject_40mm.txt, BIDS3/sub-1234/README.txt<br>
-Resulting files in output: sales.txt, surf_subject_30mm.txt, surf_subject_40mm.txt, README.txt
+Pattern: <kbd>*/s*/*.txt</kbd><br>
+Files matched: <samp>Dataset1/sales/sales.txt, CivetOut2/surfaces/surf_subject_30mm.txt, CivetOut2/surfaces/surf_subject_40mm.txt, BIDS3/sub-1234/README.txt</samp><br>
+Resulting files in output: <samp>sales.txt, surf_subject_30mm.txt, surf_subject_40mm.txt, README.txt</samp>
 <p>
-Pattern: */*/*30mm*<br>
-Files matched: CivetOut2/thickness/thick_subject_30mm.txt, CivetOut2/surfaces/surf_subject_30mm.txt<br>
-Extracted files: thick_subject_30mm.txt, surf_subject_30mm.txt
+Pattern: <kbd>*/*/*30mm*</kbd><br>
+Files matched: <samp>CivetOut2/thickness/thick_subject_30mm.txt, CivetOut2/surfaces/surf_subject_30mm.txt</samp><br>
+Extracted files: <samp>thick_subject_30mm.txt, surf_subject_30mm.txt</samp>
 <p>
 
 

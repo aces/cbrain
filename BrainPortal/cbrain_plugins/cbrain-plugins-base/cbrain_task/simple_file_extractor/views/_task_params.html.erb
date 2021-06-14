@@ -41,6 +41,29 @@
   <% 10.times do |i| %>
     <%= form.params_text_field "patterns[#{i}]", :size => 120 %><p>
   <% end %>
+  <p>
+  <strong>About these patterns:</strong>
+  <%= show_hide_toggle "(Show/Hide)", "#pat-notes", :class  => 'action_link' %>
+  <br>
+  <div id="pat-notes" style="display: none">
+    These patterns are UNIX style <em>file matching patterns</em>, not <em>regular expressions</em>.
+    <p>
+    <dl>
+      <dt>*</dt>
+      <dd>
+        An asterisk matches zero, one, or many characters, except "/".
+      </dd>
+      <dt>?</dt>
+      <dd>
+        A question mark matches a single character, except "/".
+      </dd>
+    </dl>
+    <p>
+    Typically, all patterns will start with <em>*/</em> because the first component must match
+    the names of the FileCollections themselves.
+    <p>
+    See the 'help' link above for more information and examples.
+  </div>
 </fieldset>
 
 <fieldset>
