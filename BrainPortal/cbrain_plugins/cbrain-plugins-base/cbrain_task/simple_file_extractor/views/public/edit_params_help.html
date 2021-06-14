@@ -26,7 +26,7 @@
 
 This program will extract files out of a set of FileCollections.
 The result is a new FileCollection which will be a flat set of all
-the etracted files.
+the extracted files.
 
 <p>
 
@@ -42,9 +42,8 @@ File patterns may contain:
   <dt>*</dt>
 
   <dd>
-    A asterix will match zero, one, or many characters in a filename
-    or in a path component. It will not match the directory separator "/",
-    however.
+    An asterix will match zero, one, or many characters in a filename
+    or in a path component. It will not match the directory separator "/".
   </dd>
 
   <dt>?</dt>
@@ -59,13 +58,15 @@ File patterns may contain:
 
 File patterns will be matched with all the files in all
 the selected FileCollections in input, and files that are matched
-will be extracted and put into the output flat FileCollection.
+will be extracted and copied into the output FileCollection,
+as a flat list (no subdirectories will be created in it).
 
 <p>
 
 All file patterns must include a first component that will be matched
 with the base name of the FileCollection itself. That means a pattern
-will always include at least on "/" character in it.
+will always include at least on "/" character in it. This can be used
+to write patterns that will match only a subset of the input FileCollections.
 
 <p>
 
