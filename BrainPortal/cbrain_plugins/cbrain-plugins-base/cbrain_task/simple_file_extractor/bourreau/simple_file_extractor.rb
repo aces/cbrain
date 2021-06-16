@@ -188,7 +188,8 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
     self.addlog("Adding content to collection #{out_name}")
     output_file.cache_copy_from_local_file("extracted")
 
-    self.addlog_to_userfiles_these_created_these( file_cols , [ output_file ] )
+    # Log creation of output
+    self.addlog_to_userfiles_created( output_file )
 
     true
   end
