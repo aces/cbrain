@@ -404,8 +404,8 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 % end
 % if hasAllNone
     # Lambda for checking all-or-none (either none or all are active)
-    hasAllNone = lambda { |gid| gidToMbrs[gid].select{ |m| ! isInactive.(m.to_sym) }.count == 0 } ||
-                 lambda { |gid| gidToMbrs[gid].select{ |m| isInactive.(m.to_sym) }.count == 0}
+    hasAllNone = lambda { |gid| gidToMbrs[gid].select{ |m| ! isInactive.(m.to_sym) }.count == 0 ||
+                           gidToMbrs[gid].select{ |m| isInactive.(m.to_sym) }.count == 0}
     allNoneGroups.each do |group| # Check for violations of group all-or-none properties
       errMsg = "violates group all-or-none specification"
       params_errors.add(grpName[group], errMsg) unless hasAllNone.(group)
