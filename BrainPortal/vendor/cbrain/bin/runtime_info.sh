@@ -23,13 +23,11 @@ function underscore_keys() {
 # Header info
 basename=$(basename $0)
 
-# CBRAIN version
-cb_version=$(git describe 2>/dev/null)
-
 # This tool's version
-# For git log to work, we need to temporarily cd
+# For git log and git describe to work, we need to temporarily cd
 pushd $(dirname $0) >/dev/null
 version=$(git log -n1 --format="%h by %an at %ai" "$basename" 2>/dev/null)
+cb_version=$(git describe 2>/dev/null)
 popd >/dev/null
 
 # Pretty header

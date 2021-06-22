@@ -120,19 +120,25 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
         start_extract = Time.now
       end
 
-      cache_path = userfile.cache_full_path.parent
+      cache_path   = userfile.cache_full_path
+      parent_cpath = cache_path.parent
       patterns.each_with_index do |pat,patidx|
         pat = Pathname.new(pat).cleanpath
         # Quick safety check just like in after_form on portal side
         cb_error "Wrong pattern encountered: #{pat}" if
           (! pat.relative?) || (! pat.to_s.index('/')) || (pat.to_s.start_with? "../")
-        path_pattern = cache_path + pat
+        path_pattern = parent_cpath + pat
         globbed_paths=Dir.glob(path_pattern.to_s)
         if globbed_paths.empty?
           log_it.("No files matched pattern ##{patidx}", pat, userfile, nil)
           next
         end
         globbed_paths.each do |filepath|
+          filepath = File.realpath(filepath) rescue nil
+          if ! filepath
+            log_it.("Globbing through missing filesystem entries", pat, userfile, filepath)
+            next
+          end
           if ! filepath.start_with?(cache_path.to_s)
             log_it.("Extraction outside collection", pat, userfile, filepath)
             next

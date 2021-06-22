@@ -75,7 +75,7 @@ if test $# -ne 1 ; then
 fi
 
 cd "$1" || usage
-base=$(basename $(pwd -P))
+base=$(basename "$(pwd -P)")
 
 if test "X$base" != "XBrainPortal" -a "X$base" != "XBourreau" ; then
   echo "Error: first argument must be the path to BrainPortal or Bourreau directory to update."
