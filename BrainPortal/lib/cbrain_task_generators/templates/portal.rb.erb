@@ -370,14 +370,17 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 % getGroupsWith = lambda { |prop| groups.select{ |g| g[prop] }.map{ |g| ":'"+g["id"]+"'" }.join(", ") }
 % mutexGrps     = getGroupsWith.("mutually-exclusive")
 % oneReqGrps    = getGroupsWith.("one-is-required")
+% allNoneGrps   = getGroupsWith.("all-or-none")
 % hasMutex      = (mutexGrps  != "")
 % hasOneReq     = (oneReqGrps != "")
+% hasAllNone    = (allNoneGrps != "")
 %#
-% if (hasMutex || hasOneReq)
+% if (hasMutex || hasOneReq || hasAllNone)
 
-    # Groups with the mutually exclusive or one-is-required
+    # Groups with the mutually exclusive, all-or-none or one-is-required
     <%= 'mutexGroups = [%s]'  % mutexGrps  if hasMutex %>
     <%= 'oneReqGroups = [%s]' % oneReqGrps if hasOneReq %>
+    <%= 'allNoneGroups = [%s]' % allNoneGrps if hasAllNone %>
     # Mapping from groupId to members list
 %   writeLiteralMap.("gidToMbrs", gIdToMbrs)
     # Mapping from groupId to group name
@@ -399,7 +402,15 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
       params_errors.add(grpName[group], errMsg) unless hasOneActive.(group)
     end
 % end
-%#
+% if hasAllNone
+    # Lambda for checking all-or-none (either none or all are active)
+    hasAllNone = lambda { |gid| gidToMbrs[gid].select{ |m| ! isInactive.(m.to_sym) }.count == 0 } ||
+                 lambda { |gid| gidToMbrs[gid].select{ |m| isInactive.(m.to_sym) }.count == 0}
+    allNoneGroups.each do |group| # Check for violations of group all-or-none properties
+      errMsg = "violates group all-or-none specification"
+      params_errors.add(grpName[group], errMsg) unless hasAllNone.(group)
+    end
+% end
 % end # noGroups check
 %#
 %# End parameter group properties check
