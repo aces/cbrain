@@ -32,9 +32,11 @@ class SessionsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  include GlobusHelpers
+
   api_available :only => [ :new, :show, :create, :destroy ]
 
-  before_action      :user_already_logged_in,    :only => [:new, :create]
+  before_action      :user_already_logged_in,    :only => [ :new, :create, :globus ]
   skip_before_action :verify_authenticity_token, :only => [ :create ] # we invoke it ourselves in create()
 
   def new #:nodoc:
@@ -43,6 +45,8 @@ class SessionsController < ApplicationController
     ua               = HttpUserAgent.new(rawua)
     @browser_name    = ua.browser_name    || "(unknown browser name)"
     @browser_version = ua.browser_version || "(unknown browser version)"
+
+    @globus_uri      = globus_login_uri # can be nil
 
     respond_to do |format|
       format.html
@@ -62,7 +66,7 @@ class SessionsController < ApplicationController
       return
     end
 
-    # Record that the user connected using the NeuroHub login page
+    # Record that the user connected using the CBRAIN login page
     cbrain_session[:login_page] = 'CBRAIN'
 
     respond_to do |format|
@@ -115,6 +119,48 @@ class SessionsController < ApplicationController
       format.xml  { head :ok }
       format.json { head :ok }
     end
+  end
+
+  # This action receives a JSON authentication
+  # request from globus and uses it to verify a user's
+  # identity, logging in the user if all is ok.
+  def globus
+    code  = params[:code].presence.try(:strip)
+    state = params[:state].presence || 'wrong'
+
+    # Some initial simple validations
+    if !code || state != globus_current_state()
+      cb_error "Globus session is out of sync with CBRAIN"
+    end
+
+    # Query Globus; this returns all the info we need at the same time.
+    identity_struct = globus_fetch_token(code)
+    if !identity_struct
+      cb_error "Could not fetch your identity information from Globus"
+    end
+
+    # Fetch emails; there can be a bunch of them
+    identity_set = identity_struct["identity_set"] || []
+    emails  = identity_set.map { |record| record["email"] }
+    emails |= [ identity_struct["email"] ]
+    emails.compact!
+
+    # Check email against user list
+    if emails.empty?
+      cb_error "No email addresses are found in your Globus identity. Sorry."
+    end
+
+    # Match emails and log in.
+    login_with_globus_emails(emails)
+
+  rescue CbrainException => ex
+    flash[:error] = "#{ex.message}" if ex.is_a?(CbrainException)
+    redirect_to new_session_path
+  rescue => ex
+    clean_bt = Rails.backtrace_cleaner.clean(ex.backtrace || [])
+    Rails.logger.info "Globus auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
+    flash[:error] = 'The Globus authentication failed'
+    redirect_to new_session_path
   end
 
   ###############################################
@@ -249,6 +295,47 @@ class SessionsController < ApplicationController
     if user.has_role?(:admin_user)
       cbrain_session[:active_group_id] = "all"
     end
+  end
+
+  # Given a list of emails, find a single user that match them
+  # and proceed to activate the session for that user.
+  def login_with_globus_emails(emails)
+
+    # Find the users that have these emails. Hopefully, only one.
+    users = User.where(:email => emails)
+
+    if users.size == 0
+      flash[:error] = "No CBRAIN user matches your Globus email addresses. Create a CBRAIN account or set your existing CBRAIN account email to your Globus provider's email."
+      redirect_to new_session_path
+      return
+    end
+
+    if users.size > 1
+      flash[:notice] = "Several CBRAIN user accounts match your Globus email addresses. Contact the CBRAIN admins."
+      redirect_to new_session_path
+      return
+    end
+
+    # The one lucky user
+    user = users.first
+
+    # Login by hijacking CBRAIN's system
+    all_ok, new_cb_session = eval_in_controller(::SessionsController) do
+      ok  = create_from_user(user, 'CBRAIN/Globus')
+      [ok, cbrain_session]
+    end
+    @cbrain_session = new_cb_session # crush the session object that was created for the NhSessionsController
+
+    if ! all_ok
+      redirect_to new_session_path
+      return
+    end
+
+    # Record that the user connected using the CBRAIN login page
+    cbrain_session[:login_page] = 'CBRAIN'
+
+    # All's good
+    redirect_to start_page_path
   end
 
   # ------------------------------------

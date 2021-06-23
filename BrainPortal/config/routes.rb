@@ -196,6 +196,8 @@ Rails.application.routes.draw do
   get   '/session_status'         => 'sessions#show'
   get   '/session_data'           => 'session_data#show'
   post  '/session_data'           => 'session_data#update'
+  # Globus authentication
+  get   '/globus'                 => 'sessions#globus'
 
   # Report Maker
   get   "/report",                :controller => :portal, :action => :report
