@@ -335,6 +335,7 @@ class SessionsController < ApplicationController
     cbrain_session[:login_page] = 'CBRAIN'
 
     # All's good
+    self.current_user = user # needed just so start_page_path works below
     redirect_to start_page_path
   end
 
