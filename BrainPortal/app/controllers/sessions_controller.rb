@@ -319,12 +319,8 @@ class SessionsController < ApplicationController
     # The one lucky user
     user = users.first
 
-    # Login by hijacking CBRAIN's system
-    all_ok, new_cb_session = eval_in_controller(::SessionsController) do
-      ok  = create_from_user(user, 'CBRAIN/Globus')
-      [ok, cbrain_session]
-    end
-    @cbrain_session = new_cb_session # crush the session object that was created for the NhSessionsController
+    # Login the user
+    all_ok = create_from_user(user, 'CBRAIN/Globus')
 
     if ! all_ok
       redirect_to new_session_path
@@ -335,7 +331,6 @@ class SessionsController < ApplicationController
     cbrain_session[:login_page] = 'CBRAIN'
 
     # All's good
-    self.current_user = user # needed just so start_page_path works below
     redirect_to start_page_path
   end
 
