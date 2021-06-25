@@ -158,7 +158,7 @@ class SessionsController < ApplicationController
     redirect_to new_session_path
   rescue => ex
     clean_bt = Rails.backtrace_cleaner.clean(ex.backtrace || [])
-    Rails.logger.info "Globus auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
+    Rails.logger.error "Globus auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
     flash[:error] = 'The Globus authentication failed'
     redirect_to new_session_path
   end
@@ -306,12 +306,14 @@ class SessionsController < ApplicationController
 
     if users.size == 0
       flash[:error] = "No CBRAIN user matches your Globus email addresses. Create a CBRAIN account or set your existing CBRAIN account email to your Globus provider's email."
+      Rails.logger.info "GLOBUS warning: no CBRAIN accounts found for emails: #{emails.join(", ")}"
       redirect_to new_session_path
       return
     end
 
     if users.size > 1
-      flash[:notice] = "Several CBRAIN user accounts match your Globus email addresses. Contact the CBRAIN admins."
+      flash[:notice] = "Several CBRAIN user accounts match your Globus email addresses. Please contact the CBRAIN admins."
+      Rails.logger.info "GLOBUS error: multiple CBRAIN accounts found for emails: #{emails.join(", ")}"
       redirect_to new_session_path
       return
     end
