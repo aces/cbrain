@@ -631,12 +631,12 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
       .map(&:presence)
       .compact
       .each do |file| # an ID or a userfile object
-        user = User.find(self.user_id)
 
         # Each entry of the file list should be available
         if isList
           file_list = Userfile.find(file.to_i)
           @_file_access ||= (self.class.properties[:readonly_input_files].present? || self.tool_config.inputs_readonly ? :read : :write)
+          user = User.find(self.user_id)
           files_info  = file_list.userfiles_accessible_by_user!(user, nil, nil, @_file_access)
 
           files_id   = files_info.map{|x| "#{x.id}"}
