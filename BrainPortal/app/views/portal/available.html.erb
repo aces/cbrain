@@ -3,7 +3,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2021
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -22,8 +22,21 @@
 #
 -%>
 
-<video controls="controls" preload="none">
-  <source src="<%= stream_userfile_path(@userfile, :disposition => 'inline') %>" type="video/mp4" />
-  MP4 video not supported in this browser.
-</video>
+<% title 'List of tools and datasets' %>
+
+<em>
+These tables list all tools and datasets configured on this CBRAIN portal.
+Not all of them are available to all users.
+</em>
+<p>
+
+<div class="generalbox">
+  <%= render :partial => 'available_tools_table' %>
+</div>
+
+<div class="box_spacer"></div>
+
+<div class="generalbox">
+  <%= render :partial => 'available_datasets_table' %>
+</div>
 

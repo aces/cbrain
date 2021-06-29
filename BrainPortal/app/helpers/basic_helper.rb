@@ -26,7 +26,7 @@ module BasicHelper
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # Sets the text to be displayed in the title bar when a given view is rendered.
-  def title(page_title, sep='- ')
+  def title(page_title, sep=' - ')
     content_for(:title)  { sep.html_safe + page_title }
   end
 
@@ -35,15 +35,6 @@ module BasicHelper
     return "" unless object.present?
     options[:object] = object
     render :partial => "shared/error_messages", :locals => options
-  end
-
-  # Return +content+ only if condition evaluates to true.
-  def string_if(condition, content)
-    if condition
-      content
-    else
-      ""
-    end
   end
 
   # Sets which of the menu tabs at the top of the page is

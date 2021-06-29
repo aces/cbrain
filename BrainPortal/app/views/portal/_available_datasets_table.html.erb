@@ -3,7 +3,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2021
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -22,8 +22,33 @@
 #
 -%>
 
-<video controls="controls" preload="none">
-  <source src="<%= stream_userfile_path(@userfile, :disposition => 'inline') %>" type="video/mp4" />
-  MP4 video not supported in this browser.
-</video>
+<table class="simple public_tools_list">
+
+  <tr>
+    <th colspan="2"><strong><big>Datasets</big></strong></th>
+  </tr>
+
+  <tr>
+    <th>Name and description</th>
+    <th>Availability</th>
+  </tr>
+
+<% @groups.each do |group| %>
+  <%
+    name        = group.name
+    description = (group.description.presence || "").strip
+    description = "" if description.downcase == name.strip.downcase
+    if (group.public?)
+      access = html_colorize('Generally open', 'green')
+    else
+      access = html_colorize('Restricted/on demand', 'red')
+    end
+  %>
+  <tr>
+    <td><%= overlay_description((name + "\n" + description).strip) %></td>
+    <td><%= access %></td>
+  </tr>
+<% end %>
+
+</table>
 

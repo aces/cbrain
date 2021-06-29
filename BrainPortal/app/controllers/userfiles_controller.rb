@@ -31,6 +31,8 @@ class UserfilesController < ApplicationController
 
   before_action :login_required
 
+  protect_from_forgery :except => :stream
+
   skip_before_action :verify_authenticity_token, :only => [ :download ] # we check it ourselves in download()
 
   around_action :permission_check, :only => [
@@ -195,39 +197,78 @@ class UserfilesController < ApplicationController
     redirect_to :action => :index
   end
 
-  # Use the rest of the route as a path into a file collection.
-  # [:file_path] a path relative to the file collection's route directory.
+  # Streams the content of a synchronized userfile. Typically used for
+  # files inside a FileCollection, but can also be used with a SingleFile.
+  # Use the rest of the route as a file_path into the userfile.
   #
-  # GET /userfiles/1/file_collection_content/path/to/file/in/file_collection
-  def file_collection_content
-    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
+  # For a FileCollection, :file_path is a relative path that starts with the
+  # file collection's name.
+  #
+  # For a SingleFile, :file_path should match the file's name (although the actual
+  # value will be ignored, the browser might like to have something with a proper extension).
+  #
+  # GET /userfiles/1/stream/file_collection_name/subpath/to/file/in/file_collection
+  #
+  # Can be provided with a query parameter :disposition to configure the
+  # Disposition header (default is 'attachment')
+  def stream
+    userfile_id = params[:id]
+    disposition = params[:disposition].presence || 'attachment'
+    format      = params[:format]
+    file_path   = params[:file_path].presence
+
+    # Find and validate target userfile
+    @userfile = Userfile.find_accessible_by_user(userfile_id, current_user, :access_requested => :read)
     if @userfile.nil?
-      raise ActiveRecord::RecordNotFound("Could not retrieve a userfile with ID: #{params[:id]}")
+      raise ActiveRecord::RecordNotFound("Could not retrieve a userfile with ID: #{userfile_id}")
     end
-    path = @userfile.cache_full_path.to_s + '/' + params[:file_path]
-    if params[:format]
-      path += '.' + params[:format]
+
+    # If it's a SingleFile
+    if @userfile.is_a?(SingleFile)
+      file_path = nil # we ignore whatever params we get for a SingleFile
+      path = @userfile.cache_full_path.to_s
+    else # If it's a FileCollection
+      path  = (@userfile.cache_full_path.parent + file_path).to_s
+      path += '.' + format if format
     end
+
+    # Validate we have a file on the filesystem
     if not File.file?(path)
       head :not_found
       return
     end
+
+    # Validate that the target is in the cache after path cleanup
     final_path = Pathname.new(path).realpath rescue nil
     if not final_path.to_s.start_with? @userfile.cache_full_path.to_s
       head :unauthorized
       return
     end
-    if params[:format] == 'html'
+
+    # Configure security policy such that if we're
+    # rendering a web page, the page can have local
+    # scripts (inline, or loaded locally) but cannot
+    # connect to the outside world, except for images and styles.
+    response.headers["Content-Security-Policy"] = [
+        "default-src 'self'", # the default; also disables connect-src to outside
+        "img-src    *      'unsafe-inline' data:", # images can come from anywhere
+        "font-src   *      'unsafe-inline' data:",
+        "media-src  *      'unsafe-inline' data:",
+        "style-src  *      'unsafe-inline' data:",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'", # script can only be local
+      ].join("; ")
+    # Send the file content
+    if format == 'html'
       render file: path, layout: false
     else
-      send_file path
+      send_file path, :disposition => disposition
     end
   end
 
   # Transfer contents of a file.
   # If no relevant parameters are given, the controller
   # will simply attempt to send the entire file.
-  # Otherwise, it will modify it's response according
+  # Otherwise, it will modify its response according
   # to the following parameters:
   # [:content_loader] a content loader defined for the
   #                   userfile.
@@ -236,14 +277,12 @@ class UserfilesController < ApplicationController
   #
   # GET /userfiles/1/content?option1=....optionN=...
   def content
-    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
-
+    @userfile = userfile_for_viewer
     content_loader = @userfile.find_content_loader(params[:content_loader])
     argument_list  = params[:arguments] || []
     argument_list  = [argument_list] unless argument_list.is_a?(Array)
 
     if !content_loader
-      @userfile.sync_to_cache
       send_file @userfile.cache_full_path, :stream => true, :filename => @userfile.name, :disposition => (params[:disposition] || "attachment")
       return
     end
@@ -274,7 +313,7 @@ class UserfilesController < ApplicationController
   # can be provided to override which class to search for the viewer code
   # (by default, the class of +userfile+)
   def display
-    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
+    @userfile             = userfile_for_viewer
 
     viewer_name           = params[:viewer]
     viewer_userfile_class = params[:viewer_userfile_class].presence.try(:constantize) || @userfile.class
@@ -1992,4 +2031,41 @@ class UserfilesController < ApplicationController
     end
   end
 
+  # Returns the userfile itself if the viewer render
+  # the userfile itself (!params[:file_name]), or a fake
+  # userfile if the viewer render a file inside a FileCollection
+  def userfile_for_viewer
+
+    # The three pieces of information we get directly from the request
+    userfile_id       = params[:id]
+    sub_file_name     = params[:file_name].presence # "FileCollectionName/some/path/to/file.ext"
+    viewer_class_name = params[:viewer_userfile_class].presence
+
+    # Find the real SingleFile or FileCollection
+    @top_userfile = Userfile.find_accessible_by_user(userfile_id, current_user, :access_requested => :read)
+
+    # If there is no params[:file_name], return the userfile itself; no further work needed.
+    return @top_userfile if !sub_file_name || @top_userfile.is_a?(SingleFile)
+
+    # Otherwise we want to view a file inside a FileCollection.
+    # Create a fake Userfile to pass information to the viewer
+    sub_file_info = @top_userfile.provider_collection_index.detect { |u| u.name == sub_file_name }
+    raise ActiveRecord::RecordNotFound("Could not retrieve a file with the name #{sub_file_name} inside the FileCollection") if !sub_file_info
+
+    # Find the class for the new userfile object that will be used for viewing
+    viewer_userfile_class = viewer_class_name.try(:constantize) || @top_userfile.class
+    cb_error "Invalid params viewer_userfile_class #{viewer_class_name}" if !(viewer_userfile_class < Userfile)
+
+    # Instanciate the userfile object with the class appropiate for the sub file.
+    viewer_userfile_class.new(
+      :id            => @top_userfile.id,
+      :name          => sub_file_info.name,
+      :data_provider => @top_userfile.data_provider,
+      :user_id       => @top_userfile.user_id,
+      :group_id      => @top_userfile.group_id,
+      :size          => sub_file_info.size
+    ).fake_record!
+  end
+
 end
+

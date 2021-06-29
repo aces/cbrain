@@ -23,6 +23,10 @@ function underscore_keys() {
 # Header info
 basename=$(basename $0)
 
+# CBRAIN version
+cb_version=$(git describe 2>/dev/null)
+
+# This tool's version
 # For git log to work, we need to temporarily cd
 pushd $(dirname $0) >/dev/null
 version=$(git log -n1 --format="%h by %an at %ai" "$basename" 2>/dev/null)
@@ -32,12 +36,13 @@ popd >/dev/null
 echo ""
 echo "#"
 echo "# Captured run-time information generated automatically"
-echo "# by $basename rev $version"
+echo "# by $basename rev ${version:-unknown}"
 echo "#"
 echo ""
 
 # Internal version tracking
-echo "cbrain_runtime_info_version = $version"
+echo "cbrain_version = ${cb_version:-unknown}"
+echo "cbrain_runtime_info_version = ${version:-unknown}"
 echo "cbrain_capture_date = $(date '+%Y-%m-%dT%H:%M:%S%z')"
 
 # Basic UNIX stuff
@@ -72,6 +77,17 @@ if test -e /proc/cpuinfo ; then
   uniq                           | \
   egrep '^(vendor_id|flags|cache size|cpu cores|model name|microcode)' | \
   sed -e  's/^ */proc_cpuinfo_/' | \
+  underscore_keys
+fi
+
+# LINUX: numactl
+if test -n "$(type -p numactl)" ; then
+  echo ""
+  echo "# From numactl"
+  numactl -s                | \
+  sort                      | \
+  uniq                      | \
+  sed -e  's/^ */numactl_/' | \
   underscore_keys
 fi
 

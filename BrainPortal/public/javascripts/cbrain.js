@@ -110,6 +110,24 @@
 
     /////////////////////////////////////////////////////////////////////
     //
+    // Enable chosen functionality for select boxes.
+    // From chosen JavaScript library
+    //
+    /////////////////////////////////////////////////////////////////////
+
+    loaded_element.find("select").each(function(){
+      var select = $(this);
+  
+      var defined_width = (select.context.style.width);
+      if ( defined_width !== '' ){
+        select.chosen({ width: defined_width });
+      } else {
+        select.chosen({ width: '25em' });
+      }
+    });
+		  
+    /////////////////////////////////////////////////////////////////////
+    //
     // UI Helper Methods see application_helper.rb for corresponding
     // helpers.
     //
@@ -841,6 +859,18 @@
       var replace_position = onclick_elem.data("position");
       var parents = onclick_elem.data("parents");
       var replace_elem;
+
+      var sub_viewable_links = document.getElementsByClassName('sub_viewable_link') || [];
+      for (var i = 0; i < sub_viewable_links.length; i++) {
+          var link         = $(sub_viewable_links[i]);
+          var url_link     = $(sub_viewable_links[i].parentElement).attr("data-url");
+          var onclick_link = $(onclick_elem).data("url");
+          if (url_link == onclick_link) {
+              link.css("color", "#4682B4");
+          } else {
+              link.css("color", "blue");
+          }
+      }
 
       if (!parents) {
         parents = ""

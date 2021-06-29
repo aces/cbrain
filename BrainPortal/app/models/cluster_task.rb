@@ -482,7 +482,7 @@ class ClusterTask < CbrainTask
     # not exist outside the container (and we will not have permission to make it).
     unless start_dir
       FileUtils.mkpath(full_path.dirname) unless Dir.exists?(full_path.dirname)
-      File.unlink(full_path) if File.symlink?(full_path.to_s)
+      File.unlink(full_path) if File.symlink?(full_path.to_s) # potential race condition here
     end
 
     # Create the symlink
@@ -1524,14 +1524,18 @@ class ClusterTask < CbrainTask
     Dir.chdir(full) do
 
       if ! File.exists?(tar_file)
-        self.addlog("Cannot unarchive: tar archive does not exist.")
-        return false
+        tar_file.sub!(/\.gz\z/,"") # try without the .gz
+        if ! File.exists?(tar_file)
+          self.addlog("Cannot unarchive: tar archive does not exist.")
+          return false
+        end
       end
 
       self.addlog("Attempting to unarchive work directory.")
 
+      z_opt = (tar_file =~ /\.gz\z/i) ? "z" : ""
       status = with_stdout_stderr_capture(tar_capture) do
-        system("tar", "-xzf", tar_file)
+        system("tar", "-x#{z_opt}f", tar_file)
         $?
       end
 

@@ -29,7 +29,7 @@ class PortalController < ApplicationController
 
   api_available :only => [ :swagger ] # GET /swagger returns the .json specification
 
-  before_action :login_required, :except => [ :credits, :about_us, :welcome, :swagger ]  # welcome is here so that the redirect to the login page doesn't show the error message
+  before_action :login_required, :except => [ :credits, :about_us, :welcome, :swagger, :available ]  # welcome is here so that the redirect to the login page doesn't show the error message
   before_action :admin_role_required, :only => :portal_log
 
   # Display a user's home page with information about their account.
@@ -233,6 +233,39 @@ class PortalController < ApplicationController
 
   end
 
+  # Publicly shows a list of tools and datasets available
+  def available #:nodoc:
+    # This is used to recognize public tools in the view template
+    @everyone_gid = EveryoneGroup.first.id
+
+    # The tools we list. They must have at least one ToolConfig.
+    @tools = Tool
+             .all
+             .order(:name)
+             .to_a
+             .reject { |t| t.category == 'background' }
+             .select { |t| t.tool_configs.to_a.any? { |tc|
+                tc.bourreau_id.present?  &&
+                tc.bourreau_id > 0       &&
+                tc.bourreau.try(:online) && # comment out to show them all
+                tc.version_name.present?
+                }
+             }
+
+    # The groups we list.
+    @groups = WorkGroup
+              .where(:public => true)
+              .to_a
+
+    # The AccessProfile named 'Restricted Datasets' must be created be the admin;
+    # generally it won't contain any users, just groups.
+    dataset_access_profile = AccessProfile.where(:name => 'Restricted Datasets').first
+    @groups |= dataset_access_profile.groups.to_a if dataset_access_profile
+
+    @groups.sort_by! { |g| g.name.downcase }
+  end
+
+  # Report maker
   def report #:nodoc:
     table_name      = params[:table_name] || ""
     table_op        = 'count'

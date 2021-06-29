@@ -117,7 +117,7 @@ Rails.application.routes.draw do
   resources :userfiles,       :except => [ :edit, :destroy ] do
     member do
       get  'content'
-      get  'file_collection_content/*file_path' => 'userfiles#file_collection_content'
+      get  'stream/*file_path' => 'userfiles#stream'
       get  'display'
       post 'extract_from_collection'
     end
@@ -189,6 +189,7 @@ Rails.application.routes.draw do
   post  '/home'                   => 'portal#welcome' # lock/unlock service
   get   '/credits'                => 'portal#credits'
   get   '/about_us'               => 'portal#about_us'
+  get   '/available'              => 'portal#available'
   get   '/search'                 => 'portal#search'
   get   '/login'                  => 'sessions#new'
   get   '/logout'                 => 'sessions#destroy'
@@ -277,6 +278,8 @@ Rails.application.routes.draw do
 
     # ORCID authentication
     get   '/orcid'                  => 'nh_sessions#orcid'
+    # Unlink button
+    post  '/unlink_orcid'           => 'nh_users#unlink_orcid'
 
     # Sessions
     resource  :nh_session,   :only => [ :new, :create, :destroy ] do

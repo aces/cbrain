@@ -139,7 +139,7 @@ class ServiceController < ApplicationController
   # Allows user to view the software provenance
   def provenance
     respond_to do |format|
-      format.html  { redirect_to :controller => :portal, :action => :about_us }
+      format.html  { render 'portal/provenance' }
       format.xml   { head :not_acceptable }
       format.json  { head :not_acceptable }
     end

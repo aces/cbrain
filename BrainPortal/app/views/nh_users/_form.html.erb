@@ -66,12 +66,47 @@
     %>
   </fieldset>
 
-  <fieldset>
-    <%= f.label(:orcid, "ORCID iD") %>
-    <%= text_field_tag "meta[orcid]", @orcid_canonical, :size => 30 %><br />
-    <p class="field_note">You can enter the full ORCID URI, which starts with <strong>https://</strong>, or just the numerical part, e.g. <strong>1234-5678-9012-345X</strong>
-
-  </fieldset>
+  <% if @orcid_uri %>
+    <fieldset>
+      <%= f.label(:orcid, "ORCID iD") %>
+      <% if @orcid_canonical.blank? %>
+        <p class="btn-text orcid">
+          <%= link_to @orcid_uri, :class => "btn-solid orcid" do %>
+            <%= image_tag("neurohub/ORCIDiD_iconvector.svg", :alt => "ORCID logo", :class => "orcid_logo") %>
+            Connect your NeuroHub account to your ORCID iD
+          <% end %>
+        </p>
+        <p class="field_note">
+          ORCID is an independent non-profit organization that provides a
+          persistent identifier &mdash; an ORCID iD &mdash; that distinguishes
+          you from other researchers and a mechanism for linking your research
+          outputs and activities to your iD. ORCID is integrated into many
+          systems used by publishers, funders, institutions, and other
+          research-related services.
+        </p>
+        <p class="field_note">
+          Learn more at <%= link_to "ORCID.org", "https://ORCID.org/", :class => "orcid_home_link" %>
+        </p>
+      <% else %>
+        <p class="btn-text orcid">
+          <%= link_to @orcid_canonical, :class => "orcid_link" do %>
+            <%= image_tag("neurohub/ORCIDiD_iconvector.svg", :alt => "ORCID logo", :class => "orcid_logo") %>
+            <%= @orcid_canonical %>
+          <% end %>
+        </p>
+      <% end %>
+      <% if @orcid_canonical.present? %>
+        <p class="btn-solid orcid">
+          <%= link_to unlink_orcid_path,
+              :class => "",
+              :method  => :post,
+              :data    => { :confirm => "Are you sure you want to unlink your account from this ORCID iD?" } do %>
+              Remove this ORCID iD from your NeuroHub account
+          <% end %>
+        </p>
+      <% end %>
+    </fieldset>
+  <% end %>
 
   <fieldset >
     <%= f.label(:country, "Zenodo Official Token") %>

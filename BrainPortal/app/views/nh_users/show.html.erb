@@ -144,7 +144,15 @@
       <div class="card-item">
         <div>
           <p class="card-label">ORCID iD</p>
-          <p class="card-text"><%= @orcid_canonical || "-" %></p>
+          <p class="card-text btn-text orcid">
+          <% if @orcid_canonical.present? %>
+            <%= link_to @orcid_canonical, :class => "orcid_link" do %>
+              <%= image_tag("neurohub/ORCIDiD_iconvector.svg", :alt => "ORCID logo", :class => "orcid_logo") %>
+              <%= @orcid_canonical %>
+            <% end %>
+          <% else %>
+            Your account is not linked to an ORCID iD
+          <% end %>
         </div>
       </div>
     </div>
