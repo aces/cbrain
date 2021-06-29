@@ -91,7 +91,7 @@
 		"id" : "f",
 		"name" : "f",
 		"type" : "File",
-		"description" : "Optional File List",
+		"description" : "Optional File List test",
 		"optional" : true,
 		"list" : true,
 		"value-key" : "[f]",
