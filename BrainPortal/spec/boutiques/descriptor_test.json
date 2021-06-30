@@ -2,7 +2,7 @@
 	"name" : "BoutiquesTest",
 	"tool-version" : "9.7.13",
 	"description" : "Simple test task for Boutiques",
-	"command-line" : "./boutiquesTestApp.rb [A] [B] [C] [a] [b] [c] [d] [e] [g] [i] [j] [k] [l] [m] [n] [p] [q] [u] [v] [w] [x] [o] [r] [y] [E] [I] [N] [L]",
+	"command-line" : "./boutiquesTestApp.rb [A] [B] [C] [a] [b] [c] [d] [e] [f] [g] [i] [j] [k] [l] [m] [n] [p] [q] [u] [v] [w] [x] [o] [r] [y] [E] [I] [N] [L]",
 	"schema-version" : "0.5",
   "environment-variables" : [{
     "name" : "ev1",
@@ -87,6 +87,15 @@
 		"command-line-flag" : "-e",
 		"min-list-entries" : 2,
 		"max-list-entries" : 3
+	}, {
+		"id" : "f",
+		"name" : "f",
+		"type" : "File",
+		"description" : "Optional File List",
+		"optional" : true,
+		"list" : true,
+		"value-key" : "[f]",
+		"command-line-flag" : "-f"
 	}, {
 		"id" : "g",
 		"name" : "g",
