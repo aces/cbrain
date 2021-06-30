@@ -320,9 +320,6 @@ describe "Bourreau Boutiques Tests" do
 
       # Perform tests by running the cmd line given by cluster_commands and checking the exit code
       BasicTests.each do |test|
-        puts "---test---"
-        puts test.inspect
-        puts "---test---"
         # Testing for unrecognized inputs will not work here, since apply_template will ignore them
         next if test[0].include?( "unrecognized" )
         # The apply_template method adds the separator on its own, so we need only check that works
