@@ -55,7 +55,7 @@
   # Similar to format_param.
   format_files = lambda do |value|
     value = [value] unless value.is_a?(Enumerable)
-    format_param.(value.map { |v| link_to_userfile_if_accessible(v) }).html_safe
+    format_param.(value.map { |v| v.is_a?(String) ? v : link_to_userfile_if_accessible(v) }).html_safe
   end
 %%>
 <%- end -%>
