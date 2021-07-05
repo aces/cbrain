@@ -363,6 +363,18 @@ class ApplicationController < ActionController::Base
     list.detect { |x| params.has_key?(x) && x } || default
   end
 
+  # Messy utility, poking through layers. Tricky and brittle.
+  def eval_in_controller(mycontroller, options={}, &block) #:nodoc:
+    cb_error "Controller is not a ApplicationController?" unless mycontroller < ApplicationController
+    cb_error "Block needed." unless block_given?
+    context = mycontroller.new
+    context.request = self.request
+    if options.has_key?(:define_current_user)
+      context.define_singleton_method(:current_user) { options[:define_current_user] }
+    end
+    context.instance_eval(&block)
+  end
+
 end
 
 # Patch: Load all models so single-table inheritance works properly.

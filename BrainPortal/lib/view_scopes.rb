@@ -1370,11 +1370,10 @@ module ViewScopes
 
     scope = scope.deep_dup.to_yaml
     scope = ActiveSupport::Gzip.compress(scope)
-    scope = Base64.encode64(scope)
+    scope = Base64.strict_encode64(scope)
     scope
       .tr('+/',  '-_')
-      .gsub(/=+$/, '')
-      .gsub(/\s/,  '')
+      .sub(/=+$/, '')
   end
 
   # Decompress +scope+, which is expected to be a scope string compressed by

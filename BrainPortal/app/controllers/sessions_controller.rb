@@ -32,9 +32,11 @@ class SessionsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  include GlobusHelpers
+
   api_available :only => [ :new, :show, :create, :destroy ]
 
-  before_action      :user_already_logged_in,    :only => [:new, :create]
+  before_action      :user_already_logged_in,    :only => [ :new, :create, :globus ]
   skip_before_action :verify_authenticity_token, :only => [ :create ] # we invoke it ourselves in create()
 
   def new #:nodoc:
@@ -43,6 +45,8 @@ class SessionsController < ApplicationController
     ua               = HttpUserAgent.new(rawua)
     @browser_name    = ua.browser_name    || "(unknown browser name)"
     @browser_version = ua.browser_version || "(unknown browser version)"
+
+    @globus_uri      = globus_login_uri # can be nil
 
     respond_to do |format|
       format.html
@@ -62,7 +66,7 @@ class SessionsController < ApplicationController
       return
     end
 
-    # Record that the user connected using the NeuroHub login page
+    # Record that the user connected using the CBRAIN login page
     cbrain_session[:login_page] = 'CBRAIN'
 
     respond_to do |format|
@@ -115,6 +119,61 @@ class SessionsController < ApplicationController
       format.xml  { head :ok }
       format.json { head :ok }
     end
+  end
+
+  # This action receives a JSON authentication
+  # request from globus and uses it to verify a user's
+  # identity, logging in the user if all is ok.
+  def globus
+    code  = params[:code].presence.try(:strip)
+    state = params[:state].presence || 'wrong'
+
+    # Some initial simple validations
+    if !code || state != globus_current_state()
+      cb_error "Globus session is out of sync with CBRAIN"
+    end
+
+    # Query Globus; this returns all the info we need at the same time.
+    identity_struct = globus_fetch_token(code)
+    if !identity_struct
+      cb_error "Could not fetch your identity information from Globus"
+    end
+    Rails.logger.info "Globus identity struct:\n#{identity_struct.pretty_inspect.strip}"
+
+    # Globus has a security bug with ORCID, we reject those; TODO remove once they fix
+    # this, and adjust the map() below to remove the if-end block
+    rejected_providers = [ 'ORCID' ]
+
+    # Fetch emails; globus returns a standard record, but with additional
+    # identities under 'identity_set'; we kind of flatten this and extract all emails.
+    identity_set  = [] + (identity_struct["identity_set"] || [])
+    identity_set << identity_struct if identity_set.empty? # the full struct, even with the identity_set still in
+    emails = identity_set.map do |record|
+      provider_name = record['identity_provider_display_name'] # TODO (see above)
+      if rejected_providers.include? provider_name
+        Rails.logger.warn "Ignored Globus ORCID identity for #{record['email']}"
+        next nil
+      end
+      record["email"]
+    end
+    emails.compact!
+
+    # Check email against user list
+    if emails.empty?
+      cb_error "No provider email addresses are found in your Globus identities. Sorry. (Note: ORCID identities are not supported)"
+    end
+
+    # Match emails and log in.
+    login_with_globus_emails(emails)
+
+  rescue CbrainException => ex
+    flash[:error] = "#{ex.message}" if ex.is_a?(CbrainException)
+    redirect_to new_session_path
+  rescue => ex
+    clean_bt = Rails.backtrace_cleaner.clean(ex.backtrace || [])
+    Rails.logger.error "Globus auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
+    flash[:error] = 'The Globus authentication failed'
+    redirect_to new_session_path
   end
 
   ###############################################
@@ -249,6 +308,45 @@ class SessionsController < ApplicationController
     if user.has_role?(:admin_user)
       cbrain_session[:active_group_id] = "all"
     end
+  end
+
+  # Given a list of emails, find a single user that match them
+  # and proceed to activate the session for that user.
+  def login_with_globus_emails(emails)
+
+    # Find the users that have these emails. Hopefully, only one.
+    users = User.where(:email => emails)
+
+    if users.size == 0
+      flash[:error] = "No CBRAIN user matches your Globus email addresses. Create a CBRAIN account or set your existing CBRAIN account email to your Globus provider's email."
+      Rails.logger.info "GLOBUS warning: no CBRAIN accounts found for emails: #{emails.join(", ")}"
+      redirect_to new_session_path
+      return
+    end
+
+    if users.size > 1
+      flash[:notice] = "Several CBRAIN user accounts match your Globus email addresses. Please contact the CBRAIN admins."
+      Rails.logger.info "GLOBUS error: multiple CBRAIN accounts found for emails: #{emails.join(", ")}"
+      redirect_to new_session_path
+      return
+    end
+
+    # The one lucky user
+    user = users.first
+
+    # Login the user
+    all_ok = create_from_user(user, 'CBRAIN/Globus')
+
+    if ! all_ok
+      redirect_to new_session_path
+      return
+    end
+
+    # Record that the user connected using the CBRAIN login page
+    cbrain_session[:login_page] = 'CBRAIN'
+
+    # All's good
+    redirect_to start_page_path
   end
 
   # ------------------------------------

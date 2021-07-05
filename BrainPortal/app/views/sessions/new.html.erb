@@ -68,11 +68,29 @@
       <td class="field"><%= link_to "Forgot your password?", request_password_users_path, :class  => "action_link" %></td>
     </tr>
 
+    <% if @globus_uri %>
+
+    <tr>
+      <td colspan="2">&nbsp;</td>
+    </tr>
+
+    <tr>
+      <td>
+          <strong>OR</strong>
+      </td>
+      <td class="field">
+        <%= link_to 'Sign In With Globus', @globus_uri, :class => 'button globus_button' %>
+      </td>
+    </tr>
+
+    <% end %>
+
   </table>
 
 <% end -%>
 
 <div class="centered">
+  <p>
   Not a user?
   <%= link_to 'Request an account.',
         url_for(:controller => :signups, :action => :new),
