@@ -138,6 +138,7 @@ class SessionsController < ApplicationController
     if !identity_struct
       cb_error "Could not fetch your identity information from Globus"
     end
+    Rails.logger.info "Globus identity struct:\n#{identity_struct.pretty_inspect.strip}"
 
     # Fetch emails; there can be a bunch of them
     identity_set = identity_struct["identity_set"] || []
