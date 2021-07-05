@@ -140,15 +140,27 @@ class SessionsController < ApplicationController
     end
     Rails.logger.info "Globus identity struct:\n#{identity_struct.pretty_inspect.strip}"
 
-    # Fetch emails; there can be a bunch of them
-    identity_set = identity_struct["identity_set"] || []
-    emails  = identity_set.map { |record| record["email"] }
-    emails |= [ identity_struct["email"] ]
+    # Globus has a security bug with ORCID, we reject those; TODO remove once they fix
+    # this, and adjust the map() below to remove the if-end block
+    rejected_providers = [ 'ORCID' ]
+
+    # Fetch emails; globus returns a standard record, but with additional
+    # identities under 'identity_set'; we kind of flatten this and extract all emails.
+    identity_set  = [] + (identity_struct["identity_set"] || [])
+    identity_set << identity_struct if identity_set.empty? # the full struct, even with the identity_set still in
+    emails = identity_set.map do |record|
+      provider_name = record['identity_provider_display_name'] # TODO (see above)
+      if rejected_providers.include? provider_name
+        Rails.logger.warn "Ignored Globus ORCID identity for #{record['email']}"
+        next nil
+      end
+      record["email"]
+    end
     emails.compact!
 
     # Check email against user list
     if emails.empty?
-      cb_error "No email addresses are found in your Globus identity. Sorry."
+      cb_error "No provider email addresses are found in your Globus identities. Sorry. (Note: ORCID identities are not supported)"
     end
 
     # Match emails and log in.
