@@ -620,7 +620,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     super.merge({
 %   id_width = max_width.(outputs, 'id') + "'".length
 %   outputs.each do |output|
-      <%= ":'%-#{id_width}s => true," % (output['id'] + "'") %>
+      <%= ":'_cbrain_output_%-#{id_width}s => true," % (output['id'] + "'") %>
 %   end
     })
 % end

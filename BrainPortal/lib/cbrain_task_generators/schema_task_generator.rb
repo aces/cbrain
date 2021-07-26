@@ -211,7 +211,10 @@ module SchemaTaskGenerator
       # CBRAIN_BOUTIQUES_DUMPDIR="/path/to/dir"
       # CBRAIN_BOUTIQUES_DUMPTASK="Abcd" # if not set, all tasks are dumped
       if ((dumpdir = ENV['CBRAIN_BOUTIQUES_DUMPDIR']) && dumpdir.present? && File.directory?(dumpdir))
-        to_directory(dumpdir) if ENV['CBRAIN_BOUTIQUES_DUMPTASK'].blank? || name == ENV['CBRAIN_BOUTIQUES_DUMPTASK']
+        if ENV['CBRAIN_BOUTIQUES_DUMPTASK'].blank? || name == ENV['CBRAIN_BOUTIQUES_DUMPTASK']
+          puts_red "Dumping Boutiques task code for #{name} in #{dumpdir}"
+          to_directory(dumpdir)
+        end
       end
 
       task
