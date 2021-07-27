@@ -569,14 +569,14 @@ module SchemaTaskGenerator
     args = args.map { |a| block.(a) } if block
 
     widths = (args.first rescue []).zip(*args).map do |array|
-      array.map { |v| v.length rescue 0 }.max + 1
+      array.map { |v| v.to_s.length rescue 0 }.max + 1
     end
 
     lambda do |args|
       inner = (block ? block.(args) : args)
         .reject(&:blank?)
         .each_with_index
-        .map { |v, i| "%-#{widths[i]}s" % (v + ',') }
+        .map { |v, i| "%-#{widths[i]}s" % (v.to_s + ',') }
         .join(' ')
         .gsub(/,\s*\z/, '')
 

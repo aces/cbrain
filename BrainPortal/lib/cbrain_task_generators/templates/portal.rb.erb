@@ -207,19 +207,6 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 % unless params.empty?
     params = self.params
 
-%   unless file_lists.empty?
-    # Assign the default input file list from interface_userfile_ids to unset
-    # file list parameters (unless they are optional).
-    [
-%     file_lists.select{ |f| ! f['optional'] }.each do |param|
-      :'<%= param['id'] %>',
-%     end
-    ].each do |list|
-      params[list] = params[:interface_userfile_ids].dup unless
-        params[list].is_a?(Enumerable) # Allows explicitly empty lists
-    end
-
-%   end
     # Sanitize every input parameter according to their expected type
 
 %   sanitize_param = format_call('sanitize_param', params) { |param| [
@@ -471,7 +458,11 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
         return ""
       end
     end
-    cbcsvs = files.map { |f| Userfile.find_accessible_by_user( f, self.user, :access_requested => file_access ) }.select { |f| f.is_a?(CbrainFileList) || (f.suggested_file_type || Object) <= CbrainFileList }
+    cbcsvs = files.select(&:presence).map do |f|
+      Userfile.find_accessible_by_user( f, self.user, :access_requested => file_access )
+    end.select do |f|
+      f.is_a?(CbrainFileList) || (f.suggested_file_type || Object) <= CbrainFileList
+    end
     # Validate accessibility
     for cbcsv in cbcsvs
       # Get the id of the single_file input
@@ -528,7 +519,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     <%= "files = [%s]" % files.map { |f| ":'#{f['id']}'" }.join( ', ' ) %>
     <%= "file_lists = [%s]" % file_lists.map { |f| ":'#{f['id']}'" }.join( ', ' ) %>
     return [] if files.nil? || files.length == 0
-    files.select { |f| ! self.params[f].nil? && ! file_lists.include?(f) } # Prevent problems with file-type inputs with list=true
+    files.select { |f| self.params[f].present? && ! file_lists.include?(f) } # Prevent problems with file-type inputs with list=true
          .map    { |f| [f, Userfile.find_accessible_by_user(self.params[f], self.user, :access_requested => file_access)] }
          .select { |f| f[1].is_a?(CbrainFileList) || (f[1].suggested_file_type || Object) <= CbrainFileList }
   end
@@ -696,7 +687,8 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
       # Nothing special required for strings, bar for symbols being acceptable strings.
       when :string
         value = value.to_s if value.is_a?(Symbol)
-        params_errors.add(name, " not a string (#{value})")       unless value.is_a?(String)
+        params_errors.add(name, " not a string (#{value})")        unless value.is_a?(String)
+        params_errors.add(name, " is blank")                           if value.blank?
         # The following two checks are to prevent cases when
         # a string param is used as a path
         params_errors.add(name, " cannot contain newlines")            if value.to_s =~ /[\n\r]/
@@ -717,11 +709,11 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
       # of the correct type.
       when :file
         unless (id = Integer(value) rescue nil)
-          params_errors.add(name, ": invalid or missing userfile (ID #{value})")
+          params_errors.add(name, ": invalid or missing userfile")
           next value
         end
 
-        unless (file = Userfile.find_accessible_by_user(value, self.user, :access_requested => file_access))
+        unless (file = Userfile.find_accessible_by_user(value, self.user, :access_requested => file_access) rescue nil)
           params_errors.add(name, ": cannot find userfile (ID #{value})")
           next value
         end

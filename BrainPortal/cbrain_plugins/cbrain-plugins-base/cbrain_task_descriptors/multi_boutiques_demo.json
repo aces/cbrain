@@ -1,0 +1,130 @@
+{
+    "name":           "MultiBoutiquesDemo",
+    "tool-version":   "6.1.2",
+    "schema-version": "0.5",
+    "author":         "Pierre Rioux",
+    "description":    "A demo CBRAIN task using a Boutiques descriptor. This program runs the UNIX 'du' command on some files or directories.",
+    "descriptor-url": "https://github.com/aces/cbrain/blob/master/BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task_descriptors/multi_boutiques_demo.json",
+    "command-line": "du [ALL] [HUMAN] [FOLLOW_LINKS] [SINPUT1] [MINPUT1] [SINPUT2] [MINPUT2] | tee [DU_OUTPUT_NAME]",
+    "inputs": [
+        {
+            "name":              "Required single input 1",
+            "id":                "sinput1",
+            "description":       "Any file or directory in CBRAIN",
+            "type":              "File",
+            "optional":          false,
+            "list":              false,
+            "value-key":         "[SINPUT1]"
+        },
+        {
+            "name":              "Required multi input 1",
+            "id":                "minput1",
+            "description":       "Any file or directory in CBRAIN, or even a CbrainFileList",
+            "type":              "File",
+            "optional":          false,
+            "list":              true,
+            "value-key":         "[MINPUT1]"
+        },
+        {
+            "name":              "Optional single input 2",
+            "id":                "sinput2",
+            "description":       "Any file or directory in CBRAIN",
+            "type":              "File",
+            "optional":          true,
+            "list":              false,
+            "value-key":         "[SINPUT2]"
+        },
+        {
+            "name":              "Optional multi input 2",
+            "id":                "minput2",
+            "description":       "Any file or directory in CBRAIN, or even a CbrainFileList",
+            "type":              "File",
+            "optional":          true,
+            "list":              true,
+            "value-key":         "[MINPUT2]"
+        },
+        {
+            "name":              "Name of report",
+            "id":                "my_output_name",
+            "description":       "The name of the text report containing the output of the 'du' command",
+            "type":              "String",
+            "optional":          false,
+            "list":              false,
+            "value-key":         "[DU_OUTPUT_NAME]"
+        },
+        {
+            "name":              "All files",
+            "id":                "option_a",
+            "description":       "Whether or not to provide a breakdown of each and every file",
+            "type":              "Flag",
+            "optional":          true,
+            "command-line-flag": "-a",
+            "value-key":         "[ALL]"
+        },
+        {
+            "name":              "Human readable values",
+            "id":                "option_h",
+            "description":       "If true, units will be shown in readable human values, otherwise in blocks",
+            "type":              "Flag",
+            "optional":          true,
+            "command-line-flag": "-h",
+            "value-key":         "[HUMAN]"
+        },
+        {
+            "name":              "Follow initial symlinks",
+            "id":                "option_upper_h",
+            "description":       "If true, initial symlinks are followed. Needed for file collections in CBRAIN",
+            "type":              "Flag",
+            "optional":          true,
+            "default-value":     true,
+            "command-line-flag": "-H",
+            "value-key":         "[FOLLOW_LINKS]"
+        }
+    ],
+    "output-files": [
+        {
+            "name":          "Output report",
+            "id":            "du_report_out",
+            "description":   "The output of the 'du' command",
+            "optional":      false,
+            "list":          false,
+            "path-template": "[DU_OUTPUT_NAME]"
+        }
+    ],
+    "groups": [
+        {
+            "id": "files",
+            "name": "Files",
+            "members": [
+                "my_output_name",
+                "my_input"
+            ]
+        },
+        {
+            "id": "options",
+            "name": "Options",
+            "members": [
+                "option_a",
+                "option_h",
+                "option_upper_h"
+            ]
+        }
+    ],
+    "tags": {
+        "domain": [
+            "boutiques",
+            "testing",
+            "cbrain",
+            "platform",
+            "internal"
+        ]
+    },
+    "suggested-resources": {
+        "cpu-cores":         1,
+        "ram":               1,
+        "walltime-estimate": 60
+    },
+    "custom": {
+        "cbrain:readonly-input-files": true
+    }
+}
