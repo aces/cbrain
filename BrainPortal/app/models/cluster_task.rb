@@ -827,6 +827,7 @@ class ClusterTask < CbrainTask
           saveok = saveok && self.save_results
           self.meta[:no_end_keyword_check] = nil
         end
+        self.update_size_of_cluster_workdir
         if ! saveok
           self.status_transition(self.status, "Failed On Cluster")
           self.addlog("Data processing failed on the cluster.")
@@ -2154,8 +2155,10 @@ exit $status
     if ( ! full.blank? ) && Dir.exists?(full)
       sizeline = IO.popen("du -s -k #{full.to_s.bash_escape}","r") { |fh| fh.readline rescue "" }
       if mat = sizeline.match(/^\s*(\d+)/) # in Ks
-        self.update_attribute(:cluster_workdir_size, mat[1].to_i.kilobytes)
-        self.addlog("Size of work directory: #{self.cluster_workdir_size} bytes.")
+        bytes = mat[1].to_i.kilobytes
+        return bytes if bytes == self.cluster_workdir_size # nothing has changed
+        self.update_attribute(:cluster_workdir_size, bytes)
+        self.addlog("Size of work directory: #{bytes} bytes.")
       end
     else
       self.update_attribute(:cluster_workdir_size,nil)
