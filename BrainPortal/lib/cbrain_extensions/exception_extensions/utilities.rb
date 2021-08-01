@@ -29,7 +29,10 @@ module CBRAINExtensions #:nodoc:
       # Returns the subset of a backrace that refers to the
       # actual CBRAIN code base, ignoring what's inside libraries etc.
       def cbrain_backtrace
-        backtrace.select { |l| l =~ /\/(BrainPortal|Bourreau)\// }
+        prefix = Rails.root.parent.to_s + "/"
+        backtrace
+          .select { |l| l =~ /\/(BrainPortal|Bourreau)\// }
+          .map    { |l| l[prefix] = "" if l.start_with?(prefix); l }
       end
 
     end
