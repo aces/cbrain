@@ -216,7 +216,7 @@ class RestrictedHash < Hash
        elsif key_is_allowed?(dashattr)         # string with - instead of _
          self[dashattr]        = args[0]
        else
-         cb_error "Cannot find attribute that match writer method '#{name}'\n#{self.allowed_keys.inspect}"
+         cb_error "Cannot find attribute that match writer method '#{name}'"
        end
      else
        # Reading the attribute
