@@ -211,7 +211,10 @@ module SchemaTaskGenerator
       # CBRAIN_BOUTIQUES_DUMPDIR="/path/to/dir"
       # CBRAIN_BOUTIQUES_DUMPTASK="Abcd" # if not set, all tasks are dumped
       if ((dumpdir = ENV['CBRAIN_BOUTIQUES_DUMPDIR']) && dumpdir.present? && File.directory?(dumpdir))
-        to_directory(dumpdir) if ENV['CBRAIN_BOUTIQUES_DUMPTASK'].blank? || name == ENV['CBRAIN_BOUTIQUES_DUMPTASK']
+        if ENV['CBRAIN_BOUTIQUES_DUMPTASK'].blank? || name == ENV['CBRAIN_BOUTIQUES_DUMPTASK']
+          puts_red "Dumping Boutiques task code for #{name} in #{dumpdir}"
+          to_directory(dumpdir)
+        end
       end
 
       task
@@ -566,14 +569,14 @@ module SchemaTaskGenerator
     args = args.map { |a| block.(a) } if block
 
     widths = (args.first rescue []).zip(*args).map do |array|
-      array.map { |v| v.length rescue 0 }.max + 1
+      array.map { |v| v.to_s.length rescue 0 }.max + 1
     end
 
     lambda do |args|
       inner = (block ? block.(args) : args)
         .reject(&:blank?)
         .each_with_index
-        .map { |v, i| "%-#{widths[i]}s" % (v + ',') }
+        .map { |v, i| "%-#{widths[i]}s" % (v.to_s + ',') }
         .join(' ')
         .gsub(/,\s*\z/, '')
 

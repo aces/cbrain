@@ -827,6 +827,7 @@ class ClusterTask < CbrainTask
           saveok = saveok && self.save_results
           self.meta[:no_end_keyword_check] = nil
         end
+        self.update_size_of_cluster_workdir
         if ! saveok
           self.status_transition(self.status, "Failed On Cluster")
           self.addlog("Data processing failed on the cluster.")
@@ -1524,14 +1525,18 @@ class ClusterTask < CbrainTask
     Dir.chdir(full) do
 
       if ! File.exists?(tar_file)
-        self.addlog("Cannot unarchive: tar archive does not exist.")
-        return false
+        tar_file.sub!(/\.gz\z/,"") # try without the .gz
+        if ! File.exists?(tar_file)
+          self.addlog("Cannot unarchive: tar archive does not exist.")
+          return false
+        end
       end
 
       self.addlog("Attempting to unarchive work directory.")
 
+      z_opt = (tar_file =~ /\.gz\z/i) ? "z" : ""
       status = with_stdout_stderr_capture(tar_capture) do
-        system("tar", "-xzf", tar_file)
+        system("tar", "-x#{z_opt}f", tar_file)
         $?
       end
 
@@ -2150,8 +2155,10 @@ exit $status
     if ( ! full.blank? ) && Dir.exists?(full)
       sizeline = IO.popen("du -s -k #{full.to_s.bash_escape}","r") { |fh| fh.readline rescue "" }
       if mat = sizeline.match(/^\s*(\d+)/) # in Ks
-        self.update_attribute(:cluster_workdir_size, mat[1].to_i.kilobytes)
-        self.addlog("Size of work directory: #{self.cluster_workdir_size} bytes.")
+        bytes = mat[1].to_i.kilobytes
+        return bytes if bytes == self.cluster_workdir_size # nothing has changed
+        self.update_attribute(:cluster_workdir_size, bytes)
+        self.addlog("Size of work directory: #{bytes} bytes.")
       end
     else
       self.update_attribute(:cluster_workdir_size,nil)

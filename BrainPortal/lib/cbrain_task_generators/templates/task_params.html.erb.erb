@@ -63,6 +63,7 @@
     # Handling for multi-task generation via CBCSVs
     cbcsvs       = input_files.select { |f| f.is_a?( CbrainFileList ) }
     cbcsvToFiles = cbcsvs.inject({}) do |m,f|              # Only used for preview button
+      f.sync_to_cache
       m.merge(f.name => f.ordered_raw_ids.map{ |r| (r==0 || r.nil?) ? ' ' : # Space can't be a filename in cbrain
         (Userfile.find_all_accessible_by_user(current_user).where('userfiles.id' => r).first rescue nil) }
       )
@@ -320,6 +321,7 @@
     type  = param['type'].downcase.to_sym
     opt   = !!(param['optional'] && type != :flag)
     list  = param['list']
+    list  = false if type == :file # override: we use CbrainFileLists
   -%>
   <%-
     classes  = [ 'tsk-prm', type.to_s ]
