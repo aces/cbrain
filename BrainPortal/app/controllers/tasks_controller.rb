@@ -183,7 +183,7 @@ class TasksController < ApplicationController
     @task             = CbrainTask.const_get(@toolname).new
 
     # Our new task object needs some initializing
-    @task.params         = @task.class.wrapper_default_launch_args.clone
+    @task.params         = @task.wrapper_default_launch_args.clone
     @task.bourreau_id    = params[:bourreau_id]     # Just for compatibility with old code
     @task.tool_config_id = params[:tool_config_id]  # Normally sent by interface but it's optional
     @task.user           = current_user
