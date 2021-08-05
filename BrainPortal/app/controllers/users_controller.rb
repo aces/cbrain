@@ -27,6 +27,8 @@ class UsersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  include GlobusHelpers
+
   api_available :only => [ :index, :create, :show, :destroy, :update]
 
   before_action :login_required,        :except => [:request_password, :send_password]
@@ -87,6 +89,8 @@ class UsersController < ApplicationController
       .where(:user_id => @user.id, :active => true)
       .where( "updated_at > ?", SessionHelpers::SESSION_API_TOKEN_VALIDITY.ago )
       .order(:updated_at)
+
+    @globus_uri = globus_login_uri
 
     respond_to do |format|
       format.html # show.html.erb

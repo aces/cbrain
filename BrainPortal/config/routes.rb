@@ -198,6 +198,7 @@ Rails.application.routes.draw do
   post  '/session_data'           => 'session_data#update'
   # Globus authentication
   get   '/globus'                 => 'sessions#globus'
+  post  '/unlink_globus'          => 'sessions#unlink_globus'
 
   # Report Maker
   get   "/report",                :controller => :portal, :action => :report
