@@ -123,7 +123,7 @@ class SessionsController < ApplicationController
 
   # This action receives a JSON authentication
   # request from globus and uses it to record or verify
-  # a user's identity, logging in the user if all is ok.
+  # a user's identity.
   def globus
     code  = params[:code].presence.try(:strip)
     state = params[:state].presence || 'wrong'
@@ -140,12 +140,13 @@ class SessionsController < ApplicationController
     end
     Rails.logger.info "Globus identity struct:\n#{identity_struct.pretty_inspect.strip}"
 
-    # Match emails and log in.
+    # Either record the identity...
     if current_user
       record_globus_identity(identity_struct)
       redirect_to user_path(current_user)
       return
     else
+      # ...or attempt login with it
       login_with_globus_identity(identity_struct)
     end
 
@@ -159,7 +160,8 @@ class SessionsController < ApplicationController
     redirect_to new_session_path
   end
 
-   # POST /unlink_globus
+  # POST /unlink_globus
+  # Removes a user's linked globus identity.
   def unlink_globus #:nodoc:
     redirect_to start_page_path unless current_user
 
@@ -306,8 +308,8 @@ class SessionsController < ApplicationController
     end
   end
 
-  # Record the globus identity for the current user
-  # This maybe shoudl be made into a User model method
+  # Record the globus identity for the current user.
+  # (This maybe should be made into a User model method)
   def record_globus_identity(identity)
     provider_id   = identity['identity_provider']              || cb_error("Globus: No identity provider")
     provider_name = identity['identity_provider_display_name'] || cb_error("Globus: No identity provider name")
@@ -325,6 +327,7 @@ class SessionsController < ApplicationController
     current_user.meta[:globus_provider_name]      = provider_name # used in show page
     current_user.meta[:globus_preferred_username] = pref_username
     current_user.addlog("Linked to Globus identity: '#{pref_username}' on provider '#{provider_name}'")
+
     flash[:notice] = "Your CBRAIN account is now linked to '#{pref_username}' on provider '#{provider_name}'"
   end
 
@@ -340,7 +343,7 @@ class SessionsController < ApplicationController
       orcid = pref_username.sub(/@.*/, "")
       users = User.find_all_by_meta_data(:orcid, orcid)
     else # All other globus providers
-      # We need a user which match both the username and provider_id
+      # We need a user which match both the preferred username and provider_id
       users = User.find_all_by_meta_data(:globus_preferred_username, pref_username)
         .to_a
         .select { |user| user.meta[:globus_provider_id] == provider_id }
