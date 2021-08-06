@@ -36,7 +36,7 @@ class SessionsController < ApplicationController
 
   api_available :only => [ :new, :show, :create, :destroy ]
 
-  before_action      :user_already_logged_in,    :only => [ :new, :create, :globus ]
+  before_action      :user_already_logged_in,    :only => [ :new, :create ]
   skip_before_action :verify_authenticity_token, :only => [ :create ] # we invoke it ourselves in create()
 
   def new #:nodoc:
@@ -122,8 +122,8 @@ class SessionsController < ApplicationController
   end
 
   # This action receives a JSON authentication
-  # request from globus and uses it to verify a user's
-  # identity, logging in the user if all is ok.
+  # request from globus and uses it to record or verify
+  # a user's identity.
   def globus
     code  = params[:code].presence.try(:strip)
     state = params[:state].presence || 'wrong'
@@ -140,31 +140,15 @@ class SessionsController < ApplicationController
     end
     Rails.logger.info "Globus identity struct:\n#{identity_struct.pretty_inspect.strip}"
 
-    # Globus has a security bug with ORCID, we reject those; TODO remove once they fix
-    # this, and adjust the map() below to remove the if-end block
-    rejected_providers = [ 'ORCID' ]
-
-    # Fetch emails; globus returns a standard record, but with additional
-    # identities under 'identity_set'; we kind of flatten this and extract all emails.
-    identity_set  = [] + (identity_struct["identity_set"] || [])
-    identity_set << identity_struct if identity_set.empty? # the full struct, even with the identity_set still in
-    emails = identity_set.map do |record|
-      provider_name = record['identity_provider_display_name'] # TODO (see above)
-      if rejected_providers.include? provider_name
-        Rails.logger.warn "Ignored Globus ORCID identity for #{record['email']}"
-        next nil
-      end
-      record["email"]
+    # Either record the identity...
+    if current_user
+      record_globus_identity(identity_struct)
+      redirect_to user_path(current_user)
+      return
+    else
+      # ...or attempt login with it
+      login_with_globus_identity(identity_struct)
     end
-    emails.compact!
-
-    # Check email against user list
-    if emails.empty?
-      cb_error "No provider email addresses are found in your Globus identities. Sorry. (Note: ORCID identities are not supported)"
-    end
-
-    # Match emails and log in.
-    login_with_globus_emails(emails)
 
   rescue CbrainException => ex
     flash[:error] = "#{ex.message}" if ex.is_a?(CbrainException)
@@ -174,6 +158,20 @@ class SessionsController < ApplicationController
     Rails.logger.error "Globus auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
     flash[:error] = 'The Globus authentication failed'
     redirect_to new_session_path
+  end
+
+  # POST /unlink_globus
+  # Removes a user's linked globus identity.
+  def unlink_globus #:nodoc:
+    redirect_to start_page_path unless current_user
+
+    current_user.meta[:globus_provider_id]        = nil
+    current_user.meta[:globus_provider_name]      = nil
+    current_user.meta[:globus_preferred_username] = nil
+    current_user.addlog("Unlinked Globus identity")
+
+    flash[:notice] = "You account is no longer linked to any Globus identity"
+    redirect_to user_path(current_user)
   end
 
   ###############################################
@@ -310,23 +308,57 @@ class SessionsController < ApplicationController
     end
   end
 
-  # Given a list of emails, find a single user that match them
-  # and proceed to activate the session for that user.
-  def login_with_globus_emails(emails)
+  # Record the globus identity for the current user.
+  # (This maybe should be made into a User model method)
+  def record_globus_identity(identity)
+    provider_id   = identity['identity_provider']              || cb_error("Globus: No identity provider")
+    provider_name = identity['identity_provider_display_name'] || cb_error("Globus: No identity provider name")
+    pref_username = identity['preferred_username']             || cb_error("Globus: No preferred username")
 
-    # Find the users that have these emails. Hopefully, only one.
-    users = User.where(:email => emails)
+    # Special case for ORCID, because we already have fields for that provider
+    if provider_name == 'ORCID'
+      orcid = pref_username.sub(/@.*/, "")
+      current_user.meta['orcid'] = orcid
+      flash[:notice] = 'Your ORCID ID has been linked to your CBRAIN account.'
+      return
+    end
+
+    current_user.meta[:globus_provider_id]        = provider_id
+    current_user.meta[:globus_provider_name]      = provider_name # used in show page
+    current_user.meta[:globus_preferred_username] = pref_username
+    current_user.addlog("Linked to Globus identity: '#{pref_username}' on provider '#{provider_name}'")
+
+    flash[:notice] = "Your CBRAIN account is now linked to '#{pref_username}' on provider '#{provider_name}'"
+  end
+
+  # Given a globus identity structure, find the user
+  # that matches it and activate the session for that user.
+  def login_with_globus_identity(identity)
+    provider_id   = identity['identity_provider']              || cb_error("Globus: No identity provider")
+    provider_name = identity['identity_provider_display_name'] || cb_error("Globus: No identity provider name")
+    pref_username = identity['preferred_username']             || cb_error("Globus: No preferred username")
+
+    # Special case for ORCID, because we already have fields for that provider
+    if provider_name == 'ORCID'
+      orcid = pref_username.sub(/@.*/, "")
+      users = User.find_all_by_meta_data(:orcid, orcid)
+    else # All other globus providers
+      # We need a user which match both the preferred username and provider_id
+      users = User.find_all_by_meta_data(:globus_preferred_username, pref_username)
+        .to_a
+        .select { |user| user.meta[:globus_provider_id] == provider_id }
+    end
 
     if users.size == 0
-      flash[:error] = "No CBRAIN user matches your Globus email addresses. Create a CBRAIN account or set your existing CBRAIN account email to your Globus provider's email."
-      Rails.logger.info "GLOBUS warning: no CBRAIN accounts found for emails: #{emails.join(", ")}"
+      flash[:error] = "No CBRAIN user matches your Globus identity. Create a CBRAIN account or link your existing CBRAIN account to your Globus provider."
+      Rails.logger.error "GLOBUS warning: no CBRAIN accounts found for identity '#{pref_username}' on provider '#{provider_name}'"
       redirect_to new_session_path
       return
     end
 
     if users.size > 1
-      flash[:notice] = "Several CBRAIN user accounts match your Globus email addresses. Please contact the CBRAIN admins."
-      Rails.logger.info "GLOBUS error: multiple CBRAIN accounts found for emails: #{emails.join(", ")}"
+      flash[:error] = "Several CBRAIN user accounts match your Globus identity. Please contact the CBRAIN admins."
+      Rails.logger.error "GLOBUS error: multiple CBRAIN accounts found for identity '#{pref_username}' on provider '#{provider_name}'"
       redirect_to new_session_path
       return
     end
@@ -335,7 +367,7 @@ class SessionsController < ApplicationController
     user = users.first
 
     # Login the user
-    all_ok = create_from_user(user, 'CBRAIN/Globus')
+    all_ok = create_from_user(user, "CBRAIN/Globus/#{provider_name}")
 
     if ! all_ok
       redirect_to new_session_path

@@ -155,6 +155,46 @@
 
   <% end %>
 
+  <%= show_table(@user, :as => :user, :header => 'Linked Identities') do |t| %>
+    <%
+      prov_id   = @user.meta[:globus_provider_id]
+      prov_name = @user.meta[:globus_provider_name]
+      prov_user = @user.meta[:globus_preferred_username]
+      orcid_id  = @user.meta[:orcid]
+    %>
+
+    <% if @globus_uri %>
+    <% t.cell "Globus Provider", :show_width => 2 do %>
+       <% if prov_id %>
+         <strong>Provider name:</strong> <%= prov_name %><br>
+         <strong>Provider user:</strong> <%= prov_user %><br>
+         <%= link_to('Unlink this Globus identity', unlink_globus_path,
+               :class  => "button",
+               :method => :post,
+               :data   => { :confirm => "Are you sure you want to unlink your account with this Globus identity?" }
+             )
+         %>
+       <% else %>
+         (No Globus identity linked to your account)<br>
+         <%= link_to 'Link a Globus identity', @globus_uri, :class => 'button globus_button' %>
+       <% end %>
+    <% end %>
+    <% end %>
+
+    <%
+      # Note: should be in a if/end block testing for the configuration of orcid_uri, like in NeuroHub
+    %>
+    <% t.cell "ORCID Identity", :show_width => 2 do %>
+       <% if orcid_id %>
+         <strong>ORCID ID:</strong> <%= orcid_id %>
+       <% else %>
+         (No ORCID identity linked to your account)
+       <% end %>
+       <p><small><strong>Note:</strong> Use the <%= link_to "NeuroHub interface", myaccount_path %> to manage the ORCID identity link</small>
+    <% end %>
+
+  <% end %>
+
   <%= show_table(@user, :as => :user, :header => 'Sessions And Tokens', :edit_condition => false) do |t| %>
     <% t.cell "Active Sessions", :show_width => 2 do %>
 
