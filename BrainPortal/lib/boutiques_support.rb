@@ -58,20 +58,84 @@ module BoutiquesSupport
       self
     end
 
-    def inputs=(array)
+    def self.new_from_string(text)
+      self.new(JSON.parse(text))
+    end
+
+    def self.new_from_file(path)
+      self.new_from_string(File.read(path))
+    end
+
+    # ------------------------------
+    # Attribute assignment overrides
+    # ------------------------------
+    # These methods replaces arrays of plain hashes with arrays
+    # of more useful objects (Input, OutputFile, etc)
+
+    def inputs=(array) #:nodoc:
       super( array.map { |elem| Input.new(elem) } )
     end
 
-    def output_files=(array)
+    def output_files=(array) #:nodoc:
       super( array.map { |elem| OutputFile.new(elem) } )
     end
 
-    def groups=(array)
+    def groups=(array) #:nodoc:
       super( array.map { |elem| Group.new(elem) } )
     end
 
-    def container_image=(obj)
+    def container_image=(obj) #:nodoc:
       super( ContainerImage.new(obj) )
+    end
+
+    # ------------------------------
+    # Userful utility methods
+    # ------------------------------
+
+    def input_by_id(inputid)
+      inputs.detect { |x| x.id == input_id } or
+        cb_error "No input found with ID '#{inputid}'"
+    end
+
+    def optional_inputs
+      inputs.select { |x| x.optional }
+    end
+
+    def required_inputs
+      inputs.select { |x| ! x.optional }
+    end
+
+    def list_inputs
+      inputs.select { |x| x.list }
+    end
+
+    def file_inputs
+      inputs.select { |x| x.type == 'File' }
+    end
+
+    def optional_file_inputs
+      file_inputs.select { |x| x.optional }
+    end
+
+    def required_file_inputs
+      file_inputs.select { |x| ! x.optional }
+    end
+
+    class Input
+
+      # This method return the parameter name for the input.
+      # We put all input Boutiques parameters under a 'invoke' substructure.
+      # E.g. for string input 'abcd' in a task, we'll find the value
+      # in task.params['invoke']['abcd'] and the parameter name is thus
+      # "invoke[abcd]"
+      def cb_invoke_name
+        if self.list
+          "invoke[#{self.id}][]" # .to_la is a String method added by CBRAIN
+        else
+          "invoke[#{self.id}]"
+        end
+      end
+
     end
 
   end
