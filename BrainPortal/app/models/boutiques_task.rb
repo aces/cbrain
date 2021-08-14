@@ -159,8 +159,31 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
       check_oneisrequired_group(group) if group.one_is_required
     end
 
-    xxx
+    # ----------------------------------------
+    # Check the content of all CbCsv files
+    # ----------------------------------------
+    # Get all the input cbcsv files
+    cbcsvs  = self.cbcsv_files
+    numRows = nil # Keep track of number of files per cbcsv
+    # Validate each cbcsv (all columns match per row, user has access to the file)
+    for input, cbcsv in cbcsvs
+      invokename = input.cb_invoke_name
+      # Error if the type is wrong
+      next unless checkCbcsvType.(cbcsv, invokename)
+      # Ensure user access is correct
+      next unless ascertainCbcsvUserAccess.(cbcsv, invokename)
+      # If the number of rows does not match, error
+      currNumRows = (cbcsv.ordered_raw_ids || []).length
+      numRows     = numRows.nil? ? currNumRows : numRows
+      if currNumRows != numRows
+        params_errors.add(invokename, " does not have the same number of files (#{currNumRows}) as in other present cbcsvs (#{numRows})")
+        next
+      end
+      # Validate the other file columns
+      validateCols.(cbcsv, invokename)
+    end
 
+    "" # No special message for user
   end # after_form
 
   # Portal-side utilities
@@ -173,6 +196,60 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
   def isInactive(input)
     key = input.is_a?(BoutiquesDescriptor::Input) ? input.id : input
     invoke_params[key].nil? || (invoke_params[key] == false)
+  end
+
+  # Returns all the cbcsv files present (i.e. set by the user as inputs), as tuples (input, Userfile)
+  def cbcsv_files
+    descriptor = descriptor_for_after_form
+    descriptor.file_inputs.map do |input|
+        next if input.list
+        userfile_id = invoke_params[input.id]
+        next if userfile_id.nil?
+        userfile = Userfile.find_accessible_by_user(userfile_id, self.user, :access_requested => file_access)
+        next unless ( userfile.is_a?(CbrainFileList) || (userfile.suggested_file_type || Object) <= CbrainFileList )
+        [ input, userfile ]
+    end.compact
+  end
+
+  # Checks that the cbcsv is the correct type
+  # Current implementation will output an error here if a person uploads a cbcsv
+  # but forgets to change its type to cbcsv. I.e. we assume it is an error to use
+  # a .cbcsv for anything except generating a CbrainFileList object.
+  def checkCbcsvType(f,id)
+    isCbcsv = f.is_a?(CbrainFileList)
+    msg = " is not of type CbrainFileList (file #{f.name})! Please convert it with the file manager. (Type: #{f.class})"
+    params_errors.add(id, msg) unless isCbcsv
+    isCbcsv
+  end
+
+  # Check that the user can access the cbcsv files
+  def ascertainCbcsvUserAccess(f,id)
+    # Error message when a file cannot be found (e.g. non-existent id)
+    msg1 = lambda { |i| " - unable to find file with id #{i} in cbcsv #{f.name}. Ensure you own all the given files." }
+    # Error message when an exception is thrown
+    msg2 = lambda { |e| " cbcsv accessibility error in #{f.name}! Possibly due to cbcsv malformation. (Received error: #{e.inspect})" }
+    errFlag = true # Whether the error checking found a problem
+    begin # Check that the user has access to all of the files in the cbcsv
+      fs = f.userfiles_accessible_by_user!(self.user, nil, nil, file_access)
+      for i in f.ordered_raw_ids.select{ |r| (! r.nil?) && (r.to_s != '0') }
+        accessible = ! ( Userfile.find_accessible_by_user( i, self.user, :access_requested => file_access ) rescue nil ).nil?
+        params_errors.add( id, msg1.(i) ) unless accessible
+        errFlag = false unless accessible
+      end
+    rescue => e # Catches errors from userfiles_accessible_by_user
+      params_errors.add( id, msg2.(e) )
+      errFlag = false
+    end
+    errFlag
+  end
+
+  # Check that the validation of the other columns of a CBCSV goes through
+  def validateCols(cbcsv,id)
+    # Error-check the remainder of the file with max_errors = 1 and non-strict (so zero rows can have anything in them)
+    allGood   = cbcsv.validate_extra_attributes(self.user, 1, false, file_access) rescue false # returns true if no errors
+    allGood ||= cbcsv.errors # If there were errors, we want to look at them
+    params_errors.add(id, "has attributes (in cbcsv: #{cbcsv.name}) that are invalid (Received error: #{allGood.messages})") unless (allGood == true)
+    allGood
   end
 
   # Ensure that the +input+ parameter is not null and matches a generic tool
