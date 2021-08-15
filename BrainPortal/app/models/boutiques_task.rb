@@ -24,21 +24,43 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # This method returns the BoutiquesDescriptor
+  # directly associated with the ToolConfig for the task
   def boutiques_descriptor
     self.tool_config.boutiques_descriptor
   end
 
+  # This method returns the same descriptor as
+  # boutiques_descriptor(), by default, but can be overriden
+  # by subclasses to change the behavior of what happens
+  # in the before_form() method.
   def descriptor_for_before_form
-    boutiques_descriptor
+    self.boutiques_descriptor
   end
 
+  # This method returns the same descriptor as
+  # boutiques_descriptor(), by default, but can be overriden
+  # by subclasses to change the behavior of what happens
+  # in the after_form() method.
   def descriptor_for_after_form
-    boutiques_descriptor
+    self.boutiques_descriptor
   end
 
-  # STANDARD PORTAL TASK METHODS
+  # This method returns the same descriptor as
+  # boutiques_descriptor(), by default, but can be overriden
+  # by subclasses to change the behavior of what happens
+  # in the final_task_list() method.
+  def descriptor_for_final_task_list
+    self.boutiques_descriptor
+  end
 
-  def self.properties
+
+
+  ##############################
+  # STANDARD PORTAL TASK METHODS
+  ##############################
+
+  def self.properties #:nodoc:
     {
       :no_submit_button      => false,
       :no_presets            => false,
@@ -46,17 +68,20 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
     }
   end
 
-  def default_launch_args
-    descriptor_for_before_form
+  def default_launch_args #:nodoc:
+    invoke_struct = self.descriptor_for_before_form
       .inputs
       .reject { |input|   input.type == 'File' }
       .select { |input| ! input.default_value.nil? }
       .map    { |input| [ input.id, input.default_value ] }
       .to_h
+    {
+      :invoke => invoke_struct,
+    }
   end
 
   def before_form
-    descriptor        = descriptor_for_before_form
+    descriptor        = self.descriptor_for_before_form
 
     num_needed_inputs = descriptor.required_file_inputs.size
     num_opt_inputs    = descriptor.optional_file_inputs.size
@@ -83,7 +108,10 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
   end
 
   def after_form
-    descriptor = descriptor_for_after_form
+    descriptor = self.descriptor_for_after_form
+
+    # Record pretty params names in class
+    self.class.add_pretty_params_names(descriptor.inputs || [])
 
     # -------------------------
     # Sanitize parameter values
@@ -159,9 +187,9 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
       check_oneisrequired_group(group) if group.one_is_required
     end
 
-    # ----------------------------------------
-    # Check the content of all CbCsv files
-    # ----------------------------------------
+    # ------------------------------------------------
+    # Check the content of all CbrainFileLists (cbcsv)
+    # ------------------------------------------------
     # Get all the input cbcsv files
     cbcsvs  = self.cbcsv_files
     numRows = nil # Keep track of number of files per cbcsv
@@ -173,11 +201,14 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
       # Ensure user access is correct
       next unless ascertainCbcsvUserAccess.(cbcsv, invokename)
       # If the number of rows does not match, error
-      currNumRows = (cbcsv.ordered_raw_ids || []).length
-      numRows     = numRows.nil? ? currNumRows : numRows
-      if currNumRows != numRows
-        params_errors.add(invokename, " does not have the same number of files (#{currNumRows}) as in other present cbcsvs (#{numRows})")
-        next
+      # We need only check this for inputs that are not "list".
+      if ! input.list
+        currNumRows = (cbcsv.ordered_raw_ids || []).length
+        numRows     = numRows.nil? ? currNumRows : numRows
+        if currNumRows != numRows
+          params_errors.add(invokename, " does not have the same number of files (#{currNumRows}) as in other present cbcsvs (#{numRows})")
+          next
+        end
       end
       # Validate the other file columns
       validateCols.(cbcsv, invokename)
@@ -186,9 +217,135 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
     "" # No special message for user
   end # after_form
 
-  # Portal-side utilities
+  def self.pretty_params_names
+    @_pretty_params_names ||= {}
+    super.merge @_pretty_params_names
+  end
 
-  private
+  def self.add_pretty_params_names(inputs)
+    @_pretty_params_names ||= {}
+    inputs.each do |input|
+      invokename = input.cb_invoke_name
+      pretty     = input.name
+      @_pretty_params_names[invokename] = pretty
+    end
+    @_pretty_params_names
+  end
+
+  # Final set of tasks to be launched based on this task's parameters. Only
+  # useful if the parameters set for this task represent a set of tasks
+  # instead of just one.
+  def final_task_list #:nodoc:
+    descriptor = self.descriptor_for_final_task_list
+
+    # --------------------------------------
+    # Special case where there is a single file input
+    # We generate one task per selected file, PLUS
+    # one task for each file inside any CbrainFileLists
+    # in that set too. So if the user selects:
+    #
+    #   (TextFile), (CbCsv with 3 files), (TextFile), (CbCsv with 2 files)
+    #
+    # then we will generate 7 tasks in total.
+    # --------------------------------------
+    if descriptor.inputs.size == 1
+      input = descriptor.inputs.first
+
+      fillTask = lambda do |userfile_id,tsk|
+        tsk.invoke_params[input.id] = userfile_id
+        tsk.sanitize_param(input, :file)
+        tsk.description ||= ''
+        tsk.description  += " #{input.id}: #{Userfile.find(userfile_id).name}"
+        tsk.description.strip!
+        tsk
+      end
+
+      tasklist = self.params[:interface_userfile_ids].map do |userfile_id|
+        f = Userfile.find_accessible_by_user( id, self.user, :access_requested => file_access )
+        if ! f.is_a?( CbrainFileList || input.list )
+          task = self.dup
+          fillTask.( f.id, task )
+        else
+          ufiles = f.userfiles_accessible_by_user!( self.user, nil, nil, file_access )
+          # Skip files that are purposefully nil (e.g. given id 0 by the user)
+          subtasks = ufiles.select { |u| ! u.nil? }.map { |a| fillTask.( a.id, task.dup ) }
+          subtasks # an array of tasks
+        end
+      end
+
+      return tasklist.flatten
+    end # When only one file input
+
+    # --------------------------------------
+    # General case: more than one file input
+    # In that case we expand CBCsv
+    # --------------------------------------
+
+    # Grab all the cbcsv input files
+    cbcsvs = self.cbcsv_files(descriptor)
+    cbcsvs.reject! { |pair| pair[0].list } # ignore file inputs with list=true; they just get the CBCSV directly
+
+    # Default case: just return self as a single task
+    # if there are no cbcsvs involved
+    if cbcsvs.empty?
+      return [ self ] # just one task
+    end
+
+    # Array with the actual userfiles corresponding to the cbcsv
+    mapCbcsvToUserfiles = cbcsvs.map { |f| f[1].ordered_raw_ids.map { |i| (i==0) ? nil : i } }
+    # Task list to fill and total number of tasks to output
+    tasklist = []
+    nTasks   = mapCbcsvToUserfiles[0].length
+    # Iterate over each task that needs to be generated
+    for i in 0..(nTasks - 1)
+      # Clone this task
+      currTask = self.dup
+      # Replace each cbcsv with an entry
+      cbcsvs.map { |f| f[0] }.each_with_index do |cinput,j|
+        currId = mapCbcsvToUserfiles[j][i]
+        #currTask.params[:interface_userfile_ids] << mapCbcsvToUserfiles unless currId.nil?
+        currTask.invoke_params[cinput.id] = currId # If id = 0 or nil, currId = nil
+        currTask.invoke_params.delete(cinput.id) if currId.nil?
+      end
+      # Add the new task to our tasklist
+      tasklist << currTask
+    end
+
+    return tasklist
+  end
+
+  # Task parameters to leave untouched by the edit task mechanism. Usually
+  # for parameters added in after_form or final_task_list, as those wouldn't
+  # be present on the form and thus lost when the task is edited.
+  def untouchable_params_attributes #:nodoc:
+    descriptor  = boutiques_descriptor
+    outputs     = descriptor.outputs || []
+
+    # Output parameters will be present after the task has run and need to be
+    # preserved.
+    output_syms = outputs.map { |output| "_cbrain_output_#{output.id}".to_sym }
+    super.merge(
+      output_syms.map { |sym| [ sym, true] }.to_h
+    )
+  end
+
+
+
+  ################################
+  # Portal-side utilities
+  ################################
+
+  # Returns all the cbcsv files present (i.e. set by the user as inputs), as tuples (input, Userfile)
+  def cbcsv_files(descriptor = self.descriptor_for_after_form)
+    descriptor.file_inputs.map do |input|
+        #next if input.list
+        userfile_id = invoke_params[input.id]
+        next if userfile_id.nil?
+        userfile = Userfile.find_accessible_by_user(userfile_id, self.user, :access_requested => file_access)
+        next unless ( userfile.is_a?(CbrainFileList) || (userfile.suggested_file_type || Object) <= CbrainFileList )
+        [ input, userfile ]
+    end.compact
+  end
 
   # Helper function for detecting inactive parameters (or false for flag-type parameters)
   # Note that empty strings are allowed and no parameter types except flags pass booleans
@@ -196,19 +353,6 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
   def isInactive(input)
     key = input.is_a?(BoutiquesDescriptor::Input) ? input.id : input
     invoke_params[key].nil? || (invoke_params[key] == false)
-  end
-
-  # Returns all the cbcsv files present (i.e. set by the user as inputs), as tuples (input, Userfile)
-  def cbcsv_files
-    descriptor = descriptor_for_after_form
-    descriptor.file_inputs.map do |input|
-        next if input.list
-        userfile_id = invoke_params[input.id]
-        next if userfile_id.nil?
-        userfile = Userfile.find_accessible_by_user(userfile_id, self.user, :access_requested => file_access)
-        next unless ( userfile.is_a?(CbrainFileList) || (userfile.suggested_file_type || Object) <= CbrainFileList )
-        [ input, userfile ]
-    end.compact
   end
 
   # Checks that the cbcsv is the correct type
@@ -230,9 +374,9 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
     msg2 = lambda { |e| " cbcsv accessibility error in #{f.name}! Possibly due to cbcsv malformation. (Received error: #{e.inspect})" }
     errFlag = true # Whether the error checking found a problem
     begin # Check that the user has access to all of the files in the cbcsv
-      fs = f.userfiles_accessible_by_user!(self.user, nil, nil, file_access)
+      f.userfiles_accessible_by_user!(self.user, nil, nil, file_access) # side effect: cache entries within f
       for i in f.ordered_raw_ids.select{ |r| (! r.nil?) && (r.to_s != '0') }
-        accessible = ! ( Userfile.find_accessible_by_user( i, self.user, :access_requested => file_access ) rescue nil ).nil?
+        accessible = Userfile.find_accessible_by_user( i, self.user, :access_requested => file_access ) rescue nil
         params_errors.add( id, msg1.(i) ) unless accessible
         errFlag = false unless accessible
       end
@@ -297,11 +441,12 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
       # Nothing special required for strings, bar for symbols being acceptable strings.
       when :string
         value = value.to_s if value.is_a?(Symbol)
-        params_errors.add(invokename, " not a string (#{value})")       unless value.is_a?(String)
+        params_errors.add(invokename, " not a string (#{value})")      unless value.is_a?(String)
+        params_errors.add(invokename, " is blank")                         if value.blank?
         # The following two checks are to prevent cases when
         # a string param is used as a path
-        params_errors.add(invokename, " cannot contain newlines")            if value.to_s =~ /[\n\r]/
-        params_errors.add(invokename, " cannot start with these characters") if value.to_s =~ /^[\.\/]+/
+        params_errors.add(invokename, " cannot contain newlines")          if value.to_s =~ /[\n\r]/
+        params_errors.add(invokename, " cannot start with this character") if value.to_s =~ /^[\.\/]+/
 
       # Try to match against various common representation of true and false
       when :flag
@@ -318,11 +463,12 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
       # of the correct type.
       when :file
         unless (Integer(value) rescue nil)
-          params_errors.add(invokename, ": invalid or missing userfile (ID #{value})")
+          params_errors.add(invokename, ": invalid or missing userfile")
           next value
         end
 
-        unless (file = Userfile.find_accessible_by_user(value, self.user, :access_requested => file_access_symbol()))
+        file = Userfile.find_accessible_by_user(value, self.user, :access_requested => file_access_symbol()) rescue nil
+        unless file
           params_errors.add(invokename, ": cannot find userfile (ID #{value})")
           next value
         end
@@ -396,7 +542,7 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
     end
   end
 
-  def check_mutex_group(group, descriptor = descriptor_for_after_form)
+  def check_mutex_group(group, descriptor = self.descriptor_for_after_form)
     members = group.members
     are_set = members.select { |inputid| ! isInactive(inputid) }
     return if are_set.size <= 1
@@ -407,18 +553,14 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
     end
   end
 
-  def check_oneisrequired_group(group, descriptor = descriptor_for_after_form)
+  def check_oneisrequired_group(group, descriptor = self.descriptor_for_after_form)
     members = group.members
     are_set = members.select { |inputid| ! isInactive(inputid) }
     return if are_set.size > 0
     params_errors.add(group.name, " need at least one parameter set")
   end
 
-xxx
-
   # MAYBE IN COMMON
-
-  public
 
   def invoke_params
     self.params['invoke'] ||= {}
