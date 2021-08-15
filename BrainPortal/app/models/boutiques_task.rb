@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
+class BoutiquesTask < PortalTask # TODO PortalTask vs ClusterTask
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
@@ -128,10 +128,17 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
     end
 
     # ---------------------------------------------------------------
+    # Check that there are no spurious parameters
+    # ---------------------------------------------------------------
+    expected = descriptor.inputs.map(&:id)
+    notexp   = invoke_params.keys - expected
+    self.errors.add(:base, "We received some unexpected parameters: #{notexp.join(", ")}") if notexp.present?
+
+    # ---------------------------------------------------------------
     # Check that any enum parameters have been given allowable values
     # ---------------------------------------------------------------
 
-    descriptor.inputs.select(&value_choices).each do |input|
+    descriptor.inputs.select(&:value_choices).each do |input|
       check_enum_param(input) unless isInactive(input)
     end
 
@@ -148,6 +155,7 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
     # ----------------------------------------
 
     descriptor.list_inputs.each do |input|
+      next if input.type == 'File' # these are special
       check_list_param(input) unless isInactive(input)
     end
 
@@ -261,12 +269,12 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
       end
 
       tasklist = self.params[:interface_userfile_ids].map do |userfile_id|
-        f = Userfile.find_accessible_by_user( id, self.user, :access_requested => file_access )
+        f = Userfile.find_accessible_by_user( id, self.user, :access_requested => file_access_symbol() )
         if ! f.is_a?( CbrainFileList || input.list )
           task = self.dup
           fillTask.( f.id, task )
         else
-          ufiles = f.userfiles_accessible_by_user!( self.user, nil, nil, file_access )
+          ufiles = f.userfiles_accessible_by_user!( self.user, nil, nil, file_access_symbol() )
           # Skip files that are purposefully nil (e.g. given id 0 by the user)
           subtasks = ufiles.select { |u| ! u.nil? }.map { |a| fillTask.( a.id, task.dup ) }
           subtasks # an array of tasks
@@ -341,7 +349,7 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
         #next if input.list
         userfile_id = invoke_params[input.id]
         next if userfile_id.nil?
-        userfile = Userfile.find_accessible_by_user(userfile_id, self.user, :access_requested => file_access)
+        userfile = Userfile.find_accessible_by_user(userfile_id, self.user, :access_requested => file_access_symbol())
         next unless ( userfile.is_a?(CbrainFileList) || (userfile.suggested_file_type || Object) <= CbrainFileList )
         [ input, userfile ]
     end.compact
@@ -351,7 +359,7 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
   # Note that empty strings are allowed and no parameter types except flags pass booleans
   # The argument 'x' can either be a Input object, or a string for the ID of the input param.
   def isInactive(input)
-    key = input.is_a?(BoutiquesDescriptor::Input) ? input.id : input
+    key = input.is_a?(BoutiquesSupport::Input) ? input.id : input
     invoke_params[key].nil? || (invoke_params[key] == false)
   end
 
@@ -374,9 +382,9 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
     msg2 = lambda { |e| " cbcsv accessibility error in #{f.name}! Possibly due to cbcsv malformation. (Received error: #{e.inspect})" }
     errFlag = true # Whether the error checking found a problem
     begin # Check that the user has access to all of the files in the cbcsv
-      f.userfiles_accessible_by_user!(self.user, nil, nil, file_access) # side effect: cache entries within f
+      f.userfiles_accessible_by_user!(self.user, nil, nil, file_access_symbol()) # side effect: cache entries within f
       for i in f.ordered_raw_ids.select{ |r| (! r.nil?) && (r.to_s != '0') }
-        accessible = Userfile.find_accessible_by_user( i, self.user, :access_requested => file_access ) rescue nil
+        accessible = Userfile.find_accessible_by_user( i, self.user, :access_requested => file_access_symbol() ) rescue nil
         params_errors.add( id, msg1.(i) ) unless accessible
         errFlag = false unless accessible
       end
@@ -390,7 +398,7 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
   # Check that the validation of the other columns of a CBCSV goes through
   def validateCols(cbcsv,id)
     # Error-check the remainder of the file with max_errors = 1 and non-strict (so zero rows can have anything in them)
-    allGood   = cbcsv.validate_extra_attributes(self.user, 1, false, file_access) rescue false # returns true if no errors
+    allGood   = cbcsv.validate_extra_attributes(self.user, 1, false, file_access_symbol()) rescue false # returns true if no errors
     allGood ||= cbcsv.errors # If there were errors, we want to look at them
     params_errors.add(id, "has attributes (in cbcsv: #{cbcsv.name}) that are invalid (Received error: #{allGood.messages})") unless (allGood == true)
     allGood
@@ -492,7 +500,7 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
     value = invoke_params[input.id]
     string_values  = Array(value).map(&:to_s)
     allowed_values = input.value_choices.map(&:to_s)
-    next if (string_values - allowed_values).empty? # I hope that comparing the sets as strings is OK
+    return if (string_values - allowed_values).empty? # I hope that comparing the sets as strings is OK
     params_errors.add(input.cb_invoke_name, "was not given an acceptable value")
   end
 
@@ -530,7 +538,7 @@ class BoutiquesTask < CbrainTask # TODO PortalTask vs ClusterTask
     values = invoke_params[input.id]
     if ! values.is_a?(Enumerable)
       params_errors.add(input.cb_invoke_name, "is not a list?!?") # internal error?
-      next
+      return
     end
     min   = input.min_list_entries # can be nil
     max   = input.max_list_entries # can be nil
