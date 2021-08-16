@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-class BoutiquesTask < PortalTask # TODO PortalTask vs ClusterTask
+class BoutiquesPortalTask < PortalTask # TODO PortalTask vs ClusterTask
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
@@ -205,9 +205,9 @@ class BoutiquesTask < PortalTask # TODO PortalTask vs ClusterTask
     for input, cbcsv in cbcsvs
       invokename = input.cb_invoke_name
       # Error if the type is wrong
-      next unless checkCbcsvType.(cbcsv, invokename)
+      next unless checkCbcsvType(cbcsv, invokename)
       # Ensure user access is correct
-      next unless ascertainCbcsvUserAccess.(cbcsv, invokename)
+      next unless ascertainCbcsvUserAccess(cbcsv, invokename)
       # If the number of rows does not match, error
       # We need only check this for inputs that are not "list".
       if ! input.list
@@ -219,7 +219,7 @@ class BoutiquesTask < PortalTask # TODO PortalTask vs ClusterTask
         end
       end
       # Validate the other file columns
-      validateCols.(cbcsv, invokename)
+      validateCols(cbcsv, invokename)
     end
 
     "" # No special message for user
