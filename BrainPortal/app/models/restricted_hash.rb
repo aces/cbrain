@@ -51,7 +51,7 @@
 #
 # In that case the class that x belongs to is an anonymous
 # subclass of RestrictedHash.
-class RestrictedHash < Hash
+class RestrictedHash < HashWithIndifferentAccess
 
    Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
@@ -91,7 +91,7 @@ class RestrictedHash < Hash
    # Returns true if +myattr+ is one of the allowed keys
    # in this restricted hash class.
    def self.key_is_allowed?(myattr)
-     @allowed_keys[myattr]
+     @allowed_keys[myattr] || @allowed_keys[myattr.to_sym] || @allowed_keys[myattr.to_s]
    end
 
    # Returns true if +myattr+ is one of the allowed keys

@@ -1,0 +1,301 @@
+
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2021
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+class BoutiquesClusterTask < ClusterTask
+
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+  # Descriptor-based tasks are, by default, easily restartable and recoverable
+  include RestartableTask
+  include RecoverableTask
+
+  # This method returns the BoutiquesDescriptor
+  # directly associated with the ToolConfig for the task
+  def boutiques_descriptor
+    self.tool_config.boutiques_descriptor
+  end
+
+  # This method returns the same descriptor as
+  # boutiques_descriptor(), by default, but can be overriden
+  # by subclasses to change the behavior of what happens
+  # in the setup() method.
+  def descriptor_for_setup
+    self.boutiques_descriptor
+  end
+
+  # This method returns the same descriptor as
+  # boutiques_descriptor(), by default, but can be overriden
+  # by subclasses to change the behavior of what happens
+  # in the cluster_commands() method.
+  def descriptor_for_cluster_commands
+    self.boutiques_descriptor
+  end
+
+  # This method returns the same descriptor as
+  # boutiques_descriptor(), by default, but can be overriden
+  # by subclasses to change the behavior of what happens
+  # in the save_results() method.
+  def descriptor_for_save_results
+    self.boutiques_descriptor
+  end
+
+
+
+  ##############################
+  # STANDARD PORTAL TASK METHODS
+  ##############################
+
+  def self.properties #:nodoc:
+    {
+      :can_submit_new_tasks => false, # TODO this is a class method, no access to descriptor
+    }
+  end
+
+  def setup
+    descriptor = self.descriptor_for_setup
+
+    descriptor.file_inputs.each do |input|
+      userfile_id = invoke_params[input.id]
+      next if userfile_id.blank? # that happens when it's an optional file
+      userfile    = Userfile.find(userfile_id)
+
+      # Most common situation
+      if ! input.list || ! userfile.is_a?(CbrainFileList)
+        make_available(userfile, userfile.name)
+        next
+      end
+
+      # In case the input is a list and is assigned a CbrainFileList
+      userfile.sync_to_cache
+      userfile_list = cbrainfilelist.userfiles_accessible_by_user!(user, nil, nil, file_access_symbol)
+      userfile_list.compact.each do |subfile|
+        make_available(subfile, subfile.name)
+      end
+    end
+
+    true
+  end
+
+  def cluster_commands
+    descriptor = self.descriptor_for_cluster_commands
+
+    invoke_struct = self.invoke_params.dup
+
+    descriptor.file_inputs.each do |input|
+      userfile_id = invoke_params[input.id]
+      next if userfile_id.blank? # that happens when it's an optional file
+      userfile    = Userfile.find(userfile_id)
+
+      # Most common situation
+      if ! input.list || ! userfile.is_a?(CbrainFileList)
+        invoke_struct[input.id] = (input.list ? [ userfile.name ] : userfile.name)
+        next
+      end
+
+      # In case the input is a list and is assigned a CbrainFileList
+      userfile.sync_to_cache
+      userfile_list = cbrainfilelist.userfiles_accessible_by_user!(user, nil, nil, file_access_symbol)
+      subnames = userfile_list.compact.map(&:name)  # [ 'userfilename1', 'userfilename2' ... ]
+      invoke_struct[input.id] = subnames
+    end
+
+    invoke_json_basename = "invoke.#{self.run_id}.json"
+    File.open(invoke_json_basename ,"w") do |fh|
+      fh.write JSON.pretty_generate(invoke_struct)
+      fh.write "\n"
+    end
+
+    boutiques_json_basename = "boutiques.#{self.run_id}.json"
+    File.open(boutiques_json_basename, "w") do |fh|
+      fh.write JSON.pretty_generate(descriptor)
+      fh.write "\n"
+    end
+
+    # The bosh launch command. This is all a single line, but broken up
+    # for readability.
+    commands = <<-COMMANDS
+      # Main invokation command
+      bosh exec launch                                                          \\
+        #{boutiques_json_basename.bash_escape}                                  \\
+        #{invoke_json_basename.bash_escape}
+        echo $? > #{exit_status_filename.bash_escape}
+    COMMANDS
+    commands.gsub!(/(\S)  +(\S)/,'\1 \2') # make pretty
+
+    [ commands ]
+  end
+
+  def save_results
+    descriptor = self.descriptor_for_save_results
+    custom     = descriptor.custom || {} # 'custom' is not packaged as an object, just a hash
+
+    if ! custom['cbrain:ignore-exit-status']
+      out = File.read(exit_status_filename()) rescue nil
+      if out.nil?
+        cb_error "Missing exit status file #{exit_status_filename()}"
+      end
+      if out.blank?
+        cb_error "Process did not complete successfully: status file is blank"
+      end
+      if out !~ /\A\d+\s*\z/
+        cb_error "Exit status file #{exit_status_filename()} has unexpected content"
+      end
+      status = out.strip.to_i
+      if status != 0
+        cb_error "Command failed, exit status #{status}"
+      end
+    end
+
+    invoke_json_basename    = "invoke.#{self.run_id}.json"
+    substitutions_by_ids    = JSON.parse(File.read(invoke_json_basename)) # id => val
+    substitutions_by_tokens = descriptor.inputs.map do |input|
+      next nil if input.value_key.blank?
+      value = substitutions_by_ids[input.id]
+      next nil if value.nil?
+      [ input.value_key, value ]
+    end.compact.to_h
+
+    all_ok           = true
+    cbrain_to_ignore = custom['cbrain:ignore_outputs'] || []
+    descriptor.output_files
+      .select { |output| ! cbrain_to_ignore.include?(output.id) }
+      .each do |output|
+      globpath = output.path_template
+      to_strip = output.path_template_stripped_extensions || []
+      substitutions_by_tokens.each do |key,val|
+        next if val.is_a?(Array) # not supported; what would it mean?
+        val = val.to_s
+        to_strip.each { |str| val.sub!(/\Q#{str}\z/,"") }
+        globpath.gsub!(key, val)
+      end
+
+      paths = Dir.glob(globpath)
+      if output.optional && paths.empty?
+        self.addlog("Skipped optional missing output file '#{globpath}' for output #{output.id}")
+        next
+      end
+
+      paths.each do |path|
+        if ! path_is_in_workdir?(path) # this also checks the existence
+          self.addlog("Output file is missing or outside of task work directory: #{path}")
+          all_ok = false
+        end
+
+        # Get name and filetype
+        self.addlog("Attempting to save result file #{path}")
+        name = File.basename(path)
+        userfile_class   = Userfile.suggested_file_type(name)
+        userfile_class ||= ( File.directory?(path) ? FileCollection : SingleFile )
+
+        # Add a run ID to the file name, to make sure the file doesn't exist.
+        name.sub!( /(\.\w+(\.gz|\.z|\.bz2|\.zip)?)?\z/i )  { |ext| "-#{self.run_id}" + ext }
+
+        # Save the file (possible overwrite if race condition)
+        output = safe_userfile_find_or_new(userfile_class, :name => name)
+
+        unless output.save
+          messages = output.errors.full_messages.join("; ")
+          self.addlog("Failed to save file #{path} as #{name}")
+          self.addlog(messages) if messages.present?
+          all_ok = false
+          next
+        end
+
+        # Transfer content to DataProvider
+        output.cache_copy_from_local_file(path)
+        params["_cbrain_output_#{output.id}"] ||= []
+        params["_cbrain_output_#{output.id}"]  << output.id
+        self.addlog("Saved result file #{name}")
+
+        # Add provenance logs
+        all_file_input_ids = descriptor.file_inputs.map do |input|
+          invoke_params[input.id]
+        end.compact.uniq
+        parents = Userfile.where(:id => all_file_input_ids).to_a
+        self.addlog_to_userfiles_these_created_these(parents, [output]) if parents.present?
+
+        # If there is only one input file, we move the output under it
+        output.move_to_child_of(parents[0]) if parents.size == 1
+      end # each path
+    end # each output
+
+    resync_inputs = custom['cbrain:save_back_inputs'] || []
+    if all_ok
+      resync_inputs.each do |input_id|
+        userfile_id = invoke_params[input_id].presence
+        next if ! userfile_id
+        userfile = Userfile.find(userfile_id)
+        self.addlog "Attempting to update input '#{userfile.name}' on DataProvider '#{userfile.data_provider.name}'"
+        userfile.cache_is_newer
+        userfile.sync_to_provider
+        self.addlog_to_userfiles_processed(userfile, "(content modified in place)")
+      end
+    end
+
+    all_ok
+  end
+
+  # Conservative maximal run time estimate for the job.
+  # This value should be somewhat larger than the longest
+  # expected run without being overly excessive; it will be submitted along
+  # with the job to the cluster management system for scheduling purposes.
+  def job_walltime_estimate
+    descriptor = self.descriptor_for_cluster_commands
+    custom     = descriptor.custom || {} # 'custom' is not packaged as an object, just a hash
+    if custom['cbrain:walltime-estimate'].present?
+      return custom['cbrain:walltime-estimate'].seconds
+    end
+    if descriptor.suggested_resources.present? &&
+       descriptor.suggested_resources['walltime-estimate'].present?
+       return descriptor.suggested_resources['walltime-estimate'].seconds
+    end
+    nil
+  end
+
+  # Local utility methods
+
+  # Filename used to hold the exit status of the tool.
+  # This file is generated as soon as the task is
+  # completed and is checked in +save_results+ to make sure the task succeeded.
+  def exit_status_filename
+    ".qsub.exit.#{self.name}.#{self.run_id}"
+  end
+
+
+
+  # MAYBE IN COMMON
+
+  def invoke_params
+    self.params['invoke'] ||= {}
+  end
+
+  # This determines if the task expects to only read its input files,
+  # or modify them, and return respectively :read or :write (the default).
+  # The symbol can be passed to methods such as Userfile.find_accessible_by_user().
+  # Depending on the value, more or less files are allowed to be processed.
+  # When the value is :read, it means we only need file for input and not
+  # for output.
+  def file_access_symbol
+    @_file_access ||= (self.class.properties[:readonly_input_files].present? || self.tool_config.try(:inputs_readonly) ? :read : :write)
+  end
+
+end

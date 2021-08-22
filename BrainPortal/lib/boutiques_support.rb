@@ -51,10 +51,11 @@ module BoutiquesSupport
       super(hash)
       # The following re-assignment transforms hashed into subobjects (like OutputFile etc)
       # as a side-effect. This is accomplished by the methods later in this class.
-      self.inputs          = self.inputs          || []
-      self.output_files    = self.output_files    || []
-      self.groups          = self.groups          || []
-      self.container_image = self.container_image || {}
+      self.inputs            = self.inputs          || []
+      self.output_files      = self.output_files    || []
+      self.groups            = self.groups          || []
+      self.container_image &&= self.container_image # we need to to remain nil if already nil
+      self.custom          &&= self.custom
       self
     end
 
