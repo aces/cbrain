@@ -60,7 +60,7 @@
     </div>
 </td>
 <td style="border-left: 0px">
-  <% if file.symbolic_type == :regular && file.size > 0 && file.size && file.size <  UserfilesController::MAX_DOWNLOAD_MEGABYTES.megabytes %>
+  <% if file.symbolic_type == :regular && file.size > 0 && file.size <  UserfilesController::MAX_DOWNLOAD_MEGABYTES.megabytes %>
     <%= link_to  url_for(:action  => :content, :content_loader => :collection_file, :arguments => file.name) do %>
       <span id="span" class="ui-button-icon ui-icon ui-icon-arrowthickstop-1-s"></span>
     <% end %>
