@@ -25,7 +25,7 @@
 <%
   locals      = { :params  => @task.params, :form => form }
   raw_partial = lambda do |partial|
-    @task.class.raw_partial(partial) if @task.class.respond_to?(:raw_partial)
+    @task.raw_partial(partial) if @task.respond_to?(:raw_partial)
   end
 %>
 

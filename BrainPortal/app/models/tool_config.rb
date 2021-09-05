@@ -465,4 +465,74 @@ class ToolConfig < ApplicationRecord
     }
   end
 
+  ##################################################################
+  # Boutiques Integrator: Descriptor Registration
+  ##################################################################
+
+  public
+
+  # This method stores in a class-level hash a BoutiquesDescriptor object
+  # associated with the attributes Tool#name and ToolConfig#tool_version .
+  # A tool config can then find a descriptor associated with itself using
+  # the lookup method registered_boutiques_descriptor().
+  def self.register_descriptor(descriptor, tool_name, tool_version) #:nodoc:
+    @_descriptors_ ||= {}
+    key = [ tool_name, tool_version ] # two strings
+    if @_descriptors_[key]
+      cb_error "Duplicate registration of a descriptor for Tool=#{tool_name} and Version=#{tool_version}"
+    end
+    @_descriptors_[key] = descriptor
+    tool         = Tool.where(:name => tool_name).first
+    tool_id      = tool.try(:id) || -999 # the -999 is just so the lookup below finds nothing
+    tool_configs = ToolConfig.where(:tool_id => tool_id, :version_name => tool_version)
+    tool_configs # returns the list of tool_configs in the DB that match the tool name and version
+  end
+
+  def self.registered_boutiques_descriptor(tool_name, tool_version) #:nodoc:
+    key = [ tool_name, tool_version ] # two strings
+    @_descriptors_[key]
+  end
+
+  def boutiques_descriptor
+    path = boutiques_descriptor_path.presence
+    if ! path
+      return self.class.registered_boutiques_descriptor(self.tool.name, self.version_name)
+    end
+    return @_descriptor_ if @_descriptor_
+    path = Pathname.new(path)
+    path = Pathname.new(CBRAIN::BoutiquesDescriptorsPlugins_Dir) + path if path.relative?
+    @_descriptor_ = BoutiquesSupport::BoutiquesDescriptor.new_from_file(path)
+  end
+
+  def self.create_from_descriptor(bourreau, tool, descriptor, record_path=false)
+
+    # Check if there is already a TC
+    tc = ToolConfig.where(
+      :tool_id      => tool.id,
+      :bourreau_id  => bourreau.id,
+      :version_name => descriptor.tool_version,
+    ).first
+    return tc if tc
+
+    ToolConfig.create!(
+      # Main three keys
+      :tool_id         => tool.id,
+      :bourreau_id     => bourreau.id,
+      :version_name    => descriptor.tool_version,
+      # Other attributes
+      :group_id        => User.admin.id,
+      :description     => "Auto-created by Boutiques integrator",
+      :env_array       => [],
+      :script_prologue => nil,
+      :script_epilogue => nil,
+      :ncpus           => 1,
+      :inputs_readonly => descriptor.custom['cbrain:readonly-input-files'].present?,
+      :boutiques_descriptor_path => (record_path.presence && descriptor.from_file),
+      # The following three attributes are for containerization; not sue about values
+      :container_engine          => descriptor.container_image.try(:type).presence.try(:capitalize),
+      :container_index_location  => descriptor.container_image.try(:index).presence,
+      :containerhub_image_name   => descriptor.container_image.try(:image).presence,
+    )
+  end
+
 end

@@ -41,6 +41,7 @@ module BoutiquesSupport
   BoutiquesDescriptor = Class.new(RestrictedHash) do |klass|
 
     allowed_keys top_prop_names # 'name', 'author' etc
+    attr_accessor :from_file
 
     Input          = Class.new(RestrictedHash) { |klass| allowed_keys input_prop_names  }
     OutputFile     = Class.new(RestrictedHash) { |klass| allowed_keys output_prop_names }
@@ -64,7 +65,9 @@ module BoutiquesSupport
     end
 
     def self.new_from_file(path)
-      self.new_from_string(File.read(path))
+      obj = self.new_from_string(File.read(path))
+      obj.from_file = path
+      obj
     end
 
     # ------------------------------
@@ -90,8 +93,27 @@ module BoutiquesSupport
     end
 
     # ------------------------------
-    # Userful utility methods
+    # Useful utility methods
     # ------------------------------
+
+    # Utility method to convert a string (+str+) to an identifier suitable for a
+    # Ruby class name. Similar to Rails' classify, but tries to handle more cases.
+    def name_as_ruby_class
+      self.name
+          .gsub('-', '_')
+          .gsub(/\W/, '')
+          .gsub(/\A\d/, '')
+          .camelize
+    end
+
+    def flat_tag_list
+      tags = self.tags
+      return [] if ! tags
+      tags = tags.map do |key,value|
+        next key if value == true
+        value
+      end.flatten
+    end
 
     def input_by_id(inputid)
       inputs.detect { |x| x.id == input_id } or

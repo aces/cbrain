@@ -204,7 +204,7 @@
            <%
              locals = { :task => @task, :params  => @task.params }
              raw_partial = lambda do |partial|
-               @task.class.raw_partial(partial) if @task.class.respond_to?(:raw_partial)
+               @task.raw_partial(partial) if @task.respond_to?(:raw_partial)
              end
            %>
            <% if raw_partial.(:show_params) %>

@@ -52,10 +52,14 @@ class CBRAIN
                       "PID-#{Process.pid}"
 
   # CBRAIN plugins locations
-  Plugins_Dir                = "#{Rails.root.to_s}/cbrain_plugins"
-  UserfilesPlugins_Dir       = "#{Plugins_Dir}/installed-plugins/userfiles"
-  TasksPlugins_Dir           = "#{Plugins_Dir}/installed-plugins/cbrain_task" # singular; historical
-  TaskDescriptorsPlugins_Dir = "#{Plugins_Dir}/installed-plugins/cbrain_task_descriptors"
+  Plugins_Dir                     = "#{Rails.root.to_s}/cbrain_plugins"
+  UserfilesPlugins_Dir            = "#{Plugins_Dir}/installed-plugins/userfiles"
+  TasksPlugins_Dir                = "#{Plugins_Dir}/installed-plugins/cbrain_task" # singular; historical
+
+  # Original integrator
+  TaskDescriptorsPlugins_Dir      = "#{Plugins_Dir}/installed-plugins/cbrain_task_descriptors"
+  # New integrator
+  BoutiquesDescriptorsPlugins_Dir = "#{Plugins_Dir}/installed-plugins/boutiques_descriptors"
 
   CBRAIN_StartTime_Revision = CbrainFileRevision.cbrain_head_tag
 

@@ -16,6 +16,7 @@ namespace :cbrain do
     userfiles_plugins_dir   = installed_plugins_dir + "userfiles"
     tasks_plugins_dir       = installed_plugins_dir + "cbrain_task"
     descriptors_plugins_dir = installed_plugins_dir + "cbrain_task_descriptors"
+    boutiques_plugins_dir   = installed_plugins_dir + "boutiques_descriptors"
     lib_plugins_dir         = installed_plugins_dir + "lib"
 
     # Paths to public assets exposed by the web server
@@ -137,6 +138,11 @@ namespace :cbrain do
               after: lambda do |symlink_location|
                 File.symlink "cbrain_task_descriptor_loader.rb", "#{symlink_location.sub(/.json$/, '.rb')}"
               end
+            )
+
+            # Setup each boutiques descriptor plugin (new integrator)
+            setup.('boutiques_descriptors/*', 'boutiques', boutiques_plugins_dir,
+              condition: lambda { |f| File.extname(f) == '.json' },
             )
 
             # Setup each ruby lib file
@@ -278,6 +284,7 @@ namespace :cbrain do
       erase.('userfile',   userfiles_plugins_dir)
       erase.('task',       tasks_plugins_dir)
       erase.('descriptor', descriptors_plugins_dir)
+      erase.('boutiques',  boutiques_plugins_dir)
       erase.('lib',        lib_plugins_dir)
 
     end

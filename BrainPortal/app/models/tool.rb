@@ -123,4 +123,25 @@ class Tool < ApplicationRecord
     self.description      ||= "#{self.name}"
   end
 
+  ######################################################
+  # Boutiques Integration Methods
+  ######################################################
+
+  def self.create_from_descriptor(descriptor)
+    name = descriptor.name
+    tool = Tool.where(:name => name).first
+    return tool if tool
+    Tool.create!(
+      :name        => name,
+      :description => descriptor.description,
+      :user_id     => User.admin.id,
+      :group_id    => User.admin.own_group.id,
+      :cbrain_task_class_name => ('BoutiquesTask::' + descriptor.name_as_ruby_class),
+      :category    => 'scientific tool', # a guess, this attribute's meaning is not yet well defined
+      :url         => descriptor.url,
+      :select_menu_text => "Launch #{descriptor.name}",
+      :application_tags => descriptor.flat_tag_list,
+    )
+  end
+
 end

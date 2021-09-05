@@ -1,0 +1,12 @@
+
+<%# This partial requires the variables id, flag, and optional %>
+
+  <label class="tsk-prm-lbl" for="<%= id.to_la_id %>">
+    <%= name %>
+    <% if flag.present? %>
+      (<code class="cmd-flag"><%%= flag %></code>)
+    <% end %>
+    <% unless optional %>
+      <span class="required">*</span>
+    <% end %>
+  </label>

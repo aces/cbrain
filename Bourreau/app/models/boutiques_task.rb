@@ -1,0 +1,1 @@
+../../../BrainPortal/app/models/boutiques_task.rb

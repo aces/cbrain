@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-class BoutiquesPortalTask < PortalTask # TODO PortalTask vs ClusterTask
+class BoutiquesPortalTask < PortalTask
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
