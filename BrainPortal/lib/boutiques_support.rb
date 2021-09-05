@@ -38,6 +38,14 @@ module BoutiquesSupport
   group_prop_names  = @schema['properties']['groups']['items']['properties'].keys
   cont_prop_names   = @schema['properties']['container-image']['allOf'][1]['oneOf'][0]['properties'].keys
 
+  def self.validate(json)
+    JSON::Validator.fully_validate(
+      @schema,
+      json,
+      :errors_as_objects => true
+    )
+  end
+
   BoutiquesDescriptor = Class.new(RestrictedHash) do |klass|
 
     allowed_keys top_prop_names # 'name', 'author' etc
@@ -61,13 +69,21 @@ module BoutiquesSupport
     end
 
     def self.new_from_string(text)
-      self.new(JSON.parse(text))
+      json   = JSON.parse(text)
+      errors = BoutiquesSupport.validate(json)
+      return self.new(json) if errors.blank?
+      # Dump errors
+      cb_error "Invalid Boutiques descriptor\n" + (errors.map { |e| e[:message] }.join("\n"))
     end
 
     def self.new_from_file(path)
       obj = self.new_from_string(File.read(path))
       obj.from_file = path
       obj
+    end
+
+    def validate
+      BoutiquesSupport.validate(self) # amazingly, the JSON validator also work with our descriptor class
     end
 
     # ------------------------------

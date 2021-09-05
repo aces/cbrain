@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Wraper name space for all tasks integrated with the
+# Wrapper namespace for all tasks integrated with the
 # new Boutiques integrator.
 class BoutiquesTask # not a AR model and does not inherit from nothing
 
