@@ -172,23 +172,25 @@ class TasksController < ApplicationController
 
   def new #:nodoc:
 
-    if params[:tool_id].blank?
-      flash[:error] = "Please select a task to perform."
+    tool_id = params[:tool_id].presence
+
+    if tool_id.blank?
+      flash[:error] = "Please select a tool to run."
       redirect_to :controller  => :userfiles, :action  => :index
       return
     end
 
-    @toolname         = Tool.find(params[:tool_id]).cbrain_task_class_name.demodulize
-
-    @task             = CbrainTask.const_get(@toolname).new
+    tool              = Tool.find(tool_id)
+    @toolname         = tool.name
+    @task             = tool.cbrain_task_class.new
 
     # Our new task object needs some initializing
-    @task.params         = @task.wrapper_default_launch_args.clone
     @task.bourreau_id    = params[:bourreau_id]     # Just for compatibility with old code
     @task.tool_config_id = params[:tool_config_id]  # Normally sent by interface but it's optional
     @task.user           = current_user
     @task.group_id       = current_assignable_group.id
     @task.status         = "New"
+    @task.params         = @task.wrapper_default_launch_args.clone
 
     if @task.tool_config_id.present?
       @task.tool_config = ToolConfig.find(@task.tool_config_id)
