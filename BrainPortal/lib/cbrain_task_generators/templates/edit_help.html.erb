@@ -52,7 +52,7 @@
   <%- end -%>
   <%- if param['description'] -%>
     </strong>:
-    <%= param['description'] %>
+    <%= param['description'].split("\n").map { |s| h(s) }.join("<br>").html_safe  %>
   <%- else -%>
     </strong>
   <%- end -%>

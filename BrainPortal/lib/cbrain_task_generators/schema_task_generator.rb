@@ -21,6 +21,8 @@
 #
 
 require 'fileutils'
+require 'erb'
+include ERB::Util
 
 # This module handles generation of CbrainTasks from schema and descriptor
 # files. The generated code can be added right away to CBRAIN's available tasks
@@ -30,6 +32,8 @@ require 'fileutils'
 module SchemaTaskGenerator
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+  include ERB::Util
 
   # Directory where descriptor schemas are located
   SCHEMA_DIR = "#{Rails.root.to_s}/lib/cbrain_task_generators/schemas"
@@ -314,6 +318,9 @@ module SchemaTaskGenerator
   # can be provided to be used as the source for the CBRAIN Revision_info constant
   # that will be created inside the generated task class.
   def self.generate(schema, descriptorInput, strict_validation = true, file_for_revision_info = nil)
+
+    include ERB::Util
+
     descriptor = self.expand_json(descriptorInput)
     name       = self.classify(descriptor['name'])
     schema     = Schema.new(schema) unless schema.is_a?(Schema)
