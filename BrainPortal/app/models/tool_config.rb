@@ -514,6 +514,7 @@ class ToolConfig < ApplicationRecord
     ).first
     return tc if tc
 
+    container_info = descriptor.container_image || {}
     ToolConfig.create!(
       # Main three keys
       :tool_id         => tool.id,
@@ -528,10 +529,10 @@ class ToolConfig < ApplicationRecord
       :ncpus           => 1,
       :inputs_readonly => descriptor.custom['cbrain:readonly-input-files'].present?,
       :boutiques_descriptor_path => (record_path.presence && descriptor.from_file),
-      # The following three attributes are for containerization; not sue about values
-      :container_engine          => descriptor.container_image.try(:type).presence.try(:capitalize),
-      :container_index_location  => descriptor.container_image.try(:index).presence,
-      :containerhub_image_name   => descriptor.container_image.try(:image).presence,
+      # The following three attributes are for containerization; not sure about values
+      :container_engine          => container_info['type'].presence.try(:capitalize),
+      :container_index_location  => container_info['index'].presence,
+      :containerhub_image_name   => container_info['image'].presence,
     )
   end
 

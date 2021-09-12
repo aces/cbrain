@@ -1,0 +1,64 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2021
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+#  Generate a fancy checkbox for flag parameter defined by +input+.
+#
+#  The partial receives two locals:
+#    input: a boutiques descriptor input
+#    value: the current value in the task params (at form render time)
+%>
+
+<%-
+  type      = 'chk' # used mostly in CSS classes
+  html_id   = input.cb_invoke_html_id
+  html_name = input.cb_invoke_html_name
+  check     = value.present? && value == "1"
+-%>
+
+    <%#
+      As a checkbox's value is not sent if left unchecked, a hidden 'back' field
+      sends the unchecked state is used to send. Rails overwrites this 'back'
+      value with the checbox's when the checkbox is checked, as the checkbox is
+      after the 'back' field.
+    %>
+    <input class="tsk-prm-chk-in"
+           type="hidden"
+           name="<%= html_name %>"
+           value="0"
+    />
+    <input class="tsk-prm-chk"
+           type="checkbox"
+           id="<%= html_id %>"
+           name="<%= html_name %>"
+           value="1"
+           <% if check %>
+             checked="checked"
+           <% end %>
+    />
+
+<label class="tsk-prm-<%= type %>-lbl" for="<%= html_id %>">
+  <span class="tsk-prm-<%= type %>-icon ui-icon ui-icon-check"></span>
+</label>
+

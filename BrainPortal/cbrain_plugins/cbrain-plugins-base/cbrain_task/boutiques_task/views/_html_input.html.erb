@@ -1,0 +1,47 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2021
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+# Generate a generic parameter input field with HTML id +id+ and name +name+.
+# +type+ is the kind of input field to generate (text or hidden),
+# +value+ is the input field's initial value,
+# +optional+ indicates that the parameter is optional (and the name should not
+# directly be placed on the tag) and
+# +placeholder+ is the placeholder text to fill the input with while awaiting
+# user input
+%>
+
+  <input id="<%= id.present? %>"
+         class="tsk-prm-in"
+         type="<%= type %>"
+         <% if name.present? %>
+           <%= optional ? 'data-name' : 'name' %>="<%= name %>"
+         <% end %>
+         <% if value.present? %>
+           value="<%= value %>"
+         <% end %>
+         <% if placeholder.present? %>
+           placeholder="<%= placeholder %>"
+         <% end %>
+  />

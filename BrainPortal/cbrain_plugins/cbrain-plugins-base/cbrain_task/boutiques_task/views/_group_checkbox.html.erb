@@ -1,4 +1,5 @@
 
+<%-
 #
 # CBRAIN Project
 #
@@ -19,20 +20,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+-%>
 
-# Helper methods for cbrain tasks generated with the Boutiques integrator
-module BoutiquesHelper
+<%# Generate a checkbox for a parameter grouping %>
 
-  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-
-  def btq_label(id, name, optional: false, flag: nil)
-    render :partial => 'boutiques/_label', :locals =>
-      { :id       => id,
-        :name     => name,
-        :optional => optional,
-        :flag     => flag,
-      }
-  end
-
-end
+  <input class="group-toggler"
+    type="checkbox"
+    id="<% id %>_chk"
+    <%= 'checked="checked"' if defaultChecked %>
+  />
+  <label for="<%= id %>_chk"></label>
 

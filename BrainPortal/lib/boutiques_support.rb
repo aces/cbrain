@@ -46,15 +46,19 @@ module BoutiquesSupport
     )
   end
 
+  # The following assignement is pretty much like
+  #   class BoutiquesDescriptor < RestrictedHash
+  # except we have a closure and we can access the variables
+  # initialize above (top_prop_names etc).
   BoutiquesDescriptor = Class.new(RestrictedHash) do |klass|
 
     allowed_keys top_prop_names # 'name', 'author' etc
-    attr_accessor :from_file
+    attr_accessor :from_file    # not a hash attribute; a file name, for info
 
-    Input          = Class.new(RestrictedHash) { |klass| allowed_keys input_prop_names  }
-    OutputFile     = Class.new(RestrictedHash) { |klass| allowed_keys output_prop_names }
-    Group          = Class.new(RestrictedHash) { |klass| allowed_keys group_prop_names  }
-    ContainerImage = Class.new(RestrictedHash) { |klass| allowed_keys cont_prop_names   }
+    Input          = Class.new(RestrictedHash) { allowed_keys input_prop_names  }
+    OutputFile     = Class.new(RestrictedHash) { allowed_keys output_prop_names }
+    Group          = Class.new(RestrictedHash) { allowed_keys group_prop_names  }
+    ContainerImage = Class.new(RestrictedHash) { allowed_keys cont_prop_names   }
 
     def initialize(hash={})
       super(hash)
@@ -63,8 +67,8 @@ module BoutiquesSupport
       self.inputs            = self.inputs          || []
       self.output_files      = self.output_files    || []
       self.groups            = self.groups          || []
+      self.custom            = self.custom          || {}
       self.container_image &&= self.container_image # we need to to remain nil if already nil
-      self.custom          &&= self.custom
       self
     end
 
@@ -132,7 +136,7 @@ module BoutiquesSupport
     end
 
     def input_by_id(inputid)
-      inputs.detect { |x| x.id == input_id } or
+      inputs.detect { |x| x.id == inputid } or
         cb_error "No input found with ID '#{inputid}'"
     end
 
@@ -164,15 +168,23 @@ module BoutiquesSupport
 
       # This method return the parameter name for the input.
       # We put all input Boutiques parameters under a 'invoke' substructure.
-      # E.g. for string input 'abcd' in a task, we'll find the value
+      # E.g. for a input with ID 'abcd' in a task, we'll find the value
       # in task.params['invoke']['abcd'] and the parameter name is thus
       # "invoke[abcd]"
-      def cb_invoke_name
-        if self.list
-          "invoke[#{self.id}][]" # .to_la is a String method added by CBRAIN
-        else
+      def cb_invoke_name(force_list = nil)
+        if (self.list && force_list.nil?) || force_list == true
+          "invoke[#{self.id}][]"
+        else # self.list is false, or force_list is false
           "invoke[#{self.id}]"
         end
+      end
+
+      def cb_invoke_html_name(force_list = nil)
+        cb_invoke_name(force_list).to_la
+      end
+
+      def cb_invoke_html_id(force_list = nil)
+        cb_invoke_html_name(force_list).to_la_id
       end
 
     end
