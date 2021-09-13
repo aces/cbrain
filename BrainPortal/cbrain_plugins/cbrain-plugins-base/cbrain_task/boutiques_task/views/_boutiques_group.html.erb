@@ -28,7 +28,7 @@
     # Get group parameters
     id               = group.id
     name             = group.name
-    groupDescription = group.description
+    groupDescription = group.description || ""
     inputs           = group.members.map { |inputid| @descriptor.input_by_id(inputid) }
     optional         = inputs.select { |input|   input.optional }
     required         = inputs.select { |input| ! input.optional }
@@ -44,7 +44,9 @@
         %>
       </h3>
       <h5 style="font-size : 9.5pt; font-weight: normal; padding-top: 2px;" class="grp-desc">
-        <%= groupDescription %>
+        <% groupDescription.split("\n").each do |line| %>
+          <%= line %><br>
+        <% end %>
       </h5>
     </div>
     <br>

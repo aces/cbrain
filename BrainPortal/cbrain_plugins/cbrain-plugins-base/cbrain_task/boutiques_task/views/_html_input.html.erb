@@ -32,7 +32,10 @@
 # user input
 %>
 
-  <input id="<%= id.present? %>"
+  <input
+         <% if id.present? %>
+            id="<%= id %>"
+         <% end %>
          class="tsk-prm-in"
          type="<%= type %>"
          <% if name.present? %>

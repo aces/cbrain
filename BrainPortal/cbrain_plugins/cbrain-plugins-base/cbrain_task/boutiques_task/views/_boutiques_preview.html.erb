@@ -22,13 +22,10 @@
 #
 -%>
 
-<%# Generate a parameter's description block for +desc+ %>
-  <span class="tsk-prm-desc">
-    <% desc.split("\n").each do |line| %>
-      <%= line %><br>
-    <% end %>
-  <% if isGroupMember %>
-    <br>
-  <% end %>
-  </span>
+<div class="preview-div">
+  <p>
+      <input class="ui-button ui-widget ui-state-default ui-corner-all" id="previewer"
+              type="button" value="Preview" style="float:right">
+  </p>
+</div>
 

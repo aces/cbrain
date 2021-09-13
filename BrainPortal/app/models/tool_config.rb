@@ -489,6 +489,7 @@ class ToolConfig < ApplicationRecord
   end
 
   def self.registered_boutiques_descriptor(tool_name, tool_version) #:nodoc:
+    @_descriptors_ ||= {}
     key = [ tool_name, tool_version ] # two strings
     @_descriptors_[key]
   end
@@ -504,6 +505,15 @@ class ToolConfig < ApplicationRecord
     @_descriptor_ = BoutiquesSupport::BoutiquesDescriptor.new_from_file(path)
   end
 
+  def boutiques_descriptor_origin_keyword
+    manual     = self.boutiques_descriptor_path.presence
+    registered = self.class.registered_boutiques_descriptor(self.tool.name, self.version_name)
+    return [ :overriden, manual ]               if registered && manual
+    return [ :manual,    manual ]               if manual
+    return [ :automatic, registered.from_file ] if registered
+    return [ :none,      "" ]
+  end
+
   def self.create_from_descriptor(bourreau, tool, descriptor, record_path=false)
 
     # Check if there is already a TC
@@ -515,7 +525,7 @@ class ToolConfig < ApplicationRecord
     return tc if tc
 
     container_info = descriptor.container_image || {}
-    ToolConfig.create!(
+    tc = ToolConfig.create!(
       # Main three keys
       :tool_id         => tool.id,
       :bourreau_id     => bourreau.id,
@@ -534,6 +544,10 @@ class ToolConfig < ApplicationRecord
       :container_index_location  => container_info['index'].presence,
       :containerhub_image_name   => container_info['image'].presence,
     )
+
+    tc.addlog("Automatically configured from a Boutiques descriptor")
+    tc.addlog("Descriptor path: #{descriptor.from_file}") if descriptor.from_file
+    tc
   end
 
 end

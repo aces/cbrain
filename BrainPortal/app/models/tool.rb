@@ -131,7 +131,7 @@ class Tool < ApplicationRecord
     name = descriptor.name
     tool = Tool.where(:name => name).first
     return tool if tool
-    Tool.create!(
+    tool = Tool.create!(
       :name        => name,
       :description => descriptor.description,
       :user_id     => User.admin.id,
@@ -142,6 +142,10 @@ class Tool < ApplicationRecord
       :select_menu_text => "Launch #{descriptor.name}",
       :application_tags => descriptor.flat_tag_list,
     )
+
+    tool.addlog("Automatically configured from a Boutiques descriptor")
+    tool.addlog("Descriptor path: #{descriptor.from_file}") if descriptor.from_file
+    tool
   end
 
 end
