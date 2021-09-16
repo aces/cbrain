@@ -100,6 +100,7 @@ class BoutiquesClusterTask < ClusterTask
 
     invoke_struct = self.invoke_params.dup
 
+    # Replace userfile IDs for file basenames in the invoke struct
     descriptor.file_inputs.each do |input|
       userfile_id = invoke_params[input.id]
       next if userfile_id.blank? # that happens when it's an optional file
@@ -118,6 +119,14 @@ class BoutiquesClusterTask < ClusterTask
       invoke_struct[input.id] = subnames
     end
 
+    # Replace the "0"/"1" strings we use for booleans with true and false
+    descriptor.inputs.select { |input| input.type == 'Flag' }.each do |input|
+      next if invoke_struct[input.id].blank?
+      invoke_struct[input.id] = true  if invoke_struct[input.id] == '1'
+      invoke_struct[input.id] = false if invoke_struct[input.id] == '0'
+    end
+
+    # Write down the file with the invoke struct
     invoke_json_basename = "invoke.#{self.run_id}.json"
     File.open(invoke_json_basename ,"w") do |fh|
       fh.write JSON.pretty_generate(invoke_struct)
@@ -165,6 +174,8 @@ class BoutiquesClusterTask < ClusterTask
       end
     end
 
+    # Prepare the substitution hash, which maps things like
+    # [abcd] to a value to replace, in the output files.
     invoke_json_basename    = "invoke.#{self.run_id}.json"
     substitutions_by_ids    = JSON.parse(File.read(invoke_json_basename)) # id => val
     substitutions_by_tokens = descriptor.inputs.map do |input|
@@ -181,6 +192,8 @@ class BoutiquesClusterTask < ClusterTask
       .each do |output|
       globpath = output.path_template
       to_strip = output.path_template_stripped_extensions || []
+
+      # Apply substitutions
       substitutions_by_tokens.each do |key,val|
         next if val.is_a?(Array) # not supported; what would it mean?
         val = val.to_s
@@ -210,10 +223,10 @@ class BoutiquesClusterTask < ClusterTask
         name.sub!( /(\.\w+(\.gz|\.z|\.bz2|\.zip)?)?\z/i )  { |ext| "-#{self.run_id}" + ext }
 
         # Save the file (possible overwrite if race condition)
-        output = safe_userfile_find_or_new(userfile_class, :name => name)
+        outfile = safe_userfile_find_or_new(userfile_class, :name => name)
 
-        unless output.save
-          messages = output.errors.full_messages.join("; ")
+        unless outfile.save
+          messages = outfile.errors.full_messages.join("; ")
           self.addlog("Failed to save file #{path} as #{name}")
           self.addlog(messages) if messages.present?
           all_ok = false
@@ -221,9 +234,9 @@ class BoutiquesClusterTask < ClusterTask
         end
 
         # Transfer content to DataProvider
-        output.cache_copy_from_local_file(path)
+        outfile.cache_copy_from_local_file(path)
         params["_cbrain_output_#{output.id}"] ||= []
-        params["_cbrain_output_#{output.id}"]  << output.id
+        params["_cbrain_output_#{output.id}"]  << outfile.id
         self.addlog("Saved result file #{name}")
 
         # Add provenance logs
@@ -231,10 +244,10 @@ class BoutiquesClusterTask < ClusterTask
           invoke_params[input.id]
         end.compact.uniq
         parents = Userfile.where(:id => all_file_input_ids).to_a
-        self.addlog_to_userfiles_these_created_these(parents, [output]) if parents.present?
+        self.addlog_to_userfiles_these_created_these(parents, [outfile]) if parents.present?
 
         # If there is only one input file, we move the output under it
-        output.move_to_child_of(parents[0]) if parents.size == 1
+        outfile.move_to_child_of(parents[0]) if parents.size == 1
       end # each path
     end # each output
 
