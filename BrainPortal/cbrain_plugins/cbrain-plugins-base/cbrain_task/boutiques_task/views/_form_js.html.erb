@@ -95,8 +95,8 @@ names_map           = inputs.map { |i| [i.id, i.name] }.to_h
 htmlIds_map         = inputs.map { |i| [i.id, i.cb_invoke_html_id] }.to_h
 min_inputs_map      = min_inputs.map { |i| [i.id, i.minimum] }.to_h
 max_inputs_map      = max_inputs.map { |i| [i.id, i.maximum] }.to_h
-min_inputs_exc_list = min_inputs.select { |i| u.exclusive_minimum.present }.map(&:id)
-max_inputs_exc_list = max_inputs.select { |i| u.exclusive_maximum.present }.map(&:id)
+min_inputs_exc_list = min_inputs.select { |i| i.exclusive_minimum.present? }.map(&:id)
+max_inputs_exc_list = max_inputs.select { |i| i.exclusive_maximum.present? }.map(&:id)
 int_inputs_list     = int_inputs.map(&:id)
 
 %>

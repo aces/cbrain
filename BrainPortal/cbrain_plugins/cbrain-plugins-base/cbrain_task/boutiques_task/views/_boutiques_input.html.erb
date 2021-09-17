@@ -71,7 +71,7 @@
               :options   => enum_vals.map { |v| [v, v] },
               :optional  => opt,  # only used in :dropdown partial
               :default   => input.default_value,
-              :cur_value => value,
+              :value     => value,
               :none_msg  => '(Nothing to select)',
             }
       %>
@@ -84,7 +84,7 @@
               :options   => interface_files.pluck(:id, :name),
               :optional  => opt,
               :default   => interface_files.count == 1 ? interface_files.first.id.to_s : nil,
-              :cur_value => value,
+              :value     => value,
               :none_msg  => '(Nothing to select)', # not used
             }
       %>

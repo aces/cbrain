@@ -32,13 +32,13 @@
 #    name
 #    options # just like HTML options for select
 #    default
-#    cur_value
+#    value
 #    none_msg
 %>
 
 <%-
   # helps finding out what to pre-select
-  selected = Array(cur_value)
+  selected = Array(value)
   selected = Array(default) if selected.blank?
   selected.map(&:presence).compact.map(&:to_s)
 %>
@@ -54,9 +54,9 @@
            id="<%= id %>"
            multiple="multiple"
            name="<%= name %>">
-        <% options.each do |value, label| %>
-            <option data-value="<%= value %>"
-            <%- if selected.include?(value.to_s) -%>
+        <% options.each do |val, label| %>
+            <option data-value="<%= val %>"
+            <%- if selected.include?(val.to_s) -%>
               data-selected="true"
             <%- end -%>
             ><%= label %></option>

@@ -35,7 +35,7 @@
 #    options # just like HTML options for select
 #    optional
 #    default
-#    cur_value
+#    value
 #    none_msg
 %>
 
@@ -43,7 +43,7 @@
         { :id       => id,
           :name     => name,
           :type     => 'hidden',
-          :value    => cur_value,
+          :value    => value,
           :optional => optional,
           :placeholder => nil,
         }
@@ -51,7 +51,7 @@
 
 <%-
   # helps finding out what to pre-select
-  selected = Array(cur_value)
+  selected = Array(value)
   selected = Array(default) if selected.blank?
   selected.map(&:presence).compact.map(&:to_s)
 %>
@@ -64,14 +64,14 @@
     <% else %>
       <span class="tsk-prm-sel-icon ui-icon ui-icon-triangle-1-s"></span>
       <span class="tsk-prm-sel-lbl">
-        <% if (pair = options.detect { |o| o.first.to_s == cur_value.to_s }) %>
+        <% if (pair = options.detect { |o| o.first.to_s == value.to_s }) %>
           <%= pair.last %>
         <% end %>
       </span>
       <ul class="tsk-prm-sel-opt">
-        <% options.each do |value, label| %>
-          <li data-value="<%= value %>"
-            <%- if selected.include?(value.to_s) -%>
+        <% options.each do |val, label| %>
+          <li data-value="<%= val %>"
+            <%- if selected.include?(val.to_s) -%>
               data-selected="true"
             <%- end -%>
           ><%= label %></li>

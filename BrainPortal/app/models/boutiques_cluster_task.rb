@@ -298,7 +298,7 @@ class BoutiquesClusterTask < ClusterTask
   # MAYBE IN COMMON
 
   def invoke_params
-    self.params['invoke'] ||= {}
+    self.params[:invoke] ||= {}
   end
 
   # This determines if the task expects to only read its input files,

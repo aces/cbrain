@@ -85,7 +85,7 @@ class BoutiquesPortalTask < PortalTask
       .to_h
     {
       :invoke => invoke_struct,
-    }
+    }.with_indifferent_access
   end
 
   def before_form
@@ -579,7 +579,7 @@ class BoutiquesPortalTask < PortalTask
   # MAYBE IN COMMON
 
   def invoke_params
-    self.params['invoke'] ||= {}
+    self.params[:invoke] ||= {}
   end
 
   # This determines if the task expects to only read its input files,

@@ -20,11 +20,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Helper for logging in using Globus identity stuff
+# This class implements the boot-time loading of Boutiques descriptors
+# located in the installed plugins directory CBRAIN::BoutiquesDescriptorsPlugins_Dir
+#
+# All descriptors are loaded once, and saved in a global cache managed by
+# the ToolConfig class.
+#
+# At the same time, whenever a descriptor is loaded, a Tool will be created if it doesn't already exist
+# when booting a Portal, and a ToolConfig will be created when booting a Bourreau.
 class BoutiquesBootIntegrator
 
   def self.link_from_json_file(path)
-# TODO validate JSON first
     descriptor   = BoutiquesSupport::BoutiquesDescriptor.new_from_file(path)
     tool_name    = descriptor.name
     tool_version = descriptor.tool_version
@@ -38,30 +44,40 @@ class BoutiquesBootIntegrator
     end
 
     # Register the descriptor with all existing tool_configs
+    # This is a runtime global cache that associates [tool_name, tool_version] -> descriptor
     tool_configs = ToolConfig.register_descriptor(descriptor, tool_name, tool_version)
-    if tool_configs.count > 0
-      puts "Found #{tool_configs.count} ToolConfig(s) for #{path}"
-    else
-      puts "Warning: no ToolConfigs exist for descriptor #{path}"
-    end
-    puts " -> ToolName: #{tool_name} Version: #{tool_version}"
 
     # Create the Ruby class Xyz for the BoutiquesTask::Xyz
     klass_name       = descriptor.name_as_ruby_class # The Xyz part of BoutiquesTask::Xyz
     parent           = myself.is_a?(BrainPortal) ? BoutiquesPortalTask : BoutiquesClusterTask
     descriptor_class = descriptor.custom['cbrain:inherits-from-class'] # can be nil
     parent           = descriptor_class.constantize if descriptor_class.present?
+
+    # It's ok to have several descriptor wanting the same implementation
+    # class (e.g. several versions of the tool) but only if all the superclasses agree too.
     if BoutiquesTask.const_defined?(klass_name.to_sym) # check if already exists
       exist_superclass = BoutiquesTask.const_get(klass_name.to_sym).superclass
       if exist_superclass != parent
         cb_error "Conflict in superclass while integrating descriptor: BoutiquesTask::#{klass_name} has superclass #{exist_superclass} already, and wanted to set it to #{parent}"
       end
-    else # Create new class BoutiquesTask::Xyz < ParentClass
+    else
+      # Create new class. This is the equivalent of
+      #   class BoutiquesTask::Xyz < ParentClass
+      #   end
+      # This class is pretty much empty of any distinct code.
+      # The real meat is in ParentClass.
       klass = Class.new(parent)
       BoutiquesTask.const_set klass_name.to_sym, klass
     end
+
+    # Boot process messages
+    basename = Pathname.new(path).basename
+    puts "B> Boutiques JSON: #{basename} Class: #{klass_name} Tool: #{tool_name} ToolConfigs: #{tool_configs.count}"
+
   end
 
+  # This method scans a directory for JSOn boutiques descriptors and
+  # loads them all.
   def self.link_all(dir = CBRAIN::BoutiquesDescriptorsPlugins_Dir)
     jsons=Dir.glob(Pathname.new(dir) + "*.json")
     jsons.each do |json|
