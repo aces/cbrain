@@ -36,6 +36,10 @@
     <% end %>
   <% elsif (public_path = @task.public_path("edit_params_help.html")) %>
     <%= overlay_ajax_link "(Help)", public_path.to_s, :class  => "task_help_link" %>
+  <% elsif (edit_help_partial = task_partial(:edit_help) rescue nil) %>
+    <%= overlay_content_link "(Help)", :class => "task_help_link", :enclosing_element => "span" do %>
+      <%= render :partial => edit_help_partial, :locals => locals %>
+    <% end %>
   <% end %>
   :
 </h2>
