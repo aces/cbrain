@@ -301,7 +301,7 @@
 <%%# Generate a parameter's description block for +desc+ %>
 <%% description = lambda do |desc, isGroupMember = false| %>
   <span class="tsk-prm-desc">
-    <%%= desc %><%%= "<br><br>".html_safe if isGroupMember %>
+    <%%= desc.split("\n").map { |s| h(s) }.join("<br>").html_safe if desc %><%%= "<br><br>".html_safe if isGroupMember %>
   </span>
 <%% end %>
 
