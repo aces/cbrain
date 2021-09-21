@@ -65,10 +65,14 @@
 
 <%= render :partial => task_partial(:boutiques_preview) %>
 
-<% # cap = capture do %>
-<% # render :partial => task_partial(:form_js), :locals => { :interface_files => interface_files } %>
-<% # end %>
-<% # File.open("/tmp/x.html.erb","w") { |fh| fh.write cap } %>
+<%=
+## Debug code: to capture the JS code of 'form_js' in a file in /tmp
+#  cap = capture do
+#    render :partial => task_partial(:form_js), :locals => { :interface_files => interface_files }
+#  end
+#  File.open("/tmp/x.html.erb","w") { |fh| fh.write cap }
+#  cap.html_safe
+%>
 
 <%= render :partial => task_partial(:form_js), :locals => { :interface_files => interface_files } %>
 

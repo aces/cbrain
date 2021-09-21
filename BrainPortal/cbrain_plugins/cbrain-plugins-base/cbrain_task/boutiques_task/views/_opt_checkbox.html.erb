@@ -24,21 +24,25 @@
 
 <%
 #  Generate a checkbox for optional parameters with HTML +id+.
-#  The partial receives a single local:
+#  The partial receives these locals:
+#
 #    id
+#    check
 %>
 
 <%-
-  type      = 'opt'
   html_id   = "tsk-prm-opt-#{id}"
 -%>
 
 <input class="tsk-prm-opt"
        type="checkbox"
+       <% if check %>
+         checked="checked"
+       <% end %>
        id="<%= html_id %>"
 />
 
-<label class="tsk-prm-<%= type %>-lbl" for="<%= html_id %>">
-  <span class="tsk-prm-<%= type %>-icon ui-icon ui-icon-check"></span>
+<label class="tsk-prm-opt-lbl" for="<%= html_id %>">
+  <span class="tsk-prm-opt-icon ui-icon ui-icon-check"></span>
 </label>
 

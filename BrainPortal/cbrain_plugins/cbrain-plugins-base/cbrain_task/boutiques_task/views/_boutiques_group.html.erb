@@ -32,7 +32,8 @@
     inputs           = group.members.map { |inputid| @descriptor.input_by_id(inputid) }
     optional         = inputs.select { |input|   input.optional }
     required         = inputs.select { |input| ! input.optional }
-    defaultChecked   = group.one_is_required || required.present?
+    defaultChecked   = group.one_is_required || required.present? ||
+                       inputs.any? { |input| ! @task.isInactive(input) }
   -%>
   <div class="group btq-grp-<%= id %>">
     <%# Write group header %>

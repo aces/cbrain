@@ -31,10 +31,9 @@
 %>
 
 <%-
-  type      = 'chk' # used mostly in CSS classes
   html_id   = input.cb_invoke_html_id
   html_name = input.cb_invoke_html_name
-  check     = value.present? && value == "1"
+  check     = value.present? && (value == "1" || value == true)
 -%>
 
     <%#
@@ -58,7 +57,7 @@
            <% end %>
     />
 
-<label class="tsk-prm-<%= type %>-lbl" for="<%= html_id %>">
-  <span class="tsk-prm-<%= type %>-icon ui-icon ui-icon-check"></span>
+<label class="tsk-prm-chk-lbl" for="<%= html_id %>">
+  <span class="tsk-prm-chk-icon ui-icon ui-icon-check"></span>
 </label>
 

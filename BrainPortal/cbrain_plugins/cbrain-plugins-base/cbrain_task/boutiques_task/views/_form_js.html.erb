@@ -32,7 +32,7 @@
 
 <%
     # Handling for multi-task generation via CBCSVs
-    cbcsvs       = interface_files.where(:type => CbrainFileList).to_a
+    cbcsvs       = interface_files.where(:type => 'CbrainFileList').to_a
     cbcsvToFiles = cbcsvs.map do |f|                       # Only used for preview button
       f.sync_to_cache # silly and blocking
       ids = f.ordered_raw_ids.reject { |i| i.blank? || i == 0 }
@@ -92,7 +92,6 @@ int_inputs  = inputs.select { |i| i.type == 'Number' && i.integer.present? }
 
 # Maps and lists that are subsituted in the javascript code below
 names_map           = inputs.map { |i| [i.id, i.name] }.to_h
-htmlIds_map         = inputs.map { |i| [i.id, i.cb_invoke_html_id] }.to_h
 min_inputs_map      = min_inputs.map { |i| [i.id, i.minimum] }.to_h
 max_inputs_map      = max_inputs.map { |i| [i.id, i.maximum] }.to_h
 min_inputs_exc_list = min_inputs.select { |i| i.exclusive_minimum.present? }.map(&:id)
@@ -129,7 +128,6 @@ $(function () {
   var namesMap          = <%= json.( names_map ) %>;
   var requiresMap       = <%= json.( requires_map ) %>;
   var disabledByMap     = <%= json.( disabledBy_map ) %>;
-  var inputIdsToHtmlIds = <%= json.( htmlIds_map ) %>;
 
   // Function to map ids to names to make the messages a little prettier
   var idToName = function(x){ return namesMap[x]; }

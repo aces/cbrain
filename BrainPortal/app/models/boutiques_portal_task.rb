@@ -98,8 +98,8 @@ class BoutiquesPortalTask < PortalTask
     # This is a message describing briefly all file inputs
     input_infos = descriptor.file_inputs
       .map { |i|
-        iname     = i['name']
-        ioptional = i['optional'] ? '(optional)' : '(required)'
+        iname     = i.name
+        ioptional = i.optional ? '(optional)' : '(required)'
         "#{iname} #{ioptional}\n"
       }.join("")
 
@@ -173,10 +173,12 @@ class BoutiquesPortalTask < PortalTask
 
     descriptor.inputs.each do |input|
 
+      next if isInactive(input)
+
       # Inputs that want other inputs to NOT BE provided
-      (input.disables_inputs || []).each do |dontneed|
-        next if isInactive(dontneed)
+      (input.disables_inputs || []).each do |dontneed| # loop on IDs
         dontneedinput = descriptor.input_by_id(dontneed)
+        next if isInactive(dontneedinput)
         params_errors.add(
           dontneedinput.cb_invoke_name,
           "is disabled by " + input.name
@@ -184,9 +186,9 @@ class BoutiquesPortalTask < PortalTask
       end
 
       # Inputs that want other inputs to BE provided
-      (input.requires_inputs || []).each do |need|
-        next if ! isInactive(need)
+      (input.requires_inputs || []).each do |need| # loop on IDs
         needinput = descriptor.input_by_id(need)
+        next if ! isInactive(needinput)
         params_errors.add(
           needinput.cb_invoke_name,
           "is required for " + input.name
@@ -354,9 +356,9 @@ class BoutiquesPortalTask < PortalTask
   # Returns all the cbcsv files present (i.e. set by the user as inputs), as tuples (input, Userfile)
   def cbcsv_files(descriptor = self.descriptor_for_after_form)
     descriptor.file_inputs.map do |input|
-        #next if input.list
+        next if isInactive(input)
         userfile_id = invoke_params[input.id]
-        next if userfile_id.nil?
+        next if userfile_id.blank?
         userfile = Userfile.find_accessible_by_user(userfile_id, self.user, :access_requested => file_access_symbol())
         next unless ( userfile.is_a?(CbrainFileList) || (userfile.suggested_file_type || Object) <= CbrainFileList )
         [ input, userfile ]
@@ -365,10 +367,15 @@ class BoutiquesPortalTask < PortalTask
 
   # Helper function for detecting inactive parameters (or false for flag-type parameters)
   # Note that empty strings are allowed and no parameter types except flags pass booleans
-  # The argument 'x' can either be a Input object, or a string for the ID of the input param.
+  # The argument +input+ must be a Input object.
   def isInactive(input)
-    key = input.is_a?(BoutiquesSupport::Input) ? input.id : input
-    invoke_params[key].nil? || (invoke_params[key] == false)
+    type = input.type
+    val  = self.invoke_params[input.id]
+    (
+      val.nil? || # most of the time, the interface sends NO value at all, which is what we prefer
+      (type == 'Flag' && val == "0")   || # checkboxes send their values as strings 0 and 1,
+      (type == 'Flag' && val == false)    # but normally they are transformed into bool in sanitize_params
+    )
   end
 
   # Checks that the cbcsv is the correct type
@@ -428,14 +435,14 @@ class BoutiquesPortalTask < PortalTask
   def sanitize_param(input)
 
     name = input.id
-    type = input.type.downcase.to_s # old code convention from previous integrator
+    type = input.type.downcase.to_sym # old code convention from previous integrator
 
     # Taken userfile names. An error will be raised if two input files have the
     # same name.
     @taken_files ||= Set.new
 
     # Fetch the parameter and convert to an Enumerable if required
-    values = invoke_params[name] rescue nil
+    values = invoke_params[name]
     values = [values] unless values.is_a?(Enumerable)
 
     # Paramspath used for error messages
@@ -480,19 +487,19 @@ class BoutiquesPortalTask < PortalTask
       when :file
         unless (Integer(value) rescue nil)
           params_errors.add(invokename, ": invalid or missing userfile")
-          next value
+          next nil # remove bad value
         end
 
         file = Userfile.find_accessible_by_user(value, self.user, :access_requested => file_access_symbol()) rescue nil
         unless file
           params_errors.add(invokename, ": cannot find userfile (ID #{value})")
-          next value
+          next nil # remove bad value
         end
 
-        if @taken_files.include?(file.name)
+        if @taken_files.include?(file.id)
           params_errors.add(invokename, ": file name already in use (#{file.name})")
         else
-          @taken_files.add(file.name)
+          @taken_files.add(file.id)
         end
 
       end
@@ -560,7 +567,7 @@ class BoutiquesPortalTask < PortalTask
 
   def check_mutex_group(group, descriptor = self.descriptor_for_after_form)
     members = group.members
-    are_set = members.select { |inputid| ! isInactive(inputid) }
+    are_set = members.select { |inputid| ! isInactive(descriptor.input_by_id inputid) }
     return if are_set.size <= 1
     are_set.each do |inputid|
       params_errors.add(group.name, " can have at most one parameter set")
@@ -571,7 +578,7 @@ class BoutiquesPortalTask < PortalTask
 
   def check_oneisrequired_group(group, descriptor = self.descriptor_for_after_form)
     members = group.members
-    are_set = members.select { |inputid| ! isInactive(inputid) }
+    are_set = members.select { |inputid| ! isInactive(descriptor.input_by_id inputid) }
     return if are_set.size > 0
     params_errors.add(group.name, " need at least one parameter set")
   end

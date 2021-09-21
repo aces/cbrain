@@ -139,15 +139,31 @@ class BoutiquesClusterTask < ClusterTask
       fh.write "\n"
     end
 
-    # The bosh launch command. This is all a single line, but broken up
-    # for readability.
-    commands = <<-COMMANDS
-      # Main invokation command
-      bosh exec launch                                                          \\
-        #{boutiques_json_basename.bash_escape}                                  \\
-        #{invoke_json_basename.bash_escape}
+    if self.boutiques_bosh_exec_mode == :simulate # the default
+      simulate_com = <<-SIMULATE
+        bosh exec simulate
+          -i #{invoke_json_basename.bash_escape}
+          #{boutiques_json_basename.bash_escape}
+      SIMULATE
+      simulate_com.gsub!("\n"," ")
+      simulout = IO.popen(simulate_com) { |fh| fh.read }
+      simulout.sub(/^Generated.*\n/,"") # header junk from simulate
+      commands = <<-COMMANDS
+        # Main tool command, generated with bosh exec simulate
+        #{simulout.trim}
         echo $? > #{exit_status_filename.bash_escape}
-    COMMANDS
+      COMMANDS
+    else # exec launch mode
+      # The bosh launch command. This is all a single line, but broken up
+      # for readability.
+      commands = <<-COMMANDS
+        # Main tool command, invoked through bosh exec launch
+        bosh exec launch                                                          \\
+          #{boutiques_json_basename.bash_escape}                                  \\
+          #{invoke_json_basename.bash_escape}
+          echo $? > #{exit_status_filename.bash_escape}
+      COMMANDS
+    end
     commands.gsub!(/(\S)  +(\S)/,'\1 \2') # make pretty
 
     [ commands ]
@@ -291,6 +307,30 @@ class BoutiquesClusterTask < ClusterTask
   # completed and is checked in +save_results+ to make sure the task succeeded.
   def exit_status_filename
     ".qsub.exit.#{self.name}.#{self.run_id}"
+  end
+
+  # Returns either :simulate or :launch .
+  #
+  # In the mode 'simulate', at the moment of creating
+  # the tool's script in cluster_commands(), the
+  # output of 'bosh exec simulate' will be substituted in
+  # the script ot generate the tool's command.
+  #
+  # In the mode 'launch', an actual 'bosh exec launch' command
+  # will be put in the script instead.
+  #
+  # This value can be obtained from the descriptor
+  # in the field "custom"['cbrain:boutiques_bosh_exec_mode']
+  #
+  # The default implied value is :simulate.
+  def boutiques_bosh_exec_mode
+    custom = descriptor_for_cluster_commands.custom || {}
+    mode   = custom['cbrain:boutiques_bosh_exec_mode'].presence
+    if mode.to_s == 'launch'
+      :launch
+    else
+      :simulate
+    end
   end
 
 
