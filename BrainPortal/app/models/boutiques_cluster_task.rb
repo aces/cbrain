@@ -150,7 +150,7 @@ class BoutiquesClusterTask < ClusterTask
       simulout.sub(/^Generated.*\n/,"") # header junk from simulate
       commands = <<-COMMANDS
         # Main tool command, generated with bosh exec simulate
-        #{simulout.trim}
+        #{simulout.strip}
         echo $? > #{exit_status_filename.bash_escape}
       COMMANDS
     else # exec launch mode
