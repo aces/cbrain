@@ -266,27 +266,30 @@ class BoutiquesPortalTask < PortalTask
     #
     # then we will generate 7 tasks in total.
     # --------------------------------------
-    if descriptor.inputs.size == 1
-      input = descriptor.inputs.first
+    if descriptor.file_inputs.size == 1
+      input = descriptor.file_inputs.first
 
-      fillTask = lambda do |userfile_id,tsk|
-        tsk.invoke_params[input.id] = userfile_id
+      fillTask = lambda do |userfile,tsk|
+        tsk.invoke_params[input.id] = userfile.id
         tsk.sanitize_param(input, :file)
         tsk.description ||= ''
-        tsk.description  += " #{input.id}: #{Userfile.find(userfile_id).name}"
+        tsk.description  += " #{input.id}: #{userfile.name}"
         tsk.description.strip!
         tsk
       end
 
       tasklist = self.params[:interface_userfile_ids].map do |userfile_id|
         f = Userfile.find_accessible_by_user( id, self.user, :access_requested => file_access_symbol() )
+
+        # One task for that file
         if ! f.is_a?( CbrainFileList || input.list )
           task = self.dup
-          fillTask.( f.id, task )
-        else
+          fillTask.( f, task )
+
+        else # One task per userfile in the CbrainFileList
           ufiles = f.userfiles_accessible_by_user!( self.user, nil, nil, file_access_symbol() )
           # Skip files that are purposefully nil (e.g. given id 0 by the user)
-          subtasks = ufiles.select { |u| ! u.nil? }.map { |a| fillTask.( a.id, task.dup ) }
+          subtasks = ufiles.select { |u| ! u.nil? }.map { |u| fillTask.( u, task.dup ) }
           subtasks # an array of tasks
         end
       end
