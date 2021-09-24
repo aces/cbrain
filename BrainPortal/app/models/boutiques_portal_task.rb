@@ -282,14 +282,14 @@ class BoutiquesPortalTask < PortalTask
         f = Userfile.find_accessible_by_user( id, self.user, :access_requested => file_access_symbol() )
 
         # One task for that file
-        if ! f.is_a?( CbrainFileList || input.list )
+        if ((! f.is_a?( CbrainFileList ) || input.list) # in case of a list input, we *do* assign it the CbFileList
           task = self.dup
           fillTask.( f, task )
 
         else # One task per userfile in the CbrainFileList
           ufiles = f.userfiles_accessible_by_user!( self.user, nil, nil, file_access_symbol() )
           # Skip files that are purposefully nil (e.g. given id 0 by the user)
-          subtasks = ufiles.select { |u| ! u.nil? }.map { |u| fillTask.( u, task.dup ) }
+          subtasks = ufiles.select { |u| ! u.nil? }.map { |u| fillTask.( u, self.dup ) }
           subtasks # an array of tasks
         end
       end
