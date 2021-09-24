@@ -340,7 +340,7 @@ class BoutiquesPortalTask < PortalTask
   # be present on the form and thus lost when the task is edited.
   def untouchable_params_attributes #:nodoc:
     descriptor  = boutiques_descriptor
-    outputs     = descriptor.outputs || []
+    outputs     = descriptor.output_files || []
 
     # Output parameters will be present after the task has run and need to be
     # preserved.
