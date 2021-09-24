@@ -271,7 +271,7 @@ class BoutiquesPortalTask < PortalTask
 
       fillTask = lambda do |userfile,tsk|
         tsk.invoke_params[input.id] = userfile.id
-        tsk.sanitize_param(input, :file)
+        tsk.sanitize_param(input)
         tsk.description ||= ''
         tsk.description  += " #{input.id}: #{userfile.name}"
         tsk.description.strip!
@@ -279,7 +279,7 @@ class BoutiquesPortalTask < PortalTask
       end
 
       tasklist = self.params[:interface_userfile_ids].map do |userfile_id|
-        f = Userfile.find_accessible_by_user( id, self.user, :access_requested => file_access_symbol() )
+        f = Userfile.find_accessible_by_user( userfile_id, self.user, :access_requested => file_access_symbol() )
 
         # One task for that file
         if (! f.is_a?( CbrainFileList ) || input.list) # in case of a list input, we *do* assign it the CbFileList
