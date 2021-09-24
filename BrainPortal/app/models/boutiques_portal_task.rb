@@ -282,7 +282,7 @@ class BoutiquesPortalTask < PortalTask
         f = Userfile.find_accessible_by_user( id, self.user, :access_requested => file_access_symbol() )
 
         # One task for that file
-        if ((! f.is_a?( CbrainFileList ) || input.list) # in case of a list input, we *do* assign it the CbFileList
+        if (! f.is_a?( CbrainFileList ) || input.list) # in case of a list input, we *do* assign it the CbFileList
           task = self.dup
           fillTask.( f, task )
 
