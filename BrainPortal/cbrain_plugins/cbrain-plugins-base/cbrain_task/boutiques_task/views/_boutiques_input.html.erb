@@ -55,7 +55,7 @@
   <%= render :partial => task_partial(:input_label), :locals => { :input => input } %>
 
   <%# Optional parameter enable/disable toggle %>
-  <%- if opt && (islist_except_for_file != true) -%>
+  <%- if opt -%>
     <%= render :partial => task_partial(:opt_checkbox), :locals => { :id => id, :check => !!value } %>
   <%- end -%>
 
