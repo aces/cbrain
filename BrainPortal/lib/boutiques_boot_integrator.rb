@@ -60,15 +60,15 @@ class BoutiquesBootIntegrator
       if exist_superclass != parent
         cb_error "Conflict in superclass while integrating descriptor: BoutiquesTask::#{klass_name} has superclass #{exist_superclass} already, and wanted to set it to #{parent}"
       end
+    else
+      # Create new class. This is the equivalent of
+      #   class BoutiquesTask::Xyz < ParentClass
+      #   end
+      # This class is pretty much empty of any distinct code.
+      # The real meat is in ParentClass.
+      klass = Class.new(parent)
+      BoutiquesTask.const_set klass_name.to_sym, klass
     end
-
-    # Create new class. This is the equivalent of
-    #   class BoutiquesTask::Xyz < ParentClass
-    #   end
-    # This class is pretty much empty of any distinct code.
-    # The real meat is in ParentClass.
-    klass = Class.new(parent)
-    BoutiquesTask.const_set klass_name.to_sym, klass
 
     # Boot process messages
     basename = Pathname.new(path).basename
