@@ -456,10 +456,10 @@ class BoutiquesPortalTask < PortalTask
       case type
       # Try to convert to integer and then float. Cant? then its not a number.
       when :number
-        if (number = Integer(value) rescue Float(value) rescue nil)
-          value = number
-        elsif value.blank?
+        if value.blank?
           params_errors.add(invokename, ": value missing")
+        elsif (number = Integer(value) rescue Float(value) rescue nil)
+          value = number
         else
           params_errors.add(invokename, ": not a number (#{value})")
         end
@@ -524,12 +524,23 @@ class BoutiquesPortalTask < PortalTask
 
   def check_number_param(input)
     value  = invoke_params[input.id]
-    values = Array(value).map(&:to_f)
+    values = Array(value)
+
+    if input.integer
+      ok = values.all? { |v| Integer(v.to_s) rescue false }
+      if ! ok
+        params_errors.add(input.cb_invoke_name, "must be specified as integer")
+        return # no need to check anything else
+      end
+    end
+
+    # For all other checks we compare as floats
+    values = values.map(&:to_f)
 
     if input.minimum
       clusive = input.exclusive_minimum ? "exclusive" : "inclusive"
-      ok = values.all? { |v| v.to_f >  input.minimum.to_f } if clusive == 'exclusive'
-      ok = values.all? { |v| v.to_f >= input.minimum.to_f } if clusive == 'inclusive'
+      ok = values.all? { |v| v >  input.minimum.to_f } if clusive == 'exclusive'
+      ok = values.all? { |v| v >= input.minimum.to_f } if clusive == 'inclusive'
       if ! ok
         params_errors.add(input.cb_invoke_name, "violates #{clusive} minimum value #{input.minimum}")
       end
@@ -537,19 +548,13 @@ class BoutiquesPortalTask < PortalTask
 
     if input.maximum
       clusive = input.exclusive_maximum ? "exclusive" : "inclusive"
-      ok = values.all? { |v| v.to_f <  input.maximum.to_f } if clusive == 'exclusive'
-      ok = values.all? { |v| v.to_f <= input.maximum.to_f } if clusive == 'inclusive'
+      ok = values.all? { |v| v <  input.maximum.to_f } if clusive == 'exclusive'
+      ok = values.all? { |v| v <= input.maximum.to_f } if clusive == 'inclusive'
       if ! ok
         params_errors.add(input.cb_invoke_name, "violates #{clusive} maximum value #{input.minimum}")
       end
     end
 
-    if input.integer
-      ok = values.all? { |v| Integer(v.to_s) rescue false }
-      if ! ok
-        params_errors.add(input.cb_invoke_name, "must be an integer")
-      end
-    end
   end
 
   def check_list_param(input)
