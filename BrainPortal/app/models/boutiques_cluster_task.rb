@@ -259,11 +259,22 @@ class BoutiquesClusterTask < ClusterTask
         all_file_input_ids = descriptor.file_inputs.map do |input|
           invoke_params[input.id]
         end.compact.uniq
-        parents = Userfile.where(:id => all_file_input_ids).to_a
-        self.addlog_to_userfiles_these_created_these(parents, [outfile]) if parents.present?
+        parent_userfiles = Userfile.where(:id => all_file_input_ids).to_a
+        self.addlog_to_userfiles_these_created_these(parent_userfiles, [outfile]) if parent_userfiles.present?
 
         # If there is only one input file, we move the output under it
-        outfile.move_to_child_of(parents[0]) if parents.size == 1
+        if parent_userfiles.size == 1
+          outfile.move_to_child_of(parent_userfiles[0])
+        else
+          # If there is exactly one mandatory file input, we use it
+          # as the parent even when there are other optional files.
+          req_file_inputs = descriptor.required_file_inputs
+          if req_file_inputs.size == 1
+            parent_id = invoke_params[req_file_inputs[0].id]
+            outfile.move_to_child_of(parent_id) if parent_id.present?
+          end
+        end
+
       end # each path
     end # each output
 
@@ -314,7 +325,7 @@ class BoutiquesClusterTask < ClusterTask
   # In the mode 'simulate', at the moment of creating
   # the tool's script in cluster_commands(), the
   # output of 'bosh exec simulate' will be substituted in
-  # the script ot generate the tool's command.
+  # the script to generate the tool's command.
   #
   # In the mode 'launch', an actual 'bosh exec launch' command
   # will be put in the script instead.
