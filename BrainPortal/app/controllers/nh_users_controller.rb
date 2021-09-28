@@ -26,6 +26,7 @@ class NhUsersController < NeurohubApplicationController
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include OrcidHelpers
+  include GlobusHelpers
 
   before_action :login_required
 
@@ -45,13 +46,15 @@ class NhUsersController < NeurohubApplicationController
 
   def edit #:nodoc:
     @user = User.find(params[:id])
-    @orcid_canonical = orcid_canonize(@user.meta[:orcid])
-    @orcid_uri       = orcid_login_uri()
     unless @user.id == current_user.id
       cb_error "You don't have permission to view this user.", :redirect => :neurohub
       # to change if admin/manager etc added...
       # todo move to security helpers
     end
+
+    @orcid_canonical = orcid_canonize(@user.meta[:orcid])
+    @orcid_uri       = orcid_login_uri() # set to nil if orcid not configured by admin
+    @globus_uri      = globus_login_uri(nh_globus_url) # set to nil if globus not configured by admin
   end
 
   def change_password #:nodoc:

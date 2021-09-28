@@ -40,6 +40,7 @@
       <p class="field_note">Note: You can use your CBRAIN account credentials to log in to NeuroHub. </p>
       <%= submit_tag  "Sign in", :class => 'btn-solid secondary' %>
       <%= link_to "Forgot your password?", request_password_users_path, :class => "btn-text cbrain external" %>
+
       <% if @orcid_uri %>
         <p class="text-center heading-sm grey-400 pb-4">OR</p>
         <%= link_to @orcid_uri, :class => "btn-solid orcid" do %>
@@ -49,6 +50,16 @@
         <p class="field_note">This will work if you have already linked your ORCID iD in your NeuroHub account.</p>
         <p class="field_note">You can learn more about ORCID at <%= link_to 'ORCID.org', "https://orcid.org/", :class => 'orcid_home_link' %></p>
       <% end %>
+
+      <% if @globus_uri %>
+        <p class="text-center heading-sm grey-400 pb-4">OR</p>
+        <%= link_to @globus_uri, :class => "btn-solid globus" do %>
+          Sign in with Globus
+        <% end %>
+        <p class="field_note">This will work if you have already linked your NeuroHub account to a Globus provider.</p>
+        <p class="field_note">You can learn more about Globus at <%= link_to 'www.globus.org', "https://www.globus.org/", :class => 'globus_home_link' %></p>
+      <% end %>
+
     <% end %>
   </div>
 

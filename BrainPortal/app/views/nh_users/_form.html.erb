@@ -70,8 +70,8 @@
     <fieldset>
       <%= f.label(:orcid, "ORCID iD") %>
       <% if @orcid_canonical.blank? %>
-        <p class="btn-text orcid">
-          <%= link_to @orcid_uri, :class => "btn-solid orcid" do %>
+        <p class="btn-solid orcid">
+          <%= link_to @orcid_uri, :class => "" do %>
             <%= image_tag("neurohub/ORCIDiD_iconvector.svg", :alt => "ORCID logo", :class => "orcid_logo") %>
             Connect your NeuroHub account to your ORCID iD
           <% end %>
@@ -102,6 +102,41 @@
               :method  => :post,
               :data    => { :confirm => "Are you sure you want to unlink your account from this ORCID iD?" } do %>
               Remove this ORCID iD from your NeuroHub account
+          <% end %>
+        </p>
+      <% end %>
+    </fieldset>
+  <% end %>
+
+  <% if @globus_uri %>
+    <fieldset>
+      <%= f.label(:globus, "Globus Identity") %>
+      <% glob_user = @user.meta[:globus_preferred_username] %>
+      <% glob_prov = @user.meta[:globus_provider_name] %>
+      <% if glob_user.blank? %>
+        <p class="btn-solid globus">
+          <%= link_to @globus_uri, :class => "" do %>
+            Connect your NeuroHub account to a Globus identity provider
+          <% end %>
+        </p>
+        <p class="field_note">
+          Globus is a non-profit service for secure, reliable research data management.
+          <br>
+          Learn more at <%= link_to "www.globus.org", "https://www.globus.org/", :class => "globus_home_link" %>
+        </p>
+      <% else %>
+        <p class="card-text">
+             Identity Name: <%= glob_user %><br>
+             Identity Provider: <%= glob_prov %>
+        </p>
+      <% end %>
+      <% if glob_user.present? %>
+        <p class="btn-solid globus bg-warning-bg">
+          <%= link_to nh_unlink_globus_path,
+              :class => "",
+              :method  => :post,
+              :data    => { :confirm => "Are you sure you want to unlink your account from this Globus identity?" } do %>
+              Remove this Globus identity from your NeuroHub account
           <% end %>
         </p>
       <% end %>

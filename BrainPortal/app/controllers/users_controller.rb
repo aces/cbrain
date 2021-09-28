@@ -90,7 +90,7 @@ class UsersController < ApplicationController
       .where( "updated_at > ?", SessionHelpers::SESSION_API_TOKEN_VALIDITY.ago )
       .order(:updated_at)
 
-    @globus_uri = globus_login_uri
+    @globus_uri = globus_login_uri(globus_url)
 
     respond_to do |format|
       format.html # show.html.erb

@@ -26,12 +26,14 @@ class NhSessionsController < NeurohubApplicationController
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include OrcidHelpers
+  include GlobusHelpers
 
-  before_action :login_required,    :except => [ :new, :create, :request_password, :send_password, :orcid ]
-  before_action :already_logged_in, :except => [ :orcid, :destroy ]
+  before_action :login_required,    :except => [ :new, :create, :request_password, :send_password, :orcid, :nh_globus ]
+  before_action :already_logged_in, :except => [ :orcid, :destroy, :nh_globus, :nh_unlink_globus ]
 
   def new #:nodoc:
-    @orcid_uri = orcid_login_uri()
+    @orcid_uri  = orcid_login_uri()
+    @globus_uri = globus_login_uri(nh_globus_url) # nh_globus_url is from the routes
   end
 
   # POST /nhsessions
@@ -130,6 +132,64 @@ class NhSessionsController < NeurohubApplicationController
     redirect_to signin_path
   end
 
+  # This action receives a JSON authentication
+  # request from globus and uses it to record or verify
+  # a user's identity.
+  def nh_globus
+    code  = params[:code].presence.try(:strip)
+    state = params[:state].presence || 'wrong'
+
+    # Some initial simple validations
+    if !code || state != globus_current_state()
+      cb_error "Globus session is out of sync with CBRAIN"
+    end
+
+    # Query Globus; this returns all the info we need at the same time.
+    identity_struct = globus_fetch_token(code, nh_globus_url) # nh_globus_url is from the routes
+    if !identity_struct
+      cb_error "Could not fetch your identity information from Globus"
+    end
+    Rails.logger.info "Globus identity struct:\n#{identity_struct.pretty_inspect.strip}"
+
+    # Either record the identity...
+    if current_user
+      record_globus_identity(identity_struct)
+      flash[:notice] = "Your NeuroHub account is now linked to your Globus identity."
+      redirect_to myaccount_path
+      return
+    end
+
+    # ...or attempt login with it
+    user = find_user_with_globus_identity(identity_struct)
+    if user.is_a?(String) # an error occurred
+      flash[:error] = user # the message
+      redirect_to signin_path
+      return
+    end
+
+    login_from_globus_user(user, identity_struct['identity_provider_display_name'])
+
+  rescue CbrainException => ex
+    flash[:error] = "#{ex.message}"
+    redirect_to signin_path
+  rescue => ex
+    clean_bt = Rails.backtrace_cleaner.clean(ex.backtrace || [])
+    Rails.logger.error "Globus auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
+    flash[:error] = 'The Globus authentication failed'
+    redirect_to signin_path
+  end
+
+  # POST /nh_unlink_globus
+  # Removes a user's linked globus identity.
+  def nh_unlink_globus #:nodoc:
+    redirect_to start_page_path unless current_user
+
+    unlink_globus_identity(current_user)
+
+    flash[:notice] = "Your account is no longer linked to any Globus identity"
+    redirect_to myaccount_path
+  end
+
   private
 
   def record_user_orcid(orcid) #:nodoc:
@@ -178,6 +238,26 @@ class NhSessionsController < NeurohubApplicationController
       redirect_to signin_path
       return
     end
+
+    # All's good
+    redirect_to neurohub_path
+  end
+
+  def login_from_globus_user(user, provider_name)
+    # Login the user
+    all_ok, new_cb_session = eval_in_controller(::SessionsController) do
+      ok  = create_from_user(user, "NeuroHub/Globus/#{provider_name}")
+      [ok, cbrain_session]
+    end
+    @cbrain_session = new_cb_session # crush the session object that was created for the NhSessionsController
+
+    if ! all_ok
+      redirect_to signin_path
+      return
+    end
+
+    # Record that the user connected using the CBRAIN login page
+    cbrain_session[:login_page] = 'NeuroHub'
 
     # All's good
     redirect_to neurohub_path

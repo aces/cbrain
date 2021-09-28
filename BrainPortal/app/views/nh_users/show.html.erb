@@ -160,6 +160,23 @@
     <div class="card-row">
       <div class="card-item">
         <div>
+          <p class="card-label">Globus ID</p>
+          <p class="card-text btn-text globus">
+          <% glob_user = @user.meta[:globus_preferred_username] %>
+          <% glob_prov = @user.meta[:globus_provider_name] %>
+          <% if glob_user.present? %>
+             Identity Name: <%= glob_user %><br>
+             Identity Provider: <%= glob_prov %>
+          <% else %>
+            Your account is not linked to a Globus identity provider
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-row">
+      <div class="card-item">
+        <div>
           <p class="card-label">Last Visit</p>
           <p class="card-text"><%= @user.last_connected_at ? "#{to_localtime(@user.last_connected_at,
           :datetime)} (#{pretty_elapsed(Time.now - @user.last_connected_at, :num_components => 3)} ago)" : "(Never)" %></p>
