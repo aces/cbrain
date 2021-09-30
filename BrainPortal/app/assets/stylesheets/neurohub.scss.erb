@@ -230,7 +230,10 @@ $WARNING_ALT: #db8402;
 $WARNING_DK: #653c02;
 
 $ORCID_BG: #31789b;
-$ORCID_ALT: #a6ce39;
+$ORCID_ALT: #a6ce39; /* the orcid ugly green */
+
+$GLOBUS_BG: #31789b;
+$GLOBUS_ALT: #27518F; /* the globus deep blue */
 
 $CBRAIN_BG: #29b9e8;
 $CBRAIN_WASH: #ecf7fc;
@@ -852,6 +855,12 @@ Button variants: solid, text, and nav.
   color: $ORCID_ALT;
 }
 
+// link to globus information pages
+.globus_home_link {
+  text-decoration: underline;
+  color: $GLOBUS_ALT;
+}
+
 .btn-solid.orcid {
   background-color: $ORCID_BG;
   border-color: $ORCID_BG;
@@ -860,6 +869,19 @@ Button variants: solid, text, and nav.
   &:hover {
     background-color: $ORCID_ALT;
     border-color: $ORCID_ALT;
+    color: $DEFAULT_BG;
+    transition: $TRANSITION_HOVER_ON;
+  }
+}
+
+.btn-solid.globus {
+  background-color: $GLOBUS_BG;
+  border-color: $GLOBUS_BG;
+  color: $DEFAULT_BG;
+  text-decoration: none;
+  &:hover {
+    background-color: $GLOBUS_ALT;
+    border-color: $GLOBUS_ALT;
     color: $DEFAULT_BG;
     transition: $TRANSITION_HOVER_ON;
   }
@@ -915,6 +937,11 @@ Button variants: solid, text, and nav.
 }
 
 .btn-text.orcid {
+  text-decoration: none;
+  color: black;
+}
+
+.btn-text.globus {
   text-decoration: none;
   color: black;
 }
