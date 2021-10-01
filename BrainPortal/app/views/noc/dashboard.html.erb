@@ -48,6 +48,7 @@
 
 <% num_users_color = @active_users.zero? ? "black" : colorwheel_edge_crawl(@active_users, 20) %>
 <% num_tasks_color = @active_tasks.zero? ? "black" : colorwheel_edge_crawl(@active_tasks, 400) %>
+<% cputime_color   = @cpu_time.zero?     ? "black" : colorwheel_edge_crawl(@cpu_time, 100.hours) %>
 <% num_excep_color = colorwheel_edge_crawl(@num_exceptions, 20, 1,
    # from yellow to orange to red
    :start => 63, :length => 63, :scale => :linear ) %>
@@ -71,7 +72,7 @@
       <% if @cpu_time.zero? %>
         -
       <% else %>
-        <span style="color: <%= colorwheel_edge_crawl(@cpu_time, @num_hours.hours) %>">
+        <span style="color: <%= cputime_color %>">
           <%= pretty_elapsed(@cpu_time, :num_components => 2, :short => true) %>
         </span>
       <% end %>
