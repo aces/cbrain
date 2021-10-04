@@ -51,7 +51,7 @@
 #
 # In that case the class that x belongs to is an anonymous
 # subclass of RestrictedHash.
-class RestrictedHash < Hash
+class RestrictedHash < HashWithIndifferentAccess
 
    Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
@@ -91,7 +91,7 @@ class RestrictedHash < Hash
    # Returns true if +myattr+ is one of the allowed keys
    # in this restricted hash class.
    def self.key_is_allowed?(myattr)
-     @allowed_keys[myattr]
+     @allowed_keys[myattr] || @allowed_keys[myattr.to_sym] || @allowed_keys[myattr.to_s]
    end
 
    # Returns true if +myattr+ is one of the allowed keys
@@ -150,7 +150,6 @@ class RestrictedHash < Hash
 
    # Implements the hash syntax for setting attributes
    def []=(myattr,val) #:nodoc:
-     myattr = myattr.to_sym if myattr.is_a?(String)
      cb_error "Illegal attribute '#{myattr}'." unless key_is_allowed?(myattr)
      super(myattr,val)
    end
@@ -187,13 +186,45 @@ class RestrictedHash < Hash
    # Implements the method syntax for accessing attributes:
    #   puts obj.myattr
    #   obj.myattr = value
+   #
+   # The method contains priority logic to find the hash
+   # key to update based on +name+: it will update SYMBOL keys
+   # in higher priority than STRING keys. For each, it will
+   # update the straight +name+ if it is allowed. Otherwise it
+   # will attempt to transform the underscores in the method
+   # name into dashes and see if that is allowed instead.
+   #
+   # This allows the programmer to set something like
+   #   allowed_keys = [ 'num-files' ]
+   # and yet still be able to access the hash with
+   #   obj.num_files
+   #   obj.num_files = 21
    def method_missing(name,*args) #:nodoc:
      # 'name' will be provided by Ruby as :myattr or :myattr=
-     myattr = name.to_s
+     myattr   = name.to_s        # string version
+     dashattr = myattr.dasherize # string with - instead of _
+
      if myattr.sub!(/=\z/,"")
-       self[myattr.to_sym] = args[0]
+       # Writing the attribute
+       dashattr.sub!(/=\z/,"")
+       if    key_is_allowed?(myattr.to_sym)    # symbol
+         self[myattr.to_sym]   = args[0]
+       elsif key_is_allowed?(dashattr.to_sym)  # symbol with - instead of _
+         self[dashattr.to_sym] = args[0]
+       elsif key_is_allowed?(myattr)           # string
+         self[myattr]          = args[0]
+       elsif key_is_allowed?(dashattr)         # string with - instead of _
+         self[dashattr]        = args[0]
+       else
+         cb_error "Cannot find attribute that match writer method '#{name}'"
+       end
      else
-       self[name]
+       # Reading the attribute
+       return self[name]            if key_is_allowed?(name)            # symbol
+       return self[dashattr.to_sym] if key_is_allowed?(dashattr.to_sym) # symbol with -
+       return self[myattr]          if key_is_allowed?(myattr)          # string
+       return self[dashattr]        if key_is_allowed?(dashattr)        # string with -
+       cb_error "Cannot find attribute that match reader method '#{name}'"
      end
    end
 

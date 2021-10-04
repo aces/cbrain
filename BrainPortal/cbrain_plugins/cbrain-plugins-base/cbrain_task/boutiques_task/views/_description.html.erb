@@ -1,3 +1,5 @@
+
+<%-
 #
 # CBRAIN Project
 #
@@ -18,3 +20,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+-%>
+
+<%# Generate a parameter's description block for +desc+ %>
+  <span class="tsk-prm-desc">
+    <% desc.split("\n").each do |line| %>
+      <%= line %><br>
+    <% end %>
+  <% if isGroupMember %>
+    <br>
+  <% end %>
+  </span>
+

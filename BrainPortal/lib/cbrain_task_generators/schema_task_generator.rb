@@ -169,6 +169,11 @@ module SchemaTaskGenerator
           :edit_help   => generated.source[:edit_help]
         })[partial]
       end
+      task.class_eval do
+        define_method(:raw_partial) do |partial|
+          self.class.raw_partial(partial)
+        end
+      end
 
       # Add a helper method for accessing the help file (for use on the tools page)
       # Written by the rake task cbrain:plugins:install, within the subtask public_assets

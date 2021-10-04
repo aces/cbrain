@@ -1,6 +1,6 @@
 {
-    "name":           "MultiBoutiquesDemo",
-    "tool-version":   "6.1.2",
+    "name":           "NewMultiBoutiquesDemo",
+    "tool-version":   "6.2.0",
     "schema-version": "0.5",
     "author":         "Pierre Rioux",
     "description":    "A demo CBRAIN task using a Boutiques descriptor. This program runs the UNIX 'du' command on some files or directories.",

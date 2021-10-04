@@ -1,0 +1,115 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2021
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+# This partial receives:
+#   input           : a boutiques input structure
+#   isGroupMember   : a flag to indicate if the input is a member of a boutiques group
+#   interface_files : a AR relation for the files selected by the user
+# Note that the partial will also address @task and @descriptor for other information
+%>
+
+<%-
+  id      = input.id
+  type    = input.type.downcase.to_sym
+  opt     = !!(input.optional && type != :flag)
+  islist  = input.list
+  islist_except_for_file = (islist && type != :file)
+  value   = @task.invoke_params[input.id]
+-%>
+
+<%-
+  classes  = [ 'tsk-prm', type.to_s ]
+  classes << 'list' if islist_except_for_file
+  classes << 'prm-grp-mbr' if isGroupMember
+-%>
+<li class="btq-<%= id %> <%= classes.join(' ') %>">
+
+  <%# Flag input toggle %>
+  <%- if type == :flag -%>
+    <%= render :partial => task_partial(:input_checkbox), :locals => { :input => input, :value => value } %>
+  <%- end -%>
+
+  <%# Name/Label %>
+  <%= render :partial => task_partial(:input_label), :locals => { :input => input } %>
+
+  <%# Optional parameter enable/disable toggle %>
+  <%- if opt -%>
+    <%= render :partial => task_partial(:opt_checkbox), :locals => { :id => id, :check => !!value } %>
+  <%- end -%>
+
+  <%# Enumerated values selection boxes %>
+  <%- enum_vals = input.value_choices %>
+  <%- if enum_vals.present? -%>
+      <%# Enum value html_select %>
+      <%# Enum value dropdown %>
+      <%- render_partial_name = islist ? :html_select : :dropdown %>
+      <%= render :partial => task_partial(render_partial_name), :locals =>
+            { :id        => input.cb_invoke_html_id,
+              :name      => input.cb_invoke_html_name,
+              :options   => enum_vals.map { |v| [v, v] },
+              :optional  => opt,  # only used in :dropdown partial
+              :default   => input.default_value,
+              :value     => value,
+              :none_msg  => '(Nothing to select)',
+            }
+      %>
+
+  <%# File input dropdown %>
+  <%- elsif type == :file -%>
+      <%= render :partial => task_partial(:dropdown), :locals =>
+            { :id        => input.cb_invoke_html_id(false), # false disable list input's '[]'
+              :name      => input.cb_invoke_html_name(false), # false disable list input's '[]'
+              :options   => interface_files.pluck(:id, :name),
+              :optional  => opt,
+              :default   => interface_files.count == 1 ? interface_files.first.id.to_s : nil,
+              :value     => value,
+              :none_msg  => '(Nothing to select)', # not used
+            }
+      %>
+
+  <%# Strings and numbers %>
+  <%- elsif type == :string || type == :number %>
+    <%- render_partial_name = islist ? :html_input_list : :html_input %>
+    <%= render :partial => task_partial(render_partial_name), :locals =>
+          { :id          => input.cb_invoke_html_id,
+            :name        => input.cb_invoke_html_name,
+            :type        => 'text', # not used in html_input_list
+            :optional    => opt,
+            :value       => value,
+            :placeholder => (type == :number) ? '0.0' : nil,
+          }
+    %>
+  <%- end -%>
+
+
+  <%# Description %>
+  <% desc = input.description.presence || "" %>
+  <%= render :partial => task_partial(:description), :locals =>
+      { :isGroupMember => isGroupMember,
+        :desc          => desc,
+      }
+  %>
+
+</li>

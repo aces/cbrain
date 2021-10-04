@@ -172,36 +172,65 @@ class TasksController < ApplicationController
 
   def new #:nodoc:
 
-    if params[:tool_id].blank?
-      flash[:error] = "Please select a task to perform."
-      redirect_to :controller  => :userfiles, :action  => :index
-      return
+    # NOTE: Sep 2021 The entire logic while entering this action is
+    # to be redesigned. We should require a tool_config_id as a preference,
+    # and a tool_id + bourreau_id as a second option (and then maybe not at all)
+
+    # This ID normally implies both what tool and what bourreau to use
+    tool_config_id = params[:tool_config_id].presence
+    # These two are fallback for compatibility reasons
+    tool_id        = params[:tool_id].presence
+    bourreau_id    = params[:bourreau_id].presence
+
+    # SANITY CHECKS ON TOOL_CONFIG_ID, TOOL_ID and BOURREAU_ID
+    autoconfig = false
+    if tool_config_id # the prefered method
+      @tool_config = ToolConfig.find(tool_config_id)
+      if ! @tool_config.can_be_accessed_by?(current_user)
+         raise ActiveRecord::RecordNotFound("Cannot access ToolConfig ##{tool_config_id}")
+      end
+    else # Try to propose a version; usually that's when we get just a tool_id
+      if tool_id.blank?
+        flash[:error] = "Please select a tool to run."
+        redirect_to :controller  => :userfiles, :action  => :index
+        return
+      end
+      tool = Tool.find(tool_id)
+      if ! tool.can_be_accessed_by?(current_user)
+         raise ActiveRecord::RecordNotFound("Cannot access Tool ##{tool_id}")
+      end
+      bourreau_id = Bourreau.find_all_accessible_by_user(current_user).where(:online => true).pluck(:id) if bourreau_id.nil? # try them all
+      toolconfigs = ToolConfig.where(
+         :bourreau_id => bourreau_id,
+         :tool_id     => tool.id,
+      ).order(:created_at).to_a
+      toolconfigs.reject! { |tc| ! tc.can_be_accessed_by?(current_user) }
+      if toolconfigs.empty?
+        flash[:error] = "We can't find any versions of the tool #{tool.name} available right now."
+        redirect_to :controller  => :userfiles, :action  => :index
+        return
+      end
+      @tool_config = toolconfigs.last
+      autoconfig = true
     end
 
-    @toolname         = Tool.find(params[:tool_id]).cbrain_task_class_name.demodulize
+    # Now that we sanitized the tool config...
+    tool           = @tool_config.tool
+    tool_id        = @tool_config.tool_id
+    tool_config_id = @tool_config.id
+    bourreau_id    = @tool_config.bourreau_id
 
-    @task             = CbrainTask.const_get(@toolname).new
+    # Create the new task object
+    @task       = tool.cbrain_task_class.new
+    @toolname   = tool.name
 
     # Our new task object needs some initializing
-    @task.params         = @task.class.wrapper_default_launch_args.clone
-    @task.bourreau_id    = params[:bourreau_id]     # Just for compatibility with old code
-    @task.tool_config_id = params[:tool_config_id]  # Normally sent by interface but it's optional
+    @task.bourreau_id    = bourreau_id
+    @task.tool_config_id = tool_config_id
     @task.user           = current_user
     @task.group_id       = current_assignable_group.id
     @task.status         = "New"
-
-    if @task.tool_config_id.present?
-      @task.tool_config = ToolConfig.find(@task.tool_config_id)
-      @task.bourreau_id = @task.tool_config.bourreau_id
-    elsif @task.bourreau_id # Offer latest accessible tool config as default id ! @task.tool_config
-      tool = @task.tool
-      toolconfigs = ToolConfig.where( :bourreau_id => @task.bourreau_id, :tool_id => tool.id ).all.to_a
-      toolconfigs.reject! { |tc| ! tc.can_be_accessed_by?(current_user) }
-      lastest_toolconfig = toolconfigs.last
-      @task.tool_config  = lastest_toolconfig if lastest_toolconfig
-    end
-
-    @tool_config = @task.tool_config # for access in view
+    @task.params         = @task.wrapper_default_launch_args.clone
 
     # Filter list of files as provided by the get request
     file_ids = params[:file_ids] || []
@@ -211,7 +240,7 @@ class TasksController < ApplicationController
       access = :write
     end
     @files   = Userfile.find_accessible_by_user(file_ids, current_user, :access_requested => access) rescue []
-    if @files.empty?
+    if @files.count == 0
       flash[:error] = "You must select at least one file to which you have write access."
       redirect_to :controller  => :userfiles, :action  => :index
       return
@@ -249,6 +278,12 @@ class TasksController < ApplicationController
       else
         flash.now[:notice] = message
       end
+    end
+
+    # Print message of the tool config was 'guessed'
+    if autoconfig
+      flash.now[:notice] = "We have automatically chosen the latest version and execution server for this tool (version #{@tool_config.version_name} on #{@task.bourreau.name}), please double-check this configuration."
+      #@task.errors.add(:tool_config_id, "was chosen for you, make sure this is what you want.")
     end
 
     # Generate the form.

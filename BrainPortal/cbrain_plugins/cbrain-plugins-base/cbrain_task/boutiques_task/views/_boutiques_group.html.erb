@@ -1,0 +1,64 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2021
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%# Generate HTML for a group -%>
+
+  <%-
+    # Get group parameters
+    id               = group.id
+    name             = group.name
+    groupDescription = group.description || ""
+    inputs           = group.members.map { |inputid| @descriptor.input_by_id(inputid) }
+    optional         = inputs.select { |input|   input.optional }
+    required         = inputs.select { |input| ! input.optional }
+    defaultChecked   = group.one_is_required || required.present? ||
+                       inputs.any? { |input| ! @task.isInactive(input) }
+  -%>
+  <div class="group btq-grp-<%= id %>">
+    <%# Write group header %>
+    <div style="border-bottom: 2px solid #bbbbbb; padding-bottom: 2px;">
+      <h3 style="border-width: 0px; margin: 0px; padding: 1px; padding-left: 0px;">
+        <%= name %>
+        <%= render :partial => task_partial(:group_checkbox), :locals =>
+            { :id => id, :defaultChecked => defaultChecked }
+        %>
+      </h3>
+      <h5 style="font-size : 9.5pt; font-weight: normal; padding-top: 2px;" class="grp-desc">
+        <% groupDescription.split("\n").each do |line| %>
+          <%= line %><br>
+        <% end %>
+      </h5>
+    </div>
+    <br>
+    <%# Write group parameters (required ones first) %>
+    <% (required + optional).each do |input| %>
+       <%= render :partial => task_partial(:boutiques_input), :locals =>
+           { :input           => input,
+             :isGroupMember   => true,
+             :interface_files => interface_files,
+           }
+       %>
+    <% end %>
+  </div>
+

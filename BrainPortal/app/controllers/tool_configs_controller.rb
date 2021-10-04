@@ -286,6 +286,7 @@ class ToolConfigsController < ApplicationController
       :group_id, :ncpus, :container_image_userfile_id, :containerhub_image_name, :container_index_location,
       :inputs_readonly,
       :container_engine, :extra_qsub_args, :singularity_overlays_specs, :container_exec_args,
+      :boutiques_descriptor_path,
       # The configuration of a tool in a VM managed by a
       # ScirCloud Bourreau is defined by the following
       # parameters which specify the disk image where the

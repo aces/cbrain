@@ -32,6 +32,7 @@ module GlobusHelpers
   # The parameter globus_action_url should be the URL to the controller
   # action here in CBRAIN that will received the POST response.
   def globus_login_uri(globus_action_url)
+    return nil if     api_request?
     return nil unless globus_auth_configured?
 
     # Create the URI to authenticate with GLOBUS

@@ -1,7 +1,8 @@
+
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2021
+# Copyright (C) 2021
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -18,3 +19,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+
+# Wrapper namespace for all tasks integrated with the
+# new Boutiques integrator.
+class BoutiquesTask # not a AR model and does not inherit from nothing
+
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+end
+

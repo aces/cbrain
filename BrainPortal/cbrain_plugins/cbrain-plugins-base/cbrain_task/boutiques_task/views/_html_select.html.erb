@@ -1,0 +1,66 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2021
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+#  Generate a drop-down list for a set of +options+ (value, label pairs) with
+#  HTML id +id+ and name +name+.
+#
+#  This partial receives these locals:
+#
+#    id
+#    name
+#    options # just like HTML options for select
+#    default
+#    value
+#    none_msg
+%>
+
+<%-
+  # helps finding out what to pre-select
+  selected = Array(value)
+  selected = Array(default) if selected.blank?
+  selected.map(&:presence).compact.map(&:to_s)
+%>
+
+  <div class="tsk-prm-sel-mult ">
+    <% if options.empty? %>
+      <span class="tsk-prm-sel-mult-lbl disabled">
+        <%= none_msg %>
+      </span>
+    <% else %>
+      <select class="tsk-prm-sel-mult"
+           type="text"
+           id="<%= id %>"
+           multiple="multiple"
+           name="<%= name %>">
+        <% options.each do |val, label| %>
+            <option data-value="<%= val %>"
+            <%- if selected.include?(val.to_s) -%>
+              data-selected="true"
+            <%- end -%>
+            ><%= label %></option>
+        <% end %>
+      </select>
+    <% end %>
+  </div>

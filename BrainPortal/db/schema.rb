@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20210207232542) do
+ActiveRecord::Schema.define(version: 20210905165005) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -438,6 +438,7 @@ ActiveRecord::Schema.define(version: 20210207232542) do
     t.text     "singularity_overlays_specs",  limit: 65535
     t.string   "container_exec_args"
     t.boolean  "inputs_readonly",                           default: false
+    t.string   "boutiques_descriptor_path"
     t.index ["bourreau_id"], name: "index_tool_configs_on_bourreau_id", using: :btree
     t.index ["tool_id"], name: "index_tool_configs_on_tool_id", using: :btree
   end

@@ -145,8 +145,8 @@ class PortalTask < CbrainTask
   # much too expensive when a large number of tasks were
   # reloaded.
   def add_new_params_defaults #:nodoc:
-    params = self.params ||  {}
-    mydef  = self.class.default_launch_args || {}
+    params = self.params              || {}
+    mydef  = self.default_launch_args || {}
     mydef.each do |k,v|
       next if params.has_key?(k)
       if v.is_a?(String) || v.is_a?(Array) || v.is_a?(Hash)
@@ -169,6 +169,13 @@ class PortalTask < CbrainTask
   # the content of your CbrainTask's :params
   # attribute will be initialized to be a perfect
   # copy of this hash table.
+  def default_launch_args
+    self.class.default_launch_args
+  end
+
+  # The class version of default_launch_args is
+  # deprecated; in subclasses, please
+  # define the instance method version.
   def self.default_launch_args
     {}
   end
@@ -391,7 +398,7 @@ class PortalTask < CbrainTask
   # of API methods.
   ######################################################
 
-  def self.wrapper_default_launch_args #:nodoc:
+  def wrapper_default_launch_args #:nodoc:
     begin
       ret = self.default_launch_args
       raise ScriptError.new("Coding error: method default_launch_args() for #{self.class} did not return a hash?!?") unless
@@ -626,7 +633,7 @@ class PortalTask < CbrainTask
     end
 
     def full_message(paramspath, message) #:nodoc:
-      human = PortalTask.human_attribute_name(paramspath)
+      human = @base.class.human_attribute_name(paramspath)
       "#{human} #{message}"
     end
 

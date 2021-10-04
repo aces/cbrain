@@ -28,7 +28,7 @@ describe RemoteResourceInfo do
       rri = RemoteResourceInfo.dummy_record
       expect(rri[:id]).to eq(0)
       rri.keys.each do |k|
-        expect(rri[k]).to eq('???') if k != :id && k != :bourreau_cms_rev
+        expect(rri[k]).to eq('???') if k != "id" && k != "bourreau_cms_rev"
       end
     end
   end
@@ -38,7 +38,7 @@ describe RemoteResourceInfo do
       rri = RemoteResourceInfo.mock_record(mock_value)
       expect(rri[:id]).to eq(0)
       rri.keys.each do |k|
-        expect(rri[k]).to eq(mock_value) if k != :id && k != :bourreau_cms_rev
+        expect(rri[k]).to eq(mock_value) if k != "id" && k != "bourreau_cms_rev"
       end
     end
   end

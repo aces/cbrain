@@ -47,7 +47,21 @@ module TaskFormHelper
   # of @task.name, which will be demodulized and underscored.
   def task_partial(partial_name, taskname = @task.name)
     plain = partial_name.to_s.sub(/\A_/,"").sub(/(\.html)?(\.erb)?/i,"")
-    "tasks/cbrain_plugins/installed-plugins/cbrain_task/#{taskname.demodulize.underscore}/views/#{plain}.html.erb"
+    basename = '_' + plain
+    parents = [ taskname ]
+    klass = @task.class
+    while klass < PortalTask
+      parents << klass.name
+      klass = klass.superclass
+    end
+    parents << 'BoutiquesTask'
+    parents.each do |parent|
+      dirname = parent.to_s.demodulize.underscore
+      file    = "tasks/cbrain_plugins/installed-plugins/cbrain_task/#{dirname}/views/#{basename}.html.erb"
+      next unless File.exists?(Rails.root + "app/views" + file)
+      return "tasks/cbrain_plugins/installed-plugins/cbrain_task/#{dirname}/views/#{plain}.html.erb"
+    end
+    cb_error "Cannot find task partial '#{partial_name}' for task #{@task.class}"
   end
 
   # This method can be used to insert in a task's parameters panel
