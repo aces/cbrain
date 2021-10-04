@@ -105,28 +105,28 @@ describe PortalTask do
   describe "#wrapper_default_launch_args" do
 
     it "should call default_launch_args" do
-      expect(PortalTask).to receive(:default_launch_args).and_return({})
-      PortalTask.wrapper_default_launch_args
+      expect(portal_task).to receive(:default_launch_args).and_return({})
+      portal_task.wrapper_default_launch_args
     end
 
     it "should raise an error if default args is not a hash" do
-      allow(PortalTask).to receive(:default_launch_args).and_return(nil)
-      expect { PortalTask.wrapper_default_launch_args }.to raise_error(ScriptError)
+      allow(portal_task).to receive(:default_launch_args).and_return(nil)
+      expect { portal_task.wrapper_default_launch_args }.to raise_error(ScriptError)
     end
 
     it "should reraise CbrainErrors" do
-      allow(PortalTask).to receive(:default_launch_args).and_raise(CbrainError)
-      expect { PortalTask.wrapper_default_launch_args }.to raise_error(CbrainError)
+      allow(portal_task).to receive(:default_launch_args).and_raise(CbrainError)
+      expect { portal_task.wrapper_default_launch_args }.to raise_error(CbrainError)
     end
 
     it "should reraise CbrainNotices" do
-      allow(PortalTask).to receive(:default_launch_args).and_raise(CbrainNotice)
-      expect { PortalTask.wrapper_default_launch_args }.to raise_error(CbrainNotice)
+      allow(portal_task).to receive(:default_launch_args).and_raise(CbrainNotice)
+      expect { portal_task.wrapper_default_launch_args }.to raise_error(CbrainNotice)
     end
 
     it "should convert other errors to ScriptErrors" do
-      allow(PortalTask).to receive(:default_launch_args).and_raise(StandardError)
-      expect { PortalTask.wrapper_default_launch_args }.to raise_error(ScriptError)
+      allow(portal_task).to receive(:default_launch_args).and_raise(StandardError)
+      expect { portal_task.wrapper_default_launch_args }.to raise_error(ScriptError)
     end
 
   end

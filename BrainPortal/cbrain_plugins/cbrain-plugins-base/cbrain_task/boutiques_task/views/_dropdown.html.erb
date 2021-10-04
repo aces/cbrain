@@ -1,0 +1,81 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2021
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+# Generate a drop-down list for a set of +options+ (value, label pairs) with
+# HTML id +id+ and name +name+.
+# +none_msg+ corresponds to the text displayed if +options+ is empty and
+# +optional+ indicates if the parameter is optional (or not)
+#
+#  This partial receives these locals:
+#
+#    id
+#    name
+#    options # just like HTML options for select
+#    optional
+#    default
+#    value
+#    none_msg
+%>
+
+  <%= render :partial => task_partial(:html_input), :locals =>
+        { :id       => id,
+          :name     => name,
+          :type     => 'hidden',
+          :value    => value,
+          :optional => optional,
+          :placeholder => nil,
+        }
+  %>
+
+<%-
+  # helps finding out what to pre-select
+  selected = Array(value)
+  selected = Array(default) if selected.blank?
+  selected.map(&:presence).compact.map(&:to_s)
+%>
+
+  <div class="tsk-prm-sel">
+    <% if options.blank? %>
+      <span class="tsk-prm-sel-lbl disabled">
+        <%= nothing_msg %>
+      </span>
+    <% else %>
+      <span class="tsk-prm-sel-icon ui-icon ui-icon-triangle-1-s"></span>
+      <span class="tsk-prm-sel-lbl">
+        <% if (pair = options.detect { |o| o.first.to_s == value.to_s }) %>
+          <%= pair.last %>
+        <% end %>
+      </span>
+      <ul class="tsk-prm-sel-opt">
+        <% options.each do |val, label| %>
+          <li data-value="<%= val %>"
+            <%- if selected.include?(val.to_s) -%>
+              data-selected="true"
+            <%- end -%>
+          ><%= label %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>

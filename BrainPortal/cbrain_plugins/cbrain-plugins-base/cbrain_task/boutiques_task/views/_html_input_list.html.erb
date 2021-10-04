@@ -1,0 +1,63 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2021
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+# Generate a list of inputs suitable for a list parameter with HTML id +id+
+# and name +name+. +values+, +optional+ and +placeholder+ work similarly to
+# input's corresponding arguments.
+%>
+
+<% values = Array(value) %>
+<% first  = values.shift %>
+
+  <ul class="tsk-prm-list">
+    <li>
+      <%= render :partial => task_partial(:html_input), :locals =>
+          {
+            :id          => id,
+            :name        => name,
+            :type        => 'text',
+            :value       => first,
+            :optional    => optional,
+            :placeholder => placeholder,
+          }
+      %>
+      <span class="tsk-prm-add ui-icon ui-icon-plus"></span>
+    </li>
+    <% values.each do |val| %>
+      <li>
+        <%= render :partial => task_partial(:html_input), :locals =>
+          {
+            :id          => nil,
+            :name        => name,
+            :type        => 'text',
+            :value       => val,
+            :optional    => optional,
+            :placeholder => placeholder,
+          }
+        %>
+        <span class="tsk-prm-add ui-icon ui-icon-minus"></span>
+      </li>
+    <% end %>
+  </ul>

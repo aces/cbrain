@@ -1,3 +1,5 @@
+
+<%-
 #
 # CBRAIN Project
 #
@@ -18,3 +20,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+-%>
+
+<%# Generate a checkbox for a parameter grouping %>
+
+  <input class="group-toggler"
+    type="checkbox"
+    id="<%= id %>_chk"
+    <%= 'checked="checked"' if defaultChecked %>
+  />
+  <label for="<%= id %>_chk"></label>
+

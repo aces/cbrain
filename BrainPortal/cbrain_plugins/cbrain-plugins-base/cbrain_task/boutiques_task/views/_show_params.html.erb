@@ -1,0 +1,108 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2021
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%-
+  # Parameter groups
+  @descriptor = @task.descriptor_for_form
+  inputs      = @descriptor.inputs
+  file_inputs = @descriptor.file_inputs
+  params      = inputs.select { |i| i.type != 'File' }
+  outputs     = @descriptor.output_files
+-%>
+<%- unless [params, file_inputs, outputs].all?(&:empty?) -%>
+<%
+  # Format a parameter (input or output) +value+ for display. Mostly for
+  # arrays (parameter lists).
+  format_param = lambda do |value|
+    value = [value] unless value.is_a?(Enumerable)
+    value.map(&:to_s).join(', ')
+  end
+
+  # Format a set of one or more Userfile IDs for display.
+  # Similar to format_param.
+  format_files = lambda do |value|
+    value = [value] unless value.is_a?(Enumerable)
+    format_param.(value.map { |v| link_to_userfile_if_accessible(v) }).html_safe
+  end
+%>
+<%- end -%>
+<div class="task-show">
+<%- if [params, file_inputs, outputs].all?(&:empty?) -%>
+  No parameters, no inputs, no ouputs.
+<%- else -%>
+  <table>
+  <%- unless params.empty? -%>
+    <tbody class="tsk-sw-param">
+      <tr>
+        <th colspan="2" class="tsk-sw-hdr">
+          Parameters
+        </th>
+      </tr>
+    <%- params.each do |param| -%>
+      <tr>
+        <td class="tsk-sw-name"><%= param.name %></td>
+        <td class="tsk-sw-val">
+          <%= format_param.(@task.invoke_params[param.id]) %>
+        </td>
+      </tr>
+    <%- end -%>
+    </tbody>
+  <%- end -%>
+  <%- unless file_inputs.empty? -%>
+    <tbody class="tsk-sw-input">
+      <tr>
+        <th colspan="2" class="tsk-sw-hdr">
+          Input files
+        </th>
+      </tr>
+    <%- file_inputs.each do |input| -%>
+      <tr>
+        <td class="tsk-sw-name"><%= input.name %></td>
+        <td class="tsk-sw-val">
+          <%= format_files.(@task.invoke_params[input.id]) %>
+        </td>
+      </tr>
+    <%- end -%>
+    </tbody>
+  <%- end -%>
+  <%- unless outputs.empty? -%>
+    <tbody class="tsk-sw-output">
+      <tr>
+        <th colspan="2" class="tsk-sw-hdr">
+          Output files
+        </th>
+      </tr>
+    <%- outputs.each do |output| -%>
+      <tr>
+        <td class="tsk-sw-name"><%= output.name %></td>
+        <td class="tsk-sw-val">
+          <%= format_files.(@task.params[("_cbrain_output_" + output.id).to_sym]) %>
+        </td>
+      </tr>
+    <%- end -%>
+    </tbody>
+  <%- end -%>
+  </table>
+<%- end -%>
+</div>

@@ -1,3 +1,5 @@
+
+<%-
 #
 # CBRAIN Project
 #
@@ -18,3 +20,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+-%>
+
+<%
+#  Generate a checkbox for optional parameters with HTML +id+.
+#  The partial receives these locals:
+#
+#    id
+#    check
+%>
+
+<%-
+  html_id   = "tsk-prm-opt-#{id}"
+-%>
+
+<input class="tsk-prm-opt"
+       type="checkbox"
+       <% if check %>
+         checked="checked"
+       <% end %>
+       id="<%= html_id %>"
+/>
+
+<label class="tsk-prm-opt-lbl" for="<%= html_id %>">
+  <span class="tsk-prm-opt-icon ui-icon ui-icon-check"></span>
+</label>
+

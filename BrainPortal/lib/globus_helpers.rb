@@ -30,6 +30,7 @@ module GlobusHelpers
 
   # Returns the URI to send users to the GLOBUS authentication page
   def globus_login_uri
+    return nil if     api_request?
     return nil unless globus_auth_configured?
 
     # Create the URI to authenticate with GLOBUS
