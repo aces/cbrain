@@ -147,7 +147,7 @@ class BoutiquesClusterTask < ClusterTask
       SIMULATE
       simulate_com.gsub!("\n"," ")
       simulout = IO.popen(simulate_com) { |fh| fh.read }
-      simulout.sub(/^Generated.*\n/,"") # header junk from simulate
+      simulout.sub!(/^Generated.*\n/,"") # header junk from simulate
       commands = <<-COMMANDS
         # Main tool command, generated with bosh exec simulate
         #{simulout.strip}
