@@ -71,6 +71,48 @@
     single_file = <%= single_file ? "\"#{single_file['id']}\"" : "nil" %>
 %%>
 
+
+<%-
+  #
+  # Make maps for which parameters disable/require each other
+  #
+  # Generates a map from id to [ids affected by the key id] for a given action name
+  makeActorActionMap = lambda do |action|
+    params.inject({}){ |hmap,i| (res=i[action]) ? hmap.merge(i["id"]=>res) : hmap }
+  end
+  #
+  # Generates a map from id to [ids affecting the key id] for a given action name
+  makeReceiverActionMap = lambda do |action|
+    doesMap = makeActorActionMap.(action)
+    doneMap = doesMap.inject({}) do |map,(key,val)| # invert the relation above (active->passive)
+      for v in val do
+        if v.is_a?(Array)
+          (disabled_by, keys) = v
+          keys.each do |k|
+            if map[k].nil?
+              map[k] = {key.to_s => [disabled_by]}
+            else
+              if map[k][key].nil? then map[k][key] = [disabled_by] else map[k][key] << disabled_by end
+            end
+          end
+        else
+          if map[v].nil? then map[v] = [key] else map[v] << key end
+        end
+      end
+      map
+    end
+  end
+
+  #
+  # The actual maps: idIn -> [ids disabled/required by idIn]
+  disabledBy_map   = makeReceiverActionMap.("disables-inputs")
+  requires_map     = makeActorActionMap.("requires-inputs")
+  disabledBy_value = makeReceiverActionMap.("value-disables")
+
+  disabledBy_value_keys = disabledBy_value.map {|k,v| v.keys }.flatten.uniq
+
+-%>
+
 <%-
   # Lambda for checking group membership
   whichGroup = lambda { |s| gIdToMbrs.select{ |v| gIdToMbrs[v].include? s }.first[0] rescue nil }
@@ -103,7 +145,7 @@
   +placeholder+ is the placeholder text to fill the input with while awaiting
   user input
 %%>
-<%% input = lambda do |id, name, type: 'text', value: nil, optional: false, placeholder: nil| %>
+<%% input = lambda do |id, name, type: '  text', value: nil, optional: false, placeholder: nil| %>
   <%% value = @task.params[name.to_sym] if name && value.nil? %>
   <input <%% if id %>
           id="<%%= id.to_la_id %>"
@@ -220,7 +262,7 @@
   +nothing+ corresponds to the text displayed if +options+ is empty and
   +optional+ indicates if the parameter is optional (or not)
 %%>
-<%% dropdown = lambda do |id, name, options = [], nothing: '(Nothing to select)', optional: false, default: nil| %>
+<%% dropdown = lambda do |id, name, options = [], nothing: '(Nothing to select)', disable_by: [], optional: false, default: nil| %>
   <%% value = @task.params[name.to_sym] if name %>
   <%%
     input.(id, name,
@@ -229,7 +271,11 @@
       optional: optional
     )
   %>
-  <div class="tsk-prm-sel">
+  <%% if disable_by.include?(id) %>
+    <div class="tsk-prm-sel tsk-prm-dis">
+  <%% else %>
+    <div class="tsk-prm-sel">
+  <%% end %>
     <%% if options.empty? %>
       <span class="tsk-prm-sel-lbl disabled">
         <%%= nothing %>
@@ -261,9 +307,13 @@
   +nothing+ corresponds to the text displayed if +options+ is empty and
   +optional+ indicates if the parameter is optional (or not)
 %%>
-<%% html_select = lambda do |id, name, options = [], nothing: '(Nothing to select)', optional: false, default: nil| %>
+<%% html_select = lambda do |id, name, options = [], nothing: '(Nothing to select)', optional: false, disable_by: [], default: nil| %>
   <%% value = @task.params[name.to_sym] if name %>
-  <div class="tsk-prm-sel-mult ">
+  <%% if disable_by.include?(id) %>
+    <div class="tsk-prm-sel-mult tsk-prm-dis">
+  <%% else %>
+    <div class="tsk-prm-sel-mult">
+  <%% end %>
     <%% if options.empty? %>
       <span class="tsk-prm-sel-mult-lbl disabled">
         <%%= nothing %>
@@ -301,7 +351,7 @@
 <%%# Generate a parameter's description block for +desc+ %>
 <%% description = lambda do |desc, isGroupMember = false| %>
   <span class="tsk-prm-desc">
-    <%%= desc.split("\n").map { |s| h(s) }.join("<br>").html_safe if desc %><%%= "<br><br>".html_safe if isGroupMember %>
+    <%%= desc %><%%= "<br><br>".html_safe if isGroupMember %>
   </span>
 <%% end %>
 
@@ -346,7 +396,7 @@
   <%- end -%>
         )
 
-  <%- if opt -%>
+  <%- if opt && list != true -%>
         # Optional parameter enable/disable toggle
         checkbox.(id)
 
@@ -361,6 +411,7 @@
         html_select.(id, name,
           <%= enum_vals.map { |v| [v, v] } %>,
           optional: <%= opt %>,
+          disable_by: <%= disabledBy_value_keys %>,
           default:  <%= "\"#{defaults.find { |d| d['id']==id }['default-value']}\"" rescue "nil" %>
         )
       <%- else -%>
@@ -369,6 +420,7 @@
         dropdown.(id, name,
           <%= enum_vals.map { |v| [v, v] } %>,
           optional: <%= opt %>,
+          disable_by: <%= disabledBy_value_keys %>,
           default:  <%= "\"#{defaults.find { |d| d['id']==id }['default-value']}\"" rescue "nil" %>
         )
       <%- end -%>
@@ -378,6 +430,7 @@
         dropdown.(id, id,
           [ [ input_files[0].try(:id).to_s, input_files[0].try(:name).to_s ] ],
           optional: <%= opt %>,
+          disable_by: <%= disabledBy_value_keys %>,
           default: input_files[0].try(:id).to_s
         )
     <%- elsif param['cbrain-file-type'] -%>
@@ -438,7 +491,7 @@
     # Get group parameters
     id = group['id']
     name = group['name']
-    groupDescription = group['description'].presence || ''
+    groupDescription = group['description']
     groupParams = gIdToPrms[id]
     mbrs = gIdToMbrs[id]
     defaultChecked = group['one-is-required'] || required.any? { |p| mbrs.include? p["id"] }
@@ -450,12 +503,9 @@
         <%= name %> <%% groupCheckbox.('<%= id %>',<%= defaultChecked %>) %>
       </h3>
       <h5 style="font-size : 9.5pt; font-weight: normal; padding-top: 2px;" class="grp-desc">
-        <%- groupDescription.split("\n").each do |line| %>
-          <%= line %> <br>
-        <%- end %>
+        <%= groupDescription %>
       </h5>
-    </div>
-    <br>
+    </div><%%= "<br>".html_safe %>
     <%# Write group parameters (required ones first) %>
     <%- groupParams.each { |p| parameter.(p, true) if required.any? { |r| p["id"]==r["id"] } } -%>
     <%- groupParams.each { |p| parameter.(p, true) if optional.any? { |t| p["id"]==t["id"] } } -%>
@@ -541,7 +591,20 @@ $(function () {
 % jsMapOf = lambda do |hmap, numbers: false|
 %   n = hmap.size
 %   hmap.each_with_index do |(k,v),i|
-%    if v.is_a? Array
+%    if v.is_a? Hash
+    <%= "\"#{k}\" : {" %>
+%       m = v.size
+%       v.each_with_index do |(vk, vv), i|
+%         jsMapOf.({vk => v[vk]})
+%         if (i < m - 1)
+      <%= "," %>
+%         end
+%       end
+    <%= "}" %>
+%        if (i < n - 1)
+    <%= "," %>
+%        end
+%    elsif v.is_a? Array
       <%= "\"#{k}\" : [" + v.map{ |s| "\"#{s}\"" }.join(',') + "]" + ((i == n-1) ? '' : ',') %>
 %    elsif numbers # Don't quote numbers
       <%= "\"#{k}\" : " + v.to_s + ((i == n-1) ? '' : ',') %>
@@ -557,8 +620,11 @@ $(function () {
   var requiresMap = {
 %   jsMapOf.(requires_map)
   };
-  var disabledByMap = {
+var disabledByMap = {
 %   jsMapOf.(disabledBy_map)
+  };
+  var disabledByValue = {
+%   jsMapOf.(disabledBy_value)
   };
 
 %# Generate JS functions for handling disables/requires
@@ -573,6 +639,19 @@ $(function () {
       return targ.find('.tsk-prm-chk').prop('checked');
     }
     return targ.find('.tsk-prm-opt').prop('checked'); // Non-flag case
+  }
+
+  // Helper function that checks whether a given parameter is active with specific values
+  var isActiveParamWithValues = function(param_name, values) {
+    var disabled_by_values = values[param_name]
+    var targ = $('li.' + param_name + '.tsk-prm');
+    
+    if (disabled_by_values){
+      var current_values = ($(targ[0].querySelector('select')) && $(targ[0].querySelector('select')).val()) || [targ[0].querySelector('input[type="hidden"]') && targ[0].querySelector('input[type="hidden"]').value];
+      if (current_values && current_values.some(r=> disabled_by_values.indexOf(r) >= 0)) {
+        return true;
+      }
+    }
   }
 
   // Helper for checking array containment because JS won't let you use 'in' for arrays in a useful way
@@ -621,21 +700,35 @@ $(function () {
     }
 
     // Get combined keyset of potentially affected parameters
-    var affectedIds = $.unique(Object.keys(disabledByMap).concat(Object.keys(requiresMap)));
+    var affectedIds = $.unique(Object.keys(disabledByMap).
+                        concat(Object.keys(requiresMap).
+                        concat(Object.keys(disabledByValue))));
+      
     // Run twice because the order matters: a param can be wrongly disabled if it is processed before its
     // disabler is deactivated
-    affectedIds = affectedIds.concat( affectedIds.slice() )
+    affectedIds = [...new Set (affectedIds.concat( affectedIds.slice()) )]
 
     // Iterate over parameters, enabling and disabling as needed
     affectedIds.forEach( function( key ) {
 
-      // Handle targeted disabling
+      // Handle targeted disabling by Map
       var disablers = [];
       if( key in disabledByMap ){
         var vals = disabledByMap[key], len = vals.length;
         // Look for disabling parameters
         for(var i = 0; i < len; ++i){
           if( isActiveParam(vals[i]) ){
+            disablers.push(vals[i]);
+          }
+        }
+      }
+
+      // Handle targeted disabling by Value
+      if( key in disabledByValue ){
+        var vals = Object.keys(disabledByValue[key]), len = vals.length;
+        for(var i = 0; i < len; ++i){
+          // Look for disabling parameters
+          if( isActiveParamWithValues(vals[i], disabledByValue[key]) ){
             disablers.push(vals[i]);
           }
         }
@@ -770,7 +863,15 @@ $(function () {
   })
 
 
-  /*** Optional parameters ***/
+  /*** Optional and disable parameters ***/
+  
+  /* Clicking on the parameter's toggles the parameter's state */
+  parameters.delegate('.tsk-prm-dis', 'click', function () {
+    var opt   = $(this),
+      param = opt.parent();
+
+      handleDisablesAndRequires();
+  })
 
   /* Clicking on the parameter's checkbox toggles the parameter's state */
   parameters.delegate('.tsk-prm-opt, .tsk-prm-chk', 'change activate.tsk-prm', function () {
