@@ -874,7 +874,7 @@ var disabledByMap = {
   })
 
   /* Clicking on the parameter's checkbox toggles the parameter's state */
-  parameters.delegate('.tsk-prm-opt, .tsk-prm-chk', 'change activate.tsk-prm', function () {
+  parameters.delegate('.tsk-prm-opt, .tsk-prm-chk, .tsk-prm-dis', 'change activate.tsk-prm', function () {
     var opt   = $(this),
         param = opt.parent();
 
