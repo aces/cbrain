@@ -700,26 +700,51 @@ var disabledByMap = {
 
    // Function for disabling/enabling parameters
    function handleDisablesAndRequires() {
+
     // Get combined keyset of potentially affected parameters
     var affectedIds = $.unique(Object.keys(disabledByMap).
-                        concat(Object.keys(requiresMap).
-                        concat(Object.keys(disabledByValue))));
+                        concat(Object.keys(disabledByValue).
+                        concat(Object.keys(requiresMap))));
       
     // Run twice because the order matters: a param can be wrongly disabled if it is processed before its
     // disabler is deactivated
     affectedIds = [...new Set (affectedIds.concat( affectedIds.slice()) )]
 
+    // console.log(affectedIds);
+    // console.log("disabledByMap");
+    // console.log(disabledByMap);
+    
+    // console.log("disabledByValue");
+    // console.log(disabledByValue);
+
     // Iterate over parameters, enabling and disabling as needed
+    var disabledBy_and_requiredBy = {};
+    // console.log(affectedIds);
     affectedIds.forEach( function( key ) {
+      disabledBy_and_requiredBy[key] = { disable_by: [],
+                                         require_by: [] 
+                                       };
 
       // Handle targeted disabling by Map
-      var disablers = [];
       if( key in disabledByMap ){
         var vals = disabledByMap[key], len = vals.length;
         // Look for disabling parameters
         for(var i = 0; i < len; ++i){
           if( isActiveParam(vals[i]) ){
-            disablers.push(vals[i]);
+            disabledBy_and_requiredBy[key]["disable_by"].push(vals[i]);
+            
+            Object.keys(disabledByValue).map((k) => {
+              if (Object.keys(disabledByValue[k]).includes(key)) {
+                console.log(key)
+                if (disabledBy_and_requiredBy[key]["disable_by"].includes(vals[i])) {
+                  console.log("HERE!!---")
+                  console.log(disabledBy_and_requiredBy[key]["disable_by"])
+                }
+              }
+            })
+
+          } else {
+            disabledBy_and_requiredBy[key]["disable_by"] = disabledBy_and_requiredBy[key]["disable_by"].filter(v => v !== vals[i])
           }
         }
       }
@@ -730,13 +755,12 @@ var disabledByMap = {
         for(var i = 0; i < len; ++i){
           // Look for disabling parameters
           if( isActiveParamWithValues(vals[i], disabledByValue[key]) ){
-            disablers.push(vals[i]);
+            disabledBy_and_requiredBy[key]["disable_by"].push(vals[i]);
           }
         }
       }
 
       // Handle parameter requirements (excludes parameters with mutual requirement)
-      var missingReqs = [];
       if( key in requiresMap ){
         var vals = requiresMap[key], n = vals.length;
         for(var i = 0; i < n; ++i){
@@ -744,15 +768,22 @@ var disabledByMap = {
           if( ! isActiveParam(vals[i]) ){
             // If the required parameter does not require the current target parameter
             if( ( ! (vals[i] in requiresMap) ) || requiresMap[vals[i]].indexOf(key) == -1 ){
-              missingReqs.push( vals[i] ); // Then add it to our set of missing requirements
+              disabledBy_and_requiredBy[key]["require_by"].push(vals[i]);
             }
           }
         }
       }
+    });
 
+
+    // console.log(disabledBy_and_requiredBy);
+    
+    Object.keys(disabledBy_and_requiredBy).map((key) => {
       /* Perform disablings/enablings */
       // Disable the parameter is any of its disablers are on
-      var target = $( 'li.' + key + '.tsk-prm' );
+      var target      = $( 'li.' + key + '.tsk-prm' );
+      var disablers   = disabledBy_and_requiredBy[key]["disable_by"];
+      var missingReqs = disabledBy_and_requiredBy[key]["require_by"];
       if(disablers.length != 0){
         toggleFunctionality(target, true, "Disabled by " + disablers.map(idToName).join(", "));
       }
@@ -763,9 +794,8 @@ var disabledByMap = {
       // Otherwise, enable the parameter
       else {
         toggleFunctionality(target, false, "");
-      }
-
-    });
+      }  
+    })
 
   }
 
