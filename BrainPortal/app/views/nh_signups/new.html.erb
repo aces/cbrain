@@ -63,6 +63,10 @@
           <span class="field_note">(one letter + alphanums. <b>By convention</b>: first letter of your first name + last name. For John Doe: 'jdoe')</span>
         </div>
       </fieldset>
+      <fieldset class="card-item">
+        <p class="card-label">INSTITUTIONAL INFO</p>
+        <p></p>
+     <div class="nh_form">
       <fieldset >
         <%= f.label(:institution, "Name of Institution/Organization", "data-required"=>"true") %>
         <%= f.text_field :institution, :size => 60%>
@@ -134,6 +138,8 @@
             ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
             { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'], :include_blank => true }
         %>
+      </fieldset>
+      </div>
       </fieldset>
       <fieldset >
         <%= f.label(:comment, "Comments or special requests") %>
