@@ -708,9 +708,10 @@ var disabledByMap = {
       
     // Run twice because the order matters: a param can be wrongly disabled if it is processed before its
     // disabler is deactivated
-    affectedIds = [...new Set (affectedIds.concat( affectedIds.slice()) )]
+    // affectedIds = affectedIds.concat( affectedIds.slice())
+    affectedIds = [...new Set(affectedIds)];
 
-    // console.log(affectedIds);
+    console.log(affectedIds);
     // console.log("disabledByMap");
     // console.log(disabledByMap);
     
@@ -721,9 +722,14 @@ var disabledByMap = {
     var disabledBy_and_requiredBy = {};
     // console.log(affectedIds);
     affectedIds.forEach( function( key ) {
+      console.log("----key----");
+      console.log(key);
+      console.log(disabledBy_and_requiredBy);
       disabledBy_and_requiredBy[key] = { disable_by: [],
                                          require_by: [] 
                                        };
+      console.log(Object.keys(disabledBy_and_requiredBy));
+
 
       // Handle targeted disabling by Map
       if( key in disabledByMap ){
@@ -731,20 +737,34 @@ var disabledByMap = {
         // Look for disabling parameters
         for(var i = 0; i < len; ++i){
           if( isActiveParam(vals[i]) ){
+            console.log("disabledByMap if");
             disabledBy_and_requiredBy[key]["disable_by"].push(vals[i]);
-            
-            Object.keys(disabledByValue).map((k) => {
-              if (Object.keys(disabledByValue[k]).includes(key)) {
-                console.log(key)
-                if (disabledBy_and_requiredBy[key]["disable_by"].includes(vals[i])) {
-                  console.log("HERE!!---")
-                  console.log(disabledBy_and_requiredBy[key]["disable_by"])
-                }
-              }
-            })
+            console.log("!!!");
+            console.log(disabledBy_and_requiredBy);
+            console.log("!!!");
 
+            console.log("###")
+            console.log(Object.keys(disabledBy_and_requiredBy));
+            Object.keys(disabledBy_and_requiredBy).map((k) => {
+              console.log(k)
+            })
+            console.log("###")
+
+
+            // Object.keys(disabledBy_and_requiredBy).map((k) => {
+            //   console.log("In map");
+            //   var filter = disabledBy_and_requiredBy[k]["disable_by"].filter(fk => fk !== key);
+            //   console.log(filter);
+            //   disabledBy_and_requiredBy[k]["disable_by"] = filter;
+            // });
+            
+            
+            console.log("***");
+            console.log(disabledBy_and_requiredBy);
+            console.log("***");
           } else {
-            disabledBy_and_requiredBy[key]["disable_by"] = disabledBy_and_requiredBy[key]["disable_by"].filter(v => v !== vals[i])
+            console.log("disabledByMap else");
+            // disabledBy_and_requiredBy[key]["disable_by"] = disabledBy_and_requiredBy[key]["disable_by"].filter(v => v !== vals[i])
           }
         }
       }
@@ -754,8 +774,15 @@ var disabledByMap = {
         var vals = Object.keys(disabledByValue[key]), len = vals.length;
         for(var i = 0; i < len; ++i){
           // Look for disabling parameters
+          console.log("ssss")
+          if (disabledBy_and_requiredBy[vals[i]] && disabledBy_and_requiredBy[vals[i]]["disable_by"].length !== 0) {
+            continue;
+          }
           if( isActiveParamWithValues(vals[i], disabledByValue[key]) ){
+            console.log("disabledByValue if")
             disabledBy_and_requiredBy[key]["disable_by"].push(vals[i]);
+          } else {
+            console.log("disabledByValue else")
           }
         }
       }
@@ -766,10 +793,13 @@ var disabledByMap = {
         for(var i = 0; i < n; ++i){
           // If the required parameter is not checked (active)
           if( ! isActiveParam(vals[i]) ){
+            console.log("requiresMap if");
             // If the required parameter does not require the current target parameter
             if( ( ! (vals[i] in requiresMap) ) || requiresMap[vals[i]].indexOf(key) == -1 ){
               disabledBy_and_requiredBy[key]["require_by"].push(vals[i]);
             }
+          } else {
+            console.log("requiresMap else")
           }
         }
       }
