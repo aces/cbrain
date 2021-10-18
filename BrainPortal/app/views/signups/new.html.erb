@@ -28,58 +28,52 @@
 
   <%= error_messages_for @signup %>
 
-  <table class="simple bordered">
+  <div class="generalbox">
 
-    <tr>
-      <td class="warning centered" colspan="2">Fields with an asterisk (*) are mandatory.</td>
-    </tr>
+    <p class="warning"> Fields with an asterisk (*) are mandatory.</p>
 
-    <tr>
-      <td colspan="2">&nbsp;</td>
-    </tr>
+    <div class="leftgrid">
 
-    <tr>
-      <th><%= f.label(:title, "Title:") %></th>
-      <td><%= f.text_field :title, :size => 10 %> <span class="field_note">(e.g. 'Mr.', 'Dr.', etc.)</span></td>
-    </tr>
+      <%= f.label(:title, "Title:") %>
+      <%= f.text_field :title, :size => 10 %> <span class="field_note">(e.g. 'Mr.', 'Dr.', etc.)</span>
 
-    <tr>
-      <th><%= f.label(:first, "* First Name:") %></th>
-      <td><%= f.text_field :first, :size => 20 %></td>
-    </tr>
 
-    <tr>
-      <th><%= f.label(:middle, "Middle Name:") %></th>
-      <td><%= f.text_field :middle, :size => 20 %></td>
-    </tr>
+      <%= f.label(:first, "* First Name:") %>
+      <%= f.text_field :first, :size => 20 %> <span></span>
 
-    <tr>
-      <th><%= f.label(:last, "* Last Name:") %></th>
-      <td><%= f.text_field :last, :size => 20 %></td>
-    </tr>
+      <%= f.label(:middle, "Middle Name:") %>
+      <%= f.text_field :middle, :size => 20 %> <span></span>
 
-    <tr>
-      <th><%= f.label(:login, "Preferred 'login' name:") %></th>
-      <td><%= f.text_field :login, :size => 15 %> <span class="field_note">(one letter + alphanums. <b>By convention</b>: first letter of your first name + last name. For John Doe: 'jdoe')</span></td>
-    </tr>
+      <%= f.label(:last, "* Last Name:") %>
+      <%= f.text_field :last, :size => 20 %> <span></span>
 
-    <tr>
-      <td colspan="2">&nbsp;</td>
-    </tr>
+      <%= f.label(:login, "Preferred 'login' name:") %>
+      <%= f.text_field :login, :size => 15 %> <span class="field_note">(one letter + alphanums. <b>By convention</b>: first letter of your first name + last name. For John Doe: 'jdoe')</span>
 
-    <tr>
-      <th><%= f.label(:institution, "* Name of Institution/Organization:") %></th>
-      <td><%= f.text_field :institution, :size => 60 %></td>
-    </tr>
+      <span></span>
 
-    <tr>
-      <th><%= f.label(:department, "* Department") %></th>
-      <td><%= f.text_field :department, :size => 60 %></td>
-    </tr>
 
-    <tr>
-      <th><%= f.label(:position, "* Current position or role:") %></th>
-      <td><%= f.select :position, options_for_select(
+      </div>
+
+      <fieldset class="groupentry">
+
+        <legend>
+          Institution Info
+        </legend>
+      <div class="leftgrid">
+      <%= f.label(:institution, "* Name of Institution/Organization:") %>
+      <%= f.text_field :institution, :size => 60 %>
+      <br>
+
+
+      <%= f.label(:department, "* Department") %>
+      <%= f.text_field :department, :size => 60 %>
+      <br>
+
+
+
+      <%= f.label(:position, "* Current position or role:") %>
+      <%= f.select :position, options_for_select(
               [ [ "(select one)", "" ], "Faculty",
                                         "Postdoctoral",
                                         "PhD. candidate",
@@ -90,12 +84,12 @@
               ],
               @signup.position)
           %>
-      </td>
-    </tr>
+        <span></span>
 
-    <tr>
-      <th><%= f.label(:affiliation, "* Current affiliation:") %></th>
-      <td><%= f.select :affiliation, options_for_select(
+
+
+      <%= f.label(:affiliation, "* Current affiliation:") %>
+      <%= f.select :affiliation, options_for_select(
               [ [ "(select one)", "" ], "Academic",
                                         "Private sector",
                                         "Government",
@@ -104,98 +98,91 @@
               ],
               @signup.affiliation)
           %>
-      </td>
-    </tr>
 
-    <tr>
-      <th><%= f.label(:email, "* Institutional Email address:") %></th>
-      <td><%= f.text_field :email, :size => 60 %>
-        <br><small>Please supply an address from your research institution</small>
-      </td>
-    </tr>
+      <span></span>
 
-    <tr>
-      <td colspan="2">&nbsp;</td>
-    </tr>
 
-    <tr>
-      <th><%= f.label(:street1, "Street Address (line 1):") %></th>
-      <td><%= f.text_field :street1, :size => 60 %></td>
-    </tr>
+      <%= f.label(:email, "* Institutional Email address:") %>
+      <%= f.text_field :email, :size => 60 %>
+        <span><small>Please supply an address from your research institution</small></span>
+      
 
-    <tr>
-      <th><%= f.label(:street2, "Street Address (line 2):") %></th>
-      <td><%= f.text_field :street2, :size => 60 %></td>
-    </tr>
+      <%= f.label(:street1, "Street Address (line 1):") %>
+      <%= f.text_field :street1, :size => 60 %>
+      <br>
 
-    <tr>
-      <th><%= f.label(:city, "* City:") %></th>
-      <td><%= f.text_field :city, :size => 30 %></td>
-    </tr>
 
-    <tr>
-      <th><%= f.label(:province, "* Province/State:") %></th>
-      <td><%= f.text_field :province, :size => 30 %></td>
-    </tr>
+      <%= f.label(:street2, "Street Address (line 2):") %>
+      <%= f.text_field :street2, :size => 60 %>
+      <br>
 
-    <tr>
-      <th><%= f.label(:country, "* Country:") %></th>
-      <td><%= f.text_field :country, :size => 30 %></td>
-    </tr>
 
-    <tr>
-      <th><%= f.label(:postal_code, "Postal/ZIP Code:") %></th>
-      <td><%= f.text_field :postal_code, :size => 8 %></td>
-    </tr>
+      <%= f.label(:city, "* City:") %>
+      <%= f.text_field :city, :size => 30 %>
+      <br>
 
-    <tr>
-      <th><%= f.label(:time_zone, "Time Zone:") %></th>
-      <td>
+
+      <%= f.label(:province, "* Province/State:") %>
+      <%= f.text_field :province, :size => 30 %>
+      <br>
+
+      <%= f.label(:country, "* Country:") %>
+      <%= f.text_field :country, :size => 30 %>
+      <br>
+
+      <%= f.label(:postal_code, "Postal/ZIP Code:") %>
+      <%= f.text_field :postal_code, :size => 8 %>
+      <br>
+
+      <%= f.label(:time_zone, "Time Zone:") %>
+
         <%= f.time_zone_select :time_zone,
             ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
             { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'], :include_blank => true }
         %>
-     </td>
-    </tr>
+     <br>
 
-    <tr>
-      <td colspan="2">&nbsp;</td>
-    </tr>
+      </div>
+    </fieldset>
 
-    <tr>
-      <th><%= f.label(:comment, "Comments or special requests:") %></th>
-      <td>
+    <p>
+      <td colspan="2">&nbsp;
+    </p>
+  </div>
+  <p>
+      <%= f.label(:comment, "Comments or special requests:") %>
+      
           <%= f.text_area :comment, :cols => 80, :rows => 5 %>
           <br>
           <small>
                  Please tell us the name of the laboratory you work for, the name of its Principal Investigator (if not you), and if possible anyone<br>
                  else you know in your lab who are already CBRAIN users. We'll use this information to create or add you to a <em>Site</em> within CBRAIN.
           </small>
-      </td>
-    </tr>
+      
+    </p>
 
     <% if current_user.present? && current_user.has_role?(:admin_user) %>
-      <tr>
-        <td colspan="2">&nbsp;</td>
-      </tr>
+      <p>
+        <td colspan="2">&nbsp;
+      </p>
 
-      <tr>
-        <th> <%= f.label(:admin_comment, "Private, admin-only comments:") %> </th>
-        <td> <%= f.text_area :admin_comment, :cols=>80, :rows => 5 %> </td>
-      </tr>
+      <p>
+         <%= f.label(:admin_comment, "Private, admin-only comments:") %> 
+         <%= f.text_area :admin_comment, :cols=>80, :rows => 5 %> 
+      </p>
     <% end %>
 
-    <tr>
-      <td colspan="2">&nbsp;</td>
-    </tr>
+    <p>
+      <td colspan="2">&nbsp;
+    </p>
 
-    <tr>
+    <p>
       <td colspan="2" class="centered">
         <%= f.submit(@signup.new_record? ? "Request Account" : "Update Request") %>
-      </td>
-    </tr>
+      
+    </p>
 
-  </table>
+  </div>
 
   <% end %>
 
