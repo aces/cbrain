@@ -39,38 +39,37 @@
 
 
       <%= f.label(:first, "* First Name:") %>
-      <%= f.text_field :first, :size => 20 %> <span></span>
-
-      <%= f.label(:middle, "Middle Name:") %>
-      <%= f.text_field :middle, :size => 20 %> <span></span>
-
-      <%= f.label(:last, "* Last Name:") %>
-      <%= f.text_field :last, :size => 20 %> <span></span>
-
-      <%= f.label(:login, "Preferred 'login' name:") %>
-      <%= f.text_field :login, :size => 15 %> <span class="field_note">(one letter + alphanums. <b>By convention</b>: first letter of your first name + last name. For John Doe: 'jdoe')</span>
-
-      <span></span>
-
-
-      </div>
-
-      <fieldset class="groupentry">
-
-        <legend>
-          Institution Info
-        </legend>
-      <div class="leftgrid">
-      <%= f.label(:institution, "* Name of Institution/Organization:") %>
-      <%= f.text_field :institution, :size => 60 %>
+      <%= f.text_field :first, :size => 20 %> <
       <br>
 
+      <%= f.label(:middle, "Middle Name:") %>
+      <%= f.text_field :middle, :size => 20 %>
+      <br>
+
+      <%= f.label(:last, "* Last Name:") %>
+      <%= f.text_field :last, :size => 20 %>
+      <br>
+
+      <%= f.label(:login, "Preferred 'login' name:") %>
+      <%= f.text_field :login, :size => 15 %>
+      <span class="field_note">(one letter + alphanums. <b>By convention</b>: first letter of your first name + last name. For John Doe: 'jdoe')</span>
+      <br>
+
+    </div>
+
+    <fieldset class="groupentry">
+
+      <legend>
+        Institution Info
+      </legend>
+      <div class="leftgrid">
+        <%= f.label(:institution, "* Name of Institution/Organization:") %>
+      <%= f.text_field :institution, :size => 60 %>
+      <br>
 
       <%= f.label(:department, "* Department") %>
       <%= f.text_field :department, :size => 60 %>
       <br>
-
-
 
       <%= f.label(:position, "* Current position or role:") %>
       <%= f.select :position, options_for_select(
@@ -86,8 +85,6 @@
           %>
         <span></span>
 
-
-
       <%= f.label(:affiliation, "* Current affiliation:") %>
       <%= f.select :affiliation, options_for_select(
               [ [ "(select one)", "" ], "Academic",
@@ -98,16 +95,19 @@
               ],
               @signup.affiliation)
           %>
+        <br>
 
-      <span></span>
-
-
-      <%= f.label(:email, "* Institutional Email address:") %>
+        <%= f.label(:email, "* Institutional Email address:") %>
       <%= f.text_field :email, :size => 60 %>
-        <span><small>Please supply an address from your research institution</small></span>
-      
+        <br>
+        <p></p>
+        <p>
+          <small>Please supply an address from your research institution. Non institutional emails will be ignored
+          </small>
+        </p>
+        <p></p>
 
-      <%= f.label(:street1, "Street Address (line 1):") %>
+        <%= f.label(:street1, "Street Address (line 1):") %>
       <%= f.text_field :street1, :size => 60 %>
       <br>
 
@@ -115,7 +115,6 @@
       <%= f.label(:street2, "Street Address (line 2):") %>
       <%= f.text_field :street2, :size => 60 %>
       <br>
-
 
       <%= f.label(:city, "* City:") %>
       <%= f.text_field :city, :size => 30 %>
@@ -146,7 +145,6 @@
     </fieldset>
 
     <p>
-      <td colspan="2">&nbsp;
     </p>
   </div>
   <p>
