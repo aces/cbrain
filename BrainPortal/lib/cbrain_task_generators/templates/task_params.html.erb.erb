@@ -627,6 +627,8 @@ var disabledByMap = {
 %   jsMapOf.(disabledBy_value)
   };
 
+var oldValues = {};
+
 %# Generate JS functions for handling disables/requires
 %#
   // Function to map ids to names to make the messages a little prettier
@@ -671,6 +673,10 @@ var disabledByMap = {
   
    // Helper function for handleDisablesAndRequires
    function toggleFunctionality (target, shouldDisable, greyOutMsg){
+     console.log("oldValues");
+     console.log(oldValues);
+     console.log("oldValues");
+
      var lightGrey   = '#d3d3d3'; // Firefox does not grey out disabled html elements
      // Selector classes
      var toGreyOut   = '.tsk-prm-in, .tsk-prm-opt-lbl, .tsk-prm-chk-lbl, .tsk-prm-sel';
@@ -684,9 +690,14 @@ var disabledByMap = {
      // Erase the warning message: if one is needed it will be rewritten below
      target.find('.tsk-prm-lbl').find('label.disable-msg').remove();
      // Handle properties treated differently in each toggle case
+      var oldValues_id = target.find('.tsk-prm-in')[0] && target.find('.tsk-prm-in')[0].id; // to keep and set textbox value
+      console.log(oldValues_id);
      if( shouldDisable ){
        target.find( iconClasses ).addClass('ui-state-disabled'); // disable icons
        target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', false); // uncheck checkboxes
+       if (oldValues_id) {
+        oldValues[oldValues_id] =  target.find('.tsk-prm-in')[0].value;
+       }
        target.find('.tsk-prm-in').val(''); // wipe textbox input areas
        target.find('ul.tsk-prm-list').find('li').has('.ui-icon-minus').remove(); // rm list subitems
        // Write warning message
@@ -694,6 +705,10 @@ var disabledByMap = {
        target.find('.tsk-prm-lbl').append( msg );
      }
      else {
+      if (oldValues[oldValues_id]) {
+        target.find('.tsk-prm-in')[0].value = oldValues[oldValues_id];
+        target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', true); // check checkboxes
+      }
        target.find( iconClasses ).removeClass('ui-state-disabled') // put icons in enabled state
      }
    }
