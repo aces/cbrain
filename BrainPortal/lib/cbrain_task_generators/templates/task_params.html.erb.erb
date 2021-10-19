@@ -683,10 +683,6 @@ var oldValues = {};
   
    // Helper function for handleDisablesAndRequires
    function toggleFunctionality (target, shouldDisable, greyOutMsg){
-    //  console.log("oldValues");
-    //  console.log(oldValues);
-    //  console.log("oldValues");
-
      var lightGrey   = '#d3d3d3'; // Firefox does not grey out disabled html elements
      // Selector classes
      var toGreyOut   = '.tsk-prm-in, .tsk-prm-opt-lbl, .tsk-prm-chk-lbl, .tsk-prm-sel';
@@ -701,7 +697,6 @@ var oldValues = {};
      target.find('.tsk-prm-lbl').find('label.disable-msg').remove();
      // Handle properties treated differently in each toggle case
       var oldValues_id = target.find('.tsk-prm-in')[0] && target.find('.tsk-prm-in')[0].id; // to keep and set textbox value
-      // console.log(oldValues_id);
      if( shouldDisable ){
        target.find( iconClasses ).addClass('ui-state-disabled'); // disable icons
        target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', false); // uncheck checkboxes
@@ -736,25 +731,12 @@ var oldValues = {};
     // affectedIds = affectedIds.concat( affectedIds.slice())
     affectedIds = [...new Set(affectedIds)];
 
-    console.log(affectedIds);
-    // console.log("disabledByMap");
-    // console.log(disabledByMap);
-    
-    // console.log("disabledByValue");
-    console.log(disabledByValue);
-
     // Iterate over parameters, enabling and disabling as needed
     var disabledBy_and_requiredBy = {};
-    // console.log(affectedIds);
     affectedIds.forEach( function( key ) {
-      console.log("----key----");
-      console.log(key);
-      console.log(disabledBy_and_requiredBy);
       disabledBy_and_requiredBy[key] = { disable_by: [],
                                          require_by: [] 
                                        };
-
-      console.log(Object.keys(disabledBy_and_requiredBy));
 
       // Handle targeted disabling by Map
       if( key in disabledByMap ){
@@ -795,21 +777,15 @@ var oldValues = {};
         for(var i = 0; i < n; ++i){
           // If the required parameter is not checked (active)
           if( ! isActiveParam(vals[i]) ){
-            console.log("requiresMap if");
             // If the required parameter does not require the current target parameter
             if( ( ! (vals[i] in requiresMap) ) || requiresMap[vals[i]].indexOf(key) == -1 ){
               disabledBy_and_requiredBy[key]["require_by"].push(vals[i]);
             }
-          } else {
-            console.log("requiresMap else")
           }
         }
       }
     });
 
-
-    // console.log(disabledBy_and_requiredBy);
-    
     Object.keys(disabledBy_and_requiredBy).map((key) => {
       /* Perform disablings/enablings */
       // Disable the parameter is any of its disablers are on
