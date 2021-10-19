@@ -647,9 +647,19 @@ var oldValues = {};
   var isActiveParamWithValues = function(param_name, values) {
     var disabled_by_values = values[param_name]
     var targ = $('li.' + param_name + '.tsk-prm');
-    
+
     if (disabled_by_values){
-      var current_values = ($(targ[0].querySelector('select')) && $(targ[0].querySelector('select')).val()) || [targ[0].querySelector('input[type="hidden"]') && targ[0].querySelector('input[type="hidden"]').value];
+      var current_values = ($(targ[0].querySelector('select')) && $(targ[0].querySelector('select')).val()) || 
+                             [targ[0].querySelector('input[type="hidden"]') && targ[0].querySelector('input[type="hidden"]').value]; 
+          current_values = current_values && current_values.filter(k => k !== "");
+      
+      // Handle old value if we re-activate the field
+      var oldValues_key  = Object.keys(oldValues).find(k => k.match("BRA_" + param_name + "_KET_"));
+      var oldValues_values = oldValues[oldValues_key]
+      if (oldValues_values && current_values) {
+        current_values.push(oldValues_values);
+      }
+
       if (current_values && current_values.some(r=> disabled_by_values.indexOf(r) >= 0)) {
         return true;
       }
@@ -673,9 +683,9 @@ var oldValues = {};
   
    // Helper function for handleDisablesAndRequires
    function toggleFunctionality (target, shouldDisable, greyOutMsg){
-     console.log("oldValues");
-     console.log(oldValues);
-     console.log("oldValues");
+    //  console.log("oldValues");
+    //  console.log(oldValues);
+    //  console.log("oldValues");
 
      var lightGrey   = '#d3d3d3'; // Firefox does not grey out disabled html elements
      // Selector classes
@@ -691,7 +701,7 @@ var oldValues = {};
      target.find('.tsk-prm-lbl').find('label.disable-msg').remove();
      // Handle properties treated differently in each toggle case
       var oldValues_id = target.find('.tsk-prm-in')[0] && target.find('.tsk-prm-in')[0].id; // to keep and set textbox value
-      console.log(oldValues_id);
+      // console.log(oldValues_id);
      if( shouldDisable ){
        target.find( iconClasses ).addClass('ui-state-disabled'); // disable icons
        target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', false); // uncheck checkboxes
@@ -731,7 +741,7 @@ var oldValues = {};
     // console.log(disabledByMap);
     
     // console.log("disabledByValue");
-    // console.log(disabledByValue);
+    console.log(disabledByValue);
 
     // Iterate over parameters, enabling and disabling as needed
     var disabledBy_and_requiredBy = {};
@@ -743,8 +753,8 @@ var oldValues = {};
       disabledBy_and_requiredBy[key] = { disable_by: [],
                                          require_by: [] 
                                        };
-      console.log(Object.keys(disabledBy_and_requiredBy));
 
+      console.log(Object.keys(disabledBy_and_requiredBy));
 
       // Handle targeted disabling by Map
       if( key in disabledByMap ){
@@ -752,34 +762,12 @@ var oldValues = {};
         // Look for disabling parameters
         for(var i = 0; i < len; ++i){
           if( isActiveParam(vals[i]) ){
-            console.log("disabledByMap if");
             disabledBy_and_requiredBy[key]["disable_by"].push(vals[i]);
-            console.log("!!!");
-            console.log(disabledBy_and_requiredBy);
-            console.log("!!!");
-
-            console.log("###")
-            console.log(Object.keys(disabledBy_and_requiredBy));
-            Object.keys(disabledBy_and_requiredBy).map((k) => {
-              console.log(k)
+            // Remove extra entries in disabledBy_and_requiredBy 
+            Object.keys(disabledBy_and_requiredBy).map((sk) => {
+              var disable_by = disabledBy_and_requiredBy[sk]["disable_by"];
+              disabledBy_and_requiredBy[sk]["disable_by"] = disabledBy_and_requiredBy[sk]["disable_by"].filter(vk => vk === vals[i]);
             })
-            console.log("###")
-
-
-            // Object.keys(disabledBy_and_requiredBy).map((k) => {
-            //   console.log("In map");
-            //   var filter = disabledBy_and_requiredBy[k]["disable_by"].filter(fk => fk !== key);
-            //   console.log(filter);
-            //   disabledBy_and_requiredBy[k]["disable_by"] = filter;
-            // });
-            
-            
-            console.log("***");
-            console.log(disabledBy_and_requiredBy);
-            console.log("***");
-          } else {
-            console.log("disabledByMap else");
-            // disabledBy_and_requiredBy[key]["disable_by"] = disabledBy_and_requiredBy[key]["disable_by"].filter(v => v !== vals[i])
           }
         }
       }
@@ -789,15 +777,14 @@ var oldValues = {};
         var vals = Object.keys(disabledByValue[key]), len = vals.length;
         for(var i = 0; i < len; ++i){
           // Look for disabling parameters
-          console.log("ssss")
           if (disabledBy_and_requiredBy[vals[i]] && disabledBy_and_requiredBy[vals[i]]["disable_by"].length !== 0) {
             continue;
           }
-          if( isActiveParamWithValues(vals[i], disabledByValue[key]) ){
-            console.log("disabledByValue if")
+          if ( 
+              (disabledBy_and_requiredBy[vals[i]] && isActiveParamWithValues(vals[i], disabledByValue[key])) ||
+              isActiveParamWithValues(vals[i], disabledByValue[key])
+             ) {
             disabledBy_and_requiredBy[key]["disable_by"].push(vals[i]);
-          } else {
-            console.log("disabledByValue else")
           }
         }
       }
@@ -830,7 +817,7 @@ var oldValues = {};
       var disablers   = disabledBy_and_requiredBy[key]["disable_by"];
       var missingReqs = disabledBy_and_requiredBy[key]["require_by"];
       if(disablers.length != 0){
-        toggleFunctionality(target, true, "Disabled by " + disablers.map(idToName).join(", "));
+        toggleFunctionality(target, true, "Disabled by " + [... new Set(disablers.map(idToName))].join(", "));
       }
       // Disable the parameter if it is missing any of its requirements
       else if(missingReqs.length != 0){
