@@ -145,7 +145,7 @@
   +placeholder+ is the placeholder text to fill the input with while awaiting
   user input
 %%>
-<%% input = lambda do |id, name, type: '  text', value: nil, optional: false, placeholder: nil| %>
+<%% input = lambda do |id, name, type: 'text', value: nil, optional: false, placeholder: nil| %>
   <%% value = @task.params[name.to_sym] if name && value.nil? %>
   <input <%% if id %>
           id="<%%= id.to_la_id %>"
