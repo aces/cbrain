@@ -686,13 +686,16 @@ var oldValues = {};
   
    // Helper function for handleDisablesAndRequires
    function toggleFunctionality (target, shouldDisable, greyOutMsg){
-     var lightGrey   = '#d3d3d3'; // Firefox does not grey out disabled html elements
+     var lightGrey     = '#d3d3d3'; // Firefox does not grey out disabled html elements
+     var lightGrey_img = 'linear-gradient(#d3d3d3 1%, #d3d3d3 15%)';
      // Selector classes
-     var toGreyOut   = '.tsk-prm-in, .tsk-prm-opt-lbl, .tsk-prm-chk-lbl, .tsk-prm-sel';
-     var toDisable   = '.tsk-prm-in, .tsk-prm-opt, .tsk-prm-chk';
-     var iconClasses = '.tsk-prm-opt-icon.ui-icon-check, .tsk-prm-sel-icon, .tsk-prm-add.ui-icon';
+     var toGreyOut     = '.tsk-prm-in, .tsk-prm-opt-lbl, .tsk-prm-chk-lbl, .tsk-prm-sel, .chosen-choices';
+     var toDisable     = '.tsk-prm-in, .tsk-prm-opt, .tsk-prm-chk';
+     var iconClasses   = '.tsk-prm-opt-icon.ui-icon-check, .tsk-prm-sel-icon, .tsk-prm-add.ui-icon';
      // Disable and grey out text, file, & flag inputs, as well as their checkboxes
      target.find( toGreyOut ).css('background-color', shouldDisable ? lightGrey : '');
+     target.find( toGreyOut ).css('background-image', shouldDisable ? lightGrey_img : '');
+
      target.find( toDisable ).attr('disabled', shouldDisable);
      // For lists and files, toggle the ability to add more entries or change selections
      target.find('.tsk-prm-add.ui-icon,.tsk-prm-sel').css("pointer-events",shouldDisable?"none":"auto");
