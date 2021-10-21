@@ -695,8 +695,12 @@ var oldValues = {};
      // Disable and grey out text, file, & flag inputs, as well as their checkboxes
      target.find( toGreyOut ).css('background-color', shouldDisable ? lightGrey : '');
      target.find( toGreyOut ).css('background-image', shouldDisable ? lightGrey_img : '');
-
      target.find( toDisable ).attr('disabled', shouldDisable);
+     
+     target.find('.chosen-search-input').prop('disabled', shouldDisable).trigger('chosen:updated');
+     target.find('.search-field').prop('style', "width: 100%").trigger('chosen:updated');
+     target.find('.chosen-search-input').prop('style', "width: 100%").trigger('chosen:updated');
+
      // For lists and files, toggle the ability to add more entries or change selections
      target.find('.tsk-prm-add.ui-icon,.tsk-prm-sel').css("pointer-events",shouldDisable?"none":"auto");
      // Erase the warning message: if one is needed it will be rewritten below
@@ -706,6 +710,7 @@ var oldValues = {};
      if( shouldDisable ){
        target.find( iconClasses ).addClass('ui-state-disabled'); // disable icons
        target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', false); // uncheck checkboxes
+       // Save value before swap
        if (oldValues_id) {
         oldValues[oldValues_id] =  target.find('.tsk-prm-in')[0].value;
        }
@@ -720,7 +725,7 @@ var oldValues = {};
         target.find('.tsk-prm-in')[0].value = oldValues[oldValues_id];
         target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', true); // check checkboxes
       }
-       target.find( iconClasses ).removeClass('ui-state-disabled') // put icons in enabled state
+      target.find( iconClasses ).removeClass('ui-state-disabled') // put icons in enabled state
      }
    }
 
