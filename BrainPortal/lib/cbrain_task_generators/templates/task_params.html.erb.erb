@@ -107,6 +107,7 @@
   # The actual maps: idIn -> [ids disabled/required by idIn]
   disabledBy_map   = makeReceiverActionMap.("disables-inputs")
   requires_map     = makeActorActionMap.("requires-inputs")
+  # Extra maps to handle disabled by values: idIn -> { disableBy_X : [value1, value2], disableBy_Y: [value1, value2] }
   disabledBy_value = makeReceiverActionMap.("value-disables")
 
   disabledBy_value_keys = disabledBy_value.map {|k,v| v.keys }.flatten.uniq
@@ -630,6 +631,7 @@ var disabledByMap = {
 %   jsMapOf.(disabledBy_value)
   };
 
+// To keep track of values when disabled
 var oldValues = {};
 
 %# Generate JS functions for handling disables/requires
@@ -741,9 +743,6 @@ var oldValues = {};
                         concat(Object.keys(disabledByValue).
                         concat(Object.keys(requiresMap))));
       
-    // Run twice because the order matters: a param can be wrongly disabled if it is processed before its
-    // disabler is deactivated
-    // affectedIds = affectedIds.concat( affectedIds.slice())
     affectedIds = [...new Set(affectedIds)];
 
     // Iterate over parameters, enabling and disabling as needed
