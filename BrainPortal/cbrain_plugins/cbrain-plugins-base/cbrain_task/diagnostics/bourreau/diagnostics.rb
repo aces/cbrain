@@ -124,8 +124,13 @@ class CbrainTask::Diagnostics < ClusterTask
 
   def job_walltime_estimate #:nodoc:
     params        = self.params || {}
-    cluster_delay = params[:cluster_delay] ? params[:cluster_delay].to_i : 0
-    walltime = 2.minutes + cluster_delay.seconds
+    cluster_delay    = (params[:cluster_delay].presence    || "0").strip.to_i
+    user_busy_loop   = (params[:user_busy_loop].presence   || "0").strip.to_i
+    system_busy_loop = (params[:system_busy_loop].presence || "0").strip.to_i
+    walltime = 2.minutes                  +
+                 cluster_delay.seconds    +
+                 user_busy_loop.seconds   +
+                 system_busy_loop.seconds
     return walltime
   end
 
