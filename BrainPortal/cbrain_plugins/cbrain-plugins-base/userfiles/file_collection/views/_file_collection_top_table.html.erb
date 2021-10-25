@@ -31,17 +31,18 @@
   base_dir = params[:base_directory].presence || ""
 %>
 <table class="plain_file_list" class="resource_list">
-   <tr class="list-odd">
-     <% if @userfile.is_locally_synced? %>
-     <th>
-       <%= select_all_checkbox "collection_checkbox" %>
-     </th>
-     <% end %>
-     <th colspan=2>File</th>
-     <th>Size</th>
-   </tr>
-   <%= render :file    => FileCollection.view_path(:directory_contents),
-              :locals  => { :base_directory => base_dir }
-   %>
+  <tr class="list-odd">
+    <% if @userfile.is_locally_synced? %>
+    <th>
+      <%= select_all_checkbox "collection_checkbox" %>
+    </th>
+    <% end %>
+    <th>File</th>
+    <th>DL</th>
+    <th>Size</th>
+  </tr>
+  <%= render :file    => FileCollection.view_path(:directory_contents),
+            :locals  => { :base_directory => base_dir }
+  %>
 </table>
 
