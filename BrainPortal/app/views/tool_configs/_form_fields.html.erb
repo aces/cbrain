@@ -75,6 +75,22 @@
         </div>
       <% end %>
 
+      <% desc_origin, desc_path = @tool_config.boutiques_descriptor_origin_keyword %>
+      <% t.edit_cell(:boutiques_descriptor_path, :header => "Path to Boutiques descriptor", :show_width => 2, :content => "<strong>(#{desc_origin.capitalize})</strong> #{desc_path}".html_safe) do |f| %>
+        <%= f.text_field :boutiques_descriptor_path, :size => 80 %>
+        <div class="wide_field_explanation">
+          You can use this field to provide an explicit path to a
+          Boutiques descriptor; an absolute path will be used as-is,
+          while a relative path will be resolved relative to the
+          <em>boutiques_descriptor</em> folder in the installed plugins
+          subdirectory. The page indicates the source location of the
+          effective descriptor: 'Automatic' means the configuration has
+          been mapped automatically to an installed descriptor, 'Manual'
+          means the value in the input field here is used, and 'Overriden'
+          means both values exists, but the 'Manual' version is in effect.
+        </div>
+      <% end %>
+
     <% end %>
 
   <% end %>

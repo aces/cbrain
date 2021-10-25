@@ -279,9 +279,12 @@ Rails.application.routes.draw do
     get   '/signout'                => 'nh_sessions#destroy'
     get   '/myaccount'              => 'nh_users#myaccount'
 
+    # Globus authentication
+    get   '/nh_globus'              => 'nh_sessions#nh_globus'
+    post  '/nh_unlink_globus'       => 'nh_sessions#nh_unlink_globus'
+
     # ORCID authentication
     get   '/orcid'                  => 'nh_sessions#orcid'
-    # Unlink button
     post  '/unlink_orcid'           => 'nh_users#unlink_orcid'
 
     # Sessions

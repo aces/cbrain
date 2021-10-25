@@ -122,7 +122,7 @@ describe RestrictedHash do
       expect(restricted_hash.key1).to eq("value1")
     end
     it "should raise an exception if I try to access an invalid key" do
-      expect{restricted_hash.key3}.to raise_error(CbrainError, "Illegal attribute '#{:key3}'.")
+      expect{restricted_hash.key3}.to raise_error(CbrainError, "Cannot find attribute that match reader method 'key3'")
     end
      it "should allow me to assign to a valid key" do
       restricted_hash.key1 = "value1a"
@@ -130,7 +130,7 @@ describe RestrictedHash do
     end
 
     it "should raise an exception if I try to assign to an invalid key" do
-      expect{restricted_hash.key3 = "value3"}.to raise_error(CbrainError, "Illegal attribute '#{:key3}'.")
+      expect{restricted_hash.key3 = "value3"}.to raise_error(CbrainError, "Cannot find attribute that match writer method 'key3='")
     end
   end
 

@@ -96,8 +96,10 @@
             "id": "files",
             "name": "Files",
             "members": [
-                "my_output_name",
-                "my_input"
+                "sinput1",
+                "minput1",
+                "sinput2",
+                "minput2"
             ]
         },
         {

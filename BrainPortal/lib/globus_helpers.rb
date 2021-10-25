@@ -28,8 +28,11 @@ module GlobusHelpers
   GLOBUS_AUTHORIZE_URI = "https://auth.globus.org/v2/oauth2/authorize" # will be issued a GET with params
   GLOBUS_TOKEN_URI     = "https://auth.globus.org/v2/oauth2/token"     # will be issued a POST with a single code
 
-  # Returns the URI to send users to the GLOBUS authentication page
-  def globus_login_uri
+  # Returns the URI to send users to the GLOBUS authentication page.
+  # The parameter globus_action_url should be the URL to the controller
+  # action here in CBRAIN that will received the POST response.
+  def globus_login_uri(globus_action_url)
+    return nil if     api_request?
     return nil unless globus_auth_configured?
 
     # Create the URI to authenticate with GLOBUS
@@ -37,19 +40,19 @@ module GlobusHelpers
       :client_id     => globus_client_id,
       :response_type => 'code',
       :scope         => "urn:globus:auth:scope:auth.globus.org:view_identities openid email profile",
-      :redirect_uri  => globus_url, # generated from Rails routes
+      :redirect_uri  => globus_action_url, # generated from Rails routes
       :state         => globus_current_state, # method is below
     }
     GLOBUS_AUTHORIZE_URI + '?' + globus_params.to_query
   end
 
-  def globus_fetch_token(code)
+  def globus_fetch_token(code, globus_action_url)
     # Query Globus; this returns all the info we need at the same time.
     auth_header = globus_basic_auth_header # method is below
     response = Typhoeus.post(GLOBUS_TOKEN_URI,
       :body   => {
                    :code          => code,
-                   :redirect_uri  => globus_url, # not used but still required
+                   :redirect_uri  => globus_action_url,
                    :grant_type    => 'authorization_code',
                  },
       :headers => { :Accept       => 'application/json',
@@ -113,6 +116,68 @@ module GlobusHelpers
     return false if ! globus_client_id
     return false if ! globus_client_secret
     true
+  end
+
+  # Record the globus identity for the current user.
+  # (This maybe should be made into a User model method)
+  def record_globus_identity(identity)
+    provider_id   = identity['identity_provider']              || cb_error("Globus: No identity provider")
+    provider_name = identity['identity_provider_display_name'] || cb_error("Globus: No identity provider name")
+    pref_username = identity['preferred_username']             || cb_error("Globus: No preferred username")
+
+    # Special case for ORCID, because we already have fields for that provider
+    if provider_name == 'ORCID'
+      orcid = pref_username.sub(/@.*/, "")
+      current_user.meta['orcid'] = orcid
+      current_user.addlog("Linked to ORCID identity: '#{orcid}' through Globus")
+      return
+    end
+
+    current_user.meta[:globus_provider_id]        = provider_id
+    current_user.meta[:globus_provider_name]      = provider_name # used in show page
+    current_user.meta[:globus_preferred_username] = pref_username
+    current_user.addlog("Linked to Globus identity: '#{pref_username}' on provider '#{provider_name}'")
+  end
+
+  # Removes the recorded globus identity for +user+
+  def unlink_globus_identity(user)
+    current_user.meta[:globus_provider_id]        = nil
+    current_user.meta[:globus_provider_name]      = nil
+    current_user.meta[:globus_preferred_username] = nil
+    current_user.addlog("Unlinked Globus identity")
+  end
+
+  # Given a globus identity structure, find the user
+  # that matches it and activate the session for that user.
+  # Returns the user object if found; returns a string error message otherwise.
+  def find_user_with_globus_identity(identity)
+    provider_id   = identity['identity_provider']              || cb_error("Globus: No identity provider")
+    provider_name = identity['identity_provider_display_name'] || cb_error("Globus: No identity provider name")
+    pref_username = identity['preferred_username']             || cb_error("Globus: No preferred username")
+
+    # Special case for ORCID, because we already have fields for that provider
+    if provider_name == 'ORCID'
+      orcid = pref_username.sub(/@.*/, "")
+      users = User.find_all_by_meta_data(:orcid, orcid)
+    else # All other globus providers
+      # We need a user which match both the preferred username and provider_id
+      users = User.find_all_by_meta_data(:globus_preferred_username, pref_username)
+        .to_a
+        .select { |user| user.meta[:globus_provider_id] == provider_id }
+    end
+
+    if users.size == 0
+      Rails.logger.error "GLOBUS warning: no CBRAIN accounts found for identity '#{pref_username}' on provider '#{provider_name}'"
+      return "No CBRAIN user matches your Globus identity. Create a CBRAIN account or link your existing CBRAIN account to your Globus provider."
+    end
+
+    if users.size > 1
+      Rails.logger.error "GLOBUS error: multiple CBRAIN accounts found for identity '#{pref_username}' on provider '#{provider_name}'"
+      return "Several CBRAIN user accounts match your Globus identity. Please contact the CBRAIN admins."
+    end
+
+    # The one lucky user
+    return users.first
   end
 
 end

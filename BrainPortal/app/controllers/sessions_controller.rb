@@ -46,7 +46,7 @@ class SessionsController < ApplicationController
     @browser_name    = ua.browser_name    || "(unknown browser name)"
     @browser_version = ua.browser_version || "(unknown browser version)"
 
-    @globus_uri      = globus_login_uri # can be nil
+    @globus_uri      = globus_login_uri(globus_url) # can be nil
 
     respond_to do |format|
       format.html
@@ -134,7 +134,7 @@ class SessionsController < ApplicationController
     end
 
     # Query Globus; this returns all the info we need at the same time.
-    identity_struct = globus_fetch_token(code)
+    identity_struct = globus_fetch_token(code, globus_url) # globus_url is generated from routes
     if !identity_struct
       cb_error "Could not fetch your identity information from Globus"
     end
@@ -143,15 +143,23 @@ class SessionsController < ApplicationController
     # Either record the identity...
     if current_user
       record_globus_identity(identity_struct)
+      flash[:notice] = "Your CBRAIN account is now linked to your Globus identity."
       redirect_to user_path(current_user)
       return
-    else
-      # ...or attempt login with it
-      login_with_globus_identity(identity_struct)
     end
 
+    # ...or attempt login with it
+    user = find_user_with_globus_identity(identity_struct)
+    if user.is_a?(String) # an error occurred
+      flash[:error] = user # the message
+      redirect_to new_session_path
+      return
+    end
+
+    login_from_globus_user(user, identity_struct['identity_provider_display_name'])
+
   rescue CbrainException => ex
-    flash[:error] = "#{ex.message}" if ex.is_a?(CbrainException)
+    flash[:error] = "#{ex.message}"
     redirect_to new_session_path
   rescue => ex
     clean_bt = Rails.backtrace_cleaner.clean(ex.backtrace || [])
@@ -165,12 +173,9 @@ class SessionsController < ApplicationController
   def unlink_globus #:nodoc:
     redirect_to start_page_path unless current_user
 
-    current_user.meta[:globus_provider_id]        = nil
-    current_user.meta[:globus_provider_name]      = nil
-    current_user.meta[:globus_preferred_username] = nil
-    current_user.addlog("Unlinked Globus identity")
+    unlink_globus_identity(current_user)
 
-    flash[:notice] = "You account is no longer linked to any Globus identity"
+    flash[:notice] = "Your account is no longer linked to any Globus identity"
     redirect_to user_path(current_user)
   end
 
@@ -308,64 +313,8 @@ class SessionsController < ApplicationController
     end
   end
 
-  # Record the globus identity for the current user.
-  # (This maybe should be made into a User model method)
-  def record_globus_identity(identity)
-    provider_id   = identity['identity_provider']              || cb_error("Globus: No identity provider")
-    provider_name = identity['identity_provider_display_name'] || cb_error("Globus: No identity provider name")
-    pref_username = identity['preferred_username']             || cb_error("Globus: No preferred username")
 
-    # Special case for ORCID, because we already have fields for that provider
-    if provider_name == 'ORCID'
-      orcid = pref_username.sub(/@.*/, "")
-      current_user.meta['orcid'] = orcid
-      flash[:notice] = 'Your ORCID ID has been linked to your CBRAIN account.'
-      return
-    end
-
-    current_user.meta[:globus_provider_id]        = provider_id
-    current_user.meta[:globus_provider_name]      = provider_name # used in show page
-    current_user.meta[:globus_preferred_username] = pref_username
-    current_user.addlog("Linked to Globus identity: '#{pref_username}' on provider '#{provider_name}'")
-
-    flash[:notice] = "Your CBRAIN account is now linked to '#{pref_username}' on provider '#{provider_name}'"
-  end
-
-  # Given a globus identity structure, find the user
-  # that matches it and activate the session for that user.
-  def login_with_globus_identity(identity)
-    provider_id   = identity['identity_provider']              || cb_error("Globus: No identity provider")
-    provider_name = identity['identity_provider_display_name'] || cb_error("Globus: No identity provider name")
-    pref_username = identity['preferred_username']             || cb_error("Globus: No preferred username")
-
-    # Special case for ORCID, because we already have fields for that provider
-    if provider_name == 'ORCID'
-      orcid = pref_username.sub(/@.*/, "")
-      users = User.find_all_by_meta_data(:orcid, orcid)
-    else # All other globus providers
-      # We need a user which match both the preferred username and provider_id
-      users = User.find_all_by_meta_data(:globus_preferred_username, pref_username)
-        .to_a
-        .select { |user| user.meta[:globus_provider_id] == provider_id }
-    end
-
-    if users.size == 0
-      flash[:error] = "No CBRAIN user matches your Globus identity. Create a CBRAIN account or link your existing CBRAIN account to your Globus provider."
-      Rails.logger.error "GLOBUS warning: no CBRAIN accounts found for identity '#{pref_username}' on provider '#{provider_name}'"
-      redirect_to new_session_path
-      return
-    end
-
-    if users.size > 1
-      flash[:error] = "Several CBRAIN user accounts match your Globus identity. Please contact the CBRAIN admins."
-      Rails.logger.error "GLOBUS error: multiple CBRAIN accounts found for identity '#{pref_username}' on provider '#{provider_name}'"
-      redirect_to new_session_path
-      return
-    end
-
-    # The one lucky user
-    user = users.first
-
+  def login_from_globus_user(user, provider_name)
     # Login the user
     all_ok = create_from_user(user, "CBRAIN/Globus/#{provider_name}")
 
