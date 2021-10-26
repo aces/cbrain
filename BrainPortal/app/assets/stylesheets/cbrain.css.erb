@@ -154,12 +154,20 @@ h5 {
 /* % GRID format to replace tables in forms                    */
 /* % ######################################################### */
 
-div.leftgrid {
+div.two-column-grid {
+  display:grid;
+  grid-template-columns: max-content max-content;
+  grid-gap:5px;
+}
+div.two-column-grid label       { text-align:left; }
+
+div.tree-column-grid {
   display:grid;
   grid-template-columns: max-content max-content max-content;
   grid-gap:5px;
 }
-div.leftgrid label       { text-align:left; }
+div.tree-column-grid label       { text-align:left; }
+
 
 
 /* % ######################################################### */
