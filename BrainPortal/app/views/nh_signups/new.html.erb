@@ -1,24 +1,24 @@
 <%-
-  #
-  # NeuroHub Project
-  #
-  # Copyright (C) 2020
-  # The Royal Institution for the Advancement of Learning
-  # McGill University
-  #
-  # This program is free software: you can redistribute it and/or modify
-  # it under the terms of the GNU General Public License as published by
-  # the Free Software Foundation, either version 3 of the License, or
-  # (at your option) any later version.
-  #
-  # This program is distributed in the hope that it will be useful,
-  # but WITHOUT ANY WARRANTY; without even the implied warranty of
-  # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  # GNU General Public License for more details.
-  #
-  # You should have received a copy of the GNU General Public License
-  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  #
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 -%>
 
 
@@ -75,12 +75,12 @@
         <%= f.label(:position, "Current position or role", "data-required"=>"true") %>
         <%= f.select :position, options_for_select(
             [ [ "(select one)", "" ], "Faculty",
-              "Postdoctoral",
-              "PhD. candidate",
-              "Masters student",
-              "Student",
-              "Researcher",
-              "Other"
+                                      "Postdoctoral",
+                                      "PhD. candidate",
+                                      "Masters student",
+                                      "Student",
+                                      "Researcher",
+                                      "Other"
             ],
             @signup.position)
         %>
@@ -89,10 +89,10 @@
         <%= f.label(:affiliation, "Current affiliation", "data-required"=>"true") %>
         <%= f.select :affiliation, options_for_select(
             [ [ "(select one)", "" ], "Academic",
-              "Private sector",
-              "Government",
-              "Non-profit",
-              "Other",
+                                      "Private sector",
+                                      "Government",
+                                      "Non-profit",
+                                      "Other",
             ],
             @signup.affiliation)
         %>

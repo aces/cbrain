@@ -68,7 +68,7 @@
         <span></span>
         <span>name. For examaple, John Doe login: 'jdoe'</span>
 
-  </div>
+      </div>
 
     </fieldset>
 
@@ -92,12 +92,12 @@
         <%= f.label(:position, "* Current position or role:") %>
         <%= f.select :position, options_for_select(
             [["(select one)", ""], "Faculty",
-             "Postdoctoral",
-             "PhD. candidate",
-             "Masters student",
-             "Student",
-             "Researcher",
-             "Other"
+                                   "Postdoctoral",
+                                   "PhD. candidate",
+                                   "Masters student",
+                                   "Student",
+                                   "Researcher",
+                                   "Other"
             ],
             @signup.position)
         %>
@@ -105,10 +105,10 @@
         <%= f.label(:affiliation, "* Current affiliation:") %>
         <%= f.select :affiliation, options_for_select(
             [["(select one)", ""], "Academic",
-             "Private sector",
-             "Government",
-             "Non-profit",
-             "Other",
+                                   "Private sector",
+                                   "Government",
+                                   "Non-profit",
+                                   "Other",
             ],
             @signup.affiliation)
         %>
@@ -152,10 +152,6 @@
         %>
 
 
-
-
-
-
         <%= f.label(:comment, "Comments or special requests:") %>
 
         <%= f.text_area :comment, :cols => 80, :rows => 5 %>
@@ -169,7 +165,6 @@
         </small>
 
 
-
       <% if current_user.present? && current_user.has_role?(:admin_user) %>
 
           <%= f.label(:admin_comment, "Private, admin-only comments:") %>
@@ -181,14 +176,12 @@
 
       <br>
     </fieldset>
-      <br>
-      <div class="centered">
-        <%= f.submit(@signup.new_record? ? "Request Account" : "Update Request") %>
-      </div>
+    <br>
+    <div class="centered">
+      <%= f.submit(@signup.new_record? ? "Request Account" : "Update Request") %>
+    </div>
 
-
-
-  </div>
+    </div>
   </div>
 
 <% end %>
