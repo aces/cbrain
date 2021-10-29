@@ -703,8 +703,15 @@ var oldValues = {};
      target.find('.tsk-prm-add.ui-icon,.tsk-prm-sel').css("pointer-events",shouldDisable?"none":"auto");
      // Erase the warning message: if one is needed it will be rewritten below
      target.find('.tsk-prm-lbl').find('label.disable-msg').remove();
+    
+     // Keep track of values already selected
+     var oldValues_id = (target.find('.tsk-prm-in')[0] && target.find('.tsk-prm-in')[0].id) ||
+                        (target.find('.tsk-prm-sel-mult')[1] && target.find('.tsk-prm-sel-mult')[1].id); // to keep and set textbox value
+     
+     var task_prm_sel = target.find('.tsk-prm-sel-mult')[1] && [...target.find('.tsk-prm-sel-mult')[1].options].filter(option => option.selected).map(option => option.value);
+     var task_prm_in  = target.find('.tsk-prm-in')[0] && target.find('.tsk-prm-in')[0].value
+
      // Handle properties treated differently in each toggle case
-      var oldValues_id = target.find('.tsk-prm-in')[0] && target.find('.tsk-prm-in')[0].id; // to keep and set textbox value
      if( shouldDisable ){
        // disable chosen-container
        if (target.find('.chosen-container')[0]){
@@ -714,13 +721,13 @@ var oldValues = {};
        target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', false); // uncheck checkboxes
        // Save value before swap
        if (oldValues_id) {
-        oldValues[oldValues_id] =  target.find('.tsk-prm-in')[0].value;
-       }
-       target.find('.tsk-prm-in').val(''); // wipe textbox input areas
-       target.find('ul.tsk-prm-list').find('li').has('.ui-icon-minus').remove(); // rm list subitems
-       // Write warning message
-       var msg   = '<label class="disable-msg" ' + warningStyle + '>' + greyOutMsg  + '</label>';
-       target.find('.tsk-prm-lbl').append( msg );
+         oldValues[oldValues_id] = task_prm_in || task_prm_sel;
+        }
+        target.find('.tsk-prm-in').val(''); // wipe textbox input areas
+        target.find('ul.tsk-prm-list').find('li').has('.ui-icon-minus').remove(); // rm list subitems
+        // Write warning message
+        var msg   = '<label class="disable-msg" ' + warningStyle + '>' + greyOutMsg  + '</label>';
+        target.find('.tsk-prm-lbl').append( msg );
      }
      else {
       // enable chosen-container
@@ -728,8 +735,14 @@ var oldValues = {};
         target.find('.chosen-container')[0].style.pointerEvents = 'auto';
       }
       if (oldValues[oldValues_id]) {
-        target.find('.tsk-prm-in')[0].value = oldValues[oldValues_id];
-        target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', true); // check checkboxes
+        if (target.find('.tsk-prm-in')[0]) {
+          target.find('.tsk-prm-in')[0].value = oldValues[oldValues_id];
+        }
+        if (task_prm_sel) {
+          target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', task_prm_sel.length !== 0); // check checkboxes
+        } else {
+          target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', true); // check checkboxes
+        }
       }
       target.find( iconClasses ).removeClass('ui-state-disabled') // put icons in enabled state
      }
@@ -981,6 +994,16 @@ var oldValues = {};
       .prop('checked', true)
       .trigger('activate.tsk-prm');
   });
+
+  /* Changing a parameter's value automatically marks it as active, special case for chosen */
+  $(".tsk-prm-sel-mult").on('change', function(e,p){
+    var number_selected_items = [...e.target.options].filter(option => option.selected).map(option => option.value).length;
+    $(this)
+      .closest('.tsk-prm')
+      .find('.tsk-prm-opt')
+      .prop('checked', number_selected_items !== 0)
+      .trigger('activate.tsk-prm');
+  })
 
   /* Activate optional parameters with default values */
   parameters.find(".tsk-prm-in[value]").trigger('activate.tsk-prm');
