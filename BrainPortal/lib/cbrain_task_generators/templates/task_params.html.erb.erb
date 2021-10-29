@@ -179,7 +179,7 @@
   <ul class="tsk-prm-list">
     <li>
       <%%
-        input.(id, name + "[]",
+        input.((id + "_0"), name + "[]",
           value:       first,
           optional:    optional,
           placeholder: placeholder
@@ -187,10 +187,10 @@
       %>
       <span class="tsk-prm-add ui-icon ui-icon-plus"></span>
     </li>
-    <%% values.each do |value| %>
+    <%% values.each_with_index do |value,index| %>
       <li>
         <%%
-          input.(nil, name + "[]",
+          input.((id + "_#{index+1}"), name + "[]",
             value:       value,
             optional:    optional,
             placeholder: placeholder
@@ -1047,18 +1047,30 @@ var oldValues = {};
   });
 
   /* Add/remove buttons for list parameters */
-
   /* Clicking on a '+' button adds a new value row and enables the parameter */
   parameters.delegate('.tsk-prm-add.ui-icon-plus', 'click', function () {
-    var name = $(this)
-      .siblings('.tsk-prm-in')
-      .attr('name');
+    var sibling      = $(this).siblings('.tsk-prm-in');
+    var id           = sibling[0].id;
+
+    var id_matches   = id.match(/(.+)\d+(_KET_)$/);
+    var new_id_index = sibling.parents('ul')[0].children.length;
+
+    // Give an uniq id to all input
+    var new_id     = undefined;
+    if (id_matches !== null && new_id_index) {
+      new_id     = id_matches[1] +
+                   new_id_index +
+                   id_matches[2]
+    }
+
+    var name       = sibling.attr('name');
 
     $(this)
       .closest('ul')
       .append(
         '<li>' +
           '<input ' +
+            (new_id !== undefined ? ('id=' + new_id + ' ') : '') +
             'class="tsk-prm-in" ' +
             'type="text" ' +
             'name="' + name + '" ' +
@@ -1074,10 +1086,32 @@ var oldValues = {};
 
   /* Clicking on a '-' button removes the row from an input parameter list */
   parameters.delegate('.tsk-prm-rm, .ui-icon-minus', 'click', function () {
-    $(this)
-      .closest('li')
-      .remove();
+    var closest_li = $(this).closest('li');
+    closest_li.remove();
+
+    // Give an uniq id to all the input
+    if (closest_li[0]) {
+      var li_input = closest_li[0].children[0];
+      if (li_input) {
+        var id           = li_input.id
+        var id_matches   = id.match(/(.+)\d+(_KET_)$/);
+        if (id_matches) {
+          var myReg = new RegExp(id_matches[1] + '\\d+' + id_matches[2])
+          var input_ids = Object.values($("input")).map(input => input.id).filter(input => input &&  input.match(myReg))
+          input_ids.map( (input,index) => {
+            var current_match_ids = input.match(/(.+)\d+(_KET_)$/);
+            if (current_match_ids){
+              var new_id = current_match_ids[1] + index + current_match_ids[2];
+              $("#"+input).attr('id', new_id);
+            }
+          })
+        };
+      }
+    }
   });
+
+
+
 
   /* Toggling groups */
   (function (fcn) {
