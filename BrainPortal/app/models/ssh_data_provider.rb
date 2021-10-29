@@ -81,7 +81,7 @@ class SshDataProvider < DataProvider
     rsync = rsync_over_ssh_prefix(userfile.user, userfile)
 
     # It's IMPORTANT that the source be specified with a bare ':' in front.
-    text = bash_this("#{rsync} -a -l --no-p --no-g --chmod=u=rwX,g=rX,o=r --delete #{self.rsync_excludes} :#{remote_shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
+    text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,o=r --delete #{self.rsync_excludes} :#{remote_shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
     cb_error "Error syncing userfile to local cache, rsync returned:\n#{text}" unless text.blank?
     unless File.exist?(localfull)
@@ -100,7 +100,7 @@ class SshDataProvider < DataProvider
     rsync       = rsync_over_ssh_prefix(userfile.user, userfile)
 
     # It's IMPORTANT that the destination be specified with a bare ':' in front.
-    text = bash_this("#{rsync} -a -l --no-p --no-g --chmod=u=rwX,g=rX,o=r --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{remote_shell_escape(remotefull)} 2>&1")
+    text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,o=r --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{remote_shell_escape(remotefull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
     cb_error "Error syncing userfile to data provider, rsync returned:\n#{text}" unless text.blank?
     unless self.provider_file_exists?(userfile).to_s =~ /file|dir/
