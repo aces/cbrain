@@ -57,6 +57,7 @@
     },
   ) do |t|
 %>
+
   <%
     t.pagination
 
@@ -74,6 +75,12 @@
       else
         current_user.has_role?(:admin_user) ? link_to(tc.tool.name,edit_tool_path(tc.tool)) : tc.tool.name
       end
+    end
+
+    if current_user.has_role?(:normal_user)
+       t.column("Description", :description,
+       :sortable => true,
+       ) { |tc| full_description(tc.description) }
     end
 
     t.column("Tool Project", 'tools.group_id',
@@ -136,10 +143,11 @@
           link_to_userfile_if_accessible(tc.container_image)
         end
       }
-
-    t.column("Description", :description,
-      :sortable => true,
-    ) { |tc| overlay_description(tc.description) }
+    unless current_user.has_role?(:normal_user)
+      t.column("Description", :description,
+        :sortable => true,
+      ) { |tc| overlay_description(tc.description) }
+    end
 
     if current_user.has_role?(:admin_user)
       t.column("Access?") do |tc|
