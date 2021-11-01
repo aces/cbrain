@@ -32,7 +32,7 @@
 
  <tr class="<%= cycle("list-odd", "list-even") %>">
     <td></td>
-    <td> (<span class="warning">Empty</span>) </td>
+    <td colspan="2"> (<span class="warning">Empty</span>) </td>
     <td></td>
  </tr>
 
@@ -48,7 +48,7 @@
                                                          :apply_div             => "false"
                                                         ),
                                     :position => "after",
-                                    :before   => "<td colspan='3' class='loading_message'>Loading...</td>"
+                                    :before   => "<td colspan='4' class='loading_message'>Loading...</td>"
                                   },
                                   { :class  => "#{cycle("list-odd", "list-even")}",
                                     :id     => file.name.gsub(/\W+/, "_")
@@ -66,7 +66,7 @@
   <% if file_list.size > limit %>
     <tr class="<%= cycle("list-odd", "list-even") %>">
       <td></td>
-      <td class="left"> <%= ("&nbsp;" * 6 * file_list.first.depth).html_safe %> ... <%= image_tag "/images/lotsa_files_icon.png" %> <%= pluralize(file_list.size-limit, "more entry") %></td>
+      <td colspan="2" class="left"> <%= ("&nbsp;" * 6 * file_list.first.depth).html_safe %> ... <%= image_tag "/images/lotsa_files_icon.png" %> <%= pluralize(file_list.size-limit, "more entry") %></td>
       <td></td>
     </tr>
   <% end %>
