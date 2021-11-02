@@ -77,15 +77,10 @@
       end
     end
 
-    if current_user.has_role?(:normal_user)
-       t.column("Description", :description,
-       :sortable => true,
-       ) { |tc| full_description(tc.description) }
-    end
-
     t.column("Tool Project", 'tools.group_id',
       #:sortable => true,
       #:filters  => default_filters_for(@base_scope, Group)
+      :hidden => current_user.has_role?(:normal_user)
     ) { |tc| link_to_group_if_accessible(tc.tool.group) if tc.tool }
 
     t.column("Version", :version_name,
@@ -102,17 +97,25 @@
         end
       }
 
+    if current_user.has_role?(:normal_user)
+      t.column("Description", :description,
+      :sortable => true,
+      ) { |tc| "<small>".html_safe + full_description(tc.description) + "</small>".html_safe}
+    end
+
     t.column("Version Project", :group,
       :sortable => true,
-      :filters  => default_filters_for(@base_scope, Group)
+      :filters  => default_filters_for(@base_scope, Group),
+      :hidden => current_user.has_role?(:normal_user)
     ) { |tc| link_to_group_if_accessible(tc.group) }
 
     t.column("CPUs", :ncpus,
       :sortable => true,
-      :filters  => default_filters_for(@base_scope, :ncpus)
+      :filters  => default_filters_for(@base_scope, :ncpus),
+      :hidden => current_user.has_role?(:normal_user)
     ) { |tc| tc.ncpus.to_s }
 
-    t.column("Boutiques", :boutiques,
+    t.column("Boutiques", :boutiques, :hidden => current_user.has_role?(:normal_user)
     ) {|tc|
       rev_info = tc.tool.cbrain_task_class.revision_info rescue nil
 
@@ -127,15 +130,18 @@
 
     t.column("Container Engine", :container_engine,
       :sortable => true,
-      :filters  => default_filters_for(@base_scope, :container_engine)
+      :filters  => default_filters_for(@base_scope, :container_engine),
+      :hidden => current_user.has_role?(:normal_user)
     ) { |tc| tc.container_engine.to_s }
 
     t.column("Container Index", :container_index_location,
+      :hidden => current_user.has_role?(:normal_user)
     ) { |tc|
         tc.container_index_location
       }
 
     t.column("Container Image", :container_name_image,
+      :hidden => current_user.has_role?(:normal_user)
     ) { |tc|
         if tc.containerhub_image_name.present?
           tc.containerhub_image_name
