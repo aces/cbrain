@@ -21,18 +21,8 @@
 #
 
 # Model representing automated systems.
-class AutomatedUser < User
+class AutomatedUser < NormalUser
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-
-  # Use viewable_groups of NormalUser
-  def viewable_groups
-    NormalUser.new.viewable_groups
-  end
-  
-  # Use assignable_groups of NormalUser
-  def assignable_groups
-    NormalUser.new.assignable_groups
-  end
 
 end
