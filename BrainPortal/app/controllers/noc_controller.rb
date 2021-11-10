@@ -26,6 +26,8 @@ class NocController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  skip_before_action :check_if_locked
+
   # Provides a graphical snapshot of activity
 
   def daily
