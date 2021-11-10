@@ -253,14 +253,17 @@ module SchemaTaskGenerator
       # theres already one. Only applies to Bourreaux (as it would make no
       # sense on the portal).
       return if Rails.root.to_s =~ /BrainPortal\z/
-      # Create a ToolConfig iff
+      # Create a ToolConfig if
       #   (1) the Bourreau has a container executable and
       #   (2) the descriptor specifies a container image
       return if container_engine.blank?  # Singularity or Docker
       return if container_image.blank?   # Container name or url
                 container_engine.capitalize!
       return if container_engine == "Singularity" && !resource.singularity_present?
-      return if container_engine == "Docker"      && !resource.docker_present?
+      return if container_engine == "Docker"      && (!resource.docker_present? && !resource.singularity_present?)
+      
+      # If Docker engine isn't present use Singularity
+      container_engine = "Singularity" if (container_engine == "Docker" && !resource.docker_present?)
 
       ToolConfig.new(
         :tool_id                  => task.tool.id,
