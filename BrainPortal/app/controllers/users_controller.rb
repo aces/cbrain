@@ -260,6 +260,17 @@ class UsersController < ApplicationController
         @user.addlog_object_list_updated("Groups", Group, original_group_ids, @user.group_ids, current_user)
         @user.addlog_object_list_updated("Access Profiles", AccessProfile, original_ap_ids, @user.access_profile_ids, current_user)
         add_meta_data_from_form(@user, [:pref_bourreau_id, :pref_data_provider_id, :ip_whitelist])
+        # Log AccessProfile modification
+        added_ap_ids   = @user.access_profile_ids - original_ap_ids
+        changed_ap_ids = remove_ap_ids + added_ap_ids
+        changed_ap_ids.each do |id|
+          ap                  = AccessProfile.find(id)
+          ap_user_ids         = ap.user_ids 
+          initial_ap_user_ids = added_ap_ids.include?(id) ? ap_user_ids - [@user.id] : ap_user_ids + [@user.id]
+          ap.addlog_object_list_updated("Users", User, initial_ap_user_ids, ap_user_ids,  current_user, :login)
+        end
+        
+        
         flash[:notice] = "User #{@user.login} was successfully updated." if @user.updated_at != last_update
         format.html  { redirect_to :action => :show }
         format.xml   { render :xml  => @user.for_api }
