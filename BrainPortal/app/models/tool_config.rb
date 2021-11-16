@@ -448,7 +448,7 @@ class ToolConfig < ApplicationRecord
 
       case knd
       when 'file'
-        if ! id_or_name =~ /^\/\S+\.(sqs|squashfs)$/i # full paths ok
+        if id_or_name !~ /^\/\S+\.(sqs|squashfs)$/i # full paths ok
           self.errors.add(:singularity_overlays_specs,
             " contains invalid specification '#{spec}'. It should be a full path that ends in .squashfs or .sqs")
         end
@@ -460,8 +460,8 @@ class ToolConfig < ApplicationRecord
             self.errors.add(:singularity_overlays_specs,
                    " contains invalid specification '#{spec}'. The fetching data from data provider to cache failed.")
           else
-            name = userfile.cache_full_path()
-            if name =~ /^\/\S+\.(sqs|squashfs)$/i # full paths ok
+
+            if userfile.name !~ /^\/\S+\.(sqs|squashfs)$/i
               self.errors.add(:singularity_overlays_specs,
               " contains invalid specification '#{spec}'. It should be a full path that ends in .squashfs or .sqs")
             end
