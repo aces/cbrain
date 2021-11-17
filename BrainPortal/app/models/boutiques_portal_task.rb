@@ -203,6 +203,7 @@ class BoutiquesPortalTask < PortalTask
     descriptor.groups.each do |group|
       check_mutex_group(group)         if group.mutually_exclusive
       check_oneisrequired_group(group) if group.one_is_required
+      check_allornone_group(group) if group.all_or_none
     end
 
     # ------------------------------------------------
@@ -589,6 +590,13 @@ class BoutiquesPortalTask < PortalTask
     are_set = members.select { |inputid| ! isInactive(descriptor.input_by_id inputid) }
     return if are_set.size > 0
     params_errors.add(group.name, " need at least one parameter set")
+  end
+
+  def check_allornone_group(group, descriptor = self.descriptor_for_after_form)
+    members = group.members
+    are_set = members.select { |inputid| ! isInactive(descriptor.input_by_id inputid) }
+    return if [0, members.size].include? are_set.size
+    params_errors.add(group.name, " need either all the parameter set or neither")
   end
 
   # MAYBE IN COMMON
