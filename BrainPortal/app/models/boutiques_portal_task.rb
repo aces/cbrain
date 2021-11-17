@@ -594,8 +594,8 @@ class BoutiquesPortalTask < PortalTask
 
   def check_allornone_group(group, descriptor = self.descriptor_for_after_form)
     members = group.members
-    are_set = members.select { |inputid| ! isInactive(descriptor.input_by_id inputid) }
-    return if [0, members.size].include? are_set.size
+    num_unset = members.count { |inputid| isInactive(descriptor.input_by_id inputid) }
+    return if num_unset == 0 || num_unset == members.size # all, or none
     params_errors.add(group.name, " need either all the parameter set or neither")
   end
 
