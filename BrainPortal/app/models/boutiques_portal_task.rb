@@ -596,7 +596,7 @@ class BoutiquesPortalTask < PortalTask
     members = group.members
     num_unset = members.count { |inputid| isInactive(descriptor.input_by_id inputid) }
     return if num_unset == 0 || num_unset == members.size # all, or none
-    params_errors.add(group.name, " need either all the parameter set or neither")
+    params_errors.add(group.name, " need either all the parameters set or neither")
   end
 
   # MAYBE IN COMMON
