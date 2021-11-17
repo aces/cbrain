@@ -47,7 +47,9 @@ class BoutiquesClusterTask < ClusterTask
   # by subclasses to change the behavior of what happens
   # in the cluster_commands() method.
   def descriptor_for_cluster_commands
-    self.boutiques_descriptor
+    desc = self.boutiques_descriptor.dup
+    desc.delete "container-image" # CBRAIN handles containerization itself
+    desc
   end
 
   # This method returns the same descriptor as
@@ -96,8 +98,8 @@ class BoutiquesClusterTask < ClusterTask
   end
 
   def cluster_commands
-    descriptor = self.descriptor_for_cluster_commands
-
+    # Our two main JSON structures for 'bosh'
+    descriptor    = self.descriptor_for_cluster_commands
     invoke_struct = self.invoke_params.dup
 
     # Replace userfile IDs for file basenames in the invoke struct

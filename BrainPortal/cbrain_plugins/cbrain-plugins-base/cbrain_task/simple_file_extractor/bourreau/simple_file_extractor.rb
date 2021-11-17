@@ -123,7 +123,18 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
       cache_path   = userfile.cache_full_path
       parent_cpath = cache_path.parent
       patterns.each_with_index do |pat,patidx|
+        pat = pat.dup
         pat = Pathname.new(pat).cleanpath
+
+        # Replace "*/" at the beginning of a pattern with "userfilename/"
+        # This is just an optimization for flat dir DPs, removing one
+        # unneccesary level of globbing
+        if pat.to_s.starts_with?("*/")
+          pat    = pat.to_s
+          pat[0] = userfile.name # replaces the *
+          pat    = Pathname.new(pat)
+        end
+
         # Quick safety check just like in after_form on portal side
         cb_error "Wrong pattern encountered: #{pat}" if
           (! pat.relative?) || (! pat.to_s.index('/')) || (pat.to_s.start_with? "../")
