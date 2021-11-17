@@ -203,7 +203,7 @@ class BoutiquesPortalTask < PortalTask
     descriptor.groups.each do |group|
       check_mutex_group(group)         if group.mutually_exclusive
       check_oneisrequired_group(group) if group.one_is_required
-      check_allornone_group(group) if group.all_or_none
+      check_allornone_group(group)     if group.all_or_none
     end
 
     # ------------------------------------------------
