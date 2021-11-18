@@ -260,7 +260,10 @@ module SchemaTaskGenerator
       return if container_image.blank?   # Container name or url
                 container_engine.capitalize!
       return if container_engine == "Singularity" && !resource.singularity_present?
-      return if container_engine == "Docker"      && !resource.docker_present?
+      return if container_engine == "Docker"      && (!resource.docker_present? && !resource.singularity_present?)
+      
+      # If Docker engine isn't present use Singularity
+      container_engine = "Singularity" if (container_engine == "Docker" && !resource.docker_present?)
 
       ToolConfig.new(
         :tool_id                  => task.tool.id,
