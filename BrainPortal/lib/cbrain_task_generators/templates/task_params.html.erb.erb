@@ -94,6 +94,12 @@
   </label>
 <%% end %>
 
+<%% paragraph = lambda do | text | %>
+  <span class="tsk-prm-par">
+    <%%= text   %>
+  <span class="tsk-prm-par">
+<%% end %>
+
 <%%#
   Generate a generic parameter input field with HTML id +id+ and name +name+.
   +type+ is the kind of input field to generate (text or hidden),
@@ -374,11 +380,8 @@
       <%- end -%>
   <%- elsif type == :file -%>
     <%- if single_file -%>
-        # Automatic single file input
-        dropdown.(id, id,
-          [ [ input_files[0].try(:id).to_s, input_files[0].try(:name).to_s ] ],
-          optional: <%= opt %>,
-          default: input_files[0].try(:id).to_s
+        paragraph.(
+          "#{input_files.size} tasks for #{input_files.size} inputs will be launched based on your selection."
         )
     <%- elsif param['cbrain-file-type'] -%>
         # File input dropdown
@@ -420,7 +423,7 @@
     <%- end -%>
         )
   <%- end -%>
-  <%- if param['description'] -%>
+  <%- if param['description'] && !single_file -%>
         # Description
         description.(<<-'DESC',<%= isGroupMember %>)
           <%= param['description'] %>
