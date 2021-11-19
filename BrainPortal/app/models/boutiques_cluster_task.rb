@@ -135,9 +135,12 @@ class BoutiquesClusterTask < ClusterTask
       fh.write "\n"
     end
 
+    # Write down the file with the boutiques descriptor itself
     boutiques_json_basename = "boutiques.#{self.run_id}.json"
     File.open(boutiques_json_basename, "w") do |fh|
-      fh.write JSON.pretty_generate(descriptor)
+      cleaned_desc = descriptor.dup
+      cleaned_desc.delete("groups") if cleaned_desc.groups.size == 0 # bosh is picky
+      fh.write JSON.pretty_generate(cleaned_desc)
       fh.write "\n"
     end
 
@@ -149,6 +152,10 @@ class BoutiquesClusterTask < ClusterTask
       SIMULATE
       simulate_com.gsub!("\n"," ")
       simulout = IO.popen(simulate_com) { |fh| fh.read }
+      simul_status = $? # a Process::Status object
+      if ! simul_status.success?
+        cb_error "The 'bosh exec simulate' command failed with return code #{simul_status.exitstatus}"
+      end
       simulout.sub!(/^Generated.*\n/,"") # header junk from simulate
       commands = <<-COMMANDS
         # Main tool command, generated with bosh exec simulate
