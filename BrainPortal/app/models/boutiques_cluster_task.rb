@@ -185,17 +185,20 @@ class BoutiquesClusterTask < ClusterTask
     if ! custom['cbrain:ignore-exit-status']
       out = File.read(exit_status_filename()) rescue nil
       if out.nil?
-        cb_error "Missing exit status file #{exit_status_filename()}"
+        self.addlog "Missing exit status file #{exit_status_filename()}"
+        return false
       end
       if out.blank?
-        cb_error "Process did not complete successfully: status file is blank"
+        self.addlog "Process did not complete successfully: status file is blank"
+        return false
       end
       if out !~ /\A\d+\s*\z/
         cb_error "Exit status file #{exit_status_filename()} has unexpected content"
       end
       status = out.strip.to_i
       if status != 0
-        cb_error "Command failed, exit status #{status}"
+        self.addlog "Command failed, exit status #{status}"
+        return false
       end
     end
 
