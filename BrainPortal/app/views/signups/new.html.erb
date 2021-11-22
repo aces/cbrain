@@ -25,25 +25,18 @@
 <% title 'New Account Request' %>
 
 <%= form_for @signup, :url => {:action => (@signup.new_record? ? "create" : "update"), :id => @signup.id} do |f| %>
-
   <%= error_messages_for @signup %>
 
   <div class="generalbox">
-
     <p class="warning"> Fields with an asterisk (*) are mandatory.</p>
-
     <fieldset class="groupentry">
-
       <legend>
         Personal Info
       </legend>
-
       <div class="tree-column-grid">
-
         <%= f.label(:title, "Title:") %>
-        <%= f.text_field :title %> <span class="field_note">for example: 'Mrs.', 'Mr', 'Dr.', etc.</span>
-
-
+        <%= f.text_field :title %>
+        <span class="wide_field_explanation">for example: 'Mrs.', 'Mr', 'Dr.', etc.</span>
         <%= f.label(:first, "* First Name:") %>
         <%= f.text_field :first %>
         <br>
@@ -58,18 +51,16 @@
 
         <%= f.label(:login, "Preferred 'login' name:") %>
         <%= f.text_field :login %>
+        <span class="wide_field_explanation">
 
-
-
-        <span class="field_note">
-           one letter + alphanums. <strong>By convention</strong>: the first letter of your first name + last
+            <small>one letter + alphanums. <strong>By convention</strong>: </small>the first letter of your first name + last name.
+            For example, John Doe login: 'jdoe'
         </span>
-        <span></span>
-        <span></span>
-        <span>name. For examaple, John Doe login: 'jdoe'</span>
 
+        <span></span>
+        <span></span>
+        <span class="wide_field_explanation"></span>
       </div>
-
     </fieldset>
 
     <br>
@@ -81,13 +72,12 @@
       </legend>
 
       <div class="two-column-grid">
+
         <%= f.label(:institution, "* Name of Institution/Organization:") %>
         <%= f.text_field :institution, :size => 60 %>
 
-
         <%= f.label(:department, "* Department") %>
         <%= f.text_field :department, :size => 60 %>
-
 
         <%= f.label(:position, "* Current position or role:") %>
         <%= f.select :position, options_for_select(
@@ -113,17 +103,16 @@
             @signup.affiliation)
         %>
 
-
         <%= f.label(:email, "* Institutional Email address:") %>
         <%= f.text_field :email, :size => 60 %>
 
-        <p></p>
-        <p>
+        <div></div>
+        <div class="wide_field_explanation">
           <small>Please supply the address of <strong class="warning"> your research institution.</strong>
             Requests with non institutional address or email
             will be <strong>ignored</strong>
           </small>
-        </p>
+        </div>
 
         <%= f.label(:street1, "Institution Street Address (line 1):") %>
         <%= f.text_field :street1, :size => 60 %>
@@ -133,7 +122,6 @@
 
         <%= f.label(:city, "* City of Institution:") %>
         <%= f.text_field :city, :size => 30 %>
-
 
         <%= f.label(:province, "* Province/State:") %>
         <%= f.text_field :province, :size => 30 %>
@@ -145,18 +133,14 @@
         <%= f.text_field :postal_code, :size => 8 %>
 
         <%= f.label(:time_zone, "Time Zone:") %>
-
         <%= f.time_zone_select :time_zone,
                                ActiveSupport::TimeZone.all.select {|t| t.name =~ /canada/i},
                                {:default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'], :include_blank => true}
         %>
 
-
         <%= f.label(:comment, "Comments or special requests:") %>
-
         <%= f.text_area :comment, :cols => 80, :rows => 5 %>
         <br>
-
         <small>
           Please tell us the name of the laboratory you work for, the name of its Principal Investigator (if not you),
           and if possible anyone<br>
@@ -164,16 +148,11 @@
           <em>Site</em> within CBRAIN.
         </small>
 
-
       <% if current_user.present? && current_user.has_role?(:admin_user) %>
-
           <%= f.label(:admin_comment, "Private, admin-only comments:") %>
           <%= f.text_area :admin_comment, :cols => 80, :rows => 5 %>
-
       <% end %>
-
       </div>
-
       <br>
     </fieldset>
     <br>
@@ -181,14 +160,12 @@
       <%= f.submit(@signup.new_record? ? "Request Account" : "Update Request") %>
     </div>
 
-    </div>
-  </div>
-
 <% end %>
 
 <br>
 
-<b>Privacy note:</b>
+<b>Privacy note</b>
+<br>
 The information you supply in this form is
 only used in order to review your application and, when approved, to
 automatically generate your user account. <br>
@@ -200,3 +177,4 @@ any other entities or persons.
   For more information, contact
   <a href="mailto:<%= RemoteResource.current_resource.support_email %>"><%= RemoteResource.current_resource.support_email %></a>.
 <% end %>
+</div>

@@ -41,7 +41,7 @@
         <%= f.label(:title, "Title") %>
         <div>
           <%= f.text_field(:title, :size => 10) %>
-          <span class="field_note">(e.g. 'Mr.', 'Dr.', etc.)</span>
+          <span class="field_explanation">(e.g. 'Mr.', 'Dr.', etc.)</span>
         </div>
       </fieldset>
       <fieldset >
@@ -60,7 +60,7 @@
         <%= f.label(:login, "Preferred 'login' name") %>
         <div>
           <%= f.text_field :login, :size => 15 %>
-          <span class="field_note">(one letter + alphanums. <b>By convention</b>: first letter of your first name + last name. For John Doe: 'jdoe')</span>
+          <span class="field_explanation">(one letter + alphanums. <b>By convention</b>: first letter of your first name + last name. For John Doe: 'jdoe')</span>
         </div>
       </fieldset>
       <fieldset >
@@ -101,33 +101,37 @@
       <fieldset >
         <%= f.label(:email, "Institutional email address", "data-required"=>"true") %>
         <%= f.text_field :email, :size => 60 %>
-        <span class="field_note"><small>Please supply an email address from your research institution.
+        <span class="field_explanation"><small>Please supply an email address from your research institution.
           Requests made with non-institutional addresses will be ignored.</small></span>
-
       </fieldset>
+
       <fieldset >
         <%= f.label(:street1, "Institution Street Address (line 1)") %>
         <%= f.text_field :street1, :size => 60 %>
-
         <%= f.label(:street2, "Institution Street Address (line 2)") %>
         <%= f.text_field :street2, :size => 60 %>
       </fieldset>
+
       <fieldset >
         <%= f.label(:city, "Institution City", "data-required"=>"true") %>
         <%= f.text_field :city, :size => 30 %>
       </fieldset>
+
       <fieldset >
         <%= f.label(:province, "Province/State", "data-required"=>"true") %>
         <%= f.text_field :province, :size => 30 %>
       </fieldset>
+
       <fieldset >
         <%= f.label(:country, "Country", "data-required"=>"true") %>
         <%= f.text_field :country, :size => 30 %>
       </fieldset>
+
       <fieldset >
         <%= f.label(:postal_code, "Postal/ZIP Code") %>
         <%= f.text_field :postal_code, :size => 8 %>
       </fieldset>
+
       <fieldset >
         <%= f.label(:time_zone, "Time Zone") %>
         <%= f.time_zone_select :time_zone,
@@ -135,13 +139,10 @@
                                { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'], :include_blank => true }
         %>
       </fieldset>
+
       <fieldset >
         <%= f.label(:comment, "Comments or special requests") %>
         <%= f.text_area :comment, :cols => 80, :rows => 5 %>
-        <span class="field_note">
-            <b>Privacy note</b>: The information you supply in this form is only used in order to review your application and, when approved, to automatically generate your user account.
-              This information will not be used in any other way, or passed on to any other entities or persons.
-          </span>
       </fieldset>
       <div class="btn-section">
         <%= f.submit(@signup.new_record? ? "Request Account" : "Update Request", { :class => "btn-solid primary" })  %>
