@@ -29,14 +29,19 @@
 
   <div class="generalbox">
     <p class="warning"> Fields with an asterisk (*) are mandatory.</p>
+
     <fieldset class="groupentry">
+
       <legend>
         Personal Info
       </legend>
+
       <div class="tree-column-grid">
+
         <%= f.label(:title, "Title:") %>
         <%= f.text_field :title %>
         <span class="wide_field_explanation">for example: 'Mrs.', 'Mr', 'Dr.', etc.</span>
+
         <%= f.label(:first, "* First Name:") %>
         <%= f.text_field :first %>
         <br>
@@ -52,14 +57,13 @@
         <%= f.label(:login, "Preferred 'login' name:") %>
         <%= f.text_field :login %>
         <span class="wide_field_explanation">
-
             <small>one letter + alphanums. <strong>By convention</strong>: </small>the first letter of your first name + last name.
             For example, John Doe login: 'jdoe'
         </span>
-
         <span></span>
         <span></span>
         <span class="wide_field_explanation"></span>
+
       </div>
     </fieldset>
 
