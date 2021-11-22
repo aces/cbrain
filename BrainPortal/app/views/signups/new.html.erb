@@ -161,8 +161,6 @@
       <%= f.submit(@signup.new_record? ? "Request Account" : "Update Request") %>
     </div>
 
-<% end %>
-
 <br>
 
 <b>Privacy note</b>
@@ -179,3 +177,4 @@ any other entities or persons.
   <a href="mailto:<%= RemoteResource.current_resource.support_email %>"><%= RemoteResource.current_resource.support_email %></a>.
 <% end %>
 </div>
+<% end %>
