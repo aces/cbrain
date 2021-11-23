@@ -164,6 +164,21 @@ module BoutiquesSupport
       file_inputs.select { |x| ! x.optional }
     end
 
+    # Returns a CbrainFileRevision object for the
+    # JSON file for the descriptor.
+    #
+    # Not to be confused with the revision_info() method
+    # of BoutiquesSupport itself.
+    def file_revision_info
+      path = self.from_file
+      return CbrainFileRevision.unknown_rev_info if path.blank?
+      path = Pathname.new(path)
+      if path.absolute?
+        path = path.relative_path_from(Pathname.new(Rails.root).parent)
+      end
+      CbrainFileRevision.for_relpath(path)
+    end
+
     class Input
 
       # This method return the parameter name for the input.

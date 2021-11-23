@@ -250,11 +250,10 @@ class BoutiquesPortalTask < PortalTask
     @_pretty_params_names
   end
 
-  # Final set of tasks to be launched based on this task's parameters. Only
-  # useful if the parameters set for this task represent a set of tasks
-  # instead of just one.
+  # Final set of tasks to be launched based on this task's parameters.
   def final_task_list #:nodoc:
     descriptor = self.descriptor_for_final_task_list
+    self.addlog(descriptor.file_revision_info.format("%f rev. %s %a %d"))
 
     # --------------------------------------
     # Special case where there is a single file input

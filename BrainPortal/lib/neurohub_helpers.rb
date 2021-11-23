@@ -23,6 +23,8 @@
 # Helper for Neurohub interface
 module NeurohubHelpers
 
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
   # For the user +user+, this method will return a proper
   # neurohub project (class WorkGroup) associated with +id_or_project+.
   # If +id_or_project_ is already a Group, it will make sure it's

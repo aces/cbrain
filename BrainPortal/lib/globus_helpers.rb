@@ -23,6 +23,8 @@
 # Helper for logging in using Globus identity stuff
 module GlobusHelpers
 
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
   # GLOBUS authentication URL constants
   # Maybe should be made configurable.
   GLOBUS_AUTHORIZE_URI = "https://auth.globus.org/v2/oauth2/authorize" # will be issued a GET with params

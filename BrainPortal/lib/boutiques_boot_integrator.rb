@@ -30,6 +30,8 @@
 # when booting a Portal, and a ToolConfig will be created when booting a Bourreau.
 class BoutiquesBootIntegrator
 
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
   def self.link_from_json_file(path)
     descriptor   = BoutiquesSupport::BoutiquesDescriptor.new_from_file(path)
     tool_name    = descriptor.name

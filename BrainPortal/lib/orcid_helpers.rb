@@ -23,6 +23,8 @@
 # Helper for Neurohub interface
 module OrcidHelpers
 
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
   # ORCID authentication URL constants
   # Maybe should be made configurable.
   ORCID_AUTHORIZE_URI = "https://orcid.org/oauth/authorize" # will be issued a GET with params
