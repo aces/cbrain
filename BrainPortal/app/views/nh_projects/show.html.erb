@@ -130,7 +130,13 @@
       <div class="card-item">
         <div>
           <p class="card-label">Type</p>
-          <p class="card-text"><%= @nh_project.pretty_category_name(current_user) %></p>
+          <p class="card-text"><%=
+            if @nh_project.is_a?(UserGroup)
+              "Private Project"
+            else
+              @nh_project.pretty_category_name(current_user).gsub(/group/i,"Project")
+            end
+          %></p>
         </div>
       </div>
     </div>

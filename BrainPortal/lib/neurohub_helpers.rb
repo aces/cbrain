@@ -30,8 +30,9 @@ module NeurohubHelpers
   # If +id_or_project_ is already a Group, it will make sure it's
   # a valid one. The WorkGroup is returned. If the validation fails,
   # an exception ActiveRecord::RecordNotFound is raised.
-  def find_nh_project(user, id_or_project, check_license=true)
-    id      = id_or_project.is_a?(Group) ? id_or_project.id : id_or_project
+  def find_nh_project(user, id_or_project, check_license=true, allow_own_group=true)
+    id      = id_or_project.is_a?(Group) ? id_or_project.id : id_or_project.to_i
+    return user.own_group if allow_own_group && user.own_group.id == id
     project = user.viewable_groups
                   .where(:type => 'WorkGroup')
                   .find(id)
@@ -47,9 +48,10 @@ module NeurohubHelpers
 
   # For the user +user+, this method will return
   # neurohub projects ('available' groups of class WorkGroup)
-  def find_nh_projects(user)
-    user.listable_groups
-        .where(:type => 'WorkGroup')
+  def find_nh_projects(user, allow_own_group=true)
+    types  = [ 'WorkGroup' ]
+    types += [ 'UserGroup' ] if allow_own_group
+    user.listable_groups.where(:type => types)
   end
 
   # Make sure +projects+ are all assignable
