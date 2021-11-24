@@ -32,11 +32,11 @@ class NhInvitationsController < NeurohubApplicationController
   end
 
   def new #:nodoc:
-    @nh_project = find_nh_project(current_user, params[:nh_project_id], true, false)
+    @nh_project = find_nh_project(current_user, params[:nh_project_id], allow_own_group: false)
   end
 
   def create #:nodoc:
-    @nh_project     = find_nh_project(current_user, params[:nh_project_id], true, false)
+    @nh_project     = find_nh_project(current_user, params[:nh_project_id], allow_own_group: false)
 
     # The form allows users to invite by emails or usernames, even though
     # the parameter is only called :emails
