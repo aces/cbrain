@@ -42,6 +42,9 @@
             <% if project.public %>
               <div class="nh_projects_public"> public </div>
             <% end %>
+            <% if project.is_a?(UserGroup) %>
+              <div class="nh_projects_private"> private </div>
+            <% end %>
           </th>
           <td>
             <p class="text"><%= link_to_user_if_accessible(project.creator, current_user, :html_options => {:class => "btn-text cbrain external", :'data-link' => "true", :target => "_blank"}) %></p>

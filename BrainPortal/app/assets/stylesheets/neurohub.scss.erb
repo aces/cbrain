@@ -2434,6 +2434,20 @@ $BAR_HEIGHT: 2.3;
   text-transform: uppercase;
 }
 
+.nh_projects_private {
+  @include text("xxs");
+  @include p(1);
+  @include px(2);
+  border-radius: 2px;
+  background: $PRIMARY_WASH;
+  color: $WARNING_ALT;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translate(0, -50%);
+  text-transform: uppercase;
+}
+
 #nh_projects {
   flex: 1;
   display: flex;
@@ -2523,6 +2537,12 @@ $BAR_HEIGHT: 2.3;
         display: flex;
 
         .nh_projects_public {
+          position: relative;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        .nh_projects_private {
           position: relative;
           display: flex;
           justify-content: center;
