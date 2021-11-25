@@ -381,7 +381,7 @@
   <%- elsif type == :file -%>
     <%- if single_file -%>
         paragraph.(
-          "#{input_files.size} task(s) for #{input_files.size} input(s) will be launched based on your selection."
+          "One or multiple tasks will be launched based on your selected files."
         )
     <%- elsif param['cbrain-file-type'] -%>
         # File input dropdown
@@ -423,7 +423,7 @@
     <%- end -%>
         )
   <%- end -%>
-  <%- if param['description'] && !single_file -%>
+  <%- if param['description'] -%>
         # Description
         description.(<<-'DESC',<%= isGroupMember %>)
           <%= param['description'] %>
