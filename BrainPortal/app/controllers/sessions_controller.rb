@@ -62,6 +62,7 @@ class SessionsController < ApplicationController
     all_ok = create_from_user(user, 'CBRAIN')
 
     if ! all_ok
+      @globus_uri      = globus_login_uri(globus_url) # can be nil
       auth_failed()
       return
     end

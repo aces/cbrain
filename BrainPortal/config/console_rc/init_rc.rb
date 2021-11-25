@@ -93,7 +93,8 @@ IRB.conf[:PROMPT][:CUSTOM] = {
   :RETURN   => " => %s \n",
   :AUTO_INDENT => true
 }
-IRB.conf[:PROMPT_MODE] = :CUSTOM
+IRB.conf[:PROMPT_MODE]  = :CUSTOM
+IRB.conf[:SAVE_HISTORY] = 5000 # why not
 
 #####################################################
 # Load external IRBRC files

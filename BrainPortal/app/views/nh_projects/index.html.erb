@@ -61,10 +61,13 @@
             <div class="card_text card_description">
               <%= project.description.presence %>
             </div>
-            <% if project.public || project.can_be_edited_by?(current_user) %>
+            <% if project.public || project.can_be_edited_by?(current_user) || project.is_a?(UserGroup) %>
               <div class="card_footer" data-actions = <%= project.can_be_edited_by?(current_user) %> >
                 <% if project.public %>
                   <div class="nh_projects_public">public</div>
+                <% end %>
+                <% if project.is_a?(UserGroup) %>
+                  <div class="nh_projects_private">private</div>
                 <% end %>
                 <% if project.can_be_edited_by?(current_user) %>
                   <div class="card_actions">

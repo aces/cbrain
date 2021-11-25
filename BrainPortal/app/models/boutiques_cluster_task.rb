@@ -47,7 +47,9 @@ class BoutiquesClusterTask < ClusterTask
   # by subclasses to change the behavior of what happens
   # in the cluster_commands() method.
   def descriptor_for_cluster_commands
-    self.boutiques_descriptor
+    desc = self.boutiques_descriptor.dup
+    desc.delete "container-image" # CBRAIN handles containerization itself
+    desc
   end
 
   # This method returns the same descriptor as
@@ -72,6 +74,7 @@ class BoutiquesClusterTask < ClusterTask
 
   def setup
     descriptor = self.descriptor_for_setup
+    self.addlog(descriptor.file_revision_info.format("%f rev. %s %a %d"))
 
     descriptor.file_inputs.each do |input|
       userfile_id = invoke_params[input.id]
@@ -96,8 +99,8 @@ class BoutiquesClusterTask < ClusterTask
   end
 
   def cluster_commands
-    descriptor = self.descriptor_for_cluster_commands
-
+    # Our two main JSON structures for 'bosh'
+    descriptor    = self.descriptor_for_cluster_commands
     invoke_struct = self.invoke_params.dup
 
     # Replace userfile IDs for file basenames in the invoke struct
@@ -133,9 +136,12 @@ class BoutiquesClusterTask < ClusterTask
       fh.write "\n"
     end
 
+    # Write down the file with the boutiques descriptor itself
     boutiques_json_basename = "boutiques.#{self.run_id}.json"
     File.open(boutiques_json_basename, "w") do |fh|
-      fh.write JSON.pretty_generate(descriptor)
+      cleaned_desc = descriptor.dup
+      cleaned_desc.delete("groups") if cleaned_desc.groups.size == 0 # bosh is picky
+      fh.write JSON.pretty_generate(cleaned_desc)
       fh.write "\n"
     end
 
@@ -147,6 +153,10 @@ class BoutiquesClusterTask < ClusterTask
       SIMULATE
       simulate_com.gsub!("\n"," ")
       simulout = IO.popen(simulate_com) { |fh| fh.read }
+      simul_status = $? # a Process::Status object
+      if ! simul_status.success?
+        cb_error "The 'bosh exec simulate' command failed with return code #{simul_status.exitstatus}"
+      end
       simulout.sub!(/^Generated.*\n/,"") # header junk from simulate
       commands = <<-COMMANDS
         # Main tool command, generated with bosh exec simulate
@@ -176,17 +186,20 @@ class BoutiquesClusterTask < ClusterTask
     if ! custom['cbrain:ignore-exit-status']
       out = File.read(exit_status_filename()) rescue nil
       if out.nil?
-        cb_error "Missing exit status file #{exit_status_filename()}"
+        self.addlog "Missing exit status file #{exit_status_filename()}"
+        return false
       end
       if out.blank?
-        cb_error "Process did not complete successfully: status file is blank"
+        self.addlog "Process did not complete successfully: status file is blank"
+        return false
       end
       if out !~ /\A\d+\s*\z/
         cb_error "Exit status file #{exit_status_filename()} has unexpected content"
       end
       status = out.strip.to_i
       if status != 0
-        cb_error "Command failed, exit status #{status}"
+        self.addlog "Command failed, exit status #{status}"
+        return false
       end
     end
 

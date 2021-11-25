@@ -95,7 +95,7 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def edit #:nodoc:
-    @nh_project = find_nh_project(current_user, params[:id])
+    @nh_project      = find_nh_project(current_user, params[:id], allow_own_group: false)
     @can_add_license = @nh_project.creator_id == current_user.id
   end
 
@@ -144,14 +144,14 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def new_license #:nodoc:
-    @nh_project = find_nh_project(current_user, params[:id])
+    @nh_project = find_nh_project(current_user, params[:id], allow_own_group: false)
     if @nh_project.creator_id != current_user.id
       cb_error "Only owner can set licensing", :redirect => { :action => :show }
     end
   end
 
   def add_license #:nodoc:
-    @nh_project = find_nh_project(current_user, params[:id], false) # false means no license check
+    @nh_project = find_nh_project(current_user, params[:id], check_licenses: false)
     if @nh_project.creator_id != current_user.id
       cb_error "Only owner can set licensing", :redirect  => { :action => :show }
     end
@@ -170,7 +170,7 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def show_license #:nodoc:
-    @nh_project       = find_nh_project(current_user, params[:id], false) # false means no license check
+    @nh_project       = find_nh_project(current_user, params[:id], check_licenses: false, allow_own_group: false)
     @current_licenses = @nh_project.custom_license_agreements
     @can_add_license  = @nh_project.creator_id == current_user.id
     unsigned_licenses = current_user.unsigned_custom_licenses(@nh_project)
@@ -208,7 +208,7 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def sign_license #:nodoc:
-    @nh_project = find_nh_project(current_user, params[:id], false) # false means no license check
+    @nh_project = find_nh_project(current_user, params[:id], check_licenses: false, allow_own_group: false)
     @license_id = params[:license_id].to_i
 
     unless @nh_project.custom_license_agreements.include?(@license_id)

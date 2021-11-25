@@ -32,6 +32,7 @@ module UsersHelper
 
     if user.has_role? :admin_user
       roles << ["Admin User","AdminUser"]
+      roles << ["Automated User", "AutomatedUser"]
     end
 
     roles

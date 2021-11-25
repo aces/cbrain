@@ -203,6 +203,7 @@ class BoutiquesPortalTask < PortalTask
     descriptor.groups.each do |group|
       check_mutex_group(group)         if group.mutually_exclusive
       check_oneisrequired_group(group) if group.one_is_required
+      check_allornone_group(group)     if group.all_or_none
     end
 
     # ------------------------------------------------
@@ -250,11 +251,10 @@ class BoutiquesPortalTask < PortalTask
     @_pretty_params_names
   end
 
-  # Final set of tasks to be launched based on this task's parameters. Only
-  # useful if the parameters set for this task represent a set of tasks
-  # instead of just one.
+  # Final set of tasks to be launched based on this task's parameters.
   def final_task_list #:nodoc:
     descriptor = self.descriptor_for_final_task_list
+    self.addlog(descriptor.file_revision_info.format("%f rev. %s %a %d"))
 
     # --------------------------------------
     # Special case where there is a single file input
@@ -589,6 +589,13 @@ class BoutiquesPortalTask < PortalTask
     are_set = members.select { |inputid| ! isInactive(descriptor.input_by_id inputid) }
     return if are_set.size > 0
     params_errors.add(group.name, " need at least one parameter set")
+  end
+
+  def check_allornone_group(group, descriptor = self.descriptor_for_after_form)
+    members = group.members
+    num_unset = members.count { |inputid| isInactive(descriptor.input_by_id inputid) }
+    return if num_unset == 0 || num_unset == members.size # all, or none
+    params_errors.add(group.name, " need either all the parameters set or neither")
   end
 
   # MAYBE IN COMMON
