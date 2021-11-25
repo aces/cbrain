@@ -253,25 +253,27 @@ class UsersController < ApplicationController
 
     @user = @user.class_update
 
-    last_update = @user.updated_at
+    success = false; 
+    if @user.save_with_logging(current_user, %w( full_name login email role city country account_locked ) )
+      @user = User.find(@user.id) # fully reload with new class if needed
+      @user.addlog_object_list_updated("Groups", Group, original_group_ids, @user.group_ids, current_user)
+      @user.addlog_object_list_updated("Access Profiles", AccessProfile, original_ap_ids, @user.access_profile_ids, current_user)
+      add_meta_data_from_form(@user, [:pref_bourreau_id, :pref_data_provider_id, :ip_whitelist])
+      # Log AccessProfile modification
+      added_ap_ids   = @user.access_profile_ids - original_ap_ids
+      changed_ap_ids = remove_ap_ids + added_ap_ids
+      changed_ap_ids.each do |id|
+        ap                  = AccessProfile.find(id)
+        ap_user_ids         = ap.user_ids 
+        initial_ap_user_ids = added_ap_ids.include?(id) ? ap_user_ids - [@user.id] : ap_user_ids + [@user.id]
+        ap.addlog_object_list_updated("Users", User, initial_ap_user_ids, ap_user_ids,  current_user, :login)
+      end
+      success = true;
+    end 
+
     respond_to do |format|
-      if @user.save_with_logging(current_user, %w( full_name login email role city country account_locked ) )
-        @user = User.find(@user.id) # fully reload with new class if needed
-        @user.addlog_object_list_updated("Groups", Group, original_group_ids, @user.group_ids, current_user)
-        @user.addlog_object_list_updated("Access Profiles", AccessProfile, original_ap_ids, @user.access_profile_ids, current_user)
-        add_meta_data_from_form(@user, [:pref_bourreau_id, :pref_data_provider_id, :ip_whitelist])
-        # Log AccessProfile modification
-        added_ap_ids   = @user.access_profile_ids - original_ap_ids
-        changed_ap_ids = remove_ap_ids + added_ap_ids
-        changed_ap_ids.each do |id|
-          ap                  = AccessProfile.find(id)
-          ap_user_ids         = ap.user_ids 
-          initial_ap_user_ids = added_ap_ids.include?(id) ? ap_user_ids - [@user.id] : ap_user_ids + [@user.id]
-          ap.addlog_object_list_updated("Users", User, initial_ap_user_ids, ap_user_ids,  current_user, :login)
-        end
-        
-        
-        flash[:notice] = "User #{@user.login} was successfully updated." if @user.updated_at != last_update
+      if success 
+        flash[:notice] = "User #{@user.login} was successfully updated."
         format.html  { redirect_to :action => :show }
         format.xml   { render :xml  => @user.for_api }
         format.json  { render :json => @user.for_api }
