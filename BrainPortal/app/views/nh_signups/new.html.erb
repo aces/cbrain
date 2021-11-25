@@ -74,46 +74,44 @@
       <fieldset >
         <%= f.label(:position, "Current position or role", "data-required"=>"true") %>
         <%= f.select :position, options_for_select(
-                [ [ "(select one)", "" ], "Faculty",
-                                          "Postdoctoral",
-                                          "PhD. candidate",
-                                          "Masters student",
-                                          "Student",
-                                          "Researcher",
-                                          "Other"
-                ],
-                @signup.position)
-            %>
+            [ [ "(select one)", "" ], "Faculty",
+                                      "Postdoctoral",
+                                      "PhD. candidate",
+                                      "Masters student",
+                                      "Student",
+                                      "Researcher",
+                                      "Other"
+            ],
+            @signup.position)
+        %>
       </fieldset>
       <fieldset >
         <%= f.label(:affiliation, "Current affiliation", "data-required"=>"true") %>
         <%= f.select :affiliation, options_for_select(
-                [ [ "(select one)", "" ], "Academic",
-                                          "Private sector",
-                                          "Government",
-                                          "Non-profit",
-                                          "Other",
-                ],
-                @signup.affiliation)
-            %>
+            [ [ "(select one)", "" ], "Academic",
+                                      "Private sector",
+                                      "Government",
+                                      "Non-profit",
+                                      "Other",
+            ],
+            @signup.affiliation)
+        %>
       </fieldset>
 
       <fieldset >
         <%= f.label(:email, "Institutional email address", "data-required"=>"true") %>
         <%= f.text_field :email, :size => 60 %>
-        <span class="field_note">Please supply an email address from your research institution.
-        Requests made with non-institutional addresses will be ignored.</span>
-
+        <span class="field_note"><small>Please supply an email address from your research institution.
+          Requests made with non-institutional addresses will be ignored.</small></span>
       </fieldset>
       <fieldset >
-        <%= f.label(:street1, "Street Address (line 1)") %>
+        <%= f.label(:street1, "Institution Street Address (line 1)") %>
         <%= f.text_field :street1, :size => 60 %>
-
-        <%= f.label(:street2, "Street Address (line 2)") %>
+        <%= f.label(:street2, "Institution Street Address (line 2)") %>
         <%= f.text_field :street2, :size => 60 %>
       </fieldset>
       <fieldset >
-        <%= f.label(:city, "City", "data-required"=>"true") %>
+        <%= f.label(:city, "Institution City", "data-required"=>"true") %>
         <%= f.text_field :city, :size => 30 %>
       </fieldset>
       <fieldset >
@@ -131,23 +129,19 @@
       <fieldset >
         <%= f.label(:time_zone, "Time Zone") %>
         <%= f.time_zone_select :time_zone,
-            ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
-            { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'], :include_blank => true }
+                               ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
+                               { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'], :include_blank => true }
         %>
       </fieldset>
       <fieldset >
         <%= f.label(:comment, "Comments or special requests") %>
-          <%= f.text_area :comment, :cols => 80, :rows => 5 %>
-          <span class="field_note">
-            <b>Privacy note</b>: The information you supply in this form is only used in order to review your application and, when approved, to automatically generate your user account.
-              This information will not be used in any other way, or passed on to any other entities or persons.
-          </span>
+        <%= f.text_area :comment, :cols => 80, :rows => 5 %>
       </fieldset>
       <div class="btn-section">
         <%= f.submit(@signup.new_record? ? "Request Account" : "Update Request", { :class => "btn-solid primary" })  %>
         <%= link_to 'Already Have An Account',
-        url_for(:controller => :nh_sessions, :action => :new),
-        { tabindex: 4, :class => "btn-text primary mt-2" }%>
+                    url_for(:controller => :nh_sessions, :action => :new),
+                    { tabindex: 4, :class => "btn-text primary mt-2" }%>
       </div>
     <% end %>
   </div>

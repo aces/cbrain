@@ -325,14 +325,6 @@ class SignupsController < ApplicationController
     return false
   end
 
-  def send_account_created_email(user, plain_password) #:nodoc:
-    signup.action_mailer_class.registration_confirmation(user, plain_password).deliver
-    return true
-  rescue => ex
-    Rails.logger.error ex.to_s
-    return false
-  end
-
   def send_admin_notification(signup) #:nodoc:
     return unless RemoteResource.current_resource.support_email
     show_url  = url_for(:controller => :signups, :action => :show, :id => signup.id, :only_path => false)

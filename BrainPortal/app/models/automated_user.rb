@@ -1,9 +1,8 @@
 
-<%-
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2021
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -20,29 +19,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<%
-  # This partial requires one params variable:
-  #  params[:base_directory] : a relative path to the subdirectory inside the userfile; we will list from that point.
-%>
+# Model representing automated systems.
+class AutomatedUser < NormalUser
 
-<%
-  base_dir = params[:base_directory].presence || ""
-%>
-<table class="plain_file_list" class="resource_list">
-  <tr class="list-odd">
-    <th>
-      <% if @userfile.is_locally_synced? %>
-          <%= select_all_checkbox "collection_checkbox" %>
-      <% end %>
-    </th>
-    <th>File</th>
-    <th title="Download file">DL</th>
-    <th>Size</th>
-  </tr>
-  <%= render :file    => FileCollection.view_path(:directory_contents),
-            :locals  => { :base_directory => base_dir }
-  %>
-</table>
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+end
