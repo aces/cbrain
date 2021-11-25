@@ -94,6 +94,12 @@
   </label>
 <%% end %>
 
+<%% paragraph = lambda do | text | %>
+  <span class="tsk-prm-par">
+    <%%= text   %>
+  </span>
+<%% end %>
+
 <%%#
   Generate a generic parameter input field with HTML id +id+ and name +name+.
   +type+ is the kind of input field to generate (text or hidden),
@@ -374,11 +380,8 @@
       <%- end -%>
   <%- elsif type == :file -%>
     <%- if single_file -%>
-        # Automatic single file input
-        dropdown.(id, id,
-          [ [ input_files[0].try(:id).to_s, input_files[0].try(:name).to_s ] ],
-          optional: <%= opt %>,
-          default: input_files[0].try(:id).to_s
+        paragraph.(
+          "One or multiple tasks will be launched based on your selected files."
         )
     <%- elsif param['cbrain-file-type'] -%>
         # File input dropdown

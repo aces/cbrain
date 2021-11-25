@@ -83,12 +83,6 @@
 <%- unless file_inputs.empty? -%>
 <h2>Launching Multiple Tasks</h2>
 <%- single_file = (file_inputs.length == 1) && (! file_inputs.first.optional) -%>
-<%- if single_file -%>
-<p>
-  Because this tool has only a single, required file input, all files checked in CBRAIN when the task was launched will be placed in this input.
-  A task will then be launched for each file input this way, with the other parameters remaining constant across the tasks.
-</p>
-<%- end -%>
 <p>
   Multiple instances of this tool can <%= "also" if single_file %> be launched simultaneously using the <em>CBRAIN File List</em> mechanism ("cbcsv" files).
   Essentially, a cbcsv file is a csv file with a list of a user's files registered in CBRAIN.
