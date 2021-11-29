@@ -35,7 +35,7 @@
     <li>
       <%= render :partial => task_partial(:html_input), :locals =>
           {
-            :id          => id,
+            :id          => id + "0",
             :name        => name,
             :type        => 'text',
             :value       => first,
@@ -45,11 +45,11 @@
       %>
       <span class="tsk-prm-add ui-icon ui-icon-plus"></span>
     </li>
-    <% values.each do |val| %>
+    <% values.each_with_index do |val,index| %>
       <li>
         <%= render :partial => task_partial(:html_input), :locals =>
           {
-            :id          => nil,
+            :id          => id + "#{index+1}",
             :name        => name,
             :type        => 'text',
             :value       => val,

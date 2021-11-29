@@ -429,15 +429,28 @@ $(function () {
 
   /* Clicking on a '+' button adds a new value row and enables the parameter */
   parameters.delegate('.tsk-prm-add.ui-icon-plus', 'click', function () {
-    var name = $(this)
-      .siblings('.tsk-prm-in')
-      .attr('name');
+    var sibling      = $(this).siblings('.tsk-prm-in');
+    var id           = sibling[0].id;
+
+    var id_matches   = id.match(/(.+)(_KET_)\d+$/);
+    var new_id_index = sibling.parents('ul')[0].children.length;
+
+    // Give an uniq id to all input
+    var new_id     = undefined;
+    if (id_matches !== null && new_id_index) {
+      new_id     = id_matches[1] +
+                   id_matches[2] +
+                   new_id_index
+    }
+
+    var name       = sibling.attr('name');
 
     $(this)
       .closest('ul')
       .append(
         '<li>' +
           '<input ' +
+            (new_id !== undefined ? ('id=' + new_id + ' ') : '') +
             'class="tsk-prm-in" ' +
             'type="text" ' +
             'name="' + name + '" ' +
@@ -453,9 +466,29 @@ $(function () {
 
   /* Clicking on a '-' button removes the row from an input parameter list */
   parameters.delegate('.tsk-prm-rm, .ui-icon-minus', 'click', function () {
-    $(this)
-      .closest('li')
-      .remove();
+    var closest_li = $(this).closest('li');
+    closest_li.remove();
+
+    // Give a uniq id to all the input
+    if (closest_li[0]) {
+      var li_input = closest_li[0].children[0];
+      if (li_input) {
+        var id           = li_input.id
+        var id_matches   = id.match(/(.+)(_KET_)\d+$/);
+        if (id_matches) {
+          var myReg = new RegExp(id_matches[1] + id_matches[2] + '\\d+')
+          // Re-numbering of all the list id's.
+          var input_ids = Object.values($("input")).map(input => input.id).filter(input => input &&  input.match(myReg))
+          input_ids.map( (input,index) => {
+            var current_match_ids = input.match(/(.+)(_KET_)\d+$/);
+            if (current_match_ids){
+              var new_id = current_match_ids[1] + current_match_ids[2] + index;
+              $("#"+input).attr('id', new_id);
+            }
+          })
+        };
+      }
+    }
   });
 
   /* Toggling groups */
