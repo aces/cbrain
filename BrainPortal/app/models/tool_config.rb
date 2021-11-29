@@ -459,12 +459,9 @@ class ToolConfig < ApplicationRecord
           if  !(userfile.sync_to_cache() rescue nil)
             self.errors.add(:singularity_overlays_specs,
                    " contains invalid specification '#{spec}'. The fetching data from data provider to cache failed.")
-          else
-
-            if userfile.name !~ /^\/\S+\.(sqs|squashfs)$/i
+          elsif  ! userfile.name.ends_with?('.sqs') && ! userfile.name.ends_with?('.squashfs')
               self.errors.add(:singularity_overlays_specs,
-              " contains invalid specification '#{spec}'. It should be a full path that ends in .squashfs or .sqs")
-            end
+              " contains invalid specification '#{spec}'. It should end in .squashfs or .sqs")            
           end
         else
           self.errors.add(:singularity_overlays_specs,
