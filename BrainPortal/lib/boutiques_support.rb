@@ -179,6 +179,10 @@ module BoutiquesSupport
       CbrainFileRevision.for_relpath(path)
     end
 
+    def custom_module_info(modulename)
+      self.custom['cbrain:integrator_modules'][modulename]
+    end
+
     class Input
 
       # This method return the parameter name for the input.

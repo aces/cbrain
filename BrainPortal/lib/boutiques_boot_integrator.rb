@@ -54,6 +54,7 @@ class BoutiquesBootIntegrator
     parent           = myself.is_a?(BrainPortal) ? BoutiquesPortalTask : BoutiquesClusterTask
     descriptor_class = descriptor.custom['cbrain:inherits-from-class'] # can be nil
     parent           = descriptor_class.constantize if descriptor_class.present?
+    klass            = nil
 
     # It's ok to have several descriptor wanting the same implementation
     # class (e.g. several versions of the tool) but only if all the superclasses agree too.
@@ -62,6 +63,7 @@ class BoutiquesBootIntegrator
       if exist_superclass != parent
         cb_error "Conflict in superclass while integrating descriptor: BoutiquesTask::#{klass_name} has superclass #{exist_superclass} already, and wanted to set it to #{parent}"
       end
+      klass = BoutiquesTask.const_get(klass_name.to_sym)
     else
       # Create new class. This is the equivalent of
       #   class BoutiquesTask::Xyz < ParentClass
@@ -72,10 +74,21 @@ class BoutiquesBootIntegrator
       BoutiquesTask.const_set klass_name.to_sym, klass
     end
 
+    # Add special module functionality if necessary
+    custom_modules = descriptor.custom['cbrain:integrator_modules'] || {}
+    custom_modules.keys.each do |modname|   # "MySuperModule"
+      mod = modname.constantize
+      klass.include(mod)                    # like 'include MySuperModule'
+    end
+
     # Boot process messages
     basename = Pathname.new(path).basename
     puts "B> Boutiques JSON: #{basename} Class: #{klass_name} Tool: #{tool_name} ToolConfigs: #{tool_configs.count}"
-
+  rescue => ex
+    Rails.logger.error(
+      "An error occured while trying to integrate descriptor '#{path}'"
+    )
+    raise ex
   end
 
   # This method scans a directory for JSOn boutiques descriptors and
