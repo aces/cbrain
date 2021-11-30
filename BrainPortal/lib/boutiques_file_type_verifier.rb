@@ -41,7 +41,7 @@
 module BoutiquesFileTypeVerifier
 
   def after_form #:nodoc:
-    descriptor = self.descriptor_for_before_form
+    descriptor = self.descriptor_for_after_form
     verifs     = descriptor.custom_module_info('BoutiquesFileTypeVerifier')
 
     verifs.each do |inputid,typenames| # 'myinput' => [ 'TextFile', 'MincFile' ]
