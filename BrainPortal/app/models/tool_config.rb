@@ -65,6 +65,7 @@ class ToolConfig < ApplicationRecord
   scope           :global_for_bourreaux , -> { where( { :tool_id => nil } ) }
   scope           :specific_versions    , -> { where( "bourreau_id is not null and tool_id is not null" ) }
 
+
   api_attr_visible :version_name, :description, :tool_id, :bourreau_id, :group_id, :ncpus
 
   # To make it somewhat compatible with the ResourceAccess module,
@@ -340,10 +341,8 @@ class ToolConfig < ApplicationRecord
 
     # break onto commands based on comas, whitespace or comments
     specs = specs.split(/([\s,]|#.*$)+/).map(&:presence).compact
-    i = 0
     specs.map do |spec|
       # Full path or pattern
-      i += 1
       next spec if spec =~ /^\// # just use that - FIXME remove after successful migration
       cb_error "Spec #{spec}  starts with semicolon" if spec.start_with?(':')
       knd, id_or_name = spec.split(':', 2)
@@ -357,8 +356,8 @@ class ToolConfig < ApplicationRecord
         cb_error "DataProvider #{id_or_name} does not have any overlays configured." if dp_ovs.blank?
         next dp_ovs
       when 'file'
-        cb_error "Provide absolute file path in spec #{spec}." if ! spec.start_with?('\\')
-        next id_or_name
+        cb_error "Provide absolute filepath in spec #{spec}." if (Pathname.new id_or_name).relative?
+        next id_or_name  # despite the variable name id_or_name for local file, id (inode) is not supported, only (full) name supported
       when 'userfile'
         # admin can access all files
         userfile = Userfile.find(id_or_name) rescue nil
@@ -436,41 +435,50 @@ class ToolConfig < ApplicationRecord
     return if specs.blank?
 
     specs = specs.split(/([\s,]|#.*$)+/).map(&:presence).compact
-    i = 0
+
 
     # Iterate over each spec and validate them
     specs.each do |spec|
-      i += 1
+
+      # Legacy full paths
+      # not sure is it really needed, as user can add file: prefix while editing, but as requested
+      # may be check based on date and time of creation?
+      if spec =~ /^\//
+        next if spec =~ /^\/\S+\.(sqs|squashfs)$/i # full paths ok
+        self.errors.add(:singularity_overlays_specs, "contains invalid specification '#{spec}'. It should be a full path that ends in .squashfs or .sqs")
+        next
+      end
 
       self.errors.add(:singularity_overlays_specs, " contains invalid specification '#{spec}'. Semicolon in the start of line") if spec.start_with?(':')
       knd, id_or_name = spec.split(':', 2)
-      self.errors.add(:singularity_overlays_specs, " contains invalid specification '#{spec}'. No semicolon is found") if ! id_or_name
+
+      self.errors.add(:singularity_overlays_specs, " contains invalid specification '#{spec}'. No colon is found. Specification without colon no longer supported") if ! id_or_name
 
       case knd
-      when 'file'
+      when 'file' # full path specification: "file:FULLPATH" e.g. "file:/a/b/c"
         if id_or_name !~ /^\/\S+\.(sqs|squashfs)$/i # full paths ok
           self.errors.add(:singularity_overlays_specs,
             " contains invalid specification '#{spec}'. It should be a full path that ends in .squashfs or .sqs")
+        elsif (Pathname.new id_or_name).relative?
+          self.errors.add(:singularity_overlays_specs,
+                          " contains invalid specification '#{spec}'. It should be an absolute path ")
         end
 
-      when 'userfile'
+      when 'userfile' # db-registered file specification: "userfile:ID" e.g. "userfile:42"
         userfile = Userfile.find(id_or_name) rescue nil
-        if  userfile
-          if  !(userfile.sync_to_cache() rescue nil)
+        if  !userfile
+          self.errors.add(:singularity_overlays_specs,
+                          " contains invalid specification '#{spec}'. This file is not found")
+        elsif  !(userfile.sync_to_cache() rescue nil)
             self.errors.add(:singularity_overlays_specs,
                    " contains invalid specification '#{spec}'. The fetching data from data provider to cache failed.")
-          elsif  ! userfile.name.ends_with?('.sqs') && ! userfile.name.ends_with?('.squashfs')
+        elsif  ! userfile.name.ends_with?('.sqs') && ! userfile.name.ends_with?('.squashfs')
               self.errors.add(:singularity_overlays_specs,
               " contains invalid specification '#{spec}'. It should end in .squashfs or .sqs")            
-          end
-        else
-          self.errors.add(:singularity_overlays_specs,
-            " contains invalid specification '#{spec}'. This file is not found")
         end
-      # DP specs: "dp:name" or "dp:ID"
-      when 'dp'
-        dp_name_or_id=Regexp.last_match[1]
-        dp=DataProvider.where_id_or_name(dp_name_or_id).first
+
+      when 'dp' # DataProvider specs: "dp:name" or "dp:ID"
+        dp = DataProvider.where_id_or_name(id_or_name).first
         if !dp
           self.errors.add(:singularity_overlays_specs, "contains invalid DP specification '#{spec}' '#{spec}' (no such DP)")
         elsif ! dp.is_a?(SingSquashfsDataProvider)
