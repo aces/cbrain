@@ -269,7 +269,7 @@ class SingSquashfsDataProvider < SshDataProvider
     @sq_files ||= self.meta[:squashfs_basenames] # cached_values
 
     if @sq_files.blank? || force
-      remote_cmd  = "cd #{self.remote_dir.bash_escape} && ls -1'"
+      remote_cmd  = "cd #{self.remote_dir.bash_escape} && ls -1"
       text        = self.remote_bash_this(remote_cmd)
       lines       = text.split("\n")
       @sq_files   = lines.select { |l| l =~ /\A\S+\.(squashfs|sqs)\z/ }.sort
