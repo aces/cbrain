@@ -342,7 +342,7 @@ class ToolConfig < ApplicationRecord
     # break onto commands based on comas, whitespace or comments
     specs = specs.split(/([\s,]|#.*$)+/).map(&:presence).compact
     specs.map do |spec|
-      # Full path or pattern
+      # Full path or pattern (legacy)
       next spec if spec =~ /^\// # just use that - FIXME remove after successful migration
       cb_error "Spec #{spec}  starts with semicolon" if spec.start_with?(':')
       knd, id_or_name = spec.split(':', 2)
@@ -377,7 +377,7 @@ class ToolConfig < ApplicationRecord
     return @_data_providers_with_overlays_ if @_data_providers_with_overlays_
     specs = self.singularity_overlays_specs.presence
     return [] if specs.blank?
-    specs = specs.split(/[\s,]+/).map(&:presence).compact
+    specs = specs.(/([\s,]|#.*$)+/).map(&:presence).compact
     @_data_providers_with_overlays_ = specs.map do |spec|
       next nil unless spec =~ /^dp:/i
       id_or_name = spec.sub(/^dp:/i,"")
