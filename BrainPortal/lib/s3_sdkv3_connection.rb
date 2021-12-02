@@ -54,7 +54,6 @@ class S3Sdkv3Connection
   def initialize(access_key, secret_key, bucket_name,
                  region   = "us-east-1",
                  endpoint = nil)
-                 #endpoint = "http://s3.us-east-1.amazonaws.com")
 
     credentials     = Aws::Credentials.new(access_key,secret_key)
 

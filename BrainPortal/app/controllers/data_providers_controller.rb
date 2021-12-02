@@ -136,6 +136,7 @@ class DataProvidersController < ApplicationController
            remote_user remote_host remote_port remote_dir
            not_syncable cloud_storage_client_identifier cloud_storage_client_token
            cloud_storage_client_bucket_name cloud_storage_client_path_start
+           cloud_storage_endpoint cloud_storage_region
            datalad_repository_url datalad_relative_path
            containerized_path
          )
@@ -825,10 +826,14 @@ class DataProvidersController < ApplicationController
       params.require_as_params(:data_provider).permit(
         :name, :user_id, :group_id, :remote_user, :remote_host, :alternate_host,
         :remote_port, :remote_dir, :online, :read_only, :description, :type,
-        :not_syncable, :time_zone, :cloud_storage_client_identifier,
-        :cloud_storage_client_token, :cloud_storage_client_bucket_name,
-        :cloud_storage_client_path_start, :datalad_repository_url,
-        :datalad_relative_path, :license_agreements,
+        :not_syncable, :time_zone,
+
+        :cloud_storage_client_identifier, :cloud_storage_client_token,
+        :cloud_storage_client_bucket_name, :cloud_storage_client_path_start,
+        :cloud_storage_endpoint, :cloud_storage_region,
+
+        :datalad_repository_url, :datalad_relative_path,
+        :license_agreements,
         :containerized_path
       )
     else

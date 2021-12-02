@@ -68,6 +68,8 @@ class S3FlatDataProvider < DataProvider
     @s3_connection = S3Sdkv3Connection.new(self.cloud_storage_client_identifier,
                                            self.cloud_storage_client_token,
                                            self.cloud_storage_client_bucket_name,
+                                           self.cloud_storage_region.presence,
+                                           self.cloud_storage_endpoint.presence,
                                           )
   end
 

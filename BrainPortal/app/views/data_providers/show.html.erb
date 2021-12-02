@@ -160,6 +160,12 @@
       <% t.edit_cell(:cloud_storage_client_path_start, :header => 'Client Starting Path', :show_width => 2) do %>
         <%= text_field_tag "data_provider[cloud_storage_client_path_start]", @provider.cloud_storage_client_path_start, :size => 80 %>
       <% end %>
+      <% t.edit_cell(:cloud_storage_endpoint, :header => 'Endpoint', :show_width => 2) do %>
+        <%= text_field_tag "data_provider[cloud_storage_endpoint]", @provider.cloud_storage_endpoint, :size => 80 %>
+      <% end %>
+      <% t.edit_cell(:cloud_storage_region, :header => 'Region', :show_width => 2) do %>
+        <%= text_field_tag "data_provider[cloud_storage_region]", @provider.cloud_storage_region, :size => 80 %>
+      <% end %>
     <% end %>
 
     <%= show_table(@provider, :as => :data_provider, :header => "Datalad Configuration", :edit_condition => true) do |t| %>
