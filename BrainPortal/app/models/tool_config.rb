@@ -468,7 +468,9 @@ class ToolConfig < ApplicationRecord
         userfile = Userfile.find(id_or_name) rescue nil
         if  !userfile
           self.errors.add(:singularity_overlays_specs,
-                          " contains invalid specification '#{spec}'. This file is not found")
+            %{" contains invalid specification '#{spec}'. The file with id #{id_or_name} is not found.
+            Note that file names are not supported for userfiles."}
+          )
         elsif  !(userfile.sync_to_cache() rescue nil)
             self.errors.add(:singularity_overlays_specs,
                    " contains invalid specification '#{spec}'. The fetching data from data provider to cache failed.")
