@@ -65,7 +65,6 @@ class ToolConfig < ApplicationRecord
   scope           :global_for_bourreaux , -> { where( { :tool_id => nil } ) }
   scope           :specific_versions    , -> { where( "bourreau_id is not null and tool_id is not null" ) }
 
-
   api_attr_visible :version_name, :description, :tool_id, :bourreau_id, :group_id, :ncpus
 
   # To make it somewhat compatible with the ResourceAccess module,
@@ -334,7 +333,6 @@ class ToolConfig < ApplicationRecord
   #         dp:1234
   #      # My special overlay in CBRAIN
   #         userfile:1234
-  # Here file is aserver file, while dp and userfile indicate  dataprider with a given id
   def singularity_overlays_full_paths
     specs = self.singularity_overlays_specs.presence
     return [] if specs.blank?
@@ -435,7 +433,6 @@ class ToolConfig < ApplicationRecord
     return if specs.blank?
 
     specs = specs.split(/([\s,]|#.*$)+/).map(&:presence).compact
-
 
     # Iterate over each spec and validate them
     specs.each do |spec|

@@ -732,7 +732,7 @@ class ClusterTask < CbrainTask
       self.status == 'Setting Up'
     return false if self.workdir_archived?
 
-    self.tool_config.validate_overlays_specs if self.tool_config  # validate on setup
+    self.tool_config.validate_overlays_specs if self.tool_config  # validate and sync files on setup
 
     begin
       self.addlog("Setting Up.")
