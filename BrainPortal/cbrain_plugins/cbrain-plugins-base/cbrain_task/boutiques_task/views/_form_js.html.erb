@@ -375,6 +375,17 @@ $(function () {
 
   });
 
+  /* Changing a parameter's value automatically marks it as active, special case for chosen */
+  $(".tsk-prm-sel-mult").on('change', function(e,p){
+    var values = [...e.target.options].filter(option => option.selected).map(option => option.value);
+
+    $(this)
+      .closest('.tsk-prm')
+      .find('.tsk-prm-opt')
+      .prop('checked', values.length !== 0)
+      .trigger('activate.tsk-prm');
+  })
+
   /* Changing a parameter's value automatically marks it as active */
   parameters.delegate('.tsk-prm-in', 'focus activate.tsk-prm', function () {
     $(this)
