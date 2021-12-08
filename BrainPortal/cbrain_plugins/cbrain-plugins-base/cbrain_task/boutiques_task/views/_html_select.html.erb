@@ -57,6 +57,7 @@
         <% options.each do |val, label| %>
             <option data-value="<%= val %>"
             <%- if selected.include?(val.to_s) -%>
+              selected
               data-selected="true"
             <%- end -%>
             ><%= label %></option>
