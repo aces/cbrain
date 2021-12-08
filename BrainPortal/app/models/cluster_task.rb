@@ -2380,7 +2380,7 @@ docker_image_name=#{full_image_name.bash_escape}
 
 # Build a local wrapper script to run in a singularity container
 cat << \"SINGULARITYJOB\" > #{singularity_wrapper_basename.bash_escape}
-#!/bin/bash -l
+#!/bin/bash
 
 # Singularity wrapper script created automatically for #{self.class.to_s}
 #   #{self.class.revision_info.to_s}
