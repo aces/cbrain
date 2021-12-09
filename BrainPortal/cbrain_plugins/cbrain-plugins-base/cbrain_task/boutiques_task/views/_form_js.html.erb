@@ -498,6 +498,12 @@ $(function () {
     // Helper for extracting value lists
     var getVals = function( id, join ) {
       var vals = $('li.' + ('btq-' + id) + '.tsk-prm').find('.tsk-prm-in').map( function(){ return $(this).val(); } );
+      
+      if (vals.length === 0 ) {
+        var li = $('li.' + ('btq-' + id));
+        vals   = li.find(":selected").map(idx => li.find(":selected")[idx]['value']);
+      }
+
       // If not joining, leave
       if( ! join ){ return vals; }
       // Join the array if desired
