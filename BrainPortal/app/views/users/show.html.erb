@@ -168,15 +168,19 @@
        <% if prov_id %>
          <strong>Provider name:</strong> <%= prov_name %><br>
          <strong>Provider user:</strong> <%= prov_user %><br>
-         <%= link_to('Unlink this Globus identity', unlink_globus_path,
-               :class  => "button",
-               :method => :post,
-               :data   => { :confirm => "Are you sure you want to unlink your account with this Globus identity?" }
-             )
-         %>
+         <% if @user.id == current_user.id  # show button on user own page, hide on other users pages %>
+           <%= link_to('Unlink this Globus identity', unlink_globus_path,
+                 :class  => "button",
+                 :method => :post,
+                 :data   => { :confirm => "Are you sure you want to unlink your account with this Globus identity?" }
+               )
+           %>
+         <% end %>
        <% else %>
          (No Globus identity linked to your account)<br>
-         <%= link_to 'Link a Globus identity', @globus_uri, :class => 'button globus_button' %>
+         <% if @user.id == current_user.id  # Globus button works only on user own account %>
+           <%= link_to 'Link a Globus identity', @globus_uri, :class => 'button globus_button' %>
+         <% end %>
        <% end %>
     <% end %>
     <% end %>
