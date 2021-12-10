@@ -27,35 +27,116 @@ class NocController < ApplicationController
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   skip_before_action :check_if_locked
+  before_action      :fetch_ip_address
 
   # Provides a graphical snapshot of activity
 
   def daily
-   @range = 'Today' # for message at top
-   gather_info(Time.now.at_beginning_of_day)
-   render 'dashboard', :layout => false # full HTML layout already in view file
+    @range = 'Today' # for message at top
+    gather_info(Time.now.at_beginning_of_day)
+    render 'dashboard', :layout => false # full HTML layout already in view file
   end
 
   def weekly
-   @range = 'This Week' # for message at top
-   gather_info(Time.now.at_beginning_of_week)
-   render 'dashboard', :layout => false # full HTML layout already in view file
+    @range = 'This Week' # for message at top
+    gather_info(Time.now.at_beginning_of_week)
+    render 'dashboard', :layout => false # full HTML layout already in view file
   end
 
   def monthly
-   @range = 'This Month' # for message at top
-   gather_info(Time.now.at_beginning_of_month)
-   render 'dashboard', :layout => false # full HTML layout already in view file
+    @range = 'This Month' # for message at top
+    gather_info(Time.now.at_beginning_of_month)
+    render 'dashboard', :layout => false # full HTML layout already in view file
   end
 
   def yearly
-   @range = 'This Year' # for message at top
-   gather_info(Time.now.at_beginning_of_year)
-   render 'dashboard', :layout => false # full HTML layout already in view file
+    @range = 'This Year' # for message at top
+    gather_info(Time.now.at_beginning_of_year)
+    render 'dashboard', :layout => false # full HTML layout already in view file
+  end
+
+  # Provides growth stats over time
+
+  MONTHS_MAP = { '01' => 'Jan', '02' => 'Feb', '03' => 'Mar', '04' => 'Apr',
+                 '05' => 'May', '06' => 'Jun', '07' => 'Jul', '08' => 'Aug',
+                 '09' => 'Sep', '10' => 'Oct', '11' => 'Nov', '12' => 'Dec', }
+
+  def users
+    by       = params[:by].presence || 'year'
+    @country = params[:country]     || 'Canada'
+
+    creation_dates = User.order(:created_at)
+#creation_dates = Userfile.order(:created_at)
+    if by == 'month'
+      creation_dates = creation_dates.where("created_at > ?",11.months.ago)
+    end
+    creation_dates_tot     = creation_dates.pluck(:created_at)
+    creation_dates_country = creation_dates.where(:country => @country).pluck(:created_at)
+#creation_dates_country = creation_dates.where(:type => 'TextFile').pluck(:created_at)
+
+    count_method = (by == 'year') ? :dates_to_year_counts : :dates_to_month_counts
+    @user_counts_tot      = send(count_method, creation_dates_tot)
+    @user_counts_country  = send(count_method, creation_dates_country)
+
+    if @user_counts_tot.empty?
+      @user_counts_tot     = { "None" => 0 }
+      @user_counts_country = { "None" => 0 }
+    end
+
+    @max_val = @user_counts_tot.values.max || 0
+    @max_val = 1 if @max_val.zero?
+
+    render 'users', :layout => false # full HTML layout already in view file
+  end
+
+  def cpu
+    by = params[:by].presence || 'month'
+    cputimes = CputimeResourceUsageForCbrainTask.order(:created_at)
+
+    if by == 'year'
+      start_range  = cputimes.first.created_at.beginning_of_year
+      range_span   = 1.year
+      range_render = lambda { |x| x.strftime("%Y") }
+    else # if by == 'month'
+      cputimes     = cputimes.where("created_at > ?",11.months.ago)
+      start_range  = cputimes.first.created_at.beginning_of_month
+      range_span   = 1.month
+      range_render = lambda { |x| MONTHS_MAP[x.strftime("%m")] }
+    end
+
+    @cpu_tot = {}  # either "2021" => 123456 or "Feb" => 123456
+    while start_range < Time.now
+      end_range    = start_range + range_span
+      cpu_in_range = cputimes.where("created_at > ? and created_at < ?",start_range,end_range).sum(:value)
+      label        = range_render.(start_range)
+      @cpu_tot[label] = cpu_in_range
+#@cpu_tot[label] = rand(2) == 0 ? rand(1_000_000_000) : rand(1_000_000)
+      start_range = end_range
+    end
+
+    @max_val = @cpu_tot.values.max || 0
+    @max_val = 1 if @max_val.zero?
+
+    render 'cpu', :layout => false # full HTML layout already in view file
   end
 
   private
 
+  def dates_to_year_counts(timestamps)
+    keys   = timestamps.map { |d| d.strftime("%Y") }
+    counts = keys.hashed_partitions { |x| x }.transform_values { |v| v.size }
+#(2022..2029).to_a.each { |y| counts[y.to_s] = rand(25) }
+    counts
+  end
+
+  def dates_to_month_counts(timestamps)
+    keys   = timestamps.map { |d| d.strftime("%m") }
+    counts = keys.hashed_partitions { |x| x }.transform_values { |v| v.size }
+    counts = counts.transform_keys  { |x| MONTHS_MAP[x] }
+    counts
+  end
+
+  # This is for the main daily/monthly live monitor
   def gather_info(since_when) #:nodoc:
 
     # Bourreaux or DataProviders that are offline yet modified in the past
@@ -183,13 +264,15 @@ class NocController < ApplicationController
     end
     response.headers["Refresh"] = "#{@refresh_every};#{myurl}"
 
-    # Show IP address
-    reqenv = request.env || {}
-    @ip_address ||= cbrain_request_remote_ip rescue 'UnknownIP'
-
     # Number of exceptions
     @num_exceptions = ExceptionLog.where([ "created_at > ?", since_when ]).count
     @num_exceptions = rand(fake) if fake
+  end
+
+  # Show IP address
+  def fetch_ip_address
+    reqenv = request.env || {}
+    @ip_address ||= cbrain_request_remote_ip rescue 'UnknownIP'
   end
 
 end

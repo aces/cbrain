@@ -208,6 +208,10 @@ Rails.application.routes.draw do
   #get   "/noc/weekly",            :controller => :noc,    :action => :weekly
   #get   "/noc/monthly",           :controller => :noc,    :action => :monthly
   #get   "/noc/yearly",            :controller => :noc,    :action => :yearly
+  #get   "/noc/users",             :controller => :noc,    :action => :users
+  #get   "/noc/users/:by",         :controller => :noc,    :action => :users # :by is 'year' by default
+  #get   "/noc/cpu",               :controller => :noc,    :action => :cpu
+  #get   "/noc/cpu/:by",           :controller => :noc,    :action => :cpu # :by is 'month' by default
 
   # API description, by Swagger
   get   "/swagger",               :controller => :portal, :action => :swagger

@@ -44,7 +44,6 @@
 #   0,,,,,,
 #   933,"hello.txt",3433434,"TextFile","SomeDP","jsmith","mygroup"
 #
-
 class CbrainFileList < CSVFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:

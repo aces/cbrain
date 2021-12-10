@@ -4,10 +4,34 @@
   This file contains stylesheet info for the NOC summary pages.
 */
 
+/*
+#################################################
+# Common to all NOC displays
+#################################################
+*/
+
 /* Overrides cbrain.css */
 body {
   min-width: 5em;
 }
+
+.ip_address {
+  position: absolute;
+  bottom: 1em;
+  right: 1em;
+  color: #ccc;
+}
+
+/*
+#################################################
+# NOC main display:
+#
+# /noc/daily
+# /noc/weekly
+# /noc/monthly
+# /noc/yearly
+#################################################
+*/
 
 .daily {
   font-size: 24px;
@@ -93,9 +117,71 @@ fieldset span {
   display: inline-block;
 }
 
-.ip_address {
-  position: absolute;
-  bottom: 1em;
-  right: 1em;
-  color: #ccc;
+/*
+#################################################
+# NOC alternate displays:
+#
+# /noc/users/{year|month}
+# /noc/cpu/{year|month}
+#################################################
+*/
+
+.noc_users_table {
+  font-size: 30px;
+  display: table;
+  margin: auto;
+  padding-top: 1em;
 }
+
+.noc_users_row {
+  display: table-row;
+  text-align: center;
+}
+
+.noc_users_cell {
+  display: table-cell;
+  padding: 0.5em 0 1em 0;
+/* border: 1px solid red; */
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+}
+
+.noc_users_graph {
+  display: inline-block;
+  margin: auto;
+/* border: 1px solid blue; */
+}
+
+.noc_users_bar {
+  width: 1.5em;
+  margin: 0.5em 0 0.5em 0;
+  display: inline-block;
+}
+
+.noc_users_count {
+  display: inline;
+}
+
+.noc_users_header {
+  text-align: center;
+  padding: 0.5em;
+  display: table-cell;
+}
+
+.noc_users_header_key {
+  /* font-size: 24px; */
+  border: 4px solid black;
+  border-radius: 0.5em;
+  border-spacing: 0.5em;
+  padding: 0.2em 1em;
+}
+
+.noc_users_legend {
+  text-align: center;
+  padding: 0.5em;
+/* border: 1px solid green; */
+}
+
+.noc_users_legend span {
+}
+

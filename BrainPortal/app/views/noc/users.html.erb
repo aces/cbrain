@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2021
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title "User Growth" %>
+
+<head>
+  <title><%= RemoteResource.current_resource.name.presence || "CBRAIN" %><%= yield :title %></title>
+  <link rel="shortcut icon"                    type="image/png" href="/images/custom_logos/cb-small_white_blue.png">
+  <link rel="apple-touch-icon" sizes="96x96"   type="image/png" href="/images/custom_logos/cb-small_white_blue.png">
+  <link rel="apple-touch-icon" sizes="145x145" type="image/png" href="/images/custom_logos/cb-large_white_blue.png">
+  <%= stylesheet_link_tag 'cbrain' %>
+  <%= stylesheet_link_tag 'noc' %>
+</head>
+
+<body>
+<div class="daily">
+
+
+<h1>
+<%= image_tag("custom_logos/cbrain-large_white_alpha.png", :id => "header_logo") %>
+<%= yield :title %>
+</h1>
+
+<% max_height = 500 %>
+<% scale = lambda { |x| x * max_height / @max_val } %>
+
+<% total_color   = "blue" %>
+<% country_color = "red" %>
+<% intl_color    = "green" %>
+
+<div class="noc_users_table">
+  <div class="noc_users_row noc_users_legend">
+    <span style="color: <%= total_color %>">Total Users</span>,
+    <span style="color: <%= country_color %>">Users From <%= @country %></span>,
+    <span style="color: <%= intl_color %>">International Users</span>
+  </div>
+</div>
+
+<div class="noc_users_table">
+  <div class="noc_users_row">
+    <% @user_counts_tot.each do |key,tot_val| %>
+      <% country_val  = @user_counts_country[key] || 0 %>
+      <% intl_val     = tot_val - country_val %>
+      <div class="noc_users_cell">
+        <div class="noc_users_graph">
+          <span class="noc_users_bar" style="background-color: <%= total_color %>; height: <%= scale.(tot_val) %>px"></span><br>
+          <div class="noc_users_count"><%= tot_val %></div>
+        </div>
+        <div class="noc_users_graph">
+          <span class="noc_users_bar" style="background-color: <%= country_color %>; height: <%= scale.(country_val) %>px"></span><br>
+          <div class="noc_users_count"><%= country_val %></div>
+        </div>
+        <div class="noc_users_graph">
+          <span class="noc_users_bar" style="background-color: <%= intl_color %>; height: <%= scale.(intl_val) %>px"></span><br>
+          <div class="noc_users_count"><%= intl_val %></div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <div class="noc_users_row">
+    <% @user_counts_tot.each do |key,tot_val| %>
+      <div class="noc_users_header"><span class="noc_users_header_key"><%= key %></span></div>
+    <% end %>
+  </div>
+</div>
+
+</div>
+
+<div class="ip_address"><%= @ip_address %></div>
+</body>
+</html>
