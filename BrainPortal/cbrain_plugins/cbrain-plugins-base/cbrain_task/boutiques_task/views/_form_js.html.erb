@@ -164,6 +164,19 @@ $(function () {
     return targ.find('.tsk-prm-opt').prop('checked'); // Non-flag case
   }
 
+  // Helper function that checks whether a given parameter is active with specific values
+  var isActiveParamWithValues = function(disable_by, disabled_by_values) {
+    var targ = $( 'li.' + ("btq-" + disable_by) + '.tsk-prm' );
+
+    var current_values = ($(targ[0].querySelector('select')) && $(targ[0].querySelector('select')).val()) || 
+                            [targ[0].querySelector('input[type="hidden"]') && targ[0].querySelector('input[type="hidden"]').value]; 
+        current_values = current_values && current_values.filter(k => k !== "");
+
+    if (current_values && current_values.some(r => disabled_by_values.indexOf(r) >= 0)) {
+      return true;
+    }
+  }
+
   // Helper for checking array containment because JS won't let you use 'in' for arrays in a useful way
   var arrHas = function(arr,val){
     return ($.inArray(val,arr) > -1)
@@ -239,14 +252,12 @@ $(function () {
 
     affectedIds = [...new Set(affectedIds)];
 
-    console.log(affectedIds);
-
     // Iterate over parameters, enabling and disabling as needed
     affectedIds.forEach( function( key ) {
 
       // Handle targeted disabling
       var disablers = [];
-      if( key in disabledByMap ){
+      if( key in disabledByMap){
         var vals = disabledByMap[key], len = vals.length;
         // Look for disabling parameters
         for(var i = 0; i < len; ++i){
@@ -254,6 +265,16 @@ $(function () {
             disablers.push(vals[i]);
           }
         }
+      }
+
+      if (key in disabledByValue) {
+        var disabled_by = disabledByValue[key];
+        Object.keys(disabled_by).map ( (disable_by) => {
+          var disabled_by_values = disabledByValue[key][disable_by];
+          if (isActiveParamWithValues(disable_by, disabled_by_values)) {
+            disablers.push(disable_by);
+          }
+        })
       }
 
       // Handle parameter requirements (excludes parameters with mutual requirement)
@@ -275,6 +296,11 @@ $(function () {
       // Disable the parameter is any of its disablers are on
       var target = $( 'li.' + ('btq-' + key) + '.tsk-prm' );
       if(disablers.length != 0){
+        // console.log("idToName");
+        // console.log(idToName);
+        // console.log("--map--");
+        // console.log(disablers.map(idToName).join(", "));
+
         toggleFunctionality(target, true, "Disabled by " + disablers.map(idToName).join(", "));
       }
       // Disable the parameter if it is missing any of its requirements
