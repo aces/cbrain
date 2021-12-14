@@ -222,6 +222,15 @@ $(function () {
         target.find('.tsk-prm-lbl').append( msg );
       }
       else {
+        // enable chosen-container
+        if (target.find('.chosen-container')[0]){
+          target.find('.chosen-container')[0].style.pointerEvents = 'auto';
+        }
+        // Get back values for chosen param
+        if (target.find('.tsk-prm-sel-mult')[1]) {
+          target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', $(target.find('.tsk-prm-sel-mult')[1]).val() !== 0); // check checkboxes
+        }
+
         target.find( iconClasses ).removeClass('ui-state-disabled') // put icons in enabled state
       }
     }
