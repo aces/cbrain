@@ -170,11 +170,9 @@ $(function () {
 
     var current_values = ($(targ[0].querySelector('select')) && $(targ[0].querySelector('select')).val()) || 
                             [targ[0].querySelector('input[type="hidden"]') && targ[0].querySelector('input[type="hidden"]').value]; 
-        current_values = current_values && current_values.filter(k => k !== "");
+        current_values = (current_values && current_values.filter(k => k !== "")) || [];
 
-    if (current_values && current_values.some(r => disabled_by_values.indexOf(r) >= 0)) {
-      return true;
-    }
+    return current_values.filter(value => disabled_by_values.includes(value));
   }
 
   // Helper for checking array containment because JS won't let you use 'in' for arrays in a useful way
@@ -224,23 +222,6 @@ $(function () {
         target.find('.tsk-prm-lbl').append( msg );
       }
       else {
-        // enable chosen-container
-        // if (target.find('.chosen-container')[0]){
-        //   target.find('.chosen-container')[0].style.pointerEvents = 'auto';
-        // }
-        // Get back values for chosen param
-        // if (target.find('.tsk-prm-sel-mult')[1] && ids_values_tracker[target.find('.tsk-prm-sel-mult')[1].id]) {
-        //   var task_prm_sel = ids_values_tracker[target.find('.tsk-prm-sel-mult')[1].id];
-        //   target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', task_prm_sel.length !== 0); // check checkboxes
-        // }
-        // Get back values for regular param
-        // target.find('.tsk-prm-in').map(i => {
-        //   if (target.find('.tsk-prm-in')[i] && ids_values_tracker[target.find('.tsk-prm-in')[i].id]) {
-        //     target.find('.tsk-prm-in')[i].value = ids_values_tracker[target.find('.tsk-prm-in')[i].id];
-        //     target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', true); // check checkboxes
-        //   }
-        // })
-
         target.find( iconClasses ).removeClass('ui-state-disabled') // put icons in enabled state
       }
     }
@@ -262,7 +243,7 @@ $(function () {
         // Look for disabling parameters
         for(var i = 0; i < len; ++i){
           if( isActiveParam(vals[i]) ){
-            disablers.push(vals[i]);
+            disablers.push(namesMap[vals[i]]);
           }
         }
       }
@@ -271,8 +252,10 @@ $(function () {
         var disabled_by = disabledByValue[key];
         Object.keys(disabled_by).map ( (disable_by) => {
           var disabled_by_values = disabledByValue[key][disable_by];
-          if (isActiveParamWithValues(disable_by, disabled_by_values)) {
-            disablers.push(disable_by);
+          var specific_values = isActiveParamWithValues(disable_by, disabled_by_values)
+          if (specific_values.length !== 0) {
+            var message = namesMap[disable_by] + " (" + specific_values.join(", ") + ")"
+            disablers.push(message);
           }
         })
       }
@@ -296,12 +279,7 @@ $(function () {
       // Disable the parameter is any of its disablers are on
       var target = $( 'li.' + ('btq-' + key) + '.tsk-prm' );
       if(disablers.length != 0){
-        // console.log("idToName");
-        // console.log(idToName);
-        // console.log("--map--");
-        // console.log(disablers.map(idToName).join(", "));
-
-        toggleFunctionality(target, true, "Disabled by " + disablers.map(idToName).join(", "));
+        toggleFunctionality(target, true, "Disabled by " + disablers.join(", "));
       }
       // Disable the parameter if it is missing any of its requirements
       else if(missingReqs.length != 0){
