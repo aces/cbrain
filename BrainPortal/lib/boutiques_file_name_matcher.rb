@@ -53,7 +53,7 @@ module BoutiquesFileNameMatcher
         .compact
         .all? do |userfileid|
           file = Userfile.find(userfileid)
-          file.name.match(regex)
+          file.is_a?(CbrainFileList) || file.name.match(regex) # we don't validate the names of CbrainFileLists
         end
       if ! found_match
         params_errors.add(input.cb_invoke_name, "does not have a proper name (should match #{regex.inspect})")
