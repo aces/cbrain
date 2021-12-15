@@ -390,6 +390,9 @@ $(function () {
 
 
   /*** Optional parameters ***/
+  parameters.delegate('.tsk-prm-sel', 'click', function(){
+    handleDisablesAndRequires();
+  });
 
   /* Clicking on the parameter's checkbox toggles the parameter's state */
   parameters.delegate('.tsk-prm-opt, .tsk-prm-chk, .tsk-prm-sel, .tsk-prm-sel-mult', 'change activate.tsk-prm', function () {  
