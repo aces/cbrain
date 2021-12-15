@@ -69,9 +69,31 @@ makeReceiverActionMap = lambda do |action|
   end
 end
 
+# Generates a map from id to [ids affecting the key id with values] for a given action name
+makeReceiverWithValueActionMap = lambda do |action|
+  tmp_doesMap = makeActorActionMap.(action)
+  doesMap     = {}
+
+  tmp_doesMap.each do |disable_by, value_disables|
+    value_disables.each do |value, ids|
+      ids.each do |id|
+        doesMap[id] = doesMap[id] || {};
+        if (doesMap[id] && doesMap[id][disable_by])
+          doesMap[id][disable_by].push(value)
+        elsif (doesMap[id]) 
+          doesMap[id][disable_by] = [value]
+        end
+      end
+    end
+  end
+  
+  doesMap
+end
+
 # The actual maps: idIn -> [ids disabled/required by idIn]
-disabledBy_map = makeReceiverActionMap.("disables-inputs")
-requires_map   = makeActorActionMap.("requires-inputs")
+requires_map     = makeActorActionMap.("requires-inputs")
+disabledBy_map   = makeReceiverActionMap.("disables-inputs")
+disabledBy_value = makeReceiverWithValueActionMap.("value-disables")
 
 # Implement dynamic mutual exclusion within a group by pairwise adding to the disables map
 for group in (@descriptor.groups || [])
@@ -128,6 +150,7 @@ $(function () {
   var namesMap          = <%= json.( names_map ) %>;
   var requiresMap       = <%= json.( requires_map ) %>;
   var disabledByMap     = <%= json.( disabledBy_map ) %>;
+  var disabledByValue   = <%= json.( disabledBy_value ) %>;
 
   // Function to map ids to names to make the messages a little prettier
   var idToName = function(x){ return namesMap[x]; }
@@ -139,6 +162,17 @@ $(function () {
       return targ.find('.tsk-prm-chk').prop('checked');
     }
     return targ.find('.tsk-prm-opt').prop('checked'); // Non-flag case
+  }
+
+  // Helper function that checks whether a given parameter is active with specific values
+  var isActiveParamWithValues = function(disable_by, disabled_by_values) {
+    var targ = $( 'li.' + ("btq-" + disable_by) + '.tsk-prm' );
+
+    var current_values = ($(targ[0].querySelector('select')) && $(targ[0].querySelector('select')).val()) || 
+                            [targ[0].querySelector('input[type="hidden"]') && targ[0].querySelector('input[type="hidden"]').value]; 
+        current_values = (current_values && current_values.filter(k => k !== "")) || [];
+
+    return current_values.filter(value => disabled_by_values.includes(value));
   }
 
   // Helper for checking array containment because JS won't let you use 'in' for arrays in a useful way
@@ -159,13 +193,15 @@ $(function () {
 
     // Function for disabling/enabling parameters
     var toggleFunctionality = function(target, shouldDisable, greyOutMsg) {
-      var lightGrey   = '#d3d3d3'; // Firefox does not grey out disabled html elements
+      var lightGrey     = '#d3d3d3'; // Firefox does not grey out disabled html elements
+      var lightGrey_img = 'linear-gradient(#d3d3d3 1%, #d3d3d3 15%)';
       // Selector classes
-      var toGreyOut   = '.tsk-prm-in, .tsk-prm-opt-lbl, .tsk-prm-chk-lbl, .tsk-prm-sel';
-      var toDisable   = '.tsk-prm-in, .tsk-prm-opt, .tsk-prm-chk';
-      var iconClasses = '.tsk-prm-opt-icon.ui-icon-check, .tsk-prm-sel-icon, .tsk-prm-add.ui-icon';
+      var toGreyOut     = '.tsk-prm-in, .tsk-prm-opt-lbl, .tsk-prm-chk-lbl, .tsk-prm-sel, .chosen-choices';
+      var toDisable     = '.tsk-prm-in, .tsk-prm-opt, .tsk-prm-chk';
+      var iconClasses   = '.tsk-prm-opt-icon.ui-icon-check, .tsk-prm-sel-icon, .tsk-prm-add.ui-icon';
       // Disable and grey out text, file, & flag inputs, as well as their checkboxes
       target.find( toGreyOut ).css('background-color', shouldDisable ? lightGrey : '');
+      target.find( toGreyOut ).css('background-image', shouldDisable ? lightGrey_img : '');
       target.find( toDisable ).attr('disabled', shouldDisable);
       // For lists and files, toggle the ability to add more entries or change selections
       target.find('.tsk-prm-add.ui-icon,.tsk-prm-sel').css("pointer-events",shouldDisable?"none":"auto");
@@ -173,38 +209,65 @@ $(function () {
       target.find('.tsk-prm-lbl').find('label.disable-msg').remove();
       // Handle properties treated differently in each toggle case
       if( shouldDisable ){
+        // disable chosen-container
+        if (target.find('.chosen-container')[0]){
+         target.find('.chosen-container')[0].style.pointerEvents = 'none';
+        }
         target.find( iconClasses ).addClass('ui-state-disabled'); // disable icons
         target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', false); // uncheck checkboxes
         target.find('.tsk-prm-in').val(''); // wipe textbox input areas
-        target.find('ul.tsk-prm-list').find('li').has('.ui-icon-minus').remove(); // rm list subitems
+        // target.find('ul.tsk-prm-list').find('li').has('.ui-icon-minus').remove(); // rm list subitems
         // Write warning message
         var msg   = '<label class="disable-msg" ' + warningStyle + '>' + greyOutMsg  + '</label>';
         target.find('.tsk-prm-lbl').append( msg );
       }
       else {
+        // Enable chosen-container
+        if (target.find('.chosen-container')[0]){
+          target.find('.chosen-container')[0].style.pointerEvents = 'auto';
+        }
+        // Get back values for chosen param
+        if (target.find('.tsk-prm-sel-mult')[1]) {
+          var values = $(target.find('.tsk-prm-sel-mult')[1]).val() || [];
+          target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', values.length !== 0 ); // check checkboxes
+        }
+
         target.find( iconClasses ).removeClass('ui-state-disabled') // put icons in enabled state
       }
     }
 
     // Get combined keyset of potentially affected parameters
-    var affectedIds = $.unique(Object.keys(disabledByMap).concat(Object.keys(requiresMap)));
-    // Run twice because the order matters: a param can be wrongly disabled if it is processed before its
-    // disabler is deactivated
-    affectedIds = affectedIds.concat( affectedIds.slice() )
+    var affectedIds = $.unique(Object.keys(disabledByMap).
+                        concat(Object.keys(disabledByValue).
+                        concat(Object.keys(requiresMap))));
+
+    affectedIds = [...new Set(affectedIds)];
 
     // Iterate over parameters, enabling and disabling as needed
     affectedIds.forEach( function( key ) {
 
       // Handle targeted disabling
       var disablers = [];
-      if( key in disabledByMap ){
+      if( key in disabledByMap){
         var vals = disabledByMap[key], len = vals.length;
         // Look for disabling parameters
         for(var i = 0; i < len; ++i){
           if( isActiveParam(vals[i]) ){
-            disablers.push(vals[i]);
+            disablers.push(namesMap[vals[i]]);
           }
         }
+      }
+
+      if (key in disabledByValue) {
+        var disabled_by = disabledByValue[key];
+        Object.keys(disabled_by).map ( (disable_by) => {
+          var disabled_by_values = disabledByValue[key][disable_by];
+          var specific_values = isActiveParamWithValues(disable_by, disabled_by_values)
+          if (specific_values.length !== 0) {
+            var message = namesMap[disable_by] + " (" + specific_values.join(", ") + ")"
+            disablers.push(message);
+          }
+        })
       }
 
       // Handle parameter requirements (excludes parameters with mutual requirement)
@@ -226,7 +289,7 @@ $(function () {
       // Disable the parameter is any of its disablers are on
       var target = $( 'li.' + ('btq-' + key) + '.tsk-prm' );
       if(disablers.length != 0){
-        toggleFunctionality(target, true, "Disabled by " + disablers.map(idToName).join(", "));
+        toggleFunctionality(target, true, "Disabled by " + disablers.join(", "));
       }
       // Disable the parameter if it is missing any of its requirements
       else if(missingReqs.length != 0){
@@ -327,9 +390,12 @@ $(function () {
 
 
   /*** Optional parameters ***/
+  parameters.delegate('.tsk-prm-sel', 'click', function(){
+    handleDisablesAndRequires();
+  });
 
   /* Clicking on the parameter's checkbox toggles the parameter's state */
-  parameters.delegate('.tsk-prm-opt, .tsk-prm-chk', 'change activate.tsk-prm', function () {
+  parameters.delegate('.tsk-prm-opt, .tsk-prm-chk, .tsk-prm-sel, .tsk-prm-sel-mult', 'change activate.tsk-prm', function () {  
     var opt   = $(this),
         param = opt.parent();
 
@@ -374,6 +440,18 @@ $(function () {
     handleNumberConstraints();
 
   });
+
+  /* Changing a parameter's value automatically marks it as active, special case for chosen */
+  $(".tsk-prm-sel-mult").on('change', function(e,p){
+    if ($(this)[0] && $(this)[0].type && $(this)[0].type.match("select-multiple")){
+      var values = [...e.target.options].filter(option => option.selected).map(option => option.value);
+
+      $(this)
+        .closest('.tsk-prm')
+        .find('.tsk-prm-opt, .tsk-prm-chk')
+        .prop('checked', values !== 0)
+    }
+  })
 
   /* Changing a parameter's value automatically marks it as active */
   parameters.delegate('.tsk-prm-in', 'focus activate.tsk-prm', function () {
@@ -487,6 +565,12 @@ $(function () {
     // Helper for extracting value lists
     var getVals = function( id, join ) {
       var vals = $('li.' + ('btq-' + id) + '.tsk-prm').find('.tsk-prm-in').map( function(){ return $(this).val(); } );
+      
+      if (vals.length === 0 ) {
+        var li = $('li.' + ('btq-' + id));
+        vals   = li.find(":selected").map(idx => li.find(":selected")[idx]['value']);
+      }
+
       // If not joining, leave
       if( ! join ){ return vals; }
       // Join the array if desired

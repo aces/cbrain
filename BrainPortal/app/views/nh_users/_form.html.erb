@@ -114,11 +114,13 @@
       <% glob_user = @user.meta[:globus_preferred_username] %>
       <% glob_prov = @user.meta[:globus_provider_name] %>
       <% if glob_user.blank? %>
-        <p class="btn-solid globus">
-          <%= link_to @globus_uri, :class => "" do %>
-            Connect your NeuroHub account to a Globus identity provider
-          <% end %>
-        </p>
+        <% if @user.id == current_user.id  # show button only on user own page, hide on other users pages %>
+          <p class="btn-solid globus">
+            <%= link_to @globus_uri, :class => "" do %>
+              Connect your NeuroHub account to a Globus identity provider
+            <% end %>
+          </p>
+        <% end %>
         <p class="field_note">
           Globus is a non-profit service for secure, reliable research data management.
           <br>
@@ -131,14 +133,16 @@
         </p>
       <% end %>
       <% if glob_user.present? %>
-        <p class="btn-solid globus bg-warning-bg">
-          <%= link_to nh_unlink_globus_path,
-              :class => "",
-              :method  => :post,
-              :data    => { :confirm => "Are you sure you want to unlink your account from this Globus identity?" } do %>
-              Remove this Globus identity from your NeuroHub account
-          <% end %>
-        </p>
+        <% if @user.id == current_user.id  # show button only on user own page %>
+          <p class="btn-solid globus bg-warning-bg">
+            <%= link_to nh_unlink_globus_path,
+                :class => "",
+                :method  => :post,
+                :data    => { :confirm => "Are you sure you want to unlink your account from this Globus identity?" } do %>
+                Remove this Globus identity from your NeuroHub account
+            <% end %>
+          </p>
+        <% end %>
       <% end %>
     </fieldset>
   <% end %>
