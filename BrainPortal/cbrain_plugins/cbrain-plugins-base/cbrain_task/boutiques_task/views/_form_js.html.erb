@@ -222,13 +222,14 @@ $(function () {
         target.find('.tsk-prm-lbl').append( msg );
       }
       else {
-        // enable chosen-container
+        // Enable chosen-container
         if (target.find('.chosen-container')[0]){
           target.find('.chosen-container')[0].style.pointerEvents = 'auto';
         }
         // Get back values for chosen param
         if (target.find('.tsk-prm-sel-mult')[1]) {
-          target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', $(target.find('.tsk-prm-sel-mult')[1]).val() !== 0); // check checkboxes
+          var values = $(target.find('.tsk-prm-sel-mult')[1]).val() || [];
+          target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', values.length !== 0 ); // check checkboxes
         }
 
         target.find( iconClasses ).removeClass('ui-state-disabled') // put icons in enabled state
@@ -439,13 +440,14 @@ $(function () {
 
   /* Changing a parameter's value automatically marks it as active, special case for chosen */
   $(".tsk-prm-sel-mult").on('change', function(e,p){
-    var values = [...e.target.options].filter(option => option.selected).map(option => option.value);
+    if ($(this)[0] && $(this)[0].type && $(this)[0].type.match("select-multiple")){
+      var values = [...e.target.options].filter(option => option.selected).map(option => option.value);
 
-    $(this)
-      .closest('.tsk-prm')
-      .find('.tsk-prm-opt')
-      .prop('checked', values.length !== 0)
-      .trigger('activate.tsk-prm');
+      $(this)
+        .closest('.tsk-prm')
+        .find('.tsk-prm-opt, .tsk-prm-chk')
+        .prop('checked', values !== 0)
+    }
   })
 
   /* Changing a parameter's value automatically marks it as active */
