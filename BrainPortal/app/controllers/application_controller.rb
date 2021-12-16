@@ -226,8 +226,16 @@ class ApplicationController < ActionController::Base
     stats                  = cr_meta[:stats] || {}
 
     # Fill the stats structure, initializing the levels as we go.
-    stats[client_type]          ||= {}
-    contr2action                  = stats[client_type]
+
+    # Simple success/failure counts by user agents
+    stats['UserAgents']                              ||= {}
+    stats['UserAgents'][client_type]                 ||= [0,0]
+    stats['UserAgents'][client_type][success ? 0 : 1] += 1
+
+    # As of 2022 we don't record controller and actions by user agent; instead
+    # they all go under 'AllAgents'
+    stats['AllAgents']          ||= {}
+    contr2action                  = stats['AllAgents']
     contr2action[controller]    ||= {}
     action2count                  = contr2action[controller]
     action2count[action]        ||= [0,0]

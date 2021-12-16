@@ -425,17 +425,16 @@ class Userfile < ApplicationRecord
 
   # Remove parent relationship
   def remove_parent
-    self.parent_id = nil
-    self.save
+    self.update_column(:parent_id, nil) if self.id && self.parent_id
   end
 
   # List all descendants of the calling userfile.
   def descendants(seen = {})
     result     = []
-    seen[self] = true
+    seen[self.id] = true
     self.children.each do |child|
-      next if seen[child] # defensive, against loops
-      seen[child] = true
+      next if seen[child.id] # defensive, against loops
+      seen[child.id] = true
       result << child
       result += child.descendants(seen)
     end
