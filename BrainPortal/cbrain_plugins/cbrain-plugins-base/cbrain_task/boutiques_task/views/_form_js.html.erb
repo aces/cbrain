@@ -155,6 +155,9 @@ $(function () {
   // Function to map ids to names to make the messages a little prettier
   var idToName = function(x){ return namesMap[x]; }
 
+  // To keep track of values when disabled
+  var ids_values_tracker = {};
+
   // Helper function that checks whether a given parameter is active
   var isActiveParam = function(id) {
     var targ = $( 'li.' + ("btq-" + id) + '.tsk-prm' );
@@ -209,9 +212,17 @@ $(function () {
       target.find('.tsk-prm-lbl').find('label.disable-msg').remove();
       // Handle properties treated differently in each toggle case
       if( shouldDisable ){
+        // Keep values for chosen
+        if (target.find('.tsk-prm-sel-mult')) {
+          var select = target.find("select");
+          if (select.length === 1) {
+            ids_values_tracker[select[0].id] = select.val();
+            select.val([]);
+          }
+        }
         // disable chosen-container
         if (target.find('.chosen-container')[0]){
-         target.find('.chosen-container')[0].style.pointerEvents = 'none';
+          target.find('.chosen-container')[0].style.pointerEvents = 'none';
         }
         target.find( iconClasses ).addClass('ui-state-disabled'); // disable icons
         target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', false); // uncheck checkboxes
@@ -227,11 +238,14 @@ $(function () {
           target.find('.chosen-container')[0].style.pointerEvents = 'auto';
         }
         // Get back values for chosen param
-        if (target.find('.tsk-prm-sel-mult')[1]) {
-          var values = $(target.find('.tsk-prm-sel-mult')[1]).val() || [];
-          target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', values.length !== 0 ); // check checkboxes
+        if (target.find('.tsk-prm-sel-mult')) {
+          var select = target.find("select");
+          if (select.length === 1) {
+            var values = select.val() || ids_values_tracker[select[0].id];
+            select.val(values);
+            target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', values && values.length !== 0 ? true : false ); // check checkboxes
+          }
         }
-
         target.find( iconClasses ).removeClass('ui-state-disabled') // put icons in enabled state
       }
     }
@@ -393,6 +407,11 @@ $(function () {
   parameters.delegate('.tsk-prm-sel', 'click', function(){
     handleDisablesAndRequires();
   });
+
+  /*** chosen ***/
+  $('.tsk-prm-sel-mult').change( function() {
+    ids_values_tracker[$(this)[0].id] = $(this).val();
+  })
 
   /* Clicking on the parameter's checkbox toggles the parameter's state */
   parameters.delegate('.tsk-prm-opt, .tsk-prm-chk, .tsk-prm-sel, .tsk-prm-sel-mult', 'change activate.tsk-prm', function () {  
