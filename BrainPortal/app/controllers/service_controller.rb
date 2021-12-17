@@ -67,11 +67,11 @@ class ServiceController < ApplicationController
 
   # Return information about the usage of the platform.
   def stats
-    stats             = RemoteResource.current_resource.meta[:stats] || {}
-    (stats_by_client,stats_by_contr_action) = compile_total_stats(stats)
+    stats                 = RemoteResource.current_resource.meta[:stats] || {}
+    stats_by_contr_action = compile_total_stats(stats)
 
-    @summary_stats                 = Hash[stats_by_client.collect { |client, counts| [ client , counts.sum ] } ]
-    @last_reset                    = (RemoteResource.current_resource.meta.md_for_key(:stats).created_at || Time.at(0)).utc.iso8601
+    @summary_stats                 = stats['UserAgents'].dup
+    @last_reset                    = (RemoteResource.current_resource.meta.md_for_key(:stats).try(:created_at) || Time.now).utc.iso8601
     authenticated_actions          = count_authenticated_actions(stats_by_contr_action)
     @summary_stats["TotalActions"] = authenticated_actions
     @summary_stats["lastReset"]    = @last_reset
@@ -157,7 +157,9 @@ class ServiceController < ApplicationController
   # Return information about the usage of the platform.
   def detailed_stats
     @stats             = RemoteResource.current_resource.meta[:stats] || {}
-    (@stats_by_client,@stats_by_contr_action) = compile_total_stats(@stats)
+    @stats_by_client   = @stats[:UserAgents] || {}
+    @stats_by_contr_action = compile_total_stats(@stats)
+
     @last_reset        = (RemoteResource.current_resource.meta.md_for_key(:stats).created_at || Time.at(0)).utc.iso8601
     @stats[:lastReset] = @last_reset
 
@@ -175,29 +177,21 @@ class ServiceController < ApplicationController
   # secondary stats: the sums by clients, and
   # the sums by pair "controller,service".
   def compile_total_stats(stats={}) #:nodoc:
-    stats_by_client       = {}
     stats_by_contr_action = {}
 
-    stats.each do |client, by_controller|
-      next unless by_controller.is_a?(Hash)
-      by_controller.each do |controller, by_action|
-        next unless by_action.is_a?(Hash)
-        by_action.each do |action, counts|
-          next unless counts.is_a?(Array)
-          # By client
-          stats_by_client[client]    ||= [0,0]
-          stats_by_client[client][0]  += counts[0]
-          stats_by_client[client][1]  += counts[1]
-          # By controller and action
-          contr_action = "#{controller},#{action}"
-          stats_by_contr_action[contr_action]      ||= [0,0]
-          stats_by_contr_action[contr_action][0] += counts[0]
-          stats_by_contr_action[contr_action][1] += counts[1]
-        end
+    # stats['AllAgents'] is { 'controller' => { 'action' => [1,2] , ... }, ... }
+    all_agents = stats['AllAgents'] || stats[:AllAgents] || {}
+    all_agents.each do |controller, by_action|
+      by_action.each do |action, counts|
+        # By controller and action
+        contr_action = "#{controller},#{action}"
+        stats_by_contr_action[contr_action]   ||= [0,0]
+        stats_by_contr_action[contr_action][0] += counts[0]
+        stats_by_contr_action[contr_action][1] += counts[1]
       end
     end
 
-    return stats_by_client,stats_by_contr_action
+    return stats_by_contr_action
   end
 
   # Returns a count of all actions that require
@@ -210,7 +204,6 @@ class ServiceController < ApplicationController
   def count_authenticated_actions(stats_by_contr_action = {}) #:nodoc:
     tot = 0;
     stats_by_contr_action.keys.sort.each do |contr_action|
-      counts            = stats_by_contr_action[contr_action] || [0,0]
       next if contr_action == 'portal,welcome'
       next if contr_action == 'portal,credits'
       next if contr_action == 'portal,about_us'
@@ -218,6 +211,9 @@ class ServiceController < ApplicationController
       next if controller   == 'service'  # all of them
       next if controller   == 'controls' # show
       next if controller   == 'sessions' # new, show, destroy, create
+      next if controller   == 'nh_sessions'
+      next if controller   == 'noc'
+      counts = stats_by_contr_action[contr_action] || [0,0]
       tot += counts[0] + counts[1] # OK + FAIL
     end
     tot

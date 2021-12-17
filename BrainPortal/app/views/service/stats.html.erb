@@ -38,11 +38,11 @@
       </tr>
       <!-- each row -->
       <% @summary_stats.keys.sort.each do |client| %>
-        <% next if client == "TotalActions" || client == "lastReset" %>
-        <% count = @summary_stats[client] %>
+        <% counts = @summary_stats[client] %>
+        <% next unless counts.is_a?(Array) && counts.size == 2 %>
         <tr>
           <td><%= client %></td>
-          <td><%= count %></td>
+          <td><%= counts[0] + counts[1] %></td>
         </tr>
       <% end %>
     </table>

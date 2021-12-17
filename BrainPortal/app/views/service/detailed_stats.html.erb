@@ -27,43 +27,6 @@
   <h1>CBRAIN Web Service Statistics</h1>
 
   <div class="generalbox">
-    <table class="report">
-      <!-- header -->
-      <tr>
-        <th colspan="5" class="supertitle">Number of Rails actions triggered</th>
-      </tr>
-      <tr>
-        <th>Client Type</th>
-        <th>Controller</th>
-        <th>Action</th>
-        <th>Successes</th>
-        <th>Failures</th>
-      </tr>
-      <!-- each row -->
-      <% @stats.keys.sort.each do |client| # CLIENT LOOP %>
-        <% by_controller = @stats[client] %>
-        <% next unless by_controller.is_a?(Hash) %>
-        <% by_controller.keys.sort.each do |controller| # CONTROLLER LOOP %>
-          <% by_action = by_controller[controller] %>
-          <% next unless by_action.is_a?(Hash) %>
-          <% by_action.keys.sort.each do |action|  # ACTION LOOP %>
-            <% counts = by_action[action]  # pair of two counts: [2,3] means two successes, 3 failures %>
-            <tr>
-              <td><%= client %></td>
-              <td><%= controller %></td>
-              <td><%= action %></td>
-              <td><%= counts[0] %></td>
-              <td><%= counts[1] %></td>
-            </tr>
-          <% end %>
-        <% end %>
-      <% end %>
-    </table>
-  </div>
-
-  <div class="box_spacer"></div>
-
-  <div class="generalbox">
     <table>
       <!-- header -->
       <tr>
