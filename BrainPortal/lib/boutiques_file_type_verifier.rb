@@ -53,7 +53,7 @@ module BoutiquesFileTypeVerifier
         .compact
         .all? do |userfileid|
           file = Userfile.find(userfileid)
-          types.any? { |type| file.is_a?(type) }
+          file.is_a?(CbrainFileList) || types.any? { |type| file.is_a?(type) }
         end
       if ! found_match
         params_errors.add(input.cb_invoke_name, "is not of the proper type (should be #{typenames.join(",")})")
