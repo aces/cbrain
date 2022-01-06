@@ -231,8 +231,13 @@ class BoutiquesClusterTask < ClusterTask
       end
 
       paths = Dir.glob(globpath)
-      if output.optional && paths.empty?
-        self.addlog("Skipped optional missing output file '#{globpath}' for output #{output.id}")
+      if paths.empty?
+        if output.optional
+          self.addlog("Skipped optional missing output file '#{globpath}' for output #{output.id}")
+          next
+        end
+        self.addlog("Error: couldn't find any output files matching the pattern '#{globpath}' for output #{output.id}")
+        all_ok = false
         next
       end
 
@@ -249,7 +254,7 @@ class BoutiquesClusterTask < ClusterTask
         userfile_class ||= ( File.directory?(path) ? FileCollection : SingleFile )
 
         # Add a run ID to the file name, to make sure the file doesn't exist.
-        name.sub!( /(\.\w+(\.gz|\.z|\.bz2|\.zip)?)?\z/i )  { |ext| "-#{self.run_id}" + ext }
+        name.sub!( /(\.\w+(\.gz|\.z|\.bz2|\.zip)?)?\z/i ) { |ext| "-#{self.run_id}" + ext }
 
         # Save the file (possible overwrite if race condition)
         outfile = safe_userfile_find_or_new(userfile_class, :name => name)
