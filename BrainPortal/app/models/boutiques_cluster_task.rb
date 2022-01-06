@@ -226,8 +226,8 @@ class BoutiquesClusterTask < ClusterTask
       substitutions_by_tokens.each do |key,val|
         next if val.is_a?(Array) # not supported; what would it mean?
         val = val.to_s
-        to_strip.each { |str| val.sub!(/\Q#{str}\z/,"") }
-        globpath.gsub!(key, val)
+        to_strip.each { |str| val = val.sub(/#{Regexp.quote(str)}\z/,"") }
+        globpath = globpath.gsub(key, val)
       end
 
       paths = Dir.glob(globpath)
