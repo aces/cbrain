@@ -91,7 +91,7 @@ class NocController < ApplicationController
     end.to_h
 
     # Cumulative counts
-    cumul=0;
+    cumul = (by == 'year') ? 0 : User.where("created_at < ?",11.months.ago).count
     @user_counts_cumul = @user_counts_tot.map do |key,val|
       cumul += val; [ key, cumul ]
     end.to_h
