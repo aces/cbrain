@@ -69,6 +69,7 @@ class NocController < ApplicationController
 #creation_dates = Userfile.order(:created_at)
     if by == 'month'
       creation_dates = creation_dates.where("created_at > ?",11.months.ago)
+#creation_dates = User.order(:created_at) # debug, all time; month ordering and counts will all be merged weirdly
     end
     creation_dates_tot     = creation_dates.pluck(:created_at)
     creation_dates_country = creation_dates.where(:country => @country).pluck(:created_at)
@@ -83,7 +84,19 @@ class NocController < ApplicationController
       @user_counts_country = { "None" => 0 }
     end
 
-    @max_val = @user_counts_tot.values.max || 0
+    # Counts for all countries other than the selected one
+    # This is basically tot - country
+    @user_counts_other = @user_counts_tot.map do |key,val|
+       [ key, val - (@user_counts_country[key] || 0) ]
+    end.to_h
+
+    # Cumulative counts
+    cumul=0;
+    @user_counts_cumul = @user_counts_tot.map do |key,val|
+      cumul += val; [ key, cumul ]
+    end.to_h
+
+    @max_val = @user_counts_cumul.values.max || 0
     @max_val = 1 if @max_val.zero?
 
     render 'users', :layout => false # full HTML layout already in view file
