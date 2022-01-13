@@ -133,6 +133,33 @@ class NocController < ApplicationController
     render 'cpu', :layout => false # full HTML layout already in view file
   end
 
+  # /noc/tools/:mode
+  # /noc/tools/count
+  # /noc/tools/cpu
+  def tools
+    range1 = params[:start].presence
+    range2 = params[:end].presence
+
+    tools  = CputimeResourceUsageForCbrainTask.order(:created_at)
+    tools  = tools.where("created_at >= ?",DateTime.parse(range1)) if range1
+    tools  = tools.where("created_at <= ?",DateTime.parse(range2)) if range2
+    tools  = tools.group(:tool_name)
+
+    @mode   = params[:mode].presence || 'count' # in URL
+    @mode   = 'count' if @mode != 'cpu'
+
+    tools  = tools.count       if @mode == 'count'
+    tools  = tools.sum(:value) if @mode == 'cpu'
+
+    pairs  = tools.to_a # [ [ toolname, val ], ... ]
+    pairs.sort! { |p1,p2| p2[1] <=> p1[1] } # highest counts first
+
+    @tools_stats = pairs  # either tool counts or tot cpu for each tool
+    @max_val     = (@tools_stats.first || [nil, 1])[1]
+
+    render 'tools', :layout => false # full HTML layout already in view file
+  end
+
   private
 
   def dates_to_year_counts(timestamps)

@@ -212,6 +212,8 @@ Rails.application.routes.draw do
   #get   "/noc/users/:by",         :controller => :noc,    :action => :users # :by is 'year' by default
   #get   "/noc/cpu",               :controller => :noc,    :action => :cpu
   #get   "/noc/cpu/:by",           :controller => :noc,    :action => :cpu # :by is 'month' by default
+  #get   "/noc/tools",             :controller => :noc,    :action => :tools
+  #get   "/noc/tools/:mode",       :controller => :noc,    :action => :tools # :mode is 'count' by default
 
   # API description, by Swagger
   get   "/swagger",               :controller => :portal, :action => :swagger

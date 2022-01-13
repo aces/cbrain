@@ -123,6 +123,7 @@ fieldset span {
 #
 # /noc/users/{year|month}
 # /noc/cpu/{year|month}
+# /noc/tools/{count|cpu}
 #################################################
 */
 
@@ -185,3 +186,33 @@ fieldset span {
 .noc_users_legend span {
 }
 
+.noc_tools_table {
+  display: table;
+  margin: auto;
+  font-size: 30px;
+}
+
+.noc_tools_row {
+  display: table-row;
+}
+
+.noc_tools_name {
+  display: table-cell;
+  padding: 0.2em;
+}
+
+.noc_tools_value {
+  display: table-cell;
+  padding: 0.2em;
+  text-align: right;
+}
+
+.noc_tools_graph {
+  display: table-cell;
+  padding: 0.2em;
+}
+
+.noc_tools_bar {
+  display: inline-block;
+  height: 1em;
+}
