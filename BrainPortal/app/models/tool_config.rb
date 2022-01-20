@@ -334,11 +334,7 @@ class ToolConfig < ApplicationRecord
   #      # CBRAIN db registered file
   #         userfile:1234
   def singularity_overlays_full_paths
-    specs = self.singularity_overlays_specs.presence
-    return [] if specs.blank?
-
-    # break onto commands based on comas, whitespace or comments
-    specs = parsed_overlay_specs(specs)
+    specs = parsed_overlay_specs
     specs.map do |knd, id_or_name|
 
       # Old style file spec (legacy, to be removed)
@@ -352,13 +348,13 @@ class ToolConfig < ApplicationRecord
         cb_error "DataProvider #{id_or_name} does not have any overlays configured." if dp_ovs.blank?
         dp_ovs
       when 'file'
-        cb_error "Provide absolute filepath in spec #{spec}." if (Pathname.new id_or_name).relative?
+        cb_error "Provide absolute filepath for overlay  #{id_or_name}." if (Pathname.new id_or_name).relative?
         id_or_name  # for local file, it could be full file name (no ids)
       when 'userfile'
         # db registered file, note admin can access all files
-        userfile = Userfile.where(:id => id_or_name).last
+        userfile = SingleFile.where(:id => id_or_name).last
         cb_error "Userfile #{id_or_name} not found." if ! userfile
-        userfile.sync_to_cache() rescue cb_error "Userfile #{id_or_name} failed to synchronize."
+        userfile.sync_to_cache() rescue cb_error "Userfile #{id_or_name} for fetching overlay failed to synchronize."
         userfile.cache_full_path()
       else
         cb_error "Invalid '#{knd}:#{id_or_name}' overlay."
@@ -371,9 +367,8 @@ class ToolConfig < ApplicationRecord
   # ignoring all other overlay specs for normal files.
   def data_providers_with_overlays
     return @_data_providers_with_overlays_ if @_data_providers_with_overlays_
-    specs = self.singularity_overlays_specs.presence
-    return [] if specs.blank?
-    specs = parsed_overlay_specs(specs)
+    specs = parsed_overlay_specs
+    return [] if specs.empty?
     @_data_providers_with_overlays_ = specs.map do |kind, id_or_name|
       DataProvider.where_id_or_name(id_or_name).first if kind == 'dp'
     end.compact
@@ -417,7 +412,9 @@ class ToolConfig < ApplicationRecord
   end
 
   # breaks down overlay spec onto a list of overlays
-  def parsed_overlay_specs(specs)
+  def parsed_overlay_specs
+    specs = self.singularity_overlays_specs
+    return [] if specs.blank?
     lines = specs.split(/^#.*|\s+#.*|\n/) # split on lines and drop comments
     lines.map(&:presence).compact.map do |spec|
       spec.strip.split(':', 2)
@@ -434,10 +431,7 @@ class ToolConfig < ApplicationRecord
   #    dp:dp_name
   #
   def validate_overlays_specs #:nodoc:
-    specs = self.singularity_overlays_specs.presence
-    return if specs.blank?
-
-    specs = parsed_overlay_specs(specs)
+    specs = parsed_overlay_specs
 
     # Iterate over each spec and validate them
     specs.each do |kind, id_or_name|
@@ -461,7 +455,7 @@ class ToolConfig < ApplicationRecord
             %{" contains invalid userfile id '#{id_or_name}'. The userfile id should be an integer number."}
           )
         else
-          userfile = Userfile.where(:id => id_or_name).first
+          userfile = SingleFile.where(:id => id_or_name).first
         end
         if ! userfile
           self.errors.add(:singularity_overlays_specs,
@@ -483,7 +477,7 @@ class ToolConfig < ApplicationRecord
 
       else
         # Other errors
-        self.errors.add(:singularity_overlays_specs, "contains invalid specification'#{kind}:#{id_or_name}'")
+        self.errors.add(:singularity_overlays_specs, "contains invalid specification '#{kind}:#{id_or_name}'")
       end
     end
   end
