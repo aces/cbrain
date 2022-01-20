@@ -463,7 +463,7 @@ class ToolConfig < ApplicationRecord
         else
           userfile = Userfile.where(:id => id_or_name).first
         end
-        if  !userfile
+        if ! userfile
           self.errors.add(:singularity_overlays_specs,
             %{" contains invalid userfile id '#{id_or_name}'. The file with id '#{id_or_name}' is not found."}
           )
