@@ -220,10 +220,12 @@
         A specification can be either
         a full path (e.g. <em>file:/a/b/data.squashfs</em>),
         a path with a pattern (e.g. <em>file:/a/b/data*.squashfs</em>),
-        a cbrain registered file identified by ID (e.g. <em>userfile:123</em>)
+        a registered file identified by ID (e.g. <em>userfile:123</em>)
         or a SquashFS Data Provider identified by its ID or name (e.g. <em>dp:123</em>, <em>dp:DpNameHere</em>).
         In the case of a Data Provider, the overlays will be the files that the provider uses.
-        Separate specifications with blank, commas, or newlines.
+        Each overlay specifications should be on a separate line.
+        You can start comments with symbol '#'.
+        For example, <em>file:/a/b/atlas.squashfs # brain atlas</em>
         </div>
     <% end %>
 
