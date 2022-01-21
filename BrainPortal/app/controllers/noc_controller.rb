@@ -137,12 +137,14 @@ class NocController < ApplicationController
   # /noc/tools/count
   # /noc/tools/cpu
   def tools
-    range1 = params[:start].presence
-    range2 = params[:end].presence
+    range1   = params[:start].presence
+    range2   = params[:end].presence
+    range1 &&= DateTime.parse(range1) rescue nil
+    range2 &&= DateTime.parse(range2) rescue nil
 
     tools  = CputimeResourceUsageForCbrainTask.order(:created_at)
-    tools  = tools.where("created_at >= ?",DateTime.parse(range1)) if range1
-    tools  = tools.where("created_at <= ?",DateTime.parse(range2)) if range2
+    tools  = tools.where("created_at >= ?",range1) if range1
+    tools  = tools.where("created_at <= ?",range2) if range2
     tools  = tools.group(:tool_name)
 
     @mode   = params[:mode].presence || 'count' # in URL
