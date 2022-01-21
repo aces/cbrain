@@ -348,13 +348,13 @@ class ToolConfig < ApplicationRecord
         cb_error "DataProvider #{id_or_name} does not have any overlays configured." if dp_ovs.blank?
         dp_ovs
       when 'file'
-        cb_error "Provide absolute filepath for overlay  #{id_or_name}." if (Pathname.new id_or_name).relative?
-        id_or_name  # for local file, it could be full file name (no ids)
+        cb_error "Provide absolute path for overlay file '#{id_or_name}'." if (Pathname.new id_or_name).relative?
+        id_or_name  # for local file, it is full file name (no ids)
       when 'userfile'
         # db registered file, note admin can access all files
         userfile = SingleFile.where(:id => id_or_name).last
-        cb_error "Userfile #{id_or_name} not found." if ! userfile
-        userfile.sync_to_cache() rescue cb_error "Userfile #{id_or_name} for fetching overlay failed to synchronize."
+        cb_error "Userfile with id '#{id_or_name}' for overlay fetching not found." if ! userfile
+        userfile.sync_to_cache() rescue cb_error "Userfile with id '#{id_or_name}' for fetching overlay failed to synchronize."
         userfile.cache_full_path()
       else
         cb_error "Invalid '#{knd}:#{id_or_name}' overlay."
@@ -446,7 +446,7 @@ class ToolConfig < ApplicationRecord
       when 'file', 'old style file' # full path specification for a local file, e.g. "file:/myfiles/c.sqs"
         if id_or_name !~ /^\/\S+\.(sqs|squashfs)$/i
           self.errors.add(:singularity_overlays_specs,
-            " contains invalid '#{kind}' name '#{id_or_name}'. It should be a full path that ends in .squashfs or .sqs")
+            " contains invalid #{kind} named '#{id_or_name}'. It should be a full path that ends in .squashfs or .sqs")
         end
 
       when 'userfile' # db-registered file spec, e.g. "userfile:42"
@@ -480,6 +480,8 @@ class ToolConfig < ApplicationRecord
         self.errors.add(:singularity_overlays_specs, "contains invalid specification '#{kind}:#{id_or_name}'")
       end
     end
+
+    errors.empty?
   end
 
   ##################################################################
