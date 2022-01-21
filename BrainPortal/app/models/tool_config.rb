@@ -326,22 +326,39 @@ class ToolConfig < ApplicationRecord
 
   # Returns an array of full paths to the Singularity overlay files that
   # need to be mounted, as configured by the admin. Some of them might
-  # be patterns and will need to be resolved at run time.
+  # be patterns and will need to be resolved at run time. The dsl is
+  #      # A file located on the cluster
+  #        file:/path/to/file.squashfs
+  #      # All overlays configured for DP 1234
+  #         dp:1234
+  #      # CBRAIN db registered file
+  #         userfile:1234
   def singularity_overlays_full_paths
-    specs = self.singularity_overlays_specs.presence
-    return [] if specs.blank?
+    specs = parsed_overlay_specs
+    specs.map do |knd, id_or_name|
 
-    specs = specs.split(/[\s,]+/).map(&:presence).compact
-    specs.map do |spec|
-      # Full path or pattern
-      next spec if spec =~ /^\// # just use that
-      # DP spec dp:123 or dp:name
-      id_or_name = spec.sub(/^dp:/i,"")
-      dp = DataProvider.where_id_or_name(id_or_name).first
-      cb_error "Can't find DataProvider #{id_or_name} for fetching overlays" if ! dp
-      dp_ovs = dp.singularity_overlays_full_paths rescue nil
-      cb_error "DataProvider #{id_or_name} does not have any overlays configured." if dp_ovs.blank?
-      next dp_ovs
+      # Old style file spec (legacy, to be removed)
+      next knd if knd =~ /^\//  # FIXME delete it after successful migration
+
+      case knd
+      when 'dp'
+        dp = DataProvider.where_id_or_name(id_or_name).first
+        cb_error "Can't find DataProvider #{id_or_name} for fetching overlays" if ! dp
+        dp_ovs = dp.singularity_overlays_full_paths rescue nil
+        cb_error "DataProvider #{id_or_name} does not have any overlays configured." if dp_ovs.blank?
+        dp_ovs
+      when 'file'
+        cb_error "Provide absolute filepath for overlay  #{id_or_name}." if (Pathname.new id_or_name).relative?
+        id_or_name  # for local file, it could be full file name (no ids)
+      when 'userfile'
+        # db registered file, note admin can access all files
+        userfile = SingleFile.where(:id => id_or_name).last
+        cb_error "Userfile #{id_or_name} not found." if ! userfile
+        userfile.sync_to_cache() rescue cb_error "Userfile #{id_or_name} for fetching overlay failed to synchronize."
+        userfile.cache_full_path()
+      else
+        cb_error "Invalid '#{knd}:#{id_or_name}' overlay."
+      end
     end.flatten.uniq
   end
 
@@ -350,13 +367,10 @@ class ToolConfig < ApplicationRecord
   # ignoring all other overlay specs for normal files.
   def data_providers_with_overlays
     return @_data_providers_with_overlays_ if @_data_providers_with_overlays_
-    specs = self.singularity_overlays_specs.presence
-    return [] if specs.blank?
-    specs = specs.split(/[\s,]+/).map(&:presence).compact
-    @_data_providers_with_overlays_ = specs.map do |spec|
-      next nil unless spec =~ /^dp:/i
-      id_or_name = spec.sub(/^dp:/i,"")
-      DataProvider.where_id_or_name(id_or_name).first
+    specs = parsed_overlay_specs
+    return [] if specs.empty?
+    @_data_providers_with_overlays_ = specs.map do |kind, id_or_name|
+      DataProvider.where_id_or_name(id_or_name).first if kind == 'dp'
     end.compact
   end
 
@@ -397,43 +411,74 @@ class ToolConfig < ApplicationRecord
     return errors.empty?
   end
 
-  # Verify that the admin has entered a set of
+  # breaks down overlay spec onto a list of overlays
+  def parsed_overlay_specs
+    specs = self.singularity_overlays_specs
+    return [] if specs.blank?
+    lines = specs.split(/^#.*|\s+#.*|\n/) # split on lines and drop comments
+    lines.map(&:presence).compact.map do |spec|
+      spec.strip.split(':', 2)
+    end
+  end
+
+  # Verifies that the admin has entered a set of
   # overlay specifications properly. One or several of:
   #
-  #    /full/path/to/something.squashfs
-  #    /full/path/to/pattern*/data?.squashfs
+  #    file:/full/path/to/something.squashfs
+  #    file:/full/path/to/pattern*/data?.squashfs
+  #    userfile:333
   #    dp:123
   #    dp:dp_name
+  #
   def validate_overlays_specs #:nodoc:
-    specs = self.singularity_overlays_specs.presence
-    return if specs.blank?
+    specs = parsed_overlay_specs
 
-    specs = specs.split(/[\s,]+/).map(&:presence).compact
+    # Iterate over each spec and validate them
+    specs.each do |kind, id_or_name|
 
-    # Iterare over each spec and validate them
-    specs.each do |spec|
-      # Full paths
-      if spec =~ /^\//
-        next if spec =~ /^\/\S+\.(sqs|squashfs)$/i # full paths ok
-        self.errors.add(:singularity_overlays_specs, "contains invalid specification '#{spec}'. It should be a full path that ends in .squashfs or .sqs")
-        next
+      # compatibility layer for old file spec format, to be eventually deleted after migration
+      if id_or_name.nil?
+        id_or_name = kind
+        kind = 'old style file'
       end
 
-      # DP specs: "dp:name" or "dp:ID"
-      if spec =~ /\Adp:(\S+)\z/i
-        dp_name_or_id=Regexp.last_match[1]
-        dp=DataProvider.where_id_or_name(dp_name_or_id).first
+      case kind # different validations rules for file, userfile and dp specs
+      when 'file', 'old style file' # full path specification for a local file, e.g. "file:/myfiles/c.sqs"
+        if id_or_name !~ /^\/\S+\.(sqs|squashfs)$/i
+          self.errors.add(:singularity_overlays_specs,
+            " contains invalid '#{kind}' name '#{id_or_name}'. It should be a full path that ends in .squashfs or .sqs")
+        end
+
+      when 'userfile' # db-registered file spec, e.g. "userfile:42"
+        if id_or_name !~ /\A\d+\z/
+          self.errors.add(:singularity_overlays_specs,
+            %{" contains invalid userfile id '#{id_or_name}'. The userfile id should be an integer number."}
+          )
+        else
+          userfile = SingleFile.where(:id => id_or_name).first
+        end
+        if ! userfile
+          self.errors.add(:singularity_overlays_specs,
+            %{" contains invalid userfile id '#{id_or_name}'. The file with id '#{id_or_name}' is not found."}
+          )
+        elsif ! userfile.name.end_with?('.sqs') && ! userfile.name.end_with?('.squashfs')
+          self.errors.add(:singularity_overlays_specs,
+          " contains invalid userfile with id '#{id_or_name}' and name '#{userfile.name}'. File name should end in .squashfs or .sqs")
+          # todo maybe or/and check file type?
+        end
+
+      when 'dp' # DataProvider specs: "dp:name" or "dp:ID"
+        dp = DataProvider.where_id_or_name(id_or_name).first
         if !dp
-          self.errors.add(:singularity_overlays_specs, "contains invalid DP specification '#{spec}' (no such DP)")
+          self.errors.add(:singularity_overlays_specs, "contains invalid DP '#{id_or_name}' (no such DP)")
+        elsif ! dp.is_a?(SingSquashfsDataProvider)
+          self.errors.add(:singularity_overlays_specs, "DataProvider '#{id_or_name}' is not a SingSquashfsDataProvider")
         end
-        if ! dp.is_a?(SingSquashfsDataProvider)
-          self.errors.add(:singularity_overlays_specs, "DataProvider '#{spec}' is not a SingSquashfsDataProvider")
-        end
-        next
-      end
 
-      # Other
-      self.errors.add(:singularity_overlays_specs, "contains invalid specification '#{spec}'")
+      else
+        # Other errors
+        self.errors.add(:singularity_overlays_specs, "contains invalid specification '#{kind}:#{id_or_name}'")
+      end
     end
   end
 
