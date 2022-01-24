@@ -40,11 +40,6 @@ class ResourceUsageController < ApplicationController
   def index #:nodoc:
     @scope      = scope_from_session
 
-MonthlySpaceResourceUsageForUserfile
-MonthlySpaceResourceUsageForCbrainTask
-MonthlyCputimeResourceUsageForCbrainTask
-MonthlyWalltimeResourceUsageForCbrainTask
-
     # We always have an implicit filter by 'type'
     type_filter = @scope.filters.detect { |f| f.attribute == 'type' }
     @maintype   = type_filter.try(:value)

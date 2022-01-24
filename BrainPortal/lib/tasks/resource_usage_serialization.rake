@@ -243,7 +243,7 @@ namespace :cbrain do
 
           month=record["created_at"].beginning_of_month
           month_key = month.strftime("%Y-%m")
-          puts "Processing (#{idx+1}/#{size}) at #{month_key}" if ((idx+1) % 500) == 0
+          puts "Processing (#{idx+1}/#{size}) at #{month_key}" if ((idx+1) % 10000) == 0
 
           # Build cache key: "2019-02|a|b|c|d|d" where a, b c are selected attributes values
           att_keys=grouped_attributes.map do |att|
