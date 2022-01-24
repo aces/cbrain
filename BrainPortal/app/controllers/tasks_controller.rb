@@ -381,6 +381,14 @@ class TasksController < ApplicationController
       @task.errors[:results_data_provider_id] = 'must be provided'
     end
 
+    if ! @task.bourreau.nil? && ! @task.bourreau&.online?
+      respond_to do |format|
+        format.json { render :status => :forbidden, :json => { "error" =>
+          "Bourreau #{@task.Bourreau.name} is down. Please try latter or use another bourreau."}
+        }
+      end
+    end
+
     unless @task.errors.empty? && @task.valid?
       flash.now[:error] += messages
       initialize_common_form_values
