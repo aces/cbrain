@@ -22,7 +22,6 @@
 
 # RESTful controller for the CbrainTask resource.
 class TasksController < ApplicationController
-
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   api_available :except => [:update, :destroy, :zenodo, :create_zenodo, :reset_zenodo ]
@@ -380,13 +379,13 @@ class TasksController < ApplicationController
     if @task.results_data_provider_id.blank? || @task.results_data_provider.blank?
       @task.errors[:results_data_provider_id] = 'must be provided'
     end
-
-    if ! @task.bourreau.nil? && ! @task.bourreau&.online?
+    if ! @task.bourreau.nil? && ! @task.bourreau.online?
       respond_to do |format|
         format.json { render :status => :forbidden, :json => { "error" =>
-          "Bourreau #{@task.Bourreau.name} is down. Please try latter or use another bourreau."}
+          "Bourreau #{@task.bourreau.name} is down. Please try latter or use another bourreau."}
         }
       end
+      return
     end
 
     unless @task.errors.empty? && @task.valid?
