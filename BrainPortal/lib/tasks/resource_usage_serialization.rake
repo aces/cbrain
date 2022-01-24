@@ -135,12 +135,21 @@ namespace :cbrain do
       types_to_reload.each do |type|
 
         # Find dump file and reload it
+        # TODO transparently handle .gz versions
         filename = Rails.root + "data_dumps" + "#{type.to_s}.#{timestamp}.yaml"
         if ! filename.exist?
-          printf "%36s : no dump found in %s\n", type.to_s, filename
-          next
+          filename = Rails.root + "data_dumps" + "#{type.to_s}.#{timestamp}.yaml.gz"
+          if ! filename.exist?
+            printf "%36s : no dump found in %s\n", type.to_s, filename
+            next
+          end
         end
-        attlist = YAML.load(File.read(filename))
+
+        if filename.to_s.ends_with? ".gz"
+          attlist = YAML.load(IO.popen("gunzip -c #{filename.to_s.bash_escape}","r") { |fh| fh.read })
+        else
+          attlist = YAML.load(File.read(filename))
+        end
 
         # Notify user
         printf "%36s : %7d records from %s\n", type.to_s, attlist.size, filename
@@ -160,6 +169,114 @@ namespace :cbrain do
 
       true
     end # task reload
+
+    ####################
+    # Task 'monthly'
+    #
+    # Re-insert monthly summaries from dumps from RAILS_ROOT/data_dumps
+    #
+    # Requires one argument, the class of the ResourceUsage to create summaries for.
+    #
+    #   klass => ResourceUsageSubclass
+    #
+    # The special value 'All' tells the task to process all four subclasses
+    # (see the exampled below)
+    #
+    # All the matching class' .yaml or .yaml.gz files in the data_dumps directory will
+    # be reloaded and a monthly summary records will be inserted or updated in the DB
+    #
+    # Syntax for the command-line:
+    #
+    #   rake cbrain:resource_usage:monthly[CputimeResourceUsageForCbrainTask]
+    #   rake cbrain:resource_usage:monthly[WalltimeResourceUsageForCbrainTask]
+    #   rake cbrain:resource_usage:monthly[SpaceResourceUsageForCbrainTask]
+    #   rake cbrain:resource_usage:monthly[SpaceResourceUsageForUserfile]
+    #   rake cbrain:resource_usage:monthly[All]
+    #
+    ####################
+
+    desc "Insert or update resource usage monthly summaries"
+    task :monthly, [:klass] => :environment do |t,args|
+
+      allowed_klasses = %w(
+        CputimeResourceUsageForCbrainTask
+        WalltimeResourceUsageForCbrainTask
+        SpaceResourceUsageForCbrainTask
+        SpaceResourceUsageForUserfile )
+      arg_name = args.klass.presence || ""
+      raise "This task requires a ResourceUsage class name argument, or 'All'." unless
+        (arg_name == 'All') || (allowed_klasses.include? arg_name)
+
+      klass_names = arg_name == 'All' ? allowed_klasses : [ arg_name ]
+
+      # Main processing loop for all classes
+      klass_names.each do |klass_name|
+
+        # Find all files for klass_name
+        globpattern = Rails.root + "data_dumps" + "#{klass_name}.*.yaml*" # matches .gz too
+        files       = Dir.glob(globpattern)
+
+        puts "Found #{files.size} files(s) to reload..."
+
+        totyaml = []
+        files.each do |filename|
+          if filename.ends_with? ".gz"
+            attlist = YAML.load(IO.popen("gunzip -c #{filename.to_s.bash_escape}","r") { |fh| fh.read })
+          else
+            attlist = YAML.load(File.read(filename))
+          end
+          # Notify user
+          printf "%36s : %7d records from %s\n", klass_name.to_s, attlist.size, Pathname.new(filename).basename
+          totyaml += attlist
+        end
+
+        if files.size > 1
+          printf "%36s : %7d records TOTAL\n", klass_name.to_s, totyaml.size
+        end
+        totyaml.sort! { |a,b| a["created_at"] <=> b["created_at"] }
+
+        monthly_klass      = ("Monthly"+klass_name).constantize
+        grouped_attributes = monthly_klass::GroupedAttributes
+
+        summaries = {}  # cache_key => MonthlyBlabBlah object
+        totyaml.each_with_index_and_size do |record,idx,size|
+
+          month=record["created_at"].beginning_of_month
+          month_key = month.strftime("%Y-%m")
+          puts "Processing (#{idx+1}/#{size}) at #{month_key}" if ((idx+1) % 500) == 0
+
+          # Build cache key: "2019-02|a|b|c|d|d" where a, b c are selected attributes values
+          att_keys=grouped_attributes.map do |att|
+            record[att]
+          end.join("|")
+          cache_key = month_key + "|" + att_keys
+
+          # Find or create the summary and add the count value to it
+          summary = summaries[cache_key]
+          if !summary
+            summary = monthly_klass.new(record.slice(*grouped_attributes))
+            summary["created_at"]       = month
+            summary["userfile_name"]    = "Summary #{month_key}" if klass_name == 'SpaceResourceUsageForUserfile'
+            summary["cbrain_task_type"] = "Summary #{month_key}" if klass_name == 'CputimeResourceUsageForCbrainTask'
+            summary["cbrain_task_type"] = "Summary #{month_key}" if klass_name == 'WalltimeResourceUsageForCbrainTask'
+            summary["cbrain_task_type"] = "Summary #{month_key}" if klass_name == 'SpaceResourceUsageForCbrainTask'
+            summaries[cache_key]  = summary
+          end
+          summary["value"] ||= 0
+          summary["value"]  += record["value"]
+        end
+
+        puts "Deleting old summaries from database..."
+        monthly_klass.delete_all
+
+        summaries = summaries.values.reject { |s| s["value"] == 0 }
+        puts "Writing #{summaries.size} new summaries to database..."
+        summaries.each { |summary| summary.save }
+
+      end # loop for each class
+
+      true
+    end # task monthly
 
   end # namespace :resource_usage
 end # namespace :cbrain

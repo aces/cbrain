@@ -40,24 +40,25 @@ class ResourceUsageController < ApplicationController
   def index #:nodoc:
     @scope      = scope_from_session
 
+MonthlySpaceResourceUsageForUserfile
+MonthlySpaceResourceUsageForCbrainTask
+MonthlyCputimeResourceUsageForCbrainTask
+MonthlyWalltimeResourceUsageForCbrainTask
+
     # We always have an implicit filter by 'type'
     type_filter = @scope.filters.detect { |f| f.attribute == 'type' }
     @maintype   = type_filter.try(:value)
     if @maintype.blank?
       @maintype   = AllowedReports.first
-      type_filter = ViewScopes::Scope::Filter.new
-      type_filter.attribute = 'type'
-      type_filter.value     = @maintype
-      @scope.filters.unshift(type_filter)
     end
+    @scope.filters.reject! { |f| f.attribute == 'type' } # restrict_scope() below does the type filtering
 
     scope_default_order(@scope, 'created_at')
 
-    @base_scope,error_mess   = restrict_scope(@maintype,@scope, params)
-
+    @base_scope,error_mess   = restrict_scope(@maintype, @scope, params)
     flash.now[:error] = "#{error_mess}" if error_mess.present?
 
-    @view_scope              = @scope.apply(@base_scope)
+    @view_scope = @scope.apply(@base_scope)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 15 })
     @resource_usages = @scope.pagination.apply(@view_scope) # funky plural here
@@ -66,6 +67,11 @@ class ResourceUsageController < ApplicationController
     @total_minus     = @view_scope.where("resource_usage.value < 0").sum(:value)
     @total           = @total_plus + @total_minus
 
+    # Re-insert a dummy filter that we use for persistency between requests
+    type_filter = ViewScopes::Scope::Filter.new
+    type_filter.attribute = 'type'
+    type_filter.value     = @maintype
+    @scope.filters.unshift(type_filter)
     scope_to_session(@scope)
 
     respond_to do |format|
@@ -88,7 +94,7 @@ class ResourceUsageController < ApplicationController
   def restrict_scope(maintype,scope,params) #:nodoc:
 
     @base_scope   = base_scope
-                    .where('resource_usage.type' => @maintype)
+                    .where('resource_usage.type' => @maintype.constantize.sti_descendants.map(&:name))
     if  @maintype == 'SpaceResourceUsageForUserfile'
 
       if params[:deleted_items]
