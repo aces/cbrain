@@ -127,6 +127,11 @@
         "walltime-estimate": 60
     },
     "custom": {
-        "cbrain:readonly-input-files": true
+        "cbrain:readonly-input-files": true,
+        "cbrain:integrator_modules": {
+            "BoutiquesOutputFileTypeSetter": {
+              "du_report_out": "TextFile"
+            }
+        }
     }
 }

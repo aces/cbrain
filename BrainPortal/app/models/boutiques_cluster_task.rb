@@ -89,7 +89,7 @@ class BoutiquesClusterTask < ClusterTask
 
       # In case the input is a list and is assigned a CbrainFileList
       userfile.sync_to_cache
-      userfile_list = cbrainfilelist.userfiles_accessible_by_user!(user, nil, nil, file_access_symbol)
+      userfile_list = userfile.userfiles_accessible_by_user!(user, nil, nil, file_access_symbol)
       userfile_list.compact.each do |subfile|
         make_available(subfile, subfile.name)
       end
@@ -117,7 +117,7 @@ class BoutiquesClusterTask < ClusterTask
 
       # In case the input is a list and is assigned a CbrainFileList
       userfile.sync_to_cache
-      userfile_list = cbrainfilelist.userfiles_accessible_by_user!(user, nil, nil, file_access_symbol)
+      userfile_list = userfile.userfiles_accessible_by_user!(user, nil, nil, file_access_symbol)
       subnames = userfile_list.compact.map(&:name)  # [ 'userfilename1', 'userfilename2' ... ]
       invoke_struct[input.id] = subnames
     end
@@ -249,12 +249,7 @@ class BoutiquesClusterTask < ClusterTask
 
         # Get name and filetype
         self.addlog("Attempting to save result file #{path}")
-        name = File.basename(path)
-        userfile_class   = Userfile.suggested_file_type(name)
-        userfile_class ||= ( File.directory?(path) ? FileCollection : SingleFile )
-
-        # Add a run ID to the file name, to make sure the file doesn't exist.
-        name.sub!( /(\.\w+(\.gz|\.z|\.bz2|\.zip)?)?\z/i ) { |ext| "-#{self.run_id}" + ext }
+        name, userfile_class = name_and_type_for_output_file(output, path)
 
         # Save the file (possible overwrite if race condition)
         outfile = safe_userfile_find_or_new(userfile_class, :name => name)
@@ -310,6 +305,21 @@ class BoutiquesClusterTask < ClusterTask
     end
 
     all_ok
+  end
+
+  # Returns a suggested userfile name and userfile type
+  # for a Boutiques +output+ located in +pathname+
+  def name_and_type_for_output_file(output, pathname)
+
+    # Get basename, use it to guess the class
+    name = File.basename(pathname)
+    userfile_class   = Userfile.suggested_file_type(name)
+    userfile_class ||= ( File.directory?(pathname) ? FileCollection : SingleFile )
+
+    # Add a run ID to the file name, to make sure the file doesn't exist.
+    name.sub!( /(\.\w+(\.gz|\.z|\.bz2|\.zip)?)?\z/i ) { |ext| "-#{self.run_id}" + ext }
+
+    [ name, userfile_class ]
   end
 
   # Conservative maximal run time estimate for the job.
