@@ -89,7 +89,7 @@ class BoutiquesClusterTask < ClusterTask
 
       # In case the input is a list and is assigned a CbrainFileList
       userfile.sync_to_cache
-      userfile_list = cbrainfilelist.userfiles_accessible_by_user!(user, nil, nil, file_access_symbol)
+      userfile_list = userfile.userfiles_accessible_by_user!(user, nil, nil, file_access_symbol)
       userfile_list.compact.each do |subfile|
         make_available(subfile, subfile.name)
       end
@@ -117,7 +117,7 @@ class BoutiquesClusterTask < ClusterTask
 
       # In case the input is a list and is assigned a CbrainFileList
       userfile.sync_to_cache
-      userfile_list = cbrainfilelist.userfiles_accessible_by_user!(user, nil, nil, file_access_symbol)
+      userfile_list = userfile.userfiles_accessible_by_user!(user, nil, nil, file_access_symbol)
       subnames = userfile_list.compact.map(&:name)  # [ 'userfilename1', 'userfilename2' ... ]
       invoke_struct[input.id] = subnames
     end
