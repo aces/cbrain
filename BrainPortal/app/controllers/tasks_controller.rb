@@ -22,7 +22,9 @@
 
 # RESTful controller for the CbrainTask resource.
 class TasksController < ApplicationController
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+  
   api_available :except => [:update, :destroy, :zenodo, :create_zenodo, :reset_zenodo ]
 
   before_action :login_required
