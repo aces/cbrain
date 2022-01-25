@@ -1,0 +1,11 @@
+{
+  "cbrain_task": {
+    "tool_config_id": 20,
+    "bourreau_id": 14,
+    "user_id": 2,
+    "group_id": 10,
+    "results_data_provider_id": 15,
+    "params": { },
+    "description": "OfflineTestCreate"
+  }
+}
