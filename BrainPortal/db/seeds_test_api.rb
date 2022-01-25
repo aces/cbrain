@@ -354,6 +354,25 @@ bo = Bourreau.seed_record!(
   }
 )
 
+b1 = Bourreau.seed_record!(
+    { :name                  => 'OfflineTestExec' },
+    { :id                    => 14,
+      :user_id               => admin.id,
+      :group_id              => EveryoneGroup.first.id,
+      :online                => false,
+      :read_only             => false,
+      :description           => "Test Exec",
+      :ssh_control_user      => unix_user,
+      :ssh_control_host      => hostname,
+      :ssh_control_rails_dir => (Pathname.new(rails_home).parent + "Bourreau").to_s,
+      :tunnel_mysql_port     => 12345,
+      :tunnel_actres_port    => 12346,
+      :cache_md5             => '1d1b0f2d6c06331af4fa51d2862a96ec', # arbitrary
+      :dp_cache_dir          => "#{default_support_dir}/test_api/bourreau/cacheoff",
+      :cms_shared_dir        => "#{default_support_dir}/test_api/bourreau/gridshareoff",
+    }
+)
+
 
 
 puts <<STEP
