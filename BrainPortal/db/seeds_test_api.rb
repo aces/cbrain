@@ -465,7 +465,7 @@ tca = ToolConfig.seed_record!(
     :group_id     => admin.own_group.id,
     :description  => 'admin_only',
     :tool_id      => to.id,
-    :bourreau_id  => bo.id,
+    :bourreau_id  => b1.id,
     :ncpus        => 99,
     :env_array    => [],
   }

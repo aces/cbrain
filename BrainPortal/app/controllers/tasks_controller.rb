@@ -24,7 +24,7 @@
 class TasksController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+  require 'pry'
   api_available :except => [:update, :destroy, :zenodo, :create_zenodo, :reset_zenodo ]
 
   before_action :login_required
@@ -346,7 +346,6 @@ class TasksController < ApplicationController
     new_task_params = task_params() # filters and censors
 
     @task           = create_initial_task_from_form(new_task_params, params[:tool_id])
-    return if @task.nil?
     @tool_config    = @task.tool_config # for acces in view
 
     # Give a task the ability to do a refresh of its form
@@ -382,13 +381,8 @@ class TasksController < ApplicationController
       @task.errors[:results_data_provider_id] = 'must be provided'
     end
 
-    if ! @task.bourreau.nil? && ! @task.bourreau.online? # if api mode bourreau is not automatically adjusted
-      respond_to do |format|
-        format.json { render :status => :forbidden, :json => { "error" =>
-          "Bourreau #{@task.bourreau.name} is down. Please try latter or use another bourreau."}
-        }
-      end
-      return
+    if ! @tool_config.bourreau.online?
+      @task.errors[:tool_config_id] = 'is on an Execution Server that is currently offline'
     end
 
     unless @task.errors.empty? && @task.valid?
@@ -1317,15 +1311,6 @@ class TasksController < ApplicationController
                              tool_config.bourreau_and_tool_can_be_accessed_by?(current_user)
     if tool_config
       params[:tool_id]            = tool_config.tool_id     # replace whatever was there or not, tool_id is not CbrainTask parameters
-      if ! new_task_info[:bourreau_id].nil? && new_task_info[:bourreau_id] != tool_config.bourreau_id
-        respond_to do |format|
-          format.json { render :status => :forbidden, :json => { "error" =>
-            "Specified bourreau id #{new_task_info[:bourreau_id]} differs from bourreau id #{tool_config.bourreau.id}"\
-            " of the tool config. Please change bourreau or tool config."}
-          }
-        end
-        return
-      end
       new_task_info[:bourreau_id] = tool_config.bourreau_id # replace whatever was there or not
     else
       new_task_info[:tool_config_id] = nil # ZAP value, it's incorrect; will likely cause a validation error later on.

@@ -1,2 +1,2 @@
-403 application/json "batch_id":\d+ "\w+":null,
-{"error":"Specified bourreau id 14 differs from bourreau id 13  of the tool config. Please change bourreau or tool config."}
+422 application/json "batch_id":\d+ "\w+":null,
+{"tool_config_id":["is on an Execution Server that is currently offline"]}
