@@ -24,7 +24,7 @@
 class TasksController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  require 'pry'
+
   api_available :except => [:update, :destroy, :zenodo, :create_zenodo, :reset_zenodo ]
 
   before_action :login_required
@@ -854,7 +854,7 @@ class TasksController < ApplicationController
       current_user.id != @task.user_id
 
     # Any of these can be nil
-    combined_dep_id   = @task.zenodo_deposit_id.presence # 'main-1234' or 'sandbox-1234'
+    combied_dep_id   = @task.zenodo_deposit_id.presence # 'main-1234' or 'sandbox-1234'
     zsite, deposit_id = (combined_dep_id || "").split("-") # "main", "1234"
 
     # What files this task is supposed to upload
