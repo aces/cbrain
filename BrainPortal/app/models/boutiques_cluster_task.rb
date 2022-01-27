@@ -130,8 +130,7 @@ class BoutiquesClusterTask < ClusterTask
     end
 
     # Write down the file with the invoke struct
-    invoke_json_basename = "invoke.#{self.run_id}.json"
-    File.open(invoke_json_basename ,"w") do |fh|
+    File.open(self.invoke_json_basename ,"w") do |fh|
       fh.write JSON.pretty_generate(invoke_struct)
       fh.write "\n"
     end
@@ -148,7 +147,7 @@ class BoutiquesClusterTask < ClusterTask
     if self.boutiques_bosh_exec_mode == :simulate # the default
       simulate_com = <<-SIMULATE
         bosh exec simulate
-          -i #{invoke_json_basename.bash_escape}
+          -i #{self.invoke_json_basename.bash_escape}
           #{boutiques_json_basename.bash_escape}
       SIMULATE
       simulate_com.gsub!("\n"," ")
@@ -170,7 +169,7 @@ class BoutiquesClusterTask < ClusterTask
         # Main tool command, invoked through bosh exec launch
         bosh exec launch                                                          \\
           #{boutiques_json_basename.bash_escape}                                  \\
-          #{invoke_json_basename.bash_escape}
+          #{self.invoke_json_basename.bash_escape}
           echo $? > #{exit_status_filename.bash_escape}
       COMMANDS
     end
@@ -183,6 +182,8 @@ class BoutiquesClusterTask < ClusterTask
     descriptor = self.descriptor_for_save_results
     custom     = descriptor.custom || {} # 'custom' is not packaged as an object, just a hash
 
+    # Verifications of proper exit status
+    # and command completion.
     if ! custom['cbrain:ignore-exit-status']
       out = File.read(exit_status_filename()) rescue nil
       if out.nil?
@@ -204,16 +205,12 @@ class BoutiquesClusterTask < ClusterTask
     end
 
     # Prepare the substitution hash, which maps things like
-    # [abcd] to a value to replace, in the output files.
-    invoke_json_basename    = "invoke.#{self.run_id}.json"
-    substitutions_by_ids    = JSON.parse(File.read(invoke_json_basename)) # id => val
-    substitutions_by_tokens = descriptor.inputs.map do |input|
-      next nil if input.value_key.blank?
-      value = substitutions_by_ids[input.id]
-      next nil if value.nil?
-      [ input.value_key, value ]
-    end.compact.to_h
+    # [BLAH] to a value to replace.
+    substitutions_by_token  = descriptor.build_substitutions_by_tokens_hash(
+                                JSON.parse(File.read(self.invoke_json_basename))
+                              )
 
+    # Process all outputs
     all_ok           = true
     cbrain_to_ignore = custom['cbrain:ignore_outputs'] || []
     descriptor.output_files
@@ -222,13 +219,9 @@ class BoutiquesClusterTask < ClusterTask
       globpath = output.path_template
       to_strip = output.path_template_stripped_extensions || []
 
-      # Apply substitutions
-      substitutions_by_tokens.each do |key,val|
-        next if val.is_a?(Array) # not supported; what would it mean?
-        val = val.to_s
-        to_strip.each { |str| val = val.sub(/#{Regexp.quote(str)}\z/,"") }
-        globpath = globpath.gsub(key, val)
-      end
+      # Apply substitutions.
+      # Replaces things like "[BLAH]" in globpath, based on input values
+      globpath = descriptor.apply_substitutions(globpath, substitutions_by_token, to_strip)
 
       paths = Dir.glob(globpath)
       if paths.empty?
@@ -372,7 +365,11 @@ class BoutiquesClusterTask < ClusterTask
     end
   end
 
-
+  # Returns the basename of the JSON file
+  # that holds the 'invoke' structure for bosh.
+  def invoke_json_basename
+    "invoke.#{self.run_id}.json"
+  end
 
   # MAYBE IN COMMON
 

@@ -179,8 +179,45 @@ module BoutiquesSupport
       CbrainFileRevision.for_relpath(path)
     end
 
+    # Given a module name, returns the structure with the
+    # data for it stored under the "custom"['cbrain:integrator_modules']
+    # entry of the descriptor.
     def custom_module_info(modulename)
       self.custom['cbrain:integrator_modules'][modulename]
+    end
+
+    # Given an invoke structure (like required by bosh, where
+    # keys are input IDs and values are input values),
+    # this returns the same hash with the substitution tokens
+    # as keys (typically, things like { "[BLAH]" => value, ... }
+    # The hash only contains entries for inputs that do
+    # have a "value-key" defined for them.
+    def build_substitutions_by_tokens_hash(invoke_structure)
+      self.inputs.map do |input|
+        next nil if input.value_key.blank?
+        value = invoke_structure[input.id]
+        next nil if value.nil?
+        [ input.value_key, value ]
+      end.compact.to_h
+    end
+
+    # Replaces in +string+ all occurences of the keys in
+    # +substitutions_by_tokens+ by the associated values.
+    # This is typically used to build a templated string
+    # using the "value-key" of the inputs of the descriptor.
+    # See also the method build_substitutions_by_tokens_hash()
+    # for how to build the substitution hash.
+    # The +to_strip+ array contains file extensions to remove from
+    # the substituted value before substitution itself.
+    def apply_substitutions(string, substitutions_by_tokens, to_strip=[])
+      newstring = string.dup
+      substitutions_by_tokens.each do |key,val|
+        next if val.is_a?(Array) # not supported; what would it mean?
+        val = val.to_s
+        to_strip.each { |str| val = val.sub(/#{Regexp.quote(str)}\z/,"") }
+        newstring = newstring.gsub(key, val)
+      end
+      newstring
     end
 
     class Input
