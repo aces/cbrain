@@ -86,9 +86,9 @@ Choosing a verbose level and selecting specific tests is accomplished
 the same way as for the curl testing script:
 
 ```
-rake cbrain:test:api:client -v2
+rake cbrain:test:api:client -v 2
 rake cbrain:test:api:client groups/list
-rake cbrain:test:api:client -v4 groups/list
+rake cbrain:test:api:client -v 4 groups/list
 ```
 
 ### Author
