@@ -1,5 +1,5 @@
-6.1.0 -#- 2021-02-26 09:41:36 -0500 -#- CBRAIN Team -#- __CBRAIN_TAG__
-872dd24f17d63a477ffc3d6cef99edd6311a7e50 -#- 2021-02-25 13:33:38 -0500 -#- Pierre Rioux -#- __CBRAIN_HEAD__
+6.2.0 -#- 2022-01-28 14:28:08 -0500 -#- CBRAIN Team -#- __CBRAIN_TAG__
+fc85bf12a645af586c914e24ba1badd087377ac1 -#- 2022-01-28 11:50:17 -0500 -#- Pierre Rioux -#- __CBRAIN_HEAD__
 5b22b5d61971a45646ded4ff502025ce5a83eaa8 -#- 2019-07-04 14:12:52 -0400 -#- Shawn T. Brown -#- .github/CODE_OF_CONDUCT.md
 9dec9e0176b34764197d134ba1dc6f61499012f9 -#- 2021-02-12 13:05:13 -0500 -#- Pierre Rioux -#- .github/workflows/cbrain_ci.yaml
 1b38ded2d16ee2b163149d0ae9bea35afdef47bd -#- 2021-01-21 10:06:59 -0500 -#- Pierre Rioux -#- .github/workflows/scripts/make_cbrain_app_name_rb.sh
@@ -32,6 +32,8 @@ d8351b666a97a4eefbb2768c8cc785d8cc968e46 -#- 2009-08-03 22:56:02 +0000 -#- priou
 04c513d423b42a856c4493f105465b16bef3feeb -#- 2018-02-01 16:21:32 -0500 -#- Pierre Rioux -#- Bourreau/app/models/application_record.rb
 0765162a23b328e9f2cdea637f8bdaba242cb370 -#- 2009-07-08 15:24:14 +0000 -#- prioux -#- Bourreau/app/models/bourreau.rb
 b43298eb375d0754efac4a77e425610238fe8ea3 -#- 2019-09-10 14:53:58 -0400 -#- Pierre Rioux -#- Bourreau/app/models/bourreau_worker.rb
+e58779eae25346bd5f8e46998f735a23630389f2 -#- 2021-08-22 15:47:02 -0400 -#- Pierre Rioux -#- Bourreau/app/models/boutiques_cluster_task.rb
+3c42d39e29a5851da9f8c6d5ca47e79cf866d4a9 -#- 2021-10-18 10:19:27 -0400 -#- Pierre Rioux -#- Bourreau/app/models/boutiques_portal_task.rb
 85f29bd99c3a75cda8399b815c70caf62d476421 -#- 2009-10-05 20:48:07 +0000 -#- prioux -#- Bourreau/app/models/brain_portal.rb
 b2c1b5cf38aee75d30d761870ae25189cae8e8ea -#- 2019-09-13 10:46:16 -0400 -#- Pierre Rioux -#- Bourreau/app/models/carmin_path_data_provider.rb
 c1bd0938db1c2f8a90b462bee8f3363bd54f36f6 -#- 2010-05-27 17:53:56 +0000 -#- prioux -#- Bourreau/app/models/cbrain_task.rb
@@ -56,7 +58,9 @@ a3cf669a3b62c8fbab2e07b05d98801f82c49e5a -#- 2014-09-02 13:36:56 -0400 -#- Natac
 8d8c518345449ebe9e212ec716800301c3f0c40b -#- 2010-03-17 17:17:03 +0000 -#- tsherif -#- Bourreau/app/models/local_data_provider.rb
 f2d9036347c5409ac5b5d511418240310574eeb1 -#- 2009-10-16 21:02:26 +0000 -#- prioux -#- Bourreau/app/models/message.rb
 31035f3e154376b082f9791d60587fa19ba64634 -#- 2010-06-28 20:28:58 +0000 -#- prioux -#- Bourreau/app/models/meta_data_store.rb
+3c42d39e29a5851da9f8c6d5ca47e79cf866d4a9 -#- 2021-10-18 10:19:27 -0400 -#- Pierre Rioux -#- Bourreau/app/models/multilevel_ssh_data_provider.rb
 9159ab6b65ee5f1cdc673bb8586e2c3d5ae3fb8a -#- 2012-04-16 18:30:37 -0400 -#- Tarek Sherif -#- Bourreau/app/models/normal_user.rb
+3c42d39e29a5851da9f8c6d5ca47e79cf866d4a9 -#- 2021-10-18 10:19:27 -0400 -#- Pierre Rioux -#- Bourreau/app/models/portal_task.rb
 8516b84c302d7a76248c9960852124cba97ca747 -#- 2009-12-06 02:33:08 +0000 -#- prioux -#- Bourreau/app/models/remote_command.rb
 0765162a23b328e9f2cdea637f8bdaba242cb370 -#- 2009-07-08 15:24:14 +0000 -#- prioux -#- Bourreau/app/models/remote_resource.rb
 8516b84c302d7a76248c9960852124cba97ca747 -#- 2009-12-06 02:33:08 +0000 -#- prioux -#- Bourreau/app/models/remote_resource_info.rb
@@ -66,6 +70,7 @@ a7258273e3f1161fa2edba04497ae8c1c4ac3fbd -#- 2019-09-14 15:30:35 -0400 -#- Pierr
 06ad56f51e47fe6a1124ebd6b8ee1961a2f51459 -#- 2019-01-07 13:59:53 -0500 -#- Pierre Rioux -#- Bourreau/app/models/s3_flat_data_provider.rb
 906e424ae61efd8c2f915b0423cae6d22117b1ec -#- 2012-05-08 15:44:59 -0400 -#- Pierre Rioux -#- Bourreau/app/models/sanity_check.rb
 ed20f731fb3ffdaf84da14226608f17918943da5 -#- 2017-12-19 21:10:56 -0500 -#- Pierre Rioux -#- Bourreau/app/models/scratch_data_provider.rb
+3c42d39e29a5851da9f8c6d5ca47e79cf866d4a9 -#- 2021-10-18 10:19:27 -0400 -#- Pierre Rioux -#- Bourreau/app/models/sing_bindmount_data_provider.rb
 312caf42802bd7e9245c7536afe0f7b450ba2989 -#- 2019-08-01 15:32:43 -0400 -#- Pierre Rioux -#- Bourreau/app/models/sing_squashfs_data_provider.rb
 40e5a5e82c031f188b9805a942f63714f8f51201 -#- 2009-09-29 21:44:25 +0000 -#- prioux -#- Bourreau/app/models/site.rb
 8516b84c302d7a76248c9960852124cba97ca747 -#- 2009-12-06 02:33:08 +0000 -#- prioux -#- Bourreau/app/models/site_group.rb
@@ -94,7 +99,7 @@ a7258273e3f1161fa2edba04497ae8c1c4ac3fbd -#- 2019-09-14 15:30:35 -0400 -#- Pierr
 7c0873406693e30a119c2ef855642853eb2746ef -#- 2009-07-24 22:58:34 +0000 -#- tsherif -#- Bourreau/app/models/work_group.rb
 b8f1777f7ac969954ba851fc142c99136af89716 -#- 2010-02-16 21:01:18 +0000 -#- anton -#- Bourreau/app/models/worker.rb
 b8f1777f7ac969954ba851fc142c99136af89716 -#- 2010-02-16 21:01:18 +0000 -#- anton -#- Bourreau/app/models/worker_pool.rb
-e1987bf86b98100c87b6e038352b07673b7a5bda -#- 2013-09-03 15:39:13 -0400 -#- Natacha Beck -#- Bourreau/app/views/cbrain_mailer/cbrain_message.text.erb
+169f679475e0d61e7329239b8c807dccc0aafbb1 -#- 2021-09-07 16:53:42 -0400 -#- Pierre Rioux -#- Bourreau/app/views/cbrain_mailer/general_message.text.erb
 925b9ec5790a125abf7c53eaf10f7de4fd42c02f -#- 2017-12-07 19:18:42 -0500 -#- Natacha Beck -#- Bourreau/app/views/layouts/mailer.html.erb
 925b9ec5790a125abf7c53eaf10f7de4fd42c02f -#- 2017-12-07 19:18:42 -0500 -#- Natacha Beck -#- Bourreau/app/views/layouts/mailer.text.erb
 925b9ec5790a125abf7c53eaf10f7de4fd42c02f -#- 2017-12-07 19:18:42 -0500 -#- Natacha Beck -#- Bourreau/bin/bundle
@@ -141,6 +146,12 @@ a1848dfdd07ce34f15d55e3bed31cac13a7005d1 -#- 2011-09-30 14:35:00 -0400 -#- Pierr
 9f12607a0561aa336b30a17d551215d68909f08b -#- 2010-07-06 19:11:57 +0000 -#- prioux -#- Bourreau/lib/act_rec_meta_data.rb
 925b9ec5790a125abf7c53eaf10f7de4fd42c02f -#- 2017-12-07 19:18:42 -0500 -#- Natacha Beck -#- Bourreau/lib/assets/.keep
 01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- Bourreau/lib/bourreau_system_checks.rb
+e5df01b9a679fcbc186eaf8bb180499c9ebd1e4d -#- 2021-09-05 16:41:01 -0400 -#- Pierre Rioux -#- Bourreau/lib/boutiques_boot_integrator.rb
+520284a6220fe2d84a485f2ab3cf17215ab78484 -#- 2021-11-30 10:36:41 -0500 -#- Pierre Rioux -#- Bourreau/lib/boutiques_file_name_matcher.rb
+520284a6220fe2d84a485f2ab3cf17215ab78484 -#- 2021-11-30 10:36:41 -0500 -#- Pierre Rioux -#- Bourreau/lib/boutiques_file_type_verifier.rb
+f00997eb767f27e6a17f23a6267d2ddbb0d22b0b -#- 2022-01-25 11:56:35 -0500 -#- Pierre Rioux -#- Bourreau/lib/boutiques_output_file_type_setter.rb
+a16ee1122476fe433314f20182e00ed239dab202 -#- 2022-01-27 15:20:20 -0500 -#- Pierre Rioux -#- Bourreau/lib/boutiques_post_processing_cleaner.rb
+e58779eae25346bd5f8e46998f735a23630389f2 -#- 2021-08-22 15:47:02 -0400 -#- Pierre Rioux -#- Bourreau/lib/boutiques_support.rb
 ad2feb109b3ff7bcc50145198947d151d177c083 -#- 2010-03-29 19:06:02 +0000 -#- prioux -#- Bourreau/lib/cbrain_checker.rb
 df10525ea5250f8328a3f867968b6238f1f78dbb -#- 2011-09-07 11:25:47 -0400 -#- Pierre Rioux -#- Bourreau/lib/cbrain_delete_restriction_error.rb
 df10525ea5250f8328a3f867968b6238f1f78dbb -#- 2011-09-07 11:25:47 -0400 -#- Pierre Rioux -#- Bourreau/lib/cbrain_error.rb
@@ -164,6 +175,7 @@ d6d113d95200930329ee529304008c8a8ca2f86a -#- 2013-08-28 14:37:02 -0400 -#- Natac
 01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- Bourreau/lib/recoverable_task.rb
 4f0a81387d51e2567f992db2fd4ba4229653cb64 -#- 2010-02-01 21:19:14 +0000 -#- tsherif -#- Bourreau/lib/resource_access.rb
 01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- Bourreau/lib/restartable_task.rb
+b7170e35c783a372beafe0ced9141023e2785c3e -#- 2021-12-08 16:17:20 -0500 -#- Pierre Rioux -#- Bourreau/lib/s3_sdkv3_connection.rb
 ddd240615fd0852904e3d551948d010dca7d40cc -#- 2011-04-19 19:32:10 +0000 -#- prioux -#- Bourreau/lib/scir.rb
 bcdce5e7d5895ceba1850646596318104b9c5378 -#- 2016-05-26 13:47:48 -0400 -#- Tristan Glatard -#- Bourreau/lib/scir_amazon.rb
 bcdce5e7d5895ceba1850646596318104b9c5378 -#- 2016-05-26 13:47:48 -0400 -#- Tristan Glatard -#- Bourreau/lib/scir_cloud.rb
@@ -213,7 +225,7 @@ dd5d17dcf9bf7ccb14b93d9c22dc5e5961b269e0 -#- 2020-03-06 13:22:57 -0500 -#- Pierr
 37afec02f36d43cc8c4aed5f79c18ee7d6923cc3 -#- 2010-02-17 17:02:57 +0000 -#- nkassis -#- Bourreau/vendor/cbrain
 712239cba27028969ff7cf2f2191af2e6cc0f3f2 -#- 2017-12-07 19:18:58 -0500 -#- Pierre Rioux -#- BrainPortal/.gitignore
 4ed47fcc8c35e42a8831de5d67bdf7a18a1e7d9d -#- 2016-12-02 17:53:51 -0500 -#- Pierre Rioux -#- BrainPortal/.rspec
-e72459e9a8d38553152f39aa55f6b497f58f1884 -#- 2020-04-08 20:21:28 -0400 -#- MontrealSergiy -#- BrainPortal/Gemfile
+1caba8617c594cea068b3cfd4e9d3e83b19b1566 -#- 2021-06-23 19:48:45 -0400 -#- Pierre Rioux -#- BrainPortal/Gemfile
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/README.md
 712239cba27028969ff7cf2f2191af2e6cc0f3f2 -#- 2017-12-07 19:18:58 -0500 -#- Pierre Rioux -#- BrainPortal/Rakefile
 495db4c873eeb3294c04187047ce1c3a1ffc6a0e -#- 2020-09-23 11:54:45 -0400 -#- MontrealSergiy -#- BrainPortal/app/assets/README.md
@@ -228,30 +240,30 @@ b0c034565dc45e84f9a61175d82c49c103a33e0a -#- 2017-12-07 19:19:05 -0500 -#- Pierr
 c5f94d0afdef502d91dc3d4f7e4dc789d3344ed0 -#- 2020-05-08 12:36:03 -0400 -#- candicecz -#- BrainPortal/app/assets/styleguide/NH_BARS.jpg
 c5f94d0afdef502d91dc3d4f7e4dc789d3344ed0 -#- 2020-05-08 12:36:03 -0400 -#- candicecz -#- BrainPortal/app/assets/styleguide/NH_BASE.jpg
 c5f94d0afdef502d91dc3d4f7e4dc789d3344ed0 -#- 2020-05-08 12:36:03 -0400 -#- candicecz -#- BrainPortal/app/assets/styleguide/NH_CONTROLS.jpg
-c5f94d0afdef502d91dc3d4f7e4dc789d3344ed0 -#- 2020-05-08 12:36:03 -0400 -#- candicecz -#- BrainPortal/app/assets/styleguide/NH_LOGO.jpg
+c9fb9e3fee3fd3cca83f158f443af068cf80bf18 -#- 2021-04-30 16:50:59 -0400 -#- MontrealSergiy -#- BrainPortal/app/assets/styleguide/NH_LOGO.jpg
 c5f94d0afdef502d91dc3d4f7e4dc789d3344ed0 -#- 2020-05-08 12:36:03 -0400 -#- candicecz -#- BrainPortal/app/assets/styleguide/NH_PALETTE.jpg
 c5f94d0afdef502d91dc3d4f7e4dc789d3344ed0 -#- 2020-05-08 12:36:03 -0400 -#- candicecz -#- BrainPortal/app/assets/styleguide/NH_TYPOGRAPHY.jpg
 c5f94d0afdef502d91dc3d4f7e4dc789d3344ed0 -#- 2020-05-08 12:36:03 -0400 -#- candicecz -#- BrainPortal/app/assets/styleguide/NH_VIEWS.jpg
 495db4c873eeb3294c04187047ce1c3a1ffc6a0e -#- 2020-09-23 11:54:45 -0400 -#- MontrealSergiy -#- BrainPortal/app/assets/stylesheets/SCSS_intro_tutorial.md
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/app/assets/stylesheets/application.css
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/app/assets/stylesheets/boutiques.css
-6ed7b6b39f50eb17a51e1b54edf6fda7e11a8019 -#- 2021-02-16 13:34:03 -0500 -#- MontrealSergiy -#- BrainPortal/app/assets/stylesheets/cbrain.css.erb
+5ebe8b1b59dd889d5bfc24857ba55754394527b9 -#- 2021-11-25 15:31:16 -0500 -#- Natacha Beck -#- BrainPortal/app/assets/stylesheets/cbrain.css.erb
 25dcb04652c4d89bf42e309573ef87c430d28365 -#- 2019-12-19 18:06:25 -0500 -#- Pierre Rioux -#- BrainPortal/app/assets/stylesheets/chosen_1.8.7.scss.erb
 712239cba27028969ff7cf2f2191af2e6cc0f3f2 -#- 2017-12-07 19:18:58 -0500 -#- Pierre Rioux -#- BrainPortal/app/assets/stylesheets/dynamic-table.css.erb
-fa68a44bee394caedb3ec707819777d44e6d64e6 -#- 2020-11-02 12:30:57 -0500 -#- MontrealSergiy -#- BrainPortal/app/assets/stylesheets/neurohub.scss.erb
-3b43a5a925bf9e44101d78db30ee89139f505a66 -#- 2019-10-17 14:53:52 -0400 -#- Pierre Rioux -#- BrainPortal/app/assets/stylesheets/noc.css
+2c9a78c7bae975c15f0fb81472992af41b952399 -#- 2021-11-23 13:13:18 -0500 -#- Pierre Rioux -#- BrainPortal/app/assets/stylesheets/neurohub.scss.erb
+a3cbb977f0a16799006c5a5621aa03a21a79d684 -#- 2022-01-13 13:16:05 -0500 -#- Pierre Rioux -#- BrainPortal/app/assets/stylesheets/noc.css
 6bfb9ee4872597d9d6025f19c33c4bd0dbad1943 -#- 2020-04-02 11:05:34 -0400 -#- candicecz -#- BrainPortal/app/assets/stylesheets/normalize.css
 7831421f48428776b8930222b39a19e2ec0859dd -#- 2020-02-19 18:11:44 -0500 -#- Pierre Rioux -#- BrainPortal/app/assets/stylesheets/userfiles.css.erb
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/app/channels/application_cable/channel.rb
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/app/channels/application_cable/connection.rb
 a10eb11c8c6a02be7ff7812c9015db9f71f6183d -#- 2020-05-25 14:17:10 -0400 -#- candicecz -#- BrainPortal/app/controllers/access_profiles_controller.rb
-8489096cd1fd761125ff86905c56146cc40f2b3a -#- 2020-08-20 14:48:47 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/application_controller.rb
+a46bed2d34bdabdae4f5d245ceeb42414d3feab3 -#- 2021-12-16 11:57:41 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/application_controller.rb
 14f4e56338eece4f06fa9499f90ddf305df38d04 -#- 2021-01-29 12:37:07 -0500 -#- MontrealSergiy -#- BrainPortal/app/controllers/bourreaux_controller.rb
-607c7be5c8d021277d406843b706b462fcba46d2 -#- 2020-09-18 14:43:27 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/carmin_controller.rb
+1caba8617c594cea068b3cfd4e9d3e83b19b1566 -#- 2021-06-23 19:48:45 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/carmin_controller.rb
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/concerns/.keep
 6f15a264d630eaedd1a35e802bda1135dea0d60d -#- 2020-02-21 14:37:55 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/controls_controller.rb
 c1275dbe2f97b577a66c42251ecd0fc038e5f9c6 -#- 2019-10-22 14:23:14 -0400 -#- Natacha Beck -#- BrainPortal/app/controllers/custom_filters_controller.rb
-50cc041cbe6c2d231b4e667c6011feec74b7cf6e -#- 2021-02-12 10:32:31 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/data_providers_controller.rb
+167804e09092aeee3048592447d95c6ad31b09a7 -#- 2021-12-02 12:39:34 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/data_providers_controller.rb
 a501bd2327c66d20f5f72f761a099d32157f2436 -#- 2019-05-07 14:26:03 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/exception_logs_controller.rb
 a40f9246549c5fc488ce81a46cc312e7daa4b085 -#- 2020-10-26 13:03:08 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/groups_controller.rb
 53a10b65e54e72386777a9effb0370ebf9ad2c86 -#- 2017-12-07 19:19:01 -0500 -#- Natacha Beck -#- BrainPortal/app/controllers/help_documents_controller.rb
@@ -259,33 +271,33 @@ a40f9246549c5fc488ce81a46cc312e7daa4b085 -#- 2020-10-26 13:03:08 -0400 -#- Pierr
 fa68a44bee394caedb3ec707819777d44e6d64e6 -#- 2020-11-02 12:30:57 -0500 -#- MontrealSergiy -#- BrainPortal/app/controllers/messages_controller.rb
 fa68a44bee394caedb3ec707819777d44e6d64e6 -#- 2020-11-02 12:30:57 -0500 -#- MontrealSergiy -#- BrainPortal/app/controllers/neurohub_application_controller.rb
 df83dc571792dcee95506b370f2a25f29ba4a627 -#- 2020-07-23 23:30:08 -0400 -#- Natacha Beck -#- BrainPortal/app/controllers/neurohub_portal_controller.rb
-427668908e350a1f38a4e2f9a4fe852ed44b7ce6 -#- 2020-08-18 14:56:23 -0400 -#- MontrealSergiy -#- BrainPortal/app/controllers/nh_invitations_controller.rb
-b96efebafc3091ffa6ebdfc2b752ea8beec34df2 -#- 2020-08-28 15:52:50 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/nh_loris_hooks_controller.rb
+783f532abb91f341b2725b6263209513a463a372 -#- 2021-11-24 15:39:35 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/nh_invitations_controller.rb
+46f47333b1158fecbf484793db1799315aa2b9f7 -#- 2021-04-27 20:53:36 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/nh_loris_hooks_controller.rb
 fa68a44bee394caedb3ec707819777d44e6d64e6 -#- 2020-11-02 12:30:57 -0500 -#- MontrealSergiy -#- BrainPortal/app/controllers/nh_messages_controller.rb
-64682a9ae3bd6a4e1381be4d626d7f33f622a219 -#- 2020-09-15 09:50:31 -0400 -#- Natacha Beck -#- BrainPortal/app/controllers/nh_projects_controller.rb
-450b5a9a46f722ee4b85dfaf23e4dbd73f39b02b -#- 2020-11-27 11:17:52 -0500 -#- MontrealSergiy -#- BrainPortal/app/controllers/nh_sessions_controller.rb
+783f532abb91f341b2725b6263209513a463a372 -#- 2021-11-24 15:39:35 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/nh_projects_controller.rb
+ebea9d509fbad76c57a7ec56ca0d68505c50307a -#- 2021-09-28 17:16:47 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/nh_sessions_controller.rb
 cbb1e4b160e0b779057cf67d2c6212e974bd80f6 -#- 2020-11-19 15:46:15 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/nh_signups_controller.rb
 4258713e1770ed84ebb86d8a9e741e7f4c196949 -#- 2020-04-28 14:59:37 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/nh_storages_controller.rb
-b55dc2fab79c78cff98788a2bc99102311c6da60 -#- 2020-12-07 11:10:03 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/nh_users_controller.rb
-17d7d309959fc02e9ff63fa47b76809dfc210346 -#- 2020-01-23 14:03:34 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/noc_controller.rb
-7f9644d1f4b6a900b7c594fd3091c3eb248c5a73 -#- 2020-04-09 12:33:28 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/portal_controller.rb
-9d097934b4ad21dd3eba9c8aaf8e988eacbac135 -#- 2019-10-23 15:20:44 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/resource_usage_controller.rb
-18bef8d55dda14f1f4bc664c48061c9fe23ece01 -#- 2019-07-18 17:25:56 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/service_controller.rb
+ebea9d509fbad76c57a7ec56ca0d68505c50307a -#- 2021-09-28 17:16:47 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/nh_users_controller.rb
+bbe84171a95aa429a2ad10f9fac21e8a57462aa5 -#- 2022-01-21 09:29:09 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/noc_controller.rb
+a20bce6401ec83f4467059cc0b87614712f3ad25 -#- 2021-05-26 12:36:46 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/portal_controller.rb
+ffad932287be1a353dc897abc17d2627e32f6c81 -#- 2022-01-24 15:33:01 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/resource_usage_controller.rb
+2b5dbbafc9dfd1007fa5b1a0e0a252083bafd49a -#- 2021-12-17 09:13:58 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/service_controller.rb
 81add9599705a5219617814a4fec5cb023004cf9 -#- 2017-12-07 19:19:03 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/session_data_controller.rb
-607c7be5c8d021277d406843b706b462fcba46d2 -#- 2020-09-18 14:43:27 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/sessions_controller.rb
-cbb1e4b160e0b779057cf67d2c6212e974bd80f6 -#- 2020-11-19 15:46:15 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/signups_controller.rb
+3c42d39e29a5851da9f8c6d5ca47e79cf866d4a9 -#- 2021-10-18 10:19:27 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/sessions_controller.rb
+829927d60e29ac174138747cd8ffc81590422280 -#- 2021-11-08 11:24:04 -0500 -#- Natacha Beck -#- BrainPortal/app/controllers/signups_controller.rb
 46f29825aa58db78d614bdeb34a2e4af87427a4b -#- 2018-02-06 17:52:47 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/sites_controller.rb
 24c25b3474801590604484e5f76fda4a954fea13 -#- 2020-04-08 17:02:58 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/tags_controller.rb
-e046f11542ea3da59b27dc7084641393c90d832a -#- 2021-02-01 11:56:41 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/tasks_controller.rb
-fbabdbdb4893d4338d9c3a3329c0bcd4b375c8c6 -#- 2020-11-23 11:32:50 -0500 -#- MontrealSergiy -#- BrainPortal/app/controllers/tool_configs_controller.rb
+1915a6d98691933156527eaca30d704236345853 -#- 2022-01-27 15:28:13 -0500 -#- Serge -#- BrainPortal/app/controllers/tasks_controller.rb
+ad34090533e1fa43108204c3dbd7d26a278a6916 -#- 2021-09-13 17:01:28 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/tool_configs_controller.rb
 b97cfc3e896d6dee5e8c9da5690e9f24010d1205 -#- 2020-11-19 16:58:45 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/tools_controller.rb
-e046f11542ea3da59b27dc7084641393c90d832a -#- 2021-02-01 11:56:41 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/userfiles_controller.rb
-5293c167a5f42103b6ed7d2f2c6832b3eca0dee2 -#- 2020-11-20 12:59:12 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/users_controller.rb
+2efd64c70bc056b6dfcaf3aa77add099ab6acf18 -#- 2021-06-07 16:31:10 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/userfiles_controller.rb
+c5a7e4e8cf1a5dad8624faacca12e7aa6b9df1e8 -#- 2021-11-25 16:02:10 -0500 -#- Natacha Beck -#- BrainPortal/app/controllers/users_controller.rb
 c2782dfcd26855ebc5e4ee0daa5da2ae3ec5b982 -#- 2020-06-19 11:07:27 -0400 -#- candicecz -#- BrainPortal/app/helpers/access_profiles_helper.rb
 97ce78b45fd7e7ce3f23ef750d260456443b9410 -#- 2013-08-28 13:52:22 -0400 -#- Natacha Beck -#- BrainPortal/app/helpers/access_report_helper.rb
-01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- BrainPortal/app/helpers/ajax_widget_helper.rb
+4c3482ba334d2ebb9d02d2e207e54df235cd14e9 -#- 2021-04-28 12:48:55 -0400 -#- Natacha Beck -#- BrainPortal/app/helpers/ajax_widget_helper.rb
 e9d5d84ac542f1bc35cdc42a04b09970e218f234 -#- 2020-04-08 20:05:24 -0400 -#- MontrealSergiy -#- BrainPortal/app/helpers/application_helper.rb
-b09c19a751366be3a4792a3b60ac9fb564f148a4 -#- 2020-04-09 14:51:01 -0400 -#- candicecz -#- BrainPortal/app/helpers/basic_helper.rb
+012d0c6ab442f0da03c4055610a48bbb9f860930 -#- 2021-04-29 10:11:47 -0400 -#- Pierre Rioux -#- BrainPortal/app/helpers/basic_helper.rb
 70403d4a9074bc93d2028f67d66b459719a75cb4 -#- 2015-05-06 15:23:08 -0400 -#- Natacha Beck -#- BrainPortal/app/helpers/data_providers_helper.rb
 06fbd979ae2102fc95ed1e98c30e040ddb2142ad -#- 2018-11-16 15:36:41 -0500 -#- Pierre Rioux -#- BrainPortal/app/helpers/date_range_panel_helper.rb
 ff28ae45e27417463a39d17b532c8f7ae7289658 -#- 2012-08-07 14:58:59 -0400 -#- Tarek Sherif -#- BrainPortal/app/helpers/disk_usage_report_helper.rb
@@ -302,10 +314,10 @@ ff28ae45e27417463a39d17b532c8f7ae7289658 -#- 2012-08-07 14:58:59 -0400 -#- Tarek
 0a7d467515e3c86d98114d036d514763c4118929 -#- 2018-09-05 14:58:10 -0400 -#- Pierre Rioux -#- BrainPortal/app/helpers/show_table_helper.rb
 ffb7fe821ec57c0b7b7005b7c4fe3c1a4ecb7fc7 -#- 2020-11-09 10:25:49 -0500 -#- Pierre Rioux -#- BrainPortal/app/helpers/switcher_helper.rb
 01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- BrainPortal/app/helpers/table_maker_helper.rb
-d280ff2acacf9dda97f7ea7d8d625b570584f83e -#- 2019-03-18 20:54:43 -0400 -#- Pierre Rioux -#- BrainPortal/app/helpers/task_form_helper.rb
+005b7c9c957e9e96bb119b4ebdefd6e9164f39ed -#- 2021-09-07 15:24:56 -0400 -#- Pierre Rioux -#- BrainPortal/app/helpers/task_form_helper.rb
 9dd6f2bcc9c05cbc62627705492fa398b44d5e88 -#- 2018-01-05 13:27:45 -0500 -#- Pierre Rioux -#- BrainPortal/app/helpers/tasks_helper.rb
-a5e09c5f13b9f3a5593732f997bdc9affc82a54a -#- 2017-04-23 12:21:43 -0400 -#- Pierre Rioux -#- BrainPortal/app/helpers/userfiles_helper.rb
-70403d4a9074bc93d2028f67d66b459719a75cb4 -#- 2015-05-06 15:23:08 -0400 -#- Natacha Beck -#- BrainPortal/app/helpers/users_helper.rb
+5ca19b087dc4241edc2b07ae323c7c0df6e896aa -#- 2021-04-28 15:08:19 -0400 -#- Pierre Rioux -#- BrainPortal/app/helpers/userfiles_helper.rb
+79de48d5acc566ef8ef60bb6edfbac6e5709b2a5 -#- 2021-11-17 16:07:12 -0500 -#- Natacha Beck -#- BrainPortal/app/helpers/users_helper.rb
 67bce169134affbd1f78ed76b2252b08a3969b20 -#- 2019-10-23 14:22:41 -0400 -#- Pierre Rioux -#- BrainPortal/app/helpers/zenodo_helper.rb
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/app/jobs/application_job.rb
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/app/mailers/application_mailer.rb
@@ -315,20 +327,23 @@ a5e09c5f13b9f3a5593732f997bdc9affc82a54a -#- 2017-04-23 12:21:43 -0400 -#- Pierr
 04c513d423b42a856c4493f105465b16bef3feeb -#- 2018-02-01 16:21:32 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/access_profile.rb
 04c513d423b42a856c4493f105465b16bef3feeb -#- 2018-02-01 16:21:32 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/active_record_log.rb
 0dc7a51c369ecb01b996228ae8bcd7efac0cb81c -#- 2020-07-29 16:14:09 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/admin_user.rb
-32033f99e38cbbaf5b8c29bfb5eca280b68e3202 -#- 2020-08-13 13:56:07 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/application_record.rb
+98eee53ecd68e4d4d33a413f4d1f63a3ced18a45 -#- 2021-04-28 13:13:09 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/application_record.rb
+79de48d5acc566ef8ef60bb6edfbac6e5709b2a5 -#- 2021-11-17 16:07:12 -0500 -#- Natacha Beck -#- BrainPortal/app/models/automated_user.rb
 598063ef6c013421ed34a9202fb6ab9e19e1fe33 -#- 2020-12-17 15:05:26 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/bourreau.rb
+a16ee1122476fe433314f20182e00ed239dab202 -#- 2022-01-27 15:20:20 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/boutiques_cluster_task.rb
+eb56ee2f0b1ac2a09ab18d23dfdb3a031c3fd5da -#- 2021-11-25 12:21:22 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/boutiques_portal_task.rb
 d652f273e94faf068ba1729143c03ef4148f0e02 -#- 2016-12-13 17:03:01 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/brain_portal.rb
 f04ea435ded1531cf7bec78f1e1cb618b9edd8da -#- 2019-07-07 15:39:29 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/carmin_path_data_provider.rb
 4aa8aade0b5a9bd94c98b727c280b0eb95785878 -#- 2020-08-13 16:05:10 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/cbrain_session.rb
 607c7be5c8d021277d406843b706b462fcba46d2 -#- 2020-09-18 14:43:27 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/cbrain_task.rb
-709c20505166010362199eb230c29daf3610bbbf -#- 2020-12-14 17:20:22 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/cluster_task.rb
+87fbdab73daca0abc4c95b6d08475a16acb3b153 -#- 2021-12-08 15:49:03 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/cluster_task.rb
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/concerns/.keep
 53a10b65e54e72386777a9effb0370ebf9ad2c86 -#- 2017-12-07 19:19:01 -0500 -#- Natacha Beck -#- BrainPortal/app/models/control.rb
 01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- BrainPortal/app/models/core_admin.rb
 fa68a44bee394caedb3ec707819777d44e6d64e6 -#- 2020-11-02 12:30:57 -0500 -#- MontrealSergiy -#- BrainPortal/app/models/count_resource_usage_for_user_message.rb
 a7258273e3f1161fa2edba04497ae8c1c4ac3fbd -#- 2019-09-14 15:30:35 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/cputime_resource_usage_for_cbrain_task.rb
 c1275dbe2f97b577a66c42251ecd0fc038e5f9c6 -#- 2019-10-22 14:23:14 -0400 -#- Natacha Beck -#- BrainPortal/app/models/custom_filter.rb
-56cecada04d2118d3fea297159124cac40db85ea -#- 2021-02-11 14:10:01 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/data_provider.rb
+f0951d2bdb11e6b21443f77ad4702de8699e2e8f -#- 2021-10-29 11:51:10 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/data_provider.rb
 7bb34c90f66d188335a42f84edc2e3a4f3655ea7 -#- 2020-01-31 10:35:02 -0500 -#- Natacha Beck -#- BrainPortal/app/models/en_cbrain_local_data_provider.rb
 5db22e629b5084bb909e3ce0d9939e9599753fc3 -#- 2016-06-03 17:57:00 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/en_cbrain_smart_data_provider.rb
 56cecada04d2118d3fea297159124cac40db85ea -#- 2021-02-11 14:10:01 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/en_cbrain_ssh_data_provider.rb
@@ -346,23 +361,28 @@ aef91372beb938684529ae217a67eeba2cbf6282 -#- 2020-08-19 17:33:44 -0400 -#- Pierr
 295dac6b67cd76f993e8ae42ba5bc40b5a9e47c7 -#- 2020-08-04 12:20:29 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/invitation.rb
 82b71c6a83f86f18de5c408a8a4dba30aa15bd1a -#- 2018-06-19 13:08:06 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/large_session_info.rb
 56cecada04d2118d3fea297159124cac40db85ea -#- 2021-02-11 14:10:01 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/local_data_provider.rb
-744f6276a1f2af2685eebe5d90ba66d4d6852391 -#- 2021-02-15 10:59:45 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/message.rb
+c0e63e53355bb84ce0dd58e1b21950f4e585f463 -#- 2021-02-26 10:19:42 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/message.rb
 04c513d423b42a856c4493f105465b16bef3feeb -#- 2018-02-01 16:21:32 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/meta_data_store.rb
+4e6697183a16299e96093fc33955d28382a5fe53 -#- 2022-01-24 15:12:58 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/monthly_cputime_resource_usage_for_cbrain_task.rb
+4e6697183a16299e96093fc33955d28382a5fe53 -#- 2022-01-24 15:12:58 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/monthly_space_resource_usage_for_cbrain_task.rb
+4e6697183a16299e96093fc33955d28382a5fe53 -#- 2022-01-24 15:12:58 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/monthly_space_resource_usage_for_userfile.rb
+4e6697183a16299e96093fc33955d28382a5fe53 -#- 2022-01-24 15:12:58 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/monthly_walltime_resource_usage_for_cbrain_task.rb
 50cc041cbe6c2d231b4e667c6011feec74b7cf6e -#- 2021-02-12 10:32:31 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/multilevel_ssh_data_provider.rb
 3da63c4dfc5b8de61c0074ad8449d97abd2a49cb -#- 2020-07-29 15:49:04 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/normal_user.rb
 23e38a508f5bc025b05649f3b7f85f62a6460c02 -#- 2016-07-05 09:28:03 -0400 -#- Andrew Doyle -#- BrainPortal/app/models/portal_agent_locker.rb
-67bce169134affbd1f78ed76b2252b08a3969b20 -#- 2019-10-23 14:22:41 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/portal_task.rb
+a5bc8f90a9625964b001fb8229ba6b07e4c7a81f -#- 2021-08-05 11:18:31 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/portal_task.rb
 dd5d17dcf9bf7ccb14b93d9c22dc5e5961b269e0 -#- 2020-03-06 13:22:57 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/remote_command.rb
 cbb1e4b160e0b779057cf67d2c6212e974bd80f6 -#- 2020-11-19 15:46:15 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/remote_resource.rb
 13aa69704cbed3f572ebc929b1fd0d41beadb69f -#- 2020-03-15 10:59:04 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/remote_resource_info.rb
 b9be50ddddf682be63e2240800e5080dc7762922 -#- 2019-09-16 12:47:51 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/resource_usage.rb
-f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/restricted_hash.rb
+e58779eae25346bd5f8e46998f735a23630389f2 -#- 2021-08-22 15:47:02 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/restricted_hash.rb
 56cecada04d2118d3fea297159124cac40db85ea -#- 2021-02-11 14:10:01 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/s3_data_provider.rb
-56cecada04d2118d3fea297159124cac40db85ea -#- 2021-02-11 14:10:01 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/s3_flat_data_provider.rb
+167804e09092aeee3048592447d95c6ad31b09a7 -#- 2021-12-02 12:39:34 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/s3_flat_data_provider.rb
 04c513d423b42a856c4493f105465b16bef3feeb -#- 2018-02-01 16:21:32 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/sanity_check.rb
 f41ca70703517a6620bcf8ae7a28be29364b1b7a -#- 2017-12-19 21:18:14 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/scratch_data_provider.rb
 cbb1e4b160e0b779057cf67d2c6212e974bd80f6 -#- 2020-11-19 15:46:15 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/signup.rb
-56cecada04d2118d3fea297159124cac40db85ea -#- 2021-02-11 14:10:01 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/sing_squashfs_data_provider.rb
+f0951d2bdb11e6b21443f77ad4702de8699e2e8f -#- 2021-10-29 11:51:10 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/sing_bindmount_data_provider.rb
+3b8e433c9f3f1faaf49cbd4adc2a3c95b0041a86 -#- 2021-12-01 18:22:44 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/sing_squashfs_data_provider.rb
 99005918548df8f362af68710b886b9e34557245 -#- 2019-10-09 16:47:51 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/site.rb
 3a2e9701e23bc5e58552b7d9dd5fa6335c3addf1 -#- 2017-03-06 15:17:06 -0500 -#- Andrew Doyle -#- BrainPortal/app/models/site_group.rb
 3da63c4dfc5b8de61c0074ad8449d97abd2a49cb -#- 2020-07-29 15:49:04 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/site_manager.rb
@@ -370,21 +390,21 @@ a7258273e3f1161fa2edba04497ae8c1c4ac3fbd -#- 2019-09-14 15:30:35 -0400 -#- Pierr
 a7258273e3f1161fa2edba04497ae8c1c4ac3fbd -#- 2019-09-14 15:30:35 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/space_resource_usage_for_cbrain_task.rb
 a7258273e3f1161fa2edba04497ae8c1c4ac3fbd -#- 2019-09-14 15:30:35 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/space_resource_usage_for_userfile.rb
 04c513d423b42a856c4493f105465b16bef3feeb -#- 2018-02-01 16:21:32 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/ssh_agent_unlocking_event.rb
-56cecada04d2118d3fea297159124cac40db85ea -#- 2021-02-11 14:10:01 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/ssh_data_provider.rb
-58fc182e0053dd048659744080645af2eedae126 -#- 2020-03-10 16:42:40 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/ssh_data_provider_base.rb
+f0951d2bdb11e6b21443f77ad4702de8699e2e8f -#- 2021-10-29 11:51:10 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/ssh_data_provider.rb
+f46666350ad7ff4074edabb2b5fd75b883d680c0 -#- 2021-06-07 16:39:19 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/ssh_data_provider_base.rb
 f7d6e9efadcd75edcb5bcd156fed5801395c2b6f -#- 2019-05-06 12:52:54 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/sync_status.rb
 c1e59cb4ac72a9ff66e76a42c607a269a043ee4d -#- 2019-10-30 16:14:47 -0400 -#- Natacha Beck -#- BrainPortal/app/models/system_group.rb
 04c513d423b42a856c4493f105465b16bef3feeb -#- 2018-02-01 16:21:32 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/tag.rb
 24c25b3474801590604484e5f76fda4a954fea13 -#- 2020-04-08 17:02:58 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/task_custom_filter.rb
 04c513d423b42a856c4493f105465b16bef3feeb -#- 2018-02-01 16:21:32 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/task_vm_allocation.rb
 a7258273e3f1161fa2edba04497ae8c1c4ac3fbd -#- 2019-09-14 15:30:35 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/time_resource_usage.rb
-a7258273e3f1161fa2edba04497ae8c1c4ac3fbd -#- 2019-09-14 15:30:35 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/tool.rb
-fba43a3b625d776d1afbc52714d0c6d103ba1eb3 -#- 2020-09-23 11:52:41 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/tool_config.rb
+ad34090533e1fa43108204c3dbd7d26a278a6916 -#- 2021-09-13 17:01:28 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/tool.rb
+7f2485c84e8da3aabdb4953e9abf86446303a342 -#- 2022-01-21 10:49:08 -0500 -#- Serge -#- BrainPortal/app/models/tool_config.rb
 3da63c4dfc5b8de61c0074ad8449d97abd2a49cb -#- 2020-07-29 15:49:04 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/user.rb
 ff28ae45e27417463a39d17b532c8f7ae7289658 -#- 2012-08-07 14:58:59 -0400 -#- Tarek Sherif -#- BrainPortal/app/models/user_group.rb
-56cecada04d2118d3fea297159124cac40db85ea -#- 2021-02-11 14:10:01 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/userfile.rb
+a46bed2d34bdabdae4f5d245ceeb42414d3feab3 -#- 2021-12-16 11:57:41 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/userfile.rb
 24c25b3474801590604484e5f76fda4a954fea13 -#- 2020-04-08 17:02:58 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/userfile_custom_filter.rb
-607c7be5c8d021277d406843b706b462fcba46d2 -#- 2020-09-18 14:43:27 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/userkey_flat_dir_ssh_data_provider.rb
+f46666350ad7ff4074edabb2b5fd75b883d680c0 -#- 2021-06-07 16:39:19 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/userkey_flat_dir_ssh_data_provider.rb
 56cecada04d2118d3fea297159124cac40db85ea -#- 2021-02-11 14:10:01 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/vault_local_data_provider.rb
 5db22e629b5084bb909e3ce0d9939e9599753fc3 -#- 2016-06-03 17:57:00 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/vault_smart_data_provider.rb
 56cecada04d2118d3fea297159124cac40db85ea -#- 2021-02-11 14:10:01 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/vault_ssh_data_provider.rb
@@ -440,10 +460,10 @@ bcba0a16e2e7c8e018e58a630d65130fefc89632 -#- 2015-09-11 17:10:28 -0400 -#- Remi 
 01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- BrainPortal/app/views/data_providers/dp_transfers.html.erb
 2eceeb92afa749dd8c5c28082493fcdc0111af95 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/data_providers/index.html.erb
 2eceeb92afa749dd8c5c28082493fcdc0111af95 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/data_providers/index.js.erb
-872dd24f17d63a477ffc3d6cef99edd6311a7e50 -#- 2021-02-25 13:33:38 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/data_providers/new.html.erb
+167804e09092aeee3048592447d95c6ad31b09a7 -#- 2021-12-02 12:39:34 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/data_providers/new.html.erb
 b3392f383d681b2ee6cdd51877c29a5ce6b2cf33 -#- 2020-02-04 15:13:51 -0500 -#- Natacha Beck -#- BrainPortal/app/views/data_providers/report.html.erb
 a5bafa8c01b857e358d6cbad182e6f9e0cf66a3b -#- 2015-09-28 14:16:46 -0400 -#- Remi Bernard -#- BrainPortal/app/views/data_providers/report.js.erb
-872dd24f17d63a477ffc3d6cef99edd6311a7e50 -#- 2021-02-25 13:33:38 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/data_providers/show.html.erb
+167804e09092aeee3048592447d95c6ad31b09a7 -#- 2021-12-02 12:39:34 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/data_providers/show.html.erb
 3a42fd7db2bf64ee3acc7c9163de6c8ac376343b -#- 2015-09-21 15:27:17 -0400 -#- Remi Bernard -#- BrainPortal/app/views/exception_logs/_exception_logs_table.html.erb
 0d2b8b4f5ab294edb90d29aa9d01e4ff722e4ef2 -#- 2012-05-09 18:32:53 -0400 -#- Tarek Sherif -#- BrainPortal/app/views/exception_logs/index.html.erb
 0d2b8b4f5ab294edb90d29aa9d01e4ff722e4ef2 -#- 2012-05-09 18:32:53 -0400 -#- Tarek Sherif -#- BrainPortal/app/views/exception_logs/index.js.erb
@@ -495,52 +515,59 @@ fa68a44bee394caedb3ec707819777d44e6d64e6 -#- 2020-11-02 12:30:57 -0500 -#- Montr
 fa68a44bee394caedb3ec707819777d44e6d64e6 -#- 2020-11-02 12:30:57 -0500 -#- MontrealSergiy -#- BrainPortal/app/views/nh_messages/new.html.erb
 c5f94d0afdef502d91dc3d4f7e4dc789d3344ed0 -#- 2020-05-08 12:36:03 -0400 -#- candicecz -#- BrainPortal/app/views/nh_projects/_files_table.html.erb
 47711bbc73ffd88d6ad549fe94e6c6c9dd56e24b -#- 2020-08-10 09:43:41 -0400 -#- candicecz -#- BrainPortal/app/views/nh_projects/_form.html.erb
-c5f94d0afdef502d91dc3d4f7e4dc789d3344ed0 -#- 2020-05-08 12:36:03 -0400 -#- candicecz -#- BrainPortal/app/views/nh_projects/_projects_table.html.erb
+2c9a78c7bae975c15f0fb81472992af41b952399 -#- 2021-11-23 13:13:18 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/nh_projects/_projects_table.html.erb
 d7eeb0757589695a8f64bd5b822fda329a343022 -#- 2020-08-05 12:37:58 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/nh_projects/_show_license_text.html.erb
 c5f94d0afdef502d91dc3d4f7e4dc789d3344ed0 -#- 2020-05-08 12:36:03 -0400 -#- candicecz -#- BrainPortal/app/views/nh_projects/edit.html.erb
 c5f94d0afdef502d91dc3d4f7e4dc789d3344ed0 -#- 2020-05-08 12:36:03 -0400 -#- candicecz -#- BrainPortal/app/views/nh_projects/files.html.erb
-ed5c6469fa875344aee9eff907b109c0a07c3266 -#- 2020-07-29 11:03:39 -0400 -#- candicecz -#- BrainPortal/app/views/nh_projects/index.html.erb
+2c9a78c7bae975c15f0fb81472992af41b952399 -#- 2021-11-23 13:13:18 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/nh_projects/index.html.erb
 3497104eb57ff2344393d82bad1da5f04799bb48 -#- 2020-04-17 10:21:43 -0400 -#- candicecz -#- BrainPortal/app/views/nh_projects/new.html.erb
 9111a041cbe70ebe2b9e3d55353a97c73b244791 -#- 2020-08-12 10:03:34 -0400 -#- Natacha Beck -#- BrainPortal/app/views/nh_projects/new_file.html.erb
-dfc377024268e35dff7dbce075138a989addfe9b -#- 2020-08-05 15:24:30 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/nh_projects/new_license.html.erb
-91bbb8448ffb1d897b617c3d64412add646f45f6 -#- 2020-11-23 15:38:09 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/nh_projects/show.html.erb
+ca4155a38b45e3339b93e3e372d0c9ca71827195 -#- 2021-03-30 13:52:36 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/nh_projects/new_license.html.erb
+783f532abb91f341b2725b6263209513a463a372 -#- 2021-11-24 15:39:35 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/nh_projects/show.html.erb
 d7eeb0757589695a8f64bd5b822fda329a343022 -#- 2020-08-05 12:37:58 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/nh_projects/show_license.html.erb
-450b5a9a46f722ee4b85dfaf23e4dbd73f39b02b -#- 2020-11-27 11:17:52 -0500 -#- MontrealSergiy -#- BrainPortal/app/views/nh_sessions/new.html.erb
-495db4c873eeb3294c04187047ce1c3a1ffc6a0e -#- 2020-09-23 11:54:45 -0400 -#- MontrealSergiy -#- BrainPortal/app/views/nh_sessions/request_password.html.erb
-57f7739ec3736705d13208a136755dce35b2a1af -#- 2020-02-13 16:26:53 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/nh_sessions/send_password.html.erb
+ebea9d509fbad76c57a7ec56ca0d68505c50307a -#- 2021-09-28 17:16:47 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/nh_sessions/new.html.erb
+ca4155a38b45e3339b93e3e372d0c9ca71827195 -#- 2021-03-30 13:52:36 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/nh_sessions/request_password.html.erb
+ca4155a38b45e3339b93e3e372d0c9ca71827195 -#- 2021-03-30 13:52:36 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/nh_sessions/send_password.html.erb
 527d1cd174451bce9fc9847c5fa1f2e9ae1550fb -#- 2020-07-28 14:08:14 -0400 -#- Natacha Beck -#- BrainPortal/app/views/nh_signups/confirm.html.erb
-68b7dc09175268cb197a4c4c77c970c484215d6e -#- 2020-11-20 12:39:49 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/nh_signups/new.html.erb
+7fb9876ea33cb5819b7cacc930ccbf63d104c4a0 -#- 2021-11-22 12:48:01 -0500 -#- Serge -#- BrainPortal/app/views/nh_signups/new.html.erb
 c5f94d0afdef502d91dc3d4f7e4dc789d3344ed0 -#- 2020-05-08 12:36:03 -0400 -#- candicecz -#- BrainPortal/app/views/nh_signups/show.html.erb
 c5f94d0afdef502d91dc3d4f7e4dc789d3344ed0 -#- 2020-05-08 12:36:03 -0400 -#- candicecz -#- BrainPortal/app/views/nh_storages/_form.html.erb
 05f24b38160e8353631a262bef4b9e7a6895cf2c -#- 2020-05-19 10:46:08 -0400 -#- Xavier Lecours -#- BrainPortal/app/views/nh_storages/_show_key.html.erb
 4e801daa4d93c13d4c0759a217bc6e875b374aac -#- 2020-04-20 14:55:54 -0400 -#- candicecz -#- BrainPortal/app/views/nh_storages/edit.html.erb
-c5f94d0afdef502d91dc3d4f7e4dc789d3344ed0 -#- 2020-05-08 12:36:03 -0400 -#- candicecz -#- BrainPortal/app/views/nh_storages/index.html.erb
+ca4155a38b45e3339b93e3e372d0c9ca71827195 -#- 2021-03-30 13:52:36 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/nh_storages/index.html.erb
 c5f94d0afdef502d91dc3d4f7e4dc789d3344ed0 -#- 2020-05-08 12:36:03 -0400 -#- candicecz -#- BrainPortal/app/views/nh_storages/new.html.erb
-c5f94d0afdef502d91dc3d4f7e4dc789d3344ed0 -#- 2020-05-08 12:36:03 -0400 -#- candicecz -#- BrainPortal/app/views/nh_storages/registered_report.html.erb
-c5f94d0afdef502d91dc3d4f7e4dc789d3344ed0 -#- 2020-05-08 12:36:03 -0400 -#- candicecz -#- BrainPortal/app/views/nh_storages/show.html.erb
-75ba886a49c37381cdedc23d50caa71da78203c4 -#- 2020-11-30 12:26:02 -0500 -#- MontrealSergiy -#- BrainPortal/app/views/nh_users/_form.html.erb
+ca4155a38b45e3339b93e3e372d0c9ca71827195 -#- 2021-03-30 13:52:36 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/nh_storages/registered_report.html.erb
+ca4155a38b45e3339b93e3e372d0c9ca71827195 -#- 2021-03-30 13:52:36 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/nh_storages/show.html.erb
+fdb2d55b62f8ee84b459ef8dabcfc8ece20beb8c -#- 2021-12-10 15:39:18 -0500 -#- Serge -#- BrainPortal/app/views/nh_users/_form.html.erb
 2a2c81a283a43f4c27374eb7062b268e56112df4 -#- 2020-08-12 17:52:16 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/nh_users/change_password.html.erb
 d5740e4b555d0804f3ef991de0cbc8fa71c8ccca -#- 2020-04-16 14:48:38 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/nh_users/edit.html.erb
 8489096cd1fd761125ff86905c56146cc40f2b3a -#- 2020-08-20 14:48:47 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/nh_users/new_token.html.erb
-450b5a9a46f722ee4b85dfaf23e4dbd73f39b02b -#- 2020-11-27 11:17:52 -0500 -#- MontrealSergiy -#- BrainPortal/app/views/nh_users/show.html.erb
-6854160636a58ebebc379fe9b5260091b803fbe6 -#- 2020-04-12 16:26:02 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/noc/dashboard.html.erb
+ebea9d509fbad76c57a7ec56ca0d68505c50307a -#- 2021-09-28 17:16:47 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/nh_users/show.html.erb
+2439bd526d079923b96c710ac86ac15d36e66317 -#- 2021-12-10 15:54:22 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/noc/cpu.html.erb
+8a102751e9c818baeb903de230cd8b2b5e36a1ce -#- 2021-10-01 12:34:36 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/noc/dashboard.html.erb
+a3cbb977f0a16799006c5a5621aa03a21a79d684 -#- 2022-01-13 13:16:05 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/noc/tools.html.erb
+a7edf096b00faeb56c8a8cc1ec72dc4361c78527 -#- 2022-01-07 12:37:29 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/noc/users.html.erb
+47bf3a94efa225c5d929cdc8dc5a6e7c2678f45f -#- 2021-05-20 12:33:05 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/portal/_available_datasets_table.html.erb
+a20bce6401ec83f4467059cc0b87614712f3ad25 -#- 2021-05-26 12:36:46 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/portal/_available_tools_table.html.erb
 49ca92947ec1e8cd21399ea40399859b5d8122e3 -#- 2016-09-19 16:12:00 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/portal/_logo_footer.html.erb
 f8ffc64b552d5dabb75aad1538a4a278aa7ba118 -#- 2016-09-19 15:26:25 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/portal/about_us.html.erb
+3b44321cf90c7ec00a457afe15fd45126669c4b7 -#- 2021-05-20 14:07:30 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/portal/available.html.erb
 f66a083f2a47d9d0c738766e0eda788395a7cb9b -#- 2018-01-25 17:16:32 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/portal/credits.html.erb
 4421af11b41dbae7f167ee1e17d6c9a599e6aad1 -#- 2018-12-07 17:18:46 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/portal/portal_log.html.erb
+a71d05d4aabdf3cb9f87a32eed3fea60ac39466d -#- 2021-05-03 15:19:09 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/portal/provenance.html.erb
 6a03025c454b0533051f66cb2542c752239c9bfc -#- 2020-06-15 11:51:36 -0400 -#- candicecz -#- BrainPortal/app/views/portal/report.html.erb
 ab3e2bc93ca3e388d2acdcaa1a1335a805e4452e -#- 2018-09-06 14:09:01 -0400 -#- MontrealSergiy -#- BrainPortal/app/views/portal/search.html.erb
 6a1d5e216964ceb945495978b70220a921f27f5e -#- 2012-05-10 15:26:32 -0400 -#- Natacha Beck -#- BrainPortal/app/views/portal/show_license.html.erb
 b1a0d5a20b2668342a8baa0af2ed4a3b5e8cf1ab -#- 2019-05-07 18:35:15 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/portal/swagger.html.erb
-4e24240cf0bd4f69642b9c2f2d19e7dcaaf2a45e -#- 2020-03-25 15:04:13 -0400 -#- Natacha Beck -#- BrainPortal/app/views/portal/welcome.html.erb
+47bf3a94efa225c5d929cdc8dc5a6e7c2678f45f -#- 2021-05-20 12:33:05 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/portal/welcome.html.erb
 eeecb816d8a57fbbf5405eccad7edd4da5aaaf2a -#- 2020-09-14 09:02:24 -0400 -#- Natacha Beck -#- BrainPortal/app/views/resource_usage/_resource_usage_table.html.erb
 40cdaed3acfe10dc6e10c8b1dc5b441979d9b5cb -#- 2019-09-17 16:33:21 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/resource_usage/index.html.erb
 40cdaed3acfe10dc6e10c8b1dc5b441979d9b5cb -#- 2019-09-17 16:33:21 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/resource_usage/index.js.erb
-f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/service/detailed_stats.html.erb
+2b5dbbafc9dfd1007fa5b1a0e0a252083bafd49a -#- 2021-12-17 09:13:58 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/service/detailed_stats.html.erb
 18bef8d55dda14f1f4bc664c48061c9fe23ece01 -#- 2019-07-18 17:25:56 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/service/info.html.erb
-2ee971f55e22ab9da28c77c30b6878893f9cce4c -#- 2014-07-21 17:55:33 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/service/stats.html.erb
+2b5dbbafc9dfd1007fa5b1a0e0a252083bafd49a -#- 2021-12-17 09:13:58 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/service/stats.html.erb
 18bef8d55dda14f1f4bc664c48061c9fe23ece01 -#- 2019-07-18 17:25:56 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/service/support.html.erb
-08e2f2824ac78750f0b6b7139ee43c21a8865642 -#- 2016-10-12 11:31:20 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/sessions/new.html.erb
+1caba8617c594cea068b3cfd4e9d3e83b19b1566 -#- 2021-06-23 19:48:45 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/sessions/new.html.erb
 d88c55764bb7f3d79446d68c5f5f87c28c941124 -#- 2016-11-16 16:38:09 -0500 -#- Andrew Doyle -#- BrainPortal/app/views/shared/_access_profile_checkbox_table.html.erb
 487e2f071d0d55a2d0e3e5d9db7778c856416b7b -#- 2016-01-13 09:05:34 -0500 -#- Remi Bernard -#- BrainPortal/app/views/shared/_active_filters.html.erb
 d5bdc11809455300581173ec0232ef856c6751d8 -#- 2016-08-01 18:34:55 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/shared/_color_picker.html.erb
@@ -562,7 +589,7 @@ dbe071717651c75272b306eb705aad34e0d60ff0 -#- 2020-08-04 16:37:38 -0400 -#- Pierr
 3e2ab43e4f00b11a6df6d15c3e38f9535f833272 -#- 2016-10-11 15:36:58 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/signups/index.html.erb
 3e2ab43e4f00b11a6df6d15c3e38f9535f833272 -#- 2016-10-11 15:36:58 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/signups/index.js.erb
 9863b084c86df478187212536d17d65963411477 -#- 2016-10-11 19:10:57 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/signups/multi_action.html.erb
-527d1cd174451bce9fc9847c5fa1f2e9ae1550fb -#- 2020-07-28 14:08:14 -0400 -#- Natacha Beck -#- BrainPortal/app/views/signups/new.html.erb
+7fb9876ea33cb5819b7cacc930ccbf63d104c4a0 -#- 2021-11-22 12:48:01 -0500 -#- Serge -#- BrainPortal/app/views/signups/new.html.erb
 dbe071717651c75272b306eb705aad34e0d60ff0 -#- 2020-08-04 16:37:38 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/signups/show.html.erb
 5ba82d970370c700b8a748630e3a05db5ec3878a -#- 2018-02-08 16:50:06 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/sites/_sites_table.html.erb
 2eceeb92afa749dd8c5c28082493fcdc0111af95 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/sites/index.html.erb
@@ -572,7 +599,7 @@ a501bd2327c66d20f5f72f761a099d32157f2436 -#- 2019-05-07 14:26:03 -0400 -#- Pierr
 8c480b7a3ebd7a63c8e61e63dbc338ecbb67597f -#- 2019-10-07 12:29:18 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/tasks/_control.html.erb
 2eceeb92afa749dd8c5c28082493fcdc0111af95 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/tasks/_filters.html.erb
 d280ff2acacf9dda97f7ea7d8d625b570584f83e -#- 2019-03-18 20:54:43 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/tasks/_output_renaming_fieldset.html.erb
-57d07e87ce10b2eca93b3568653e4d6c432ee460 -#- 2015-07-28 15:44:49 -0400 -#- Remi Bernard -#- BrainPortal/app/views/tasks/_params.html.erb
+fe87bd0ad20874176f2558f31f6782efaaf39cb4 -#- 2021-09-19 16:09:01 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/tasks/_params.html.erb
 1191065c15b50be5e6afdc844608f80c0c9cb26f -#- 2019-05-07 16:42:58 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/tasks/_presets.html.erb
 40cdaed3acfe10dc6e10c8b1dc5b441979d9b5cb -#- 2019-09-17 16:33:21 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/tasks/_resource_usage.html.erb
 5aa3655ab722465ce8981813e50f187e6a1fc954 -#- 2016-09-06 16:33:35 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/tasks/_show_prereqs.html.erb
@@ -585,12 +612,12 @@ d280ff2acacf9dda97f7ea7d8d625b570584f83e -#- 2019-03-18 20:54:43 -0400 -#- Pierr
 8b748f87ae1c4e871d541a5e9fb6fffd59bd79a0 -#- 2012-10-12 17:51:02 -0400 -#- Tarek Sherif -#- BrainPortal/app/views/tasks/index.html.erb
 a5bafa8c01b857e358d6cbad182e6f9e0cf66a3b -#- 2015-09-28 14:16:46 -0400 -#- Remi Bernard -#- BrainPortal/app/views/tasks/index.js.erb
 692ff77d48c70be9ccc7b7f8d3ee583834e9a507 -#- 2015-01-06 17:17:58 -0500 -#- Natacha Beck -#- BrainPortal/app/views/tasks/new.html.erb
-757bd09da701ba91ee5bef58dc446fcec6b5f3d4 -#- 2020-05-29 14:50:19 -0400 -#- Candice -#- BrainPortal/app/views/tasks/show.html.erb
+641971b6cea07f3a5f33ac668362a641002c391e -#- 2021-09-16 17:13:37 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/tasks/show.html.erb
 67bce169134affbd1f78ed76b2252b08a3969b20 -#- 2019-10-23 14:22:41 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/tasks/zenodo.html.erb
 ab3e2bc93ca3e388d2acdcaa1a1335a805e4452e -#- 2018-09-06 14:09:01 -0400 -#- MontrealSergiy -#- BrainPortal/app/views/tool_configs/_by_resource.erb
 ab3e2bc93ca3e388d2acdcaa1a1335a805e4452e -#- 2018-09-06 14:09:01 -0400 -#- MontrealSergiy -#- BrainPortal/app/views/tool_configs/_by_user.html.erb
 656945deaf11556ae55ed0bd8108a6b308dcdd89 -#- 2018-11-16 12:19:31 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/tool_configs/_env_key_value_pair.erb
-9803f76a44a5517ebb2e08a5a4a6739a51daa366 -#- 2020-12-01 16:28:05 -0500 -#- MontrealSergiy -#- BrainPortal/app/views/tool_configs/_form_fields.html.erb
+1b90a3352d9cd1f2446303fd54138b3c1f0c9ac0 -#- 2022-01-21 10:02:53 -0500 -#- Serge -#- BrainPortal/app/views/tool_configs/_form_fields.html.erb
 c4ea5b07f4c6a44368172830f7495a50cc7deb6f -#- 2019-09-17 12:33:10 -0400 -#- Natacha Beck -#- BrainPortal/app/views/tool_configs/_tool_configs_table.html.erb
 3a9dfece076bc8fca9e2ec445057c0b8a3ce03ba -#- 2016-10-07 17:28:40 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/tool_configs/index.html.erb
 3a9dfece076bc8fca9e2ec445057c0b8a3ce03ba -#- 2016-10-07 17:28:40 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/tool_configs/index.js.erb
@@ -628,7 +655,7 @@ d498d11e37f27b588bfe4df9aad9d684178e4a27 -#- 2012-08-08 15:54:19 -0400 -#- Tarek
 61b8eca1774a47160fc79eed1a1ad4d7e8b7dcf5 -#- 2020-08-18 14:04:21 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/users/new.html.erb
 4aa8aade0b5a9bd94c98b727c280b0eb95785878 -#- 2020-08-13 16:05:10 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/users/new_token.html.erb
 2eceeb92afa749dd8c5c28082493fcdc0111af95 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/users/request_password.html.erb
-4aa8aade0b5a9bd94c98b727c280b0eb95785878 -#- 2020-08-13 16:05:10 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/users/show.html.erb
+fdb2d55b62f8ee84b459ef8dabcfc8ece20beb8c -#- 2021-12-10 15:39:18 -0500 -#- Serge -#- BrainPortal/app/views/users/show.html.erb
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/bin/bundle
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/bin/rails
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/bin/rake
@@ -636,16 +663,35 @@ d498d11e37f27b588bfe4df9aad9d684178e4a27 -#- 2012-08-08 15:54:19 -0400 -#- Tarek
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/bin/spring
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/bin/update
 88b60a0371a8d338c05adc7b711f3575d5edcae8 -#- 2020-07-23 15:05:50 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/.gitignore
+f00997eb767f27e6a17f23a6267d2ddbb0d22b0b -#- 2022-01-25 11:56:35 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/boutiques_descriptors/new_multi_boutiques_demo.json
 c1c5c30eda2b2d4b2c3bf2b82b5b0bc50f738299 -#- 2015-04-20 14:18:23 -0400 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/bash_scriptor/bourreau/bash_scriptor.rb
 67bce169134affbd1f78ed76b2252b08a3969b20 -#- 2019-10-23 14:22:41 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/bash_scriptor/portal/bash_scriptor.rb
 41562bbad4c91100c05a806e0d1eee779dff1783 -#- 2015-01-28 18:35:17 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/bash_scriptor/views/_show_params.html.erb
 01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/bash_scriptor/views/_task_params.html.erb
+005b7c9c957e9e96bb119b4ebdefd6e9164f39ed -#- 2021-09-07 15:24:56 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/bourreau/boutiques_task.rb
+005b7c9c957e9e96bb119b4ebdefd6e9164f39ed -#- 2021-09-07 15:24:56 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/portal/boutiques_task.rb
+0ba73d176edc86c246589fea6e7052bac26965ec -#- 2021-09-21 18:19:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/views/_boutiques_group.html.erb
+106ff000629d75c16259daf069aa8b26abc7435b -#- 2021-09-24 15:40:01 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/views/_boutiques_input.html.erb
+ad34090533e1fa43108204c3dbd7d26a278a6916 -#- 2021-09-13 17:01:28 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/views/_boutiques_preview.html.erb
+ad34090533e1fa43108204c3dbd7d26a278a6916 -#- 2021-09-13 17:01:28 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/views/_description.html.erb
+d6219529c978cea00c7e1998858518774b472f1b -#- 2021-09-17 14:51:01 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/views/_dropdown.html.erb
+5ebe8b1b59dd889d5bfc24857ba55754394527b9 -#- 2021-11-25 15:31:16 -0500 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/views/_edit_help.html.erb
+45e104c4833e7cdcbd57a2d3d1164d249a525c80 -#- 2021-12-16 15:05:28 -0500 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/views/_form_js.html.erb
+4a59d5e0468e9e5bbd5f978696c63e7cad81dc81 -#- 2021-09-16 16:30:42 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/views/_group_checkbox.html.erb
+ad34090533e1fa43108204c3dbd7d26a278a6916 -#- 2021-09-13 17:01:28 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/views/_html_input.html.erb
+b8287da6797c5d19ba413950786249423bcde982 -#- 2021-09-11 22:36:25 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/views/_html_input_list.html.erb
+26f716aad71ace57b9d394e4ba6a7639eff72d2e -#- 2021-12-08 15:37:02 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/views/_html_select.html.erb
+0ba73d176edc86c246589fea6e7052bac26965ec -#- 2021-09-21 18:19:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/views/_input_checkbox.html.erb
+b8287da6797c5d19ba413950786249423bcde982 -#- 2021-09-11 22:36:25 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/views/_input_label.html.erb
+0ba73d176edc86c246589fea6e7052bac26965ec -#- 2021-09-21 18:19:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/views/_opt_checkbox.html.erb
+641971b6cea07f3a5f33ac668362a641002c391e -#- 2021-09-16 17:13:37 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/views/_show_params.html.erb
+0ba73d176edc86c246589fea6e7052bac26965ec -#- 2021-09-21 18:19:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/views/_task_params.html.erb
 e760ff349380178b4b022d6bd22d4efa8fa670cb -#- 2016-11-23 17:17:58 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/cb_serializer/bourreau/cb_serializer.rb
 b0c034565dc45e84f9a61175d82c49c103a33e0a -#- 2017-12-07 19:19:05 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/cb_serializer/common/cb_serializer.rb
 c02799a0fc8b7e21be2f0753babc879483701920 -#- 2017-12-07 19:19:03 -0500 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/cb_serializer/portal/cb_serializer.rb
 757bd09da701ba91ee5bef58dc446fcec6b5f3d4 -#- 2020-05-29 14:50:19 -0400 -#- Candice -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/cb_serializer/views/_show_params.html.erb
 41562bbad4c91100c05a806e0d1eee779dff1783 -#- 2015-01-28 18:35:17 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/cb_serializer/views/_task_params.html.erb
-ffd3c8364ff1f0bd4fe1f735128c99b4b3fe46ac -#- 2019-09-18 13:59:29 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/diagnostics/bourreau/diagnostics.rb
+cea3baa1e96faebee88a97fa5b93b67843f35c69 -#- 2021-10-22 15:40:16 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/diagnostics/bourreau/diagnostics.rb
 67bce169134affbd1f78ed76b2252b08a3969b20 -#- 2019-10-23 14:22:41 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/diagnostics/portal/diagnostics.rb
 41562bbad4c91100c05a806e0d1eee779dff1783 -#- 2015-01-28 18:35:17 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/diagnostics/views/_show_params.html.erb
 ffd3c8364ff1f0bd4fe1f735128c99b4b3fe46ac -#- 2019-09-18 13:59:29 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/diagnostics/views/_task_params.html.erb
@@ -665,6 +711,13 @@ a68f8891f0ff03a3dc92adb1bc79c9e932b3caf4 -#- 2018-03-29 13:48:15 -0400 -#- Pierr
 c02799a0fc8b7e21be2f0753babc879483701920 -#- 2017-12-07 19:19:03 -0500 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/parallelizer/portal/parallelizer.rb
 757bd09da701ba91ee5bef58dc446fcec6b5f3d4 -#- 2020-05-29 14:50:19 -0400 -#- Candice -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/parallelizer/views/_show_params.html.erb
 bc5ff0c2fb5f055763f0601d1af6b49a0595d0cf -#- 2015-04-23 17:09:58 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/parallelizer/views/_task_params.html.erb
+9b921827aed320be83c8901b754065bb5ab5d78b -#- 2021-11-17 15:01:55 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/simple_file_extractor/bourreau/simple_file_extractor.rb
+e9b89b1e9da949aa642f3ee96d85b1e3dedd9d2b -#- 2021-06-11 16:30:11 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/simple_file_extractor/common/simple_file_extractor.rb
+313daf5f10d4fa02c567fe6d91dcf01cd073ea9f -#- 2021-06-14 11:53:35 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/simple_file_extractor/portal/simple_file_extractor.rb
+e9b89b1e9da949aa642f3ee96d85b1e3dedd9d2b -#- 2021-06-11 16:30:11 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/simple_file_extractor/views/_show_params.html.erb
+313daf5f10d4fa02c567fe6d91dcf01cd073ea9f -#- 2021-06-14 11:53:35 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/simple_file_extractor/views/_task_params.html.erb
+1be9f03e2252b95a398be358bfdcd06a74416a70 -#- 2021-06-14 12:39:10 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/simple_file_extractor/views/public/edit_params_help.html
+e9b89b1e9da949aa642f3ee96d85b1e3dedd9d2b -#- 2021-06-11 16:30:11 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/simple_file_extractor/views/public/tool_info.html
 c1c5c30eda2b2d4b2c3bf2b82b5b0bc50f738299 -#- 2015-04-20 14:18:23 -0400 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/simple_monitor/bourreau/simple_monitor.rb
 41562bbad4c91100c05a806e0d1eee779dff1783 -#- 2015-01-28 18:35:17 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/simple_monitor/portal/simple_monitor.rb
 41562bbad4c91100c05a806e0d1eee779dff1783 -#- 2015-01-28 18:35:17 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/simple_monitor/views/_show_params.html.erb
@@ -675,32 +728,33 @@ d2697ef44b58c5d0912391e1656af82fe5e39d40 -#- 2016-08-12 15:43:49 -0400 -#- Trist
 d2697ef44b58c5d0912391e1656af82fe5e39d40 -#- 2016-08-12 15:43:49 -0400 -#- Tristan Glatard -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/start_vm/views/_show_params.html.erb
 d2697ef44b58c5d0912391e1656af82fe5e39d40 -#- 2016-08-12 15:43:49 -0400 -#- Tristan Glatard -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task/start_vm/views/_task_params.html.erb
 2a72a34c29a0575d406a6391b64025205b1c72fb -#- 2019-07-22 18:46:40 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task_descriptors/boutiques_demo.json
+e58779eae25346bd5f8e46998f735a23630389f2 -#- 2021-08-22 15:47:02 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task_descriptors/multi_boutiques_demo.json
 41562bbad4c91100c05a806e0d1eee779dff1783 -#- 2015-01-28 18:35:17 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/audio_file/audio_file.rb
 f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/bash_source_file/bash_source_file.rb
-746e1c972d22803eed831ebf6a6d66b69b3ab36b -#- 2020-12-02 14:13:29 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/cbrain_file_list/cbrain_file_list.rb
+2439bd526d079923b96c710ac86ac15d36e66317 -#- 2021-12-10 15:54:22 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/cbrain_file_list/cbrain_file_list.rb
 f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/cbrain_file_list/views/_cb_file_list.html.erb
 336746bfee3c75bbbef2d4b9e4def4ad0b14278b -#- 2019-11-21 15:44:29 -0500 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/csv_file/csv_file.rb
-918a790ca2b378991621f84ceaa87f453918ff86 -#- 2016-07-27 11:42:14 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/csv_file/views/_csv_file.html.erb
+4c3482ba334d2ebb9d02d2e207e54df235cd14e9 -#- 2021-04-28 12:48:55 -0400 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/csv_file/views/_csv_file.html.erb
 f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/dat_file/dat_file.rb
 f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/dot_graph_file/dot_graph_file.rb
 e8a3e24808b66dad6cf0b94d234acc7fd94fd713 -#- 2019-05-17 12:50:09 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/file_collection/file_collection.rb
-5aa3655ab722465ce8981813e50f187e6a1fc954 -#- 2016-09-06 16:33:35 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/file_collection/views/_directory_contents.html.erb
-41562bbad4c91100c05a806e0d1eee779dff1783 -#- 2015-01-28 18:35:17 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/file_collection/views/_file_collection.html.erb
+18600dc54a2c03ebf16cd958306efc466e210aaa -#- 2021-11-17 15:37:30 -0500 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/file_collection/views/_directory_contents.html.erb
+4c3482ba334d2ebb9d02d2e207e54df235cd14e9 -#- 2021-04-28 12:48:55 -0400 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/file_collection/views/_file_collection.html.erb
 41562bbad4c91100c05a806e0d1eee779dff1783 -#- 2015-01-28 18:35:17 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/file_collection/views/_file_collection.json.erb
 41562bbad4c91100c05a806e0d1eee779dff1783 -#- 2015-01-28 18:35:17 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/file_collection/views/_file_collection_form.html.erb
-41562bbad4c91100c05a806e0d1eee779dff1783 -#- 2015-01-28 18:35:17 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/file_collection/views/_file_collection_top_table.html.erb
-01655ad966b17769dffa503031cf7f354845cc87 -#- 2016-11-02 14:27:01 -0400 -#- Andrew Doyle -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/file_collection/views/_plain_file_list_row.html.erb
+18600dc54a2c03ebf16cd958306efc466e210aaa -#- 2021-11-17 15:37:30 -0500 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/file_collection/views/_file_collection_top_table.html.erb
+18600dc54a2c03ebf16cd958306efc466e210aaa -#- 2021-11-17 15:37:30 -0500 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/file_collection/views/_plain_file_list_row.html.erb
 adb728e57d657ed78b0ab33e4cb872996017ca16 -#- 2017-12-20 17:03:38 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/filesystem_image/filesystem_image.rb
-f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/image_file/image_file.rb
-41562bbad4c91100c05a806e0d1eee779dff1783 -#- 2015-01-28 18:35:17 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/image_file/views/_image_file.html.erb
+4c3482ba334d2ebb9d02d2e207e54df235cd14e9 -#- 2021-04-28 12:48:55 -0400 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/image_file/image_file.rb
+98eee53ecd68e4d4d33a413f4d1f63a3ced18a45 -#- 2021-04-28 13:13:09 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/image_file/views/_image_file.html.erb
 bb27117a32906aeb1f6fe7f8b5928a6d31b414ad -#- 2019-09-18 12:11:42 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/json_file/json_file.rb
-72af2e0929dcf00b2f54d5a8d64594e3a0174f14 -#- 2019-09-19 08:43:02 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/json_file/views/_json_raw.html.erb
+98eee53ecd68e4d4d33a413f4d1f63a3ced18a45 -#- 2021-04-28 13:13:09 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/json_file/views/_json_raw.html.erb
 f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/log_file/log_file.rb
 f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/matlab_script/matlab_script.rb
 f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/mp3_audio_file/mp3_audio_file.rb
-41562bbad4c91100c05a806e0d1eee779dff1783 -#- 2015-01-28 18:35:17 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/mp3_audio_file/views/_html5_mp3_audio.html.erb
+98eee53ecd68e4d4d33a413f4d1f63a3ced18a45 -#- 2021-04-28 13:13:09 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/mp3_audio_file/views/_html5_mp3_audio.html.erb
 f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/mp4_video_file/mp4_video_file.rb
-17d7d309959fc02e9ff63fa47b76809dfc210346 -#- 2020-01-23 14:03:34 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/mp4_video_file/views/_html5_mp4_video.html.erb
+98eee53ecd68e4d4d33a413f4d1f63a3ced18a45 -#- 2021-04-28 13:13:09 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/mp4_video_file/views/_html5_mp4_video.html.erb
 f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/perl_source_file/perl_source_file.rb
 f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/ruby_source_file/ruby_source_file.rb
 af0228ade7fec0c2bcb052ebe0e3ec9469263edd -#- 2018-02-20 17:07:13 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/single_file/single_file.rb
@@ -709,16 +763,17 @@ af0228ade7fec0c2bcb052ebe0e3ec9469263edd -#- 2018-02-20 17:07:13 -0500 -#- Pierr
 f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/tar_archive/tar_archive.rb
 1f1d1199f64975d1c0642faaf2841a3ddb0e6253 -#- 2016-09-02 15:39:53 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/tar_archive/views/_tar_archive.html.erb
 eb5251a923e923218eb839c1cb0104c27f5236f5 -#- 2018-03-06 14:53:23 -0500 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/task_raw_workdir/task_raw_workdir.rb
-f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/task_workdir_archive/task_workdir_archive.rb
+e218fa995e594a172604f69d035f16f11d0a142d -#- 2021-06-07 15:47:38 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/task_workdir_archive/task_workdir_archive.rb
 e236c57be39a0b770a31c6a6e2dfa9851698f3e6 -#- 2016-02-05 16:34:37 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/task_workdir_archive/views/_task_workdir_archive.html.erb
 336746bfee3c75bbbef2d4b9e4def4ad0b14278b -#- 2019-11-21 15:44:29 -0500 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/text_file/text_file.rb
 2fdcf21b7c69ba9c41f9c2701255cfc43f2b8e63 -#- 2019-11-21 16:36:49 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/text_file/views/_qc_panel.html.erb
-41562bbad4c91100c05a806e0d1eee779dff1783 -#- 2015-01-28 18:35:17 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/text_file/views/_text_file.html.erb
+4c3482ba334d2ebb9d02d2e207e54df235cd14e9 -#- 2021-04-28 12:48:55 -0400 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/text_file/views/_text_file.html.erb
 f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/tsv_file/tsv_file.rb
 41562bbad4c91100c05a806e0d1eee779dff1783 -#- 2015-01-28 18:35:17 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/video_file/video_file.rb
-72af2e0929dcf00b2f54d5a8d64594e3a0174f14 -#- 2019-09-19 08:43:02 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/xml_file/views/_xml_raw.html.erb
+98eee53ecd68e4d4d33a413f4d1f63a3ced18a45 -#- 2021-04-28 13:13:09 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/xml_file/views/_xml_raw.html.erb
 bb27117a32906aeb1f6fe7f8b5928a6d31b414ad -#- 2019-09-18 12:11:42 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/xml_file/xml_file.rb
 f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain-plugins-base/userfiles/yaml_file/yaml_file.rb
+e5df01b9a679fcbc186eaf8bb180499c9ebd1e4d -#- 2021-09-05 16:41:01 -0400 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/installed-plugins/boutiques_descriptors/.gitignore
 41562bbad4c91100c05a806e0d1eee779dff1783 -#- 2015-01-28 18:35:17 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/installed-plugins/cbrain_task/.gitignore
 712239cba27028969ff7cf2f2191af2e6cc0f3f2 -#- 2017-12-07 19:18:58 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/installed-plugins/cbrain_task/cbrain_task_class_loader.rb
 1178d6ddaa6a99e73632143efc57c9a0debfaf8f -#- 2015-09-09 15:01:20 -0400 -#- Remi Bernard -#- BrainPortal/cbrain_plugins/installed-plugins/cbrain_task_descriptors/.gitignore
@@ -731,7 +786,7 @@ bc6b860360346254d6edcefb1ea20e6fd847eeb8 -#- 2018-02-20 13:20:11 -0500 -#- Pierr
 bc6b860360346254d6edcefb1ea20e6fd847eeb8 -#- 2018-02-20 13:20:11 -0500 -#- Pierre Rioux -#- BrainPortal/config/application.rb
 712239cba27028969ff7cf2f2191af2e6cc0f3f2 -#- 2017-12-07 19:18:58 -0500 -#- Pierre Rioux -#- BrainPortal/config/boot.rb
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/config/cable.yml
-357582e9163013e4425fe6262d37686e0b4c3205 -#- 2019-07-24 13:50:59 -0400 -#- Pierre Rioux -#- BrainPortal/config/console_rc/init_rc.rb
+9b921827aed320be83c8901b754065bb5ab5d78b -#- 2021-11-17 15:01:55 -0500 -#- Pierre Rioux -#- BrainPortal/config/console_rc/init_rc.rb
 c75f35f789d2533de8aaa917a38e5971ecf2e8f6 -#- 2018-09-27 13:31:00 -0400 -#- Pierre Rioux -#- BrainPortal/config/console_rc/lib/admin.rb
 da85d9f66b5803715eff22ed52f9191df5d386b7 -#- 2016-07-27 13:43:08 -0400 -#- Pierre Rioux -#- BrainPortal/config/console_rc/lib/bourreau_console.rb
 e6a5841e20ff7f8d87142b8a60edea8d4da40fd1 -#- 2018-11-21 16:20:14 -0500 -#- Pierre Rioux -#- BrainPortal/config/console_rc/lib/current_user_project.rb
@@ -764,7 +819,7 @@ d652f273e94faf068ba1729143c03ef4148f0e02 -#- 2016-12-13 17:03:01 -0500 -#- Pierr
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/config/initializers/application_controller_renderer.rb
 77ed69a4410e36122278072184999daf85638a80 -#- 2020-02-18 17:10:08 -0500 -#- candicecz -#- BrainPortal/config/initializers/assets.rb
 4e2f730c46c525e4a7c9a21bf0e0f87a6c37e016 -#- 2011-06-09 13:08:52 -0400 -#- Pierre Rioux -#- BrainPortal/config/initializers/backtrace_silencers.rb
-1575a85046bfe40a34d5640128e287929a7ffd34 -#- 2019-11-15 14:14:24 -0500 -#- Pierre Rioux -#- BrainPortal/config/initializers/cbrain.rb
+e5df01b9a679fcbc186eaf8bb180499c9ebd1e4d -#- 2021-09-05 16:41:01 -0400 -#- Pierre Rioux -#- BrainPortal/config/initializers/cbrain.rb
 712239cba27028969ff7cf2f2191af2e6cc0f3f2 -#- 2017-12-07 19:18:58 -0500 -#- Pierre Rioux -#- BrainPortal/config/initializers/cbrain_deprecation_tmp.rb
 81744bf3522320596acc7802c5991e64d97d3cb6 -#- 2010-10-19 19:24:57 +0000 -#- prioux -#- BrainPortal/config/initializers/config_portal.rb.TEMPLATE
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/config/initializers/cookies_serializer.rb
@@ -775,14 +830,16 @@ bf263658c83064a2d5590140920791ede9dcb9ef -#- 2018-11-16 15:05:06 -0500 -#- Pierr
 712239cba27028969ff7cf2f2191af2e6cc0f3f2 -#- 2017-12-07 19:18:58 -0500 -#- Pierre Rioux -#- BrainPortal/config/initializers/mime_types.rb
 712239cba27028969ff7cf2f2191af2e6cc0f3f2 -#- 2017-12-07 19:18:58 -0500 -#- Pierre Rioux -#- BrainPortal/config/initializers/new_framework_defaults.rb
 f7e64b976d1182ea6e7b7cb6882e474617f39dca -#- 2014-07-17 14:56:13 -0400 -#- Pierre Rioux -#- BrainPortal/config/initializers/rack_config.rb
-b96efebafc3091ffa6ebdfc2b752ea8beec34df2 -#- 2020-08-28 15:52:50 -0400 -#- Pierre Rioux -#- BrainPortal/config/initializers/session_store.rb
+4b61c48b800a5dde9d105044ae91c6be013d1746 -#- 2021-09-09 16:03:02 -0400 -#- Pierre Rioux -#- BrainPortal/config/initializers/session_store.rb
 67965179387bf929919dc4174e1aee60c9733008 -#- 2020-08-31 17:30:29 -0400 -#- Pierre Rioux -#- BrainPortal/config/initializers/validation_portal.rb
 ce3ba6484541b1db17fe542aaaba0eeea0b4e6eb -#- 2018-02-07 18:18:10 -0500 -#- Pierre Rioux -#- BrainPortal/config/initializers/wrap_parameters.rb
 712239cba27028969ff7cf2f2191af2e6cc0f3f2 -#- 2017-12-07 19:18:58 -0500 -#- Pierre Rioux -#- BrainPortal/config/locales/en.yml
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/config/puma.rb
-fa68a44bee394caedb3ec707819777d44e6d64e6 -#- 2020-11-02 12:30:57 -0500 -#- MontrealSergiy -#- BrainPortal/config/routes.rb
+a3cbb977f0a16799006c5a5621aa03a21a79d684 -#- 2022-01-13 13:16:05 -0500 -#- Pierre Rioux -#- BrainPortal/config/routes.rb
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/config/secrets.yml
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/config/spring.rb
+38d6c88a3f83a7f85bf3bf9b523c7a0b04c6b008 -#- 2022-01-13 15:15:12 -0500 -#- Pierre Rioux -#- BrainPortal/data_dumps/.gitignore
+5a676e1c42ef0724672a7346af1d4cd2459f30de -#- 2021-12-31 13:38:00 -0500 -#- Pierre Rioux -#- BrainPortal/data_dumps/README.md
 2eceeb92afa749dd8c5c28082493fcdc0111af95 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- BrainPortal/db/migrate/20081118191942_create_userfiles.rb
 2eceeb92afa749dd8c5c28082493fcdc0111af95 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- BrainPortal/db/migrate/20081118200238_create_users.rb
 2eceeb92afa749dd8c5c28082493fcdc0111af95 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- BrainPortal/db/migrate/20081119163831_add_role.rb
@@ -991,10 +1048,12 @@ c522e7812a85ffa89727a48a2e99cbe5a3e040b9 -#- 2020-11-10 16:42:26 -0500 -#- Montr
 cbb1e4b160e0b779057cf67d2c6212e974bd80f6 -#- 2020-11-19 15:46:15 -0500 -#- Pierre Rioux -#- BrainPortal/db/migrate/20201119174821_add_nh_contact_info.rb
 43fdcd0d80d777a1b33afb21f3544e19521fab4c -#- 2020-12-01 17:28:50 -0500 -#- MontrealSergiy -#- BrainPortal/db/migrate/20201123133913_add_inputs_readonly_to_tool_config.rb
 56cecada04d2118d3fea297159124cac40db85ea -#- 2021-02-11 14:10:01 -0500 -#- Pierre Rioux -#- BrainPortal/db/migrate/20210207232542_add_browse_path_to_userfile.rb
-56cecada04d2118d3fea297159124cac40db85ea -#- 2021-02-11 14:10:01 -0500 -#- Pierre Rioux -#- BrainPortal/db/schema.rb
+e5df01b9a679fcbc186eaf8bb180499c9ebd1e4d -#- 2021-09-05 16:41:01 -0400 -#- Pierre Rioux -#- BrainPortal/db/migrate/20210905165005_add_descriptor_basename_to_tool_configs.rb
+167804e09092aeee3048592447d95c6ad31b09a7 -#- 2021-12-02 12:39:34 -0500 -#- Pierre Rioux -#- BrainPortal/db/migrate/20211202163418_add_cloud_storage_endpoint_to_data_providers.rb
+167804e09092aeee3048592447d95c6ad31b09a7 -#- 2021-12-02 12:39:34 -0500 -#- Pierre Rioux -#- BrainPortal/db/schema.rb
 86770b0be8236b3e1653207839b2c2d641d7885c -#- 2018-03-21 12:01:20 -0400 -#- Pierre Rioux -#- BrainPortal/db/seeds.rb
 04c513d423b42a856c4493f105465b16bef3feeb -#- 2018-02-01 16:21:32 -0500 -#- Pierre Rioux -#- BrainPortal/db/seeds_dev.rb
-d11d7ef8e76c9b93d125f4a13fdde1bae39d0604 -#- 2019-09-06 13:30:10 -0400 -#- Pierre Rioux -#- BrainPortal/db/seeds_test_api.rb
+1915a6d98691933156527eaca30d704236345853 -#- 2022-01-27 15:28:13 -0500 -#- Serge -#- BrainPortal/db/seeds_test_api.rb
 04c513d423b42a856c4493f105465b16bef3feeb -#- 2018-02-01 16:21:32 -0500 -#- Pierre Rioux -#- BrainPortal/db/seeds_test_bourreau.rb
 a1848dfdd07ce34f15d55e3bed31cac13a7005d1 -#- 2011-09-30 14:35:00 -0400 -#- Pierre Rioux -#- BrainPortal/doc/.gitignore
 01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- BrainPortal/lib/act_rec_log.rb
@@ -1002,7 +1061,13 @@ a1848dfdd07ce34f15d55e3bed31cac13a7005d1 -#- 2011-09-30 14:35:00 -0400 -#- Pierr
 07974a254ae605ce1a0403aa0ecf4ffa5b1959f4 -#- 2021-01-21 15:46:01 -0500 -#- Natacha Beck -#- BrainPortal/lib/api_helpers.rb
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/lib/assets/.keep
 04667ab63445de4da4ae45332599edbf2cfdbcd2 -#- 2019-06-07 13:15:35 -0400 -#- Pierre Rioux -#- BrainPortal/lib/authenticated_system.rb
-56cecada04d2118d3fea297159124cac40db85ea -#- 2021-02-11 14:10:01 -0500 -#- Pierre Rioux -#- BrainPortal/lib/browse_provider_file_caching.rb
+38d6c88a3f83a7f85bf3bf9b523c7a0b04c6b008 -#- 2022-01-13 15:15:12 -0500 -#- Pierre Rioux -#- BrainPortal/lib/boutiques_boot_integrator.rb
+6b4c52ac1c309553d427c72d08bd66508789204d -#- 2021-12-15 14:39:46 -0500 -#- Pierre Rioux -#- BrainPortal/lib/boutiques_file_name_matcher.rb
+0dcb5000189278b5240562f52666a364de1c0f3d -#- 2022-01-03 11:19:32 -0500 -#- Pierre Rioux -#- BrainPortal/lib/boutiques_file_type_verifier.rb
+f00997eb767f27e6a17f23a6267d2ddbb0d22b0b -#- 2022-01-25 11:56:35 -0500 -#- Pierre Rioux -#- BrainPortal/lib/boutiques_output_file_type_setter.rb
+a16ee1122476fe433314f20182e00ed239dab202 -#- 2022-01-27 15:20:20 -0500 -#- Pierre Rioux -#- BrainPortal/lib/boutiques_post_processing_cleaner.rb
+a16ee1122476fe433314f20182e00ed239dab202 -#- 2022-01-27 15:20:20 -0500 -#- Pierre Rioux -#- BrainPortal/lib/boutiques_support.rb
+8901480c7544d91f86bbb36a29ec1eec532707a1 -#- 2021-03-01 13:29:25 -0500 -#- MontrealSergiy -#- BrainPortal/lib/browse_provider_file_caching.rb
 e26b6e4c070db0c6914b5df26e97531043cda4b7 -#- 2019-07-03 16:04:42 -0400 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_carmin_error.rb
 70403d4a9074bc93d2028f67d66b459719a75cb4 -#- 2015-05-06 15:23:08 -0400 -#- Natacha Beck -#- BrainPortal/lib/cbrain_checker.rb
 970fd506142f19c2b27feb929ff285174556bf47 -#- 2012-08-07 14:59:21 -0400 -#- Tarek Sherif -#- BrainPortal/lib/cbrain_delete_restriction_error.rb
@@ -1021,7 +1086,7 @@ f035e3758e55b947de559945db1f46adc54ff1c9 -#- 2018-08-31 15:49:33 -0400 -#- Pierr
 01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- BrainPortal/lib/cbrain_extensions/active_record_extensions/single_table_inheritance.rb
 f4d078226427fc2b182ac9967158827cf93850ce -#- 2015-12-11 17:22:38 -0500 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_extensions/array_extensions/hashed_partitions.rb
 337bd0bd39d7777f060c62e0070411b05ba5ccb6 -#- 2018-10-23 17:15:47 -0400 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_extensions/array_extensions/miscellaneous.rb
-874b082e4489010be82d02cf94ec3e88a9f8da92 -#- 2014-11-20 17:05:54 -0500 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_extensions/exception_extensions/utilities.rb
+5d69f5ff0bf37742b646f0c982c46add0ea168d1 -#- 2021-08-01 12:22:38 -0400 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_extensions/exception_extensions/utilities.rb
 744f6276a1f2af2685eebe5d90ba66d4d6852391 -#- 2021-02-15 10:59:45 -0500 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_extensions/hash_extensions/conversions.rb
 2cd30afa5ba0352bc3e30a579746dbe30f6ca8c9 -#- 2012-10-05 14:29:12 -0400 -#- Tarek Sherif -#- BrainPortal/lib/cbrain_extensions/object_extensions/deep_clone.rb
 bed4171b3c6f15b655aa47bdd5e7a3243b6b642f -#- 2016-08-16 15:10:31 -0400 -#- Andrew Doyle -#- BrainPortal/lib/cbrain_extensions/object_extensions/revision_tracking.rb
@@ -1031,15 +1096,15 @@ bed4171b3c6f15b655aa47bdd5e7a3243b6b642f -#- 2016-08-16 15:10:31 -0400 -#- Andre
 2abc783c84c4175708b412761f15f97cdd1511d4 -#- 2021-02-12 16:19:50 -0500 -#- MontrealSergiy -#- BrainPortal/lib/cbrain_file_revision.rb
 8966635b69fc29455754e12460c727b9c2fea83e -#- 2020-04-02 21:13:54 -0400 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_license_exception.rb
 ff28ae45e27417463a39d17b532c8f7ae7289658 -#- 2012-08-07 14:58:59 -0400 -#- Tarek Sherif -#- BrainPortal/lib/cbrain_notice.rb
-f7d6e9efadcd75edcb5bcd156fed5801395c2b6f -#- 2019-05-06 12:52:54 -0400 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_system_checks.rb
+e5df01b9a679fcbc186eaf8bb180499c9ebd1e4d -#- 2021-09-05 16:41:01 -0400 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_system_checks.rb
 01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- BrainPortal/lib/cbrain_task_form_builder.rb
-0fd01d830fd7773f9a6443399e28c8fd8fbdd209 -#- 2020-07-23 15:37:18 -0400 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_task_generators/schema_task_generator.rb
+38d52e397d7bd45d552f074d887f5958e4a108fc -#- 2021-11-18 13:09:35 -0500 -#- Natacha Beck -#- BrainPortal/lib/cbrain_task_generators/schema_task_generator.rb
 e0998dc6901bc3a47501d9e45cd4db6e02a1cafb -#- 2019-09-10 17:01:02 -0400 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_task_generators/schemas/boutiques.schema.json
-a0ed52e01f936a8fad6fdd6a61c6ec3f844af775 -#- 2021-02-02 10:30:19 -0500 -#- Natacha Beck -#- BrainPortal/lib/cbrain_task_generators/templates/bourreau.rb.erb
+e981e4fcadb9f7f3716f90516354441561abcd35 -#- 2021-07-27 11:31:55 -0400 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_task_generators/templates/bourreau.rb.erb
 2a20519bd9c525da9b20ae34da1da670434d68b5 -#- 2016-08-11 15:11:28 -0400 -#- Tristan A.A -#- BrainPortal/lib/cbrain_task_generators/templates/edit_help.html.erb
-79034d45b2544193f31687105ee11f0d84141237 -#- 2020-12-15 14:09:02 -0500 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_task_generators/templates/portal.rb.erb
+76d52c087f51fca07e95e2d45733e4519055773a -#- 2021-11-18 12:28:27 -0500 -#- Serge -#- BrainPortal/lib/cbrain_task_generators/templates/portal.rb.erb
 1a2ce77735503fcba856720bb6c7a5e9d326e9e8 -#- 2017-09-12 15:11:51 -0400 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_task_generators/templates/show_params.html.erb.erb
-7519bcdc09e3594f948837d2b55f023c12c8abd3 -#- 2020-01-10 15:49:32 -0500 -#- Natacha Beck -#- BrainPortal/lib/cbrain_task_generators/templates/task_params.html.erb.erb
+5ebe8b1b59dd889d5bfc24857ba55754394527b9 -#- 2021-11-25 15:31:16 -0500 -#- Natacha Beck -#- BrainPortal/lib/cbrain_task_generators/templates/task_params.html.erb.erb
 fa1f087dd076c330459661b326a5b93d2b52f35a -#- 2019-03-03 16:01:31 -0500 -#- Pierre Rioux -#- BrainPortal/lib/cbrain_transition_exception.rb
 b2fc2eb106ab17867b6010407b13e6a8a6e79609 -#- 2020-02-04 15:25:28 -0500 -#- Natacha Beck -#- BrainPortal/lib/consistency_checks.rb
 defcc0cac9c7b4cc503984ebc400b85e795bfcf7 -#- 2020-08-04 17:40:29 -0400 -#- Pierre Rioux -#- BrainPortal/lib/custom_license.rb
@@ -1054,10 +1119,11 @@ cecd7d852c222be5c2b0bf0e8bc347679e4202b8 -#- 2015-12-08 15:11:47 -0500 -#- Pierr
 7fbed31b2a8fd110c7fbcb18a46cb614c75cdb2d -#- 2015-01-28 22:15:16 -0500 -#- Pierre Rioux -#- BrainPortal/lib/generators/cbrain_task/templates/edit_params_help.html.erb
 01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- BrainPortal/lib/generators/cbrain_task/templates/portal_task_model.rb.erb
 01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- BrainPortal/lib/generators/cbrain_task/templates/show_params.html.erb
-01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- BrainPortal/lib/generators/cbrain_task/templates/task_params.html.erb
+e9b89b1e9da949aa642f3ee96d85b1e3dedd9d2b -#- 2021-06-11 16:30:11 -0400 -#- Pierre Rioux -#- BrainPortal/lib/generators/cbrain_task/templates/task_params.html.erb
 7fbed31b2a8fd110c7fbcb18a46cb614c75cdb2d -#- 2015-01-28 22:15:16 -0500 -#- Pierre Rioux -#- BrainPortal/lib/generators/cbrain_task/templates/tool_info.html.erb
 b2f67b0b609a16cda5877491fbc05153be46a535 -#- 2015-07-28 18:00:36 -0400 -#- Remi Bernard -#- BrainPortal/lib/generators/descriptor_task/USAGE
 712239cba27028969ff7cf2f2191af2e6cc0f3f2 -#- 2017-12-07 19:18:58 -0500 -#- Pierre Rioux -#- BrainPortal/lib/generators/descriptor_task/descriptor_task_generator.rb
+c1b63a712fc348d42362204b2215cfaef178c0f8 -#- 2021-11-23 12:17:34 -0500 -#- Pierre Rioux -#- BrainPortal/lib/globus_helpers.rb
 65d87ed48def4ba99bcb5ad825770395b89dde5d -#- 2016-09-22 12:50:31 -0400 -#- Pierre Rioux -#- BrainPortal/lib/http_user_agent.rb
 81d8358efbe761a87e26c96f15c914d06afa8042 -#- 2020-04-12 12:53:13 -0400 -#- Pierre Rioux -#- BrainPortal/lib/identifier_format_validator.rb
 ff28ae45e27417463a39d17b532c8f7ae7289658 -#- 2012-08-07 14:58:59 -0400 -#- Tarek Sherif -#- BrainPortal/lib/javascript_option_setup.rb
@@ -1065,16 +1131,19 @@ ff28ae45e27417463a39d17b532c8f7ae7289658 -#- 2012-08-07 14:58:59 -0400 -#- Tarek
 c1c5c30eda2b2d4b2c3bf2b82b5b0bc50f738299 -#- 2015-04-20 14:18:23 -0400 -#- Natacha Beck -#- BrainPortal/lib/message_helpers.rb
 24c25b3474801590604484e5f76fda4a954fea13 -#- 2020-04-08 17:02:58 -0400 -#- Pierre Rioux -#- BrainPortal/lib/models_report.rb
 f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/lib/name_format_validator.rb
-e317869408400d1f0e0a49764ecbc90457365663 -#- 2020-11-27 15:28:17 -0500 -#- MontrealSergiy -#- BrainPortal/lib/neurohub_helpers.rb
+783f532abb91f341b2725b6263209513a463a372 -#- 2021-11-24 15:39:35 -0500 -#- Pierre Rioux -#- BrainPortal/lib/neurohub_helpers.rb
 7ced7a6a6922487da5ddae6dc4b147a9052643d6 -#- 2016-11-18 16:17:10 -0500 -#- Pierre Rioux -#- BrainPortal/lib/no_vm_available_error.rb
 f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/lib/numerical_subdir_tree.rb
+c1b63a712fc348d42362204b2215cfaef178c0f8 -#- 2021-11-23 12:17:34 -0500 -#- Pierre Rioux -#- BrainPortal/lib/orcid_helpers.rb
 cbeef44b0e23999ceda76ae6310a02eaef298b8b -#- 2018-01-04 14:18:16 -0500 -#- Pierre Rioux -#- BrainPortal/lib/permission_helpers.rb
 712239cba27028969ff7cf2f2191af2e6cc0f3f2 -#- 2017-12-07 19:18:58 -0500 -#- Pierre Rioux -#- BrainPortal/lib/persistent_selection.rb
 bacba8bee6a060576aa5ee69f06cd1e079290e24 -#- 2020-03-03 14:11:40 -0500 -#- Pierre Rioux -#- BrainPortal/lib/portal_sanity_checks.rb
-b0c034565dc45e84f9a61175d82c49c103a33e0a -#- 2017-12-07 19:19:05 -0500 -#- Pierre Rioux -#- BrainPortal/lib/portal_system_checks.rb
+1ff37b7d395e1308b99ad6b73258d0809fbe1195 -#- 2021-05-21 14:39:22 -0400 -#- Pierre Rioux -#- BrainPortal/lib/portal_system_checks.rb
+e58779eae25346bd5f8e46998f735a23630389f2 -#- 2021-08-22 15:47:02 -0400 -#- Pierre Rioux -#- BrainPortal/lib/recoverable_task.rb
 88f8c204f5c9d6b6ffc5963436a753009f89aa04 -#- 2019-06-07 13:46:42 -0400 -#- Pierre Rioux -#- BrainPortal/lib/request_helpers.rb
 7f9644d1f4b6a900b7c594fd3091c3eb248c5a73 -#- 2020-04-09 12:33:28 -0400 -#- Pierre Rioux -#- BrainPortal/lib/resource_access.rb
-485da62c059d0e06b551947d217e69b51eca7be3 -#- 2018-08-24 19:07:53 -0400 -#- Pierre Rioux -#- BrainPortal/lib/s3_sdkv3_connection.rb
+e58779eae25346bd5f8e46998f735a23630389f2 -#- 2021-08-22 15:47:02 -0400 -#- Pierre Rioux -#- BrainPortal/lib/restartable_task.rb
+167804e09092aeee3048592447d95c6ad31b09a7 -#- 2021-12-02 12:39:34 -0500 -#- Pierre Rioux -#- BrainPortal/lib/s3_sdkv3_connection.rb
 01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- BrainPortal/lib/scir.rb
 b7126e2d03761ba2593aeffe891bae7f73e30423 -#- 2018-11-06 11:44:23 -0500 -#- Pierre Rioux -#- BrainPortal/lib/scir_amazon.rb
 01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- BrainPortal/lib/scir_cloud.rb
@@ -1087,23 +1156,24 @@ a09f501e345df16f3a05278c7e04c661b0e3739a -#- 2015-12-16 14:14:51 -0500 -#- Trist
 2aabd59cc9f14ecf79255908d9ef1f66695b2b7c -#- 2020-04-02 10:45:28 -0400 -#- Pierre Rioux -#- BrainPortal/lib/scir_slurm.rb
 81add9599705a5219617814a4fec5cb023004cf9 -#- 2017-12-07 19:19:03 -0500 -#- Pierre Rioux -#- BrainPortal/lib/scir_unix.rb
 14f4e56338eece4f06fa9499f90ddf305df38d04 -#- 2021-01-29 12:37:07 -0500 -#- MontrealSergiy -#- BrainPortal/lib/session_helpers.rb
-56cecada04d2118d3fea297159124cac40db85ea -#- 2021-02-11 14:10:01 -0500 -#- Pierre Rioux -#- BrainPortal/lib/smart_data_provider_interface.rb
+e9b89b1e9da949aa642f3ee96d85b1e3dedd9d2b -#- 2021-06-11 16:30:11 -0400 -#- Pierre Rioux -#- BrainPortal/lib/smart_data_provider_interface.rb
 01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- BrainPortal/lib/ssh_agent.rb
 1792e25fc57d57e21ab49e090791f9ad434c32c1 -#- 2020-03-06 15:53:10 -0500 -#- Pierre Rioux -#- BrainPortal/lib/ssh_key.rb
-b96efebafc3091ffa6ebdfc2b752ea8beec34df2 -#- 2020-08-28 15:52:50 -0400 -#- Pierre Rioux -#- BrainPortal/lib/ssh_master.rb
+f46666350ad7ff4074edabb2b5fd75b883d680c0 -#- 2021-06-07 16:39:19 -0400 -#- Pierre Rioux -#- BrainPortal/lib/ssh_master.rb
 70403d4a9074bc93d2028f67d66b459719a75cb4 -#- 2015-05-06 15:23:08 -0400 -#- Natacha Beck -#- BrainPortal/lib/subclass_validator.rb
 01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- BrainPortal/lib/subpath_format_validator.rb
 c637666465dfd4deb3339634fbe50198dbca574d -#- 2019-05-06 12:50:19 -0400 -#- Pierre Rioux -#- BrainPortal/lib/tasks/brainportal_docs.rake
 2eceeb92afa749dd8c5c28082493fcdc0111af95 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- BrainPortal/lib/tasks/brainportal_sanity_check.rake
 298b1d87550834b7132cc4b4f884bea42a6fbe90 -#- 2020-08-31 18:03:48 -0400 -#- Pierre Rioux -#- BrainPortal/lib/tasks/cbrain_nagios_checker.rake
-e6a5841e20ff7f8d87142b8a60edea8d4da40fd1 -#- 2018-11-21 16:20:14 -0500 -#- Pierre Rioux -#- BrainPortal/lib/tasks/cbrain_plugins.rake
+e5df01b9a679fcbc186eaf8bb180499c9ebd1e4d -#- 2021-09-05 16:41:01 -0400 -#- Pierre Rioux -#- BrainPortal/lib/tasks/cbrain_plugins.rake
+ffad932287be1a353dc897abc17d2627e32f6c81 -#- 2022-01-24 15:33:01 -0500 -#- Pierre Rioux -#- BrainPortal/lib/tasks/resource_usage_serialization.rake
 2eceeb92afa749dd8c5c28082493fcdc0111af95 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- BrainPortal/lib/tasks/seed_dev.rake
 8e02763d3016d3bebb7cf95026831c5a19f55ebc -#- 2018-10-26 17:13:44 -0400 -#- Pierre Rioux -#- BrainPortal/lib/tasks/seed_test_api.rake
 545ee88ef19fed72f3b9ecb5d0b0a370b436d471 -#- 2016-07-19 16:32:40 -0400 -#- Tristan A.A -#- BrainPortal/lib/tasks/seed_test_bourreau.rake
 54af994d4fcc60b03c6790043d24df185ac0f1f4 -#- 2018-11-22 18:13:09 -0500 -#- Pierre Rioux -#- BrainPortal/lib/tasks/test_api_client.rake
 f8252be341146b311b05ab85184f081cde901ac3 -#- 2016-09-06 16:59:30 -0400 -#- Pierre Rioux -#- BrainPortal/lib/username_format_validator.rb
 9fc9ea17d3170e899a8a92dd33341faa387b5ec8 -#- 2020-02-10 15:35:01 -0500 -#- Pierre Rioux -#- BrainPortal/lib/view_helpers.rb
-6422e133e80b004df1561e96a7d880d4a18f8e21 -#- 2018-02-08 16:13:32 -0500 -#- Pierre Rioux -#- BrainPortal/lib/view_scopes.rb
+1caba8617c594cea068b3cfd4e9d3e83b19b1566 -#- 2021-06-23 19:48:45 -0400 -#- Pierre Rioux -#- BrainPortal/lib/view_scopes.rb
 077511bc3a7a9c3674df2d6eee186c2741b3ee9e -#- 2015-01-05 16:56:36 -0500 -#- Pierre Rioux -#- BrainPortal/log/.gitignore
 3da63c4dfc5b8de61c0074ad8449d97abd2a49cb -#- 2020-07-29 15:49:04 -0400 -#- Pierre Rioux -#- BrainPortal/misc/README.txt
 93c790b019c4ac59c3710eefac5d2f0de06fe59c -#- 2020-07-28 17:26:09 -0400 -#- Pierre Rioux -#- BrainPortal/misc/mk_tst_access.rb
@@ -1167,15 +1237,12 @@ cf893e6ad224a34b5c40728dc7656cafb5f44605 -#- 2010-03-26 18:05:31 +0000 -#- tsher
 4984758c2beb5ab414e52839c4876914aa963ed8 -#- 2020-04-23 15:37:45 -0400 -#- candicecz -#- BrainPortal/public/images/neurohub/NH_hbhl_lettermark_black.png
 4984758c2beb5ab414e52839c4876914aa963ed8 -#- 2020-04-23 15:37:45 -0400 -#- candicecz -#- BrainPortal/public/images/neurohub/NH_hbhl_lettermark_grayscale.png
 4984758c2beb5ab414e52839c4876914aa963ed8 -#- 2020-04-23 15:37:45 -0400 -#- candicecz -#- BrainPortal/public/images/neurohub/NH_hbhl_lettermark_white.png
-4984758c2beb5ab414e52839c4876914aa963ed8 -#- 2020-04-23 15:37:45 -0400 -#- candicecz -#- BrainPortal/public/images/neurohub/NH_hbhl_wordmark_RGB.png
-4984758c2beb5ab414e52839c4876914aa963ed8 -#- 2020-04-23 15:37:45 -0400 -#- candicecz -#- BrainPortal/public/images/neurohub/NH_hbhl_wordmark_black.png
-4984758c2beb5ab414e52839c4876914aa963ed8 -#- 2020-04-23 15:37:45 -0400 -#- candicecz -#- BrainPortal/public/images/neurohub/NH_hbhl_wordmark_grayscale.png
-4984758c2beb5ab414e52839c4876914aa963ed8 -#- 2020-04-23 15:37:45 -0400 -#- candicecz -#- BrainPortal/public/images/neurohub/NH_hbhl_wordmark_white.png
 605908873d558296a1b5cb84f92b487ec89431cf -#- 2020-03-02 15:52:04 -0500 -#- candicecz -#- BrainPortal/public/images/neurohub/NH_login_backsplash.png
+76c95af4acae87460790dfed086e638c2c8b33b9 -#- 2021-03-08 13:37:12 -0500 -#- Pierre Rioux -#- BrainPortal/public/images/neurohub/ORCIDiD_iconvector.svg
 d1da3eff0c044c3ed474cde1cc8cbc54352027a9 -#- 2015-06-17 14:24:45 -0400 -#- Remi Bernard -#- BrainPortal/public/images/ui-black-icons.png
 d1da3eff0c044c3ed474cde1cc8cbc54352027a9 -#- 2015-06-17 14:24:45 -0400 -#- Remi Bernard -#- BrainPortal/public/images/ui-blue-icons.png
 d1da3eff0c044c3ed474cde1cc8cbc54352027a9 -#- 2015-06-17 14:24:45 -0400 -#- Remi Bernard -#- BrainPortal/public/images/ui-white-icons.png
-110d4a0a0937b5f8f2053e7a86a40fd6334c0f76 -#- 2021-02-11 10:16:49 -0500 -#- MontrealSergiy -#- BrainPortal/public/javascripts/cbrain.js
+1f1195e67b4a848f6a67544690da46ea7e8382e6 -#- 2021-05-20 17:46:45 -0400 -#- Pierre Rioux -#- BrainPortal/public/javascripts/cbrain.js
 ddf208bc21042093f23f3bb57775287890eeb4e8 -#- 2016-03-08 16:15:37 -0500 -#- Pierre Rioux -#- BrainPortal/public/javascripts/cbrain/bourreaux/fetch_row.js
 a5ca12d9e18b21f955b703f9cff1602ee0b07884 -#- 2018-02-16 17:32:49 -0500 -#- Pierre Rioux -#- BrainPortal/public/javascripts/cbrain/shared/selection_database.js
 ddf208bc21042093f23f3bb57775287890eeb4e8 -#- 2016-03-08 16:15:37 -0500 -#- Pierre Rioux -#- BrainPortal/public/javascripts/cbrain/tasks/batch_list.js
@@ -1252,12 +1319,12 @@ e26bc11d5fe29b7edcaad474c945b2ccb5cc1436 -#- 2020-12-15 12:41:57 -0500 -#- Montr
 01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- BrainPortal/spec/boutiques/test_helpers.rb
 386633a953e454c05b25c458e7a3cb2d0f55b104 -#- 2016-11-23 16:08:47 -0500 -#- Tristan A.A -#- BrainPortal/spec/boutiques/validator.rb
 e824ced6b1f3757e7b044ea160dee355ebca28e2 -#- 2019-09-13 16:53:31 -0400 -#- MontrealSergiy -#- BrainPortal/spec/controllers/access_profiles_controller_spec.rb
-c49c31f133e18886c260699223d294634ec0099e -#- 2020-04-11 16:58:26 -0400 -#- Pierre Rioux -#- BrainPortal/spec/controllers/data_providers_controller_spec.rb
+151dc82e0af67ead611bdce65a092505af98edfd -#- 2021-02-23 12:46:45 -0500 -#- MontrealSergiy -#- BrainPortal/spec/controllers/data_providers_controller_spec.rb
 53a10b65e54e72386777a9effb0370ebf9ad2c86 -#- 2017-12-07 19:19:01 -0500 -#- Natacha Beck -#- BrainPortal/spec/controllers/portal_controller_spec.rb
 2326d77d3dbcb178eb2f82f2e33001bba5f00013 -#- 2019-05-15 15:11:45 -0400 -#- Pierre Rioux -#- BrainPortal/spec/controllers/sessions_controller_spec.rb
 01ff22899df226c5831a0ad8c233a1f3f04c77a4 -#- 2018-08-09 15:28:15 -0400 -#- Nicholas Nadeau, P.Eng., AVS -#- BrainPortal/spec/controllers/tags_controller_spec.rb
 b0c034565dc45e84f9a61175d82c49c103a33e0a -#- 2017-12-07 19:19:05 -0500 -#- Pierre Rioux -#- BrainPortal/spec/controllers/tools_controller_spec.rb
-36bbb701e6d433dd1ee9ffb3b956d769080e8d7b -#- 2021-01-29 14:36:47 -0500 -#- MontrealSergiy -#- BrainPortal/spec/controllers/userfiles_controller_spec.rb
+f4e9cdc45b3334d426a874a11f8e3a85d6f471a4 -#- 2021-06-07 17:27:26 -0400 -#- Pierre Rioux -#- BrainPortal/spec/controllers/userfiles_controller_spec.rb
 e824ced6b1f3757e7b044ea160dee355ebca28e2 -#- 2019-09-13 16:53:31 -0400 -#- MontrealSergiy -#- BrainPortal/spec/controllers/users_controller_spec.rb
 dc2eaf46e933770354e47c8eb49ead6b6a14ae81 -#- 2019-05-17 15:12:30 -0400 -#- Pierre Rioux -#- BrainPortal/spec/factories/portal_factories.rb
 a805a234eeed4f234677202fc42c6b46b8256896 -#- 2015-04-08 12:56:35 -0400 -#- Natacha Beck -#- BrainPortal/spec/fixtures/.gitignore
@@ -1279,10 +1346,10 @@ af4c4ee7161b371b63740a95926c30adf08e7c69 -#- 2020-03-04 13:30:14 -0500 -#- Natac
 4ae88132ae49c202d5363fe1648d1f4861c81920 -#- 2015-04-29 16:40:11 -0400 -#- Natacha Beck -#- BrainPortal/spec/models/incoming_vault_ssh_data_provider_spec.rb
 53a10b65e54e72386777a9effb0370ebf9ad2c86 -#- 2017-12-07 19:19:01 -0500 -#- Natacha Beck -#- BrainPortal/spec/models/message_spec.rb
 a18d0ebf4c40f6030dd233f2810ee2da9cf4b104 -#- 2018-11-06 18:33:45 -0500 -#- Pierre Rioux -#- BrainPortal/spec/models/params_errors_spec.rb
-4421af11b41dbae7f167ee1e17d6c9a599e6aad1 -#- 2018-12-07 17:18:46 -0500 -#- Pierre Rioux -#- BrainPortal/spec/models/portal_task_spec.rb
-4ae88132ae49c202d5363fe1648d1f4861c81920 -#- 2015-04-29 16:40:11 -0400 -#- Natacha Beck -#- BrainPortal/spec/models/remote_resource_info_spec.rb
+a946d8ac3d0e19768e08b4137be79a6daa041560 -#- 2021-08-05 18:30:49 -0400 -#- Pierre Rioux -#- BrainPortal/spec/models/portal_task_spec.rb
+2abdc9daec787bc883f6d261432afeb9f7f3a5b2 -#- 2021-08-22 19:55:28 -0400 -#- Pierre Rioux -#- BrainPortal/spec/models/remote_resource_info_spec.rb
 ad7428f4d166daf281e6714c1fe28ffb554362fd -#- 2019-10-08 12:08:40 -0400 -#- Natacha Beck -#- BrainPortal/spec/models/remote_resource_spec.rb
-4ae88132ae49c202d5363fe1648d1f4861c81920 -#- 2015-04-29 16:40:11 -0400 -#- Natacha Beck -#- BrainPortal/spec/models/restricted_hash_spec.rb
+785d73ae1ecbc13e4afbde38d457d1ce4debf71d -#- 2021-08-02 16:52:22 -0400 -#- Pierre Rioux -#- BrainPortal/spec/models/restricted_hash_spec.rb
 4ae88132ae49c202d5363fe1648d1f4861c81920 -#- 2015-04-29 16:40:11 -0400 -#- Natacha Beck -#- BrainPortal/spec/models/single_file_spec.rb
 4ae88132ae49c202d5363fe1648d1f4861c81920 -#- 2015-04-29 16:40:11 -0400 -#- Natacha Beck -#- BrainPortal/spec/models/site_spec.rb
 7cfa5c2a0fd77b5c386ad0b212f422527d83f0e1 -#- 2020-04-11 12:34:41 -0400 -#- Pierre Rioux -#- BrainPortal/spec/models/ssh_data_provider_spec.rb
@@ -1307,13 +1374,13 @@ dc2eaf46e933770354e47c8eb49ead6b6a14ae81 -#- 2019-05-17 15:12:30 -0400 -#- Pierr
 53a10b65e54e72386777a9effb0370ebf9ad2c86 -#- 2017-12-07 19:19:01 -0500 -#- Natacha Beck -#- BrainPortal/spec/modules/view_scopes_spec.rb
 b0c034565dc45e84f9a61175d82c49c103a33e0a -#- 2017-12-07 19:19:05 -0500 -#- Pierre Rioux -#- BrainPortal/spec/rails_helper.rb
 53a10b65e54e72386777a9effb0370ebf9ad2c86 -#- 2017-12-07 19:19:01 -0500 -#- Natacha Beck -#- BrainPortal/spec/spec_helper.rb
-4421af11b41dbae7f167ee1e17d6c9a599e6aad1 -#- 2018-12-07 17:18:46 -0500 -#- Pierre Rioux -#- BrainPortal/test_api/README.md
+1915a6d98691933156527eaca30d704236345853 -#- 2022-01-27 15:28:13 -0500 -#- Serge -#- BrainPortal/test_api/README.md
 dbee64dd0b12f6b72f119b9a1fcaf01bd1060c91 -#- 2020-03-20 13:57:11 -0400 -#- Natacha Beck -#- BrainPortal/test_api/curl_req_tester.pl
-d11d7ef8e76c9b93d125f4a13fdde1bae39d0604 -#- 2019-09-06 13:30:10 -0400 -#- Pierre Rioux -#- BrainPortal/test_api/lib/parse_req.rb
+1ff37b7d395e1308b99ad6b73258d0809fbe1195 -#- 2021-05-21 14:39:22 -0400 -#- Pierre Rioux -#- BrainPortal/test_api/lib/parse_req.rb
 969b473bfc43435037ce8184aec0845c7d4cf854 -#- 2020-03-16 23:21:15 -0400 -#- Natacha Beck -#- BrainPortal/test_api/req_files/README.md
 94a62d84cb5ba9f644900be13b5ca522f65744cd -#- 2018-10-31 14:34:47 -0400 -#- Pierre Rioux -#- BrainPortal/test_api/req_files/bourreaux/normget/out
 94a62d84cb5ba9f644900be13b5ca522f65744cd -#- 2018-10-31 14:34:47 -0400 -#- Pierre Rioux -#- BrainPortal/test_api/req_files/bourreaux/normget/req
-aca59a8abcaeccb21d253b5a096b70ca1cf9bab1 -#- 2018-11-03 22:33:20 -0400 -#- Pierre Rioux -#- BrainPortal/test_api/req_files/bourreaux/normlist/out
+1915a6d98691933156527eaca30d704236345853 -#- 2022-01-27 15:28:13 -0500 -#- Serge -#- BrainPortal/test_api/req_files/bourreaux/normlist/out
 94a62d84cb5ba9f644900be13b5ca522f65744cd -#- 2018-10-31 14:34:47 -0400 -#- Pierre Rioux -#- BrainPortal/test_api/req_files/bourreaux/normlist/req
 84383f4e16a4366db0402c401af3cab044211562 -#- 2018-11-21 19:05:27 -0500 -#- Pierre Rioux -#- BrainPortal/test_api/req_files/carmin/authenticate.in.json
 610828d73600865c57aeb0d07097190ebcf5ad8d -#- 2019-09-12 19:04:41 -0400 -#- Pierre Rioux -#- BrainPortal/test_api/req_files/carmin/authenticate.out
@@ -1452,9 +1519,13 @@ c935422aafa379ceb2392298172f7a12d51d3589 -#- 2019-10-07 12:57:18 -0400 -#- Pierr
 9085b942e6af67d8ef865d2e1d28e51fa5b4aa08 -#- 2018-11-03 22:08:56 -0400 -#- Pierre Rioux -#- BrainPortal/test_api/req_files/tasks/2-create.in.rb
 c935422aafa379ceb2392298172f7a12d51d3589 -#- 2019-10-07 12:57:18 -0400 -#- Pierre Rioux -#- BrainPortal/test_api/req_files/tasks/2-create.out
 8dcab6057c79826f6e8acdf9bd6f572040da81f8 -#- 2018-11-03 14:26:32 -0400 -#- Pierre Rioux -#- BrainPortal/test_api/req_files/tasks/2-create.req
-9085b942e6af67d8ef865d2e1d28e51fa5b4aa08 -#- 2018-11-03 22:08:56 -0400 -#- Pierre Rioux -#- BrainPortal/test_api/req_files/tool_configs/adminget/out
+1915a6d98691933156527eaca30d704236345853 -#- 2022-01-27 15:28:13 -0500 -#- Serge -#- BrainPortal/test_api/req_files/tasks/3-create_offline.in.json
+1915a6d98691933156527eaca30d704236345853 -#- 2022-01-27 15:28:13 -0500 -#- Serge -#- BrainPortal/test_api/req_files/tasks/3-create_offline.in.rb
+1915a6d98691933156527eaca30d704236345853 -#- 2022-01-27 15:28:13 -0500 -#- Serge -#- BrainPortal/test_api/req_files/tasks/3-create_offline.out
+1915a6d98691933156527eaca30d704236345853 -#- 2022-01-27 15:28:13 -0500 -#- Serge -#- BrainPortal/test_api/req_files/tasks/3-create_offline.req
+1915a6d98691933156527eaca30d704236345853 -#- 2022-01-27 15:28:13 -0500 -#- Serge -#- BrainPortal/test_api/req_files/tool_configs/adminget/out
 94a62d84cb5ba9f644900be13b5ca522f65744cd -#- 2018-10-31 14:34:47 -0400 -#- Pierre Rioux -#- BrainPortal/test_api/req_files/tool_configs/adminget/req
-9085b942e6af67d8ef865d2e1d28e51fa5b4aa08 -#- 2018-11-03 22:08:56 -0400 -#- Pierre Rioux -#- BrainPortal/test_api/req_files/tool_configs/adminlist/out
+1915a6d98691933156527eaca30d704236345853 -#- 2022-01-27 15:28:13 -0500 -#- Serge -#- BrainPortal/test_api/req_files/tool_configs/adminlist/out
 94a62d84cb5ba9f644900be13b5ca522f65744cd -#- 2018-10-31 14:34:47 -0400 -#- Pierre Rioux -#- BrainPortal/test_api/req_files/tool_configs/adminlist/req
 94a62d84cb5ba9f644900be13b5ca522f65744cd -#- 2018-10-31 14:34:47 -0400 -#- Pierre Rioux -#- BrainPortal/test_api/req_files/tool_configs/normget/out
 94a62d84cb5ba9f644900be13b5ca522f65744cd -#- 2018-10-31 14:34:47 -0400 -#- Pierre Rioux -#- BrainPortal/test_api/req_files/tool_configs/normget/req
@@ -1548,13 +1619,13 @@ bc5ff0c2fb5f055763f0601d1af6b49a0595d0cf -#- 2015-04-23 17:09:58 -0400 -#- Pierr
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/vendor/assets/javascripts/.keep
 1bf01a4de26b607385517cb0094c08a37ad3aeb0 -#- 2017-12-07 19:18:41 -0500 -#- Pierre Rioux -#- BrainPortal/vendor/assets/stylesheets/.keep
 68add15c0a1e34a546bec5ca4d6b5c5d80e5d531 -#- 2012-08-02 14:24:06 -0400 -#- Pierre Rioux -#- BrainPortal/vendor/cbrain/bin/askpass.sh
-817efe28b81bf52f115e46df01f3d4fc22608506 -#- 2019-10-23 16:57:35 -0400 -#- Pierre Rioux -#- BrainPortal/vendor/cbrain/bin/runtime_info.sh
+06a93ffcc7b25b48edbbb49ead1c35a10ac5c881 -#- 2021-06-22 16:26:51 -0400 -#- Pierre Rioux -#- BrainPortal/vendor/cbrain/bin/runtime_info.sh
 c184bd8f84d7984c04b7581a61a6b3abc8f8c5bd -#- 2017-08-23 14:26:13 -0400 -#- Pierre Rioux -#- BrainPortal/vendor/cbrain/lib/.gitignore
 9ed82ccd397e8291af470670fb032a04d4606758 -#- 2014-11-12 16:25:19 -0500 -#- Tarek Sherif -#- CBRAIN_licenses.txt
 df3e2af099c3247e5b7c350de3afc8f99b0253d8 -#- 2012-01-25 13:10:16 -0500 -#- Pierre Rioux -#- LICENSE.txt
 495db4c873eeb3294c04187047ce1c3a1ffc6a0e -#- 2020-09-23 11:54:45 -0400 -#- MontrealSergiy -#- NEUROHUB_README.md
 1b38ded2d16ee2b163149d0ae9bea35afdef47bd -#- 2021-01-21 10:06:59 -0500 -#- Pierre Rioux -#- README.md
-aef91372beb938684529ae217a67eeba2cbf6282 -#- 2020-08-19 17:33:44 -0400 -#- Pierre Rioux -#- Release-Notes.md
+2bb36b003cc7ae98fe9d7017d399c7270ac27025 -#- 2021-02-26 15:51:43 -0500 -#- Pierre Rioux -#- Release-Notes.md
 2ad7e18a2361df9fa2fc5a880cae6f32205775a8 -#- 2020-03-10 17:33:32 -0400 -#- Pierre Rioux -#- Travis/Dockerfile.travis
 daa19ab96f0a6463c004742a8d4b0f42b3b3fe05 -#- 2017-04-11 14:32:59 -0400 -#- Pierre Rioux -#- Travis/README.md
 c4e436410858283f3ed06eaf65a52d1935253175 -#- 2019-06-12 12:49:49 -0400 -#- Pierre Rioux -#- Travis/bootstrap.sh
@@ -1563,10 +1634,10 @@ aab7619bf65c941f03c5f944779bf31554b80f2f -#- 2016-11-26 19:35:28 -0500 -#- Pierr
 aab7619bf65c941f03c5f944779bf31554b80f2f -#- 2016-11-26 19:35:28 -0500 -#- Pierre Rioux -#- Travis/templates/config_portal.rb.TEST
 aab7619bf65c941f03c5f944779bf31554b80f2f -#- 2016-11-26 19:35:28 -0500 -#- Pierre Rioux -#- Travis/templates/database.yml.TEST
 22d7196f7fdaf23c990a450599f360d957308c34 -#- 2019-09-03 14:36:24 -0400 -#- Pierre Rioux -#- Travis/travis_ci.sh
-0106e7f5a846c94503fb4d1a229f2f9daa263ca8 -#- 2020-08-19 17:35:36 -0400 -#- Pierre Rioux -#- cbrain_file_revisions.csv
-bb27117a32906aeb1f6fe7f8b5928a6d31b414ad -#- 2019-09-18 12:11:42 -0400 -#- Pierre Rioux -#- license_header.txt
+2e9aaa24b00460d88f774be8016d3a6477e7faad -#- 2021-02-26 10:20:23 -0500 -#- Pierre Rioux -#- cbrain_file_revisions.csv
+6eff5f304c4f97b994d8b6f72992ceaba9516b3b -#- 2021-08-02 16:36:36 -0400 -#- Pierre Rioux -#- license_header.txt
 a7e0e34d6dbe195cdc06d7bd183bb56f164436db -#- 2016-08-14 14:37:17 -0400 -#- Pierre Rioux -#- script/README.md
-80fd1518a7a74a6b01237b5c49683d129d942f27 -#- 2019-06-10 17:07:45 -0400 -#- Pierre Rioux -#- script/gen_local_rev_csv.sh
-80fd1518a7a74a6b01237b5c49683d129d942f27 -#- 2019-06-10 17:07:45 -0400 -#- Pierre Rioux -#- script/make_all_rev_csv.sh
+2bb36b003cc7ae98fe9d7017d399c7270ac27025 -#- 2021-02-26 15:51:43 -0500 -#- Pierre Rioux -#- script/gen_local_rev_csv.sh
+2bb36b003cc7ae98fe9d7017d399c7270ac27025 -#- 2021-02-26 15:51:43 -0500 -#- Pierre Rioux -#- script/make_all_rev_csv.sh
 80fd1518a7a74a6b01237b5c49683d129d942f27 -#- 2019-06-10 17:07:45 -0400 -#- Pierre Rioux -#- script/make_local_doc.sh
-9979bb7ee107243657268a36fb40af1d386e8fcf -#- 2020-04-07 15:00:41 -0400 -#- Pierre Rioux -#- script/update_cb_all.sh
+06a93ffcc7b25b48edbbb49ead1c35a10ac5c881 -#- 2021-06-22 16:26:51 -0400 -#- Pierre Rioux -#- script/update_cb_all.sh

@@ -1,6 +1,48 @@
 
 ## CBRAIN/NeuroHub Release Notes
 
+#### Version 6.2.0 Released 2022-01-28
+
+(After eleven months, the `git diff` output is over 12,000 lines long!)
+
+Major features:
+
+* A new Boutiques integrator was implemented. This new framework
+  is modular and customizable, and much easier to maintain.
+  from the developer's perspective. Some technical documentation
+  is in this [presentation](https://prioux.github.io/new-boutiques-presentation/#/title).
+* The new Bouiques integrator comes with four new modules that sysadmins
+  can configure withing each Boutiques descriptor:
+  * BoutiquesFileNameMatcher
+  * BoutiquesFileTypeVerifier
+  * BoutiquesOutputFileTypeSetter
+  * BoutiquesPostProcessingCleaner
+* Users can link their account to a Globus identity and
+  authenticate with Globus from that point on.
+* A new DataProvider types has been added: SingBindMountDataProvider.
+  It access files in squashfs or ext3 overlays using the singularity
+  bindmount feature.
+* The NeuroHub interface now shows the user's own private project.
+* A new 'stream' action has been added to the userfile model,
+  allowing seemless path-based access to file contents.
+* Sysadmins have access to a set of new rake tasks to extract old record
+  from the resource_usage table, and get them saved into YAML files.
+  Replacement monthly summary records can then be reinserted in the database
+  so that the usage tracking for all resources stay accurate.
+
+Other enhancements:
+
+* New NOC status and statistics pages: users over time, tools usage
+  over time, tasks CPU time over time.
+* The main login page has a public list of configured tools and datasets.
+* The data structure that maintains statistics about the portal
+  requests has been simplified.
+* S3 data providers can be configued with distinct regions and endpoints.
+* A new class of users, AutomatedUser, is available for automatic systems.
+* Admins can configure overlays for Singularity-launched tools
+  by provding the overlays as userfiles.
+* A new tool, SimpleFileExtractor, is provided with the distribution.
+
 #### Version 6.1.0 Released 2021-02-26
 
 This release contains several new features and bug fixes.
