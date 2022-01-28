@@ -381,6 +381,10 @@ class TasksController < ApplicationController
       @task.errors[:results_data_provider_id] = 'must be provided'
     end
 
+    if ! @tool_config.bourreau.online?
+      @task.errors[:tool_config_id] = 'is on an Execution Server that is currently offline'
+    end
+
     unless @task.errors.empty? && @task.valid?
       flash.now[:error] += messages
       initialize_common_form_values
