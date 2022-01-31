@@ -1661,6 +1661,8 @@ class ClusterTask < CbrainTask
       return false
     end
 
+    taskarch_userfile.map!(&:check_hash) # validate
+
     self.addlog("Attempting to restore TaskWorkdirArchive.")
 
     taskarch_userfile.sync_to_cache
