@@ -40,7 +40,7 @@ module BoutiquesOutputFileTypeSetter
 
   # This method overrides the one in BoutiquesClusterTask
   def name_and_type_for_output_file(output, pathname) #:nodoc:
-    name, userfile_class = super  # original suggestions; class is either SingleFile or FileCollection
+    name, userfile_class = super  # original suggestions
 
     # Get the suggestion from the descriptor
     descriptor           = self.descriptor_for_save_results
@@ -49,9 +49,12 @@ module BoutiquesOutputFileTypeSetter
     return [ name, userfile_class ] if suggested_class_name.blank?
 
     # Verify it's compatible (e.g. within each of SingleFile or FileCollection subclass branches)
+    # Find the top parent of the original class suggestion
+    top_class       = (userfile_class <= SingleFile) ? SingleFile : FileCollection
     suggested_class = suggested_class_name.constantize
-    return [ name, userfile_class ] if ! (suggested_class < userfile_class)
+    return [ name, userfile_class ] if ! (suggested_class <= top_class)
 
+    # Ok, so we apply the new class proposed in the descriptor
     [ name, suggested_class ]
   end
 
