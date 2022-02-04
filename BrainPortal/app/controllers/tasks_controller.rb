@@ -381,7 +381,7 @@ class TasksController < ApplicationController
       @task.errors[:results_data_provider_id] = 'must be provided'
     end
 
-    if @tool_config.bourreau.present? && ! @tool_config.bourreau.online?
+    if @tool_config && @tool_config.bourreau.present? && ! @tool_config.bourreau.online?
       @task.errors[:tool_config_id] = 'is on an Execution Server that is currently offline'
     end
 
