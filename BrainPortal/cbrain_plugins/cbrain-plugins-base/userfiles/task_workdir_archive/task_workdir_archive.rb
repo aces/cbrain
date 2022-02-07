@@ -68,7 +68,7 @@ class TaskWorkdirArchive < TarArchive
           "md5sum" # hope it works
         end
     if content_path
-      md5 = IO.popen("#{md5command} < #{content_path.bash_escape}","r") { |fh| fh.read }
+      md5 = IO.popen("#{md5command} < #{content_path.to_s.bash_escape}","r") { |fh| fh.read }
       md5 = Regexp.last_match[1] if md5.present? && md5.match(/\b([0-9a-fA-F]{32})\b/)
       self.meta[:content_hash] = md5 if md5.present? and self.meta[:content_hash].blank?
     end
