@@ -1661,11 +1661,10 @@ class ClusterTask < CbrainTask
       return false
     end
 
-    taskarch_userfile.map!(&:check_hash) # validate
-
     self.addlog("Attempting to restore TaskWorkdirArchive.")
 
-    taskarch_userfile.sync_to_cache
+    taskarch_userfile&.check_hash # validate, save navigation (ampersand) is for smother migration
+    taskarch_userfile.sync_to_cache # for compatibility remove in the next deploy
 
     self.make_cluster_workdir
     Dir.chdir(self.full_cluster_workdir) do

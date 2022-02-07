@@ -56,6 +56,8 @@ class TaskWorkdirArchive < TarArchive
 
   # compute archive file hash to avoid tampering
   def get_hash
+    self.sync_to_cache
+    content_path = self.cache_full_path
     md5command =
         case CBRAIN::System_Uname
         when /Linux/i
@@ -65,10 +67,11 @@ class TaskWorkdirArchive < TarArchive
         else
           "md5sum" # hope it works
         end
-    self.sync_to_cache
-    md5 = IO.popen("#{md5command} < #{self.cache_full_path.bash_escape}","r") { |fh| fh.read }
-    md5 = Regexp.last_match[1] if md5.present? && md5.match(/\b([0-9a-fA-F]{32})\b/)
-    self.meta[:content_hash] = md5 if md5.present? and self.meta[:content_hash].blank?
+    if content_path
+      md5 = IO.popen("#{md5command} < #{content_path.bash_escape}","r") { |fh| fh.read }
+      md5 = Regexp.last_match[1] if md5.present? && md5.match(/\b([0-9a-fA-F]{32})\b/)
+      self.meta[:content_hash] = md5 if md5.present? and self.meta[:content_hash].blank?
+    end
   end
 
   # validate crypto hash to
