@@ -80,7 +80,7 @@ class TaskWorkdirArchive < TarArchive
     if md5.present? and md5 != get_hash  #  compatibility layer for old tasks archives
       errors.add('md5 hash check changed. Archive #{self.name} has been was tampered with ' )
       self.addlog("MD5 hash does not match stored record: TaskWorkdirArchive #{self.name } is corrupted.")
-      # cb_error "Tried to unarchive a TaskWorkdirArchive while in the wrong Rails app."
+      cb_error "Task archive #{self.name} was tampered with! Unarchiving is aborted"
     end
   end
 
