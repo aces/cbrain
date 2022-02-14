@@ -75,12 +75,11 @@ class TaskWorkdirArchive < TarArchive
   end
 
   # validate crypto hash to
-  def check_hash
+  def integrity_violated?
     md5 = self.meta[:content_hash]
     if md5.present? and md5 != get_hash  #  compatibility layer for old tasks archives
-      errors.add('md5 hash check changed. Archive #{self.name} has been was tampered with ' )
-      self.addlog("MD5 hash does not match stored record: TaskWorkdirArchive #{self.name } is corrupted.")
-      cb_error "Task archive #{self.name} was tampered with! Unarchiving is aborted"
+      self.addlog("MD5 hash does not match stored record: TaskWorkdirArchive #{self.name} is corrupted.")
+      true
     end
   end
 

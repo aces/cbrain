@@ -1664,7 +1664,10 @@ class ClusterTask < CbrainTask
 
     self.addlog("Attempting to restore TaskWorkdirArchive.")
 
-    taskarch_userfile&.check_hash # validate, save navigation (ampersand) is for smother migration
+    if taskarch_userfile&.integrity_violated?
+      self.addlog("MD5 hash does not match stored record: TaskWorkdirArchive #{self.name} is corrupted.")
+      cb_error "Task archive #{self.name} was tampered with! Unarchiving is aborted"
+    end
     taskarch_userfile.sync_to_cache # for compatibility remove in the next deploy
 
     self.make_cluster_workdir
