@@ -152,7 +152,7 @@ class SingBindmountDataProvider < SshDataProvider
     source_colon   = provider_is_remote ? ":" : "localhost:"
     # If our rsync is running remotely, we need to escape the source twice.
     source_escaped = provider_is_remote ? remote_shell_escape(remotefull) : remotefull.to_s.bash_escape
-    text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,o=r --delete #{self.rsync_excludes} #{source_colon}#{source_escaped}#{sourceslash} #{shell_escape(localfull)} 2>&1")
+    text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{source_colon}#{source_escaped}#{sourceslash} #{shell_escape(localfull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
     cb_error "Error syncing userfile to local cache, rsync returned:\n#{text}" unless text.blank?
     unless File.exist?(localfull)
