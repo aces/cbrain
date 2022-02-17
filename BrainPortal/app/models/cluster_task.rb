@@ -1621,7 +1621,6 @@ class ClusterTask < CbrainTask
       file.save!
       file.cache_copy_from_local_file(tar_file)
       file.cache_erase
-      file.get_hash
       file.save
       self.workdir_archive_userfile_id = file.id
       self.addlog_to_userfiles_created(file)
@@ -1662,12 +1661,13 @@ class ClusterTask < CbrainTask
       return false
     end
 
-    self.addlog("Attempting to restore TaskWorkdirArchive.")
-
     if taskarch_userfile&.integrity_violated?
-      self.addlog("MD5 hash does not match stored record: TaskWorkdirArchive #{self.name} is corrupted.")
-      cb_error "Task archive #{self.name} was tampered with! Unarchiving is aborted"
+      self.addlog("Work directory cannot be unarchived, MD5 hash of work directory archive does not match stored record: #{self.name}")
+      cb_error "Archive of #{self.name} task was tampered with! Unarchiving is aborted"
+      return false
     end
+
+    self.addlog("Attempting to restore TaskWorkdirArchive.")
     taskarch_userfile.sync_to_cache # for compatibility remove in the next deploy
 
     self.make_cluster_workdir

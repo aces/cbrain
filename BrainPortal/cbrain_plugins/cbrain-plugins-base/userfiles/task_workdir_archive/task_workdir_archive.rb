@@ -34,7 +34,7 @@ class TaskWorkdirArchive < TarArchive
 
   before_destroy :before_destroy_adjust_task
 
-  before_save :get_hash
+  before_save :save_hash
 
   def self.file_name_pattern #:nodoc:
     /\ACbrainTask_Workdir_[\w\-]+\.tar(\.gz)?\z/i
@@ -56,8 +56,6 @@ class TaskWorkdirArchive < TarArchive
 
   # compute archive file hash to avoid tampering
   def get_hash
-    self.sync_to_cache
-    content_path = self.cache_full_path
     md5command =
         case CBRAIN::System_Uname
         when /Linux/i
@@ -65,14 +63,27 @@ class TaskWorkdirArchive < TarArchive
         when /Darwin/i
           "md5"
         else
-          "md5sum" # hope it works
+          "md5sum"
         end
-    if content_path
-      md5 = IO.popen("#{md5command} < #{content_path.to_s.bash_escape}","r") { |fh| fh.read }
-      md5 = Regexp.last_match[1] if md5.present? && md5.match(/\b([0-9a-fA-F]{32})\b/)
-      self.meta[:content_hash] = md5 if md5.present? and self.meta[:content_hash].blank?
+    self.sync_to_cache
+    content_path = self.&cache_full_path
+    if content_path.present?
+      begin
+        md5 = IO.popen("#{md5command} < #{content_path.to_s.bash_escape}","r") { |fh| fh.read }
+      rescue => e
+        self.addlog("was not able to add md5 hash #{e.message}")
+      else
+        md5 = Regexp.last_match[1] if  md5.match(/\b([0-9a-fA-F]{32})\b/)
+        self.addlog('md5sum is malformed, the output format of md5 system untility may changed') if ! md5
+      end
       md5
     end
+  end
+
+  # saves archive file hash in his 'meta' data
+  def save_hash
+    return if self.meta[:content_hash]
+    self.meta[:content_hash] = get_hash.presence
   end
 
   # validate crypto hash to
