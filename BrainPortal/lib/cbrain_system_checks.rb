@@ -345,15 +345,6 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.a090_ensure_boutiques_descriptors_are_loaded #:nodoc:
-    #-----------------------------------------------------------------------------
-    puts "C> Associating Boutiques Descriptors With ToolConfigs"
-    #-----------------------------------------------------------------------------
-    BoutiquesBootIntegrator.link_all
-  end
-
-
-
   private
 
   # Shows a list of currently configured BrainPortals

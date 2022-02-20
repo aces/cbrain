@@ -1,0 +1,125 @@
+{
+    "name":           "BoutiquesDescriptorMaker",
+    "tool-version":   "1.0.0",
+    "schema-version": "0.5",
+    "author":         "Pierre Rioux <pierre.rioux@mcgill.ca>",
+    "description":    "The core descriptor for the interface",
+    "descriptor-url": "https://github.com/aces/cbrain/blob/master/BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task_descriptors/boutiques_descriptor_maker.json",
+    "command-line": "program_name [FLAG] [STRING] [NUMBER] [SELECT] [FILE]",
+    "inputs": [
+        {
+            "name":              "Raw JSON descriptor",
+            "id":                "_bdm_json_descriptor",
+            "type":              "String",
+            "description":       "",
+            "optional":          false,
+            "list":              false
+        },
+        {
+            "name":              "Example of file input",
+            "id":                "infile",
+            "type":              "File",
+            "description":       "Set any file here",
+            "optional":          true,
+            "value-key":         "[FILE]"
+        },
+        {
+            "name":              "Example of flag input",
+            "id":                "option_flag",
+            "type":              "Flag",
+            "description":       "If set, will add '-f' to the command",
+            "optional":          true,
+            "default-value":     true,
+            "command-line-flag": "-f",
+            "value-key":         "[FLAG]"
+        },
+        {
+            "name":              "Example of string input",
+            "id":                "option_string",
+            "type":              "String",
+            "description":       "If set, will add '-s stringvalue' to the command",
+            "optional":          true,
+            "default-value":     "mystring",
+            "command-line-flag": "-s",
+            "value-key":         "[STRING]"
+        },
+        {
+            "name":              "Example of number input",
+            "id":                "option_number",
+            "type":              "Number",
+            "description":       "If set, will add '-n numbervalue' to the command",
+            "integer":           true,
+            "minimum":           0,
+            "maximum":           25,
+            "optional":          true,
+            "default-value":     12,
+            "command-line-flag": "-n",
+            "value-key":         "[NUMBER]"
+        },
+        {
+            "name":              "Example of select input",
+            "id":                "option_select",
+            "type":              "String",
+            "description":       "If set, will add '-m val1,val2...' to the command",
+            "optional":          true,
+            "list":              true,
+            "list-separator":    ",",
+            "value-choices":     [
+               "I",
+               "am",
+               "the",
+               "eggman",
+               "or",
+               "walrus"
+            ],
+            "default-value":     [ "I", "am", "the", "walrus" ],
+            "command-line-flag": "-m",
+            "value-key":         "[SELECT]"
+        }
+    ],
+    "output-files": [
+        {
+            "name":          "Output of program",
+            "id":            "output",
+            "description":   "An output file of the command",
+            "optional":      false,
+            "list":          false,
+            "path-template": "[FILE].out"
+        }
+    ],
+    "groups": [
+        {
+            "id": "group1",
+            "name": "File Inputs",
+            "members": [
+              "infile"
+            ]
+        },
+        {
+            "id": "group2",
+            "name": "Command Options",
+            "members": [
+                "option_flag",
+                "option_string",
+                "option_number",
+                "option_select"
+            ]
+        }
+    ],
+    "tags": {
+        "domain": [
+            "boutiques",
+            "internal"
+        ]
+    },
+    "suggested-resources": {
+        "cpu-cores":         1,
+        "ram":               1,
+        "walltime-estimate": 60
+    },
+    "custom": {
+        "cbrain:readonly-input-files": true,
+        "cbrain:author": "Pierre Rioux <pierre.rioux@mcgill.ca>",
+        "cbrain:inherits-from-class": "BoutiquesDescriptorMakerHandler"
+    }
+}

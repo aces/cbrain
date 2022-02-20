@@ -1,0 +1,99 @@
+
+<!--
+#
+# CBRAIN Project
+#
+# Copyright (C) 2022
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-->
+
+<h1>Boutiques Descriptor Maker</h1>
+
+This form allows you to design and visualize a Boutiques descriptor
+for a task.
+
+<p>
+
+The descriptor is in JSON format and the syntax is very strict.
+
+<p>
+
+You start with a sample descriptor with five example inputs (a file,
+a string, a number, a flag and a selection box).
+
+<p>
+
+Add new inputs and meta data as needed, and click on the <strong>Check
+Descriptor</strong> button to refresh this page and validate the
+descriptor.
+
+<p>
+
+If the descriptor's syntax is valid, it will be re-validated by
+<em>bosh</em> and messages will be shown below. If this validation
+step works too, then an example of the generated command will be
+shown, based on the content of the generated form shown underneath.
+
+<p>
+
+You can enter values in the generated form to see what effects they
+have on both the validation and the command line. <strong>Note:</strong>
+because the form shows the inputs from the previous round of
+'checking the descriptor', you may have to click the <strong>Check
+Descriptor</strong> button twice to get the form data posted and the
+descriptor's input properly in sync.
+
+<p>
+
+At any time, you can return to the initial example descriptor by
+wiping blank the entire JSON descriptor text area.
+
+<h2>Recommendations</h2>
+
+<ul>
+  <li>
+    Make sure you enter a proper name for the tool, something with
+    no spaces or special characters, e.g. "Brainmangler" or "SuperConfabulator"
+  </li>
+  <li>
+    The 'tool-version' also needs a proper string value.
+  </li>
+  <li>
+    The 'author' and 'descriptor-url' fields are for the author of
+    the tool. Enter your own name in the "custom -&gt; 'cbrain:author'"
+    section instead.
+  </li>
+</ul>
+
+<h2>More information</h2>
+
+The full Boutiques specification is available at
+<a href="https://github.com/boutiques/boutiques" target="_blank">GitHub/Boutiques</a>.
+
+<p>
+
+Other resources:
+
+<ul>
+  <li>
+    <a href="https://github.com/boutiques/boutiques/blob/master/tools/python/boutiques/schema/descriptor.schema.json" target="_blank">Full JSON schema</a>
+  </li>
+  <li>
+    <a href="https://github.com/boutiques/boutiques/tree/master/examples" target="_blank">Examples</a>
+  </li>
+</ul>

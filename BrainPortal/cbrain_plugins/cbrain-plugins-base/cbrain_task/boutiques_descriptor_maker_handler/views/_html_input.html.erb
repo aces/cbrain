@@ -1,0 +1,94 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2021
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+# Generate a generic parameter input field with HTML id +id+ and name +name+.
+# +type+ is the kind of input field to generate (text or hidden),
+# +value+ is the input field's initial value,
+# +optional+ indicates that the parameter is optional (and the name should not
+# directly be placed on the tag) and
+# +placeholder+ is the placeholder text to fill the input with while awaiting
+# user input
+%>
+
+<%
+# Yes, the next test is hardcoded with the generated HTML id for the input
+%>
+<% if id.blank? || id.to_s != 'cbrain_task_BRA_params_KET__BRA_cbrain_task_KET__BRA_params_KET__BRA_invoke_KET__BRA__bdm_json_descriptor_KET_' %>
+
+  <% # This is invoking the standard partial exactly as-is %>
+
+  <%= render :partial => task_partial(:html_input, 'BoutiquesTask'), :locals => {
+        :id          => id,
+        :name        => name,
+        :type        => type,
+        :optional    => optional,
+        :value       => value,
+        :placeholder => placeholder,
+      }
+  %>
+
+<% else %>
+
+  <% # This is a new textarea tag with the validation messages and command preview %>
+
+  <%= text_area_tag(name, value,
+        :id    => id,
+        :rows  => "80",
+        :cols  => "150",
+      )
+  %>
+
+  <% if @task.bosh_validation_messages %>
+    <% valcolor = @task.bosh_validation_messages.to_s.strip == 'OK' ? 'black' : 'red' %>
+    <p>
+    <div style="border-bottom: 2px solid #bbbbbb; padding-bottom: 2px;">
+      <h2 style="border-width: 0px; margin: 0px; padding: 1px; padding-left: 0px;">
+        Validation messages
+      </h2>
+
+      <big><big>
+        <pre style="border: 2px solid <%= valcolor %>; padding: 0.2em"><%= @task.bosh_validation_messages %></pre>
+      </big></big>
+    </div>
+  <% end %>
+
+  <% if @task.bosh_command_preview %>
+    <p>
+    <div style="border-bottom: 2px solid #bbbbbb; padding-bottom: 2px;">
+      <h2 style="border-width: 0px; margin: 0px; padding: 1px; padding-left: 0px;">
+        Generated command preview
+      </h2>
+      <big><big>
+        <pre style="border: 2px solid black; padding: 0.2em"><%= @task.bosh_command_preview %></pre>
+      </big></big>
+    </div>
+  <% end %>
+
+  <p>
+    <h2 style="border-width: 0px; margin: 0px; padding: 1px; padding-left: 0px;">
+      Generated Boutiques Form
+    </h2>
+
+<% end %>
