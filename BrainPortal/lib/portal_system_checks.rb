@@ -43,6 +43,15 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
 
 
+  def self.a005_ensure_boutiques_descriptors_are_loaded #:nodoc:
+    #-----------------------------------------------------------------------------
+    puts "C> Associating Boutiques Descriptors With ToolConfigs"
+    #-----------------------------------------------------------------------------
+    BoutiquesBootIntegrator.link_all
+  end
+
+
+
   # Checks for pending migrations, stops the boot if it detects a problem. Must be run first
   def self.a010_check_if_pending_database_migrations #:nodoc:
 
