@@ -66,7 +66,7 @@ class TaskWorkdirArchive < TarArchive
           "md5sum"
         end
     self.sync_to_cache
-    content_path = self.&cache_full_path
+    content_path = self&.cache_full_path
     if content_path.present?
       begin
         md5 = IO.popen("#{md5command} < #{content_path.to_s.bash_escape}","r") { |fh| fh.read }
