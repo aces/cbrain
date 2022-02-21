@@ -34,7 +34,7 @@ class TaskWorkdirArchive < TarArchive
 
   before_destroy :before_destroy_adjust_task
 
-  before_save :save_hash
+  after_save :save_hash
 
   def self.file_name_pattern #:nodoc:
     /\ACbrainTask_Workdir_[\w\-]+\.tar(\.gz)?\z/i
