@@ -86,7 +86,7 @@ class TaskWorkdirArchive < TarArchive
     self.meta[:content_hash] = get_hash.presence
   end
 
-  # validate crypto hash to
+  # validate crypto hash
   def integrity_violated?
     md5 = self.meta[:content_hash]
     if md5.present? and md5 != get_hash  #  compatibility layer for old tasks archives
