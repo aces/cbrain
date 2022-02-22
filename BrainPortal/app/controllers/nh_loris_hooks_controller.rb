@@ -34,11 +34,11 @@ class NhLorisHooksController < NeurohubApplicationController
   #
   # Receives:
   #  {
-  #    source_basenames:  [ "abc.nii.gz", "def.mnc.gz" ],
+  #    source_basenames:         [ "abc.nii.gz", "def.mnc.gz" ],
   #    source_data_provider_id:  123, # optiona, can be name
-  #    result_filename:   "hello.csv",
-  #    result_dp_id:      123, # optional, can be name
-  #    result_group_id:   123, # optional, can be name
+  #    result_filename:          "hello.csv",
+  #    result_data_provider_id:  123, # optional, can be name
+  #    result_group_id:          123, # optional, can be name
   #  }
   #
   # Produces: a CbrainFileList userfile. Basenames are looked
@@ -85,10 +85,10 @@ class NhLorisHooksController < NeurohubApplicationController
   #
   # Receives:
   #  {
-  #    table_content:     [ [a, b, c], [d, e, f]... ],
-  #    result_filename:   "hello.csv",
-  #    result_dp_id:      123, # optional, can be name
-  #    result_group_id:   123, # optional, can be name
+  #    table_content:            [ [a, b, c], [d, e, f]... ],
+  #    result_filename:          "hello.csv",
+  #    result_data_provider_id:  123, # optional, can be name
+  #    result_group_id:          123, # optional, can be name
   #  }
   #
   # Produces: a CSVFile userfile
