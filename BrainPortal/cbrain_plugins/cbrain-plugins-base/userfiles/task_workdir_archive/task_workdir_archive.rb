@@ -34,8 +34,6 @@ class TaskWorkdirArchive < TarArchive
 
   before_destroy :before_destroy_adjust_task
 
-  after_save :save_hash
-
   def self.file_name_pattern #:nodoc:
     /\ACbrainTask_Workdir_[\w\-]+\.tar(\.gz)?\z/i
   end
@@ -52,47 +50,6 @@ class TaskWorkdirArchive < TarArchive
     # Adjust/save task ; use update_column in order not to change the updated_at value
     task.update_column(:workdir_archived, false)
     return true
-  end
-
-  # compute archive file hash to avoid tampering
-  def get_hash
-    md5command =
-        case CBRAIN::System_Uname
-        when /Linux/i
-          "md5sum"
-        when /Darwin/i
-          "md5"
-        else
-          "md5sum"
-        end
-    self.sync_to_cache
-    content_path = self&.cache_full_path
-    if content_path.present?
-      begin
-        md5 = IO.popen("#{md5command} < #{content_path.to_s.bash_escape}","r") { |fh| fh.read }
-      rescue => e
-        self.addlog("was not able to add md5 hash #{e.message}")
-      else
-        md5 = Regexp.last_match[1] if  md5.match(/\b([0-9a-fA-F]{32})\b/)
-        self.addlog('md5sum is malformed, the output format of md5 system untility may changed') if ! md5
-      end
-      md5
-    end
-  end
-
-  # saves archive file hash in his 'meta' data
-  def save_hash
-    return if self.meta[:content_hash]
-    self.meta[:content_hash] = get_hash.presence
-  end
-
-  # validate crypto hash
-  def integrity_violated?
-    md5 = self.meta[:content_hash]
-    if md5.present? and md5 != get_hash  #  compatibility layer for old tasks archives
-      self.addlog("MD5 hash does not match stored record: TaskWorkdirArchive #{self.name} is corrupted.")
-      true
-    end
   end
 
 end
