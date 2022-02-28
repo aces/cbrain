@@ -1620,7 +1620,7 @@ class ClusterTask < CbrainTask
                  )
       file.save!
       file.cache_copy_from_local_file(tar_file)
-      self.meta[:workdir_archive_hash] = cache_compute_md5sum.presence
+      self.meta[:workdir_archive_hash] = file.cache_compute_md5sum.presence
       file.cache_erase
       file.save
       self.workdir_archive_userfile_id = file.id
@@ -1662,15 +1662,15 @@ class ClusterTask < CbrainTask
       return false
     end
 
+    self.addlog("Attempting to restore TaskWorkdirArchive.")
+    taskarch_userfile.sync_to_cache
+
     md5 = self.meta[:workdir_archive_hash]
-    if md5.present? and md5 != cache_compute_md5sum  #  presence check is compatibility layer for old tasks archives
+    if md5.present? and md5 != taskarch_userfile.cache_compute_md5sum  #  presence check is compatibility layer for old tasks archives
       self.addlog("MD5 hash does not match stored record: TaskWorkdirArchive #{self.name} is corrupted.")
       # cb_error "Archive of #{self.name} task was tampered with! Unarchiving is aborted"
       return false
     end
-
-    self.addlog("Attempting to restore TaskWorkdirArchive.")
-    taskarch_userfile.sync_to_cache # for compatibility remove in the next deploy
 
     self.make_cluster_workdir
     Dir.chdir(self.full_cluster_workdir) do

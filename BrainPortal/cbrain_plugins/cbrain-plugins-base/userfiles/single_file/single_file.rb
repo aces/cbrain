@@ -101,5 +101,4 @@ class SingleFile < Userfile
         md5.size != 32
     md5
   end
-
 end
