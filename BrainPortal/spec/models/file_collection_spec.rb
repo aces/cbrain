@@ -89,22 +89,22 @@ describe FileCollection do
     end
 
     it "should execute 'gunzip' if archive is a *.tar.gz" do
-      expect(file_collection).to receive(:system).with(/\.+gunzip/)
+      expect(file_collection).to receive(:system).with(/\.+gunzip\.+/)
       file_collection.extract_collection_from_archive_file("dir.tar.gz")
     end
 
     it "should execute 'gunzip' if archive is a *.tgz" do
-      expect(file_collection).to receive(:system).with(/\.+gunzip/)
+      expect(file_collection).to receive(:system).with(/\.+gunzip\.+/)
       file_collection.extract_collection_from_archive_file("dir.tgz")
     end
 
     it "should execute 'tar -xf' if archive is a *.tar" do
-      expect(file_collection).to receive(:system).with(/\.+tar -xf/)
+      expect(file_collection).to receive(:system).with(/\.+tar -xf\.+/)
       file_collection.extract_collection_from_archive_file("dir.tar")
     end
 
     it "should execute 'unzip' if archive is a *.zip" do
-      expect(file_collection).to receive(:system).with(/\.+unzip/)
+      expect(file_collection).to receive(:system).with(/\.+unzip\.+/)
       file_collection.extract_collection_from_archive_file("dir.zip")
     end
 
