@@ -22,19 +22,25 @@
 #
 -%>
 
-<fieldset class="cookie_notification" style="display: none; width: 300px; margin: auto; text-align: center;">
-  <legend>Cookie Notification</legend>
-  <strong>THIS SITE EATS DELICIOUS COOKIES!</strong>
-  <p>
-  <span class="cookie_agree_button" style="border: 2px solid black; padding: 0.2em;">OK fine I agree</span>
-  <p>
-  <small>
-     These cookies are baked with the very best cake batter and are filled with chocolate and butterscotch bits
-  </small>
-</fieldset>
+<%
+   if params[:controller].to_s =~ /^(sessions|signups|nh_sessions)$/ &&
+      params[:action].to_s     =~ /^(new)$/
+%>
 
-<p>
-<strong class="unagree"> debug remove agree</strong>
+<div class="cookie_notification">
+  <fieldset>
+    <legend>Cookie Notification</legend>
+    <strong>THIS SITE EATS DELICIOUS COOKIES!</strong>
+    <p>
+    <span class="cookie_agree_button">OK fine I agree</span>
+    <p>
+    <small>
+       These cookies are baked with the very best cake batter and are filled with chocolate and butterscotch bits
+    </small>
+  </fieldset>
+</div>
+
+<p><strong class="unagree" style="color: red">(Debug button remove agree)</strong>
 
 <script type="text/javascript">
 (function () {
@@ -51,7 +57,9 @@
     notif_panel.fadeOut();
   });
 
+  // debug code below, remove in final merge
   $('.unagree').on('click', function() { window.localStorage.setItem('cbrain_cookie_agree', 'no'); notif_panel.fadeIn(); });
 })();
 </script>
 
+<% end %>
