@@ -58,12 +58,13 @@ class FileCollection < Userfile
 
     # Dir.chdir(directory) do
       escaped_tmparchivefile = archive_file_name.to_s.bash_escape
+      escaped_directory      = directory.to_s.bash_escape
       if archive_file_name =~ /(\.tar.gz|\.tgz)\z/i
-        system("cd #{directory.bash_escape} ; gunzip < #{escaped_tmparchivefile} | tar xf -")
+        system("cd #{escaped_directory} ; gunzip < #{escaped_tmparchivefile} | tar xf -")
       elsif archive_file_name =~ /\.tar\z/i
-        system("cd #{directory.bash_escape} ; tar -xf #{escaped_tmparchivefile}")
+        system("cd #{escaped_directory} ; tar -xf #{escaped_tmparchivefile}")
       elsif archive_file_name =~ /\.zip\z/i
-        system("cd #{directory.bash_escape} ; unzip #{escaped_tmparchivefile}")
+        system("cd #{escaped_directory} ; unzip #{escaped_tmparchivefile}")
       else
         cb_error "Cannot extract files from archive with unknown extension '#{archive_file_name}'"
       end
