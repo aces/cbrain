@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20211202163418) do
+ActiveRecord::Schema.define(version: 20220302191553) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -477,9 +477,9 @@ ActiveRecord::Schema.define(version: 20211202163418) do
     t.integer  "data_provider_id"
     t.boolean  "group_writable",                                 default: false, null: false
     t.integer  "num_files"
-    t.boolean  "hidden",                                         default: false
-    t.boolean  "immutable",                                      default: false
-    t.boolean  "archived",                                       default: false
+    t.boolean  "hidden",                                         default: false, null: false
+    t.boolean  "immutable",                                      default: false, null: false
+    t.boolean  "archived",                                       default: false, null: false
     t.text     "description",       limit: 65535
     t.string   "zenodo_deposit_id"
     t.string   "zenodo_doi"
