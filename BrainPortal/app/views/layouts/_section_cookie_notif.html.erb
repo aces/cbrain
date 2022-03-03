@@ -30,19 +30,20 @@
 <div class="cookie_notification">
   <fieldset>
     <legend>Cookie Notification</legend>
-    <strong>This site uses one cookie to remember you<strong>
-    <p>
-    <span class="cookie_agree_button">I agree</span>
+    <strong>This site uses one cookie to remember you</strong>
     <p>
     <small>
-       CBRAIN and NeuroHub use a single cookie to remember when you are logged in.<br>
-       The cookie's information is only exchanged between your browser and the site.<br>
-       This is safe and private. No information is ever sent to any other sites, people or third parties.
+       This is safe and private. The cookie information is only exchanged between your browser and the site.<br>
+       No information is sent to other sites, people or third parties.
     </small>
+    <p>
+    <span class="cookie_agree_button">I agree</span>
   </fieldset>
 </div>
 
+<!--
 <p><strong class="unagree" style="color: red">(Debug button remove agree)</strong>
+-->
 
 <script type="text/javascript">
 (function () {
@@ -60,7 +61,7 @@
   });
 
   // debug code below, remove in final merge
-  $('.unagree').on('click', function() { window.localStorage.setItem('cbrain_cookie_agree', 'no'); notif_panel.fadeIn(); });
+  // $('.unagree').on('click', function() { window.localStorage.setItem('cbrain_cookie_agree', 'no'); notif_panel.fadeIn(); });
 })();
 </script>
 
