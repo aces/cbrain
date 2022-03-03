@@ -18,6 +18,7 @@
    - NAVIGATION BAR
    - SECONDARY NAVIGATION BAR
    - FOOTER
+   - COOKIE NOTIFICATION
    - PAGES
      - BASE
      - SESSIONS
@@ -2089,6 +2090,50 @@ Secondary navbar with application-wide search + breadcrumbs
       transition: $TRANSITION_HOVER_ON;
       opacity: 1;
     }
+  }
+}
+
+/*
+=============================================================
+| COOKIE NOTIFICATION
+=============================================================
+*/
+
+.cookie_notification {
+  display: none; /* javascript code switches this back on as needed */
+  text-align: center;
+  position: absolute;
+  bottom: 0px;
+  width: 100%;
+  color: $PRIMARY_DK;
+  background-color: $PRIMARY_BG;
+  opacity: 95%;
+  z-index: 10;
+  line-height: 1;
+
+  fieldset {
+    border: 2px solid $PRIMARY_DK;
+    border-radius: 0.5em;
+    padding: 1em;
+    margin: 1em;
+    legend {
+      color: $PRIMARY_DK;
+      padding: 0 0.5em 0 0.5em;
+    }
+  }
+
+  p {
+    margin: 1em 0 0 0;
+  }
+
+  .cookie_agree_button {
+    border: 4px solid $PRIMARY_WASH;
+    padding: 0.2em;
+    border-radius: 0.5em;
+    color: $PRIMARY_WASH;
+    margin: 1em;
+    line-height: 3;
+    background-color: $PRIMARY_DK;
   }
 }
 

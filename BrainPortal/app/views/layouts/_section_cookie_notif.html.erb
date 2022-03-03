@@ -1,0 +1,68 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2022
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+   if params[:controller].to_s =~ /^(sessions|signups|nh_sessions)$/ &&
+      params[:action].to_s     =~ /^(new)$/
+%>
+
+<div class="cookie_notification">
+  <fieldset>
+    <legend>Cookie Notification</legend>
+    <strong>This site uses one cookie to remember you</strong>
+    <p>
+    <small>
+       This is safe and private. The cookie information is only exchanged between your browser and the site.<br>
+       No information is sent to other sites, people or third parties.
+    </small>
+    <p>
+    <span class="cookie_agree_button">I agree</span>
+  </fieldset>
+</div>
+
+<!--
+<p><strong class="unagree" style="color: red">(Debug button remove agree)</strong>
+-->
+
+<script type="text/javascript">
+(function () {
+  var agree       = window.localStorage.getItem('cbrain_cookie_agree');
+  var notif_panel = $('.cookie_notification');
+  if (agree != 'yes') {
+    notif_panel.show();
+  } else {
+    notif_panel.fadeOut();
+  }
+
+  $('.cookie_agree_button').on('click', function() {
+    window.localStorage.setItem('cbrain_cookie_agree','yes');
+    notif_panel.fadeOut();
+  });
+
+  // debug code below, remove in final merge
+  // $('.unagree').on('click', function() { window.localStorage.setItem('cbrain_cookie_agree', 'no'); notif_panel.fadeIn(); });
+})();
+</script>
+
+<% end %>

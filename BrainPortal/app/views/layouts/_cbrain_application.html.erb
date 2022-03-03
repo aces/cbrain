@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2022
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -61,6 +61,8 @@
     <%= javascript_include_tag "cbrain" %>
     <%= javascript_include_tag "dynamic-table" %>
     <%= yield :scripts %>
+
+    <%= render :partial => 'layouts/section_cookie_notif' %>
 
     <!-- Dynamically Appended Body Elements Below This -->
 
