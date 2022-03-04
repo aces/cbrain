@@ -75,7 +75,7 @@
 
       t.column('Name', :name,
         :sortable => true
-      )
+      ) { |f| f.name.force_encoding('UTF-8') }
 
       if @provider.has_browse_path_capabilities?
         t.column('CD', :changedir) do |f|

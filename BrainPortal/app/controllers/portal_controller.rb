@@ -96,8 +96,8 @@ class PortalController < ApplicationController
     remove_egrep << "^Started "                                      if params[:hide_started].presence    == "1"
     remove_egrep << "^ *Processing "                                 if params[:hide_processing].presence == "1"
     remove_egrep << "^ *Parameters: "                                if params[:hide_parameters].presence == "1"
-    remove_egrep << "^ *Rendered"                                    if params[:hide_rendered].presence   == "1"
-    remove_egrep << "^ *Redirected"                                  if params[:hide_redirected].presence == "1"
+    remove_egrep << "^ *Render"                                      if params[:hide_rendered].presence   == "1"
+    remove_egrep << "^ *Redirect"                                    if params[:hide_redirected].presence == "1"
     remove_egrep << "^User:"                                         if params[:hide_user].presence       == "1"
     remove_egrep << "^Completed"                                     if params[:hide_completed].presence  == "1"
     # Note that in production, 'SQL', 'CACHE' and 'LOAD' are never shown.
