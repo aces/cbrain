@@ -44,10 +44,13 @@ class UserkeyFlatDirSshDataProvider < FlatDirSshDataProvider
     user    = self.user # forced use of the DP owner as the connection ssh user
     key     = user.ssh_key
     id_file = key.send(:private_key_path)
+
+    # Stupidly, some SSHDs insist on having 'keyboard-interactive' in the :auth_methods
+    # even if we're not planning ot use it. Probably because of 2FA.
     Net::SFTP.start(remote_host, remote_user,
         :port         => (remote_port.presence || 22),
         :use_agent    => false,
-        :auth_methods => [ 'publickey' ],
+        :auth_methods => [ 'publickey', 'keyboard-interactive' ],
         :keys         => [ id_file ]
     ) do |sftp|
       yield sftp

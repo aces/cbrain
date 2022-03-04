@@ -34,7 +34,10 @@ module SshDataProviderBase
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def net_sftp(user = nil, userfile = nil) #:nodoc:
-    Net::SFTP.start(remote_host, remote_user, :port => (remote_port.presence || 22), :auth_methods => [ 'publickey' ] ) do |sftp|
+
+    # Stupidly, some SSHDs insist on having 'keyboard-interactive' in the :auth_methods
+    # even if we're not planning ot use it. Probably because of 2FA.
+    Net::SFTP.start(remote_host, remote_user, :port => (remote_port.presence || 22), :auth_methods => [ 'publickey', 'keyboard-interactive' ] ) do |sftp|
       yield sftp
     end
   end

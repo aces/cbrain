@@ -87,7 +87,10 @@ class EnCbrainSshDataProvider < SshDataProvider
 
     # We should create a nice state machine for the remote rename operations
     self.master # triggers unlocking the agent
-    Net::SFTP.start(remote_host,remote_user, :port => (remote_port.presence || 22), :auth_methods => [ 'publickey' ] ) do |sftp|
+
+    # Stupidly, some SSHDs insist on having 'keyboard-interactive' in the :auth_methods
+    # even if we're not planning ot use it. Probably because of 2FA.
+    Net::SFTP.start(remote_host,remote_user, :port => (remote_port.presence || 22), :auth_methods => [ 'publickey', 'keyboard-interactive' ] ) do |sftp|
 
       req = sftp.lstat(newpath).wait
       return false if req.response.ok?   # file already exists ?
