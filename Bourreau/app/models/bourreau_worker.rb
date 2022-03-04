@@ -466,9 +466,11 @@ class BourreauWorker < Worker
           task.addlog("Cannot restart at '#{fromwhat}'. Returning task status to Completed.")
           task.status_transition(task.status, "Completed")
         else # OK, we have the go ahead to restart the task
-          task.run_number = task.run_number + 1
           task.addlog("Preparation for restarting at '#{fromwhat}' succeeded, now we restart it.")
-          task.addlog("This task's Run Number was increased to '#{task.run_number}'.")
+          if fromwhat == 'Setup'
+            task.run_number = task.run_number + 1
+            task.addlog("This task's Run Number was increased to '#{task.run_number}'.")
+          end
           task.meta[:no_end_keyword_check] = "nope" if fromwhat == 'PostProcess'
           if fromwhat == 'Cluster' # special case, we need to resubmit the task.
             begin
