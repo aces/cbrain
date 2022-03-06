@@ -91,14 +91,10 @@ class SingleFile < Userfile
         else
           "md5sum"
         end
-    self.sync_to_cache
-
-    content_path = self&.cache_full_path
-    cb_error("Can't find cache path for file #{self.name}") if content_path.blank?
-    md5 = IO.popen("#{md5command} < #{content_path.to_s.bash_escape}","r") { |fh| fh.read }
-    md5 = Regexp.last_match[1] if md5.present? && md5.match(/\b([0-9a-fA-F]{32})\b/)
-    cb_error("Can't compute MD5 for file #{self.name}", Errno::EIO) if md5.blank? ||
-        md5.size != 32
+    content_path = self.cache_full_path  # supposedly always defined
+    out = IO.popen("#{md5command} < #{content_path.to_s.bash_escape}","r") { |fh| fh.read }
+    md5 = Regexp.last_match[1] if out.present? && out.match(/\b([0-9a-fA-F]{32})\b/)
+    cb_error("Can't compute MD5 for file #{self.name}") if md5.blank?
     md5
   end
 end
