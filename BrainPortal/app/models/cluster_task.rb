@@ -1663,12 +1663,12 @@ class ClusterTask < CbrainTask
     end
 
     self.addlog("Attempting to restore TaskWorkdirArchive.")
-    
+
     taskarch_userfile.sync_to_cache
 
     md5 = self.meta[:workdir_archive_hash]
     if md5.present? and md5 != taskarch_userfile.cache_compute_md5sum  #  presence check is compatibility layer for old tasks archives
-      self.addlog("MD5 hash does not match stored record: archive #{taskarch_userfile.name} of task #{self.name} is corrupted.")
+      self.addlog("MD5 hash does not match stored record: task archive #{taskarch_userfile.name} is corrupted.")
       return false
     end
 
