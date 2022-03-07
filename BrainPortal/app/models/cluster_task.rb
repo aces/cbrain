@@ -1663,6 +1663,7 @@ class ClusterTask < CbrainTask
     end
 
     self.addlog("Attempting to restore TaskWorkdirArchive.")
+    
     taskarch_userfile.sync_to_cache
 
     md5 = self.meta[:workdir_archive_hash]
