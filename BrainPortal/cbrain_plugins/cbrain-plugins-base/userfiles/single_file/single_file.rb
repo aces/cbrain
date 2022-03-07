@@ -80,4 +80,21 @@ class SingleFile < Userfile
     self.sync_to_provider
   end
 
+  # compute file md5 hash sum (useful to avoid tampering, e.g. with task archive)
+  def cache_compute_md5sum
+    md5command =
+        case CBRAIN::System_Uname
+        when /Linux/i
+          "md5sum"
+        when /Darwin/i
+          "md5"
+        else
+          "md5sum"
+        end
+    content_path = self.cache_full_path  # supposedly always defined
+    out = IO.popen("#{md5command} < #{content_path.to_s.bash_escape}","r") { |fh| fh.read }
+    md5 = Regexp.last_match[1] if out.present? && out.match(/\b([0-9a-fA-F]{32})\b/)
+    cb_error("Can't compute MD5 for file #{self.name}") if md5.blank?
+    md5
+  end
 end
