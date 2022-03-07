@@ -96,10 +96,15 @@ class ApplicationRecord < ActiveRecord::Base #:nodoc:
   end
 
   # Useful generic scopes for console users.
-  scope :utoday, -> { where [ "#{self.quoted_table_name}.updated_at >= ?", Time.now.midnight ] }
-  scope :ctoday, -> { where [ "#{self.quoted_table_name}.created_at >= ?", Time.now.midnight ] }
-  scope :uweek , -> { where [ "#{self.quoted_table_name}.updated_at >= ?", Time.now.at_beginning_of_week ] } # starts Monday
-  scope :cweek , -> { where [ "#{self.quoted_table_name}.created_at >= ?", Time.now.at_beginning_of_week ] } # starts Monday
+  scope :utoday, -> { where [ "#{self.quoted_table_name}.updated_at >= ?", Time.now.at_beginning_of_day   ] }
+  scope :ctoday, -> { where [ "#{self.quoted_table_name}.created_at >= ?", Time.now.at_beginning_of_day   ] }
+  # Note: the following two scopes imply that the week starts on Monday morning
+  scope :uweek , -> { where [ "#{self.quoted_table_name}.updated_at >= ?", Time.now.at_beginning_of_week  ] }
+  scope :cweek , -> { where [ "#{self.quoted_table_name}.created_at >= ?", Time.now.at_beginning_of_week  ] }
+  scope :umonth, -> { where [ "#{self.quoted_table_name}.updated_at >= ?", Time.now.at_beginning_of_month ] }
+  scope :cmonth, -> { where [ "#{self.quoted_table_name}.created_at >= ?", Time.now.at_beginning_of_month ] }
+  scope :uyear,  -> { where [ "#{self.quoted_table_name}.updated_at >= ?", Time.now.at_beginning_of_year  ] }
+  scope :cyear,  -> { where [ "#{self.quoted_table_name}.created_at >= ?", Time.now.at_beginning_of_year  ] }
 
   # To mark a record as a fake internal object not meant
   # to be actually loaded or saved.

@@ -263,9 +263,9 @@ module ResourceLinkHelper
         (
         "<div class=\"left_align\">\n" +
         "#{h(user.full_name)}<br>\n" +
-        (user.city.blank?  ? "" : "City: #{h(user.city)}<br/>\n") +
-        (user.site.blank?  ? "" : "Site: #{h(user.site.name)}<br/>\n") +
-        (user.email.blank? ? "" : "Email: #{h(user.email)}<br/>\n") +
+        (user.city.blank?  ? "" : "City: #{h(user.city)}, #{h(user.country)}<br>\n") +
+        (user.site.blank?  ? "" : "Site: #{h(user.site.name)}<br>\n") +
+        (user.email.blank? ? "" : "Email: #{h(user.email)}<br>\n") +
         "Last connection: #{pretty_past_date(user.last_connected_at)}<br>\n" +
         "Last activity: #{pretty_past_date(user.last_activity_at)}<br>\n" +
         "</div>"
