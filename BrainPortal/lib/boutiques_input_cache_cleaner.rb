@@ -68,7 +68,7 @@ module BoutiquesInputCacheCleaner
         last_cache_access_time = inputfile.local_sync_status.accessed_at
         next if last_cache_access_time > setup_time  # skip, perhaps the file is being accessed by another task
         inputfile.cache_erase
-        self.addlog("Boutiques Integrator's InputCacheCleaner deleted #{inputfile.name} file cache (#{input.cb_invoke_name})")
+        self.addlog("BoutiquesInputCacheCleaner deleted #{inputfile.name} file cache (#{input.cb_invoke_name})")
       end
 
     end
