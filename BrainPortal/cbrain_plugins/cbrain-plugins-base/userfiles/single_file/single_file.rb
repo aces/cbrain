@@ -97,4 +97,14 @@ class SingleFile < Userfile
     cb_error("Can't compute MD5 for file #{self.name}") if md5.blank?
     md5
   end
+
+  def size_allows_viewing?(size_limit=400_000)
+    userfile_errors = []
+    if self.size.blank?
+      userfile_errors.push("No size available for this file")  
+    else
+      userfile_errors.push("File is too large to be viewable (> #{size_limit.humanize}) kB") if self.size > size_limit
+    end
+    userfile_errors
+  end
 end

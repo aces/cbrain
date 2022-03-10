@@ -25,17 +25,10 @@ class TextFile < SingleFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  has_viewer :name => 'Text File', :partial  => :text_file, :if => :is_viewable?
+  has_viewer :name => 'Text File', :partial  => :text_file, :if => Proc.new { |u| u.size_allows_viewing?(500_000) }
 
   def self.file_name_pattern #:nodoc:
     /\.txt\z/i
-  end
-
-  def is_viewable? #:nodoc:
-    userfile_errors = []
-    userfile_errors.push("No size available for this file") if self.size.blank?
-    userfile_errors.push("File is too large to be viewable (> 500 kB)") if self.size > 500_000
-    userfile_errors
   end
 
 end
