@@ -44,8 +44,9 @@
 module BoutiquesInputCacheCleaner
 
   def setup #:nodoc:
+    result = super
     self.meta[:setup_time] = Time.now
-    super
+    result
   end
 
   def save_results #:nodoc:
@@ -63,11 +64,11 @@ module BoutiquesInputCacheCleaner
 
       Array(invoke_params[inputid]).map(&:presence).compact.each do |inputfileid|
         inputfile = Userfile.find(inputfileid)
-        last_cache_access_time = inputfile.local_sync_status&.accessed_at        
-        next if !last_cache_access_time  # cache is already deleted
+        next if inputfile.local_sync_status.nil? # cache is already deleted  # cache is already deleted
+        last_cache_access_time = inputfile.local_sync_status.accessed_at
         next if last_cache_access_time > setup_time  # skip, perhaps the file is being accessed by another task
         inputfile.cache_erase
-        self.addlog("Boutiques Integrator's InputCacheCleaner deleted #{inputfile.name} file cache (parameter #{input.cb_invoke_name})")
+        self.addlog("Boutiques Integrator's InputCacheCleaner deleted #{inputfile.name} file cache (#{input.cb_invoke_name})")
       end
 
     end
