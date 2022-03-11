@@ -66,6 +66,7 @@ module BoutiquesInputCacheCleaner
       Array(invoke_params[inputid]).map(&:presence).compact.each do |inputfileid|
         inputfile = Userfile.find(inputfileid)
         last_cache_access_time = inputfile.local_sync_status&.accessed_at
+        next unless last_cache_access_time  # skip, already unsynch 
         next if last_cache_access_time > setup_time  # skip, perhaps the file is being accessed by another task
         inputfile.cache_erase
         self.addlog("BoutiquesInputCacheCleaner deleted #{inputfile.name} file cache (#{input.cb_invoke_name})")
