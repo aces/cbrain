@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2021
+# Copyright (C) 2008-2022
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -20,8 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# This module adds automatic verification of the
-# type of files selected in a File input of a Boutiques Task.
+# This module adds automatic cleanup of cached file inputs
+# after a task completes successfully.
 #
 # To include the module automatically at boot time
 # in a task integrated by Boutiques, add a new entry
@@ -36,16 +36,29 @@
 #       }
 #   }
 #
-# In the example above, any userfile cache selected for the file input
-# named 'my_input1' or 'my_input2' will be deleted after task execution unless CBRAIN
-# notices that another task uses same cache.
-# CBRAIN tries to handle conflict between tasks that share same file based on timestamps.
-# Yet this is a dangerous feature as it might not handle some of races, e.g. with legacy tools
+# In the example above, the cached content of any userfile(s) selected for the
+# file inputs named 'my_input1' or 'my_input2' will be deleted after the task
+# completes properly. This happens unless CBRAIN notices that another task
+# uses that input too. The module tries to handle conflict between tasks that
+# share same file based on the SyncStatus timestamps.
 module BoutiquesInputCacheCleaner
 
   def setup #:nodoc:
+
+    # BEFORE code: identify userfiles that are not synced at all
+    # at this point.
+    userfile_ids = to_clean_userfile_ids()
+    self.meta[:input_userfile_ids_not_synced] = userfile_ids.select do |userfile_id|
+      sync_status = Userfile.find(userfile_id).local_sync_status
+      sync_status.blank? || sync_status.status == 'ProvNewer'
+    end
+
+    # Invoke the standard setup code
     result = super
+
+    # AFTER code: record a timestamp
     self.meta[:setup_time] = Time.now
+
     result
   end
 
@@ -53,27 +66,42 @@ module BoutiquesInputCacheCleaner
 
     return false unless super # call all the normal code
 
-    setup_time = self.meta[:setup_time]
-    return true if setup_time.nil?
+    # Fetch the two pieces of info we prepared in setup() above
+    setup_time     = self.meta[:setup_time]
+    not_synced_ids = self.meta[:input_userfile_ids_not_synced]
+    return true if setup_time.blank?
+    return true if not_synced_ids.blank?
 
-    descriptor = self.descriptor_for_save_results
-    inputs     = descriptor.custom_module_info('BoutiquesInputCacheCleaner')
+    # For each userfile that were not synced before
+    # we set up the task, see if they have been synced by others
+    # since then. If not, we can delete the cache.
+    not_synced_ids.each do |userfile_id|
 
-    inputs.each do |inputid| # 'my_input1', 'my_input2'
+      userfile = Userfile.find(userfile_id)
+      last_cache_access_time = userfile.local_sync_status&.accessed_at
 
-      input = descriptor.input_by_id(inputid)
+      next unless last_cache_access_time  # skip, already unsynced
+      next if     last_cache_access_time >= setup_time  # skip, file is being accessed by another task
 
-      Array(invoke_params[inputid]).map(&:presence).compact.each do |inputfileid|
-        inputfile = Userfile.find(inputfileid)
-        last_cache_access_time = inputfile.local_sync_status&.accessed_at
-        next unless last_cache_access_time  # skip, already unsynch 
-        next if last_cache_access_time > setup_time  # skip, perhaps the file is being accessed by another task
-        inputfile.cache_erase
-        self.addlog("BoutiquesInputCacheCleaner deleted #{inputfile.name} file cache (#{input.cb_invoke_name})")
-      end
+      userfile.cache_erase
+      self.addlog("BoutiquesInputCacheCleaner deleted cache of '#{userfile.name}'")
 
     end
 
+    true
+  end
+
+  # Returns the list of userfile IDs associated
+  # with the boutiques inputs specified with this
+  # module's config.
+  def to_clean_userfile_ids #:nodoc:
+    descriptor = self.descriptor_for_save_results
+    input_ids  = descriptor.custom_module_info('BoutiquesInputCacheCleaner')
+    input_ids # 'my_input1', 'my_input2'
+      .map { |inputid| invoke_params[inputid] } # the userfile ID(s) in the params; scalar or array
+      .flatten                                  # flatten them all
+      .map(&:presence)
+      .compact # returns a clean list of Userfile IDs
   end
 
 end
