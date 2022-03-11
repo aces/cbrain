@@ -98,13 +98,24 @@ class SingleFile < Userfile
     md5
   end
 
-  def size_allows_viewing?(size_limit=400_000)
-    userfile_errors = []
-    if self.size.blank?
-      userfile_errors.push("No size available for this file")  
+  def method_missing(name, *args)
+    # Define a method that perform size verifictaion on the file
+    # in order to know if it's viewable or not
+    size = name.to_s.match(/^size_allows_viewing_(.+)/)[1]
+    if size
+      size_limit      = size.to_i
+      userfile_errors = []
+      if self.size.blank?
+        userfile_errors.push("No size available for this file")  
+      else
+        userfile_errors.push("File is too large to be viewable (> #{size.humanize} kB)") if self.size > size_limit
+      end
+      return userfile_errors
     else
-      userfile_errors.push("File is too large to be viewable (> #{size_limit.humanize}) kB") if self.size > size_limit
+      super
     end
-    userfile_errors
+    rescue
+      super
   end
+  
 end

@@ -27,7 +27,7 @@ class CSVFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  has_viewer :name => 'CSV Viewer', :partial  => :csv_file, :if => Proc.new { |u| u.size_allows_viewing?(400_000) }
+  has_viewer :name => 'CSV Viewer', :partial  => :csv_file, :if => Proc.new { |u| u.size_allows_viewing_400_000) }
 
   def self.pretty_type #:nodoc:
     "CSV File"
