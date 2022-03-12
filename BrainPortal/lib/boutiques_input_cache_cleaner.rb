@@ -38,14 +38,22 @@
 #
 # In the example above, the cached content of any userfile(s) selected for the
 # file inputs named 'my_input1' or 'my_input2' will be deleted after the task
-# completes properly. This happens unless CBRAIN notices that another task
-# uses that input too. The module tries to handle conflict between tasks that
-# share same file based on the SyncStatus timestamps.
+# completes properly.
+#
+# For data safety, the cleanup only happens when two conditions are met:
+# 1) the files were not already in the cache before the task was set up
+# 2) after the task completes, the files' synchronization timestamps
+# indicate that they have not been used by other processes too.
 module BoutiquesInputCacheCleaner
+
+  # Note: to access the revision info of the module,
+  # you need to access the constant directly, the
+  # object method revision_info() won't work.
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def setup #:nodoc:
 
-    # BEFORE code: identify userfiles that are not synced at all
+    # BEFORE standard setup: identify userfiles that are not synced at all
     # at this point.
     userfile_ids = to_clean_userfile_ids()
     self.meta[:input_userfile_ids_not_synced] = userfile_ids.select do |userfile_id|
@@ -53,10 +61,10 @@ module BoutiquesInputCacheCleaner
       sync_status.blank? || sync_status.status == 'ProvNewer'
     end
 
-    # Invoke the standard setup code
+    # Standard setup
     result = super
 
-    # AFTER code: record a timestamp
+    # AFTER standard setup: record a timestamp
     self.meta[:setup_time] = Time.now
 
     result
@@ -87,6 +95,10 @@ module BoutiquesInputCacheCleaner
       self.addlog("BoutiquesInputCacheCleaner deleted cache of '#{userfile.name}'")
 
     end
+
+    # Some internal cleanup
+    self.meta[:setup_time]                    = nil
+    self.meta[:input_userfile_ids_not_synced] = nil
 
     true
   end
