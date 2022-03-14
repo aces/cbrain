@@ -25,7 +25,7 @@ class TextFile < SingleFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  has_viewer :name => 'Text File', :partial  => :text_file, :if => Proc.new { |u| u.size_allows_viewing_500_000 }
+  has_viewer :name => 'Text File', :partial  => :text_file, :if => :size_allows_viewing_500_000
 
   def self.file_name_pattern #:nodoc:
     /\.txt\z/i
