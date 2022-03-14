@@ -115,7 +115,7 @@ class SingleFile < Userfile
     if self.size.blank?
       userfile_errors.push("No size available for this file")  
     else
-      userfile_errors.push("File is too large to be viewable (> #{size_limit.to_s.humanize} kB) ") if self.size > size_limit
+      userfile_errors.push("File is too large to be viewable (> #{size_limit.to_s} kB) ") if self.size > size_limit
     end
     userfile_errors
   end
