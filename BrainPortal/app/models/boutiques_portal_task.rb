@@ -62,6 +62,14 @@ class BoutiquesPortalTask < PortalTask
     self.boutiques_descriptor
   end
 
+  # This method returns the same descriptor as
+  # boutiques_descriptor(), by default, but can be overriden
+  # by subclasses to change the behavior of what happens
+  # when generating the task's "show" page.
+  def descriptor_for_show_params
+    self.boutiques_descriptor
+  end
+
 
 
   ##############################
