@@ -7,5 +7,6 @@ ActiveSupport::Inflector.inflections(:en) do |inflect|
   inflect.irregular 'bourreau', 'bourreaux'
   inflect.irregular 'status',   'status'
   inflect.irregular 'usage',    'usage'
+  inflect.irregular 'quota',    'quotas'
 end
 

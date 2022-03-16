@@ -87,6 +87,9 @@ class Userfile < ApplicationRecord
   before_save             :track_resource_usage_update
   after_destroy           :track_resource_usage_destroy
 
+  # Quota handler
+  before_create           :check_exceeded_quota!
+
   # For tree sorting algorithm
   attr_accessor           :level
   attr_accessor           :tree_children
@@ -1147,6 +1150,14 @@ class Userfile < ApplicationRecord
       self.errors.add(:browse_path, 'is invalid')
       return false
     end
+    true
+  end
+
+  # This method is invoked before the creation of any file.
+  # It will raise an CbrainDiskQuotaExceeded exception if the
+  # user has exceeded a quota (space, or number of files) for the DP.
+  def check_exceeded_quota!
+    DiskQuota.exceeded!(self.user_id, self.data_provider_id)
     true
   end
 

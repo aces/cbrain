@@ -61,6 +61,8 @@ extend Hirb::Console
                         ),
   'Signup'         => %i( id first last email position institution confirmed approved_by user_id
                         ),
+  'DiskQuota'      => %i( id user_id data_provider_id max_bytes max_files
+                        ),
 
 }.each do |klassname,fields|
   fields = fields.dup

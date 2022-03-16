@@ -1,0 +1,120 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2022
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%=
+  render(:partial => 'shared/active_filters', :locals  => {
+    :scope => @scope,
+    :model => DiskQuota
+  })
+%>
+
+<div class="pagination">
+  <span class="page_links">
+    (<%= pluralize @disk_quotas.total_entries, "disk quota configurations" %>)
+  </span>
+</div>
+
+<%=
+  dynamic_scoped_table(@disk_quotas,
+    :id    => 'disk_quotas_table',
+    :class => [ :resource_list ],
+    :scope => @scope,
+    :order_map       => {
+      :user          => { :a => 'users.login',           :j =>  User         },
+      :data_provider => { :a => 'data_providers.name',   :j =>  DataProvider },
+    },
+    :filter_map => {
+      :user          => { :a => 'user_id'          },
+      :data_provider => { :a => 'data_provider_id' },
+    },
+  ) do |t|
+%>
+  <%
+    t.pagination
+
+    t.column("User", :user,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, User)
+    ) do |dq|
+      if dq.user_id == 0
+        html_colorize("(Default for all users)", 'orange')
+      else
+        link_to_user_if_accessible(dq.user)
+      end
+    end
+
+    t.column("Data Provider", :data_provider,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, DataProvider)
+    ) { |dq| link_to_data_provider_if_accessible(dq.data_provider) }
+
+    t.column("Max Size", :max_bytes,
+      :sortable => true,
+    ) { |dq| colored_pretty_size(dq.max_bytes) }
+
+    t.column("Max Files", :max_files,
+      :sortable => true,
+    ) { |dq| dq.max_files.to_s }
+
+    t.column("Usage") do |dq|
+      if dq.user_id != 0
+        what = dq.exceeded?
+        if what.nil?
+          html_colorize("OK","green") +
+          " (#{colored_pretty_size(dq.cursize)}, #{dq.curfiles} files)".html_safe
+        else
+          html_colorize(what.to_s.humanize,"red") +
+          " (#{colored_pretty_size(dq.cursize)}, #{dq.curfiles} files)".html_safe
+        end
+      end
+    end
+
+    t.column("Details") do |dq|
+      link_to 'Table',
+              report_path(
+                  :table_name       => 'userfiles.combined_file_rep',
+                  :user_id          => (dq.user_id.zero? ? "" : dq.user_id),
+                  :data_provider_id => dq.data_provider_id,
+                  :row_type         => :user_id ,
+                  :col_type         => :type,
+                  :generate         => "ok"
+              ), :class => "action_link"
+    end
+
+    if current_user.has_role? :admin_user
+
+      t.column("Operations") do |dq|
+        ( link_to("Show/Edit", disk_quota_path(dq), :class => "action_link") +
+          " " +
+          link_to("Delete",    disk_quota_path(dq), :class => "action_link",
+              :data   => { :confirm => "Are you sure you want to delete this quota entry?" },
+              :method => :delete)
+        )
+      end
+
+    end
+
+  %>
+
+<% end %>
