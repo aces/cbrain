@@ -24,7 +24,7 @@
 
 <%-
   # Parameter groups
-  @descriptor = @task.descriptor_for_form
+  @descriptor = @task.descriptor_for_show_params
   inputs      = @descriptor.inputs
   file_inputs = @descriptor.file_inputs
   params      = inputs.select { |i| i.type != 'File' }
