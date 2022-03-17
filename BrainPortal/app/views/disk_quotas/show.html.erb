@@ -59,6 +59,10 @@
 
   <% t.edit_cell(:max_bytes, :content => colored_pretty_size(@disk_quota.max_bytes), :header => "Max Disk Space") do |f| %>
     <%= f.text_field :max_bytes, :size => 12 %>
+    <div class="field_explanation">
+       Sizes are in bytes; when entering a new value,
+       you can use a unit as a suffix, such as in <em>2.3 kb</em> and <em>10 G</em>.
+    </div>
   <% end %>
 
   <% t.cell("Data Provider") do %>

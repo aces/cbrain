@@ -94,8 +94,8 @@ class DiskQuotasController < ApplicationController
     @disk_quota ||= DiskQuota.new(   :user_id => form_user_id, :data_provider_id => form_dp_id )
 
     # Update everything else.
-    @disk_quota.max_bytes = quota_params[:max_bytes].to_i if quota_params[:max_bytes].present?
-    @disk_quota.max_files = quota_params[:max_files].to_i if quota_params[:max_files].present?
+    @disk_quota.max_bytes = guess_size_units(quota_params[:max_bytes]) if quota_params[:max_bytes].present?
+    @disk_quota.max_files = quota_params[:max_files].to_i              if quota_params[:max_files].present?
 
     new_record = @disk_quota.new_record?
 
@@ -145,6 +145,19 @@ class DiskQuotasController < ApplicationController
       )
     end
     scope
+  end
+
+  # Tries to turn strings like '3 mb' into 3_000_000 etc
+  # Supported suffixes are T, G, M, K, TB, GB, MB, KB, B (case insensitive)
+  def guess_size_units(sizestring)
+    match = sizestring.match /\A\s*(\d*\.?\d+)\s*([tgmk]?)\s*b?\s*\z/i
+    return "" unless match # parsing error
+    number = match[1]
+    suffix = match[2].presence&.downcase || 'u'
+    mult   = { 't' => 1_000_000_000_000, 'g' => 1_000_000_000, 'm' => 1_000_000, 'k' => 1_000, 'u' => 1 }
+    totbytes = number.to_f * mult[suffix]
+    totbytes = totbytes.to_i
+    totbytes
   end
 
 end
