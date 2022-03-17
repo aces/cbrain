@@ -94,6 +94,9 @@
            <li <%= set_selected(params[:controller], :users) %>>
              <%= link_to 'Users', users_path %>
            </li>
+           <li <%= set_selected(params[:controller], :disk_quotas) %>>
+             <%= link_to 'Quotas', disk_quotas_path %>
+           </li>
          <% end %>
          <% if current_user.has_role?(:admin_user) %>
            <li <%= set_selected(params[:controller], :access_profiles) %>>

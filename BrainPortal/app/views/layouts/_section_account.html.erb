@@ -30,9 +30,11 @@
   # We can colorize the CBRAIN interface based on the current GIT branch
   # One only needs to define a CSS class 'account_git_branch_NAME'
   git_branch = CBRAIN::CBRAIN_Git_Branch.presence || "unknown"
+  # When devs are working in their own special branches, highlight the top in green
+  colorstyle = 'style="background-color: #393"'.html_safe if git_branch !~ /^(dev|master|unknown|service)$/
 %>
 
-<div class="account account_git_branch_<%= git_branch.gsub(/\W/,"_") %>">
+<div class="account account_git_branch_<%= git_branch.gsub(/\W/,"_") %>" <%= colorstyle %>>
 
   <span class="home_credits">
     <%= link_to 'NeuroHub', alternate_page_or_dashboard_path, :class => "home_credits-neurohub" %>
@@ -48,6 +50,7 @@
       <% if current_user.has_role?(:normal_user) %>
         <%= hover_dropdown("Resources", :dropdown_class => "resource_header") do %>
           <%= link_to 'Data Providers', data_providers_path %><BR>
+          <%= link_to 'Disk Quotas', disk_quotas_path %><BR>
           <%= link_to 'Servers', bourreaux_path %><BR>
           <%= link_to 'Tools', tools_path %><BR>
           <%= link_to 'Tool Versions', tool_configs_path %><BR>
