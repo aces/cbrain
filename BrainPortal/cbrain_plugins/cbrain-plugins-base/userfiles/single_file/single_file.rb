@@ -29,7 +29,7 @@ class SingleFile < Userfile
 
   validates :type, :subclass => { :root_class => SingleFile }
 
-  before_create :set_num_files_to_one
+  before_create :set_num_files_to_one 
 
   def self.valid_file_classes #:nodoc:
     @valid_file_classes ||= [SingleFile] + SingleFile.descendants
@@ -97,4 +97,28 @@ class SingleFile < Userfile
     cb_error("Can't compute MD5 for file #{self.name}") if md5.blank?
     md5
   end
+
+  def method_missing(name, *args)
+    return super unless name.to_s.match(/^size_allows_viewing_(.+)/)
+    size_limit   = Regexp.last_match[1].to_i
+    define_singleton_method (name) do 
+      size_allows_viewing?(size_limit) 
+    end
+    self.send(name)
+  end
+  
+  # Check if a file respect a size_limit in order to be viewable
+  # this method is used in the :if of the has_viewer used in specific 
+  # Userfile model
+  def size_allows_viewing?(size_limit=400_000)
+    userfile_errors = []
+    if self.size.blank?
+      userfile_errors.push("No size available for this file")  
+    else
+      size_limit_in_kb = size_limit / 1000
+      userfile_errors.push("File is too large to be viewable (> #{size_limit_in_kb.to_s} kB) ") if self.size > size_limit
+    end
+    userfile_errors
+  end
+  
 end
