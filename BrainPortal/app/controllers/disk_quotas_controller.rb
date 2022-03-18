@@ -88,8 +88,6 @@ class DiskQuotasController < ApplicationController
 
     # Build the true object for the form
     @disk_quota   = DiskQuota.find(id) unless id.blank?
-    cb_error "Need one User ID and one DataProvider ID" if @disk_quota.blank? && (form_user_id.blank? || form_dp_id.blank?)
-
     @disk_quota ||= DiskQuota.where( :user_id => form_user_id, :data_provider_id => form_dp_id ).first
     @disk_quota ||= DiskQuota.new(   :user_id => form_user_id, :data_provider_id => form_dp_id )
 
