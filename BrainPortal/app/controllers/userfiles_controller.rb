@@ -1662,14 +1662,14 @@ class UserfilesController < ApplicationController
             "#{failed_files.size.to_s} files failed extracting;\n" +
             "#{nested_files.size.to_s} files were ignored because they are nested in subdirectories.\n"
     if status == :success && failed_files.size == 0 && nested_files.size == 0
-      Message.send_message(current_user.own_group,
+      Message.send_message(current_user,
         :message_type  => 'notice',
         :header  => "File extraction completed",
         :description  => "Your files have been extracted from archive '#{archive_file_name}'",
         :variable_text  => report
       )
     else
-      Message.send_message(current_user.own_group,
+      Message.send_message(current_user,
         :message_type  => 'error',
         :header  => "File extraction failed",
         :description  => "Some errors occurred while extracting files from archive '#{archive_file_name}'",
@@ -1677,7 +1677,7 @@ class UserfilesController < ApplicationController
       )
     end
     rescue => e
-      Message.send_message(current_user.own_group,
+      Message.send_message(current_user,
         :message_type  => 'error',
         :header  => "File extraction failed",
         :description  => "Some errors occurred while extracting files from archive '#{archive_file_name}'",
