@@ -29,7 +29,7 @@ class SingleFile < Userfile
 
   validates :type, :subclass => { :root_class => SingleFile }
 
-  before_create :set_num_files_to_one
+  before_create :set_num_files_to_one 
 
   def self.valid_file_classes #:nodoc:
     @valid_file_classes ||= [SingleFile] + SingleFile.descendants
@@ -115,7 +115,8 @@ class SingleFile < Userfile
     if self.size.blank?
       userfile_errors.push("No size available for this file")  
     else
-      userfile_errors.push("File is too large to be viewable (> #{size_limit.to_s.humanize} kB) ") if self.size > size_limit
+      size_limit_in_kb = size_limit / 1000
+      userfile_errors.push("File is too large to be viewable (> #{size_limit_in_kb.to_s} kB) ") if self.size > size_limit
     end
     userfile_errors
   end
