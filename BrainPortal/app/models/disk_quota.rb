@@ -35,6 +35,8 @@ class DiskQuota < ApplicationRecord
 
   validates_uniqueness_of :user_id, :scope => [ :data_provider_id ]
 
+  CACHED_USAGE_EXPIRATION = 1.minute
+
   attr_reader :cursize, :curfiles # values are filled when performing a check
 
   # Returns true if currently, the user specified by +user_id+
@@ -55,7 +57,7 @@ class DiskQuota < ApplicationRecord
     quota ||= self.where(:user_id => 0      , :data_provider_id => data_provider_id).first
     return nil if quota.nil?
 
-    quota.exceeded?
+    quota.exceeded?(user_id)
   end
 
   # Same as the 'exceeded?' but raises a CbrainDiskQuotaExceeded
@@ -74,7 +76,10 @@ class DiskQuota < ApplicationRecord
 
     return nil if user_id == 0 # just in case
 
-    @cursize, @curfiles = Rails.cache.fetch("disk_usage-u=#{user_id}-dp=#{data_provider_id}", :expires_in => 1.minute) do
+    @cursize, @curfiles = Rails.cache.fetch(
+        "disk_usage-u=#{user_id}-dp=#{data_provider_id}",
+        :expires_in => CACHED_USAGE_EXPIRATION
+      ) do
       req = Userfile
               .where(:user_id          => user_id)
               .where(:data_provider_id => data_provider_id)
@@ -92,7 +97,7 @@ class DiskQuota < ApplicationRecord
       what_is_exceeded ||= :files
     end
 
-    return what_is_exceeded # one of nil, :bytes, :files, or bytes_and_files
+    return what_is_exceeded # one of nil, :bytes, :files, or :bytes_and_files
   end
 
   # Same as the 'exceeded?' but raises a CbrainDiskQuotaExceeded
