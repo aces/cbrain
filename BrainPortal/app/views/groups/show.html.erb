@@ -68,20 +68,31 @@
         <div class="field_explanation">The first line should be a short summary, and the rest are for details.</div><br>
     <% end %>
 
-    <% if current_user.has_role?(:admin_user) && @group.is_a?(WorkGroup) %>
-      <% t.edit_cell("Invisible", :content => check_box_tag(nil ,nil, @group.invisible?, :disabled => true)) do |f| %>
-        <%= f.check_box :invisible %>
-      <% end %>
-    <% else %>
-      <% t.empty_cell %>
-    <% end %>
-
     <% t.edit_cell("Not assignable", :content => check_box_tag(nil ,nil, @group.not_assignable?, :disabled => true)) do |f| %>
       <%= f.check_box :not_assignable %>
       <div class="field_explanation">
          If checked, normal members will not be able to assign files or other
          resources to this project (but editors are always allowed to do so).
       </div>
+    <% end %>
+
+    <% if current_user.has_role?(:admin_user) && @group.is_a?(WorkGroup) %>
+
+      <% t.edit_cell("Invisible", :content => check_box_tag(nil ,nil, @group.invisible?, :disabled => true)) do |f| %>
+        <%= f.check_box :invisible %>
+        <div class="field_explanation">
+          If checked, the project will not be shown in the list of projects.
+        </div>
+      <% end %>
+
+      <% t.edit_cell("Track Usage", :content => check_box_tag(nil ,nil, @group.track_usage?, :disabled => true)) do |f| %>
+        <%= f.check_box :track_usage %>
+        <div class="field_explanation">
+          If checked, the system will track overall usage of files in this project
+          (views, downloads etc) per month.
+        </div>
+      <% end %>
+
     <% end %>
 
   <% end %>

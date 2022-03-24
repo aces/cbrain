@@ -298,7 +298,8 @@ class PortalController < ApplicationController
        Group            => [ [                                         :type, :site_id ], [ 'count' ] ],
        Tool             => [ [ :user_id, :group_id,                    :category       ], [ 'count' ] ],
        ToolConfig       => [ [           :group_id, :bourreau_id,      :tool_id        ], [ 'count' ] ],
-       User             => [ [ :type, :site_id, :timezone, :city, :country             ], [ 'count' ] ]
+       User             => [ [ :type, :site_id, :timezone, :city, :country             ], [ 'count' ] ],
+       DataUsage        => [ [ :user_id, :group_id, :yearmonth                         ], [ 'combined_views', 'combined_copies', 'combined_downloads', 'combined_task_setups' ] ],
     }) if current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)
 
     @model      = allowed_breakdown.keys.detect { |m| m.table_name == table_name }
@@ -371,6 +372,11 @@ class PortalController < ApplicationController
       task_counts        = table_content_fetcher.count
       task_no_size       = table_content_fetcher.where( :cluster_workdir_size => nil ).where("cluster_workdir IS NOT NULL").count
       @table_content     = merge_vals_as_array(task_sum_size, task_counts, task_no_size) # create triplets
+    elsif table_ops[0].to_s =~ /combined_(views|copies|downloads|task_setups)\z/
+      attname = Regexp.last_match[1] # (views|copies|downloads|task_setups)
+      att_count          = table_content_fetcher.sum("#{attname}_count")
+      att_numfiles       = table_content_fetcher.sum("#{attname}_numfiles")
+      @table_content     = merge_vals_as_array( att_count, att_numfiles )
     else
       generic_count  = table_content_fetcher.send(*table_ops)
       @table_content = merge_vals_as_array(generic_count) # create singletons

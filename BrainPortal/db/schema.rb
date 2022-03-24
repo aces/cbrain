@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220315153324) do
+ActiveRecord::Schema.define(version: 20220324155533) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -122,6 +122,22 @@ ActiveRecord::Schema.define(version: 20220315153324) do
     t.index ["user_id"], name: "index_data_providers_on_user_id", using: :btree
   end
 
+  create_table "data_usage", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1" do |t|
+    t.integer  "user_id",                          null: false
+    t.integer  "group_id",                         null: false
+    t.string   "yearmonth",                        null: false
+    t.integer  "views_count",          default: 0, null: false
+    t.integer  "views_numfiles",       default: 0, null: false
+    t.integer  "downloads_count",      default: 0, null: false
+    t.integer  "downloads_numfiles",   default: 0, null: false
+    t.integer  "task_setups_count",    default: 0, null: false
+    t.integer  "task_setups_numfiles", default: 0, null: false
+    t.integer  "copies_count",         default: 0, null: false
+    t.integer  "copies_numfiles",      default: 0, null: false
+    t.datetime "created_at",                       null: false
+    t.datetime "updated_at",                       null: false
+  end
+
   create_table "disk_quotas", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1" do |t|
     t.integer  "user_id"
     t.integer  "data_provider_id"
@@ -160,6 +176,7 @@ ActiveRecord::Schema.define(version: 20220315153324) do
     t.text     "description",    limit: 65535
     t.boolean  "public",                       default: false
     t.boolean  "not_assignable",               default: false
+    t.boolean  "track_usage",                  default: false, null: false
     t.index ["invisible"], name: "index_groups_on_invisible", using: :btree
     t.index ["name"], name: "index_groups_on_name", using: :btree
     t.index ["not_assignable"], name: "index_groups_on_not_assignable", using: :btree

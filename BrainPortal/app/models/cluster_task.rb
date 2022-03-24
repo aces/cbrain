@@ -747,6 +747,7 @@ class ClusterTask < CbrainTask
             self.status_transition(self.status, "Failed To Setup")
           else
             self.addlog("Setup and submit process successful.")
+            self.track_usage_of_input_files_after_setup
             # the status is moving forward at its own pace now
           end
           self.meta[:submit_without_setup] = nil # reset special skip
@@ -2174,6 +2175,21 @@ exit $status
     return self.cluster_workdir_size
   rescue
     return nil
+  end
+
+  # This will increase the "task_setup" counts of the
+  # DataUsage records for any and all userfiles left in
+  # the :interface_userfile_ids array of the task's params.
+  def track_usage_of_input_files_after_setup #:nodoc:
+    userfile_ids = self.params[:interface_userfile_ids] || []
+    Userfile.joins(:group)
+      .where('userfiles.id' => userfile_ids)
+      .where('groups.track_usage' => true)
+      .to_a
+      .select { |userfile| userfile.is_locally_synced? }
+      .each do |userfile|
+        DataUsage.increase_task_setups(self.user, userfile)
+      end
   end
 
 

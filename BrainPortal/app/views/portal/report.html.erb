@@ -37,6 +37,7 @@
               [ 'Tool',           'tool_id' ],
               [ 'City',           'city' ],
               [ 'Country',        'country' ],
+              [ 'Year/Month',     'yearmonth' ],
             ]
    #restricted_att_list = @model_atts.blank? ? full_att_list : full_att_list.select { |pair| @model_atts.include?(pair[1].to_sym) }
    restricted_att_list = @model_atts.blank? ? [] : full_att_list.select { |pair| @model_atts.include?(pair[1].to_sym) }
@@ -98,6 +99,10 @@ in a tabular layout. Proceed as follow:
               [ 'Projects - count',                            Group.table_name                                     ],
               [ 'Tools - count',                               Tool.table_name                                      ],
               [ 'Tool Versions - count',                       ToolConfig.table_name                                ],
+              [ 'Data Usage - file views',                     DataUsage.table_name + ".combined_views"             ],
+              [ 'Data Usage - file downloads',                 DataUsage.table_name + ".combined_downloads"         ],
+              [ 'Data Usage - file copies',                    DataUsage.table_name + ".combined_copies"            ],
+              [ 'Data Usage - processed',                      DataUsage.table_name + ".combined_task_setups"       ],
             ] : []),
             params[:table_name]
           )
@@ -221,11 +226,28 @@ in a tabular layout. Proceed as follow:
 
 
 
+      <%
+         # Special proc for combined data usage reports
+         if params[:table_name] =~ /\.combined_(views|copies|downloads|task_setups)\z/
+           attname = Regexp.last_match[1]
+           td_content_proc = Proc.new do |vector,td_filters|
+             att_count, att_numfiles = vector
+             capture do
+      %>
+             <%= "#{pluralize(att_count,"entry")} / #{pluralize(att_numfiles,"file")}" %>
+      <%
+             end # capture
+           end # proc
+         end # if
+      %>
+
+
+
       <table id="report_table" class="tablesorter">
 
         <%
            # HTML attribute modifications for vertical headers (default) or wider headers
-           vertical_headers = (params[:table_name] !~ /\.combined_(file|task)_rep\z/)
+           vertical_headers = (params[:table_name] !~ /\.combined_(file|task)_rep|\.combined_(views|downloads|copies|task_setups)\z/)
            th_att     = ""
            th_div_att = " style=\"margin-right: 1.5em\"".html_safe
            if vertical_headers
@@ -468,12 +490,21 @@ in a tabular layout. Proceed as follow:
             </tr>
           <% end %>
 
-       <tr>
-        <th>Dates:</th>
-        <td colspan="2"><%= date_range_panel(date_filtering) %>
-        <small>(Note: the links in the report will NOT include the date restrictions)</small>
-        </td>
-      </tr>
+          <% if @model_atts.include?(:yearmonth) %>
+            <tr class="report_fix_attributes">
+            <th>Year/Month:</th>
+              <td><%= select_tag :yearmonth, options_for_select(@model.group(:yearmonth).order(:yearmonth).pluck(:yearmonth), { :selector => params[:status] }), :multiple => true, :size => 5 %></td>
+            </tr>
+          <% end %>
+
+          <% if ! @model == DataUsage %>
+            <tr>
+              <th>Dates:</th>
+              <td colspan="2"><%= date_range_panel(date_filtering) %>
+                <small>(Note: the links in the report will NOT include the date restrictions)</small>
+             </td>
+            </tr>
+          <% end %>
 
       </table>
 

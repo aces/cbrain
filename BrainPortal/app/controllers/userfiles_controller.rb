@@ -1080,6 +1080,7 @@ class UserfilesController < ApplicationController
                      :group_id          => my_group_id,
                      :crush_destination => crush_destination
                   )
+            DataUsage.increase_copies(current_user, u)
           end
           raise "file collision: there is already such a file on the other provider" unless res
           success_list << u
@@ -1256,6 +1257,7 @@ class UserfilesController < ApplicationController
     if userfiles_list.size == 1 && userfiles_list[0].is_a?(SingleFile)
       userfile = userfiles_list[0]
       fullpath = userfile.cache_full_path
+      DataUsage.increase_downloads(current_user, userfile)
       send_file fullpath, :stream => true, :filename => is_blank ? fullpath.basename : specified_filename
       return
     end
