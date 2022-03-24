@@ -32,7 +32,7 @@ class DataUsage < ApplicationRecord
   belongs_to :user,  :optional => false
   belongs_to :group, :optional => false
 
-  validates_uniqueness_of :user_id, :scope => [ :group_id ]
+  validates_uniqueness_of :user_id, :scope => [ :group_id, :yearmonth ]
 
   def self.increase_views(user, userfile)
     return nil unless userfile.group.track_usage?
