@@ -258,7 +258,7 @@ class BoutiquesClusterTask < ClusterTask
         # Transfer content to DataProvider
         outfile.cache_copy_from_local_file(path)
         params["_cbrain_output_#{output.id}"] ||= []
-        params["_cbrain_output_#{output.id}"]  << outfile.id
+        params["_cbrain_output_#{output.id}"]  |= [ outfile.id ]
         self.addlog("Saved result file #{name}")
 
         # Add provenance logs
