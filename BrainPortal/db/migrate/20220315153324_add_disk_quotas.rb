@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2022
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -20,15 +20,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Generic model for text files.
-class TextFile < SingleFile
+class AddDiskQuotas < ActiveRecord::Migration[5.0]
 
-  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-
-  has_viewer :name => 'Text File', :partial  => :text_file, :if => :size_allows_viewing_500_000
-
-  def self.file_name_pattern #:nodoc:
-    /\.txt\z/i
+  def change
+    create_table :disk_quotas do |t|
+      t.integer    :user_id
+      t.integer    :data_provider_id
+      t.decimal    :max_bytes, :precision => 24, :scale => 0
+      t.decimal    :max_files, :precision => 24, :scale => 0
+      t.timestamps
+    end
   end
 
 end
+

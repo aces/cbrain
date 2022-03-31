@@ -1,8 +1,9 @@
 
+<%-
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2022
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -19,16 +20,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+-%>
 
-# Generic model for text files.
-class TextFile < SingleFile
+<% title 'Disk Quotas' %>
 
-  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+<% if current_user.has_role? :admin_user %>
+  <div class="menu_bar">
+    <%= link_to "New Quota Entry", new_disk_quota_path(), :class => :button %>
+  </div>
+<% end %>
 
-  has_viewer :name => 'Text File', :partial  => :text_file, :if => :size_allows_viewing_500_000
+<div id="disk_quotas_table" class="index_block">
+  <%= render :partial => 'disk_quotas_table' %>
+</div>
 
-  def self.file_name_pattern #:nodoc:
-    /\.txt\z/i
-  end
-
-end

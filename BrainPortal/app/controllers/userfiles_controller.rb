@@ -611,6 +611,12 @@ class UserfilesController < ApplicationController
                                   :header         => "Collection Uploaded",
                                   :variable_text  => "#{collection.pretty_type} [[#{collection.name}][/userfiles/#{collection.id}]]"
                                   )
+          rescue => e
+            Message.send_message(current_user,
+              :message_type   => 'error',
+              :header         => 'Failed to upload collection',
+              :description     => e.message
+              )
           ensure
             File.delete(tmpcontentfile) rescue true
           end
@@ -1567,7 +1573,6 @@ class UserfilesController < ApplicationController
   #+attributes+ is a hash of attributes for all the files,
   #they must contain at least user_id and data_provider_id
   def extract_from_archive(archive_file_name, file_type = nil, attributes = {}) #:nodoc:
-
     file_type = SingleFile if file_type.present? && ! (file_type <= SingleFile) # just protect from classes outside of Userfile
     escaped_archivefile = archive_file_name.to_s.bash_escape # bash escaping
 
@@ -1599,18 +1604,18 @@ class UserfilesController < ApplicationController
 
     workdir = "/tmp/filecollection.#{Process.pid}"
     Dir.mkdir(workdir)
-    Dir.chdir(workdir) do
+    # Dir.chdir(workdir) do
       if archive_file_name =~ /(\.tar.gz|\.tgz)\z/i
-        system("tar -xzf #{escaped_archivefile}")
+        system("cd #{workdir} ; tar -xzf #{escaped_archivefile}")
       elsif archive_file_name =~ /\.tar\z/i
-        system("tar -xf #{escaped_archivefile}")
+        system("cd #{workdir} ; tar -xf #{escaped_archivefile}")
       elsif archive_file_name =~ /\.zip/i
-        system("unzip #{escaped_archivefile}")
+        system("cd #{workdir} ; unzip #{escaped_archivefile}")
       else
         FileUtils.remove_dir(workdir, true)
         cb_error "Cannot process file with unknown extension: #{archive_file_name}"
       end
-    end
+    # end
 
     # Prepare for extraction
     status           = :success
@@ -1618,6 +1623,7 @@ class UserfilesController < ApplicationController
     failed_files     = []
     nested_files     = []
 
+    # Fill array for report
     all_files.each do |file_name|
       if file_name =~ /\//
         nested_files << file_name
@@ -1625,52 +1631,58 @@ class UserfilesController < ApplicationController
               :name             => file_name,
               :user_id          => user_id,
               :data_provider_id => data_provider_id
-            ).first
+            ).exists?
         failed_files << file_name
       else
         successful_files << file_name
       end
     end
 
-    Dir.chdir(workdir) do
-      successful_files.each do |file|
-        local_file_type = file_type || Userfile.suggested_file_type(file)
-        u = local_file_type.new(attributes)
-        u.name = file
+    # Dir.chdir(workdir) do
+      successful_files.each do |file_name|
+        local_file_type = file_type || Userfile.suggested_file_type(file_name)
+        u               = local_file_type.new(attributes)
+        u.name          = file_name
         if u.save
-          u.cache_copy_from_local_file(file)
-          u.size = File.size(file)
+          u.cache_copy_from_local_file("#{workdir}/#{file_name}")
+          u.size = File.size(file_name)
           u.save
         else
           status = :failed
         end
       end
-    end
+    # end
 
     FileUtils.remove_dir(workdir, true)
 
     # Report these values using new comm mechanism
     # [status, successful_files, failed_files, nested_files]
     report = "Based on the content of the archive we found:\n" +
-             "#{successful_files.size.to_s} files successfully extracted;\n" +
-             "#{failed_files.size.to_s} files failed extracting;\n" +
-             "#{nested_files.size.to_s} files were ignored because they are nested in subdirectories.\n"
+            "#{successful_files.size.to_s} files successfully extracted;\n" +
+            "#{failed_files.size.to_s} files failed extracting;\n" +
+            "#{nested_files.size.to_s} files were ignored because they are nested in subdirectories.\n"
     if status == :success && failed_files.size == 0 && nested_files.size == 0
-      Message.send_message(current_user.own_group,
+      Message.send_message(current_user,
         :message_type  => 'notice',
         :header  => "File extraction completed",
         :description  => "Your files have been extracted from archive '#{archive_file_name}'",
         :variable_text  => report
       )
     else
-      Message.send_message(current_user.own_group,
+      Message.send_message(current_user,
         :message_type  => 'error',
         :header  => "File extraction failed",
         :description  => "Some errors occurred while extracting files from archive '#{archive_file_name}'",
         :variable_text  => report
       )
     end
-
+    rescue => e
+      Message.send_message(current_user,
+        :message_type  => 'error',
+        :header  => "File extraction failed",
+        :description  => "Some errors occurred while extracting files from archive '#{archive_file_name}'",
+        :variable_text  => e.message
+      )
   end
 
   # This method creates a tar file of the userfiles listed

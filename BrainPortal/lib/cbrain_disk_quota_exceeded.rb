@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2022
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -20,15 +20,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Generic model for text files.
-class TextFile < SingleFile
+# Use this exception class for notification
+# of disk quota exceeded.
+class CbrainDiskQuotaExceeded < CbrainError
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  has_viewer :name => 'Text File', :partial  => :text_file, :if => :size_allows_viewing_500_000
+  def initialize(user_id, data_provider_id)
+    message =
+      "Disk Quota Exceeded" +
+      " for user '#{User.find(user_id).login}'" +
+      " on data provider '#{DataProvider.find(data_provider_id).name}'"
+    super(message)
 
-  def self.file_name_pattern #:nodoc:
-    /\.txt\z/i
+    self
   end
 
 end
+

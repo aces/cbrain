@@ -47,7 +47,8 @@ end
 #####################################################
 
 # Make sure the classes are loaded
-[ Userfile, CbrainTask, User, Group, DataProvider, RemoteResource, RemoteResourceInfo, Site, Tool, ToolConfig, Bourreau ]
+[ Userfile, CbrainTask, User, Group, DataProvider, RemoteResource,
+  RemoteResourceInfo, Site, Tool, ToolConfig, Bourreau, DiskQuota ]
 # Note that it's important to load PortalTask and/or ClusterTask too, because of its own pre-loading of subclasses.
 PortalTask.nil? rescue true
 ClusterTask.nil? rescue true
@@ -348,6 +349,28 @@ ToolConfig #%d "%s"
       container_image_userfile_id.presence || 0,
       container_image.try(:name) || "none",
       extra_qsub_args.presence || ""
+  end
+end
+
+class DiskQuota
+  def pretview
+    report = <<-VIEW
+DiskQuota #%d
+  Owner:    %d (%s)
+  DP:       %d (%s)
+  MaxBytes: %d (%s)
+  MaxFiles: %d
+  Created:  %s
+  Updated:  %s
+    VIEW
+    sprintf report,
+      self.id,
+      user_id, (user_id == 0 ? "Default for all users" : user.login),
+      data_provider_id, data_provider.try(:name),
+      self.max_bytes, ConsoleCtx.send(:pretty_size, self.max_bytes),
+      self.max_files,
+      ConsoleCtx.send(:pretty_past_date,created_at),
+      ConsoleCtx.send(:pretty_past_date,updated_at)
   end
 end
 

@@ -68,10 +68,19 @@ end
 
 # Last connected users.
 # Try "last -20", just like in a shell!
-def last(lim=20)
+# Also supported:
+#   last -20, loginname
+#   last loginname
+def last(lim=20, user=nil)
+  # Silly args parser/shifter
+  if lim.to_s !~ /^-?\d+$/
+    user ||= lim.to_s # shift
+    lim=20
+  end
   table LargeSessionInfo
         .order("large_session_infos.updated_at desc")
         .joins(:user)
+        .where(user.blank? ? {} : { 'users.login' => user.to_s })
         .select( %w( users.login
                      users.id
                      large_session_infos.active

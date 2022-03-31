@@ -1,0 +1,81 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2022
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title @disk_quota.new_record? ? 'Create Disk Quota' : 'Edit Disk Quota' %>
+
+<%= error_messages_for @disk_quota %>
+
+<div class="menu_bar">
+
+  <%= link_to "Quotas Table", disk_quotas_path(), :class => :button %>
+
+  <% if ! @disk_quota.new_record? %>
+
+    <%= link_to 'New Quota With Same User',
+        new_disk_quota_path(:user_id          => @disk_quota.user_id),          :class => :button %>
+
+    <%= link_to 'New Quota With Same Provider',
+        new_disk_quota_path(:data_provider_id => @disk_quota.data_provider_id), :class => :button %>
+
+  <% end %>
+
+</div>
+
+
+
+<%= show_table(@disk_quota, :header => "Disk Quota Record",
+                            :edit_condition => check_role(:admin_user)) do |t| %>
+
+  <% t.cell("User") do %>
+    <% if @disk_quota.new_record? %>
+      <%= user_select("disk_quota[user_id]", { :selector => (@disk_quota.user_id.presence || ""), :include_blank => '(Default For All Users)' }) %>
+    <% else %>
+      <%= @disk_quota.user_id.zero? ?
+          html_colorize("(Default for all users)", 'orange') :
+          link_to_user_if_accessible(@disk_quota.user) %>
+    <% end %>
+  <% end %>
+
+  <% t.edit_cell(:max_bytes, :content => colored_pretty_size(@disk_quota.max_bytes), :header => "Max Disk Space") do |f| %>
+    <%= f.text_field :max_bytes, :size => 12 %>
+    <div class="field_explanation">
+       Sizes are in bytes; when entering a new value,
+       you can use a unit as a suffix, such as in <em>2.3 kb</em> and <em>10 G</em>.
+    </div>
+  <% end %>
+
+  <% t.cell("Data Provider") do %>
+    <% if @disk_quota.new_record? %>
+      <%= data_provider_select("disk_quota[data_provider_id]", { :selector => (@disk_quota.data_provider_id.presence || ""), :include_blank => '(Select a DataProvider)' }) %>
+    <% else %>
+      <%= link_to_data_provider_if_accessible(@disk_quota.data_provider) %>
+    <% end %>
+  <% end %>
+
+  <% t.edit_cell(:max_files, :header => "Max Num Files") do |f| %>
+    <%= f.text_field :max_files, :size => 12 %>
+  <% end %>
+
+<% end %>
+
