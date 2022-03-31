@@ -1080,6 +1080,7 @@ class UserfilesController < ApplicationController
                      :group_id          => my_group_id,
                      :crush_destination => crush_destination
                   )
+            DataUsage.increase_copies(current_user, u)
           end
           raise "file collision: there is already such a file on the other provider" unless res
           success_list << u
@@ -1256,6 +1257,7 @@ class UserfilesController < ApplicationController
     if userfiles_list.size == 1 && userfiles_list[0].is_a?(SingleFile)
       userfile = userfiles_list[0]
       fullpath = userfile.cache_full_path
+      DataUsage.increase_downloads(current_user, userfile)
       send_file fullpath, :stream => true, :filename => is_blank ? fullpath.basename : specified_filename
       return
     end
@@ -1264,6 +1266,7 @@ class UserfilesController < ApplicationController
     tarfile      = create_relocatable_tar_for_userfiles(userfiles_list,current_user.login)
     tarfile_name = "#{specified_filename}.tar.gz"
     send_file tarfile, :stream  => true, :filename => tarfile_name
+    userfiles_list.each { |userfile| DataUsage.increase_downloads(current_user, userfile) }
     CBRAIN.spawn_fully_independent("Download Clean Tmp #{current_user.login}") do
       sleep 3000
       File.delete(tarfile)

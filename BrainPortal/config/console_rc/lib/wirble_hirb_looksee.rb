@@ -63,6 +63,12 @@ extend Hirb::Console
                         ),
   'DiskQuota'      => %i( id user_id data_provider_id max_bytes max_files
                         ),
+  'DataUsage'      => %i( id user_id group_id
+                          views_count       views_numfiles
+                          downloads_count   downloads_numfiles
+                          copies_count      copies_numfiles
+                          task_setups_count task_setups_numfiles
+                        ),
 
 }.each do |klassname,fields|
   fields = fields.dup

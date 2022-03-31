@@ -48,7 +48,7 @@ end
 
 # Make sure the classes are loaded
 [ Userfile, CbrainTask, User, Group, DataProvider, RemoteResource,
-  RemoteResourceInfo, Site, Tool, ToolConfig, Bourreau, DiskQuota ]
+  RemoteResourceInfo, Site, Tool, ToolConfig, Bourreau, DiskQuota, DataUsage ]
 # Note that it's important to load PortalTask and/or ClusterTask too, because of its own pre-loading of subclasses.
 PortalTask.nil? rescue true
 ClusterTask.nil? rescue true
@@ -371,6 +371,32 @@ DiskQuota #%d
       self.max_files,
       ConsoleCtx.send(:pretty_past_date,created_at),
       ConsoleCtx.send(:pretty_past_date,updated_at)
+  end
+end
+
+class DataUsage
+  def pretview
+    report = <<-VIEW
+DataUsage #%d
+  User:    %d (%s)
+  Group:   %d (%s)
+  Views     (Count)   : %d
+            (NumFiles): %d
+  Downloads (Count)   : %d
+            (NumFiles): %d
+  Copies    (Count)   : %d
+            (NumFiles): %d
+  TaskSetup (Count)   : %d
+            (NumFiles): %d
+    VIEW
+    sprintf report,
+      self.id,
+      user_id,  user.login,
+      group_id, group.name,
+      views_count,       views_numfiles,
+      downloads_count,   downloads_numfiles,
+      copies_count,      copies_numfiles,
+      task_setups_count, task_setups_numfiles
   end
 end
 
