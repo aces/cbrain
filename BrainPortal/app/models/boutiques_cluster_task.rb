@@ -258,7 +258,7 @@ class BoutiquesClusterTask < ClusterTask
         # Transfer content to DataProvider
         outfile.cache_copy_from_local_file(path)
         params["_cbrain_output_#{output.id}"] ||= []
-        params["_cbrain_output_#{output.id}"]  << outfile.id
+        params["_cbrain_output_#{output.id}"]  |= [ outfile.id ]
         self.addlog("Saved result file #{name}")
 
         # Add provenance logs
@@ -276,8 +276,9 @@ class BoutiquesClusterTask < ClusterTask
           # as the parent even when there are other optional files.
           req_file_inputs = descriptor.required_file_inputs
           if req_file_inputs.size == 1
-            parent_id = invoke_params[req_file_inputs[0].id]
-            outfile.move_to_child_of(parent_id) if parent_id.present?
+            parent_userfile_id = invoke_params[req_file_inputs[0].id]
+            parent_userfile    = Userfile.where(:id => parent_userfile_id).first
+            outfile.move_to_child_of(parent_userfile) if parent_userfile.present?
           end
         end
 
