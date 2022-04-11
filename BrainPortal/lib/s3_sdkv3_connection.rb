@@ -63,7 +63,8 @@ class S3Sdkv3Connection
       :credentials => credentials,
       :region      => region,
     }
-    client_connection[:endpoint] = endpoint if endpoint.present?
+    client_connection[:endpoint] = endpoint     if endpoint.present?
+    client_connection[:force_path_style] = true if endpoint.present?
 
     @client         = Aws::S3::Client.new(client_connection)
     self
