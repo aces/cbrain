@@ -121,8 +121,6 @@ describe RemoteResource do
     before(:each) do
       allow(remote_resource).to receive(:ssh_master).and_return(ssh_master)
       allow(remote_resource).to receive(:has_ssh_control_info?).and_return(true)
-      allow(remote_resource).to receive(:has_db_tunnelling_info?).and_return(false)
-      allow(remote_resource).to receive(:has_actres_tunnelling_info?).and_return(false)
     end
     it "should return false if called on the Portal app" do
       portal_resource = RemoteResource.current_resource
@@ -156,13 +154,7 @@ describe RemoteResource do
       remote_resource.start_tunnels
     end
     it "should add a tunnel when db tunneling info is available" do
-      allow(remote_resource).to receive(:has_db_tunnelling_info?).and_return(true)
-      expect(ssh_master).to receive(:add_tunnel)
-      remote_resource.start_tunnels
-    end
-    it "should add a tunnel when active resource tunneling info is available" do
-      allow(remote_resource).to receive(:has_actres_tunnelling_info?).and_return(true)
-      expect(ssh_master).to receive(:add_tunnel)
+      expect(ssh_master).to receive(:add_tunnel).twice
       remote_resource.start_tunnels
     end
   end
@@ -217,40 +209,6 @@ describe RemoteResource do
     it "should return false if rails dir is blank" do
       remote_resource.ssh_control_rails_dir = ""
       expect(remote_resource).not_to have_remote_control_info
-    end
-  end
-  describe "#has_db_tunnelling_info?" do
-    before(:each) do
-      allow(remote_resource).to receive(:has_ssh_control_info?).and_return(true)
-      remote_resource.tunnel_mysql_port = "port"
-    end
-    it "should return true if ssh control infor and mysql port are defined" do
-      expect(remote_resource).to have_db_tunnelling_info
-    end
-    it "should return false if no ssh control infor" do
-      allow(remote_resource).to receive(:has_ssh_control_info?).and_return(false)
-      expect(remote_resource).not_to have_db_tunnelling_info
-    end
-    it "should return false if mysql port is blank" do
-      remote_resource.tunnel_mysql_port = ""
-      expect(remote_resource).not_to have_db_tunnelling_info
-    end
-  end
-  describe "#has_actres_tunnelling_info?" do
-    before(:each) do
-      allow(remote_resource).to receive(:has_ssh_control_info?).and_return(true)
-      remote_resource.tunnel_actres_port = "port"
-    end
-    it "should return true if ssh control infor and mysql port are defined" do
-      expect(remote_resource).to have_actres_tunnelling_info
-    end
-    it "should return false if no ssh control infor" do
-      allow(remote_resource).to receive(:has_ssh_control_info?).and_return(false)
-      expect(remote_resource).not_to have_actres_tunnelling_info
-    end
-    it "should return false if mysql port is blank" do
-      remote_resource.tunnel_actres_port = ""
-      expect(remote_resource).not_to have_actres_tunnelling_info
     end
   end
   describe "#read_from_remote_shell_command" do
