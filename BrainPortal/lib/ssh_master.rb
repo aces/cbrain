@@ -272,24 +272,62 @@ class SshMaster
   #               accessing +accept_port+ at the accepting end.
   # [*dest_port*] is the port number that will get connected to on
   #               the +dest_host+, from the +remote_host+.
-  # [*bind*]      is an optional binding address for the +accept_port+;
+  # [*accept_bind*] is an optional binding address for the +accept_port+;
   #               the default value is 'localhost'.
-  def add_tunnel(direction, accept_port, dest_host, dest_port, bind = "localhost")
+  #
+  # The argument list described above applies when both the source
+  # and destination of the tunnels are network socket. But either
+  # of them can also be configured as UNIX sockets.
+  #
+  # On the accept side, this is accomplished by setting +accept_bind+ to nil
+  # and providing a path to the socket in +accept_port+ .
+  #
+  # On the destination side, this is accomplished by setting +dest_host to nil
+  # and providing a path to the socket in +dest_port+ .
+  #
+  # Note that SSH will create the accept-side socket as needed,
+  # but the destination side socket is supposed to have already
+  # been set up by whatever is using it.
+  def add_tunnel(direction, accept_port, dest_host, dest_port, accept_bind = "localhost")
 
     self.properly_registered?
 
     raise "'direction' must be :forward or :reverse." unless
       direction == :forward || direction == :reverse
-    raise "'accept_port' must be a port number > 1024 and < 65535." unless
-      accept_port.is_a?(Integer) && accept_port > 1024 && accept_port < 65535
-    raise "'dest_port' must be a port number." unless
-      dest_port.is_a?(Integer) && dest_port > 0 && dest_port < 65535
-    raise "'dest_host' is not a simple host name or IP." unless
-      dest_host =~ /\A[a-zA-Z0-9][a-zA-Z0-9\-\.]*\z/
-    raise "'bind' is not a simple host name or IP." unless
-      bind =~ /\A[a-zA-Z0-9][a-zA-Z0-9\-\.]*\z/
 
-    tunnel_spec = [ bind, accept_port, dest_host, dest_port ]
+    if ! accept_bind.nil?
+      # Checks for network socket arguments
+      raise "'accept_port' must be a port number > 1024 and < 65535." unless
+        accept_port.is_a?(Integer) && accept_port > 1024 && accept_port < 65535
+      raise "'accept_bind' is not a simple host name or IP." unless
+        accept_bind =~ /\A[a-zA-Z0-9][a-zA-Z0-9\-\.]*\z/
+    else
+      # Checks for UNIX-domain socket arguments (accept_bind is nil)
+      raise "'accept_port' cannot look like a number if using a UNIX socket." if
+        accept_port.to_s =~ /^\d+$/
+      socketpath = Pathname.new(accept_port)
+      if direction == :forward && socketpath.exist?
+        raise "Socket path for accept side already exists: #{accept_port}"
+      end
+    end
+
+    if ! dest_host.nil?
+      # Checks for network socket arguments
+      raise "'dest_port' must be a port number." unless
+        dest_port.is_a?(Integer) && dest_port > 0 && dest_port < 65535
+      raise "'dest_host' is not a simple host name or IP." unless
+        dest_host =~ /\A[a-zA-Z0-9][a-zA-Z0-9\-\.]*\z/
+    else
+      # Checks for UNIX-domain socket arguments (dest_host is nil)
+      raise "'dest_port' cannot look like a number if using a UNIX socket." if
+        dest_port.to_s =~ /^\d+$/
+      #socketpath = Pathname.new(dest_port)
+      #if direction == :reverse && ! socketpath.exist?
+      #  raise "Socket path for destination does not seem to exist: #{dest_port}"
+      #end
+    end
+
+    tunnel_spec = [ accept_bind, accept_port, dest_host, dest_port ]
     if direction == :forward
       if @forward_tunnels.find { |spec| spec[1] == accept_port }
         raise "Error: there's already a forward tunnel configured for port #{accept_port}."
@@ -308,7 +346,10 @@ class SshMaster
   # may not be active; only tunnels present at the moment that
   # start() was called will be active). The returned value is
   # an array of quadruplets like this:
-  #    [ bind, accept_port, dest_host, dest_port ]
+  #    [ accept_bind, accept_port, dest_host, dest_port ]
+  # When a the accept side is a UNIX socket, +accept_bind+ will
+  # be nil. In the same way, if the destination side is a socket,
+  # the +dest_host+ will be nil.
   def get_tunnels(direction)
     raise "'direction' must be :forward or :reverse." unless
       direction == :forward || direction == :reverse
@@ -320,7 +361,7 @@ class SshMaster
   # colons, such as "localhost:1234:myhost:5678".
   def get_tunnels_strings(direction)
     tunnels = self.get_tunnels(direction)
-    tunnels.map { |s| s.join(":") }
+    tunnels.map { |s| s.compact.join(":") }
   end
 
   # Delete the list of tunnels specifications from the object.
