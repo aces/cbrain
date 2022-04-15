@@ -21,8 +21,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-
-
 # This script is a wrapper that launches the normal Rails server,
 # but with the added ability of receiving the content of the database.yml
 # file in standard output before it does so. Also, once the server is
@@ -57,20 +55,17 @@
 # which will result in killing the rails app.
 #
 #
-# To start a console
+# To start a console:
 #
 #   $0 console -e <environment>
 
-
-
-#require 'rubygems'
-#require 'active_support'
-#require 'active_support/core_ext.rb'
-#require 'etc'
-#require File.dirname(__FILE__) + '/../lib/cbrain_file_revision.rb' # ugly
-#require File.dirname(__FILE__) + '/../lib/cbrain_extensions/string_extensions/utilities.rb' # SO UGLEEEEE!!!!
-#require File.dirname(__FILE__) + '/../config/initializers/added_core_extensions/string.rb' # ugly
-
+# IMPORTANT DEVELOPER NOTICE:
+#
+# This script is written in plain standard Ruby with NO
+# access to Rails and other ActiveSupport helpers. Therefore
+# you can't invoke things like ".present?" and ".blank?" etc.
+# The reason for this is to make this script boot up as
+# quickly as possible.
 
 #########################
 # S U B R O U T I N E S #
@@ -90,14 +85,24 @@ def fatal(message)
     Kernel.exit(20)
 end
 
-# Run-time paths
-cwd      = Dir.getwd
-basename = $PROGRAM_NAME
-fullprog = basename =~ /^\// ? basename : cwd + "/" + basename
+# Run-time paths and names of host and program
+basename   = $PROGRAM_NAME.sub(/.*\//,"") # that constant is provided by Ruby
+curhost    = `hostname -s`.strip
+rails_home = __dir__.sub(/\/Bourreau\/script.*$/,"/Bourreau")
 
-# Rails-specific paths
-rails_home = fullprog.sub(/\/script\/.+$/,"")
-pidfile    = "#{rails_home}/tmp/pids/server.pid"
+# Make sure we're at the base of the app
+Dir.chdir(rails_home)
+
+# Rails-specific paths.
+# Alongside the PID file, we maintain the hostname where
+# the Bourreau was previously started.
+db_file    = "config/database.yml"
+pidfile    = "tmp/pids/server.pid"
+pidhost    = "#{pidfile}.hostname"
+
+# Values from previous 'start' operation
+prevpid    = File.read(pidfile).to_i rescue 0
+prevhost   = (File.read(pidhost) rescue "").strip
 
 # To help diagnose problems, print Ruby's version.
 puts "You are using Ruby #{RUBY_VERSION}"
@@ -106,87 +111,102 @@ if RUBY_VERSION =~ /^1\.[0-8]/
 end
 
 # Check usage
-usage(basename) if ARGV.size != 1 && ARGV.size != 3 && ARGV.size != 5    # 1, 3 or 5 args!
+usage(basename) if ARGV.size != 1 && ARGV.size != 3 # 1 or 3 args!
+
 
 #############################################################
 # STOP
 #############################################################
 
 if ARGV.size == 1
-    usage(basename) if ARGV[0] != "stop"
-    fp = File.open(pidfile,"r") rescue nil
-    if fp
-        pid = fp.read.to_i
-        fp.close
-        Process.kill("TERM", pid)
-        puts "Bourreau Stopped"
-        Kernel.exit(0)
-    end
-    fatal "Could not find/open PID file '#{pidfile}'."
+  usage(basename) if ARGV[0] != "stop"
+  if prevhost != curhost
+    prevhost = '(unknown)' if prevhost == "" # prettier fatal message
+    prevpid  = '(unknown)' if prevpid  == 0  # prettier fatal message
+    fatal("Could not stop Bourreau app, it was last started on host #{prevhost} as PID #{prevpid}, and we are on host #{curhost}")
+  end
+  fatal("Could not find/open PID file '#{pidfile}'.") if prevpid == 0
+  Process.kill("TERM", prevpid)
+  puts "Bourreau Stopped"
+  File.unlink(pidhost) rescue nil
+  Kernel.exit(0)
 end
+
 
 #############################################################
 # ARGUMENT CHECKS FOR OTHER MODES (start or console)
 #############################################################
 
-if ARGV[0] == "start"      # start -e env
-  usage(basename) if ARGV.size != 3 || ARGV[1] != "-e"
-elsif ARGV[0] == "console" # console -e env
-  usage(basename) if ARGV.size != 3 || ARGV[1] != "-e"
-else
-  usage(basename)
-end
-mode = ARGV[0] # 'start' or 'console'
-
-if mode == "start" && File.exist?(pidfile)
-  pid = File.read(pidfile).to_i
-  # The command below echoes back the PID if the process exists,
-  # and happens to work on both Linux and MacOS.
-  exists = `ps -p #{pid} -o pid=`
-  if exists.match /\d+/
-    fatal("The Rails app seems to be running already (PID=#{pid}). Kill it first.")
-  end
-  File.unlink(pidfile) rescue true
-end
-
-# Check arguments
+# start -e env
+# console -e env
+mode        = ARGV[0] # 'start' or 'console'
 environment = ARGV[2]
-fatal("Environment argument must be 'production', 'development' or 'test'") unless
-   environment =~ /^(production|development|test)$/
 
-db_yml_text = mode == "start" ? (STDIN.read || "") : ""
-db_file     = rails_home + "/config/database.yml"
+usage(basename) if ARGV[1] != "-e"
+usage(basename) unless mode =~ /^(start|console)$/
+fatal("Environment argument must be 'production' or 'development'") unless
+  environment =~ /^(production|development)$/
 
-# Install or restore database.yml if necessary
-blank_yml  = db_yml_text !~ /\S/
+# Check for existing PID file
+# and cleanup if necessary
+if mode == "start" && prevpid > 0
 
-if blank_yml #  blank? use what db.yml is already here
+  # If it was started on a different login node, we can't do anything else
+  if prevhost != "" && prevhost != curhost
+    fatal("The Rails app seems to be running already on a different host, #{prevhost} as PID #{prevpid}")
+  end
+
+  # The 'ps' command below echoes back the PID if the process exists,
+  # and it happens to work on both Linux and MacOS.
+  exists = `ps -p #{prevpid} -o pid=`
+  if exists.include?(prevpid.to_s) # this is a substring match
+    fatal("The Rails app seems to be running already as PID #{prevpid}.")
+  end
+  # OK so the process seems to be dead, let's just clean up.
+  File.unlink(pidfile) rescue true
+  File.unlink(pidhost) rescue true
+end
+
+# In 'start' mode, we get the content of the database.yml
+# from STDIN stream. In 'console' mode, the content is already
+# installed in place by a separate 'cat' command issued
+# by the portal (see in bourreau.rb).
+db_yml_text = mode == 'start' ? STDIN.read : ""
+blank_yml   = db_yml_text !~ /\S/
+
+if blank_yml # blank? use what db.yml is already here
   if ! File.exist?(db_file)
     fatal("Could not find a database.yml file for the Rails application!")
   end
-else # db text is provided to us
-  # Substitute most recently created DB socket filename
-  sockfiles = Dir.glob("#{rails_home}/tmp/sockets/db.*.sock").map { |f| Pathname.new(f) }
-  fatal("Could not find a DB socket in tmp/sockets/db.*.sock") if sockfiles.size == 0
-  sockfiles.sort! { |sock_a,sock_b| sock_a.mtime <=> sock_b.mtime } # order by time
-  db_sockfile = sockfiles.pop.to_s # remove the last, which is the most recent
-  db_yml_text.sub!(/socket:.*/,"socket: #{db_sockfile}")
-  File.open(db_file,"w") { |fh| fh.write(db_yml_text) }
-  sockfiles.each { |f| File.unlink(f) rescue nil } # remove all older socket files
+  db_yml_text = File.read(db_file)
 end
+
+# Substitute most recently created DB socket filename
+sockfiles = Dir.glob("tmp/sockets/db.*.sock")
+fatal("Could not find a DB socket in tmp/sockets/db.*.sock") if sockfiles.size == 0
+sockfiles.sort! { |sock_a,sock_b| File.mtime(sock_a) <=> File.mtime(sock_b) } # order by time
+db_sockfile = sockfiles.pop.to_s # remove the last, which is the most recent
+db_yml_text.sub!(/socket:.*/,"socket: #{rails_home}/#{db_sockfile}")
+
+# Write it back
+File.open(db_file,"w") { |fh| fh.write(db_yml_text) }
+
+# Remove all older socket files
+sockfiles.each { |f| File.unlink(f) rescue nil }
+
 
 ###########################################
 # CONSOLE START
 ###########################################
+
 if mode == 'console'
-  Dir.chdir(rails_home) do
-    # Bash command for launching the interactive console
-    start_success = system("script/rails", "console", environment) # this will BLOCK
-    File.unlink(db_file) rescue true
-    puts "\nBourreau Console Exited."
-    Kernel.exit(start_success ? 0 : 10) # all done
-  end
+  puts "\nBourreau Console Starting on #{curhost}."
+  start_success = system("script/rails", "console", environment) # this will BLOCK
+  puts "\nBourreau Console Exiting on #{curhost}."
+  File.unlink(db_file) rescue true
+  Kernel.exit(start_success ? 0 : 10) # all done
 end
+
 
 ###########################################
 # BOURREAU START
@@ -194,8 +214,8 @@ end
 
 # Rename log files when they are too big
 date_extension       = Time.now.strftime("%Y-%m-%d")
-start_log_file       = "#{rails_home}/log/server_start.log"
-environment_log_file = "#{rails_home}/log/#{environment}.log"
+start_log_file       = "log/server_start.log"
+environment_log_file = "log/#{environment}.log"
 if File.exists?( start_log_file ) && File.size( start_log_file ) > 1_048_576
   File.rename(start_log_file, start_log_file.sub(/\.log$/,"_#{date_extension}.log"))
 end
@@ -204,14 +224,10 @@ if File.exists?( environment_log_file ) && File.size( environment_log_file ) > 1
 end
 
 # Start the server
-start_success=false
-Dir.chdir(rails_home) do
-  # We provide a dummy value for the session cookie encoder.
-  # TODO just documet in YAML file?
-  ENV["SECRET_KEY_BASE"] ||= "JUNK-NOT-USED-IN-BOURREAU-THERE-ARE-NO-SESSIONS-ANYWAY"
-  # puma_wait_wrapper is a custom program that boots puma and waits to make sure
-  start_success = system("script/puma_wait_wrapper")
-end
+ENV["RAILS_ENV"] = environment  # puma's mode of operation is passed through an env var
+# puma_wait_wrapper is a custom bash program that starts puma
+# and waits to make sure it booted properly
+start_success = system("script/puma_wait_wrapper")
 
 # If we were provided with a database.yml, we need
 # delete it once the server has read it.
@@ -223,14 +239,14 @@ end
 # whether or not the server started.
 if start_success
   puts "Bourreau Started." # This string is used by the Portal controller!
+  File.open(pidhost,"w") { |fh| fh.write curhost } # write back current hostname
   Kernel.exit(0)
 end
 
-puts "Bourreau Failed."
-puts "Raw BASH command: #{raw_system_cmd}"
+puts "Bourreau application failed to start properly."
 #if File.exists?(start_log_file)
-#  puts "Here are the last 100 lines of the server's log:"
-#  system("tail -100 '#{start_log_file}'")
+#  puts "Here are the last 200 lines of the server's log:"
+#  system("tail -200 '#{start_log_file}'")
 #else
 #  puts "No server log file found to help you out of this one :-("
 #end

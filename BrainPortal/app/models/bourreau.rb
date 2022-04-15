@@ -201,6 +201,11 @@ class Bourreau < RemoteResource
     # uses, but with the connection parameters adjusted.
     db_yml = self.build_db_yml_for_tunnel(myrailsenv)
 
+    # Copy the database.yml file
+    # Note: the database.yml file will be removed automatically by the cbrain_remote_ctl script when it exits.
+    copy_command = "cat > #{self.ssh_control_rails_dir.to_s.bash_escape}/config/database.yml"
+    self.write_to_remote_shell_command(copy_command) { |io| io.write(db_yml) }
+
     # SSH command to start the console.
     start_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec script/cbrain_remote_ctl console -e #{myrailsenv.to_s.bash_escape}"
     self.read_from_remote_shell_command(start_command, :force_pseudo_ttys => true) # no block, so that ttys gets connected to remote stdin, stdout and stderr
