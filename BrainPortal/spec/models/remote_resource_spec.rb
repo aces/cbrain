@@ -121,6 +121,7 @@ describe RemoteResource do
     before(:each) do
       allow(remote_resource).to receive(:ssh_master).and_return(ssh_master)
       allow(remote_resource).to receive(:has_ssh_control_info?).and_return(true)
+      allow(remote_resource).to receive(:ssh_control_rails_dir).and_return("dir")
     end
     it "should return false if called on the Portal app" do
       portal_resource = RemoteResource.current_resource
