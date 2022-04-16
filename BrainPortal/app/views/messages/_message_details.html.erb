@@ -3,7 +3,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2022
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -18,24 +18,28 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<% unless mess.description.blank? %>
-  <p class="<%= mess.message_type.to_s %>">
-    <%= mess.parse_links( :description ).gsub(/\n/,"<BR>").html_safe %>
+<% if mess.description.present? %>
+  <p class="mess_<%= mess.message_type.to_s %>">
+    <% if mess.message_type == 'cbrain_dashboard' || mess.message_type == 'neurohub_dashboard' %>
+      <%= (mess.description.presence || "").html_safe %>
+    <% else %>
+      <%= mess.parse_links( :description ).gsub(/\n/,"<BR>").html_safe %>
+    <% end %>
   </p>
 <% end %>
 
-<% unless mess.variable_text.blank? %>
-    <p class="<%= mess.message_type.to_s %>">
+<% if mess.variable_text.present? %>
+    <p class="mess_<%= mess.message_type.to_s %>">
       <%= mess.parse_links( :variable_text ).gsub(/\n/,"<BR>").html_safe -%>
     </p>
 <% end %>
 
-<% unless mess.expiry.blank? %>
-    <p class="<%= mess.message_type.to_s %>">
+<% if mess.expiry.present? %>
+    <p class="mess_<%= mess.message_type.to_s %>">
       Expires: <%=to_localtime(mess.expiry, :datetime) -%>
     </p>
 <% end %>

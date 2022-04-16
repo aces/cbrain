@@ -64,8 +64,15 @@ class MessagesController < ApplicationController
 
   # POST /messages
   # POST /messages.xml
+  #
+  # In CBRAIN, only an admin can create new messages.
   def create #:nodoc:
-    @message = Message.new(message_params)
+    @message  = Message.new(message_params)
+    @group_id = params[:group_id] # destination; this is NOT the group_id IN the message object!
+
+    if @message.message_type == 'cbrain_dashboard' || @message.message_type == 'neurohub_dashboard'
+      @group_id = current_user.own_group.id # these notifications always belong to the admin who created them
+    end
 
     date = params[:expiry_date] || ""
     hour = params[:expiry_hour] || "00"
@@ -81,7 +88,6 @@ class MessagesController < ApplicationController
       @message.errors.add(:header, "cannot be left blank.")
     end
 
-    @group_id = params[:group_id]
     if @group_id.blank?
       @message.errors.add(:base, "You need to specify the project whose members will receive this message.")
     elsif @message.errors.empty?

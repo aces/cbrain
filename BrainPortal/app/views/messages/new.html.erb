@@ -33,6 +33,15 @@
   <div class="generalbox">
 
      <p>
+       <%= f.label :message_type %><br />
+       <%= f.select :message_type, ["system", "notice", "error", "cbrain_dashboard", "neurohub_dashboard"] %>
+       <br>
+       <span class="field_explanation">
+         When creating a Dashboard announcement, only the <strong>header</strong> and <strong>description</strong> below are necessary. Also, the description's content will be rendered as explicit HTML, so be careful.
+       </span>
+     </p>
+
+     <p>
      To users of project: <%= group_select(:group_id,
            {
              :groups  => current_user.assignable_groups.order(:name),
@@ -61,10 +70,6 @@
       <p>
         <%= f.label :variable_text %><br />
         <%= f.text_area :variable_text, :rows => 5, :cols => 80 %>
-      </p>
-      <p>
-        <%= f.label :message_type %><br />
-        <%= f.select :message_type, ["system", "notice", "error"] %>
       </p>
       <p>
         <%= f.label :expiry_date, "Expiration date (current time: #{to_localtime(Time.now, :datetime)})" %><br>

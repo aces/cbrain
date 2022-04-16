@@ -55,6 +55,18 @@
           <img src="/images/neurohub/NH_hbhl_icon_RGB.png" alt="neurohub-logo"/>
           NeuroHub News
         </div>
+
+        <% @dashboard_messages.each do |message| %>
+          <div class="card">
+            <div class="card-row header bg-secondary-alt">
+              <p class="heading-xs default-bg"><%= message.header %> - <%= message.created_at.strftime("%B %e, %Y") %></p>
+            </div>
+            <div class="card-item">
+              <%= (message.description.presence || "").html_safe %>
+            </div>
+          </div>
+        <% end %>
+
         <div class="card">
           <div class="card-row header bg-secondary-alt">
             <p class="heading-xs default-bg">UK Biobank Dataset Access back fully online - March 18, 2022</p>
