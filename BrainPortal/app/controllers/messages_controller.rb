@@ -35,7 +35,7 @@ class MessagesController < ApplicationController
     scope_default_order(@scope, 'last_sent', :desc)
 
     @base_scope = Message.where(nil)
-    @base_scope = @base_scope.where(:user_id => current_user.available_users.map(&:id)) unless
+    @base_scope = @base_scope.where(:user_id => current_user.available_users.pluck(:id)) unless
       current_user.has_role?(:admin_user)
     # no need to distract admins and managers with personal communicaitons
     @base_scope = @base_scope.where.not( :message_type =>  :communication).or(
@@ -60,6 +60,13 @@ class MessagesController < ApplicationController
   def new #:nodoc:
     @message  = Message.new # blank object for new() form.
     @group_id = nil         # for new() form
+
+    if params[:for_dashboard]
+      @message.message_type = (params[:for_dashboard].to_s =~ /neurohub/i ? 'neurohub_dashboard' : 'cbrain_dashboard')
+      render 'new_dashboard'
+      return
+    end
+    # Otherwise, we just render 'new'
   end
 
   # POST /messages

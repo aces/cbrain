@@ -25,7 +25,13 @@
 
 <% title 'Add New Message' %>
 
+<div class="menu_bar">
+  <%= link_to "New CBRAIN Dashboard Message",   new_message_path(:for_dashboard => 'cbrain'),   :class => "button" %>
+  <%= link_to "New NeuroHub Dashboard Message", new_message_path(:for_dashboard => 'neurohub'), :class => "button" %>
+</div>
+
 <h2>Add New Message</h2>
+
 <%= error_messages_for(@message) %>
 
 <%= form_for @message, :as => :message, :url => { :action => "create" }, :datatype => "script" do |f| -%>
@@ -34,11 +40,7 @@
 
      <p>
        <%= f.label :message_type %><br />
-       <%= f.select :message_type, ["system", "notice", "error", "cbrain_dashboard", "neurohub_dashboard"] %>
-       <br>
-       <span class="field_explanation">
-         When creating a Dashboard announcement, only the <strong>header</strong> and <strong>description</strong> below are necessary. Also, the description's content will be rendered as explicit HTML, so be careful.
-       </span>
+       <%= f.select :message_type, ["system", "notice", "error"] %>
      </p>
 
      <p>

@@ -61,7 +61,7 @@
             <div class="card-row header bg-secondary-alt">
               <p class="heading-xs default-bg"><%= message.header %> - <%= message.created_at.strftime("%B %e, %Y") %></p>
             </div>
-            <div class="card-item">
+            <div class="card-item dashboard-news">
               <%= (message.description.presence || "").html_safe %>
             </div>
           </div>
