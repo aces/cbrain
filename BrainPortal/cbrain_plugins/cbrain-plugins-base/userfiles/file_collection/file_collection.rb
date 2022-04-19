@@ -384,6 +384,30 @@ class FileCollection < Userfile
     "" # empty string means all OK
   end
 
+  # Return a list of fake files with matched_class
+  def list_fake_files
+    fake_files = []
+
+    subclass_list = SingleFile.sti_descendants
+    
+    self.list_files.each_with_index do |file,idx|
+      matched_class = subclass_list.find { |c| file.name =~ c.file_name_pattern } 
+      next if !matched_class
+
+      file = matched_class.new(
+        :id            => self.id  ,
+        :name          => file.name,
+        :data_provider => self.data_provider,
+        :user_id       => self.user_id,
+        :group_id      => self.group_id,
+        :size          => self.provider_collection_index.detect { |u| u.name == file.name }.size
+      ).fake_record!
+
+      fake_files.push(file);
+    end 
+    fake_files
+  end
+
 end
 
 
