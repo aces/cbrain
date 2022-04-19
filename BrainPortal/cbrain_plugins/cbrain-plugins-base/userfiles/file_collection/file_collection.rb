@@ -384,7 +384,7 @@ class FileCollection < Userfile
     "" # empty string means all OK
   end
 
-  # Return a list of fake files with matched_class
+  # Return a list of fake files
   def list_fake_files
     fake_files = []
 
@@ -395,12 +395,12 @@ class FileCollection < Userfile
       next if !matched_class
 
       file = matched_class.new(
-        :id            => self.id  ,
+        :id            => self.id,
         :name          => file.name,
         :data_provider => self.data_provider,
         :user_id       => self.user_id,
         :group_id      => self.group_id,
-        :size          => self.provider_collection_index.detect { |u| u.name == file.name }.size
+        :size          => file.size
       ).fake_record!
 
       fake_files.push(file);
