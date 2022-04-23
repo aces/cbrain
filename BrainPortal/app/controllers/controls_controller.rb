@@ -55,6 +55,21 @@ class ControlsController < ApplicationController
       format.html { head :method_not_allowed }
       format.xml  { head :method_not_allowed }
     end
+
+  rescue Mysql2::Error => exception
+    Rails.logger.fatal("#{keyword} operation lost the connection to the DB, shutting down properly.")
+    Process.kill('TERM', Process.pid) # will finish current request though!
+
+    respond_to do |format|
+      format.html { head :service_unavailable }
+      format.xml  do
+        render :xml => { :status  => 503,
+                         :error   => 'Service Unavailable',
+                         :message => exception.message,
+                       }.to_xml,
+               :status => :service_unavailable
+      end
+    end
   end
 
   # The 'create' action receives a Control object
