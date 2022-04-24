@@ -26,8 +26,8 @@
 
 <% if @group.is_a?(WorkGroup) %>
   <div class="menu_bar">
-    <% unless @group.creator_id == current_user.id %>
-      <%= link_to 'Unregister', {:action => :unregister, :id => @group.id}, :class => "button", :method  => :post %>
+    <% if (@group.creator_id != current_user.id && !@group.public? && current_user.assignable_group_ids.include?(@group.id) %>
+      <%= link_to 'Leave Project', {:action => :unregister, :id => @group.id}, :class => "button", :method  => :post %>
     <% end %>
     <% if @group.can_be_edited_by?(current_user) %>
 
