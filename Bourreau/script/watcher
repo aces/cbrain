@@ -1,0 +1,83 @@
+#!/bin/bash
+
+# This program pings the local Bourreau every 20 minutes.
+# It is generally started at the end of puma_wait_wrapper
+# (also in this directory) as part of the Bourreau boot process.
+#
+# As long as the Bourreau responds with a proper reply,
+# it will keep pinging. But as soon as either the socket
+# is unavailable or the reply is an error response, this
+# script exits. The point is to force the bourreau itself
+# to make a call to its database, from time to time. If
+# the Bourreau cannot access it, it will also exit properly.
+#
+# This script logs events in 'log/watcher.log'.
+
+# This program only works if its CWD is the Bourreau's root dir.
+# We verify this by checking for the presence of a particular file
+if ! test -f "app/models/bourreau_worker.rb" ; then
+  echo "This program '$0' must be started from the Bourreau directory."
+  exit 2
+fi
+
+# The socket we use to ping the Bourreau
+socket="tmp/sockets/bourreau.sock"
+# This file allows us to detect if the Bourreau stopped in other ways
+pidfile="tmp/pids/server.pid"
+
+exec 6>&- ; exec 255>&-  # potential inherited descriptors we want to get rid of
+
+# Log outputs and errors; the logfile generally has one line added
+# at the beginning of the script, and one at the end.
+exec 0<&- 1>> log/watcher.log 2>&1
+
+# Signap trap
+function on_signal {
+  echo $(date +"%Y-%m-%d %H:%M:%S") Bourreau Watcher exiting from a signal
+  exit 0
+}
+trap on_signal TERM INT HUP
+
+echo $(date +"%Y-%m-%d %H:%M:%S") Bourreau Watcher $$: starting
+sleep 20 # a small initial wait for things to settle
+
+#####################################################################
+# Main Watcher Loop, every 20 minutes.
+#####################################################################
+
+status=7 # What curl returns if socket doesn't exist or is not connected
+while test -e $socket ; do
+  # Aliveness check, done every 20 minutes
+  curl -f --head --unix-socket $socket "http://fakehost/controls/ping.xml?watcher=$$" >/dev/null 2>/dev/null
+  status=$?
+  test $status -ne 0 && break
+
+  # Wait loop with PID file checks
+  for n in $(seq 1 600) ; do # 600 x 2 seconds = 1200 seconds = 20 minutes
+    sleep 2 # we do this so we can process signals in on_signal above...
+    test -f $pidfile || break # a quick way to detect if the bourreau exited while we wait
+  done
+done
+
+#####################################################################
+# Error Reporting and Exiting
+#####################################################################
+
+if test $status -eq 22 ; then
+  # When curl returns 22, the Bourreau answered the request
+  # but provided a 503 error message, because its DB is no longer
+  # available. The Bourreau has now exited as a consquence, too.
+  echo $(date +"%Y-%m-%d %H:%M:%S") Watcher $$: Bourreau seems to have lost its DB connection
+
+elif test $status -eq 7 ; then
+  # When curl returns 7, the socket doesn't exist, or it exists
+  # but it's not connected to the Bourreau app at all (presumably
+  # because the Bourreau is not running).
+  echo $(date +"%Y-%m-%d %H:%M:%S") Watcher $$: Bourreau does not seem to be alive
+
+else
+  echo $(date +"%Y-%m-%d %H:%M:%S") Watcher $$: Bourreau curl check failed with unexpected code $status
+fi
+
+exit 0 # this program's own return code is not used by anything
+

@@ -216,7 +216,6 @@ class RemoteResource
   Group:    %d (%s)
   SshPath:  ssh://%s@%s:%s%s
   ProxHost: %s
-  Tunnels:  ActRes: %d, DB: %d
   TimeZone: %s
   SiteURL:  %s
   HelpURL:  %s
@@ -246,7 +245,6 @@ class RemoteResource
       ssh_control_port.presence || 22,
       ssh_control_rails_dir.presence || "/none",
       proxied_host.presence || "",
-      tunnel_actres_port.presence || 0, tunnel_mysql_port.presence || 0,
       time_zone.presence || "none",
       site_url_prefix.presence || "",
       help_url.presence || "",

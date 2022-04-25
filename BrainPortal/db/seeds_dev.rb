@@ -473,7 +473,6 @@ main_bourreau = Bourreau.seed_record!({
     :name => "Main_Exec", :description => "Execution Server For Everyone",
     :user_id => User.admin.id, :group_id => Group.everyone.id,
     :ssh_control_user => unix_user, :ssh_control_host => hostname,
-    :tunnel_mysql_port  => 28732, :tunnel_actres_port => 28733,
     :online => true, :read_only => false,
     :cms_class => 'ScirUnix',
     :workers_instances => 1, :workers_chk_time => 60, :workers_log_to => 'combined', :workers_verbose => 1
@@ -506,7 +505,6 @@ pember_bourreau = Bourreau.seed_record!({
     :name => "PemberExec", :description => "Exec For Pemberley People",
     :user_id => User.find_by_login('mrdarcy').id, :group_id => pember_site.own_group.id,
     :ssh_control_user => unix_user, :ssh_control_host => hostname,
-    :tunnel_mysql_port  => 28734, :tunnel_actres_port => 28735,
     :online => true, :read_only => false,
     :cms_class => 'ScirUnix',
     :workers_instances => 1, :workers_chk_time => 60, :workers_log_to => 'combined', :workers_verbose => 1
@@ -539,7 +537,6 @@ longbourne_bourreau = Bourreau.seed_record!({
     :name => "LongbournExec", :description => "Exec For Longbourne People",
     :user_id => User.find_by_login('mrbennet').id, :group_id => long_site.own_group.id,
     :ssh_control_user => unix_user, :ssh_control_host => hostname,
-    :tunnel_mysql_port  => 28736, :tunnel_actres_port => 28737,
     :online => true, :read_only => false,
     :cms_class => 'ScirUnix',
     :workers_instances => 1, :workers_chk_time => 60, :workers_log_to => 'combined', :workers_verbose => 1

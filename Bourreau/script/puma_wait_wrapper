@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# This program starts the Puma server for the Bourreau side.
+#
+# Since version 5, puma no longer has the ability to
+# deamonize itself.
+#
+# So basically here we just start "puma --config config/puma.rb"
+# in background and wait until it is sure that puma booted
+# correctly (because it can take some to to intialize itself,
+# the Rails stack and initialization steps being so big in CBRAIN)
+# A boot is considered successful when the puma socket appears.
+
+# This program only works if its CWD is the Bourreau's root dir.
+# We verify this by checking for the presence of a particular file
+if ! test -f "app/models/bourreau_worker.rb" ; then
+  echo "This program '$0' must be started from the Bourreau directory."
+  exit 2
+fi
+
+# THe presence of this file indicates the boot
+# process was successful
+wait_for_socket="tmp/sockets/bourreau.sock"
+
+# Prepare for launch
+rm -f $wait_for_socket
+exec 6>&- ; exec 255>&-  # any inherited descriptors we want to get rid of before forking
+
+# Start and fork the server
+puma --config config/puma.rb >> log/server_start.log 2>&1 </dev/null &
+
+# Check every second for the socket
+while test -n "$(jobs -r -p)" ; do # while the puma process exists
+  sleep 1
+  if test -e $wait_for_socket ; then # everything is OK, the socket has appeared
+    script/watcher </dev/null >/dev/null 2>&1 & # start background aliveness monitor
+    exit 0
+  fi
+done
+
+echo Error starting Bourreau: puma exited and no sockets appeared.
+exit 2 # error, will be intepreted by cbrain_remote_ctl_rb

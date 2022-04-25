@@ -114,16 +114,6 @@ class Bourreau < RemoteResource
       return false
     end
 
-    unless self.has_actres_tunnelling_info?
-      self.operation_messages = "Not configured for remote control: missing control tunnel port."
-      return false
-    end
-
-    unless self.has_db_tunnelling_info?
-      self.operation_messages = "Not configured for remote control: missing DB tunnel port."
-      return false
-    end
-
     unless RemoteResource.current_resource.is_a?(BrainPortal)
       self.operation_messages = "Only a Portal can start a Bourreau."
       return false
@@ -137,26 +127,17 @@ class Bourreau < RemoteResource
     # What environment will it run under?
     myrailsenv = Rails.env || "production"
 
-    # If we tunnel the DB, we get a non-blank yml file here
-    db_yml  = self.build_db_yml_for_tunnel(myrailsenv)
-
-    # What port the Rails Bourreau will listen to?
-    port = self.tunnel_actres_port
+    # This is a copy of the database.yml file that the portal
+    # uses, but with the connection parameters adjusted.
+    db_yml = self.build_db_yml_for_tunnel(myrailsenv)
 
     # File to capture command output.
     captfile = "/tmp/start.out.#{Process.pid}"
 
-    # If the remote host is actually just a frontend before the REAL
-    # host, add the "-R host -H http_port -D db_port" special options to the command
-    proxy_args = ""
-    if self.proxied_host.present?
-      proxy_args = "-R #{self.proxied_host.bash_escape} -H #{port.to_s.bash_escape} -D #{self.tunnel_mysql_port.to_s.bash_escape}"
-    end
-
     # SSH command to start it up; we pipe to it either a new database.yml file
     # which will be installed, or "" which means to use whatever
     # yml file is already configured at the other end.
-    start_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} start -e #{myrailsenv.to_s.bash_escape} -p #{port.to_s.bash_escape} 2>&1"
+    start_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec script/cbrain_remote_ctl start -e #{myrailsenv.to_s.bash_escape} 2>&1"
     self.write_to_remote_shell_command(start_command, :stdout => captfile) { |io| io.write(db_yml) }
 
     out = File.read(captfile) rescue ""
@@ -184,15 +165,7 @@ class Bourreau < RemoteResource
     self.zap_info_cache(:info)
     self.zap_info_cache(:ping)
 
-    # If the remote host is actually just a frontend before the REAL
-    # host, add the "-R host -H http_port -D db_port" special options to the command
-    proxy_args = ""
-    if self.proxied_host.present?
-      port = self.tunnel_actres_port
-      proxy_args = "-R #{self.proxied_host.to_s.bash_escape} -H #{port.to_s.bash_escape} -D #{self.tunnel_mysql_port.to_s.bash_escape}"
-    end
-
-    stop_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} stop"
+    stop_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec script/cbrain_remote_ctl stop"
     confirm = self.read_from_remote_shell_command(stop_command) {|io| io.read}
 
     return true if confirm =~ /Bourreau Stopped/i # output of 'cbrain_remote_ctl'
@@ -224,16 +197,9 @@ class Bourreau < RemoteResource
     # What environment will it run under?
     myrailsenv = Rails.env || "production"
 
-    # If we tunnel the DB, we get a non-blank yml file here
-    db_yml  = self.has_db_tunnelling_info?   ?   self.build_db_yml_for_tunnel(myrailsenv) : ""
-
-    # If the remote host is actually just a frontend before the REAL
-    # host, add the "-R host -H http_port -D db_port" special options to the command
-    proxy_args = ""
-    if self.proxied_host.present?
-      port = self.tunnel_actres_port
-      proxy_args = "-R #{self.proxied_host.to_s.bash_escape} -H #{port.to_s.bash_escape} -D #{self.tunnel_mysql_port.to_s.bash_escape}"
-    end
+    # This is a copy of the database.yml file that the portal
+    # uses, but with the connection parameters adjusted.
+    db_yml = self.build_db_yml_for_tunnel(myrailsenv)
 
     # Copy the database.yml file
     # Note: the database.yml file will be removed automatically by the cbrain_remote_ctl script when it exits.
@@ -241,7 +207,7 @@ class Bourreau < RemoteResource
     self.write_to_remote_shell_command(copy_command) { |io| io.write(db_yml) }
 
     # SSH command to start the console.
-    start_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} console -e #{myrailsenv.to_s.bash_escape}"
+    start_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec script/cbrain_remote_ctl console -e #{myrailsenv.to_s.bash_escape}"
     self.read_from_remote_shell_command(start_command, :force_pseudo_ttys => true) # no block, so that ttys gets connected to remote stdin, stdout and stderr
   end
 
@@ -330,9 +296,12 @@ class Bourreau < RemoteResource
   def build_db_yml_for_tunnel(railsenv) #:nodoc:
     myconfig = self.class.current_resource_db_config(railsenv) # a copy of the active config
 
-    myconfig["host"]   = "127.0.0.1"
-    myconfig["port"]   = self.tunnel_mysql_port
-    myconfig.delete("socket")
+    myconfig.delete "host"
+    myconfig.delete "port"
+    myconfig["socket"] = 'SUBSTITUTED_BY_BOURREAU_AT_BOOT_TIME'
+
+    ymlstruct = Hash.new
+    ymlstruct[railsenv.to_s] = myconfig.to_h
 
     yml = "\n" +
           "#\n" +
@@ -340,11 +309,7 @@ class Bourreau < RemoteResource
           "# by " + self.revision_info.format("%f %s %a %d") + "\n" +
           "#\n" +
           "\n" +
-          "#{railsenv}:\n"
-    myconfig.each do |field,val|
-       yml += "  #{field}: #{val.to_s}\n"
-    end
-    yml += "\n"
+          YAML.dump( ymlstruct )
 
     yml
   end

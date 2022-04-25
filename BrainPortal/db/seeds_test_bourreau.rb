@@ -147,7 +147,6 @@ main_bourreau = Bourreau.seed_record!({
     :name => "Test_Bourreau_Exec", :description => "Execution Server For Testing",
     :user_id => User.admin.id, :group_id => Group.everyone.id,
     :ssh_control_user => unix_user, :ssh_control_host => hostname,
-    :tunnel_mysql_port  => 29732, :tunnel_actres_port => 29733,
     :online => true, :read_only => false,
     :cms_class => 'ScirUnix',
     :workers_instances => 1, :workers_chk_time => 60, :workers_log_to => 'combined', :workers_verbose => 1

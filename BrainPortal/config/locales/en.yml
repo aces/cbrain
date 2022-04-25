@@ -40,8 +40,6 @@ en:
           meta_value:                  Metadata value
         remote_resource:
           ssh_control_rails_dir:       Rails root directory
-          tunnel_mysql_port:           Port for MySQL tunnel
-          tunnel_actres_port:          Port for ActiveResource tunnel
           dp_cache_dir:                Data provider cache directory
           dp_ignore_patterns:          Filename ignore patterns
           spaced_dp_ignore_patterns:   Filename ignore patterns
