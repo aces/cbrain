@@ -347,7 +347,7 @@ class SshMaster
   # start() was called will be active). The returned value is
   # an array of quadruplets like this:
   #    [ accept_bind, accept_port, dest_host, dest_port ]
-  # When a the accept side is a UNIX socket, +accept_bind+ will
+  # When the accept side is a UNIX socket, +accept_bind+ will
   # be nil. In the same way, if the destination side is a socket,
   # the +dest_host+ will be nil.
   def get_tunnels(direction)

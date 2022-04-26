@@ -7,7 +7,7 @@
 #
 # So basically here we just start "puma --config config/puma.rb"
 # in background and wait until it is sure that puma booted
-# correctly (because it can take some to to intialize itself,
+# correctly (because it can take some time to intialize itself,
 # the Rails stack and initialization steps being so big in CBRAIN)
 # A boot is considered successful when the puma socket appears.
 
