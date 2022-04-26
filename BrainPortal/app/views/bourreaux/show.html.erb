@@ -210,16 +210,8 @@
           <%= f.text_field :ssh_control_user %>
         <% end %>
 
-        <% t.edit_cell(:tunnel_mysql_port, :header => "Database Server Remote Tunnel Port") do |f| %>
-          <%= f.text_field :tunnel_mysql_port, :size => 6 %>
-        <% end %>
-
         <% t.edit_cell(:ssh_control_port, :header => "SSH Port") do |f| %>
           <%= f.text_field :ssh_control_port, :size => 6 %>
-        <% end %>
-
-        <% t.edit_cell(:tunnel_actres_port, :header => "ActiveResource Remote Tunnel Port") do |f| %>
-          <%= f.text_field :tunnel_actres_port, :size => 6 %>
         <% end %>
 
         <% t.edit_cell(:proxied_host, :header => "Second-level Hostname") do |f| %>

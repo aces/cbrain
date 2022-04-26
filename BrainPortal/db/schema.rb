@@ -122,7 +122,7 @@ ActiveRecord::Schema.define(version: 20220418144014) do
     t.index ["user_id"], name: "index_data_providers_on_user_id", using: :btree
   end
 
-  create_table "data_usage", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1" do |t|
+  create_table "data_usage", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.integer  "user_id",                          null: false
     t.integer  "group_id",                         null: false
     t.string   "yearmonth",                        null: false
@@ -138,7 +138,7 @@ ActiveRecord::Schema.define(version: 20220418144014) do
     t.datetime "updated_at",                       null: false
   end
 
-  create_table "disk_quotas", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1" do |t|
+  create_table "disk_quotas", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.integer  "user_id"
     t.integer  "data_provider_id"
     t.decimal  "max_bytes",        precision: 24

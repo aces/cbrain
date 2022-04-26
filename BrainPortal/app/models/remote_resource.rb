@@ -39,15 +39,6 @@ require 'socket'
 #[*ssh_control_port*] SSH port number of the machine running the remote resource's Rails application.
 #[*ssh_control_rails_dir*] Rails root directory where the remote resource is installed.
 #
-#==Optional Tunnelling Port Numbers Attributes:
-#[*tunnel_mysql_port*] Used by a BrainPortal to offer its ActiveRecord DB connection to the
-#                      remote resource through a tunnel; this works only when the SSH
-#                      connection attributes are properly configured.
-#[*tunnel_actres_port*] Used by a BrainPortal to tunnel the remote resource's ActiveResource
-#                       connection; this works only when the SSH connection attributes
-#                       are properly configured. When in use, the ActiveResource attributes
-#                       above are ignored.
-#
 #= Associations:
 #*Belongs* *to*:
 #* User
@@ -246,19 +237,7 @@ class RemoteResource < ApplicationRecord
   # on which the RemoteResource is running, and optionally configures
   # any or both of two supplemental tunnels: a forward tunnel to
   # carry the ActiveResource connections, and a reverse
-  # tunnel to carry the ActiveRecord DB connection. The
-  # tunnels are set up if the following attributes
-  # are set:
-  #
-  # *tunnel_mysql_port*:: Optional; must be an unused port number on the remote
-  #                       side where it will expect to connect to the DB server. Setting
-  #                       a value to this attribute means that the remote database.yml
-  #                       file will get rewritten automatically.
-  # *tunnel_actres_port*:: Optional; must be an unused port number on the remote
-  #                        side that it will open as its HTTP acceptor (it will become
-  #                        the argument to the "-p" option for its "script/server").
-  #                        The Rails application over here will tunnel its requests to it
-  #                        using a port number of (3090 + the ID of the remote resource).
+  # tunnel to carry the ActiveRecord DB connection.
   def start_tunnels
 
     return false if self.id == CBRAIN::SelfRemoteResourceId
@@ -272,21 +251,25 @@ class RemoteResource < ApplicationRecord
     master.delete_tunnels(:forward)
     master.delete_tunnels(:reverse)
 
-    # Setup DB tunnel
-    if self.has_db_tunnelling_info?
-      remote_db_port  = self.tunnel_mysql_port
-      myconfig        = self.class.current_resource_db_config
-      local_db_host   = myconfig["host"]  || "localhost"
-      local_db_port   = (myconfig["port"] || "3306").to_i
-      master.add_tunnel(:reverse, remote_db_port, local_db_host, local_db_port)
-    end
+    # Setup DB reverse tunnel
+    myconfig        = self.class.current_resource_db_config
+    local_db_host   = myconfig["host"]  || "localhost"
+    local_db_port   = (myconfig["port"] || "3306").to_i
+    rnd             = 1000000+rand(9999999)
+    master.add_tunnel(:reverse,
+      (Pathname.new(self.ssh_control_rails_dir) + "tmp/sockets/db.#{rnd}.sock").to_s,
+      local_db_host,
+      local_db_port,
+      nil # nil is important here
+    )
 
-    # Setup ActiveResource tunnel
-    if self.has_actres_tunnelling_info?
-      local_port  = 3090+self.id # see also in site()
-      remote_port = self.tunnel_actres_port
-      master.add_tunnel(:forward, local_port, "localhost", remote_port)
-    end
+    # Setup ActiveResource forward tunnel
+    local_port  = 3090+self.id # see also in site()
+    master.add_tunnel(:forward,
+      local_port,
+      nil, # nil is important here
+      (Pathname.new(self.ssh_control_rails_dir) + "tmp/sockets/bourreau.sock").to_s
+    )
 
     # If the SSH master and tunnels have already been started by
     # another instance, the following will simply do nothing.
@@ -336,20 +319,6 @@ class RemoteResource < ApplicationRecord
        (   self.has_ssh_control_info?        ) &&
        ( ! self.ssh_control_rails_dir.blank? )
      false
-  end
-
-  # Returns true if this remote resource is configued
-  # for DB tunnelling
-  def has_db_tunnelling_info?
-    return true if self.has_ssh_control_info? && ( ! self.tunnel_mysql_port.blank? )
-    false
-  end
-
-  # Returns true if this remote resource is configued
-  # for ActiveResource tunnelling
-  def has_actres_tunnelling_info?
-    return true if self.has_ssh_control_info? && ( ! self.tunnel_actres_port.blank? )
-    false
   end
 
 
@@ -457,14 +426,9 @@ class RemoteResource < ApplicationRecord
   # The connection is established to host localhost, on a port
   # number equal to (3090 + the ID of the resource).
   def site
-    host = ""
-    port = nil
-    dir  = ""
-    if self.has_ssh_control_info? && self.tunnel_actres_port
-      host = "localhost"
-      port = 3090+self.id  # see also in start_tunnels()
-    end
-    "http://" + ( host.presence || "localhost" ) + (port && port > 0 ? ":#{port}" : "") + dir
+    host = "localhost"
+    port = 3090+self.id  # see also in start_tunnels()
+    "http://#{host}:#{port}"
   end
 
   # Returns a RemoteResourceInfo object describing the
@@ -589,7 +553,6 @@ class RemoteResource < ApplicationRecord
     begin
       # We used to support direct ActiveResource connections to a Bourreau, but not anymore.
       # We expect them all to go through SSH tunnels, now.
-      #if !self.has_ssh_control_info? || (self.ssh_master && self.ssh_master.is_alive?)
       if self.ssh_master && self.ssh_master.is_alive?
         Control.site    = self.site
         Control.timeout = (self.rr_timeout.blank? || self.rr_timeout < 30) ? 30 : self.rr_timeout

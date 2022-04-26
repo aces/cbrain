@@ -193,10 +193,6 @@
 
       if ! r.has_remote_control_info?
         html_colorize("(Missing SSH control info)")
-      elsif ! r.has_actres_tunnelling_info?
-        html_colorize("(Missing ActiveResource SSH tunnel info)")
-      elsif ! r.has_db_tunnelling_info?
-        html_colorize("(Missing database SSH tunnel info)")
       else
         link_to('Start', start_bourreau_path(r), :class => 'action_link', :method  => :post) +
         '&nbsp;&nbsp;&nbsp;'.html_safe +
