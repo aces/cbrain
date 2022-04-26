@@ -35,7 +35,7 @@ class MessagesController < ApplicationController
     scope_default_order(@scope, 'last_sent', :desc)
 
     @base_scope = Message.where(nil)
-    @base_scope = @base_scope.where(:user_id => current_user.available_users.map(&:id)) unless
+    @base_scope = @base_scope.where(:user_id => current_user.available_users.pluck(:id)) unless
       current_user.has_role?(:admin_user)
     # no need to distract admins and managers with personal communicaitons
     @base_scope = @base_scope.where.not( :message_type =>  :communication).or(
@@ -60,12 +60,26 @@ class MessagesController < ApplicationController
   def new #:nodoc:
     @message  = Message.new # blank object for new() form.
     @group_id = nil         # for new() form
+
+    if params[:for_dashboard]
+      @message.message_type = (params[:for_dashboard].to_s =~ /neurohub/i ? 'neurohub_dashboard' : 'cbrain_dashboard')
+      render 'new_dashboard'
+      return
+    end
+    # Otherwise, we just render 'new'
   end
 
   # POST /messages
   # POST /messages.xml
+  #
+  # In CBRAIN, only an admin can create new messages.
   def create #:nodoc:
-    @message = Message.new(message_params)
+    @message  = Message.new(message_params)
+    @group_id = params[:group_id] # destination; this is NOT the group_id IN the message object!
+
+    if @message.message_type == 'cbrain_dashboard' || @message.message_type == 'neurohub_dashboard'
+      @group_id = current_user.own_group.id # these notifications always belong to the admin who created them
+    end
 
     date = params[:expiry_date] || ""
     hour = params[:expiry_hour] || "00"
@@ -81,7 +95,6 @@ class MessagesController < ApplicationController
       @message.errors.add(:header, "cannot be left blank.")
     end
 
-    @group_id = params[:group_id]
     if @group_id.blank?
       @message.errors.add(:base, "You need to specify the project whose members will receive this message.")
     elsif @message.errors.empty?

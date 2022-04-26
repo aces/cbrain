@@ -46,6 +46,12 @@ class PortalController < ApplicationController
     @default_data_provider  = DataProvider.find_by_id(current_user.meta["pref_data_provider_id"])
     @default_bourreau       = Bourreau.find_by_id(current_user.meta["pref_bourreau_id"])
 
+    @dashboard_messages = Message
+      .where(:message_type => 'cbrain_dashboard')
+      .order("created_at desc")
+      .to_a
+      .select { |m| m.expiry.nil? || m.expiry > Time.now }
+
     if current_user.has_role? :admin_user
       @active_users = CbrainSession.active_users.to_a
       @active_users.unshift(current_user) unless @active_users.include?(current_user)

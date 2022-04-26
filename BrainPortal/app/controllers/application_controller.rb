@@ -306,7 +306,9 @@ class ApplicationController < ActionController::Base
   end
 
   def unread_messages_to_display #:nodoc:
-    current_user.messages.where( :read => false ).order( "last_sent DESC" )
+    current_user.messages
+      .where( :read => false, :message_type => [ 'communication', 'notice', 'error', 'system' ] )
+      .order( "last_sent DESC" )
   end
 
   # Utility method that allows a controller to add

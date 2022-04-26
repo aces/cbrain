@@ -249,6 +249,8 @@ $COMMUNICATION_WASH: #BAB2B5;
 $COMMUNICATION_ALT: #EDC7B7;
 $COMMUNICATION_DK: #AC3B61;
 
+$DASHBOARD_BG: #F267C2;
+
 .grey-400 {
   color: $GREY_400;
 }
@@ -1106,6 +1108,12 @@ $variant : error, notice
   @if ($variant == "system") {
     background-color: $SYSTEM_BG;
   }
+  @if ($variant == "cbrain_dashboard") {
+    background-color: $DASHBOARD_BG;
+  }
+  @if ($variant == "neurohub_dashboard") {
+    background-color: $DASHBOARD_BG;
+  }
 }
 
 .flash_icon {
@@ -1136,6 +1144,16 @@ $variant : error, notice
 
 .flash_communication {
   @include banner("communication");
+  @include px(7);
+}
+
+.flash_cbrain_dashboard {
+  @include banner("cbrain_dashboard");
+  @include px(7);
+}
+
+.flash_neurohub_dashboard {
+  @include banner("neurohub_dashboard");
   @include px(7);
 }
 
@@ -2956,7 +2974,7 @@ $BAR_HEIGHT: 2.3;
 }
 
 .nh_messages .card{
-  .flash_notice, .flash_communication, .flash_system, .flash_error {
+  .flash_notice, .flash_communication, .flash_system, .flash_error, .flash_cbrain_dashboard, .flash_neurohub_dashboard {
     display: block;
     padding-right: 10px;
     padding:3px 5px;
@@ -2992,6 +3010,9 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
           @include mb(4);
           .card-item {
             width: unset;
+            &.dashboard-news {
+              display: block;
+            }
           }
           .header {
             @include px(5);
