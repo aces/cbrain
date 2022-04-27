@@ -34,6 +34,11 @@ class NeurohubPortalController < NeurohubApplicationController
     user_ids     = current_user.available_users.raw_first_column(:id)
     @tasks       = CbrainTask.real_tasks.not_archived.where(:user_id => user_ids, :bourreau_id => bourreau_ids).order( "updated_at DESC" ).limit(5).all
     @files       = Userfile.find_all_accessible_by_user(current_user).where(:hidden => false).order( "updated_at DESC" ).limit(5).all
+    @dashboard_messages = Message
+      .where(:message_type => 'neurohub_dashboard')
+      .order("created_at desc")
+      .to_a
+      .select { |m| m.expiry.nil? || m.expiry > Time.now }
   end
 
   # This action searches among all sorts of models for IDs or strings,

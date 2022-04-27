@@ -26,6 +26,18 @@
 
 <h1>Welcome to CBRAIN, <%= current_user.full_name %></h1>
 
+<% if @dashboard_messages.count > 0 %>
+    <div class="generalbox no_wrap">
+      <h1>CBRAIN News</h1>
+      <% @dashboard_messages.each do |message| %>
+        <h2><%= message.header %> - <%= message.created_at.strftime("%B %e, %Y") %></h2>
+        <%= message.description.html_safe %>
+      <% end %>
+    </div>
+
+    <div class="box_spacer"></div>
+<% end %>
+
 <% if current_user.has_role?(:admin_user) %>
 
     <div class="generalbox no_wrap">

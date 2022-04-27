@@ -2283,6 +2283,16 @@ img {
   border-color: blue;
 }
 
+.message_display_table tr.cbrain_dashboard_display {
+  background-color: #f267c2;
+  border-color: black;
+}
+
+.message_display_table tr.neurohub_dashboard_display {
+  background-color: #f267c2;
+  border-color: black;
+}
+
 .message_display_table tr.message_read {
   border-style: none;
 }
@@ -2314,12 +2324,26 @@ img {
   background: #fff3d3;
 }
 
+#message_table tr.cbrain_dashboard_display.message_read:hover,
+#message_table tr.cbrain_dashboard_display.message_unread:hover,
+#message_table tr.neurohub_dashboard_display.message_read:hover,
+#message_table tr.neurohub_dashboard_display.message_unread:hover {
+  background: #fff3d3;
+}
+
 #message_table tr.notice_display.message_read:active,
 #message_table tr.notice_display.message_unread:active,
 #message_table tr.system_display.message_read:active,
 #message_table tr.system_display.message_unread:active,
 #message_table tr.error_display.message_read:active,
 #message_table tr.error_display.message_unread:active {
+  background: #ffe49a;
+}
+
+#message_table tr.cbrain_dashboard_display.message_read:active,
+#message_table tr.cbrain_dashboard_display.message_unread:active,
+#message_table tr.neurohub_dashboard_display.message_read:active,
+#message_table tr.neurohub_dashboard_display.message_unread:active {
   background: #ffe49a;
 }
 
@@ -2337,6 +2361,22 @@ img {
 
 #message_table tr.system_display.message_unread {
   background: #5f7ec6;
+}
+
+#message_table tr.cbrain_dashboard_display.message_read {
+  background: #f267c2;
+}
+
+#message_table tr.cbrain_dashboard_display.message_unread {
+  background: #f267c2;
+}
+
+#message_table tr.neurohub_dashboard_display.message_read {
+  background: #f267c2;
+}
+
+#message_table tr.neurohub_dashboard_display.message_unread {
+  background: #f267c2;
 }
 
 #message_table tr.error_display.message_read {
