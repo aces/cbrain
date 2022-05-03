@@ -41,8 +41,8 @@ module SessionHelpers
 
   # Returns currently active project.
   def current_project
-    return nil unless cbrain_session[:active_group_id].present?
-    return nil if     cbrain_session[:active_group_id] == "all"
+    return nil if cbrain_session[:active_group_id].blank?
+    return nil if cbrain_session[:active_group_id] == "all"
 
     if !@current_project || @current_project.id.to_i != cbrain_session[:active_group_id].to_i
       @current_project = Group.find_by_id(cbrain_session[:active_group_id])
@@ -53,7 +53,7 @@ module SessionHelpers
   end
 
   # Returns currently active project  or, if the current project is not assignable for the user, own group.
-  # Serves as default destination project id for many operation
+  # Serves as default destination project id for many operations
   def current_assignable_group
     if current_user.assignable_groups.include? current_project
       current_project
