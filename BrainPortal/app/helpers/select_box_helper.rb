@@ -108,6 +108,12 @@ module SelectBoxHelper
     groups   = options.has_key?(:groups)   ? (options[:groups]            || []) : current_user.assignable_groups
     groups   = groups.all.to_a if groups.is_a?(ActiveRecord::Relation)
 
+    # for Admin filter out only public, invisible or non_assignable to reduce the clutter
+    groups   =   groups.select do |g|
+      g.instance_of? WorkGroup && (g.public || g.invisible || (g.not_assignable &&
+          g.user_ids.include?(current_user.id ) ))
+    end if current_user.has_role? :adminuser
+
     if selector.respond_to?(:group_id)
       selected = selector.group_id.to_s
     elsif selector.is_a?(Group)
