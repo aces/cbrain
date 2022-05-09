@@ -24,8 +24,11 @@
 
 <%
     if current_user.has_role? :admin_user
+      admin_ids = AdminUser.all.pluck(:id) || []
       work_groups  = WorkGroup.where(invisible: false, public: true).all
-      work_groups += WorkGroup.where(invisible: false, public: false, not_assignable: true, users: current_user.id).all
+      work_groups += WorkGroup.joins(:users).where(invisible: false, public: false, not_assignable: true,
+                                                      "users.id" => admin_ids).all
+      work_groups = (work_groups + model.groups).uniq
       invis_groups = WorkGroup.where(invisible: true).all
     elsif current_user.has_role? :site_manager
       work_groups  = current_user.site.groups.where( :type  => "WorkGroup", :invisible => false ).all | current_user.groups.where( :type => "WorkGroup", :invisible => false )

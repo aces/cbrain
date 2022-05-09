@@ -108,12 +108,6 @@ module SelectBoxHelper
     groups   = options.has_key?(:groups)   ? (options[:groups]            || []) : current_user.assignable_groups
     groups   = groups.all.to_a if groups.is_a?(ActiveRecord::Relation)
 
-    # for Admin filter out only public, invisible or non_assignable to reduce the clutter
-    groups   =   groups.select do |g|
-      g.instance_of? WorkGroup && (g.public || g.invisible || (g.not_assignable &&
-          g.user_ids.include?(current_user.id ) ))
-    end if current_user.has_role? :adminuser
-
     if selector.respond_to?(:group_id)
       selected = selector.group_id.to_s
     elsif selector.is_a?(Group)
@@ -122,6 +116,20 @@ module SelectBoxHelper
       selected = selector
     else
       selected = selector.to_s
+    end
+
+    # for Admin filter out only public, invisible or non_assignable to reduce the clutter
+    if current_user.has_role? :admin_user
+      current_user_id = current_user.id
+      admin_ids = AdminUser.all.pluck(:id) || []
+      groups   =   groups.select do |g|
+        (   g.instance_of?(SystemGroup) ||
+            g.instance_of?(UserGroup) && admin_ids.include?(g.creator_id) ||
+            g.public ||
+            g.invisible ||
+            (g.not_assignable && g.user_ids & admin_ids ) ||
+            (selected == g.id.to_s) || selected.include?(g.id.to_s))
+      end
     end
 
     # Optimize the labels for UserGroups and SiteGroups, by extracting in a hash
