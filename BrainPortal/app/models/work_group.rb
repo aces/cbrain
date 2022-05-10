@@ -77,7 +77,17 @@ class WorkGroup < Group
     wgs
   end
 
-  def pretty_category_name(as_user) #:nodoc:
+  def pretty_category_name(as_user = nil) #:nodoc:
+    category = pretty_category_name_no_pub(as_user)
+    if category.present? && self.public && ! category.include?('Public') && as_user.has_role?(:admin_user)
+      category.sub(" ", " Public ")
+      # category.split(' ', 2).insert(1, "Public").join  # works even for empty str
+    else
+      category
+    end
+  end
+
+  def pretty_category_name_no_pub(as_user) #:nodoc:
     return @_pretty_category_name if @_pretty_category_name
     if self.invisible?
       @_pretty_category_name = 'Invisible Project'

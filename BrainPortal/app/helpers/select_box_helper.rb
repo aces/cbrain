@@ -123,12 +123,14 @@ module SelectBoxHelper
       current_user_id = current_user.id
       admin_ids = AdminUser.all.pluck(:id) || []
       groups   =   groups.select do |g|
-        (   g.instance_of?(SystemGroup) ||
-            g.instance_of?(UserGroup) && admin_ids.include?(g.creator_id) ||
+        (   g.instance_of?(SystemGroup) ||                            # everyone group
+            g.instance_of?(UserGroup) && (admin_ids & g.user_ids).present? ||  # admin usergroups
             g.public ||
             g.invisible ||
-            (g.not_assignable && g.user_ids & admin_ids ) ||
-            (selected == g.id.to_s) || selected.include?(g.id.to_s))
+            g.not_assignable && (g.user_ids & admin_ids ).present? ||          # notassingable admin groups
+            g.not_assignable && admin_ids.include?(g.creator_id) ||     # notassignable created by admin
+            (selected == g.id.to_s) || selected.include?(g.id.to_s)  # already selected
+        )
       end
     end
 
@@ -159,15 +161,17 @@ module SelectBoxHelper
 
     # Step 1: My Work Projects first
     ordered_category_grouped << [ "My Work Projects", category_grouped_pairs.delete("My Work Projects") ] if category_grouped_pairs["My Work Projects"]
-
+    ordered_category_grouped << [ "My Public Work Projects", category_grouped_pairs.delete("My Public Work Projects") ] if category_grouped_pairs["My Public Work Projects"]
     # Step 2: All personal work projects first
-    category_grouped_pairs.keys.select { |proj| proj =~ /Personal Work Projects/ }.sort.each do |proj|
+    category_grouped_pairs.keys.select { |proj| proj =~ /Personal (Public )?Work Projects/ }.sort.each do |proj|
        ordered_category_grouped << [ proj, category_grouped_pairs.delete(proj) ]
     end
-
     # Step 3: Other project categories, in that order
     [ "Shared Work Projects", "Empty Work Projects", "Site Projects", "User Projects", "System Projects", "Invisible Projects", "Everyone Projects" ].each do |proj|
       ordered_category_grouped << [ proj, category_grouped_pairs.delete(proj) ] if category_grouped_pairs[proj]
+      proj = proj.sub(" ", " Public ")
+      ordered_category_grouped << [ proj, category_grouped_pairs.delete(proj) ] if category_grouped_pairs[proj]
+
     end
 
     # Step 4: Other mysterious categories ?!?
