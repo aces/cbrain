@@ -123,8 +123,8 @@ module SelectBoxHelper
       current_user_id = current_user.id
       admin_ids = AdminUser.all.pluck(:id) || []
       groups   =   groups.select do |g|
-        (   g.instance_of?(SystemGroup) ||                            # everyone group
-            g.instance_of?(UserGroup) && (admin_ids & g.user_ids).present? ||  # admin usergroups
+        (   g.is_a?(SystemGroup) ||  # everyone group, to make a private tool public
+            g.is_a?(UserGroup) && (admin_ids & g.user_ids).present? ||  # admin usergroups
             g.public ||
             g.invisible ||
             g.not_assignable && (g.user_ids & admin_ids ).present? ||          # notassingable admin groups
