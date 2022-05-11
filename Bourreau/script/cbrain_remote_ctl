@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/bin/bash
 
 #
 # CBRAIN Project
@@ -24,17 +24,16 @@
 # This script is a wrapper that launches the normal Rails server,
 # but with the added ability of receiving the content of the database.yml
 # file in standard output before it does so. Also, once the server is
-# started, the database.yml is deleted outright, closing a security hole.
+# started, the database.yml is deleted outright.
 #
 # This script it NOT usually executed by a human, instead it is
 # invoked by the Portal when trying to start or stop a Bourreau.
 #
 # The command-line args are to be provided strictly in the order shown
 # below, and all of them should be present (this is done simply so that
-# this bash script is kept simple, as anyway this script is not meant
-# to be started manually by users).
+# this bash script is kept simple).
 #
-#
+# -----------------------
 # To start the Rails app:
 #
 #   $0 start -e <environment>
@@ -42,95 +41,93 @@
 # which will result in reading the database.yml from stdin, installing
 # it, executing this command
 #
+#   script/puma_wait_wrapper
+#
+# which starts
+#
 #   puma --config config/puma.rb
 #
 # and finally removing the database.yml file. Any database.yml file
 # already present before doing all this will be erased.
 #
-#
+# ----------------------
 # To stop the Rails app:
 #
 #   $0 stop
 #
 # which will result in killing the rails app.
 #
-#
+# -------------------
 # To start a console:
 #
 #   $0 console -e <environment>
-
-# IMPORTANT DEVELOPER NOTICE:
-#
-# This script is written in plain standard Ruby with NO
-# access to Rails and other ActiveSupport helpers. Therefore
-# you can't invoke things like ".present?" and ".blank?" etc.
-# The reason for this is to make this script boot up as
-# quickly as possible.
 
 #########################
 # S U B R O U T I N E S #
 #########################
 
 # Usage
-def usage(basename)
-    puts "Usage: #{basename} start -e <environment>\n" +
-         "       #{basename} stop\n" +
-         "       #{basename} console -e <environment>"
-    Kernel.exit(10)
-end
+function usage {
+  echo "Usage: $0 start -e <environment>"
+  echo "       $0 stop"
+  echo "       $0 console -e <environment>"
+  exit 10
+}
 
 # Fatal error message
-def fatal(message)
-    puts message
-    Kernel.exit(20)
-end
+function fatal {
+  echo "$*"
+  exit 20
+}
+
+# This program only works if its CWD is the Bourreau's root dir.
+# We verify this by checking for the presence of a particular file
+if ! test -f "app/models/bourreau_worker.rb" ; then
+  fatal "This program '$0' must be started from the Bourreau directory."
+fi
 
 # Run-time paths and names of host and program
-basename   = $PROGRAM_NAME.sub(/.*\//,"") # that constant is provided by Ruby
-curhost    = `hostname -s`.strip
-rails_home = __dir__.sub(/\/Bourreau\/script.*$/,"/Bourreau")
-
-# Make sure we're at the base of the app
-Dir.chdir(rails_home)
+basename=$(basename $0)
+curhost=$(hostname -s)
+rails_home=$PWD
 
 # Rails-specific paths.
 # Alongside the PID file, we maintain the hostname where
 # the Bourreau was previously started.
-db_file    = "config/database.yml"
-pidfile    = "tmp/pids/server.pid"
-pidhost    = "#{pidfile}.hostname"
+db_file="config/database.yml"
+pidfile="tmp/pids/server.pid"
+pidhost="$pidfile.hostname"
 
 # Values from previous 'start' operation
-prevpid    = File.read(pidfile).to_i rescue 0
-prevhost   = (File.read(pidhost) rescue "").strip
-
-# To help diagnose problems, print Ruby's version.
-puts "You are using Ruby #{RUBY_VERSION}"
-if RUBY_VERSION =~ /^1\.[0-8]/
-  puts "Warning! This Ruby version seems to be way too old. Maybe your environment wasn't initialized properly?"
-end
+prevpid=$(cat $pidfile 2>/dev/null)
+prevhost=$(cat $pidhost 2>/dev/null)
 
 # Check usage
-usage(basename) if ARGV.size != 1 && ARGV.size != 3 # 1 or 3 args!
+if test $# -ne 1 -a $# -ne 3 ; then # 1 or 3 args!
+  usage
+fi
+
+# Auto cleanup no matter what
+trap "rm -f $db_file" EXIT
 
 
 #############################################################
 # STOP
 #############################################################
 
-if ARGV.size == 1
-  usage(basename) if ARGV[0] != "stop"
-  if prevhost != curhost
-    prevhost = '(unknown)' if prevhost == "" # prettier fatal message
-    prevpid  = '(unknown)' if prevpid  == 0  # prettier fatal message
-    fatal("Could not stop Bourreau app, it was last started on host #{prevhost} as PID #{prevpid}, and we are on host #{curhost}")
-  end
-  fatal("Could not find/open PID file '#{pidfile}'.") if prevpid == 0
-  Process.kill("TERM", prevpid)
-  puts "Bourreau Stopped"
-  File.unlink(pidhost) rescue nil
-  Kernel.exit(0)
-end
+if test $# -eq 1 ; then
+  test "$1" = "stop" || usage
+  if test "$prevhost" != "$curhost" ; then
+    test -z "$prevhost" && prevhost='(unknown)' # prettier fatal message
+    test -z "$prevpid"  && prevpid='(unknown)'  # prettier fatal message
+    fatal "Could not stop Bourreau app, it was last started on host $prevhost as PID $prevpid, and we are on host $curhost"
+  fi
+  test -z "$prevpid" && fatal "Cannot stop Bourreau: could not find/open PID file '$pidfile'."
+  kill -TERM $prevpid # this should also remove $pidfile during teardown
+  echo "Bourreau Stopped"
+  rm -f $pidhost
+  exit 0
+fi
 
 
 #############################################################
@@ -139,73 +136,77 @@ end
 
 # start -e env
 # console -e env
-mode        = ARGV[0] # 'start' or 'console'
-environment = ARGV[2]
+test "X$2" != "X-e" && usage
+mode="$1" # 'start' or 'console'
+environment="$3"
+test "X$mode" != "Xstart" -a "X$mode" != "Xconsole" && usage
 
-usage(basename) if ARGV[1] != "-e"
-usage(basename) unless mode =~ /^(start|console)$/
-fatal("Environment argument must be 'production' or 'development'") unless
-  environment =~ /^(production|development)$/
+if test "X$environment" != "Xdevelopment" -a "X$environment" != "Xproduction" ; then
+  fatal "Environment argument must be 'production' or 'development'"
+fi
 
 # Check for existing PID file
 # and cleanup if necessary
-if mode == "start" && prevpid > 0
+if test "$mode" = "start" -a -n "$prevpid" ; then
 
   # If it was started on a different login node, we can't do anything else
-  if prevhost != "" && prevhost != curhost
-    fatal("The Rails app seems to be running already on a different host, #{prevhost} as PID #{prevpid}")
-  end
+  if test "$prevhost" != "" -a "$prevhost" != "$curhost" ; then
+    fatal "The Rails app seems to be running already on a different host, $prevhost as PID $prevpid"
+  fi
 
   # The 'ps' command below echoes back the PID if the process exists,
   # and it happens to work on both Linux and MacOS.
-  exists = `ps -p #{prevpid} -o pid=`
-  if exists.include?(prevpid.to_s) # this is a substring match
-    fatal("The Rails app seems to be running already as PID #{prevpid}.")
-  end
+  exists=$( ps -p $prevpid -o pid= | tr -cd 0-9 )
+  if test "X$exists" = "X$prevpid" ; then
+    fatal "The Rails app seems to be running already as PID $prevpid."
+  fi
   # OK so the process seems to be dead, let's just clean up.
-  File.unlink(pidfile) rescue true
-  File.unlink(pidhost) rescue true
-end
+  rm -f $pidfile
+  rm -f $pidhost
+fi
+
+# Find the most recently created DB socket filename
+sockfile=$( /bin/ls -1tr tmp/sockets/db.*.sock 2>/dev/null | tail -1 )
+if test "X$sockfile" = "X" ; then
+  fatal "Could not find a DB socket in tmp/sockets/db.*.sock"
+fi
+# Erase older DB socket files
+for badsock in tmp/sockets/db.*.sock ; do
+  test "X$badsock" = "X$sockfile" && continue # skip good one
+  rm -f "$badsock"
+done
 
 # In 'start' mode, we get the content of the database.yml
 # from STDIN stream. In 'console' mode, the content is already
 # installed in place by a separate 'cat' command issued
 # by the portal (see in bourreau.rb).
-db_yml_text = mode == 'start' ? STDIN.read : ""
-blank_yml   = db_yml_text !~ /\S/
-
-if blank_yml # blank? use what db.yml is already here
-  if ! File.exist?(db_file)
-    fatal("Could not find a database.yml file for the Rails application!")
-  end
-  db_yml_text = File.read(db_file)
-end
-
-# Substitute most recently created DB socket filename
-sockfiles = Dir.glob("tmp/sockets/db.*.sock")
-fatal("Could not find a DB socket in tmp/sockets/db.*.sock") if sockfiles.size == 0
-sockfiles.sort! { |sock_a,sock_b| File.mtime(sock_a) <=> File.mtime(sock_b) } # order by time
-db_sockfile = sockfiles.pop.to_s # remove the last, which is the most recent
-db_yml_text.sub!(/socket:.*/,"socket: #{rails_home}/#{db_sockfile}")
-
-# Write it back
-File.open(db_file,"w") { |fh| fh.write(db_yml_text) }
-
-# Remove all older socket files
-sockfiles.each { |f| File.unlink(f) rescue nil }
+if test -s $db_file ; then
+  # This takes the current file's content and makes the substitution in it.
+  # Mostly used in 'console' mode but it can happen in 'start' mode if
+  # a developer has installed manually a DB file.
+  cat $db_file | sed -e 's@socket:.*@socket: '"$PWD/$sockfile"'@' > $db_file.tmp
+  mv -f $db_file.tmp $db_file
+else
+  # This gets the file's content from STDIN and makes the substitution in it before writing.
+  # Only used in 'start' mode.
+  cat | sed -e 's@socket:.*@socket: '"$PWD/$sockfile"'@' > $db_file
+fi
 
 
 ###########################################
 # CONSOLE START
 ###########################################
 
-if mode == 'console'
-  puts "\nBourreau Console Starting on #{curhost}."
-  start_success = system("script/rails", "console", environment) # this will BLOCK
-  puts "\nBourreau Console Exiting on #{curhost}."
-  File.unlink(db_file) rescue true
-  Kernel.exit(start_success ? 0 : 10) # all done
-end
+if test "$mode" = "console" ; then
+  echo ""
+  echo "Bourreau Console Starting on $curhost."
+  script/rails console $environment # this will BLOCk
+  errcode=$?
+  echo ""
+  echo "Bourreau Console Exiting on $curhost."
+  rm -f $db_file
+  exit $errcode # all done
+fi
 
 
 ###########################################
@@ -213,42 +214,47 @@ end
 ###########################################
 
 # Rename log files when they are too big
-date_extension       = Time.now.strftime("%Y-%m-%d")
-start_log_file       = "log/server_start.log"
-environment_log_file = "log/#{environment}.log"
-if File.exists?( start_log_file ) && File.size( start_log_file ) > 1_048_576
-  File.rename(start_log_file, start_log_file.sub(/\.log$/,"_#{date_extension}.log"))
-end
-if File.exists?( environment_log_file ) && File.size( environment_log_file ) > 1_048_576
-  File.rename(environment_log_file, environment_log_file.sub(/\.log$/,"_#{date_extension}.log"))
-end
+date_extension=$( date +"%Y-%m-%d" )
+start_log_file="log/server_start.log"
+environment_log_file="log/$environment.log"
+if test -s $start_log_file ; then
+  if test $( find $start_log_file -size +1M -print | wc -l ) -gt 0 ; then # if size > 1M; works on MacOS too
+    renamed=$( echo $start_log_file | sed -e "s/.log/_$date_extension.log/ ")
+    mv $start_log_file $renamed
+  fi
+fi
+if test -s $environment_log_file ; then
+  if test $( find $environment_log_file -size +1M -print | wc -l ) -gt 0 ; then # if size > 1M; works on MacOS too
+    renamed=$( echo $environment_log_file | sed -e "s/.log/_$date_extension.log/" )
+    mv $environment_log_file $renamed
+  fi
+fi
 
 # Start the server
-ENV["RAILS_ENV"] = environment  # puma's mode of operation is passed through an env var
+export RAILS_ENV=$environment  # puma's mode of operation is passed through an env var
 # puma_wait_wrapper is a custom bash program that starts puma
 # and waits to make sure it booted properly
-start_success = system("script/puma_wait_wrapper")
+script/puma_wait_wrapper
+start_success=$?
 
 # If we were provided with a database.yml, we need
 # delete it once the server has read it.
-if (! blank_yml)
-  File.unlink(db_file) rescue true
-end
+rm -f $db_file
 
 # Return a message to indicate to our calling context
 # whether or not the server started.
-if start_success
-  puts "Bourreau Started." # This string is used by the Portal controller!
-  File.open(pidhost,"w") { |fh| fh.write curhost } # write back current hostname
-  Kernel.exit(0)
-end
+if test $start_success -eq 0 ; then
+  echo "Bourreau Started." # This string is used and checked by the Portal controller!
+  echo $curhost > $pidhost # write back current hostname
+  exit 0
+fi
 
-puts "Bourreau application failed to start properly."
-#if File.exists?(start_log_file)
-#  puts "Here are the last 200 lines of the server's log:"
-#  system("tail -200 '#{start_log_file}'")
+echo "Bourreau application failed to start properly."
+#if test -s $start_log_file ; then
+#  echo "Here are the last 200 lines of the server's log:"
+#  tail -200 $start_log_file
 #else
-#  puts "No server log file found to help you out of this one :-("
-#end
-Kernel.exit(10)
+#  echo "No server log file found to help you out of this one :-("
+#fi
+exit 10 # bad
 

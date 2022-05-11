@@ -137,7 +137,7 @@ class Bourreau < RemoteResource
     # SSH command to start it up; we pipe to it either a new database.yml file
     # which will be installed, or "" which means to use whatever
     # yml file is already configured at the other end.
-    start_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec script/cbrain_remote_ctl start -e #{myrailsenv.to_s.bash_escape} 2>&1"
+    start_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; script/cbrain_remote_ctl start -e #{myrailsenv.to_s.bash_escape} 2>&1"
     self.write_to_remote_shell_command(start_command, :stdout => captfile) { |io| io.write(db_yml) }
 
     out = File.read(captfile) rescue ""
@@ -165,7 +165,7 @@ class Bourreau < RemoteResource
     self.zap_info_cache(:info)
     self.zap_info_cache(:ping)
 
-    stop_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec script/cbrain_remote_ctl stop"
+    stop_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; script/cbrain_remote_ctl stop"
     confirm = self.read_from_remote_shell_command(stop_command) {|io| io.read}
 
     return true if confirm =~ /Bourreau Stopped/i # output of 'cbrain_remote_ctl'
@@ -207,7 +207,7 @@ class Bourreau < RemoteResource
     self.write_to_remote_shell_command(copy_command) { |io| io.write(db_yml) }
 
     # SSH command to start the console.
-    start_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec script/cbrain_remote_ctl console -e #{myrailsenv.to_s.bash_escape}"
+    start_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; script/cbrain_remote_ctl console -e #{myrailsenv.to_s.bash_escape}"
     self.read_from_remote_shell_command(start_command, :force_pseudo_ttys => true) # no block, so that ttys gets connected to remote stdin, stdout and stderr
   end
 
