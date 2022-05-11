@@ -11,6 +11,7 @@
 # the unix-domain socket.
 
 # This is used for setting up paths etc.
+require 'pathname'
 bourreau_install_location = Pathname.new(__FILE__).parent.parent.realpath
 
 # Specifies the `environment` that Puma will run in.
