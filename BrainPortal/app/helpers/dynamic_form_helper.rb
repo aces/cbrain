@@ -51,12 +51,15 @@ module DynamicFormHelper
   # +options+ are just treated as HTML attributes.
   def select_all_checkbox(checkbox_class, options = {})
     options[:class] ||= ""
-    options[:class] +=  " select_all"
+    options[:class]  +=  " select_all"
+    options[:name]    = options[:name].to_la if options[:name].present?
 
     options["data-checkbox-class"] = checkbox_class
     atts = options.to_html_attributes
 
-    "<input type='checkbox' #{atts}/>".html_safe
+    
+    inputs = "<input type='checkbox' #{atts}/>".html_safe + " " + "<input type='hidden' #{atts}/>".html_safe
+    return inputs
   end
 
   # Create a select box with options +select_options+ that will manipulate
