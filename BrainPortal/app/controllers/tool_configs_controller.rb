@@ -25,10 +25,10 @@ class ToolConfigsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available :only => [ :index, :show ]
+  api_available :only => [ :index, :show, :boutiques_descriptor ]
 
   before_action :login_required
-  before_action :admin_role_required, :except => [ :index ]
+  before_action :admin_role_required, :except => [ :index, :boutiques_descriptor ]
 
   def index #:nodoc:
     @scope = scope_from_session
@@ -275,6 +275,18 @@ class ToolConfigsController < ApplicationController
                     end
                   }
       format.xml  { head :ok }
+    end
+  end
+
+  # GET /tool_configs/:id/boutiques_descriptor[.json]
+  def boutiques_descriptor
+    id           = params[:id]
+    @tool_config = base_scope.find(id)
+    @descriptor  = @tool_config.boutiques_descriptor
+
+    respond_to do |format|
+      format.html
+      format.json { render :json => (@descriptor || {}) }
     end
   end
 

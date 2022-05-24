@@ -49,6 +49,9 @@ Rails.application.routes.draw do
     collection do
       get  'report'
     end
+    member do
+      get  'boutiques_descriptor'
+    end
   end
 
   resources :messages,        :except => [ :edit, :show ] do
