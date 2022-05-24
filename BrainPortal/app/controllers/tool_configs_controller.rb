@@ -286,7 +286,7 @@ class ToolConfigsController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.json { render :json => (@descriptor || {}) }
+      format.json { render :json => JSON.pretty_generate(@descriptor || {}) }
     end
   end
 
