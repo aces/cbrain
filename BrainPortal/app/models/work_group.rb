@@ -78,31 +78,28 @@ class WorkGroup < Group
   end
 
   def pretty_category_name(as_user = nil) #:nodoc:
-    category = pretty_category_name_no_pub(as_user)
-    if category.present? && self.public && ! category.include?('Public') && as_user.has_role?(:admin_user)
-      category.sub(" ", " Public ")
-      # category.split(' ', 2).insert(1, "Public").join  # works even for empty str
-    else
-      category
-    end
-  end
 
-  def pretty_category_name_no_pub(as_user) #:nodoc:
-    return @_pretty_category_name if @_pretty_category_name
-    if self.invisible?
-      @_pretty_category_name = 'Invisible Project'
-    elsif self.public?
-      @_pretty_category_name = 'Public Project'
-    elsif self.users.count == 0
-      @_pretty_category_name = 'Empty Work Project'
-    elsif self.users.count > 1
-      @_pretty_category_name = 'Shared Work Project'
-    elsif as_user.present? && (self.creator_id == as_user.id || self.users.first.id == as_user.id)
-      @_pretty_category_name = 'My Work Project'
-    else
-      @_pretty_category_name = "Personal Work Project of #{self.users.first.full_name}"
+    if @_pretty_category_name.blank?
+      if self.invisible?
+        @_pretty_category_name = 'Invisible Project'
+      elsif self.public?
+        @_pretty_category_name = 'Public Project'
+      elsif self.users.count == 0
+        @_pretty_category_name = 'Empty Work Project'
+      elsif self.users.count > 1
+        @_pretty_category_name = 'Shared Work Project'
+      elsif as_user.present? && (self.creator_id == as_user.id || self.users.first.id == as_user.id)
+        @_pretty_category_name = 'My Work Project'
+      else
+        @_pretty_category_name = "Personal Work Project of #{self.users.first.full_name}"
+      end
     end
-    @_pretty_category_name
+    # Public is more of quantifier, there could be public shared or public personal projects
+    if @_pretty_category_name.present? && self.public && ! @_pretty_category_name.include?('Public')
+      @_pretty_category_name = @_pretty_category_name.sub(" ", " Public ")
+    else
+      @_pretty_category_name
+    end
   end
 
   def short_pretty_type #:nodoc:
