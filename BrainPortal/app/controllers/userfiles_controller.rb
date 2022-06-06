@@ -27,6 +27,8 @@ class UserfilesController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  include SwitchGroupHelpers
+
   api_available
 
   before_action :login_required
@@ -56,6 +58,23 @@ class UserfilesController < ApplicationController
       :attribute => 'name',
       :operator  => 'match'
     })
+
+    # Special non-staleless option: switch to another project automatically
+    # Unlike the switch action for the Groups controller, we do no
+    # unselect persistently selected files. A choice I made. However,
+    # we do trigger the 'view all files' option if the project is public
+    # or if the project belongs to someone else.
+    switch_group_id = params[:switch_group_id].presence
+    if switch_group_id
+      changed = switch_current_group(switch_group_id)
+      if changed
+        remove_group_filters_for_files_and_tasks
+        if current_project
+          @scope.custom[:view_all] = true if current_project.public?
+          @scope.custom[:view_all] = true if current_project.creator_id != current_user.id
+        end
+      end
+    end
 
     # Apply basic and @scope-based scoping/filtering
     scope_default_order(@scope, 'name')

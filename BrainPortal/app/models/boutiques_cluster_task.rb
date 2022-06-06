@@ -198,7 +198,7 @@ class BoutiquesClusterTask < ClusterTask
         cb_error "Exit status file #{exit_status_filename()} has unexpected content"
       end
       status = out.strip.to_i
-      if status != 0
+      if exit_status_means_failure?(status)
         self.addlog "Command failed, exit status #{status}"
         return false
       end
@@ -370,6 +370,14 @@ class BoutiquesClusterTask < ClusterTask
   # that holds the 'invoke' structure for bosh.
   def invoke_json_basename
     "invoke.#{self.run_id}.json"
+  end
+
+  # Return true or false depending on if
+  # the number +status+ returned by the command
+  # indicates a failure. By default, anything
+  # other that 0 is a failure.
+  def exit_status_means_failure?(status)
+    status > 0
   end
 
   # MAYBE IN COMMON

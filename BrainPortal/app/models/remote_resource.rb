@@ -738,7 +738,7 @@ class RemoteResource < ApplicationRecord
 
     # Send remote
     Control.site    = self.site
-    Control.timeout = 10
+    Control.timeout = 20
     control         = Control.new(command)
     control.save
 
