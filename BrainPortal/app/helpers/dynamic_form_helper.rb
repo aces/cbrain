@@ -52,7 +52,6 @@ module DynamicFormHelper
   def select_all_checkbox(checkbox_class, options = {})
     options[:class] ||= ""
     options[:class]  +=  " select_all"
-    options[:name]    = options[:name].to_la if options[:name].present?
 
     options["data-checkbox-class"] = checkbox_class
     atts = options.to_html_attributes
