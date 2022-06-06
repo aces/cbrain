@@ -23,6 +23,7 @@
 -%>
 
 <%
+    public_groups = []
     if current_user.has_role? :admin_user
       admin_ids         = AdminUser.all.pluck(:id) || []
       public_groups     = WorkGroup.where( invisible: false, public: true ).all
@@ -37,11 +38,10 @@
     elsif current_user.has_role? :site_manager
       work_groups   = current_user.site.groups.where( :type  => "WorkGroup", :invisible => false ).all | current_user.groups.where( :type => "WorkGroup", :invisible => false )
       invis_groups  = current_user.site.groups.where( :type  => "WorkGroup", :invisible => true )
-      public_groups = []
     else
       work_groups   = []
       invis_groups  = []
-      public_groups = []
+
     end
     work_groups   = work_groups.sort  { |a,b| a.name <=> b.name }
     invis_groups  = invis_groups.sort { |a,b| a.name <=> b.name }
