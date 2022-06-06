@@ -138,7 +138,7 @@ Operations Mode : #{@mode == "each_command" ?
   def process_user_letter(letter) #:nodoc:
 
     # Validate the user input
-    if letter !~ /^([haombwitukygsrczqxj]|\d+|exit|quit)$/
+    if letter !~ /^([haombwiptukygsrczqxj]|\d+|exit|quit)$/
       puts "Unknown command: #{letter} (ignored)"
       return false
     end
@@ -179,6 +179,7 @@ Operations Mode : #{@mode == "each_command" ?
       * Misc
 
         I = query bourreaux for 'info' record
+        P = ping bourreaux
         E,Q,X = exits
 
       You can enter multiple commands all on a single line, e.g.
@@ -291,17 +292,29 @@ Operations Mode : #{@mode == "each_command" ?
     end
 
     # Status: 'info'
-    if letter == "i"
+    if letter == "i" || letter == "p"
       bourreau_list = @bourreaux.select { |b| @selected[b.id] }
       if bourreau_list.empty?
         puts "\nWell, no Bourreaux are selected. So nothing done."
         return false
       end
+      max_size = bourreau_list.map { |b| b.name.size }.max
       bourreau_list.each do |bou|
-        puts "==== Bourreau: #{bou.name} ===="
-        info = bou.remote_resource_info rescue { :exception => "Cannot connect." }
-        info.keys.sort.each do |key|
-          printf "%30s => %s\n",key.to_s,info[key].to_s
+        puts "==== Bourreau: #{bou.name} ====" if letter == "i"
+        info = bou.remote_resource_info(letter == "i" ? :info : :ping) rescue { :exception => "Cannot connect." }
+        if letter == "i"
+          info.keys.sort.each do |key|
+            printf "%30s => %s\n",key.to_s,info[key].to_s
+          end
+        else
+          uptime     = info[:uptime];      uptime     = nil if uptime     == '???'
+          numworkers = info[:worker_pids]; numworkers = nil if numworkers == '???'
+          numworkers = (numworkers || "").split(",").count
+          expworkers = bou.workers_instances || 0
+          uptime     = uptime.to_i if uptime;
+          uptime   &&= "up #{uptime} seconds"
+          uptime   ||= "DOWN"
+          printf "%#{max_size}s : %s, %d/%d workers\n", bou.name, uptime, numworkers, expworkers
         end
       end
       return true
