@@ -63,7 +63,7 @@ extend Hirb::Console
                         ),
   'DiskQuota'      => %i( id user_id data_provider_id max_bytes max_files
                         ),
-  'DataUsage'      => %i( id user_id group_id
+  'DataUsage'      => %i( id user_id group_id yearmonth
                           views_count       views_numfiles
                           downloads_count   downloads_numfiles
                           copies_count      copies_numfiles
@@ -74,8 +74,8 @@ extend Hirb::Console
   fields = fields.dup
   klass  = klassname.constantize rescue nil
   next unless klass # e.g. in irb instead of Rails console
-  fields << :created_at if klass.attribute_names.include?('created_at')
-  fields << :updated_at if klass.attribute_names.include?('updated_at')
+  fields << :created_at if klass.attribute_names.include?('created_at') && ! [ 'DataUsage' ].include?(klassname)
+  fields << :updated_at if klass.attribute_names.include?('updated_at') && ! [ 'DataUsage' ].include?(klassname)
   Hirb::Formatter.dynamic_config[klassname] = {
     :class     => Hirb::Helpers::AutoTable,
     :ancestor  => true,

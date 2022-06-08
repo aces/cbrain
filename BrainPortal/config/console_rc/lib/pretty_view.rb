@@ -378,6 +378,7 @@ class DataUsage
 DataUsage #%d
   User:    %d (%s)
   Group:   %d (%s)
+  Month:   %s
   Views     (Count)   : %d
             (NumFiles): %d
   Downloads (Count)   : %d
@@ -391,6 +392,7 @@ DataUsage #%d
       self.id,
       user_id,  user.login,
       group_id, group.name,
+      self.yearmonth,
       views_count,       views_numfiles,
       downloads_count,   downloads_numfiles,
       copies_count,      copies_numfiles,
