@@ -619,17 +619,22 @@
       }
     });
 
+    // Use to set the value of the hidden input field linked to the specific
+    // header_box, actually used value 'all', 'none' and 'some'
     var set_hidden_select_all = (header_box, value) => {
-      var name = header_box.attr('name');
-      if (name === undefined) {return};
+      var checkbox_class = header_box.attr('data-checkbox-class');
+      if (checkbox_class === undefined) {return};
 
-      var hidden_box = $("input[type='hidden'][name='"+name+"']");
-      if (hidden_box.length === 0) {return};
+      var hidden_box = $("input[type='hidden'][data-checkbox-class='"+checkbox_class+"']");
+      if (hidden_box.length !== 1) {return};
+      hidden_box = hidden_box[0];
 
-      hidden_box.val( value );
+      $(hidden_box).val( value );
     };
 
-    var handle_select_all = (header_box) => {
+    // When click on select_all the value of the header box is used 
+    // to handle `child` 
+    var click_select_all = (header_box) => {
       var checkbox_class = header_box.data("checkbox-class");
 
       set_hidden_select_all(header_box, header_box.prop('checked') ? "all" : "none");
@@ -641,14 +646,14 @@
 
     $(document).delegate(".select_all", "click", function() {
       var header_box = $(this);
-      handle_select_all(header_box);
+      click_select_all(header_box);
     });
 
+    // define on click event for each child of a `select_all` element.
     $(".select_all").each( (index,input) => { 
-      if (input.type !== "checkbox");
       var checkbox_class = $(input).data("checkbox-class");
 
-      $(input).load(handle_select_all($(input)));
+      $(input).load(click_select_all($(input)));
 
       var checkbox_class_elements = $('.' + checkbox_class);
       checkbox_class_elements.each(function(index, element) {        

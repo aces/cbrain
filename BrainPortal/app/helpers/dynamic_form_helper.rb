@@ -54,10 +54,25 @@ module DynamicFormHelper
     options[:class]  +=  " select_all"
 
     options["data-checkbox-class"] = checkbox_class
-    atts = options.to_html_attributes
+    atts  = options.to_html_attributes
 
-    
-    inputs = "<input type='checkbox' #{atts}/>".html_safe + " " + "<input type='hidden' #{atts}/>".html_safe
+    # Do not add an hidden input to keep the value persistant
+    return "<input type='checkbox' #{atts}/>".html_safe if !options[:persistant]
+
+    if !options[:name]
+      name           = "" 
+      name          += 10.times { random_string += ('a'..'z').to_a.sample }
+      options[:name] = name.to_la
+      atts           = options.to_html_attributes
+    end 
+
+    input          = "<input type='checkbox' #{atts}/>".html_safe
+    hidden_options = {:name => "#{options[:name]}".to_la, 
+                      "data-checkbox-class" => checkbox_class,
+                      :class => "select_all_hidden"
+                     } 
+    inputs         = "#{input} <input type='hidden' #{hidden_options.to_html_attributes} />".html_safe
+
     return inputs
   end
 
