@@ -55,7 +55,7 @@ ClusterTask.nil? rescue true
 
 # We need some sort of constant to refer to the console's
 # context, which has access to all the pretty helpers etc.
-ConsoleCtx = self
+ConsoleCtx ||= self # also in interactive_bourreau_control.rb in the same directory
 
 class Userfile
   def pretview

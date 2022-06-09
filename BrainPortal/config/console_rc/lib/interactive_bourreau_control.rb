@@ -20,6 +20,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# We need some sort of constant to refer to the console's
+# context, which has access to all the pretty helpers etc.
+ConsoleCtx = self # also in pretty_view.rb in the same directory
+
 # == Interactive Bourreau Control
 #
 # This class implements a simple command line interface to
@@ -179,7 +183,7 @@ Operations Mode : #{@mode == "each_command" ?
       * Misc
 
         I = query bourreaux for 'info' record
-        P = ping bourreaux
+        P = ping bourreaux (just uptime and number of workers)
         E,Q,X = exits
 
       You can enter multiple commands all on a single line, e.g.
@@ -312,7 +316,8 @@ Operations Mode : #{@mode == "each_command" ?
           numworkers = (numworkers || "").split(",").count
           expworkers = bou.workers_instances || 0
           uptime     = uptime.to_i if uptime;
-          uptime   &&= "up #{uptime} seconds"
+          uptime   &&= ConsoleCtx.send(:pretty_elapsed, uptime, :num_components => 2)
+          uptime   &&= "up for #{uptime}"
           uptime   ||= "DOWN"
           printf "%#{max_size}s : %s, %d/%d workers\n", bou.name, uptime, numworkers, expworkers
         end
