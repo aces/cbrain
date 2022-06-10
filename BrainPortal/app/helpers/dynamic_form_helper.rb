@@ -48,7 +48,10 @@ module DynamicFormHelper
 
   # Create a checkbox that will select or deselect all checkboxes on the page
   # of class +checkbox_class+.
+  # +options[:persistant_name]+
   # +options+ are just treated as HTML attributes.
+  # Except +options[:persistant_name]+ that allow a persitancy 
+  # for example to save some tasks params
   def select_all_checkbox(checkbox_class, options = {})
     options[:class] ||= ""
     options[:class]  +=  " select_all"
@@ -57,21 +60,18 @@ module DynamicFormHelper
     atts  = options.to_html_attributes
 
     # Do not add an hidden input to keep the value persistant
-    return "<input type='checkbox' #{atts}/>".html_safe if !options[:persistant]
+    input = "<input type='checkbox' #{atts}>".html_safe
+    return input if !options[:persistant_name]
 
-    if !options[:name]
-      name           = "" 
-      name          += 10.times { random_string += ('a'..'z').to_a.sample }
-      options[:name] = name.to_la
-      atts           = options.to_html_attributes
-    end 
-
-    input          = "<input type='checkbox' #{atts}/>".html_safe
-    hidden_options = {:name => "#{options[:name]}".to_la, 
+    hidden_options = {
+                      :name                 => options[:persistant_name], 
                       "data-checkbox-class" => checkbox_class,
-                      :class => "select_all_hidden"
+                      :class                => "select_all_hidden"
                      } 
-    inputs         = "#{input} <input type='hidden' #{hidden_options.to_html_attributes} />".html_safe
+    
+    hidden_atts  = hidden_options.to_html_attributes
+    hidden_input = "<input type='hidden' #{hidden_atts}>".html_safe
+    inputs       = "#{input} #{hidden_input}".html_safe
 
     return inputs
   end

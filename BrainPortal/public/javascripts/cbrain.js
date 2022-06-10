@@ -619,8 +619,7 @@
       }
     });
 
-    // Use to set the value of the hidden input field linked to the specific
-    // header_box, actually used value 'all', 'none' and 'some'
+    // Set the value of the hidden input field linked to the header_box
     var set_hidden_select_all = (header_box, value) => {
       var checkbox_class = header_box.attr('data-checkbox-class');
       if (checkbox_class === undefined) {return};
@@ -632,8 +631,8 @@
       $(hidden_box).val( value );
     };
 
-    // When click on select_all the value of the header box is used 
-    // to handle `child` 
+    // Value of the header box is used to set 
+    // the checked status of child boxes 
     var click_select_all = (header_box) => {
       var checkbox_class = header_box.data("checkbox-class");
 
@@ -649,7 +648,7 @@
       click_select_all(header_box);
     });
 
-    // define on click event for each child of a `select_all` element.
+    // Define on click event for each child of a `select_all` element.
     $(".select_all").each( (index,input) => { 
       var checkbox_class = $(input).data("checkbox-class");
 
