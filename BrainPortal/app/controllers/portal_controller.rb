@@ -380,8 +380,8 @@ class PortalController < ApplicationController
       @table_content     = merge_vals_as_array(task_sum_size, task_counts, task_no_size) # create triplets
     elsif table_ops[0].to_s =~ /combined_(views|copies|downloads|task_setups)\z/
       attname = Regexp.last_match[1] # (views|copies|downloads|task_setups)
-      att_count          = table_content_fetcher.sum("#{attname}_count")
-      att_numfiles       = table_content_fetcher.sum("#{attname}_numfiles")
+      att_count          = table_content_fetcher.sum("#{attname}_count").reject    { |k,v| v == 0 }
+      att_numfiles       = table_content_fetcher.sum("#{attname}_numfiles").reject { |k,v| v == 0 }
       @table_content     = merge_vals_as_array( att_count, att_numfiles )
     else
       generic_count  = table_content_fetcher.send(*table_ops)
