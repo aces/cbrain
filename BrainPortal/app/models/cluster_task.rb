@@ -2785,7 +2785,7 @@ chmod o+x . .. ../.. ../../..
     # Create CPU time record
     cpu_time  = num_seconds_info[:user_tot] + num_seconds_info[:syst_tot]
 
-    CputimeResourceUsageForCbrainTask.create(
+    cpu_ru = CputimeResourceUsageForCbrainTask.create(
       :value              => cpu_time,
       :cbrain_task_status => recorded_status,
       :user_id            => self.user_id,
@@ -2799,7 +2799,7 @@ chmod o+x . .. ../.. ../../..
     # Create walltime record
     wall_time = num_seconds_info[:walltime]
 
-    WalltimeResourceUsageForCbrainTask.create(
+    wt_ru = WalltimeResourceUsageForCbrainTask.create(
       :value              => wall_time,
       :cbrain_task_status => recorded_status,
       :user_id            => self.user_id,
@@ -2809,6 +2809,11 @@ chmod o+x . .. ../.. ../../..
       :tool_id            => self.tool.id,
       :tool_config_id     => self.tool_config_id,
     )
+
+    # Add CSV log entry; to enable configure a path in bourreau's meta data entry "user_logfile_path"
+    user_logfile_path = self.bourreau.meta[:user_logfile_path].presence
+    user_submit_log(user_logfile_path, cpu_ru, wt_ru) if user_logfile_path
+
   end
 
   # Add a task workdir size and the status of a task that reach
@@ -2823,6 +2828,23 @@ chmod o+x . .. ../.. ../../..
       :tool_id            => self.tool.id,
       :tool_config_id     => self.tool_config_id,
     )
+  end
+
+  # This method does external logging to a file with a bunch of
+  # attributes about a recently finished job (successful or not).
+  def user_submit_log(user_logfile_path, cpu_ru, wt_ru) #:nodoc:
+    csv_values = [
+      # DateTime        User             Cluster Job ID
+      Time.now.iso8601, self.user.login, self.cluster_jobid,
+      # Tool Name       Tool version
+      cpu_ru.tool_name, cpu_ru.tool_config_version_name,
+      # CPU time        Wall time
+      cpu_ru.value,     wt_ru.value
+    ]
+    csv_row_txt = csv_values.map { |v| "\"#{v}\"" }.join(",") + "\n"
+    File.open(user_logfile_path.to_s, "a") { |fh| fh.write csv_row_txt } # APPEND mode
+  rescue => ex
+    Rails.logger.error "Cannot append to user submit log file: #{ex.class}: #{ex.message}"
   end
 
   # Utility that should go in a separate framework.
