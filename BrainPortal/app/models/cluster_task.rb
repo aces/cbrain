@@ -2833,13 +2833,17 @@ chmod o+x . .. ../.. ../../..
   # This method does external logging to a file with a bunch of
   # attributes about a recently finished job (successful or not).
   def user_submit_log(user_logfile_path, cpu_ru, wt_ru) #:nodoc:
+    user = self.user
     csv_values = [
-      # DateTime        User             Cluster Job ID
-      Time.now.iso8601, self.user.login, self.cluster_jobid,
-      # Tool Name       Tool version
-      cpu_ru.tool_name, cpu_ru.tool_config_version_name,
-      # CPU time        Wall time
-      cpu_ru.value,     wt_ru.value
+      Time.now.iso8601,                      # DateTime
+      user.login,                            # CBRAIN username
+      user.meta[:globus_preferred_username], # User globus name
+      user.meta[:globus_provider_name],      # User globus provider name
+      self.cluster_jobid,                    # Cluster Job ID
+      cpu_ru.tool_name,                      # Tool Name
+      cpu_ru.tool_config_version_name,       # Tool version
+      cpu_ru.value,                          # CPU time
+      wt_ru.value                            # Wall time
     ]
     csv_row_txt = csv_values.map { |v| "\"#{v}\"" }.join(",") + "\n"
     File.open(user_logfile_path.to_s, "a") { |fh| fh.write csv_row_txt } # APPEND mode
