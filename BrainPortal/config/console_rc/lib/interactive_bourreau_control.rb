@@ -313,13 +313,14 @@ Operations Mode : #{@mode == "each_command" ?
         else
           uptime     = info[:uptime];      uptime     = nil if uptime     == '???'
           numworkers = info[:worker_pids]; numworkers = nil if numworkers == '???'
+          gitrev     = info[:starttime_revision]
           numworkers = (numworkers || "").split(",").count
           expworkers = bou.workers_instances || 0
           uptime     = uptime.to_i if uptime;
           uptime   &&= ConsoleCtx.send(:pretty_elapsed, uptime, :num_components => 2)
           uptime   &&= "up for #{uptime}"
           uptime   ||= "DOWN"
-          printf "%#{max_size}s : %s, %d/%d workers\n", bou.name, uptime, numworkers, expworkers
+          printf "%#{max_size}s rev %-9.9s %s, %d/%d workers\n", bou.name, gitrev, uptime, numworkers, expworkers
         end
       end
       return true

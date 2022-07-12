@@ -583,7 +583,7 @@ class ToolConfig < ApplicationRecord
       :bourreau_id     => bourreau.id,
       :version_name    => descriptor.tool_version,
       # Other attributes
-      :group_id        => User.admin.id,
+      :group_id        => User.admin.own_group.id,
       :description     => "Auto-created by Boutiques integrator",
       :env_array       => [],
       :script_prologue => nil,
