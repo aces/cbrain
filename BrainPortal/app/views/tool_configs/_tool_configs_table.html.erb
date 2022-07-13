@@ -106,10 +106,16 @@
     ) { |tc| tc.ncpus.to_s }
 
     t.column("Boutiques", :boutiques,
-    ) {|tc|
-      rev_info = tc.tool.cbrain_task_class.revision_info rescue nil
+    ) do |tc|
+      descriptor = tc.boutiques_descriptor rescue nil # some TCs have no tools
+      if descriptor
+        desc_full_path = descriptor.from_file
+        rev_info       = CbrainFileRevision.for_relpath(desc_full_path.sub("#{Rails.root.parent}/",""))
+      else
+        rev_info = tc.tool.cbrain_task_class.revision_info rescue nil # task class revinfo
+      end
 
-      link_show = ""
+      link_show=""
       if rev_info
         rev_info_basename = rev_info.basename
         rev_info_commit   = rev_info.short_commit
@@ -117,16 +123,12 @@
         # rev_info_basename match *.json if cbrain use a Boutiques descriptor
         link_show = "#{rev_info_commit} -- #{rev_info_basename}" if rev_info_basename =~ /\.json$/
       end
-
-      descriptor = tc.boutiques_descriptor rescue nil # some TCs have no tools
-      link_show  = "(Descriptor)" if link_show.blank? && descriptor.present?
-
-      if descriptor
+      if descriptor && link_show.present?
         link_to link_show, boutiques_descriptor_tool_config_path(tc)
       else
         link_show
       end
-    }
+    end
 
     t.column("Container Engine", :container_engine,
       :sortable => true,
