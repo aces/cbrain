@@ -85,14 +85,14 @@ module BoutiquesInputValueFixer
         end
       end
 
-      # removes one is required flag if one element fixed
+      # removes one is required flag if one element fixed  --use-min-mem vs --mem-mb
       if g.one_is_required && members.length != g.members.length
         if (invocation.keys & g.members - skipped).present?
           g.one_is_required == false
         end
       end
 
-      # removes one is required flag if one element fixed
+      # removes one is required flag if one element fixed, e.g.
       if g.all_or_none && members.length != g.members.length
         if (g.members & skipped).present?
           g.all_or_none == false
@@ -101,7 +101,7 @@ module BoutiquesInputValueFixer
           g.members.each do |i_id|
             begin
               input = descriptor.input_by_id(i_id)
-            rescue CbrainError
+            rescue CbrainError  # if descriptor was already processed
               next
             end
             input.optional = false
@@ -131,53 +131,46 @@ module BoutiquesInputValueFixer
   end
 
   # adjust descriptor to allow check # of supplied files
-  def descriptor_for_before_form #:nodoc:
-    
+  def descriptor_for_before_form
     delete_fixed_inputs(super)
   end
 
   # not show user fixed inputs
   def descriptor_for_form
-    
     self.invoke_params.merge!(invocation)
     delete_fixed_inputs(super)
   end
 
   def descriptor_for_show_params
-    
     self.invoke_params.merge!(invocation)
-    super
+    super    # standard values
   end
-
 
   # validation
-  # todo descriptor trimming might needed to hide from executed
-  def after_form #:nodoc:
-    
+  def after_form
     self.invoke_params.merge!(invocation)
     # delete_fixed(descriptor) no idea is needed
-    super
+    super    # Performs standard processing
   end
 
-  # prepare fixed userfiles
+  # prepare userfiles
   def setup
     self.invoke_params.merge!(invocation)
-    super
+    super    # Performs standard processing
   end
 
-  # todo delete, is it really needed? maybe to restart on cluster
+  # re-start on cluster
   # This method overrides the one in BoutiquesClusterTask
   # It adjusts task's invocation
   def cluster_commands
-    self.invoke_params.merge!(invocation) # todo, maybe not needed, already done at setup
-    super
+    self.invoke_params.merge!(invocation)
+    super    # Performs standard processing
   end
 
-  # restart postprocessing
+  # for restart postprocessing
   def save_results
-    self.invoke_params.merge!(invocation) # todo, maybe not needed, already done at setup
-    # Performs standard processing
-    super
+    self.invoke_params.merge!(invocation)
+    super     # Performs standard processing
   end
 
 end
