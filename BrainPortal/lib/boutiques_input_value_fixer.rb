@@ -29,7 +29,7 @@
 #     "cbrain:integrator_modules": {
 #         "BoutiquesInputValueFixer": {
 #             "n_cpus": 1,
-#             "mem_": "4G",
+#             "mem": "4G",
 #             "customquery": nil,
 #             "level": "group"
 #         }
@@ -46,35 +46,38 @@ module BoutiquesInputValueFixer
   # object method revision_info() won't work.
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  require 'pry'
+
+  # the hash of param values to be fixed or be ommited ()  #
+  def invocation
+    invocation = self.boutiques_descriptor.custom_module_info('BoutiquesInputValueFixer')
+    cb_error "module BoutiquesInputValueFixer requires a hash" unless invocation.is_a? Hash
+    invocation
+  end
+
   # deletes fixed inputs listed in the custom 'integrator_modules'
   # no input or values dependencies for fixed variables are supported
   def delete_fixed_inputs(descriptor)
-    old_descriptor = descriptor.dup
-    #skipped parameters that's unset
 
-    invocation = descriptor.custom_module_info('BoutiquesInputValueFixer')
+    # input parameters are marked by null values will be excluded from the command line
+    # the major use case are Flags, but also may be useful to address params with 'default' (
+    # or, for flags, null-like values)
 
-    # inputs which are deleted by assign null (or, for flags, null-like values)
+    descriptor_dup = descriptor.deep_dup
     skipped = invocation.keys.select do |i_id|
-
-      input = descriptor.input_by_id(i_id)
+      begin
+        input = descriptor_dup.input_by_id(i_id)
+      rescue CbrainError # might be already deleted
+        next
+      end
       value = invocation[i_id]
-      value.nil? || input.type == 'Flag' && (value               == 0       || # flag inputs
-                                             value.to_s.downcase == 'no'    || # can be skipped by null-like values
-                                             value               == [nil]   || # but for other types
-                                             value               == '0'     || # to skip a parameter from command line
-                                             value.to_s.downcase == 'null'  || # only use
-                                             value.to_s.downcase == 'false' || # null
-                                             value.blank?
-                                             )
+      value.nil? || (input.type == 'Flag') &&  (value.presence.to_s.strip =~ /no|0|nil|none|null|false/i || value.blank?)
+
     end
 
-    descriptor.inputs = descriptor.inputs.select { |i| ! invocation.key?(i.id)} # filter inputs
-
-    descriptor.groups.each do |g| # filter groups
-
+    descriptor_dup.groups.each do |g| # filter groups
       members = g.members - invocation.keys
-      # deletes a mutualy exclusive group if one element fixed
+      # delete a mutualy exclusive group if its member(s) fixed to a value(s)
       if g.mutually_exclusive && members.length != g.members.length
         if (invocation.keys & g.members - skipped).present?
            g.mutually_exclusive == false
@@ -93,59 +96,64 @@ module BoutiquesInputValueFixer
       if g.all_or_none && members.length != g.members.length
         if (g.members & skipped).present?
           g.all_or_none == false
+          # todo delete all member inputs
         elsif (invocation.keys & g.members - skipped).present? # if one is set, rest should be to
-          g.members.each do |iid|
-            input = descriptor.input_by_id(iid)
+          g.members.each do |i_id|
+            begin
+              input = descriptor.input_by_id(i_id)
+            rescue CbrainError
+              next
+            end
             input.optional = false
           end
-
         end
       end
 
       # I suspect that at the moment CBRAIN only fully comfortable
       # with at most one quantifier flag per group
-      # and in mutually exclusive
-      # (non-overlapping groups), if not more can be done
+      # and in mutually exclusive (i.e. non-overlapping) groups.
+      # if not, perhaps, more can be done
 
       g.members = members.presence
 
-      # todo propagate dependencies (it's easier to add internal 'hidden' attribute to inputs)
-      # or maybe just delete dependencies
+      # todo propagate dependencies described with input or value disables, enalbes and requires
+      # (it's easier to add internal 'hidden' attribute to inputs in the main codebase)
+      # or maybe just delete dependencies or maybe just check that fixed vars are not involved
+      # in dependecier
 
     end
-    descriptor.groups = descriptor.groups.compact
-    descriptor
+    descriptor_dup.groups = descriptor_dup.groups.compact
+
+    # delete fixed inputs
+    descriptor_dup.inputs = descriptor_dup.inputs.select { |i| ! invocation.key?(i.id)} # filter out fixed inputs
+
+    descriptor_dup
   end
 
   # adjust descriptor to allow check # of supplied files
-  def descriptor_before_form #:nodoc:
-    descriptor = self.super.dup
-    delete_fixed_inputs(descriptor)
+  def descriptor_for_before_form #:nodoc:
+    
+    delete_fixed_inputs(super)
   end
 
   # not show user fixed inputs
   def descriptor_for_form
-    descriptor = super.dup
-    invocation = descriptor.custom_module_info('BoutiquesInputValueFixer')
+    
     self.invoke_params.merge!(invocation)
-    delete_fixed_inputs(descriptor)
+    delete_fixed_inputs(super)
   end
 
   def descriptor_for_show_params
-    descriptor = super.dup
-    invocation = descriptor.custom_module_info('BoutiquesInputValueFixer')
+    
     self.invoke_params.merge!(invocation)
-    delete_fixed_inputs(descriptor)
+    super
   end
 
-  require 'pry'
+
   # validation
   # todo descriptor trimming might needed to hide from executed
   def after_form #:nodoc:
-    #binding.pry
-    descriptor = self.descriptor_for_after_form
-    invocation = descriptor.custom_module_info('BoutiquesInputValueFixer')
-
+    
     self.invoke_params.merge!(invocation)
     # delete_fixed(descriptor) no idea is needed
     super
@@ -153,8 +161,6 @@ module BoutiquesInputValueFixer
 
   # prepare fixed userfiles
   def setup
-    descriptor = self.descriptor_for_setup
-    invocation = descriptor.custom_module_info('BoutiquesInputValueFixer')
     self.invoke_params.merge!(invocation)
     super
   end
@@ -163,16 +169,12 @@ module BoutiquesInputValueFixer
   # This method overrides the one in BoutiquesClusterTask
   # It adjusts task's invocation
   def cluster_commands
-    descriptor = self.descriptor_for_cluster_commands
-    invocation = descriptor.custom_module_info('BoutiquesInputValueFixer')
     self.invoke_params.merge!(invocation) # todo, maybe not needed, already done at setup
     super
   end
 
   # restart postprocessing
   def save_results
-    descriptor = self.descriptor_for_save_results
-    invocation = descriptor.custom_module_info('BoutiquesInputValueFixer')
     self.invoke_params.merge!(invocation) # todo, maybe not needed, already done at setup
     # Performs standard processing
     super
