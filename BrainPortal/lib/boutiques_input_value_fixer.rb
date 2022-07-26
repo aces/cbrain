@@ -63,7 +63,7 @@ module BoutiquesInputValueFixer
     # the major use case are Flags, but also may be useful to address params with 'default' (
     # or, for flags, null-like values)
 
-    descriptor_dup = descriptor.deep_dup
+    descriptor_dup = descriptor.dup
     skipped = invocation.keys.select do |i_id|
       begin
         input = descriptor_dup.input_by_id(i_id)
@@ -77,15 +77,22 @@ module BoutiquesInputValueFixer
 
     descriptor_dup.groups.each do |g| # filter groups
       members = g.members - invocation.keys
-      # delete a mutualy exclusive group if its member(s) fixed to a value(s)
-      if g.mutually_exclusive && members.length != g.members.length
-        if (invocation.keys & g.members - skipped).present?
-           g.mutually_exclusive == false
-           members = nil
+      # disable a mutualy exclusive group if its param assigned fixed value by this modifier
+      # if one simply deletes the fixed param,
+      if g.mutually_exclusive && members.length != g.members.length # params can be mutually exclusive e.g. --use-min-mem vs --mem-mb
+        if (invocation.keys & g.members - skipped).present? # at least some group members are actually assigned vals rather than deleted
+           if members.length == 1
+             g.mutually_exclusive = false # drop the restriction, has no point for one element
+             # (though ideally input should be suppressed)
+           else # when more than one member
+             g.all_or_none = true # adding all-or-none will block task submission.
+           end
+           # a better solution is to delete rest of group params completely
+           # a bit more complex though and might result in recursive code or nested loops
         end
       end
 
-      # removes one is required flag if one element fixed  --use-min-mem vs --mem-mb
+      # removes one-is-required flag if one element fixed
       if g.one_is_required && members.length != g.members.length
         if (invocation.keys & g.members - skipped).present?
           g.one_is_required == false
@@ -95,7 +102,8 @@ module BoutiquesInputValueFixer
       # removes one is required flag if one element fixed, e.g.
       if g.all_or_none && members.length != g.members.length
         if (g.members & skipped).present?
-          g.all_or_none == false
+          #g.all_or_none == false
+          g.mutually_exclusive = true # if more than 1 params remains remaining
           # todo delete all member inputs
         elsif (invocation.keys & g.members - skipped).present? # if one is set, rest should be to
           g.members.each do |i_id|
@@ -113,16 +121,9 @@ module BoutiquesInputValueFixer
       # with at most one quantifier flag per group
       # and in mutually exclusive (i.e. non-overlapping) groups.
       # if not, perhaps, more can be done
-
-      g.members = members.presence
-
-      # todo propagate dependencies described with input or value disables, enalbes and requires
-      # (it's easier to add internal 'hidden' attribute to inputs in the main codebase)
-      # or maybe just delete dependencies or maybe just check that fixed vars are not involved
-      # in dependecier
-
+      g.members = members
     end
-    descriptor_dup.groups = descriptor_dup.groups.compact
+    descriptor_dup.groups = descriptor_dup.groups.select {|g| g.members.present?} # delete empty group
 
     # delete fixed inputs
     descriptor_dup.inputs = descriptor_dup.inputs.select { |i| ! invocation.key?(i.id)} # filter out fixed inputs
@@ -132,45 +133,29 @@ module BoutiquesInputValueFixer
 
   # adjust descriptor to allow check # of supplied files
   def descriptor_for_before_form
+    
     delete_fixed_inputs(super)
   end
 
-  # not show user fixed inputs
+  # prevent from showing/submitting fixed inputs in the form
   def descriptor_for_form
-    self.invoke_params.merge!(invocation)
+    # self.invoke_params.except!(*invocation.keys) # do not use fixed params value in the form
     delete_fixed_inputs(super)
   end
 
-  def descriptor_for_show_params
-    self.invoke_params.merge!(invocation)
+  def descriptor_for_show_params # show all the params
+    
+    self.invoke_params.merge!(invocation) # show hidden parameters, used would not be able to edit them, so should be save
     super    # standard values
   end
 
-  # validation
-  def after_form
-    self.invoke_params.merge!(invocation)
-    # delete_fixed(descriptor) no idea is needed
+  def after_form # validation step - the original boutiques with combined invocation, for the greatest accuracy
+    # note, error messages might involve fixed variables
+    self.invoke_params.merge!(invocation) # put back fixed values into invocation, if needed
     super    # Performs standard processing
   end
 
-  # prepare userfiles
-  def setup
-    self.invoke_params.merge!(invocation)
-    super    # Performs standard processing
-  end
+  # assuming the after_form always happens before cluster steps, the fixed values will be available for them
 
-  # re-start on cluster
-  # This method overrides the one in BoutiquesClusterTask
-  # It adjusts task's invocation
-  def cluster_commands
-    self.invoke_params.merge!(invocation)
-    super    # Performs standard processing
-  end
-
-  # for restart postprocessing
-  def save_results
-    self.invoke_params.merge!(invocation)
-    super     # Performs standard processing
-  end
 
 end
