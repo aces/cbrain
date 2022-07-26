@@ -75,7 +75,9 @@ module BoutiquesInputValueFixer
 
     end
 
-    descriptor_dup.groups.each do |g| # filter groups
+
+
+    descriptor_dup.groups.each do |g| # filter groups, relax restriction to anable form submission
       members = g.members - invocation.keys
       # disable a mutualy exclusive group if its param assigned fixed value by this modifier
       # if one simply deletes the fixed param,
@@ -83,7 +85,7 @@ module BoutiquesInputValueFixer
         if (invocation.keys & g.members - skipped).present? # at least some group members are actually assigned vals rather than deleted
            if members.length == 1
              g.mutually_exclusive = false # drop the restriction, has no point for one element
-             # (though ideally input should be suppressed)
+             # todo add pairwise requires and disables to effectively disable all
            else # when more than one member
              g.all_or_none = true # adding all-or-none will block task submission.
            end
@@ -92,30 +94,32 @@ module BoutiquesInputValueFixer
         end
       end
 
+      # presently one-is-required is checked only statically, no GUI support
       # removes one-is-required flag if one element fixed
-      if g.one_is_required && members.length != g.members.length
-        if (invocation.keys & g.members - skipped).present?
-          g.one_is_required == false
-        end
-      end
+      # if g.one_is_required && members.length != g.members.length
+      #   if (invocation.keys & g.members - skipped).present?
+      #     g.one_is_required == false
+      #   end
+      # end
 
-      # removes one is required flag if one element fixed, e.g.
-      if g.all_or_none && members.length != g.members.length
-        if (g.members & skipped).present?
-          #g.all_or_none == false
-          g.mutually_exclusive = true # if more than 1 params remains remaining
-          # todo delete all member inputs
-        elsif (invocation.keys & g.members - skipped).present? # if one is set, rest should be to
-          g.members.each do |i_id|
-            begin
-              input = descriptor.input_by_id(i_id)
-            rescue CbrainError  # if descriptor was already processed
-              next
-            end
-            input.optional = false
-          end
-        end
-      end
+      # all-or-none is not reflected in dynamic gui, uncomment once fixed
+      #
+      # removes  'one-is-required' or disables group when one or more element fixed, e.g.
+      # if g.all_or_none && members.length != g.members.length
+      #   # if (g.members & skipped).present?
+      #   #   # todo delete all member inputs, or disable by injecting pairwise required/disable dependencie
+      #   # end
+      #   if (invocation.keys & g.members - skipped).present? # if one is set, rest should be to
+      #     g.members.each do |i_id|
+      #       begin
+      #         input = descriptor.input_by_id(i_id)
+      #       rescue CbrainError  # if descriptor was already processed
+      #         next
+      #       end
+      #       input.optional = false
+      #     end
+      #   end
+      # end
 
       # I suspect that at the moment CBRAIN only fully comfortable
       # with at most one quantifier flag per group
