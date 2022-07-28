@@ -1161,17 +1161,27 @@ class Userfile < ApplicationRecord
     true
   end
 
-end
 
-# Patch: pre-load all model files for the subclasses
-Dir.chdir(CBRAIN::UserfilesPlugins_Dir) do
-  Dir.glob("*").select { |dir| File.directory?(dir) }.each do |model_dir|
-    model_file = "#{model_dir}/#{model_dir}.rb"  # e.g.  "mp3_file/mp3_file.rb" for class Mp3File
-    next unless File.file?(model_file)
-    model = model_dir.classify
-    next if Object.const_defined? model # already loaded? Skip.
-    #puts_blue "Loading Userfile subclass #{model} from #{model_file} ..."
-    require_dependency "#{CBRAIN::UserfilesPlugins_Dir}/#{model_file}"
+
+  ##################################################################
+  # BOOT-TIME Support
+  ##################################################################
+
+  public
+
+  # Patch: pre-load all model files for the subclasses
+  def self.preload_subclasses
+    Dir.chdir(CBRAIN::UserfilesPlugins_Dir) do
+      Dir.glob("*").select { |dir| File.directory?(dir) }.each do |model_dir|
+        model_file = "#{model_dir}/#{model_dir}.rb"  # e.g.  "mp3_file/mp3_file.rb" for class Mp3File
+        next unless File.file?(model_file)
+        model = model_dir.classify
+        next if Object.const_defined? model # already loaded? Skip.
+        #puts_blue "Loading Userfile subclass #{model} from #{model_file} ..."
+        require_dependency "#{CBRAIN::UserfilesPlugins_Dir}/#{model_file}"
+      end
+    end
   end
+
 end
 

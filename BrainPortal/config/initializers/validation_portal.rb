@@ -75,6 +75,7 @@ elsif program_name =~ /server|puma/ # normal server mode
 elsif program_name =~ /rspec/ # test suite
   puts "C> \t- Testing with 'rspec'."
   CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
+  PortalSystemChecks.check([:a000_ensure_models_are_preloaded])
   PortalSystemChecks.check([:a010_check_if_pending_database_migrations])
 
 # ----- RAKE TASK -----
@@ -89,6 +90,8 @@ elsif program_name =~ /rake/
     #------------------------------------------------------------------------------
     puts "C> \t- No validations needed for rake task '#{first_arg}'. Skipping."
     #------------------------------------------------------------------------------
+    CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself]) if first_arg == "db:seed:test:api"
+    PortalSystemChecks.check([:a000_ensure_models_are_preloaded])  if first_arg == "db:seed:test:api"
   else # all other rake cases
     #------------------------------------------------------------------------------
     puts "C> \t- All validations will run for rake task '#{first_arg}'."

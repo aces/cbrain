@@ -1015,5 +1015,29 @@ class CbrainTask < ApplicationRecord
     }
   end
 
+
+
+  ##################################################################
+  # BOOT-TIME Support
+  ##################################################################
+
+  # Patch: pre-load all model files for the subclasses
+  def self.preload_subclasses
+    [ CBRAIN::TasksPlugins_Dir, CBRAIN::TaskDescriptorsPlugins_Dir ].each do |dir|
+      Dir.chdir(dir) do
+        Dir.glob("*.rb").each do |rubyfile|
+          next if [
+            'cbrain_task_class_loader.rb',
+            'cbrain_task_descriptor_loader.rb'
+          ].include?(rubyfile)
+
+          model = rubyfile.sub(/.rb\z/, '')
+          require_dependency "#{dir}/#{model}.rb" unless
+            [ model.classify, model.camelize ].any? { |m| CbrainTask.const_defined?(m) rescue nil }
+        end
+      end
+    end
+  end
+
 end
 
