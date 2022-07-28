@@ -46,8 +46,8 @@ class S3FlatDataProvider < DataProvider
   validates_presence_of :cloud_storage_client_identifier, :cloud_storage_client_token,
                         :cloud_storage_client_bucket_name
 
-  validates :cloud_storage_client_identifier,  length: { is: 20 }
-  validates :cloud_storage_client_token,       length: { is: 40 }
+  validates :cloud_storage_client_identifier,  length: { in: 16..128 }
+  validates :cloud_storage_client_token,       length: { in: 20..100 }
 
   validates :cloud_storage_client_bucket_name, format: {
     with: /\A[A-Za-z0-9][A-Za-z0-9\-.]{1,61}[A-Za-z0-9]\z/, # this is good enough; DP will just crash on bad names

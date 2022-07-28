@@ -29,6 +29,7 @@ module GlobusHelpers
   # Maybe should be made configurable.
   GLOBUS_AUTHORIZE_URI = "https://auth.globus.org/v2/oauth2/authorize" # will be issued a GET with params
   GLOBUS_TOKEN_URI     = "https://auth.globus.org/v2/oauth2/token"     # will be issued a POST with a single code
+  GLOBUS_LOGOUT_URI    = "https://auth.globus.org/v2/web/logout"       # for pages that provide this link
 
   # Returns the URI to send users to the GLOBUS authentication page.
   # The parameter globus_action_url should be the URL to the controller
@@ -46,6 +47,10 @@ module GlobusHelpers
       :state         => globus_current_state, # method is below
     }
     GLOBUS_AUTHORIZE_URI + '?' + globus_params.to_query
+  end
+
+  def globus_logout_uri
+    GLOBUS_LOGOUT_URI
   end
 
   def globus_fetch_token(code, globus_action_url)
@@ -122,50 +127,98 @@ module GlobusHelpers
 
   # Record the globus identity for the current user.
   # (This maybe should be made into a User model method)
-  def record_globus_identity(identity)
+  def record_globus_identity(user, globus_identity)
+
+    # In the case where a user must auth with a specific set of
+    # globus providers, we find the first identity that
+    # matches a name of that set.
+    identity = set_of_identities(globus_identity).detect do |idstruct|
+       user_can_link_to_globus_identity?(user, idstruct)
+    end
+
     provider_id   = identity['identity_provider']              || cb_error("Globus: No identity provider")
     provider_name = identity['identity_provider_display_name'] || cb_error("Globus: No identity provider name")
-    pref_username = identity['preferred_username']             || cb_error("Globus: No preferred username")
+    pref_username = identity['preferred_username'] ||
+                    identity['username']                       || cb_error("Globus: No preferred username")
 
     # Special case for ORCID, because we already have fields for that provider
-    if provider_name == 'ORCID'
+    # We do NOT do this in the case where the user is forced to auth with globus.
+    if provider_name == 'ORCID' && ! user_must_link_to_globus?(user)
       orcid = pref_username.sub(/@.*/, "")
-      current_user.meta['orcid'] = orcid
-      current_user.addlog("Linked to ORCID identity: '#{orcid}' through Globus")
+      user.meta['orcid'] = orcid
+      user.addlog("Linked to ORCID identity: '#{orcid}' through Globus")
       return
     end
 
-    current_user.meta[:globus_provider_id]        = provider_id
-    current_user.meta[:globus_provider_name]      = provider_name # used in show page
-    current_user.meta[:globus_preferred_username] = pref_username
-    current_user.addlog("Linked to Globus identity: '#{pref_username}' on provider '#{provider_name}'")
+    user.meta[:globus_provider_id]        = provider_id
+    user.meta[:globus_provider_name]      = provider_name # used in show page
+    user.meta[:globus_preferred_username] = pref_username
+    user.addlog("Linked to Globus identity: '#{pref_username}' on provider '#{provider_name}'")
   end
 
   # Removes the recorded globus identity for +user+
   def unlink_globus_identity(user)
-    current_user.meta[:globus_provider_id]        = nil
-    current_user.meta[:globus_provider_name]      = nil
-    current_user.meta[:globus_preferred_username] = nil
-    current_user.addlog("Unlinked Globus identity")
+    user.meta[:globus_provider_id]        = nil
+    user.meta[:globus_provider_name]      = nil
+    user.meta[:globus_preferred_username] = nil
+    user.addlog("Unlinked Globus identity")
   end
 
-  # Given a globus identity structure, find the user
-  # that matches it and activate the session for that user.
-  # Returns the user object if found; returns a string error message otherwise.
-  def find_user_with_globus_identity(identity)
-    provider_id   = identity['identity_provider']              || cb_error("Globus: No identity provider")
-    provider_name = identity['identity_provider_display_name'] || cb_error("Globus: No identity provider name")
-    pref_username = identity['preferred_username']             || cb_error("Globus: No preferred username")
+  def set_of_identities(globus_identity)
+    globus_identity['identity_set'] || [ globus_identity ]
+  end
 
-    # Special case for ORCID, because we already have fields for that provider
-    if provider_name == 'ORCID'
-      orcid = pref_username.sub(/@.*/, "")
-      users = User.find_all_by_meta_data(:orcid, orcid)
-    else # All other globus providers
-      # We need a user which match both the preferred username and provider_id
-      users = User.find_all_by_meta_data(:globus_preferred_username, pref_username)
-        .to_a
-        .select { |user| user.meta[:globus_provider_id] == provider_id }
+  def set_of_identity_provider_names(globus_identity)
+    set_of_identities(globus_identity).map { |s| s['identity_provider_display_name'] }
+  end
+
+  # Returns an array of allowed identity provider names.
+  # Returns nil if they are all allowed
+  def allowed_globus_provider_names(user)
+    user.meta[:allowed_globus_provider_names]
+       .presence
+      &.split(/\s*,\s*/)
+      &.map(&:strip)
+  end
+
+  def user_can_link_to_globus_identity?(user, identity)
+    allowed = allowed_globus_provider_names(user)
+    return true if allowed.nil?
+    return true if allowed.size == 1 && allowed[0] == '*'
+    prov_names = set_of_identity_provider_names(identity)
+    return true if (allowed & prov_names).present? # if the intersection is not empty
+    false
+  end
+
+  def user_has_link_to_globus?(user)
+    user.meta[:globus_provider_id].present?       &&
+    user.meta[:globus_provider_name].present?     &&
+    user.meta[:globus_preferred_username].present?
+  end
+
+  def user_must_link_to_globus?(user)
+    user.meta[:allowed_globus_provider_names].present?
+  end
+
+  def wipe_user_password_after_globus_link(user)
+    user.update_attribute(:crypted_password, 'Wiped-By-Globus-Link-' + User.random_string)
+    user.update_attribute(:salt            , 'Wiped-By-Globus-Link-' + User.random_string)
+    user.update_attribute(:password_reset  , false)
+  end
+
+  # Given a globus identity structure, find the user that matches it.
+  # Returns the user object if found; returns a string error message otherwise.
+  def find_user_with_globus_identity(globus_identity)
+
+    provider_name = globus_identity['identity_provider_display_name']
+    pref_username = globus_identity['preferred_username'] || globus_identity['username']
+
+    id_set = set_of_identities(globus_identity) # a globus record can contain several identities
+
+    # For each present identity, find all users that have it.
+    # We only allow ONE cbrain user to link to any of the identities.
+    users = id_set.inject([]) do |ulist, subident|
+      ulist |= find_users_with_specific_identity(subident)
     end
 
     if users.size == 0
@@ -174,12 +227,38 @@ module GlobusHelpers
     end
 
     if users.size > 1
-      Rails.logger.error "GLOBUS error: multiple CBRAIN accounts found for identity '#{pref_username}' on provider '#{provider_name}'"
+      loginnames = users.map(&:login).join(", ")
+      Rails.logger.error "GLOBUS error: multiple CBRAIN accounts (#{loginnames}) found for identity '#{pref_username}' on provider '#{provider_name}'"
       return "Several CBRAIN user accounts match your Globus identity. Please contact the CBRAIN admins."
     end
 
     # The one lucky user
     return users.first
+  end
+
+  # Returns an array of all users that have linked their
+  # account to the +identity+ provider. The array can
+  # be empty (no such users) or contain more than one
+  # user (an account management error).
+  def find_users_with_specific_identity(identity)
+    provider_id   = identity['identity_provider']              || cb_error("Globus: No identity provider")
+    provider_name = identity['identity_provider_display_name'] || cb_error("Globus: No identity provider name")
+    pref_username = identity['preferred_username']
+                    identity['username']                       || cb_error("Globus: No preferred username")
+
+    # Special case for ORCID, because we already have fields for that provider
+    if provider_name == 'ORCID'
+      orcid = pref_username.sub(/@.*/, "")
+      users = User.find_all_by_meta_data(:orcid, orcid).to_a
+      return users if users.present?
+      # otherwise we fall through to detect users who linked with ORCID through Globus
+    end
+
+    # All other globus providers
+    # We need a user which match both the preferred username and provider_id
+    users = User.find_all_by_meta_data(:globus_preferred_username, pref_username)
+      .to_a
+      .select { |user| user.meta[:globus_provider_id] == provider_id }
   end
 
 end

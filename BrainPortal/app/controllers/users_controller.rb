@@ -146,7 +146,7 @@ class UsersController < ApplicationController
     if @user.save
 
       # This is not a real attribute of the model, and must be added after user is created
-      add_meta_data_from_form(@user, [:pref_data_provider_id])
+      add_meta_data_from_form(@user, [ :pref_data_provider_id, :allowed_globus_provider_names ])
 
       flash[:notice] = "User successfully created.\n"
 
@@ -174,7 +174,7 @@ class UsersController < ApplicationController
         end
       end
       respond_to do |format|
-        format.html { redirect_to :action => :index, :format => :html }
+        format.html { redirect_to users_path() }
         format.xml  { render :xml  => @user.for_api }
         format.json { render :json => @user.for_api }
       end
@@ -189,7 +189,12 @@ class UsersController < ApplicationController
 
   def change_password #:nodoc:
     @user = User.find(params[:id])
-    cb_error "You don't have permission to view this page.", :redirect => start_page_path unless edit_permission?(@user)
+    if ! edit_permission?(@user)
+       cb_error "You don't have permission to view this page.", :redirect => start_page_path
+    end
+    if user_must_link_to_globus?(@user)
+       cb_error "Your account can only authenticate with Globus identities.", :redirect => user_path(current_user)
+    end
   end
 
   # PUT /users/1
@@ -210,6 +215,10 @@ class UsersController < ApplicationController
     end
 
     if new_user_attr[:password].present?
+      if user_must_link_to_globus?(@user)
+        new_user_attr.delete(:password)
+        new_user_attr.delete(:password_confirmation)
+      end
       if current_user.id == @user.id
         @user.password_reset = false
       else
@@ -258,7 +267,7 @@ class UsersController < ApplicationController
       @user = User.find(@user.id) # fully reload with new class if needed
       @user.addlog_object_list_updated("Groups", Group, original_group_ids, @user.group_ids, current_user)
       @user.addlog_object_list_updated("Access Profiles", AccessProfile, original_ap_ids, @user.access_profile_ids, current_user)
-      add_meta_data_from_form(@user, [:pref_bourreau_id, :pref_data_provider_id, :ip_whitelist])
+      add_meta_data_from_form(@user, [:pref_bourreau_id, :pref_data_provider_id, :ip_whitelist, :allowed_globus_provider_names ])
       # Log AccessProfile modification
       added_ap_ids   = @user.access_profile_ids - original_ap_ids
       changed_ap_ids = remove_ap_ids + added_ap_ids

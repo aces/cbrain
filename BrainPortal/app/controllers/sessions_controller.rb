@@ -32,8 +32,6 @@ class SessionsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  include GlobusHelpers
-
   api_available :only => [ :new, :show, :create, :destroy ]
 
   before_action      :user_already_logged_in,    :only => [ :new, :create ]
@@ -48,6 +46,18 @@ class SessionsController < ApplicationController
 
     @globus_uri      = globus_login_uri(globus_url) # can be nil
 
+    respond_to do |format|
+      format.html
+      format.any { head :unauthorized }
+    end
+  end
+
+  # GET /mandatory_globus
+  # Shows the page that informs the user they MUST link to a Globus ID.
+  def mandatory_globus #:nodoc:
+    @globus_uri    = globus_login_uri(globus_url)
+    @globus_logout = globus_logout_uri
+    @allowed_provs = allowed_globus_provider_names(current_user)
     respond_to do |format|
       format.html
       format.any { head :unauthorized }
@@ -143,8 +153,23 @@ class SessionsController < ApplicationController
 
     # Either record the identity...
     if current_user
-      record_globus_identity(identity_struct)
+      if ! user_can_link_to_globus_identity?(current_user, identity_struct)
+        Rails.logger.error("User #{current_user.login} attempted authentication " +
+                           "with unallowed Globus identity provider " +
+                           identity_struct['identity_provider_display_name'].to_s)
+        flash[:error] = "Error: your account can only authenticate with the following Globus providers: " +
+                        "#{allowed_globus_provider_names(current_user).join(", ")}"
+        redirect_to user_path(current_user)
+        return
+      end
+      record_globus_identity(current_user, identity_struct)
       flash[:notice] = "Your CBRAIN account is now linked to your Globus identity."
+      if user_must_link_to_globus?(current_user)
+        wipe_user_password_after_globus_link(current_user)
+        flash[:notice] += "\nImportant note: from now on you can no longer connect to CBRAIN using a password."
+        redirect_to start_page_path
+        return
+      end
       redirect_to user_path(current_user)
       return
     end

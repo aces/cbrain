@@ -26,10 +26,9 @@ class NhSessionsController < NeurohubApplicationController
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include OrcidHelpers
-  include GlobusHelpers
 
   before_action :login_required,    :except => [ :new, :create, :request_password, :send_password, :orcid, :nh_globus ]
-  before_action :already_logged_in, :except => [ :orcid, :destroy, :nh_globus, :nh_unlink_globus ]
+  before_action :already_logged_in, :except => [ :orcid, :destroy, :nh_globus, :nh_unlink_globus, :nh_mandatory_globus ]
 
   def new #:nodoc:
     @orcid_uri  = orcid_login_uri()
@@ -153,8 +152,23 @@ class NhSessionsController < NeurohubApplicationController
 
     # Either record the identity...
     if current_user
-      record_globus_identity(identity_struct)
+      if ! user_can_link_to_globus_identity?(current_user, identity_struct)
+        Rails.logger.error("User #{current_user.login} attempted authentication " +
+                           "with unallowed Globus identity provider " +
+                           identity_struct['identity_provider_display_name'].to_s)
+        flash[:error] = "Error: your account can only authenticate with the following Globus providers: " +
+                        "#{allowed_globus_provider_names(current_user).join(", ")}"
+        redirect_to myaccount_path
+        return
+      end
+      record_globus_identity(current_user, identity_struct)
       flash[:notice] = "Your NeuroHub account is now linked to your Globus identity."
+      if user_must_link_to_globus?(current_user)
+        wipe_user_password_after_globus_link(current_user)
+        flash[:notice] += "\nImportant note: from now on you can no longer connect to NeuroHub using a password."
+        redirect_to neurohub_path
+        return
+      end
       redirect_to myaccount_path
       return
     end
@@ -188,6 +202,18 @@ class NhSessionsController < NeurohubApplicationController
 
     flash[:notice] = "Your account is no longer linked to any Globus identity"
     redirect_to myaccount_path
+  end
+
+  # GET /nh_mandatory_globus
+  # Shows the page that informs the user they MUST link to a Globus ID.
+  def nh_mandatory_globus #:nodoc:
+    @globus_uri    = globus_login_uri(nh_globus_url)
+    @globus_logout = globus_logout_uri
+    @allowed_provs = allowed_globus_provider_names(current_user)
+    respond_to do |format|
+      format.html
+      format.any  { head :unauthorized }
+    end
   end
 
   private
