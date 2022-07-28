@@ -243,7 +243,7 @@ module GlobusHelpers
   def find_users_with_specific_identity(identity)
     provider_id   = identity['identity_provider']              || cb_error("Globus: No identity provider")
     provider_name = identity['identity_provider_display_name'] || cb_error("Globus: No identity provider name")
-    pref_username = identity['preferred_username']
+    pref_username = identity['preferred_username'] ||
                     identity['username']                       || cb_error("Globus: No preferred username")
 
     # Special case for ORCID, because we already have fields for that provider
