@@ -46,17 +46,19 @@ module BoutiquesInputValueFixer
   # object method revision_info() won't work.
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  require 'pry'
-
   # the hash of param values to be fixed or be ommited ()  #
-  def invocation
-    invocation = self.boutiques_descriptor.custom_module_info('BoutiquesInputValueFixer')
-    cb_error "module BoutiquesInputValueFixer requires a hash" unless invocation.is_a? Hash
-    invocation
+  def fixation
+    fixation = self.boutiques_descriptor.custom_module_info('BoutiquesInputValueFixer')
+    cb_error "module BoutiquesInputValueFixer requires a hash" unless fixation.is_a? Hash
+    fixation
   end
 
   # deletes fixed inputs listed in the custom 'integrator_modules'
-  # no input or values dependencies for fixed variables are supported
+  # no input or values dependencies for fixed variables are fully supported,
+  # in the presence of dependencies involving fixed params, the module
+  # does its best to avoid deadlock and issues, but, probably,
+  # might fails in edge cases. It is best if fixation is "closed" in the sense that
+  # contains all the 'implied' fixation
   def delete_fixed_inputs(descriptor)
 
     # input parameters are marked by null values will be excluded from the command line
@@ -64,52 +66,43 @@ module BoutiquesInputValueFixer
     # or, for flags, null-like values)
 
     descriptor_dup = descriptor.dup
-    skipped = invocation.keys.select do |i_id|
+    skipped = fixation.keys.select do |i_id|
       begin
         input = descriptor_dup.input_by_id(i_id)
       rescue CbrainError # might be already deleted
         next
       end
-      value = invocation[i_id]
+      value = fixation[i_id]
       value.nil? || (input.type == 'Flag') &&  (value.presence.to_s.strip =~ /no|0|nil|none|null|false/i || value.blank?)
 
     end
 
 
+    # generally speaking, boutiques inputs can have different dependencies,
+    # here we address only group dependencies, namely mutually exclusion group
+    # if not removed task UI might force user into entering invalid parameter valuation (invocation)
 
     descriptor_dup.groups.each do |g| # filter groups, relax restriction to anable form submission
-      members = g.members - invocation.keys
+      members = g.members - fixation.keys
       # disable a mutualy exclusive group if its param assigned fixed value by this modifier
       # if one simply deletes the fixed param,
       if g.mutually_exclusive && members.length != g.members.length # params can be mutually exclusive e.g. --use-min-mem vs --mem-mb
-        if (invocation.keys & g.members - skipped).present? # at least some group members are actually assigned vals rather than deleted
-           if members.length == 1
-             g.mutually_exclusive = false # drop the restriction, has no point for one element
-             # todo add pairwise requires and disables to effectively disable all
-           else # when more than one member
-             g.all_or_none = true # adding all-or-none will block task submission.
-           end
-           # a better solution is to delete rest of group params completely
-           # a bit more complex though and might result in recursive code or nested loops
+        if (fixation.keys & g.members - skipped).present? # at least some group members are actually assigned vals rather than deleted
+          g.mutually_exclusive = false
+          block_inputs(descriptor_dup, members)
+          # a better solution is to delete rest of group params completely
+          # a bit more complex though and might result in recursive code or nested loops
         end
       end
 
-      # presently one-is-required is checked only statically, no GUI support
-      # removes one-is-required flag if one element fixed
-      # if g.one_is_required && members.length != g.members.length
-      #   if (invocation.keys & g.members - skipped).present?
-      #     g.one_is_required == false
-      #   end
-      # end
-
       # all-or-none is not reflected in dynamic gui, uncomment once fixed
-      #
+
       # removes  'one-is-required' or disables group when one or more element fixed, e.g.
       # if g.all_or_none && members.length != g.members.length
       #   # if (g.members & skipped).present?
       #   #   # todo delete all member inputs, or disable by injecting pairwise required/disable dependencie
       #   # end
-      #   if (invocation.keys & g.members - skipped).present? # if one is set, rest should be to
+      #   if (fixation.keys & g.members - skipped).present? # if one is set, rest should be to
       #     g.members.each do |i_id|
       #       begin
       #         input = descriptor.input_by_id(i_id)
@@ -121,45 +114,72 @@ module BoutiquesInputValueFixer
       #   end
       # end
 
-      # I suspect that at the moment CBRAIN only fully comfortable
-      # with at most one quantifier flag per group
-      # and in mutually exclusive (i.e. non-overlapping) groups.
-      # if not, perhaps, more can be done
+      # presently one-is-required is checked only statically, no GUI support
+      # removes one-is-required flag if one element fixed
+      # if g.one_is_required && members.length != g.members.length
+      #   if (fixation.keys & g.members - skipped).present?
+      #     g.one_is_required == false
+      #   end
+      # end
+
       g.members = members
     end
-    descriptor_dup.groups = descriptor_dup.groups.select {|g| g.members.present?} # delete empty group
+    descriptor_dup.groups = descriptor_dup.groups.select {|g| g.members.present? } # delete empty group
 
     # delete fixed inputs
-    descriptor_dup.inputs = descriptor_dup.inputs.select { |i| ! invocation.key?(i.id)} # filter out fixed inputs
+    descriptor_dup.inputs = descriptor_dup.inputs.select { |i| ! fixation.key?(i.id) } # filter out fixed inputs
+
+    # crude erase of fixed inputs from dependencies.
+    #
+    descriptor_dup.inputs.each do |i|
+      i.requires_inputs = i.requires_inputs - fixation.keys if i.requires_inputs.present?
+      i.disables_inputs = i.disables_inputs - fixation.keys if i.disables_inputs.present?
+      i.value_requires.each { |v, a| i.value_disables[v] -= fixation.keys } if i.value_requires.present?
+      i.value_disables.each { |v, a| i.value_disables[v] -= fixation.keys } if i.value_disables.present?
+    end
 
     descriptor_dup
   end
 
+  # this is blocks an input parameter, rather than explicitely deleting it
+  # it is a bit unconvential yet expected to be used for relatively rare case when fixing or deleting
+  # one input has implications.
+  # Assuming the the boutiques developer(s) test their results
+  def block_inputs(descriptor, input_ids)
+    input_ids.each do |input_id|
+
+      input = descriptor.input_by_id(input_id) rescue next
+      #input.disables_if input.disables_inputs.present?
+      input.disables_inputs ||= []
+      input.disables_inputs |= [input_id]
+      input.name += " --- disabled by admin ---"
+    end
+  end
+
   # adjust descriptor to allow check # of supplied files
   def descriptor_for_before_form
-    
+
     delete_fixed_inputs(super)
   end
 
   # prevent from showing/submitting fixed inputs in the form
   def descriptor_for_form
-    # self.invoke_params.except!(*invocation.keys) # do not use fixed params value in the form
     delete_fixed_inputs(super)
   end
 
-  def descriptor_for_show_params # show all the params
-    
-    self.invoke_params.merge!(invocation) # show hidden parameters, used would not be able to edit them, so should be save
+  # show all the params
+  def descriptor_for_show_params
+    self.invoke_params.merge!(fixation) # show hidden parameters, used would not be able to edit them, so should be save
     super    # standard values
   end
 
-  def after_form # validation step - the original boutiques with combined invocation, for the greatest accuracy
-    # note, error messages might involve fixed variables
-    self.invoke_params.merge!(invocation) # put back fixed values into invocation, if needed
+  # validation step - the original boutiques with combined invocation, for the greatest accuracy
+  # note, error messages might involve fixed variables
+  def after_form
+    self.invoke_params.merge!(fixation) # put back fixed values into invocation, if needed
     super    # Performs standard processing
   end
 
   # assuming the after_form always happens before cluster steps, the fixed values will be available for them
-
 
 end
