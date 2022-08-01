@@ -117,6 +117,14 @@
           Comma-separated list of allowed source IPs (X.X.X.X/XX) for the user to connect from.
         </div>
       <% end %>
+
+      <% t.edit_cell('meta[allowed_globus_provider_names]', :header => 'Forced Globus Identity Providers', :content => @user.meta['allowed_globus_provider_names'] || '') do %>
+        <%= text_field_tag "meta[allowed_globus_provider_names]", @user.meta['allowed_globus_provider_names'], :size => 40 %><br />
+        <div class="field_explanation">
+          If set, must be a list of Globus identity provider names separated by commas. A single '*' is
+          also allowed to mean any provider name.
+        </div>
+      <% end %>
     <% end %>
 
   <% end %>

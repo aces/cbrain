@@ -40,6 +40,7 @@ class ApplicationController < ActionController::Base
   include PermissionHelpers
   include ExceptionHelpers
   include MessageHelpers
+  include GlobusHelpers
 
   helper_method :start_page_path
 
@@ -120,9 +121,25 @@ class ApplicationController < ActionController::Base
   def check_account_validity #:nodoc:
     return false unless current_user
     return true  if     params[:controller] == "sessions"
+    return false unless check_mandatory_globus_id_linkage()
     return false unless check_password_reset()
     return false unless check_license_agreements()
     return true
+  end
+
+  # Check to see if the user HAS to link their account to
+  # a globus identity. If that's the case and not yet done,
+  # redirects to the page that provides the user with the
+  # buttons and explanations.
+  def check_mandatory_globus_id_linkage #:nodoc:
+    return true if ! user_must_link_to_globus?(current_user)
+    return true if   user_has_link_to_globus?(current_user)
+    respond_to do |format|
+      format.html { redirect_to :controller => :sessions, :action => :mandatory_globus }
+      format.json { render :status => 403, :json => { "error" => "This account must first be linked to a Globus identity" } }
+      format.xml  { render :status => 403, :xml  => { "error" => "This account must first be linked to a Globus identity" } }
+    end
+    return false
   end
 
   def check_license_agreements #:nodoc:
