@@ -72,7 +72,7 @@ class BoutiquesClusterTask < ClusterTask
     }
   end
 
-  def setup
+  def setup #:nodoc:
     descriptor = self.descriptor_for_setup
     self.addlog(descriptor.file_revision_info.format("%f rev. %s %a %d"))
 
@@ -98,10 +98,10 @@ class BoutiquesClusterTask < ClusterTask
     true
   end
 
-  def cluster_commands
+  def cluster_commands #:nodoc:
     # Our two main JSON structures for 'bosh'
     descriptor    = self.descriptor_for_cluster_commands
-    invoke_struct = self.invoke_params.dup
+    invoke_struct = self.invoke_params.dup # as it is in the task's params
 
     # Replace userfile IDs for file basenames in the invoke struct
     descriptor.file_inputs.each do |input|
@@ -131,7 +131,8 @@ class BoutiquesClusterTask < ClusterTask
 
     # Write down the file with the invoke struct
     File.open(self.invoke_json_basename ,"w") do |fh|
-      fh.write JSON.pretty_generate(invoke_struct)
+      modified_struct = finalize_bosh_invoke_struct(invoke_struct)
+      fh.write JSON.pretty_generate(modified_struct)
       fh.write "\n"
     end
 
@@ -178,7 +179,7 @@ class BoutiquesClusterTask < ClusterTask
     [ commands ]
   end
 
-  def save_results
+  def save_results #:nodoc:
     descriptor = self.descriptor_for_save_results
     custom     = descriptor.custom || {} # 'custom' is not packaged as an object, just a hash
 
@@ -301,6 +302,19 @@ class BoutiquesClusterTask < ClusterTask
     all_ok
   end
 
+  #########################################################
+  # Behavior methods that are meant to be overridable
+  #########################################################
+
+  # Returns the final structure to be written to the invoke
+  # json file. The input is whatever was prepared by
+  # cluster_commands(). By default, there's nothing
+  # else to do, but modules can override this method
+  # to add/remove entries in the struct.
+  def finalize_bosh_invoke_struct(invoke_struct) #:nodoc:
+    invoke_struct
+  end
+
   # Returns a suggested userfile name and userfile type
   # for a Boutiques +output+ located in +pathname+
   def name_and_type_for_output_file(output, pathname)
@@ -333,7 +347,9 @@ class BoutiquesClusterTask < ClusterTask
     nil
   end
 
+  #########################################################
   # Local utility methods
+  #########################################################
 
   # Filename used to hold the exit status of the tool.
   # This file is generated as soon as the task is
