@@ -57,10 +57,9 @@ module BoutiquesInputValueFixer
   # no input or values dependencies for fixed variables are fully supported,
   # in the presence of dependencies involving fixed params, the module
   # does its best to avoid deadlock and issues, but, probably,
-  # might fails in edge cases. It is best if fixation is "closed" in the sense that
-  # contains all the 'implied' fixation
+  # might fails in edge cases. It is recommended to supply fixation is "closed" in the sense that
+  # contains all the implied parameter fixes or deletions
   def delete_fixed_inputs(descriptor)
-
     # input parameters are marked by null values will be excluded from the command line
     # the major use case are Flags, but also may be useful to address params with 'default' (
     # or, for flags, null-like values)
@@ -89,7 +88,7 @@ module BoutiquesInputValueFixer
       if g.mutually_exclusive && members.length != g.members.length # params can be mutually exclusive e.g. --use-min-mem vs --mem-mb
         if (fixation.keys & g.members - skipped).present? # at least some group members are actually assigned vals rather than deleted
           g.mutually_exclusive = false
-          block_inputs(descriptor_dup, members)
+          block_inputs(descriptor_dup, members - fixation.keys)
           # a better solution is to delete rest of group params completely
           # a bit more complex though and might result in recursive code or nested loops
         end
@@ -158,7 +157,6 @@ module BoutiquesInputValueFixer
 
   # adjust descriptor to allow check # of supplied files
   def descriptor_for_before_form
-
     delete_fixed_inputs(super)
   end
 
