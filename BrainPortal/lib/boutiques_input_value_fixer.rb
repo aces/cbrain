@@ -76,7 +76,6 @@ module BoutiquesInputValueFixer
 
     end
 
-
     # generally speaking, boutiques inputs can have different dependencies,
     # here we address only group dependencies, namely mutually exclusion group
     # if not removed task UI might force user into entering invalid parameter valuation (invocation)
@@ -99,7 +98,7 @@ module BoutiquesInputValueFixer
       # removes  'one-is-required' or disables group when one or more element fixed, e.g.
       # if g.all_or_none && members.length != g.members.length
       #   # if (g.members & skipped).present?
-      #   #   # todo delete all member inputs, or disable by injecting pairwise required/disable dependencie
+      #   #   # todo delete all member inputs, or disable by injecting pairwise required/disable dependencies
       #   # end
       #   if (fixation.keys & g.members - skipped).present? # if one is set, rest should be to
       #     g.members.each do |i_id|
@@ -133,7 +132,7 @@ module BoutiquesInputValueFixer
     descriptor_dup.inputs.each do |i|
       i.requires_inputs = i.requires_inputs - fixation.keys if i.requires_inputs.present?
       i.disables_inputs = i.disables_inputs - fixation.keys if i.disables_inputs.present?
-      i.value_requires.each { |v, a| i.value_disables[v] -= fixation.keys } if i.value_requires.present?
+      i.value_requires.each { |v, a| i.value_requires[v] -= fixation.keys } if i.value_requires.present?
       i.value_disables.each { |v, a| i.value_disables[v] -= fixation.keys } if i.value_disables.present?
     end
 
