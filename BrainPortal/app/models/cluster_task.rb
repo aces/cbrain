@@ -1780,8 +1780,20 @@ class ClusterTask < CbrainTask
     # Joined version of all the lines in the scientific script
     command_script = commands.join("\n")
 
+    # Add HOME switching back and forth
+    command_script = <<-HOME_SWITCHING
+# Preserve system HOME, then switch it to the task's workdir
+_cbrain_home_="$HOME"
+export HOME=#{self.full_cluster_workdir.bash_escape}
+
+#{command_script}
+
+# Restore system HOME
+export HOME="$_cbrain_home_"
+    HOME_SWITCHING
+
     # In case of Docker or Singularity, we rewrite the scientific script inside
-    # another wrapper script.
+    # yet another wrapper script.
     if self.use_docker?
       command_script = self.docker_commands(command_script)
     elsif self.use_singularity?
@@ -2396,7 +2408,7 @@ chmod o+x . .. ../.. ../../..
 
 # Invoke Singularity with our wrapper script above.
 # Tricks used here:
-# 1) we supply (if any) additional options for the exec command 
+# 1) we supply (if any) additional options for the exec command
 # 2) we mount the gridshare root directory
 # 3) we mount the local data provider cache root directory
 # 4) we mount each (if any) of the root directory for local data providers
