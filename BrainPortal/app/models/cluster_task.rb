@@ -1788,8 +1788,10 @@ export HOME=#{self.full_cluster_workdir.bash_escape}
 
 #{command_script}
 
-# Restore system HOME
+# Restore system HOME (while preserving the latest exit code)
+_cbrain_status_="$?"
 export HOME="$_cbrain_home_"
+bash -c "exit $_cbrain_status_"
     HOME_SWITCHING
 
     # In case of Docker or Singularity, we rewrite the scientific script inside
