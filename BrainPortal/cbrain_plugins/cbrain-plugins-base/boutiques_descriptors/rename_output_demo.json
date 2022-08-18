@@ -1,0 +1,89 @@
+{
+    "name":           "RenameOutputDemo",
+    "tool-version":   "1.0.0",
+    "schema-version": "0.5",
+    "author":         "Pierre Rioux",
+    "description":    "A demo CBRAIN task that saves just parts of the created file structure, and allows renaming them",
+    "descriptor-url": "https://github.com/aces/cbrain/blob/master/BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task_descriptors/rename_output_demo.json",
+    "command-line": "mkdir -p out/human out/blocks out/[OUTPUT_NAME_MEGABYTES];du -a -H -h [CBRAIN_INPUT] > out/human/[OUTPUT_NAME_HUMAN] ; du -a -H [CBRAIN_INPUT] > out/blocks/dummy-[OUTPUT_NAME_BLOCKS] ; du -a -H -m [CBRAIN_INPUT] > out/[OUTPUT_NAME_MEGABYTES]/fixedbase",
+    "inputs": [
+        {
+            "name":              "Input file or directory",
+            "id":                "my_input",
+            "description":       "Any file or directory in CBRAIN",
+            "type":              "File",
+            "optional":          false,
+            "list":              false,
+            "value-key":         "[CBRAIN_INPUT]"
+        },
+        {
+            "name":              "Name of human report",
+            "id":                "output_name_human",
+            "description":       "The name of the text report containing the output of the 'du' command in human units",
+            "type":              "String",
+            "optional":          false,
+            "list":              false,
+            "value-key":         "[OUTPUT_NAME_HUMAN]"
+        },
+        {
+            "name":              "Name of blocks report",
+            "id":                "output_name_blocks",
+            "description":       "The name of the text report containing the output of the 'du' command in blocks units",
+            "type":              "String",
+            "optional":          false,
+            "list":              false,
+            "value-key":         "[OUTPUT_NAME_BLOCKS]"
+        },
+        {
+            "name":              "Name of megabytes report",
+            "id":                "output_name_megabytes",
+            "description":       "The name of the text report containing the output of the 'du' command in megabytes units",
+            "type":              "String",
+            "optional":          false,
+            "list":              false,
+            "value-key":         "[OUTPUT_NAME_MEGABYTES]"
+        }
+    ],
+    "output-files": [
+        {
+            "name":          "Human output report",
+            "id":            "du_report_out_human",
+            "description":   "The output of the 'du' command in human units",
+            "optional":      false,
+            "list":          false,
+            "path-template": "out/human/[OUTPUT_NAME_HUMAN]"
+        },
+        {
+            "name":          "Blocks output report",
+            "id":            "du_report_out_blocks",
+            "description":   "The output of the 'du' command in block units",
+            "optional":      false,
+            "list":          false,
+            "path-template": "out/blocks/dummy-[OUTPUT_NAME_BLOCKS]"
+        },
+        {
+            "name":          "Megabytes output report",
+            "id":            "du_report_out_megabytes",
+            "description":   "The output of the 'du' command in megabytes units",
+            "optional":      false,
+            "list":          false,
+            "path-template": "out/[OUTPUT_NAME_MEGABYTES]/fixedbase"
+        }
+    ],
+    "custom": {
+        "cbrain:readonly-input-files": true,
+        "cbrain:author": "Pierre Rioux <pierre.rioux@mcgill.ca>",
+        "cbrain:integrator_modules": {
+            "BoutiquesOutputFileTypeSetter": {
+                "du_report_out_human":     "TextFile",
+                "du_report_out_blocks":    "TextFile",
+                "du_report_out_megabytes": "TextFile"
+            },
+            "BoutiquesOutputFilenameRenamer": {
+              "output_name_human":     [ "my_input", "du_report_out_human"     ],
+              "output_name_blocks":    [ "my_input", "du_report_out_blocks"    ],
+              "output_name_megabytes": [ "my_input", "du_report_out_megabytes" ]
+            }
+        }
+    }
+}

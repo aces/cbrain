@@ -30,23 +30,31 @@
 #   "custom": {
 #       "cbrain:integrator_modules": {
 #           "BoutiquesOutputFilenameRenamer": {
-#             "outname_inputid1": "file_inputid1",
-#             "outname_inputid2": "file_inputid2"
+#             "outname_inputid1": [ "file_inputid1", "outputid1" ],
+#             "outname_inputid2": [ "file_inputid2", "outputid2" ]
 #           }
 #       }
 #   }
 #
-# The keys "outname_inputid1" are IDs of input entries
-# where the user provides a name for an output. The values
-# "file_inputid1" are IDs of input entries for actual
-# file inputs. To repeat, both keys are values are
-# IDs of INPUT entries in the descriptor, the first
-# for a String and the second for a File.
+# The key "outname_inputid1" is the ID of a String input entry
+# where the user provides a textual name for an output. Normally
+# this is supstituted somewhere in the command to provide a file
+# or directory name. With this module, this string can become
+# a pattern such as "hello-#{taskid}-{3}.out"
 #
-# NOTE: this module can only work properly if in the descriptor,
-# the value for 'value-key' of the input "outname_inputid1"
-# matches exactly the value for 'path-template' of an
-# "output-files" entry in the descriptor. E.g.
+# In the associated value, there  must be an array of two other IDs.
+# The first value in the array, "file_inputid1" is an ID of File input
+# entry. The substring components of that file can be used by the user
+# to be substituted in the pattern the value of the outname String above.
+#
+# The second value of the array, "outputid1", is the ID of an entry in
+# the "output-files" section of the descriptor, and it indicates
+# which physical file in the work directory will be saved with the
+# newly generated name.
+#
+# NOTE: most of the times, this module will be used in a descriptor
+# such that the value for 'value-key' of the input "outname_inputid1"
+# matches exactly the value for 'path-template' for "outputid1". E.g.
 #
 #   "inputs": [
 #     {
@@ -85,10 +93,11 @@ module BoutiquesOutputFilenameRenamer
   def descriptor_with_renaming_explanations(descriptor)
     descriptor = descriptor.dup
     input_maps = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer')
-    input_maps.each do |outnameinputid, fileinputid|
-      outnameinput  = descriptor.input_by_id(outnameinputid)
-      fileinput     = descriptor.input_by_id(fileinputid)
-      fileinputname = fileinput.name.presence || fileinputid
+    input_maps.each do |outnameinputid, pair|
+      fileinputid, _ = *pair
+      outnameinput   = descriptor.input_by_id(outnameinputid)
+      fileinput      = descriptor.input_by_id(fileinputid)
+      fileinputname  = fileinput.name.presence || fileinputid
       outnameinput.description ||= ""
       outnameinput.description = outnameinput.description.sub(/\s*\z/,"\n\n")
       outnameinput.description  += <<-INFO
@@ -153,7 +162,8 @@ module BoutiquesOutputFilenameRenamer
   def setup
     descriptor = descriptor_for_setup
     input_maps = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer')
-    input_maps.each do |outnameinputid, inputfileid| # boutiques IDs of input containing filename for output, File input
+    input_maps.each do |outnameinputid, pair| # boutiques IDs of input containing filename for output, File input
+      inputfileid, _    = *pair
       input_userfile_id = invoke_params[inputfileid]
       input_userfile    = Userfile.find(input_userfile_id)
       outname_pattern   = invoke_params[outnameinputid]
@@ -177,9 +187,9 @@ module BoutiquesOutputFilenameRenamer
     name, type = super # the standard names and types; the name will be replaced
     descriptor = descriptor_for_save_results
     input_maps = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer')
-    input_maps.each do |outnameinputid, _| # boutiques ID of input containing filename for output
-      outnameinput = descriptor.input_by_id(outnameinputid)
-      next unless outnameinput.value_key == output.path_template
+    input_maps.each do |outnameinputid, pair| # boutiques ID of input containing filename for output
+      _, outputid = *pair
+      next unless outputid == output.id
       name = invoke_params[outnameinputid] # just replace it; this removes the standard task ID extension too
       break
     end
