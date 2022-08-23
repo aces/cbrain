@@ -100,8 +100,8 @@ module BoutiquesOutputFilenameRenamer
       fileinputname  = fileinput.name.presence || fileinputid
       outnameinput.description ||= ""
       outnameinput.description = outnameinput.description.sub(/\s*\z/,"\n\n")
-      outnameinput.description  += <<-INFO
-        The name provided here can contain patterns that will be substituted at when the task
+      outnameinput.description  += <<-INFO # note: it looks good in the form to have ~80 chars per line
+        The name provided here can contain patterns that will be substituted when the task
         is launched. These patterns look like "{something}". The basic list of patterns include:
 
         {date} : the date in format 2020-12-31

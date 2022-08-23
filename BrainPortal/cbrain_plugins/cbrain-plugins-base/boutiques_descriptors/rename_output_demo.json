@@ -83,6 +83,11 @@
               "output_name_human":     [ "my_input", "du_report_out_human"     ],
               "output_name_blocks":    [ "my_input", "du_report_out_blocks"    ],
               "output_name_megabytes": [ "my_input", "du_report_out_megabytes" ]
+            },
+            "BoutiquesForcedOutputBrowsePath": {
+              "du_report_out_human":     "data/human",
+              "du_report_out_blocks":    "",
+              "du_report_out_megabytes": "data"
             }
         }
     }
