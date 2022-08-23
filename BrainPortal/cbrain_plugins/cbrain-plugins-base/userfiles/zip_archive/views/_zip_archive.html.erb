@@ -1,0 +1,52 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2020
+# The Royal Institution for the Advancement of Learning
+# McGill University in collaboration with Cuba Center for NeuroSciences (CNEURO), Neuro-informatic Department
+# development: tperezdevelopment@gmail.com
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% if @userfile.is_locally_synced? %>
+
+  <%
+    show_lines  = 500 # how many lines we show
+    zip_list    = []
+    zip_list_io = IO.popen("unzip -l #{@userfile.cache_full_path.to_s.bash_escape}","r") rescue nil
+    zip_list_io and show_lines.downto(0) do |i|
+      line = zip_list_io.gets
+      break unless line
+      zip_list << line
+      zip_list << "(More files not shown)\n" if i == 0
+    end
+    zip_list_io.close rescue nil
+  %>
+
+  <% if zip_list.present? %>
+    List of files in archive:
+    <pre class="standard_out script_preview"><%= zip_list.join("") %></pre>
+  <% else %>
+    (Cannot get archive content list)
+  <% end %>
+
+<% else %>
+
+  File not synchronized, content cannot be listed for the moment.
+
+<% end %>
+
