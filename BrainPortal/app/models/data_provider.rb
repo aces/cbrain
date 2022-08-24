@@ -1573,5 +1573,19 @@ class DataProvider < ApplicationRecord
     output
   end
 
+  # Returns the version number of the local rsync command
+  def self.local_rsync_version
+    return @_local_rsync_version_ if @_local_rsync_version_
+    version_text = `rsync --version`
+    @_local_rsync_version_   = Regexp.last_match[1] if version_text =~ /rsync\s+version\s+([\d\.]+)/
+    @_local_rsync_version_ ||= 'not_installed'
+  end
+
+  # Returns true if the version number of the local rsync command
+  # is at least "3.2.4"
+  def self.local_rsync_at_least_3_2_4?
+    local_rsync_version =~ /^3\.2\.[4-9]|^3.[3-9]|^[4-9]/
+  end
+
 end
 

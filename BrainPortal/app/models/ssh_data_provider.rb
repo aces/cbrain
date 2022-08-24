@@ -80,8 +80,13 @@ class SshDataProvider < DataProvider
 
     rsync = rsync_over_ssh_prefix(userfile.user, userfile)
 
+    # Double escaping for old rsyncs
+    source_escaped = remote_shell_escape(remotefull)
+    # As of rsync 3.2.4, rsync does the escaping of the remote path properly itself
+    source_escaped = remotefull.to_s.bash_escape if self.class.local_rsync_at_least_3_2_4?
+
     # It's IMPORTANT that the source be specified with a bare ':' in front.
-    text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} :#{remote_shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
+    text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} :#{source_escaped}#{sourceslash} #{shell_escape(localfull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
     cb_error "Error syncing userfile to local cache, rsync returned:\n#{text}" unless text.blank?
     unless File.exist?(localfull)
@@ -99,8 +104,13 @@ class SshDataProvider < DataProvider
     sourceslash = userfile.is_a?(FileCollection) ? "/" : ""
     rsync       = rsync_over_ssh_prefix(userfile.user, userfile)
 
+    # Double escaping for old rsyncs
+    dest_escaped = remote_shell_escape(remotefull)
+    # As of rsync 3.2.4, rsync does the escaping of the remote path properly itself
+    dest_escaped = remotefull.to_s.bash_escape if self.class.local_rsync_at_least_3_2_4?
+
     # It's IMPORTANT that the destination be specified with a bare ':' in front.
-    text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{remote_shell_escape(remotefull)} 2>&1")
+    text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{dest_escaped} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
     cb_error "Error syncing userfile to data provider, rsync returned:\n#{text}" unless text.blank?
     unless self.provider_file_exists?(userfile).to_s =~ /file|dir/
@@ -146,12 +156,8 @@ class SshDataProvider < DataProvider
 
     self.master(userfile.user, userfile) # triggers unlocking the agent
     net_sftp(userfile.user, userfile) do |sftp|
-      begin
-        sftp.lstat!(newpath)
-        return false # means file exists already
-      rescue => ex
-        # Nothing to do! An exception means everything is OK, so just go on.
-      end
+      dest_exists = sftp.lstat!(newpath) rescue nil
+      return false if dest_exists # means file exists already
       begin
         sftp.rename!(oldpath,newpath)
         return true
