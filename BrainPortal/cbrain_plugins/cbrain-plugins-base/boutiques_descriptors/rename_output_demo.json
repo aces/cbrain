@@ -80,9 +80,9 @@
                 "du_report_out_megabytes": "TextFile"
             },
             "BoutiquesOutputFilenameRenamer": {
-              "output_name_human":     [ "my_input", "du_report_out_human"     ],
-              "output_name_blocks":    [ "my_input", "du_report_out_blocks"    ],
-              "output_name_megabytes": [ "my_input", "du_report_out_megabytes" ]
+              "du_report_out_human":     [ "my_input", "output_name_human"     ],
+              "du_report_out_blocks":    [ "my_input", "output_name_blocks"    ],
+              "du_report_out_megabytes": [ "my_input", "output_name_megabytes" ]
             },
             "BoutiquesForcedOutputBrowsePath": {
               "du_report_out_human":     "data/human",

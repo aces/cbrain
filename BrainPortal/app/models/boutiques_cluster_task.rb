@@ -319,13 +319,21 @@ class BoutiquesClusterTask < ClusterTask
   # for a Boutiques +output+ located in +pathname+
   def name_and_type_for_output_file(output, pathname)
 
+    # Find descriptor for options; warning, we get the one for save_results
+    desc   = descriptor_for_save_results
+    custom = desc.custom || {} # 'custom' is not packaged as an object, just a hash
+    idlist = custom['cbrain:no-run-id-for-outputs'].presence # list of IDs where no run id inserted
+    no_run_id = true if idlist && idlist.include?(output.id)
+
     # Get basename, use it to guess the class
     name = File.basename(pathname)
     userfile_class   = Userfile.suggested_file_type(name)
     userfile_class ||= ( File.directory?(pathname) ? FileCollection : SingleFile )
 
     # Add a run ID to the file name, to make sure the file doesn't exist.
-    name.sub!( /(\.\w+(\.gz|\.z|\.bz2|\.zip)?)?\z/i ) { |ext| "-#{self.run_id}" + ext }
+    if ! no_run_id
+      name.sub!( /(\.\w+(\.gz|\.z|\.bz2|\.zip)?)?\z/i ) { |ext| "-#{self.run_id}" + ext }
+    end
 
     [ name, userfile_class ]
   end
