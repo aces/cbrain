@@ -30,27 +30,28 @@
 #   "custom": {
 #       "cbrain:integrator_modules": {
 #           "BoutiquesOutputFilenameRenamer": {
-#             "outname_inputid1": [ "file_inputid1", "outputid1" ],
-#             "outname_inputid2": [ "file_inputid2", "outputid2" ]
+#             "outputid1": [ "file_inputid1", "outname_inputid1" ],
+#             "outputid2": [ "file_inputid2", "outname_inputid2" ]
 #           }
 #       }
 #   }
 #
-# The key "outname_inputid1" is the ID of a String input entry
-# where the user provides a textual name for an output. Normally
-# this is supstituted somewhere in the command to provide a file
-# or directory name. With this module, this string can become
-# a pattern such as "hello-#{taskid}-{3}.out"
-#
-# In the associated value, there  must be an array of two other IDs.
-# The first value in the array, "file_inputid1" is an ID of File input
-# entry. The substring components of that file can be used by the user
-# to be substituted in the pattern the value of the outname String above.
-#
-# The second value of the array, "outputid1", is the ID of an entry in
+# The key "outname_inputid1" is the ID of an entry in
 # the "output-files" section of the descriptor, and it indicates
 # which physical file in the work directory will be saved with the
 # newly generated name.
+#
+# In the associated value, there must be an array of two other IDs.
+#
+# The first value in the array, "file_inputid1" is an ID of a File input
+# entry. The substring components of that file name can be used by the user
+# to be substituted in a filename pattern.
+#
+# The second value in the array, "outname_inputid1" is the ID of a String
+# input entry where the user provides that renaming pattern. Normally
+# this is substituted somewhere in the command to provide a file
+# or directory name. With this module, this string can become
+# a pattern such as "hello-#{taskid}-{3}.out"
 #
 # NOTE: most of the times, this module will be used in a descriptor
 # such that the value for 'value-key' of the input "outname_inputid1"
@@ -58,13 +59,13 @@
 #
 #   "inputs": [
 #     {
-#       "id": "file_inputid1",
+#       "id": "fileinput",
 #       "name": "Input file to process",
 #       "type": "File",
 #       "value-key": "[INFILE]"
 #     },
 #     {
-#       "id": "outname_inputid1",
+#       "id": "outname",
 #       "name": "Name of output",
 #       "type": "String",
 #       "value-key": "[OUTPUT_FILE]"
@@ -75,6 +76,14 @@
 #       "id" : "results1",
 #       "name" : "Created data",
 #       "path-template" : "[OUTPUT_FILE]",
+#  (...)
+#   "custom": {
+#       "cbrain:integrator_modules": {
+#           "BoutiquesOutputFilenameRenamer": {
+#             "results1": [ "fileinput", "outname" ]
+#           }
+#       }
+#   }
 #
 module BoutiquesOutputFilenameRenamer
 
@@ -92,9 +101,9 @@ module BoutiquesOutputFilenameRenamer
   # each configured String input fields.
   def descriptor_with_renaming_explanations(descriptor)
     descriptor = descriptor.dup
-    input_maps = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer')
-    input_maps.each do |outnameinputid, pair|
-      fileinputid, _ = *pair
+    config_map = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer')
+    config_map.each do |_, pair|
+      fileinputid, outnameinputid = *pair
       outnameinput   = descriptor.input_by_id(outnameinputid)
       fileinput      = descriptor.input_by_id(fileinputid)
       fileinputname  = fileinput.name.presence || fileinputid
@@ -137,8 +146,9 @@ module BoutiquesOutputFilenameRenamer
   def after_form
     message    = super
     descriptor = descriptor_for_after_form
-    input_maps = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer')
-    input_maps.each do |outnameinputid, _|  # boutiques ID of input with filename for output
+    config_map = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer')
+    config_map.each do |_, pair|  # pair = [ boutiques ID of input, filename for output ]
+      _, outnameinputid = *pair
       outname_pattern = invoke_params[outnameinputid].presence || ""
       fake_inputname  = (1..100).to_a.join("-") # A string like "1-2-3-4...-100"
       fake_outname    = output_name_from_pattern(outname_pattern, fake_inputname)
@@ -161,10 +171,10 @@ module BoutiquesOutputFilenameRenamer
   # as the new effective value for the name.
   def setup
     descriptor = descriptor_for_setup
-    input_maps = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer')
-    input_maps.each do |outnameinputid, pair| # boutiques IDs of input containing filename for output, File input
-      inputfileid, _    = *pair
-      input_userfile_id = invoke_params[inputfileid]
+    config_map = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer')
+    config_map.each do |_, pair|
+      fileinputid, outnameinputid = *pair
+      input_userfile_id = invoke_params[fileinputid]
       input_userfile    = Userfile.find(input_userfile_id)
       outname_pattern   = invoke_params[outnameinputid]
       outname           = output_name_from_pattern(outname_pattern, input_userfile.name)
@@ -184,12 +194,12 @@ module BoutiquesOutputFilenameRenamer
   # with the pattern system. The "type" value returned is the same as
   # whatever "super" method returned.
   def name_and_type_for_output_file(output, pathname)
-    name, type = super # the standard names and types; the name will be replaced
+    name, type = super # the standard names and types; the name will be replaced outright
     descriptor = descriptor_for_save_results
-    input_maps = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer')
-    input_maps.each do |outnameinputid, pair| # boutiques ID of input containing filename for output
-      _, outputid = *pair
+    config_map = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer')
+    config_map.each do |outputid, pair| # boutiques ID of outfile-files entry, pair
       next unless outputid == output.id
+      _, outnameinputid = *pair
       name = invoke_params[outnameinputid] # just replace it; this removes the standard task ID extension too
       break
     end
