@@ -53,7 +53,7 @@
 # or directory name. With this module, this string can become
 # a pattern such as "hello-#{taskid}-{3}.out"
 #
-# NOTE: most of the times, this module will be used in a descriptor
+# NOTE 1: most of the times, this module will be used in a descriptor
 # such that the value for 'value-key' of the input "outname_inputid1"
 # matches exactly the value for 'path-template' for "outputid1". E.g.
 #
@@ -85,6 +85,14 @@
 #       }
 #   }
 #
+# NOTE 2: It is an error to configure this module
+# with two entries that have the same String outname
+# and a different File fileinput, e.g. like:
+#
+#           "BoutiquesOutputFilenameRenamer": {
+#             "results1": [ "fileinput1", "outname" ]
+#             "results2": [ "fileinput2", "outname" ]
+#           }
 module BoutiquesOutputFilenameRenamer
 
   # Note: to access the revision info of the module,
@@ -102,8 +110,15 @@ module BoutiquesOutputFilenameRenamer
   def descriptor_with_renaming_explanations(descriptor)
     descriptor = descriptor.dup
     config_map = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer')
+
+    uniq_outnames = {}
+
     config_map.each do |_, pair|
       fileinputid, outnameinputid = *pair
+
+      next if uniq_outnames[outnameinputid]
+      uniq_outnames[outnameinputid]=true
+
       outnameinput   = descriptor.input_by_id(outnameinputid)
       fileinput      = descriptor.input_by_id(fileinputid)
       fileinputname  = fileinput.name.presence || fileinputid
@@ -200,7 +215,7 @@ module BoutiquesOutputFilenameRenamer
     config_map.each do |outputid, pair| # boutiques ID of outfile-files entry, pair
       next unless outputid == output.id
       _, outnameinputid = *pair
-      name = invoke_params[outnameinputid] # just replace it; this removes the standard task ID extension too
+      name = invoke_params[outnameinputid] # just replace it
       break
     end
     [ name, type ]
