@@ -86,7 +86,6 @@ class BourreauWorker < Worker
     # The full objects are reloaded in process_task() later on.
     tasks_todo_rel = CbrainTask.not_archived
        .where( :status => ReadyTasks, :bourreau_id => @rr_id )
-       #.select([:id, :type, :user_id, :bourreau_id, :status, :updated_at])
     tasks_todo_count = tasks_todo_rel.count
     worker_log.info "Found #{tasks_todo_count} tasks to handle."
 
@@ -112,7 +111,7 @@ class BourreauWorker < Worker
     @zero_task_found = 0
 
     # Very recent tasks need to rest a little, so we skip them.
-    tasks_todo_rel = tasks_todo_rel.where( [ "updated_at < ?", 20.seconds.ago ] )
+    tasks_todo_rel = tasks_todo_rel.where( [ "updated_at < ?", 5.seconds.ago ] )
     return if ! tasks_todo_rel.exists?
 
     # Fork a subprocess to do the actual task processing

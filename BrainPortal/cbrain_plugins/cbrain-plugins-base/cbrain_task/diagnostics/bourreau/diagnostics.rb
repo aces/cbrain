@@ -293,9 +293,11 @@ class CbrainTask::Diagnostics < ClusterTask
       commands << "sleep #{cluster_delay}"
     end
 
+    exit_status = params[:exit_status].presence || "0"
     commands << "\n"
     commands << "echo \"============================================================\""
-    commands << "echo Diagnostics Script Ending\n" # we check for this sentence in save_results()
+    commands << "echo Diagnostics Script Ending With Status #{exit_status}\n" # we check for this sentence in save_results()
+    commands << "bash -c 'exit #{exit_status}'"
     commands << "\n"
 
     return commands

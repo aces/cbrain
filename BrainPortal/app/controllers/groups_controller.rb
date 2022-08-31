@@ -25,6 +25,8 @@ class GroupsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  include SwitchGroupHelpers
+
   api_available :only => [:index, :create, :switch, :update, :destroy, :show]
 
   before_action :login_required
@@ -243,28 +245,14 @@ class GroupsController < ApplicationController
 
   def switch #:nodoc:
 
-    orig_active_group_id = cbrain_session[:active_group_id]
+    group_id = params[:id]
 
-    ['userfiles#index', 'tasks#index'].each do |name|
-      scope = scope_from_session(name)
-      scope.filters.reject! { |f| f.attribute.to_s == 'group_id' }
-      scope_to_session(scope, name)
+    changed = switch_current_group(group_id)
+
+    if changed
+      remove_group_filters_for_files_and_tasks
+      trigger_unselect_of_all_persistent_files
     end
-
-    if params[:id].blank?
-      cbrain_session[:active_group_id] = nil
-    elsif params[:id] == "all"
-      cbrain_session[:active_group_id] = "all"
-    else
-      @group = current_user.listable_groups
-      @group = @group.without_everyone if ! current_user.has_role? :admin_user
-      @group = @group.find(params[:id])
-      cbrain_session[:active_group_id] = @group.id
-    end
-
-    # This flag will tell the userfiles 'index' action to add code to the page
-    # to clear the persistently selected list of files.
-    cbrain_session[:switched_active_group] = (cbrain_session[:active_group_id] != orig_active_group_id)
 
     if api_request?
       head :ok

@@ -103,7 +103,7 @@ class NeurohubApplicationController < ApplicationController
     @nh_new_message_count = find_nh_messages.where(:read => false).count  # differs from cbrain, as invites are shown separately
     @nh_new_invites_ack   = current_user.messages.where( :read => false, :header => 'Invitation Accepted' ).order( "last_sent DESC" ).all()
   end
-  
+
   # Check if password need to be reset.
   # This method is identical to (and overrides) the one in
   # ApplicationController excepts it uses the NeuroHub password reset form.
@@ -117,6 +117,26 @@ class NeurohubApplicationController < ApplicationController
     end
     return true
   end
+
+  # Check to see if the user HAS to link their account to
+  # a globus identity. If that's the case and not yet done,
+  # redirects to the page that provides the user with the
+  # buttons and explanations.
+  # This method is similar to (and overrides) the one in
+  # ApplicationController excepts it uses the NeuroHub information form.
+  def check_mandatory_globus_id_linkage #:nodoc:
+    return true if   params[:action].to_s == "nh_mandatory_globus"
+    return true if   params[:action].to_s == "nh_globus"
+    return true if ! user_must_link_to_globus?(current_user)
+    return true if   user_has_link_to_globus?(current_user)
+    respond_to do |format|
+      format.html { redirect_to :controller => :nh_sessions, :action => :nh_mandatory_globus }
+      format.json { render :status => 403, :json => { "error" => "This account must first be linked to a Globus identity" } }
+      format.xml  { render :status => 403, :xml  => { "error" => "This account must first be linked to a Globus identity" } }
+    end
+    return false
+  end
+
 
 end
 

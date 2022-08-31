@@ -24,8 +24,25 @@
 
 <%# Generate a parameter's description block for +desc+ %>
   <span class="tsk-prm-desc">
-    <% desc.split("\n").each do |line| %>
-      <%= line %><br>
+    <% lines = desc.split("\n") %>
+    <% if lines.size <= 3 %>
+      <% lines.each do |line| %>
+        <%= line %><br>
+      <% end %>
+    <% else %>
+      <% rando = "btq-sh-" + rand(10000000).to_s %>
+      <% while lines.size > 0 && lines[0].present? %>
+        <%= lines.shift %><br>
+      <% end %>
+      <% lines.shift %>
+      <% if lines.size > 0 %>
+        <%= show_hide_toggle "(Show more)", "##{rando}", :class => 'action_link', :slide_effect => true, :slide_duration => 'fast' %>
+        <div id="<%= rando %>" style="display: none">
+          <% lines.each do |line| %>
+            <%= line %><br>
+          <% end %>
+        </div>
+      <% end %>
     <% end %>
   <% if isGroupMember %>
     <br>

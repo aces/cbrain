@@ -131,6 +131,9 @@
         "cbrain:integrator_modules": {
             "BoutiquesOutputFileTypeSetter": {
               "du_report_out": "TextFile"
+            },
+            "BoutiquesOutputFilenameRenamer": {
+              "my_output_name": "sinput1"
             }
         }
     }

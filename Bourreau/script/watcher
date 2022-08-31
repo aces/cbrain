@@ -55,8 +55,12 @@ while test -e $socket ; do
   # Wait loop with PID file checks
   for n in $(seq 1 600) ; do # 600 x 2 seconds = 1200 seconds = 20 minutes
     sleep 2 # we do this so we can process signals in on_signal above...
-    test -f $pidfile || break # a quick way to detect if the bourreau exited while we wait
+    if ! test -f $pidfile ; then # a quick way to detect if the bourreau exited while we wait
+      status=1729  # a fake status number I chose to identify this situation
+      break
+    fi
   done
+  test $status -ne 0 && break # just to handle 1729, a sum of cubes
 done
 
 #####################################################################
@@ -74,6 +78,11 @@ elif test $status -eq 7 ; then
   # but it's not connected to the Bourreau app at all (presumably
   # because the Bourreau is not running).
   echo $(date +"%Y-%m-%d %H:%M:%S") Watcher $$: Bourreau does not seem to be alive
+
+elif test $status -eq 1729 ; then
+  # Status 1729 just means we detected the pidfile disappeared, presumably
+  # because it exited normally.
+  echo $(date +"%Y-%m-%d %H:%M:%S") Watcher $$: Bourreau seems to have exited normally
 
 else
   echo $(date +"%Y-%m-%d %H:%M:%S") Watcher $$: Bourreau curl check failed with unexpected code $status

@@ -1,0 +1,1 @@
+../../BrainPortal/lib/boutiques_forced_output_browse_path.rb

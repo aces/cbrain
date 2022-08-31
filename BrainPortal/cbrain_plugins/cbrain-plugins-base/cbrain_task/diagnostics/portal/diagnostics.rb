@@ -35,6 +35,8 @@ class CbrainTask::Diagnostics < PortalTask
 
   def self.default_launch_args #:nodoc:
     {
+      :exit_status           => "0",
+
       :setup_delay           => 0,
       :cluster_delay         => 0,
       :postpro_delay         => 0,

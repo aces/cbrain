@@ -72,7 +72,7 @@ class BoutiquesClusterTask < ClusterTask
     }
   end
 
-  def setup
+  def setup #:nodoc:
     descriptor = self.descriptor_for_setup
     self.addlog(descriptor.file_revision_info.format("%f rev. %s %a %d"))
 
@@ -98,10 +98,10 @@ class BoutiquesClusterTask < ClusterTask
     true
   end
 
-  def cluster_commands
+  def cluster_commands #:nodoc:
     # Our two main JSON structures for 'bosh'
     descriptor    = self.descriptor_for_cluster_commands
-    invoke_struct = self.invoke_params.dup
+    invoke_struct = self.invoke_params.dup # as it is in the task's params
 
     # Replace userfile IDs for file basenames in the invoke struct
     descriptor.file_inputs.each do |input|
@@ -131,7 +131,8 @@ class BoutiquesClusterTask < ClusterTask
 
     # Write down the file with the invoke struct
     File.open(self.invoke_json_basename ,"w") do |fh|
-      fh.write JSON.pretty_generate(invoke_struct)
+      modified_struct = finalize_bosh_invoke_struct(invoke_struct)
+      fh.write JSON.pretty_generate(modified_struct)
       fh.write "\n"
     end
 
@@ -178,7 +179,7 @@ class BoutiquesClusterTask < ClusterTask
     [ commands ]
   end
 
-  def save_results
+  def save_results #:nodoc:
     descriptor = self.descriptor_for_save_results
     custom     = descriptor.custom || {} # 'custom' is not packaged as an object, just a hash
 
@@ -198,7 +199,7 @@ class BoutiquesClusterTask < ClusterTask
         cb_error "Exit status file #{exit_status_filename()} has unexpected content"
       end
       status = out.strip.to_i
-      if status != 0
+      if exit_status_means_failure?(status)
         self.addlog "Command failed, exit status #{status}"
         return false
       end
@@ -301,9 +302,28 @@ class BoutiquesClusterTask < ClusterTask
     all_ok
   end
 
+  #########################################################
+  # Behavior methods that are meant to be overridable
+  #########################################################
+
+  # Returns the final structure to be written to the invoke
+  # json file. The input is whatever was prepared by
+  # cluster_commands(). By default, there's nothing
+  # else to do, but modules can override this method
+  # to add/remove entries in the struct.
+  def finalize_bosh_invoke_struct(invoke_struct) #:nodoc:
+    invoke_struct
+  end
+
   # Returns a suggested userfile name and userfile type
   # for a Boutiques +output+ located in +pathname+
   def name_and_type_for_output_file(output, pathname)
+
+    # Find descriptor for options; warning, we get the one for save_results
+    desc   = descriptor_for_save_results
+    custom = desc.custom || {} # 'custom' is not packaged as an object, just a hash
+    idlist = custom['cbrain:no-run-id-for-outputs'].presence # list of IDs where no run id inserted
+    no_run_id = true if idlist && idlist.include?(output.id)
 
     # Get basename, use it to guess the class
     name = File.basename(pathname)
@@ -311,7 +331,9 @@ class BoutiquesClusterTask < ClusterTask
     userfile_class ||= ( File.directory?(pathname) ? FileCollection : SingleFile )
 
     # Add a run ID to the file name, to make sure the file doesn't exist.
-    name.sub!( /(\.\w+(\.gz|\.z|\.bz2|\.zip)?)?\z/i ) { |ext| "-#{self.run_id}" + ext }
+    if ! no_run_id
+      name.sub!( /(\.\w+(\.gz|\.z|\.bz2|\.zip)?)?\z/i ) { |ext| "-#{self.run_id}" + ext }
+    end
 
     [ name, userfile_class ]
   end
@@ -333,7 +355,9 @@ class BoutiquesClusterTask < ClusterTask
     nil
   end
 
+  #########################################################
   # Local utility methods
+  #########################################################
 
   # Filename used to hold the exit status of the tool.
   # This file is generated as soon as the task is
@@ -370,6 +394,14 @@ class BoutiquesClusterTask < ClusterTask
   # that holds the 'invoke' structure for bosh.
   def invoke_json_basename
     "invoke.#{self.run_id}.json"
+  end
+
+  # Return true or false depending on if
+  # the number +status+ returned by the command
+  # indicates a failure. By default, anything
+  # other that 0 is a failure.
+  def exit_status_means_failure?(status)
+    status > 0
   end
 
   # MAYBE IN COMMON

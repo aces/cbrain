@@ -868,6 +868,65 @@ class CbrainTask < ApplicationRecord
 
 
   ##################################################################
+  # Output Renaming Helper Methods
+  ##################################################################
+
+  # Returns a hash table containing a basic list of substitution keywords
+  # suitable to use with output_renaming_add_numbered_keywords() ; to this
+  # hash you can add any number of other keywords. See the full example
+  # in output_renaming_add_numbered_keywords().
+  def output_renaming_standard_keywords
+    now = Time.zone.now
+    {
+      "date"       => now.strftime("%Y-%m-%d"),
+      "time"       => now.strftime("%H:%M:%S"),
+      "task_id"    => self.id.to_s.presence || "UnknownTaskID",
+      "run_number" => self.run_number.to_s  || "UnknownRunID",
+      "cluster"    => self.bourreau.name,
+    }
+  end
+
+  # Utility method to help create new numbered keywords for
+  # the pattern renaming helpers. See the helper method
+  # output_renaming_fieldset() in TaskFormHelper to create the
+  # frontend. This method is normally used in save_results()
+  # (in ClusterTask) to build a new filename for an output.
+  # Here's an example. Let's say we have an input filename
+  # and a output pattern:
+  #
+  #   infile   = params[:infilename]              # "patient-00123_45.txt.gz"
+  #   pattern  = params[:output_renaming_pattern] # "out-{in-2}.{in-3}.{date}.gz"
+  #
+  # The user would like the output to be "out-00123.45.2013-03-18.gz".
+  # So in save_results, you build a set of keywords:
+  #
+  #   keywords = output_renaming_standard_keywords # std keywords, like '{time}' and '{date}'
+  #   output_renaming_add_numbered_keywords(keywords, infile, "in-") # add '{in-1}', '{in-2}' etc
+  #
+  # At this point, the hash table 'keywords' contains:
+  #
+  #   {
+  #     'date' => '2013-03-18', 'time' => '11:56:09', 'run_number' => '1', 'cluster' => 'execname', 'task_id' => '12343',
+  #     'in-1' => 'patient', 'in-2' => '00123', 'in-3' => '45', 'in-4' => 'txt', 'in-5' => 'gz'
+  #   }
+  #
+  # Then you call the string method pattern_substitute() to build the
+  # output filename:
+  #
+  #   outname = pattern.pattern_substitute(keywords)  # returns "out-00123.45.2013-03-18.gz"
+  #
+  def output_renaming_add_numbered_keywords(keywords, string_to_split, keyprefix)
+    comps = string_to_split.split(/([a-z0-9]+)/i)
+    1.step(comps.size-1,2) do |i|
+      keyword           = "#{keyprefix}#{(i-1)/ 2+1}"
+      keywords[keyword] = comps[i]
+    end
+    self
+  end
+
+
+
+  ##################################################################
   # Lifecycle hooks
   ##################################################################
 
@@ -1013,6 +1072,30 @@ class CbrainTask < ApplicationRecord
       :startDate          => self.created_at.to_i,
       :endDate            => self.updated_at.to_i,
     }
+  end
+
+
+
+  ##################################################################
+  # BOOT-TIME Support
+  ##################################################################
+
+  # Patch: pre-load all model files for the subclasses
+  def self.preload_subclasses
+    [ CBRAIN::TasksPlugins_Dir, CBRAIN::TaskDescriptorsPlugins_Dir ].each do |dir|
+      Dir.chdir(dir) do
+        Dir.glob("*.rb").each do |rubyfile|
+          next if [
+            'cbrain_task_class_loader.rb',
+            'cbrain_task_descriptor_loader.rb'
+          ].include?(rubyfile)
+
+          model = rubyfile.sub(/.rb\z/, '')
+          require_dependency "#{dir}/#{model}.rb" unless
+            [ model.classify, model.camelize ].any? { |m| CbrainTask.const_defined?(m) rescue nil }
+        end
+      end
+    end
   end
 
 end

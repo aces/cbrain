@@ -663,59 +663,6 @@ class ClusterTask < CbrainTask
     "export PATH=#{(Rails.root.to_s + "/vendor/cbrain/bin").to_s.bash_escape}:\"$PATH\"\n"
   end
 
-  # Returns a hash table containing a basic list of substitution keywords
-  # suitable to use with output_renaming_add_numbered_keywords() ; to this
-  # hash you can add any number of other keywords. See the full example
-  # in output_renaming_add_numbered_keywords().
-  def output_renaming_standard_keywords
-    now = Time.zone.now
-    {
-      "date"       => now.strftime("%Y-%m-%d"),
-      "time"       => now.strftime("%H:%M:%S"),
-      "task_id"    => self.id.to_s,
-      "run_number" => self.run_number.to_s,
-      "cluster"    => self.bourreau.name,
-    }
-  end
-
-  # Utility method to help create new numbered keywords for
-  # the pattern renaming helpers. See the helper method
-  # output_renaming_fieldset() in TaskFormHelper to create the
-  # frontend. This method is normally used in save_results()
-  # to build a new filename. Here's an example. Let's say
-  # we have an input filename and a output pattern:
-  #
-  #
-  #   infile   = params[:infilename]              # "patient-00123_45.txt.gz"
-  #   pattern  = params[:output_renaming_pattern] # "out-{in-2}.{in-3}.{date}.gz"
-  #
-  # The user would like the output to be "out-00123.45.2013-03-18.gz".
-  # So in save_results, you build a set of keywords:
-  #
-  #   keywords = output_renaming_standard_keywords # std keywords, like '{time}' and '{date}'
-  #   output_renaming_add_numbered_keywords(keywords, infile, "in") # add '{in-1}', '{in-2}' etc
-  #
-  # At this point, the hash table 'keywords' contains:
-  #
-  #   {
-  #     'date' => '2013-03-18', 'time' => '11:56:09', 'run_number' => '1', 'cluster' => 'execname', 'task_id' => '12343',
-  #     'in-1' => 'patient', 'in-2' => '00123', 'in-3' => '45', 'in-4' => 'txt', 'in-5' => 'gz'
-  #   }
-  #
-  # Then you call the string method pattern_substitute() to build the
-  # output filename:
-  #
-  #   outname = pattern.pattern_substitute(keywords)  # returns "out-00123.45.2013-03-18.gz"
-  #
-  def output_renaming_add_numbered_keywords(keywords, string_to_split, keyprefix)
-    comps = string_to_split.split(/([a-z0-9]+)/i)
-    1.step(comps.size-1,2) do |i|
-      keyword           = "#{keyprefix}-#{(i-1)/ 2+1}"
-      keywords[keyword] = comps[i]
-    end
-    self
-  end
-
 
 
   ##################################################################
@@ -1833,8 +1780,22 @@ class ClusterTask < CbrainTask
     # Joined version of all the lines in the scientific script
     command_script = commands.join("\n")
 
+    # Add HOME switching back and forth
+    command_script = <<-HOME_SWITCHING
+# Preserve system HOME, then switch it to the task's workdir
+_cbrain_home_="$HOME"
+export HOME=#{self.full_cluster_workdir.bash_escape}
+
+#{command_script}
+
+# Restore system HOME (while preserving the latest exit code)
+_cbrain_status_="$?"
+export HOME="$_cbrain_home_"
+bash -c "exit $_cbrain_status_"
+    HOME_SWITCHING
+
     # In case of Docker or Singularity, we rewrite the scientific script inside
-    # another wrapper script.
+    # yet another wrapper script.
     if self.use_docker?
       command_script = self.docker_commands(command_script)
     elsif self.use_singularity?
@@ -2449,7 +2410,7 @@ chmod o+x . .. ../.. ../../..
 
 # Invoke Singularity with our wrapper script above.
 # Tricks used here:
-# 1) we supply (if any) additional options for the exec command 
+# 1) we supply (if any) additional options for the exec command
 # 2) we mount the gridshare root directory
 # 3) we mount the local data provider cache root directory
 # 4) we mount each (if any) of the root directory for local data providers
@@ -2785,7 +2746,7 @@ chmod o+x . .. ../.. ../../..
     # Create CPU time record
     cpu_time  = num_seconds_info[:user_tot] + num_seconds_info[:syst_tot]
 
-    CputimeResourceUsageForCbrainTask.create(
+    cpu_ru = CputimeResourceUsageForCbrainTask.create(
       :value              => cpu_time,
       :cbrain_task_status => recorded_status,
       :user_id            => self.user_id,
@@ -2799,7 +2760,7 @@ chmod o+x . .. ../.. ../../..
     # Create walltime record
     wall_time = num_seconds_info[:walltime]
 
-    WalltimeResourceUsageForCbrainTask.create(
+    wt_ru = WalltimeResourceUsageForCbrainTask.create(
       :value              => wall_time,
       :cbrain_task_status => recorded_status,
       :user_id            => self.user_id,
@@ -2809,6 +2770,11 @@ chmod o+x . .. ../.. ../../..
       :tool_id            => self.tool.id,
       :tool_config_id     => self.tool_config_id,
     )
+
+    # Add CSV log entry; to enable configure a path in bourreau's meta data entry "user_logfile_path"
+    user_logfile_path = self.bourreau.meta[:user_logfile_path].presence
+    user_submit_log(user_logfile_path, cpu_ru, wt_ru) if user_logfile_path
+
   end
 
   # Add a task workdir size and the status of a task that reach
@@ -2823,6 +2789,27 @@ chmod o+x . .. ../.. ../../..
       :tool_id            => self.tool.id,
       :tool_config_id     => self.tool_config_id,
     )
+  end
+
+  # This method does external logging to a file with a bunch of
+  # attributes about a recently finished job (successful or not).
+  def user_submit_log(user_logfile_path, cpu_ru, wt_ru) #:nodoc:
+    user = self.user
+    csv_values = [
+      Time.now.iso8601,                      # DateTime
+      user.login,                            # CBRAIN username
+      user.meta[:globus_preferred_username], # User globus name
+      user.meta[:globus_provider_name],      # User globus provider name
+      self.cluster_jobid,                    # Cluster Job ID
+      cpu_ru.tool_name,                      # Tool Name
+      cpu_ru.tool_config_version_name,       # Tool version
+      cpu_ru.value,                          # CPU time
+      wt_ru.value                            # Wall time
+    ]
+    csv_row_txt = csv_values.map { |v| "\"#{v}\"" }.join(",") + "\n"
+    File.open(user_logfile_path.to_s, "a") { |fh| fh.write csv_row_txt } # APPEND mode
+  rescue => ex
+    Rails.logger.error "Cannot append to user submit log file: #{ex.class}: #{ex.message}"
   end
 
   # Utility that should go in a separate framework.
@@ -2852,18 +2839,3 @@ chmod o+x . .. ../.. ../../..
 
 end
 
-# Patch: pre-load all model files for the subclasses
-[ CBRAIN::TasksPlugins_Dir, CBRAIN::TaskDescriptorsPlugins_Dir ].each do |dir|
-  Dir.chdir(dir) do
-    Dir.glob("*.rb").each do |model|
-      next if [
-        'cbrain_task_class_loader.rb',
-        'cbrain_task_descriptor_loader.rb'
-      ].include?(model)
-
-      model.sub!(/.rb$/, '')
-      require_dependency "#{dir}/#{model}.rb" unless
-        [ model.classify, model.camelize ].any? { |m| CbrainTask.const_defined?(m) rescue nil }
-    end
-  end
-end

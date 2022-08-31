@@ -39,6 +39,10 @@
 # The syncing code implements an internal 'rsync'-like algorithm
 # to try to transfer only files that have changed between Amazon
 # and the local cache.
+#
+# As of Aug 2022 this DP implementation supports the 'browse_path'
+# attribute in userfiles (making it a MultiLevel DP) but the
+# capability is only turned on in the subclass S3MultiLevelDataProvider.
 class S3FlatDataProvider < DataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -46,8 +50,8 @@ class S3FlatDataProvider < DataProvider
   validates_presence_of :cloud_storage_client_identifier, :cloud_storage_client_token,
                         :cloud_storage_client_bucket_name
 
-  validates :cloud_storage_client_identifier,  length: { is: 20 }
-  validates :cloud_storage_client_token,       length: { is: 40 }
+  validates :cloud_storage_client_identifier,  length: { in: 16..128 }
+  validates :cloud_storage_client_token,       length: { in: 20..100 }
 
   validates :cloud_storage_client_bucket_name, format: {
     with: /\A[A-Za-z0-9][A-Za-z0-9\-.]{1,61}[A-Za-z0-9]\z/, # this is good enough; DP will just crash on bad names
@@ -120,7 +124,7 @@ class S3FlatDataProvider < DataProvider
 
   # Returns the relative path of the +userfile+ on the Amazon side.
   def provider_full_path(userfile)
-    add_start(userfile.name)
+    add_start(userfile.browse_name) # browse_name is "browse_path + / + name"
   end
 
   # Standard implementation
@@ -138,7 +142,7 @@ class S3FlatDataProvider < DataProvider
 
     s3_objlist = s3_connection.send(s3method,prefix)
 
-    s3_fileinfos = s3_objlist_to_fileinfos(s3_objlist)
+    s3_fileinfos = s3_objlist_to_fileinfos(s3_objlist, userfile.browse_path)
                    .reject { |fi| is_excluded?(fi.name) }
                    .select { |fi| allowed_types.include? fi.symbolic_type }
 
@@ -148,6 +152,9 @@ class S3FlatDataProvider < DataProvider
 
   # Use our own internal rsync-like algorithm.
   def impl_sync_to_cache(userfile) #:nodoc:
+
+    # Intermediate browse_path on S3 side
+    provider_browse_path = Pathname.new(userfile.browse_path.presence || "")
 
     # Prep cache area
     mkdir_cache_subdirs(userfile)
@@ -161,8 +168,8 @@ class S3FlatDataProvider < DataProvider
 
     # Figure out what to do
     to_add, to_remove = rsync_emulation(
-       provider_recursive_fileinfos( userfile ),
-       cache_recursive_fileinfos(    userfile ),
+      provider_recursive_fileinfos( userfile ),
+      cache_recursive_fileinfos(    userfile ),
     )
 
     # Remove files that exist locally but shouldn't
@@ -170,24 +177,23 @@ class S3FlatDataProvider < DataProvider
       relpath  = Pathname.new(fi.name) # "abc" or "abc/def" or "abc/dev/gih.txt", always files or symlinks
       fullpath = localparent + relpath
       FileUtils.remove_entry(fullpath.to_s, true) rescue true
-      #if relpath.parent.to_s != '.'
-      #  FileUtils.rmdir(fullpath.parent.to_s, :parents => true) rescue true # Attempt removing as many parents as possible
-      #end
     end
 
     # Add files locally. Regular and symlinks are supported.
     to_add.each do |fi|
-      relpath  = Pathname.new(fi.name) # "abc" or "abc/def" or "abc/dev/gih.txt", always files or symlinks
-      fullpath = localparent + relpath
+      relpath      = Pathname.new(fi.name) # "abc" or "abc/def" or "abc/dev/gih.txt", always files or symlinks
+      fullpath     = localparent + relpath # dest filepath in filesystem cache
+      prov_relpath = provider_browse_path + relpath # "browse/path/abc" or "browse/path/abc/def" etc
+      prov_key     = add_start(prov_relpath)
       FileUtils.remove_entry(fullpath.to_s, true) rescue true # destroy whatever is in the way
       if relpath.parent.to_s != '.'
         FileUtils.mkpath fullpath.parent.to_s
       end
       if fi.symbolic_type == :regular
-        s3_connection.download_object_to_file(add_start(relpath), fullpath.to_s)
+        s3_connection.download_object_to_file(prov_key, fullpath.to_s)
         FileUtils.touch( fullpath.to_s, :mtime => fi.mtime, :nocreate => true ) if fi.mtime
       elsif fi.symbolic_type == :symlink
-        linkval = s3_connection.download_symlink_value(add_start(relpath))
+        linkval = s3_connection.download_symlink_value(prov_key)
         File.unlink(fullpath.to_s) if File.symlink?(fullpath.to_s) # we force re-creation... because can't compare timestamps
         File.symlink(linkval, fullpath.to_s)
         # Prob: it doesn't seem we can restore the mtime for a symlink... maybe this will cause
@@ -206,32 +212,37 @@ class S3FlatDataProvider < DataProvider
   # Use our own internal rsync-like algorithm.
   def impl_sync_to_provider(userfile) #:nodoc:
 
+    # Intermediate browse_path on S3 side
+    provider_browse_path = Pathname.new(userfile.browse_path.presence || "")
+
     # Cache area info
     localfull   = cache_full_path(userfile)
     localparent = localfull.parent
 
     # Figure out what to do
     to_add, to_remove = rsync_emulation(
-       cache_recursive_fileinfos(    userfile ),
-       provider_recursive_fileinfos( userfile ),
+      cache_recursive_fileinfos(    userfile ),
+      provider_recursive_fileinfos( userfile ),
     )
 
     # Remove files that exist remotely but shouldn't
-    adj_keys = s3_fileinfos_to_realkeys(to_remove)
-    adj_keys = adj_keys.map { |k| add_start(k) }
-    s3_connection.delete_multiple_objects(adj_keys)
+    rem_keys = s3_fileinfos_to_realkeys(to_remove)
+    rem_keys = rem_keys.map { |k| add_start((provider_browse_path + k).to_s) }
+    s3_connection.delete_multiple_objects(rem_keys)
 
     # Add files remotely. Regular and symlinks are supported.
     to_add.each do |fi|
-      relpath  = Pathname.new(fi.name) # "abc" or "abc/def" or "abc/dev/gih.txt", always files or symlinks
-      fullpath = localparent + relpath
+      relpath      = Pathname.new(fi.name) # "abc" or "abc/def" or "abc/dev/gih.txt", always files or symlinks
+      fullpath     = localparent + relpath  # physical file in local cache
+      prov_relpath = provider_browse_path + relpath # "browse/path/abc" or "browse/path/abc/def" etc
+      prov_key     = add_start(prov_relpath)
       if fi.symbolic_type == :symlink
         linkvalue = File.readlink(fullpath.to_s)
-        s3_connection.upload_symlink_value_to_object(linkvalue, add_start(relpath))
+        s3_connection.upload_symlink_value_to_object(linkvalue, prov_key)
       elsif fi.symbolic_type == :regular
-        s3_connection.upload_file_content_to_object(fullpath, add_start(relpath))
+        s3_connection.upload_file_content_to_object(fullpath, prov_key)
       elsif fi.symbolic_type == :directory
-        s3_connection.upload_subdir_placeholder_to_object(add_start(relpath))
+        s3_connection.upload_subdir_placeholder_to_object(prov_key)
       else
         # unknown/unsupported file type?
       end
@@ -244,29 +255,37 @@ class S3FlatDataProvider < DataProvider
     if userfile.is_a?(SingleFile)
       s3_connection.delete_object(provider_full_path(userfile))
     else
+      # Intermediate browse_path on S3 side
+      provider_browse_path = Pathname.new(userfile.browse_path.presence || "")
       to_remove = provider_recursive_fileinfos(userfile)
-      adj_keys  = s3_fileinfos_to_realkeys(to_remove)
-      adj_keys  = adj_keys.map { |k| add_start(k) }
-      s3_connection.delete_multiple_objects(adj_keys)
+      rem_keys  = s3_fileinfos_to_realkeys(to_remove)
+      rem_keys  = rem_keys.map { |k| add_start((provider_browse_path + k).to_s) }
+      s3_connection.delete_multiple_objects(rem_keys)
     end
     true
   end
 
-  def impl_provider_list_all(user=nil,browse_path=nil) #:nodoc:
-    dp_list = s3_connection.list_objects_one_level(add_start("")) # top level
-    s3_objlist_to_fileinfos(dp_list)
+  def impl_provider_list_all(user=nil, browse_path=nil) #:nodoc:
+    dp_list = s3_connection.list_objects_one_level(add_start(browse_path.presence || "")) # top level
+    s3_objlist_to_fileinfos(dp_list, browse_path)
   end
 
-  def impl_provider_rename(userfile,newname) #:nodoc:
-    return false if s3_connection.get_object_info(add_start(newname))
-    return false if s3_connection.list_objects_one_level(add_start(newname)).present?
+  def impl_provider_rename(userfile, newname) #:nodoc:
+
+    # Intermediate browse_path on S3 side
+    provider_browse_path = Pathname.new(userfile.browse_path.presence || "")
+    prov_newname         = (provider_browse_path + newname).to_s
+    prov_newkey          = add_start(prov_newname)
+
+    return false if s3_connection.get_object_info(prov_newkey)
+    return false if s3_connection.list_objects_one_level(prov_newkey).present?
     if userfile.is_a?(SingleFile)
-      s3_connection.rename_object(provider_full_path(userfile),add_start(newname))
+      s3_connection.rename_object(provider_full_path(userfile),prov_newkey)
     else
       s3_connection.list_objects_recursive(provider_full_path(userfile)).each do |s3obj|
         oldkey = s3obj.key
         next unless oldkey.starts_with?("#{provider_full_path(userfile)}/")
-        newkey = oldkey.sub("#{provider_full_path(userfile)}/","#{add_start(new_name)}/")
+        newkey = oldkey.sub("#{provider_full_path(userfile)}/","#{prov_newkey}/")
         s3_connection.rename_object(oldkey,newkey)
       end
     end
@@ -310,7 +329,7 @@ class S3FlatDataProvider < DataProvider
   def provider_recursive_fileinfos(userfile)
     single_head = s3_connection.list_single_object(provider_full_path(userfile))
     objlist     = s3_connection.list_objects_recursive(provider_full_path(userfile))
-    s3_objlist_to_fileinfos(single_head + objlist)
+    s3_objlist_to_fileinfos(single_head + objlist, userfile.browse_path)
   end
 
   private
@@ -329,11 +348,14 @@ class S3FlatDataProvider < DataProvider
 
   # Turns an array of objects infos built on the Amazon side
   # into an array of FileInfo objects.
-  def s3_objlist_to_fileinfos(s3_objlist) #:nodoc:
+  def s3_objlist_to_fileinfos(s3_objlist, remove_browse_path) #:nodoc:
+    remove_bp_slash = remove_browse_path.sub(/\/*$/,"/") if remove_browse_path.present? # adds a '/' at end
     s3_objlist.map do |objinfo| # S3 obj contains just a bit of info, not a full FileInfo struct
-      name,type = s3_connection.real_name_and_symbolic_type(objinfo[:key])
+      name, type = s3_connection.real_name_and_symbolic_type(objinfo[:key])
+      name       = remove_start(name)
+      name       = name.sub(remove_bp_slash, "") if remove_bp_slash
       FileInfo.new(
-        :name          => remove_start(name),
+        :name          => name,
         :symbolic_type => type,
         :mtime         => objinfo[:last_modified],
         :atime         => objinfo[:last_modified], # no separate a and c times

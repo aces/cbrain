@@ -49,6 +49,9 @@ Rails.application.routes.draw do
     collection do
       get  'report'
     end
+    member do
+      get  'boutiques_descriptor'
+    end
   end
 
   resources :messages,        :except => [ :edit, :show ] do
@@ -200,6 +203,7 @@ Rails.application.routes.draw do
   # Globus authentication
   get   '/globus'                 => 'sessions#globus'
   post  '/unlink_globus'          => 'sessions#unlink_globus'
+  get   '/mandatory_globus'       => 'sessions#mandatory_globus'
 
   # Report Maker
   get   "/report",                :controller => :portal, :action => :report
@@ -289,6 +293,7 @@ Rails.application.routes.draw do
     # Globus authentication
     get   '/nh_globus'              => 'nh_sessions#nh_globus'
     post  '/nh_unlink_globus'       => 'nh_sessions#nh_unlink_globus'
+    get   '/nh_mandatory_globus'    => 'nh_sessions#nh_mandatory_globus'
 
     # ORCID authentication
     get   '/orcid'                  => 'nh_sessions#orcid'

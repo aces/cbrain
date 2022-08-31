@@ -71,6 +71,7 @@ elsif program_name =~ /server|puma/ # normal server mode
 elsif program_name =~ /rspec/ # test suite
   puts "C> \t- Testing with 'rspec'."
   CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
+  BourreauSystemChecks.check([:a000_ensure_models_are_preloaded])
 
 # ----- RAKE TASK -----
 elsif program_name =~ /rake/

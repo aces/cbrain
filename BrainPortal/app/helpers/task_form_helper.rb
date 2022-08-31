@@ -54,7 +54,7 @@ module TaskFormHelper
       parents << klass.name
       klass = klass.superclass
     end
-    parents << 'BoutiquesTask'
+    parents << 'BoutiquesTask' if @task.class < BoutiquesPortalTask
     parents.each do |parent|
       dirname = parent.to_s.demodulize.underscore
       file    = "tasks/cbrain_plugins/installed-plugins/cbrain_task/#{dirname}/views/#{basename}.html.erb"

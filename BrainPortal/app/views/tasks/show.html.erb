@@ -131,7 +131,7 @@
       <% if current_user.has_role?(:admin_user) && @task.tool_config %>
         <%= link_to @task.tool_config.version_name, tool_config_path(@task.tool_config) %>
       <% else %>
-        <%= @task.tool_config ? overlay_description(@task.tool_config.description) : "None" %>
+        <%= @task.tool_config.version_name %>
       <% end %>
     <% end %>
     <% t.cell("Project") { link_to_group_if_accessible(@task.group) } %>
