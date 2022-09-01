@@ -53,12 +53,12 @@ function cbrain_attach_userfile_checkboxes(userfile_checkboxes, tool_name, launc
   userfile_checkboxes
     .unbind('change.launch_task')
     .bind('change.launch_task', function () {
-      launch_task_div(tool_name);
+      launch_task();
     });
 }
 
 // Generate the launch_task div if prepare_tool_id present as a parameter
-function launch_task_div(tool_name=undefined) {
+function launch_task() {
   var parameters          = window.location.search.split(/\?|&/);
 
   // scan the query params in the URL, trying to find "prepare_tool_id=NNN"
@@ -79,15 +79,18 @@ function launch_task_div(tool_name=undefined) {
   if (!prepare_tool_id && !tool_name) {
     return;
   }
-  // Fetch tool name according to `prepare_tool_id`
-  if (!tool_name && prepare_tool_id !== undefined) {
-    for (let tool of document.getElementsByClassName("toolsLink")) {
-      var id   = tool.dataset.toolId;
-      var name = tool.childNodes[0].data;
-      if (id === prepare_tool_id) {
-        tool_name = name;
-        break;
-      }
+  // Fetch tool name according to `prepare_tool_id` or
+  // Fetch prepare_tool_id according to tool name.
+  for (let tool of document.getElementsByClassName("toolsLink")) {
+    var id   = tool.dataset.toolId;
+    var name = tool.childNodes[0].data;
+    if (prepare_tool_id && id === prepare_tool_id) {
+      tool_name = name;
+      break;
+    }
+    if (tool_name !== ''  && name === tool_name) {
+      prepare_tool_id = id;
+      break;
     }
   }
 
@@ -493,7 +496,7 @@ $(function() {
         $('#ren-btn, #ren-ctx').toggle(checked == 1);
 
         // Generate the launch_task div if prepare_tool_id present as a parameter
-        launch_task_div();
+        launch_task();
       };
 
       $('#userfiles_table')
