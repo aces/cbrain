@@ -76,7 +76,14 @@
       <% end %>
 
       <% desc_origin, desc_path = @tool_config.boutiques_descriptor_origin_keyword %>
-      <% t.edit_cell(:boutiques_descriptor_path, :header => "Path to Boutiques descriptor", :show_width => 2, :content => "<strong>(#{desc_origin.capitalize})</strong> #{desc_path}".html_safe) do |f| %>
+      <% desc_content  = "<strong>(#{desc_origin.capitalize})</strong> ".html_safe %>
+      <%
+         if desc_path.present?
+           show_btq_link = link_to("(show)", boutiques_descriptor_tool_config_path(@tool_config))
+           desc_content += show_btq_link
+         end
+      %>
+      <% t.edit_cell(:boutiques_descriptor_path, :header => "Path to Boutiques descriptor", :show_width => 2, :content => desc_content) do |f| %>
         <%= f.text_field :boutiques_descriptor_path, :size => 80 %>
         <div class="wide_field_explanation">
           You can use this field to provide an explicit path to a
