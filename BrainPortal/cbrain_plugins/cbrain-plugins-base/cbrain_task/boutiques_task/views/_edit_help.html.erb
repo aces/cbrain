@@ -29,6 +29,7 @@
   other_inputs  = @descriptor.inputs.select { |i| i['type'] != 'File' }
   outputs       = @descriptor.output_files.dup
 -%>
+
 <%# Format a parameter (+param+) attributes as a list element (<li>) -%>
 <%- format_param = lambda do |param| -%>
   <li>
@@ -47,16 +48,30 @@
   <%- end -%>
   </li>
 <%- end -%>
-<h1>
-  <%= @descriptor.name %>
-<%- if @descriptor.tool_version -%>
-  <%= @descriptor.tool_version %>
-<%- end -%>
-</h1>
-<br />
 
-<% (@descriptor.description.presence || "").split("\n").each do |line| %>
-  <%= line %><br>
+<h1><%= @descriptor.name %> <%= @descriptor.tool_version %></h1>
+
+<% if @descriptor.description.presence %>
+  <h2>Description</h2>
+  <% (@descriptor.description.presence || "").split("\n").each do |line| %>
+    <%= line %><br>
+  <% end %>
+  <p>
+<% end %>
+
+<% if @descriptor.tool_doi.present? %>
+  <strong>Tool DOI:</strong> <%= link_to @descriptor.tool_doi, @descriptor.tool_doi, :target => '_blank', :class => 'action_link' %>
+  <br>
+<% end %>
+
+<% if @descriptor.url.present? %>
+  <strong>Tool URL:</strong> <%= link_to @descriptor.url, @descriptor.url, :target => '_blank', :class => 'action_link' %>
+  <br>
+<% end %>
+
+<% if @descriptor.descriptor_url.present? %>
+  <strong>Boutiques Descriptor::</strong> <%= link_to @descriptor.descriptor_url, @descriptor.descriptor_url, :target => '_blank', :class => 'action_link' %>
+  <br>
 <% end %>
 
 <%- unless other_inputs.empty? -%>
