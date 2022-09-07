@@ -82,8 +82,8 @@ class SshDataProvider < DataProvider
 
     # Double escaping for old rsyncs
     source_escaped = remote_shell_escape(remotefull)
-    # As of rsync 3.2.4, rsync does the escaping of the remote path properly itself
-    source_escaped = remotefull.to_s.bash_escape if self.class.local_rsync_at_least_3_2_4?
+    # As of rsync 3.1.2, rsync does the escaping of the remote path properly itself
+    source_escaped = remotefull.to_s.bash_escape if self.class.local_rsync_protects_args?
 
     # It's IMPORTANT that the source be specified with a bare ':' in front.
     text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} :#{source_escaped}#{sourceslash} #{shell_escape(localfull)} 2>&1")
@@ -106,8 +106,8 @@ class SshDataProvider < DataProvider
 
     # Double escaping for old rsyncs
     dest_escaped = remote_shell_escape(remotefull)
-    # As of rsync 3.2.4, rsync does the escaping of the remote path properly itself
-    dest_escaped = remotefull.to_s.bash_escape if self.class.local_rsync_at_least_3_2_4?
+    # As of rsync 3.1.2, rsync does the escaping of the remote path properly itself
+    dest_escaped = remotefull.to_s.bash_escape if self.class.local_rsync_protects_args?
 
     # It's IMPORTANT that the destination be specified with a bare ':' in front.
     text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{dest_escaped} 2>&1")
