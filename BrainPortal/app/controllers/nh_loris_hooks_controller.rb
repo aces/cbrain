@@ -35,7 +35,7 @@ class NhLorisHooksController < NeurohubApplicationController
   # Receives:
   #  {
   #    source_basenames:         [ "abc.nii.gz", "def.mnc.gz" ],
-  #    source_data_provider_id:  123, # optiona, can be name
+  #    source_data_provider_id:  123, # optional, can be name
   #    result_filename:          "hello.csv",
   #    result_data_provider_id:  123, # optional, can be name
   #    result_group_id:          123, # optional, can be name
@@ -47,8 +47,12 @@ class NhLorisHooksController < NeurohubApplicationController
   def file_list_maker
 
     # Parameters for source files
-    source_basenames = params[:source_basenames] # array of userfiles names
+    source_basenames = Array(params[:source_basenames]) # array of userfiles names
     source_dp_id     = params[:source_data_provider_id].presence # can be nil, can be id or name
+    source_group_id  = params[:source_group_id].presence # can be nil, can be ID or name
+
+    # Query mode: strict or subset
+    strict_match     = params[:strict_match].present?
 
     # List of online DPs that user can access
     user_dps = DataProvider.find_all_accessible_by_user(current_user)
@@ -56,17 +60,20 @@ class NhLorisHooksController < NeurohubApplicationController
 
     # Find the files for the list
     cb_error "No basenames provided." if source_basenames.blank?
-    s_dp = user_dps.where_id_or_name(source_dp_id).first if source_dp_id
+    s_dp    = user_dps.where_id_or_name(source_dp_id).first if source_dp_id
+    s_group = Group.where_id_or_name(source_group_id).first if source_group_id
     base = Userfile.where(nil) # As seen in userfiles_controller
     base = Userfile.restrict_access_on_query(current_user, base, :access_requested => :read)
     userfiles = base.where(:name => source_basenames)
-    userfiles = userfiles.where(:data_provider_id => s_dp.id) if s_dp
+    userfiles = userfiles.where(:data_provider_id => s_dp.id)    if s_dp
+    userfiles = userfiles.where(:group_id         => s_group.id) if s_group
 
     # It is an error not to find exactly the same number of files as in
     # the params' basenames array
-    file_count = userfiles.count
-    exp_count  = Array(source_basenames).size
-    if file_count != exp_count
+    found_names = userfiles.pluck(:name)
+    file_count = found_names.size
+    exp_count  = source_basenames.size
+    if (file_count == 0) || (strict_match && (file_count != exp_count))
       cb_error "Could not find an exact match for the files. Found #{file_count} of #{exp_count} files"
     end
 
@@ -76,8 +83,26 @@ class NhLorisHooksController < NeurohubApplicationController
     # Save result file
     result = create_file_for_request(CbrainFileList, "Loris-DQT-List.cbcsv", cblist_content)
 
+    # Info message and unmatched entries
+    extra_response = {
+      :found_count   => file_count,
+      :missing_count => (exp_count - file_count) > 0 ? (exp_count - file_count) : 0,
+      :extra_count   => (file_count - exp_count) > 0 ? (file_count - exp_count) : 0,
+    }
+    if file_count == exp_count
+      info_message = "with #{file_count} entries"
+    else
+      info_message = "found #{file_count} entries, but expected #{exp_count}"
+      extra_response[:missing_userfile_names] = (source_basenames - found_names).sort
+      dup_counts = found_names
+                   .inject(Hash.new(0)) { |h,name| h[name] += 1; h } # name => count
+                   .reject { |k,v| v == 1 }
+      dup_basenames = dup_counts.keys.sort # all names that appear more than once
+      extra_response[:extra_userfiles_names] = dup_basenames
+    end
+
     # Report back to client
-    render_created_file_report(result)
+    render_created_file_report(result, info_message, extra_response)
 
   end
 
@@ -123,7 +148,7 @@ class NhLorisHooksController < NeurohubApplicationController
   private
 
   # Creates a file of class +userfile_class+.
-  # Other attrivutes are fetched from the request params
+  # Other attributes are fetched from the request params
   # (result_filename, result_data_provider_id, result_group_id).
   # If not provided in params, user-specific default are used.
   def create_file_for_request(userfile_class, default_name, file_content = nil)
@@ -182,10 +207,11 @@ class NhLorisHooksController < NeurohubApplicationController
   # Given a newly created +result+ userfile, renders
   # a JSON request with information about it. The HTTP
   # status :created is returned to the client.
-  def render_created_file_report(result)
+  def render_created_file_report(result, info_message="", other_properties={})
 
+    info_message = ", #{info_message}" if info_message.present?
     json_report = {
-      :message            => "#{result.pretty_type} created",
+      :message            => "#{result.pretty_type} created#{info_message}",
       :userfile_id        => result.id,
       :userfile_name      => result.name,
       :userfile_type      => result.type,
@@ -195,7 +221,7 @@ class NhLorisHooksController < NeurohubApplicationController
       :data_provider_id   => result.data_provider.id,
       :data_provider_name => result.data_provider.name,
       :cbrain_url         => userfile_url(result),
-    }
+    }.merge(other_properties)
 
     response.headers["Location"] = userfile_url(result)
     render :json => json_report, :status => :created
