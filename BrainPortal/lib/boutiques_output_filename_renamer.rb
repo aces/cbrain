@@ -134,14 +134,23 @@ module BoutiquesOutputFilenameRenamer
         {cluster} : the name of the execution server
         {run_number} : the task's run number
 
-        and additionally, alphanumerical sequences extracted from the input file specified
-        in "#{fileinputname}" as {1}, {2}, {3} etc.
+        Additionally, you can specify patterns such as {1}, {2}, {3} etc. These will
+        extract alphanumerical sequences from the input file name specified
+        in "#{fileinputname}".
 
-        E.g. if your inputfile is named "hello_123-b626.mnc" then {1} is "hello", {2} is "123",
-        {3} is "b626" and {4} is "mnc".
+        E.g. if your input file is named "hello_123-b626.txt" then {1} is "hello", {2} is "123",
+        {3} is "b626" and {4} is "txt".
+
+        Two more patterns exist to substitute most or all of your input file name:
+
+        {full} : your input file name exactly (e.g. "hello_123-b626.txt")
+        {full_noex} : your input file name without any extensions (e.g. "hello_123-b626")
+
+        Important: Make sure the name generated does not crush any of your existing files!
 
         Important: if you launch several tasks out of a list of input files, make sure
-        each task will generate a distinct unique filename here!
+        each task will generate a distinct, unique output file name. Using the {task_id}
+        is a good way to ensure unique names.
       INFO
     end
     descriptor
@@ -232,6 +241,9 @@ module BoutiquesOutputFilenameRenamer
     keywords = output_renaming_standard_keywords
     # Add support for {1}, {2} etc extracted from the input file name
     output_renaming_add_numbered_keywords(keywords, inputname, "")
+    # Add '{full}', '{full_noex}'
+    keywords['full']      = inputname
+    keywords['full_noex'] = inputname.sub(/\..*/,"")
     outname = pattern.pattern_substitute(keywords)
     outname
   end
