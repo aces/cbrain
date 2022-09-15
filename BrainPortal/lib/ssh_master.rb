@@ -561,7 +561,7 @@ class SshMaster
   # itself but we do include the user and hostname.
   # A typical return value would be something like:
   #
-  #  "-port 1234 -A -o ConnectTimeout=10 -o ControlMaster=no -o ControlPath=/tmp/something user@host"
+  #  "-port 1234 -o ConnectTimeout=10 -o ControlMaster=no -o ControlPath=/tmp/something user@host"
   #
   # which allows you to add more options at the beginning
   # and the end of any ssh command being built. Note that
@@ -574,7 +574,6 @@ class SshMaster
     # Base options that are always present
     args_string  = ""
     args_string += " -p #{@port}" if @port != 22
-    args_string += " -A"
     args_string += " " + ssh_config_options_as_string()
 
     # When @nomaster is true, it means we're not even building
