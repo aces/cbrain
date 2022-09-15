@@ -34,6 +34,16 @@
   groups      = @descriptor.groups          || []
   params_in_groups = groups.map(&:members).flatten.uniq # list of param IDs
   interface_files  = Userfile.where(:id => @task.params[:interface_userfile_ids])
+
+  interface_files_name   = interface_files.pluck(:name)
+  contain_duplicate_name = interface_files.count != interface_files_name.uniq.count
+
+  interface_files_info = interface_files.map do |x|
+  browse_path = x.browse_path ? ", in browse_path: #{x.browse_path}" : ""
+  contain_duplicate_name ?
+    { id: x.id, type: x.type, name: "#{x.name} (#{x.data_provider.name}#{browse_path})"} :
+    { id: x.id, type: x.type, name: x.name}
+  end
 %>
 
 <div class="task-params">
@@ -47,7 +57,7 @@
        <%= render :partial => task_partial(:boutiques_input), :locals =>
            { :input           => input,
              :isGroupMember   => false,
-             :interface_files => interface_files,
+             :interface_files => interface_files_info,
            }
        %>
     <% end %>
@@ -55,7 +65,7 @@
     <%- groups.each do |group| %>
        <%= render :partial => task_partial(:boutiques_group), :locals =>
            { :group           => group,
-             :interface_files => interface_files,
+             :interface_files => interface_files_info,
            }
        %>
     <% end %>
