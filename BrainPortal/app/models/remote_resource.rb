@@ -224,12 +224,17 @@ class RemoteResource < ApplicationRecord
   # for this RemoteResource. The method does not start it, if
   # it's created.
   def ssh_master
+    # SSH connect options are normally just the default ones,
+    # but an admin can override them in the meta data of the object.
+    # The SSH agent forwarding is mandatory however.
+    ssh_options = (self.meta[:ssh_config_options].presence || {})
+                  .dup.merge( :ForwardAgent => 'yes' )
     # category: we add the UNIX userid so as not to conflict
     # with any other user on the system when creating out socket in /tmp
     category = "#{self.class}_#{Process.uid}"
     uniq     = "#{self.id}"
     master   = SshMaster.find_or_create(self.ssh_control_user,self.ssh_control_host,self.ssh_control_port || 22,
-               :category => category, :uniq => uniq, :ssh_config_options => self.meta[:ssh_config_options])
+               :category => category, :uniq => uniq, :ssh_config_options => ssh_options )
     master
   end
 
