@@ -211,12 +211,6 @@ class User < ApplicationRecord
     self.custom_licenses_signed = signed
   end
 
-  # lincensable (owned) groups
-  def licensable_groups
-    # group owned by user, created by him or
-      WorkGroup.where(:creator_id => self.id)
-  end
-
   # Records that +user+ signed the +license+ file for +project+
   # with nice log messages to that effect. When signed on cbrain model should be 'group' on heurohub 'project'
   def signs_license_for_project(license, project, model='project')
