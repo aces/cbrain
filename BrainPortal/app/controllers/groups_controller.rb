@@ -349,7 +349,7 @@ class GroupsController < ApplicationController
     end
 
     license = Userfile.find(@license_id)
-    current_user.signs_license_for_project( license, @group)
+    current_user.signs_license_for_project(license, @group, model='group')
 
     if current_user.unsigned_custom_licenses(@group).empty?
       flash[:notice] = 'You signed all the project licenses'
