@@ -236,7 +236,7 @@ class NhProjectsController < NeurohubApplicationController
     end
 
     license = Userfile.find(@license_id)
-    user_signs_license_for_project(current_user, license, @nh_project)
+    current_user.signs_license_for_project(license, @nh_project)
 
     if current_user.unsigned_custom_licenses(@nh_project).empty?
       flash[:notice] = 'You signed all the project licenses'

@@ -33,6 +33,8 @@ class GroupsController < ApplicationController
 
   before_action :license_check, :only => [:show, :create, :switch, :edit, :update, :unregister, :destroy]
 
+  before_action :can_add_license, :only => [:show, :new_license, :add_license, :show_license, :sign_license]
+
   # GET /groups
   # GET /groups.xml
   def index  #:nodoc:
@@ -268,36 +270,140 @@ class GroupsController < ApplicationController
     end
   end
 
+  def new_license #:nodoc:
+    cb_error "Only owner can set licensing", :redirect => { :action => :show } unless @can_add_license
+  end
+
+  def add_license #:nodoc:
+    cb_error("Only owner can set licensing", :redirect => { :action => :show }) unless @can_add_license
+
+    license_text = params[:license_text]
+    cb_error 'Empty licenses are presently not allowed' if license_text.blank?
+
+    timestamp  = Time.zone.now.strftime("%Y-%m-%dT%H:%M:%S")
+    group_name = @group.name.gsub(/[^\w]+/, "")
+    file_name  = "license_#{group_name}_#{timestamp}.txt"
+    license    = @group.register_custom_license(license_text, current_user, file_name)
+    current_user.signs_license_for_project(license, @group, model='group')
+
+    flash[:notice] = 'A license is added. You can force users to sign multiple license agreements if needed.'
+    redirect_to :action => :show
+  end
+
+  def show_license #:nodoc:
+    # @group            =  @current_user.visible_groups.where(id: params[id]).first
+
+    unsigned_licenses = current_user.unsigned_custom_licenses(@group)
+
+    if unsigned_licenses.empty?
+      if @current_licenses.present?
+        flash[:notice] = 'You already signed all licenses'
+      else
+        flash[:notice] = 'No licenses are defined for this project'
+        redirect_to :action => :show
+        return
+      end
+    end
+
+    # What to show. If a license is given in params,
+    # we make sure it's a registered one and we pick that.
+    @license_id = false unless @current_licenses.include? @license_id
+    # If no valid license was given and there are unsigned licenses, pick the first
+    @license_id ||= unsigned_licenses.first.try(:to_i)
+    # Otherwise, show the first license.
+    @license_id ||= @current_licenses.first
+
+    # Load the text of the license
+    userfile = Userfile.find(@license_id)
+    userfile.sync_to_cache
+    @license_text = userfile.cache_readhandle { |fh| fh.read }
+
+    # Identifies if the current user has already signed it,
+    # and whether they are the author
+  end
+
+  def sign_license #:nodoc:
+
+    unless @group.custom_license_agreements.include?(@license_id)
+      flash[:error] = 'You are trying to access unrelated license. Try again or report the issue to the support.'
+      redirect_to :action => :show
+      return
+    end
+
+    if current_user.custom_licenses_signed.include?(@license_id)
+      flash[:error] = 'You have already signed this license.'
+      redirect_to :action => :show
+      return
+    end
+
+    unless params.has_key?(:agree)
+      flash[:error] = "You cannot access that project without signing the License Agreement first."
+      redirect_to :action => :index
+      return
+    end
+
+    if params[:license_check].blank? || params[:license_check].to_i == 0
+      flash[:error] = "There was a problem with your submission. Please read the agreement and check the checkbox."
+      redirect_to show_license_group_path(@group)
+      return
+    end
+
+    license = Userfile.find(@license_id)
+    current_user.signs_license_for_project( license, @group)
+
+    if current_user.unsigned_custom_licenses(@group).empty?
+      flash[:notice] = 'You signed all the project licenses'
+      redirect_to :action => :show, :id => @group.id
+    else
+      flash[:notice] = 'This project has at least one other license agreement'
+      redirect_to :action => :show, :id => @group.id
+      #redirect_to :action => show_license_nh_project_path(@nh_project)
+    end
+  end
+
+  # check license for project with id pid,
+  def license_check(pid=false)
+    pid = pid || params[:id]
+
+
+    return true if pid == 'all' ## to do && current_user.has_role(:admin)
+    # if unexpected id - let the action method handle the error message
+    begin
+      @group = current_user.viewable_groups.find(pid)
+    rescue ActiveRecord::RecordNotFound
+      return true
+    end
+    if current_user.unsigned_custom_licenses(@group).present?
+      flash[:error] = "Access to the project #{@group.name} is blocked due to licensing issues. Please sign the license"
+      # license_redirect
+      raise CbrainLicenseException
+    end
+  end
+
   private
 
   def group_params #:nodoc:
     if current_user.has_role?(:admin_user)
       params.require_as_params(:group).permit(
-        :name, :description, :not_assignable,
-        :site_id, :creator_id, :invisible, :track_usage,
-        :user_ids => []
+          :name, :description, :not_assignable,
+          :site_id, :creator_id, :invisible, :track_usage,
+          :user_ids => []
       )
     else # non admin users
       params.require_as_params(:group).permit(
-        :name, :description, :not_assignable,
-        :user_ids => []
+          :name, :description, :not_assignable,
+          :user_ids => []
       )
     end
   end
 
-  def license_check
-    return true if params[:id].blank?
-    return true if params[:id] == 'all'
-    # if unexpected id - let the action method handle the error message
-    begin
-      @group = current_user.viewable_groups.find(params[:id])
-    rescue ActiveRecord::RecordNotFound
-      return true
-    end
-    if current_user.unsigned_custom_licenses(@group).present?
-      flash[:error] = "Access to the project #{@group.name} is blocked due to licensing issues. Please consult with the project maintainer or support for details"
-      license_redirect
-    end
+  def can_add_license # helper updates custom license attribute
+    @group            = @current_user.viewable_groups.find(params[:id])
+    @can_add_license  = current_user.id == @group&.creator_id
+    @current_licenses = @group.custom_license_agreements
+
+    param_lic_id = params['license_id'].presence
+    @license_id  = param_lic_id && param_lic_id.to_i  # nil if param is nil-like, otherwise cast to integer
   end
 
 end

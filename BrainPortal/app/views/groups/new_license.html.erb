@@ -1,0 +1,53 @@
+
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title "Add License", "" %>
+
+<h2>Add New Licence to Project <%= @group.name %> </h2>
+
+<div id="new_license" >
+  <%= form_tag add_license_group_path(@group) do %>
+    <div class="generalbox">
+       <div class="field_note"><b>Important:</b>
+          All members of the project will be required to sign the agreement in order to access the project.
+          You, as the author, will be be considered as having signed it implicitly.
+       </div>
+
+      <p>
+        <label>Enter license text: </label>
+      </p>
+      <p>
+        <%= text_area_tag "license_text", "", :required => true, :rows => 20, :class => "whole_width" %>
+
+      </p>
+      <div>
+        <%= submit_tag "Add License", :name => :add_license, :class => "button" %>
+        <span class="field_note">
+          You can assign additional license agreements at any time.
+        </span>
+      </div>
+    <% end %>
+  </div>
+</div>
+

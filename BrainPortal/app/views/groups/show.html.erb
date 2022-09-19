@@ -37,7 +37,12 @@
         <% end %>
         <%= link_to 'Delete', group_path(@group), { :data => { :confirm => "Are you sure you want to delete '#{@group.name}'?" }, :method => :delete, :class => "button" } %>
     <% end %>
+    <% if @can_add_license %>
+        <%= link_to "Add License", new_license_group_path(@group.id), :class => "button" %>
+    <% end %>
+
     </div>
+
 <% end %>
 
 <P>

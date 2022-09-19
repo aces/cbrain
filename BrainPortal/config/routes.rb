@@ -74,6 +74,12 @@ Rails.application.routes.draw do
   end
 
   resources :groups,          :except => [ :edit ] do
+    member do
+      get  :new_license
+      post :add_license
+      get  :show_license
+      post :sign_license
+    end
     collection do
       post 'unregister'
       post 'switch'

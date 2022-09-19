@@ -203,8 +203,6 @@ class User < ApplicationRecord
     self.meta[:custom_licenses_signed] = Array(licenses)
   end
 
-  # Records that a custom license agreement has
-  # been signed by adding it to the list of signed ones.
   def add_signed_custom_license(license_file)
     cb_error "A license file is supposed to be a TextFile" unless license_file.is_a?(TextFile)
     signed  = self.custom_licenses_signed
@@ -212,6 +210,21 @@ class User < ApplicationRecord
     signed = TextFile.where(:id => signed).pluck(:id) # clean up dead IDs
     self.custom_licenses_signed = signed
   end
+
+  # lincensable (owned) groups
+  def licensable_groups
+    # group owned by user, created by him or
+      WorkGroup.where(:creator_id => self.id)
+  end
+
+  # Records that +user+ signed the +license+ file for +project+
+  # with nice log messages to that effect. When signed on cbrain model should be 'group' on heurohub 'project'
+  def signs_license_for_project(license, project, model='project')
+    self.add_signed_custom_license(license)
+    self.addlog("Signed custom license agreement '#{license.name}' (ID #{license.id}) for #{model} '#{project.name}' (ID #{project.id}).")
+    project.addlog("User #{self.login} signed license agreement '#{license.name}' (ID #{license.id}).")
+  end
+
 
   ###############################################
   #

@@ -61,13 +61,24 @@ class ApplicationController < ActionController::Base
 
   protect_from_forgery with: :exception, unless: -> { request.format.json? || request.format.xml? }
 
+  rescue_from CbrainLicenseException, with: :redirect_show_license
 
 
-  ########################################################################
+    ########################################################################
   # Controller Filters
   ########################################################################
 
   private
+
+
+  def redirect_show_license
+    #
+    if params[:id].present? && params[:controller] == "groups"
+      redirect_to show_license_group_path(params[:id])
+    else
+      redirect_to groups_path
+    end
+  end
 
   # Re-compute the host and IP from the request (when not logged in, or changed)
   def adjust_remote_ip_and_host #:nodoc:
