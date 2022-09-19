@@ -64,7 +64,7 @@ class ApplicationController < ActionController::Base
   rescue_from CbrainLicenseException, with: :redirect_show_license
 
 
-    ########################################################################
+  ########################################################################
   # Controller Filters
   ########################################################################
 

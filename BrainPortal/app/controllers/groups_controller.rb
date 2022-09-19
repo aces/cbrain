@@ -33,7 +33,8 @@ class GroupsController < ApplicationController
 
   before_action :license_check, :only => [:show, :create, :switch, :edit, :update, :unregister, :destroy]
 
-  before_action :can_add_license, :only => [:show, :new_license, :add_license, :show_license, :sign_license]
+  # few license related attributes are updated here
+  before_action :group_license_attributes, :only => [:show, :new_license, :add_license, :show_license, :sign_license]
 
   # GET /groups
   # GET /groups.xml
@@ -361,7 +362,7 @@ class GroupsController < ApplicationController
     end
   end
 
-  # check license for project with id pid,
+  # check license for project (group) with id pid,
   def license_check(pid=false)
     pid = pid || params[:id]
 
@@ -385,19 +386,19 @@ class GroupsController < ApplicationController
   def group_params #:nodoc:
     if current_user.has_role?(:admin_user)
       params.require_as_params(:group).permit(
-          :name, :description, :not_assignable,
-          :site_id, :creator_id, :invisible, :track_usage,
-          :user_ids => []
+        :name, :description, :not_assignable,
+        :site_id, :creator_id, :invisible, :track_usage,
+        :user_ids => []
       )
     else # non admin users
       params.require_as_params(:group).permit(
-          :name, :description, :not_assignable,
-          :user_ids => []
+        :name, :description, :not_assignable,
+        :user_ids => []
       )
     end
   end
 
-  def can_add_license # helper updates custom license attribute
+  def group_license_attributes # helper updates custom license attribute
     @group            = @current_user.viewable_groups.find(params[:id])
     @can_add_license  = current_user.id == @group&.creator_id
     @current_licenses = @group.custom_license_agreements
