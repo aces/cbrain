@@ -44,20 +44,20 @@
             <%= hidden_field_tag :license_id, @license_id %>
 
             <pre><%= @license_text %></pre>
-        </div>
-        <% unless @is_signed %>
-            <p>
-              <%= check_box_tag :license_check, 1, nil, :class => "my-2" %>
-              By clicking here, I agree with all the conditions above.
-            </p>
-            <p>
-              <%= submit_tag "I agree with the above statement", :name => :agree,     :class => "button" %>
-              <%= submit_tag "I do not agree",                   :name => :not_agree, :class => "button" %>
-            </p>
+
+            <% unless @is_signed %>
+              <p>
+                <%= check_box_tag :license_check, 1, nil, :class => "my-2" %>
+                By clicking here, I agree with all the conditions above.
+              </p>
+              <p>
+                <%= submit_tag "I agree with the above statement", :name => :agree,     :class => "button" %>
+                <%= submit_tag "I do not agree",                   :name => :not_agree, :class => "button" %>
+              </p>
             <% end %>
           <% end %>
-
-    </div>
+        </div>
+    </p>
 
     <% if @current_licenses.size > 1 %>
         <p>
@@ -70,7 +70,5 @@
             </li>
           <% end %>
         </ul>
-      </div>
     <% end %>
-  </div>
 </div>

@@ -331,7 +331,7 @@ class GroupsController < ApplicationController
       return
     end
 
-    if current_user.custom_licenses_signed.include?(@license_id)
+    if @is_signed
       flash[:error] = 'You have already signed this license.'
       redirect_to :action => :show
       return
@@ -405,6 +405,7 @@ class GroupsController < ApplicationController
 
     param_lic_id = params['license_id'].presence
     @license_id  = param_lic_id && param_lic_id.to_i  # nil if param is nil-like, otherwise cast to integer
+    @is_signed   = current_user.custom_licenses_signed.include?(@license_id)
   end
 
 end
