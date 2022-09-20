@@ -28,7 +28,11 @@
 
 <div id="show_license">
 
-  The owner of the project <%= @group.name %> forbade access to the project info, until you sign the license
+  <% unless @is_signed %>
+    The owner of the project <%= @group.name %> forbade access to the project info, until you sign the license
+  <% else %>
+    You already signed this license
+  <% end %>
 
   <%- # actions -%>
   <% if @can_add_license %>
