@@ -29,13 +29,7 @@ class S3Sdkv3Connection
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   SYMLINK_ENDING = "_symlink_s3_object" #:nodoc:
-
-  # Note: it is important that when sorted, the string
-  #  "dirname#{SUBDIR_ENDING}"
-  # appears BEFORE
-  #  "dirname/"
-  # for all strings "dirname". Thus the "-", which comes before "/".
-  SUBDIR_ENDING  = "-subdir_s3_object"  #:nodoc:
+  SUBDIR_ENDING  = "/"  #:nodoc:
 
   # Sets a logger for the AWS layer (default, STDOUT)
   def self.set_logger(logger=Logger.new(STDOUT))
@@ -153,28 +147,44 @@ class S3Sdkv3Connection
     prefix          = prefix.to_s
     prefix         += '/' if prefix.present? && ! prefix.ends_with?('/')
 
+    # To avoid duplication of seen prefixes when doing multiple rounds of fetching keys
+    seen_common_prefixes = {}
+
+    # We go through multiple rounds of requests, 1000 entries at a time
     while resp[:is_truncated] do
       resp = @client.list_objects_v2(:bucket              => @bucket_name,
                                      :prefix              => prefix,
                                      :delimiter           => delimiter, # empty string is OK
                                      :continuation_token  => cont_token)
       break if resp.blank?
-      list_of_objects += resp.contents if resp.contents.present?
-      list_of_objects += create_fake_subdir_s3objs(prefix,resp.common_prefixes)
+
+      # Add cumulatively the list of objects
+      current_list_of_obj = resp.contents.presence || []
+      current_list_of_obj.reject! { |obj| obj.key == prefix } # any fake subdir object like "a/b/c/" that match exactly the prefix
+      #current_list_of_obj.reject! { |obj| obj.key.ends_with?("-subdir_s3_object") } # remove old compatibility objects
+      list_of_objects += current_list_of_obj # cumulative list
+
+      # Add to the list some artificial objects representing subdirs
+      common_prefixes = resp.common_prefixes.presence || []
+      common_prefixes.reject! { |obj| seen_common_prefixes[obj.prefix] }
+      common_prefixes.each    { |obj| seen_common_prefixes[obj.prefix] = true }
+      local_subdir_keys = create_fake_subdir_s3objs(common_prefixes)
+      list_of_objects  += local_subdir_keys
+
       cont_token       = resp[:next_continuation_token]
     end
 
     list_of_objects
   end
 
-  def create_fake_subdir_s3objs(prefix,s3_common_prefixes)
+  def create_fake_subdir_s3objs(s3_common_prefixes)
     return [] if s3_common_prefixes.blank? # in case it's nil
-    s3_common_prefixes.map do |pref_obj|
-      subprefix = pref_obj.prefix
-      subprefix.sub!(/\/$/,"") # remove trailing / if any
-      subprefix[0,(prefix.size)] = "" if prefix.present?
-      next nil if subprefix.index('/') # reject if there are any other slashes (e.g. "a/b"), we want just "a"
-      Aws::S3::Types::Object.new(:key => encode_subdir_key(subprefix), :last_modified => Time.now, :size => 0).freeze
+    s3_common_prefixes.map(&:prefix).map do |subprefix|
+      Aws::S3::Types::Object.new(
+        :key           => encode_subdir_key(subprefix),
+        :last_modified => Time.now,
+        :size          => 0,
+      ).freeze
     end.compact
   end
 
@@ -297,6 +307,7 @@ class S3Sdkv3Connection
   end
 
   def encode_subdir_key(key) #:nodoc:
+    return key if key.to_s.ends_with? SUBDIR_ENDING
     "#{key}#{SUBDIR_ENDING}"
   end
 

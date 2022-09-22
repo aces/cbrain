@@ -483,7 +483,7 @@ class DataProvidersController < ApplicationController
 
           # And save it
           if userfile.save
-            userfile.addlog_context(self, "Registered on DataProvider '#{@provider.name}' as '#{userfile.name}' by #{current_user.login}.")
+            userfile.addlog_context(self, "Registered on DataProvider '#{@provider.name}' as '#{userfile.browse_name}' by #{current_user.login}.")
             registered << (userfiles[basename] = userfile)
             succeeded << basename
           else
