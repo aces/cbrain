@@ -1,0 +1,1 @@
+../../BrainPortal/lib/boutiques_singularity_env.rb
