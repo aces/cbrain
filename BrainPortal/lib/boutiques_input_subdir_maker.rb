@@ -50,17 +50,21 @@
 #
 # and in the `cbrain:integrator_modules` section:
 #
-#     "BoutiquesCreateFakeParentDir": {
+#     "BoutiquesInputSubdirMaker": {
 #       "precomputed_input": ["precomputed", true],
 #       "derivatives_input": ["derivatives", false]
 #      },
 #
-# In CBRAIN the user will select a userfile for example `sub-n`,
-# the final command line will become:
+# In CBRAIN the user will select 2 userfiles for example:
+#
+# For precomputed option `precomputed/sub-n`,
+# for derivatived option `derivatives/sub-n`
+#
+# The final command line will become:
 #
 #     apptool --precomputed precomputed/sub-n --derivatives derivatives
 #
-module BoutiquesCreateFakeParentDir
+module BoutiquesInputSubdirMaker
 
   # Note: to access the revision info of the module,
   # you need to access the constant directly, the
@@ -75,14 +79,14 @@ module BoutiquesCreateFakeParentDir
   # the fake parent directory information
   def descriptor_for_form #:nodoc:
     descriptor                = super.dup
-    parent_dirname_by_inputid = descriptor.custom_module_info('BoutiquesCreateFakeParentDir')
+    parent_dirname_by_inputid = descriptor.custom_module_info('BoutiquesInputSubdirMaker')
 
     parent_dirname_by_inputid.each do |inputid,fake_parent_dirname|
       # Adjust the description
       input              = descriptor.input_by_id(inputid)
       dirname            = fake_parent_dirname[0]
       input.description  = input.description.to_s +
-                           "\nThis input will be copied in a parent folder: #{dirname}.The parent folder will be used in the command line"
+                           "\nThis input will be copied in a parent folder: #{dirname}. The parent folder will be used in the command line"
     end
 
     descriptor
@@ -92,7 +96,7 @@ module BoutiquesCreateFakeParentDir
   # Bourreau (Cluster) Side Modifications
   ############################################
 
-  # For input in `BoutiquesCreateFakeParentDir` section,
+  # For input in `BoutiquesInputSubdirMaker` section,
   # create a fake parent directory that will contains a symlink
   # to the orginal selected Userfile.
   def setup #:nodoc:
@@ -101,13 +105,13 @@ module BoutiquesCreateFakeParentDir
     # Log revision information
     basename = Revision_info.basename
     commit   = Revision_info.short_commit
-    self.addlog("Creating parent directories in BoutiquesCreateFakeParentDir.")
+    self.addlog("Creating parent directories in BoutiquesInputSubdirMaker.")
     self.addlog("#{basename} rev. #{commit}")
 
     descriptor = self.descriptor_for_setup
 
     # Remove IDs from invoke_params
-    parent_dirname_by_inputid = descriptor.custom_module_info('BoutiquesCreateFakeParentDir')
+    parent_dirname_by_inputid = descriptor.custom_module_info('BoutiquesInputSubdirMaker')
     parent_dirname_by_inputid.keys do |inputid|
       original_userfile_ids[inputid]  = invoke_params[inputid]
       invoke_params[inputid]          = nil
@@ -140,20 +144,20 @@ module BoutiquesCreateFakeParentDir
   # Overrides the same method in BoutiquesClusterTask, as used
   # during cluster_commands()
   def finalize_bosh_invoke_struct(invoke_struct) #:nodoc:
-    invoke_params = super.dup
+    override_invoke_params = super.dup
 
     descriptor = self.descriptor_for_cluster_commands
-    parent_dirname_by_inputid = descriptor.custom_module_info('BoutiquesCreateFakeParentDir')
+    parent_dirname_by_inputid = descriptor.custom_module_info('BoutiquesInputSubdirMaker')
     parent_dirname_by_inputid.each do |inputid,fake_parent_dirname|
-      if invoke_params[inputid].blank?
-        invoke_params.delete(inputid)
+      if override_invoke_params[inputid].blank?
+        override_invoke_params.delete(inputid)
       else
         (dirname, append_userfile_name) = fake_parent_dirname
-        invoke_params[inputid] = append_userfile_name ? "#{dirname}/#{invoke_params[inputid]}" : dirname
+        override_invoke_params[inputid] = append_userfile_name ? "#{dirname}/#{override_invoke_params[inputid]}" : dirname
       end
     end
 
-    invoke_params
+    override_invoke_params
   end
 
 end
