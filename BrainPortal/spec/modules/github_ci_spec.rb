@@ -23,7 +23,7 @@
 require 'rails_helper'
 
 # This test file is meant to test stuff that are particular to
-# being in a Travis CI testing environment.
+# being in a Github CI testing environment.
 describe "GithubCI" do
 
   describe "environment" do
