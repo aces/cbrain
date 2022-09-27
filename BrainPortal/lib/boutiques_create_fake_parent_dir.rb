@@ -98,8 +98,11 @@ module BoutiquesCreateFakeParentDir
   def setup #:nodoc:
     original_userfile_ids = {}
 
+    # Log revision information
     basename = Revision_info.basename
     commit   = Revision_info.short_commit
+    self.addlog("Creating parent directories in BoutiquesCreateFakeParentDir.")
+    self.addlog("#{basename} rev. #{commit}")
 
     descriptor = self.descriptor_for_setup
 
@@ -122,9 +125,6 @@ module BoutiquesCreateFakeParentDir
       userfile_id = original_userfile_ids[inputid]
 
       next if userfile_id.blank?
-
-      self.addlog("Creating parent directory '#{dirname}'")
-      self.addlog("#{basename} rev. #{commit}")
 
       userfile = Userfile.find(userfile_id)
       make_available(userfile, "#{dirname}/#{userfile.name}")
