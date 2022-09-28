@@ -81,7 +81,7 @@
       <%= render :partial => task_partial(:dropdown), :locals =>
             { :id        => input.cb_invoke_html_id(false), # false disable list input's '[]'
               :name      => input.cb_invoke_html_name(false), # false disable list input's '[]'
-              :options   => interface_files.pluck(:id, :name),
+              :options   => interface_files.map { |userfile|  [ userfile.id, userfile.browse_name ] },
               :optional  => opt,
               :default   => interface_files.count == 1 ? interface_files.first.id.to_s : nil,
               :value     => value,
