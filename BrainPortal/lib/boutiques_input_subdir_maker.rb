@@ -23,6 +23,8 @@
 # Some tools expect that a file/directory input is
 # placed in a parent directory.
 #
+# The parent dir will be used in the command line.
+#
 # For example we have the following Boutiques command-line:
 #
 #     apptool [PRECOMPUTED_INPUT] [DERIVATIVES_INPUT]
@@ -48,7 +50,17 @@
 #       "value-key": "[DERIVATIVES_INPUT]"
 #     }
 #
-# and in the `cbrain:integrator_modules` section:
+# and in the `cbrain:integrator_modules` section look like:
+#
+#     "BoutiquesInputSubdirMaker": {
+#       "input_id": ["folder_name", boolean],
+#      },
+#
+# if the boolean is true the value used in the command line
+# will be 'folder_name/userfile_name'. Otherwise the value will
+# be 'folder_name' only.
+#
+# For example:
 #
 #     "BoutiquesInputSubdirMaker": {
 #       "precomputed_input": ["precomputed", true],
@@ -57,10 +69,10 @@
 #
 # In CBRAIN the user will select 2 userfiles for example:
 #
-# For precomputed option `precomputed/sub-n`,
-# for derivatived option `derivatives/sub-n`
+# 'sub-n' for precomputed option.
+# 'sub-m' for derivatives option.
 #
-# The final command line will become:
+# The final command line will be:
 #
 #     apptool --precomputed precomputed/sub-n --derivatives derivatives
 #
@@ -112,7 +124,7 @@ module BoutiquesInputSubdirMaker
 
     # Remove IDs from invoke_params
     parent_dirname_by_inputid = descriptor.custom_module_info('BoutiquesInputSubdirMaker')
-    parent_dirname_by_inputid.keys do |inputid|
+    parent_dirname_by_inputid.each_key do |inputid|
       original_userfile_ids[inputid]  = invoke_params[inputid]
       invoke_params[inputid]          = nil
     end
