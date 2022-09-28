@@ -20,8 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# This module autopropagate all env variable to singularity container
-# by adding "SINGULARITYENV_" prefix to all env variable (e.g. "SINGULARITYENV_ABC")
+# To autopropagate all env variable to singularity container this module
+# adds "SINGULARITYENV_" prefix to all env variable (e.g. "SINGULARITYENV_ABC")
 #
 # To include the module automatically at boot time
 # in a task integrated by Boutiques, add a new entry
@@ -69,4 +69,3 @@ module BoutiquesSingularityEnv
   end
 
 end
-
