@@ -1,0 +1,45 @@
+{
+    "name":           "ENVPrefix",
+    "tool-version":   "1.0.0",
+    "schema-version": "0.5",
+    "author":         "Serge",
+    "description":    "A demo CBRAIN task that adds SINGULARITYENV_ prefix to config environment variable names ",
+
+    "command-line": "touch old_{$MYVARIABLE}; touch new_{$SINGULARITYENV_MYVARIABLE} ; du -a -H -h [CBRAIN_INPUT] > out",
+    "inputs": [
+        {
+            "name":              "Input file or directory",
+            "id":                "my_input",
+            "description":       "Any file or directory in CBRAIN",
+            "type":              "File",
+            "optional":          false,
+            "list":              false,
+            "value-key":         "[CBRAIN_INPUT]"
+        }
+   ],
+    "output-files": [
+        {
+            "name":          "old file",
+            "id":            "s1",
+            "description":   "The output of the 'du' command in human units",
+            "optional": true,
+            "list":          false,
+            "path-template": "old*"
+        },
+        {
+            "name":          "new file",
+            "id":            "s2",
+            "description":   "The output of the 'du' command in human units",
+            "optional": true,
+            "list":          false,
+            "path-template": "new"
+        }
+    ],
+    "custom": {
+        "cbrain:readonly-input-files": true,
+        "cbrain:author": "Serge Boroday",
+        "cbrain:integrator_modules":         {"BoutiquesSingularityEnv": true}
+
+
+    }
+}
