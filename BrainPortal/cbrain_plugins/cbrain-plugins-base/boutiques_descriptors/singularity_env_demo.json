@@ -5,7 +5,7 @@
     "author":         "Serge",
     "description":    "A demo CBRAIN task that adds SINGULARITYENV_ prefix to config environment variable names ",
 
-    "command-line": "touch old_{$MYVARIABLE}; touch new_{$SINGULARITYENV_MYVARIABLE} ; du -a -H -h [CBRAIN_INPUT] > out",
+    "command-line": "du -a -H -h [CBRAIN_INPUT] > report_$MYVARIABLE",
     "inputs": [
         {
             "name":              "Input file or directory",
@@ -19,27 +19,17 @@
    ],
     "output-files": [
         {
-            "name":          "old file",
+            "name":          "report",
             "id":            "s1",
             "description":   "The output of the 'du' command in human units",
             "optional": true,
             "list":          false,
-            "path-template": "old*"
-        },
-        {
-            "name":          "new file",
-            "id":            "s2",
-            "description":   "The output of the 'du' command in human units",
-            "optional": true,
-            "list":          false,
-            "path-template": "new"
+            "path-template": "report*"
         }
     ],
     "custom": {
         "cbrain:readonly-input-files": true,
         "cbrain:author": "Serge Boroday",
         "cbrain:integrator_modules":         {"BoutiquesSingularityEnv": true}
-
-
     }
 }
