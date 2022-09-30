@@ -42,6 +42,7 @@ module BoutiquesSingularityEnv
 
   # adds "SINGULARITYENV_" prefix to all the env variables of the task's tool config
   def ensure_env_prefix(prefix=PREFIX)
+    return if self.tool_config.container_engine != "Singularity" # todo update to "Apptainer" one day
     env_array = self.tool_config.env_array
     return if env_array.blank?
     env_array.each do |name_val|
