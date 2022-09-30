@@ -259,22 +259,10 @@ Rails.application.routes.draw do
 
 
   ####################################################################################
-  # Service; most of these actions are only needed
-  # for the CANARIE monitoring system, and are therefore
-  # shipped disabled by default, because it's not needed
-  # anywhere else.
+  # Service; detailed_stats is the only action kept from
+  # the (deprecated) CANARIE monitoring system.
   ####################################################################################
-  #get   '/platform/info',           :controller => :service, :action => :info
-  #get   '/platform/stats',          :controller => :service, :action => :stats
-  #get   '/platform/detailed_stats', :controller => :service, :action => :detailed_stats
-  #get   '/platform/doc',            :controller => :service, :action => :doc
-  #get   '/platform/releasenotes',   :controller => :service, :action => :releasenotes
-  #get   '/platform/support',        :controller => :service, :action => :support
-  #get   '/platform/source',         :controller => :service, :action => :source
-  #get   '/platform/tryme',          :controller => :service, :action => :tryme
-  #get   '/platform/licence',        :controller => :service, :action => :licence
-  #get   '/platform/provenance',     :controller => :service, :action => :provenance
-  #get   '/platform/factsheet',      :controller => :service, :action => :factsheet
+  get   '/stats', :controller => :service, :action => :detailed_stats
 
 
 
