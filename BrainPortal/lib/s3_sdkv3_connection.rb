@@ -31,6 +31,10 @@ class S3Sdkv3Connection
   SYMLINK_ENDING = "_symlink_s3_object" #:nodoc:
   SUBDIR_ENDING  = "/"  #:nodoc:
 
+  # This value is for old backwards-compatibiliy;
+  # objects with this ending are now ignored
+  OLD_SUBDIR_ENDING = "-subdir_s3_object" #:nodoc:
+
   # Sets a logger for the AWS layer (default, STDOUT)
   def self.set_logger(logger=Logger.new(STDOUT))
     Aws.config.update(:logger => logger)
@@ -161,7 +165,7 @@ class S3Sdkv3Connection
       # Add cumulatively the list of objects
       current_list_of_obj = resp.contents.presence || []
       current_list_of_obj.reject! { |obj| obj.key == prefix } # any fake subdir object like "a/b/c/" that match exactly the prefix
-      #current_list_of_obj.reject! { |obj| obj.key.ends_with?("-subdir_s3_object") } # remove old compatibility objects
+      current_list_of_obj.reject! { |obj| obj.key.ends_with?(OLD_SUBDIR_ENDING) } # remove old compatibility objects
       list_of_objects += current_list_of_obj # cumulative list
 
       # Add to the list some artificial objects representing subdirs
