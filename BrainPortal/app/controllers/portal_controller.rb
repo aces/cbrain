@@ -27,9 +27,9 @@ class PortalController < ApplicationController
 
   include DateRangeRestriction
 
-  api_available :only => [ :swagger ] # GET /swagger returns the .json specification
+  api_available :only => [ :swagger, :stats ] # GET /swagger returns the .json specification
 
-  before_action :login_required, :except => [ :credits, :about_us, :welcome, :swagger, :available ]  # welcome is here so that the redirect to the login page doesn't show the error message
+  before_action :login_required, :except => [ :credits, :about_us, :welcome, :swagger, :available, :stats ]  # welcome is here so that the redirect to the login page doesn't show the error message
   before_action :admin_role_required, :only => :portal_log
 
   # Display a user's home page with information about their account.
@@ -444,6 +444,22 @@ class PortalController < ApplicationController
     end
   end
 
+  # Return information about the usage of the platform.
+  def stats
+    @stats             = RemoteResource.current_resource.meta[:stats] || {}
+    @stats_by_client   = @stats[:UserAgents] || {}
+    @stats_by_contr_action = compile_total_stats(@stats)
+
+    @last_reset        = (RemoteResource.current_resource.meta.md_for_key(:stats).created_at || Time.at(0)).utc.iso8601
+    @stats[:lastReset] = @last_reset
+
+    respond_to do |format|
+      format.html
+      format.xml  { render :xml  => @stats }
+      format.json { render :json => @stats }
+    end
+  end
+
   private
 
   def merge_vals_as_array(*sub_reports) #:nodoc:
@@ -484,6 +500,28 @@ class PortalController < ApplicationController
     end
 
     data
+  end
+
+  # From the raw stats accumulated for all clients,
+  # controllers and actions, compile two other
+  # secondary stats: the sums by clients, and
+  # the sums by pair "controller,service".
+  def compile_total_stats(stats={}) #:nodoc:
+    stats_by_contr_action = {}
+
+    # stats['AllAgents'] is { 'controller' => { 'action' => [1,2] , ... }, ... }
+    all_agents = stats['AllAgents'] || stats[:AllAgents] || {}
+    all_agents.each do |controller, by_action|
+      by_action.each do |action, counts|
+        # By controller and action
+        contr_action = "#{controller},#{action}"
+        stats_by_contr_action[contr_action]   ||= [0,0]
+        stats_by_contr_action[contr_action][0] += counts[0]
+        stats_by_contr_action[contr_action][1] += counts[1]
+      end
+    end
+
+    return stats_by_contr_action
   end
 
 end
