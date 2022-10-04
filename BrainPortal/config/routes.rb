@@ -195,6 +195,7 @@ Rails.application.routes.draw do
   get   '/about_us'               => 'portal#about_us'
   get   '/available'              => 'portal#available'
   get   '/search'                 => 'portal#search'
+  get   '/stats'                  => 'portal#stats'
   get   '/login'                  => 'sessions#new'
   get   '/logout'                 => 'sessions#destroy'
   get   '/session_status'         => 'sessions#show'
@@ -255,14 +256,6 @@ Rails.application.routes.draw do
   get    '/path/*path',             :controller => :carmin, :action => :path_show,    :constraints => { :path => nil }
   put    '/path/*path',             :controller => :carmin, :action => :path_create,  :constraints => { :path => nil }
   delete '/path/*path',             :controller => :carmin, :action => :path_delete,  :constraints => { :path => nil }
-
-
-
-  ####################################################################################
-  # Service; detailed_stats is the only action kept from
-  # the (deprecated) CANARIE monitoring system.
-  ####################################################################################
-  get   '/stats', :controller => :service, :action => :detailed_stats
 
 
 
