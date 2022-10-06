@@ -57,7 +57,7 @@
 #       "value-key": "[DERIVATIVES_INPUT]"
 #     }
 #
-# and in the +cbrain:integrator_modules+ section look like:
+# and in the `cbrain:integrator_modules` section look like:
 #
 #     "BoutiquesInputSubdirMaker": {
 #       "input_id": {"dirname": "folder_name", "filename": "file_name", "append_filename": boolean},
@@ -109,9 +109,11 @@ module BoutiquesInputSubdirMaker
       # Adjust the description
       input              = descriptor.input_by_id(inputid)
       dirname            = fake_parent_dirname["dirname"]
+      filename           = fake_parent_dirname["filename"]
       input.description  = input.description.to_s +
-                           "\nThis input will be copied in a parent folder: #{dirname}. The parent folder will be used in the command line"
-    end
+                           "\nThis input will be copied in a parent folder: #{dirname}. The parent folder will be used in the command line."
+      input.description  = input.description.to_s + "\nThe file will be register with name #{filename}." if filename.present?
+      end
 
     descriptor
   end
@@ -144,7 +146,6 @@ module BoutiquesInputSubdirMaker
     # invoke main setup
     result = super
 
-    # Return false if super failed
     return false if ! super
 
     # Special make_available who need to have a parent folder
