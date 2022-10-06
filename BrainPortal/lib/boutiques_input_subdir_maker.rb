@@ -57,7 +57,7 @@
 #       "value-key": "[DERIVATIVES_INPUT]"
 #     }
 #
-# and in the `cbrain:integrator_modules` section look like:
+# and in the +cbrain:integrator_modules+ section look like:
 #
 #     "BoutiquesInputSubdirMaker": {
 #       "input_id": {"dirname": "folder_name", "filename": "file_name", "append_filename": boolean},
@@ -85,8 +85,8 @@
 #
 #     apptool --precomputed precomputed --derivatives derivatives/sub-m
 #
-# The `precomputed` folder contains `sub-n` and `data_descriptor.json` (== `descriptor.json` renamed as `data_descriptor.json`)
-# The `derivatives` folder contains `sub-m`
+# The +precomputed+ folder contains +sub-n+ and +data_descriptor.json+ (== +descriptor.json+ renamed as +data_descriptor.json+)
+# The +derivatives+ folder contains +sub-m+
 #
 module BoutiquesInputSubdirMaker
 
@@ -120,7 +120,7 @@ module BoutiquesInputSubdirMaker
   # Bourreau (Cluster) Side Modifications
   ############################################
 
-  # For input in `BoutiquesInputSubdirMaker` section,
+  # For input in +BoutiquesInputSubdirMaker+ section,
   # create a fake parent directory that will contains a symlink
   # to the orginal selected Userfile.
   def setup #:nodoc:
