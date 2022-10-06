@@ -105,11 +105,11 @@ module BoutiquesInputSubdirMaker
     descriptor                = super.dup
     parent_dirname_by_inputid = descriptor.custom_module_info('BoutiquesInputSubdirMaker')
 
-    parent_dirname_by_inputid.each do |inputid,fake_parent_dirname|
+    parent_dirname_by_inputid.each do |inputid,subdir_config|
       # Adjust the description
       input              = descriptor.input_by_id(inputid)
-      dirname            = fake_parent_dirname["dirname"]
-      filename           = fake_parent_dirname["filename"]
+      dirname            = subdir_config["dirname"]
+      filename           = subdir_config["filename"]
       input.description  = input.description.to_s +
                            "\nThis input will be copied in a parent folder: #{dirname}. The parent folder will be used in the command line."
       input.description  = input.description.to_s + "\nThe file will be register with name #{filename}." if filename.present?
@@ -149,14 +149,14 @@ module BoutiquesInputSubdirMaker
     return false if ! super
 
     # Special make_available who need to have a parent folder
-    parent_dirname_by_inputid.each do |inputid,fake_parent_dirname|
+    parent_dirname_by_inputid.each do |inputid,subdir_config|
       userfile_id = original_userfile_ids[inputid]
 
       next if userfile_id.blank?
 
       userfile    = Userfile.find(userfile_id)
-      dirname     = fake_parent_dirname["dirname"]
-      filename    = fake_parent_dirname["filename"] || userfile.name
+      dirname     = subdir_config["dirname"]
+      filename    = subdir_config["filename"] || userfile.name
 
       make_available(userfile, "#{dirname}/#{filename}")
     end
@@ -175,13 +175,13 @@ module BoutiquesInputSubdirMaker
 
     descriptor = self.descriptor_for_cluster_commands
     parent_dirname_by_inputid = descriptor.custom_module_info('BoutiquesInputSubdirMaker')
-    parent_dirname_by_inputid.each do |inputid,fake_parent_dirname|
+    parent_dirname_by_inputid.each do |inputid,subdir_config|
       if override_invoke_params[inputid].blank?
         override_invoke_params.delete(inputid)
       else
-        dirname              = fake_parent_dirname["dirname"]
-        filename             = fake_parent_dirname["filename"] || "#{override_invoke_params[inputid]}"
-        append_userfile_name = fake_parent_dirname["append_filename"]
+        dirname              = subdir_config["dirname"]
+        filename             = subdir_config["filename"] || "#{override_invoke_params[inputid]}"
+        append_userfile_name = subdir_config["append_filename"]
         override_invoke_params[inputid] = append_userfile_name ? "#{dirname}/#{filename}" : dirname
       end
     end
