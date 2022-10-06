@@ -39,7 +39,14 @@
 #       "type": "File",
 #       "command-line-flag": "--precomputed",
 #       "value-key": "[PRECOMPUTED_INPUT]"
-#     }
+#     },
+#     {
+#       "description": "Data descriptor for precomputed data",
+#       "id": "precomputed_data_descriptor_json",
+#       "name": "Data descriptor (precomputed)",
+#       "optional": false,
+#       "type": "File"
+#     },
 #     {
 #       "description": "A directory that contain the derivatives data process by...",
 #       "id": "derivatives_input",
@@ -53,7 +60,7 @@
 # and in the `cbrain:integrator_modules` section look like:
 #
 #     "BoutiquesInputSubdirMaker": {
-#       "input_id": ["folder_name", boolean],
+#       "input_id": {"dirname": "folder_name", "filename": "file_name", "append_filename": boolean},
 #      },
 #
 # if the boolean is true the value used in the command line
@@ -63,18 +70,23 @@
 # For example:
 #
 #     "BoutiquesInputSubdirMaker": {
-#       "precomputed_input": ["precomputed", true],
-#       "derivatives_input": ["derivatives", false]
+#       "precomputed_input": {"dirname": "precomputed", "append_filename": false},
+#       "precomputed_json" : {"dirname": "precomputed", "filename": "dataset_description.json", "append_filename": false},
+#       "derivatives_input": {"dirname": "derivative",  "append_filename": true}
 #      },
 #
-# In CBRAIN the user will select 2 userfiles for example:
+# In CBRAIN the user will select 3 userfiles for example:
 #
 # 'sub-n' for precomputed option.
+# 'descriptor.json' for precomputed_data_descriptor_json option.
 # 'sub-m' for derivatives option.
 #
 # The final command line will be:
 #
-#     apptool --precomputed precomputed/sub-n --derivatives derivatives
+#     apptool --precomputed precomputed --derivatives derivatives/sub-m
+#
+# The `precomputed` folder contains `sub-n` and `data_descriptor.json` (== `descriptor.json` renamed as `data_descriptor.json`)
+# The `derivatives` folder contains `sub-m`
 #
 module BoutiquesInputSubdirMaker
 
@@ -96,7 +108,7 @@ module BoutiquesInputSubdirMaker
     parent_dirname_by_inputid.each do |inputid,fake_parent_dirname|
       # Adjust the description
       input              = descriptor.input_by_id(inputid)
-      dirname            = fake_parent_dirname[0]
+      dirname            = fake_parent_dirname["dirname"]
       input.description  = input.description.to_s +
                            "\nThis input will be copied in a parent folder: #{dirname}. The parent folder will be used in the command line"
     end
@@ -137,13 +149,15 @@ module BoutiquesInputSubdirMaker
 
     # Special make_available who need to have a parent folder
     parent_dirname_by_inputid.each do |inputid,fake_parent_dirname|
-      dirname     = fake_parent_dirname[0]
       userfile_id = original_userfile_ids[inputid]
 
       next if userfile_id.blank?
 
-      userfile = Userfile.find(userfile_id)
-      make_available(userfile, "#{dirname}/#{userfile.name}")
+      userfile    = Userfile.find(userfile_id)
+      dirname     = fake_parent_dirname["dirname"]
+      filename    = fake_parent_dirname["filename"] || userfile.name
+
+      make_available(userfile, "#{dirname}/#{filename}")
     end
 
     true
@@ -164,8 +178,10 @@ module BoutiquesInputSubdirMaker
       if override_invoke_params[inputid].blank?
         override_invoke_params.delete(inputid)
       else
-        (dirname, append_userfile_name) = fake_parent_dirname
-        override_invoke_params[inputid] = append_userfile_name ? "#{dirname}/#{override_invoke_params[inputid]}" : dirname
+        dirname              = fake_parent_dirname["dirname"]
+        filename             = fake_parent_dirname["filename"] || "#{override_invoke_params[inputid]}"
+        append_userfile_name = fake_parent_dirname["append_filename"]
+        override_invoke_params[inputid] = append_userfile_name ? "#{dirname}/#{filename}" : dirname
       end
     end
 
