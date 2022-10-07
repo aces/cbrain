@@ -334,7 +334,6 @@ describe RemoteResource do
     end
     it "should return a 'localhost' url if ssh control and active resource tunnel info given" do
       allow(remote_resource).to receive(:has_ssh_control_info?).and_return(true)
-      allow(remote_resource).to receive(:tunnel_actres_port).and_return(true)
       expect(remote_resource.site).to match(/^http:\/\/localhost/)
     end
   end
