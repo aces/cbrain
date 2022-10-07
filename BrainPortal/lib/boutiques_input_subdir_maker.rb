@@ -111,8 +111,8 @@ module BoutiquesInputSubdirMaker
       dirname            = subdir_config["dirname"]
       filename           = subdir_config["filename"]
       input.description  = input.description.to_s +
-                           "\nThis input will be copied in a parent folder: #{dirname}. The parent folder will be used in the command line."
-      input.description  = input.description.to_s + "\nThe file will be register with name #{filename}." if filename.present?
+                           "\nThis input will be copied in a parent folder: #{dirname}.\n The parent folder will be used in the command line."
+      input.description  = input.description.to_s + "\nThe file will be registered with name #{filename}." if filename.present?
       end
 
     descriptor
