@@ -144,8 +144,6 @@ module BoutiquesInputSubdirMaker
     end
 
     # invoke main setup
-    result = super
-
     return false if ! super
 
     # Special make_available who need to have a parent folder
