@@ -76,7 +76,7 @@ class BoutiquesClusterTask < ClusterTask
     descriptor = self.descriptor_for_setup
     self.addlog(descriptor.file_revision_info.format("%f rev. %s %a %d"))
 
-    module_information;
+
 
     descriptor.file_inputs.each do |input|
       userfile_id = invoke_params[input.id]
@@ -420,19 +420,6 @@ class BoutiquesClusterTask < ClusterTask
   # for output.
   def file_access_symbol
     @_file_access ||= (self.class.properties[:readonly_input_files].present? || self.tool_config.try(:inputs_readonly) ? :read : :write)
-  end
-
-  private
-
-  def module_information
-    descriptor = self.descriptor_for_setup
-
-    integrator_modules = descriptor['custom']['cbrain:integrator_modules']
-    integrator_modules.each_key do |module_name|
-      klass    = module_name.constantize
-      rev_info = klass::Revision_info
-      self.addlog("#{rev_info.basename} rev. #{rev_info.short_commit} #{rev_info.time} (author: #{rev_info.author})");
-    end
   end
 
 end
