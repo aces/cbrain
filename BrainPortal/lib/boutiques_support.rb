@@ -90,6 +90,13 @@ module BoutiquesSupport
       BoutiquesSupport.validate(self) # amazingly, the JSON validator also work with our descriptor class
     end
 
+    # When dup'ing, also copy the from_file attribute
+    def dup #:nodoc:
+      copy = super
+      copy.from_file = self.from_file
+      copy
+    end
+
     # ------------------------------
     # Attribute assignment overrides
     # ------------------------------

@@ -105,10 +105,11 @@ class S3FlatDataProvider < DataProvider
   # cloud_storage_client_path_start if it is present.
   # Will try to return an object of the same type as +path+ (e.g.
   # a String or a Pathname)
+  #
+  # It's important for this method to preserve trailing slashes.
   def add_start(path)
     return path if cloud_storage_client_path_start.blank?
     joined = cloud_storage_client_path_start + "/" + path.to_s
-    joined = joined.sub(/\/\z/,"") # happens with path == ""
     return Pathname.new(joined) if path.is_a?(Pathname)
     joined
   end

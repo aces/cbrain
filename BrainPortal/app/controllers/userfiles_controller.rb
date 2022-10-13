@@ -625,6 +625,7 @@ class UserfilesController < ApplicationController
         CBRAIN.spawn_with_active_records(current_user, "FileCollection Extraction") do
           begin
             collection.extract_collection_from_archive_file(tmpcontentfile)
+            collection.addlog_context(self, "Uploaded by #{current_user.login}, extracted from #{basename}")
             Message.send_message(current_user,
                                   :message_type   => 'notice',
                                   :header         => "Collection Uploaded",

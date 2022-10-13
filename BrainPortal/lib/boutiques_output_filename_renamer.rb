@@ -53,7 +53,7 @@
 # or directory name. With this module, this string can become
 # a pattern such as "hello-#{taskid}-{3}.out"
 #
-# NOTE: most of the times, this module will be used in a descriptor
+# NOTE 1: most of the times, this module will be used in a descriptor
 # such that the value for 'value-key' of the input "outname_inputid1"
 # matches exactly the value for 'path-template' for "outputid1". E.g.
 #
@@ -85,6 +85,14 @@
 #       }
 #   }
 #
+# NOTE 2: It is an error to configure this module
+# with two entries that have the same String outname
+# and a different File fileinput, e.g. like:
+#
+#           "BoutiquesOutputFilenameRenamer": {
+#             "results1": [ "fileinput1", "outname" ]
+#             "results2": [ "fileinput2", "outname" ]
+#           }
 module BoutiquesOutputFilenameRenamer
 
   # Note: to access the revision info of the module,
@@ -102,8 +110,15 @@ module BoutiquesOutputFilenameRenamer
   def descriptor_with_renaming_explanations(descriptor)
     descriptor = descriptor.dup
     config_map = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer')
+
+    uniq_outnames = {}
+
     config_map.each do |_, pair|
       fileinputid, outnameinputid = *pair
+
+      next if uniq_outnames[outnameinputid]
+      uniq_outnames[outnameinputid]=true
+
       outnameinput   = descriptor.input_by_id(outnameinputid)
       fileinput      = descriptor.input_by_id(fileinputid)
       fileinputname  = fileinput.name.presence || fileinputid
@@ -119,14 +134,23 @@ module BoutiquesOutputFilenameRenamer
         {cluster} : the name of the execution server
         {run_number} : the task's run number
 
-        and additionally, alphanumerical sequences extracted from the input file specified
-        in "#{fileinputname}" as {1}, {2}, {3} etc.
+        Additionally, you can specify patterns such as {1}, {2}, {3} etc. These will
+        extract alphanumerical sequences from the input file name specified
+        in "#{fileinputname}".
 
-        E.g. if your inputfile is named "hello_123-b626.mnc" then {1} is "hello", {2} is "123",
-        {3} is "b626" and {4} is "mnc".
+        E.g. if your input file is named "hello_123-b626.txt" then {1} is "hello", {2} is "123",
+        {3} is "b626" and {4} is "txt".
+
+        Two more patterns exist to substitute most or all of your input file name:
+
+        {full} : your input file name exactly (e.g. "hello_123-b626.txt")
+        {full_noex} : your input file name without any extensions (e.g. "hello_123-b626")
+
+        Important: Make sure the name generated does not crush any of your existing files!
 
         Important: if you launch several tasks out of a list of input files, make sure
-        each task will generate a distinct unique filename here!
+        each task will generate a distinct, unique output file name. Using the {task_id}
+        is a good way to ensure unique names.
       INFO
     end
     descriptor
@@ -200,7 +224,7 @@ module BoutiquesOutputFilenameRenamer
     config_map.each do |outputid, pair| # boutiques ID of outfile-files entry, pair
       next unless outputid == output.id
       _, outnameinputid = *pair
-      name = invoke_params[outnameinputid] # just replace it; this removes the standard task ID extension too
+      name = invoke_params[outnameinputid] # just replace it
       break
     end
     [ name, type ]
@@ -217,6 +241,9 @@ module BoutiquesOutputFilenameRenamer
     keywords = output_renaming_standard_keywords
     # Add support for {1}, {2} etc extracted from the input file name
     output_renaming_add_numbered_keywords(keywords, inputname, "")
+    # Add '{full}', '{full_noex}'
+    keywords['full']      = inputname
+    keywords['full_noex'] = inputname.sub(/\..*/,"")
     outname = pattern.pattern_substitute(keywords)
     outname
   end
