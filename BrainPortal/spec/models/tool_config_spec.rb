@@ -32,7 +32,6 @@ describe ToolConfig do
     let(:no_b_tool_config)  { create(:tool_config, :bourreau => nil) }
     let(:no_t_tool_config)  { create(:tool_config, :tool => nil) }
 
-
     it "should allow admin user to access a tool config even if they don't belong to its group" do
       expect(tool_config.can_be_accessed_by?(user)).to be_truthy
     end
@@ -159,12 +158,14 @@ describe ToolConfig do
 
    context "fill HEADER" do
       it "should print 'Configuration: tool_config.id'" do
-        expect(tool_config.to_bash_prologue).to match(/Configuration\s?:\s+#\s+#{tool_config.id}/)
+        expect(tool_config.to_bash_prologue).to                    match(/Configuration\s?:\s+#\s+#{tool_config.id}/)
+        expect(tool_config.to_bash_prologue(singularity: true)).to match(/Configuration\s?:\s+#\s+#{tool_config.id}/)
       end
 
       it "should print 'Tool: ALL' if specific tool is not defined"  do
         tool_config.tool = nil
-        expect(tool_config.to_bash_prologue).to match(/Tool\s?:\s+ALL/)
+        expect(tool_config.to_bash_prologue).to                    match(/Tool\s?:\s+ALL/)
+        expect(tool_config.to_bash_prologue(singularity: true)).to match(/Tool\s?:\s+ALL/)
       end
 
       it "should print 'Tool: tool_config.tool.name' if specific tool is defined"  do
@@ -195,12 +196,14 @@ describe ToolConfig do
       it "should print 'Description: (NONE SUPPLIED)' if description is blank" do
         tool_config.description = nil
         tool_config.tool        = tool
-        expect(tool_config.to_bash_prologue).to match(/Description\s?:\s+\(NONE SUPPLIED\)/)
+        expect(tool_config.to_bash_prologue).to      match(/Description\s?:\s+\(NONE SUPPLIED\)/)
+        expect(tool_config.to_bash_prologue true).to match(/Description\s?:\s+\(NONE SUPPLIED\)/)
       end
 
       it "should print 'Description: tool_config.description' if description is blank" do
         tool_config.tool        = tool
-        expect(tool_config.to_bash_prologue).to match(/Description\s?:\n\#\-+\n\n\#\s+#{tool_config.description}/)
+        expect(tool_config.to_bash_prologue).to      match(/Description\s?:\n\#\-+\n\n\#\s+#{tool_config.description}/)
+        expect(tool_config.to_bash_prologue true).to match(/Description\s?:\n\#\-+\n\n\#\s+#{tool_config.description}/)
       end
     end
 
@@ -221,6 +224,22 @@ describe ToolConfig do
         end
 
         expect(tool_config.to_bash_prologue).to match(/Environment variables\s?:\n\#\-+\n\n#{script}/)
+      end
+      it "should not print 'Environment variables: export SINGULARITYENV_name1=\"value1\".... if config has no singularity" do
+        tool_config.env_array = [["name1", "value1"],["name2","value2"]]
+        expect(tool_config.to_bash_prologue).not_to match(/(SINGULARITYENV|APPTAINERENV)/)
+      end
+      it "should print 'export SINGULARITYENV_name1=\"value1\".... if env is not empty and config uses singularity" do
+        tool_config.env_array = [["name1", "value1"],["name2","value2"]]
+
+        script = ""
+        tool_config.env_array.each do |name_val|
+          name = "SINGULARITYENV_" + name_val[0].strip
+          val  = name_val[1]
+          script += "export #{name}=\\\"#{val}\\\"\\n"
+        end
+
+        expect(tool_config.to_bash_prologue true).to match(/#{script}/)
       end
     end
 
