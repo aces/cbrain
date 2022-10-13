@@ -33,7 +33,7 @@ function cbrain_userfile_launch_bar(tool_name, file_status_text, have_selection,
 
   $('#menu_bar').after(
     $('<div class="launch_bar">')
-      .append($('<span class="info">Select some files to launch <span id="tool_name">' + tool_name + '</span></span>'))
+      .append($('<span class="info">Select some files to launch <span id="tool_name_to_launch">' + tool_name + '</span></span>'))
       .append($('<span class="file_status">' + file_status_text + '</span>'))
       .append($('<button>Launch</button>').button({ disabled: !have_selection }))
   );
@@ -71,7 +71,7 @@ function launch_task() {
     }
   }
 
-  var tool_name = $("#tool_name").text();
+  var tool_name = $("#tool_name_to_launch").text();
   if (tool_name === '') {
     tool_name === undefined;
   }
