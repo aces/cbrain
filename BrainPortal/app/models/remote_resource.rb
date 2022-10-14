@@ -58,7 +58,6 @@ class RemoteResource < ApplicationRecord
   # can only be set by the admin using the Rails console; leaving them blank
   # means the mailers use whatever is configured in the Rails environment config.
   serialize             :email_delivery_options
-  serialize             :nh_email_delivery_options
 
   validates             :name,
                         :uniqueness        => true,
