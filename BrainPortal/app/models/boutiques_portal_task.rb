@@ -267,9 +267,15 @@ class BoutiquesPortalTask < PortalTask
     self.addlog(descriptor.file_revision_info.format("%f rev. %s %a %d"))
     valid_input_keys = descriptor.inputs.map(&:id)
 
+<<<<<<< HEAD
     # Add information about Boutiques module
     module_information = boutiques_module_information();
     module_information.map do |info|
+=======
+    # add information about Boutiques module
+    module_information = boutiques_module_information()
+    module_information.each do |info|
+>>>>>>> [FIX] after PR review
        self.addlog(info)
     end
 
@@ -747,16 +753,19 @@ class BoutiquesPortalTask < PortalTask
   
   private
 
-  def boutiques_module_information
+  # Prepare an array with revision information of
+  # all the Boutiques integrator modules used by the
+  # tools.
+  def boutiques_module_information #:nodoc:
     descriptor = self.descriptor_for_final_task_list
 
-    module_information = []
+    integrator_modules = (descriptor['custom'] && descriptor['custom']['cbrain:integrator_modules']) || {}
 
-    integrator_modules = descriptor['custom']['cbrain:integrator_modules']
-    integrator_modules.each_key do |module_name|
+    module_information = []
+    module_information = integrator_modules.map do |module_name, value|
       module_name = module_name.constantize
       rev_info    = module_name::Revision_info
-      module_information.push("#{rev_info.basename} rev. #{rev_info.short_commit} #{rev_info.time} (author: #{rev_info.author})");
+      "#{rev_info.basename} rev. #{rev_info.short_commit} #{rev_info.time} (author: #{rev_info.author})"
     end
 
     return module_information

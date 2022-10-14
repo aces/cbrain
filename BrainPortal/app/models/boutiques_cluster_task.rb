@@ -76,8 +76,6 @@ class BoutiquesClusterTask < ClusterTask
     descriptor = self.descriptor_for_setup
     self.addlog(descriptor.file_revision_info.format("%f rev. %s %a %d"))
 
-
-
     descriptor.file_inputs.each do |input|
       userfile_id = invoke_params[input.id]
       next if userfile_id.blank? # that happens when it's an optional file
