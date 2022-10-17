@@ -5,7 +5,7 @@
     "author":         "Pierre Rioux",
     "description":    "A demo CBRAIN task using a Boutiques descriptor. This program runs the UNIX 'du' command on a file or directory.",
     "descriptor-url": "https://github.com/aces/cbrain/blob/master/BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task_descriptors/boutiques_demo.json",
-    "command-line": "du [ALL] [HUMAN] [FOLLOW_LINKS] [CBRAIN_INPUT] > tee [DU_OUTPUT_NAME]",
+    "command-line": "du [ALL] [HUMAN] [FOLLOW_LINKS] [CBRAIN_INPUT] | tee [DU_OUTPUT_NAME]",
     "inputs": [
         {
             "name":              "Input file or directory",
