@@ -212,7 +212,7 @@ class User < ApplicationRecord
   end
 
   # Records that +user+ signed the +license+ file for +project+
-  # with nice log messages to that effect. When signed on cbrain model should be 'group' on heurohub 'project'
+  # with nice log messages to that effect. When signed on CBRAIN model should be 'group' and 'project' on NeuroHub's
   def signs_license_for_project(license, project, model='project')
     self.add_signed_custom_license(license)
     self.addlog("Signed custom license agreement '#{license.name}' (ID #{license.id}) for #{model} '#{project.name}' (ID #{project.id}).")

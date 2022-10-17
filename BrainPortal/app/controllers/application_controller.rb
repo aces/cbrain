@@ -72,7 +72,6 @@ class ApplicationController < ActionController::Base
 
 
   def redirect_show_license
-    #
     if params[:id].present? && params[:controller] == "groups"
       redirect_to show_license_group_path(params[:id])
     else

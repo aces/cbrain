@@ -354,12 +354,10 @@ class GroupsController < ApplicationController
 
     if current_user.unsigned_custom_licenses(@group).empty?
       flash[:notice] = 'You signed all the project licenses'
-      redirect_to :action => :show, :id => @group.id
     else
       flash[:notice] = 'This project has at least one other license agreement'
-      redirect_to :action => :show, :id => @group.id
-      #redirect_to :action => show_license_nh_project_path(@nh_project)
     end
+    redirect_to :action => :show, :id => @group.id
   end
 
   # check license for project (group) with id pid,
