@@ -77,17 +77,16 @@ module BoutiquesInputValueFixer
                                                    # in the spec, so they will be treated slightly different
       begin
         input = descriptor_dup.input_by_id(i_id)
-      rescue CbrainError # might be already deleted, the dependencies between different desciptors_for ... a bit complex to track
-        next
+      rescue CbrainError # it is hard to predict how all the desciptors_after are related ... a bit complex to track
+        next             # if one `descriptor_after` affected by another, some inputs could be already deleted
       end
       value = fixed_values[i_id]
       value.nil? || (input.type == 'Flag') &&  (value.presence.to_s.strip =~ /no|0|nil|none|null|false/i || value.blank?)
 
     end
 
-    # generally speaking, boutiques inputs can have different dependencies,
-    # here we address only group dependencies, namely mutually exclusion group
-    # if not removed task UI might force user into entering invalid parameter valuation (invocation)
+    # generally speaking, boutiques input groups can have three different constraints,
+    # here we address mutually exclusion group only.
 
     descriptor_dup.groups.each do |g| # filter groups, relax restriction to ensure that form can still be submitted
       members = g.members - fixed_values.keys
@@ -137,7 +136,7 @@ module BoutiquesInputValueFixer
     descriptor_dup.inputs = descriptor_dup.inputs.select { |i| ! fixed_values.key?(i.id) } # filter out fixed inputs
 
     # crude erase of fixed inputs from dependencies.
-    #    descriptor_dup.inputs.each do |i|
+    descriptor_dup.inputs.each do |i|
       i.requires_inputs = i.requires_inputs - fixed_values.keys if i.requires_inputs.present?
       i.disables_inputs = i.disables_inputs - fixed_values.keys if i.disables_inputs.present?
       i.value_requires.each { |v, a| i.value_requires[v] -= fixed_values.keys } if i.value_requires.present?
@@ -147,8 +146,8 @@ module BoutiquesInputValueFixer
     descriptor_dup
   end
 
-  # this is blocks an input parameter, rather than explicitely deleting it
-  # it is a bit unconvential yet expected to be used for relatively rare case when fixing or deleting
+  # this is blocks an input parameter, rather than explicitly deleting it
+  # it is a bit unorthodox yet expected to be used for relatively rare case when fixing or deleting
   # one input has negative implications.
   def block_inputs(descriptor, input_ids)
     input_ids.each do |input_id|
@@ -183,7 +182,5 @@ module BoutiquesInputValueFixer
     self.invoke_params.merge!(fixed_values) # put back fixed values into invocation, if needed
     super    # Performs standard processing
   end
-
-  # assuming the after_form always happens before cluster steps, the fixed values will be available for them
 
 end
