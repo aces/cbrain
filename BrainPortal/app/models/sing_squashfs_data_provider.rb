@@ -86,12 +86,17 @@ class SingSquashfsDataProvider < SshDataProvider
     cb_error "No .squashfs files found" unless sq_files.present?
 
     # Check we have singularity version 3.2 or better
-    remote_cmd = "singularity --version"
+    remote_cmd = "(singularity --version 2>/dev/null || apptainer --version 2>/dev/null)"
     text       = self.remote_bash_this(remote_cmd)
-    cb_error "Can't find singularity version number on remote host" unless text =~ /^(singularity version )?(\d+)\.(\d+)/
-    major,minor = Regexp.last_match[2,2].map(&:to_i)
-    cb_error "singularity version number on remote host is less than 3.0" if major  < 3
-    cb_error "singularity version number on remote host is less than 3.2" if major == 3 && minor < 2
+    cb_error "Can't find singularity version number on remote host" unless text =~ /^((singularity|apptainer) version )?(\d+)\.(\d+)/
+    _, _, tool, major, minor = Regexp.last_match
+    major = major.to_i
+    minor = minor.to_i
+    if tool == 'singularity'
+      cb_error "singularity version number on remote host is less than 3.7" if major  < 3 || (major == 3 && minor < 7)
+    else # tool == 'apptainer'
+      cb_error "apptainer version number on remote host is less than 1.1"   if major  < 1 || (major == 1 && minor < 1)
+    end
 
     # Check that inside the container
     all_sq_files = @sq_files
