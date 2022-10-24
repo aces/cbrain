@@ -123,7 +123,7 @@ class SingBindmountDataProvider < SshDataProvider
     remote_cmd = "(singularity --version 2>/dev/null || apptainer --version 2>/dev/null)"
     text       = self.remote_bash_this(remote_cmd)
     cb_error "Can't find singularity version number on remote host" unless text =~ /^((singularity|apptainer) version )?(\d+)\.(\d+)/
-    _, _, tool, major, minor = Regexp.last_match
+    _, _, tool, major, minor = Regexp.last_match.to_a
     major = major.to_i
     minor = minor.to_i
     if tool == 'singularity'
