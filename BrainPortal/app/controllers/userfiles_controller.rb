@@ -1422,6 +1422,10 @@ class UserfilesController < ApplicationController
 
     # Save it and set its content.
     if file_list.save
+      file_list.addlog("Created with #{userfiles.size} entries")
+      typecounts = userfiles.inject(Hash.new(0)) { |tc,f| tc[f.type.to_s] += 1; tc }
+      typereport = typecounts.map { |klassname,count| "#{klassname} x #{count}" }.join(", ")
+      file_list.addlog(typereport)
       csv_text = CbrainFileList.create_csv_file_from_userfiles(userfiles)
       file_list.cache_writehandle { |fh| fh.write(csv_text) }
       flash[:notice] = <<~NOTICE
