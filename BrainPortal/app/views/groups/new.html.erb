@@ -54,6 +54,12 @@
       <%= f.check_box :track_usage %>
     <% end %>
 
+    <% Make project public, so its files are visible to all the users %>
+    <%= f.check_box :public %>
+    <p>
+    A public project makes all its files visible to all the users. Be careful with this option!
+    You can always make project to public latter on.
+
     <p>
     Normal members will not be able to assign files or other resources
     to this project (but editors are always allowed to do so):
