@@ -133,7 +133,7 @@
               "du_report_out": "TextFile"
             },
             "BoutiquesOutputFilenameRenamer": {
-              "my_output_name": "sinput1"
+              "du_report_out": [ "sinput1", "my_output_name" ]
             }
         }
     }

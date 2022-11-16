@@ -95,6 +95,9 @@ class CBRAIN
     reader,writer = IO.pipe  # The stream that we use to send the subchild's pid to the parent
     childpid = Kernel.fork do
 
+      # Need to properly tell MySQL/MariaDB that we're disconnecting
+      ApplicationRecord.connection.disconnect! rescue nil
+
       # Child code starts here
       reader.close # Not needed in the child!
 
@@ -197,6 +200,9 @@ class CBRAIN
   def self.spawn_fully_independent(taskname = 'Independent Background Task')
     reader,writer = IO.pipe  # The stream that we use to send the subchild's pid to the parent
     childpid = Kernel.fork do
+
+      # Need to properly tell MySQL/MariaDB that we're disconnecting
+      ApplicationRecord.connection.disconnect! rescue nil
 
       # Child code starts here
       reader.close # Not needed in the child!

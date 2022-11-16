@@ -573,10 +573,12 @@ class ToolConfig < ApplicationRecord
 
     container_info   = descriptor.container_image || {}
     container_engine = container_info['type'].presence.try(:capitalize)
-    container_engine = "Singularity" if (container_engine == "Docker" && 
+    container_engine = "Singularity" if (container_engine == "Docker" &&
                                          !bourreau.docker_present?    &&
                                           bourreau.singularity_present?
                                         )
+    container_index  = container_info['index'].presence
+    container_index  = 'docker://' if container_index == 'index.docker.io' # old convention
     tc = ToolConfig.create!(
       # Main three keys
       :tool_id         => tool.id,
@@ -593,7 +595,7 @@ class ToolConfig < ApplicationRecord
       :boutiques_descriptor_path => (record_path.presence && descriptor.from_file),
       # The following three attributes are for containerization; not sure about values
       :container_engine          => container_engine,
-      :container_index_location  => container_info['index'].presence,
+      :container_index_location  => container_index,
       :containerhub_image_name   => container_info['image'].presence,
     )
 

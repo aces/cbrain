@@ -37,7 +37,7 @@
 #             "work",
 #             "*.tmp",
 #             "[OUTFILE_NAME].*.work"
-#           [
+#           ]
 #       }
 #   }
 #

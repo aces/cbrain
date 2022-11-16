@@ -454,7 +454,11 @@ class Bourreau < RemoteResource
 
     CBRAIN.spawn_with_active_records(:admin, "AlterTask #{newstatus}") do
 
+    signaled_finish = false # set to true when receiving TERM
+    Signal.trap("TERM") { signaled_finish = true }
+
     taskids.shuffle.each_with_index do |task_id,count|
+      break if signaled_finish # ends the entire task ID list
       Process.setproctitle "AlterTask #{newstatus} ID=#{task_id} #{count+1}/#{taskids.size}"
       task = CbrainTask.where(:id => task_id, :bourreau_id => myself.id).first
       next unless task # doesn't even exist? just ignore it
