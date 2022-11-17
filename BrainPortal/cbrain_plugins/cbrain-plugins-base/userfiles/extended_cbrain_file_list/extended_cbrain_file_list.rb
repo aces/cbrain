@@ -37,6 +37,6 @@ class ExtendedCbrainFileList < CbrainFileList
 
     # Structure of the CSV file; only the ID is used when this object is used as input to something else.
     # When displayed in a web page, the associations to other models are shown by name.
-    ATTRIBUTES_LIST << :json_params
+    ATTRIBUTES_LIST = superclass::ATTRIBUTES_LIST + [ :json_params ]
 
 end
