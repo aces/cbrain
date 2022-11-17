@@ -30,7 +30,8 @@
     <div class="generalbox no_wrap">
       <h1>CBRAIN News</h1>
       <% @dashboard_messages.each do |message| %>
-        <h2><%= message.header %> - <%= message.created_at.strftime("%B %e, %Y") %></h2>
+        <h2><%= message.header %></h2>
+        <span class="small">Posted: <%= message.created_at.strftime("%B %e, %Y") %></span><br>
         <%= message.description.html_safe %>
       <% end %>
     </div>
