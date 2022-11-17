@@ -67,7 +67,7 @@ class NhLorisHooksController < NeurohubApplicationController
 
     # Special situation when a file with partial path is specified
     # instead of just a basename.
-    extra_params_by_parent = Hash.new {|h, k| h[k] = {} }
+    extra_params_by_parent = {}
 
     source_basenames = source_basenames.map do |filepath|
       # file path can either be:
@@ -80,11 +80,11 @@ class NhLorisHooksController < NeurohubApplicationController
 
       # E.g: sub-123/anat/...T1w.nii.gz
       # Initialisation of the array of filenames to keep
-      extra_params_by_parent[parent_dir]['basenames'] = [] if !extra_params_by_parent[parent_dir]['basenames'];
+      current_params = extra_params_by_parent[parent_dir] ||= { :basenames => [] }
       # E.g: basename == file_T1w.nii.gz
       basename = filenames.last
-      next parent_dir if extra_params_by_parent[parent_dir]['basenames'].include?(basename);
-      extra_params_by_parent[parent_dir]['basenames'] << basename;
+      next parent_dir if current_params[:basenames].include?(basename)
+      current_params[:basenames] << basename
 
       parent_dir
     end.uniq
