@@ -96,7 +96,7 @@ class CbrainFileList < CSVFile
   # as extracted by cached_csv_array(). IDs will be numeric, or for
   # missing rows, will contain nils. IDs can be zero.
   #
-  #  [ 12, 0, 45, nil nil, 433 ]
+  #  [ 12, 0, 45, nil, nil, 433 ]
   #
   # Note that this method caches internally its result. To clear the
   # cache (if the userfile's content has changed for instance) call

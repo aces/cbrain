@@ -64,21 +64,70 @@ class NhLorisHooksController < NeurohubApplicationController
     s_group = Group.where_id_or_name(source_group_id).first if source_group_id
     base = Userfile.where(nil) # As seen in userfiles_controller
     base = Userfile.restrict_access_on_query(current_user, base, :access_requested => :read)
+
+    # Special situation when a file with partial path is specified
+    # instead of just a basename.
+    extra_params_by_parent = Hash.new {|h, k| h[k] = {} }
+
+    source_basenames = source_basenames.map do |filepath|
+      # file path can either be:
+      #    sub-123
+      #    sub-123/anat/file_T1w.nii.gz
+      filenames =  Pathname.new(filepath).each_filename.to_a
+      # E.g: root == sub-123
+      parent_dir = filenames.first
+      next parent_dir if filenames.size == 1
+
+      # E.g: sub-123/anat/...T1w.nii.gz
+      # Initialisation of the array of filenames to keep
+      extra_params_by_parent[parent_dir]['basenames'] = [] if !extra_params_by_parent[parent_dir]['basenames'];
+      # E.g: basename == file_T1w.nii.gz
+      basename = filenames.last
+      next parent_dir if extra_params_by_parent[parent_dir]['basenames'].include?(basename);
+      extra_params_by_parent[parent_dir]['basenames'] << basename;
+
+      parent_dir
+    end.uniq
+
     userfiles = base.where(:name => source_basenames)
     userfiles = userfiles.where(:data_provider_id => s_dp.id)    if s_dp
     userfiles = userfiles.where(:group_id         => s_group.id) if s_group
 
+    # Add setter and getter for json_params in Userfile class
+    Userfile.class_eval do
+      define_method :json_params= do |arg|
+        @json_params = arg.to_s
+        Userfile.columns_hash["json_params"] = OpenStruct.new({type: :hash})
+      end
+
+      define_method :json_params do
+        @json_params || nil
+      end
+    end
+
+    userfiles.each do |userfile|
+      userfile.json_params=(extra_params_by_parent[userfile.name])
+    end
+
     # It is an error not to find exactly the same number of files as in
     # the params' basenames array
     found_names = userfiles.pluck(:name)
-    file_count = found_names.size
-    exp_count  = source_basenames.size
+    file_count  = found_names.size
+    exp_count   = source_basenames.size
     if (file_count == 0) || (strict_match && (file_count != exp_count))
       cb_error "Could not find an exact match for the files. Found #{file_count} of #{exp_count} files"
     end
 
     # Create CbrainFileList content and save it to DP
-    cblist_content = CbrainFileList.create_csv_file_from_userfiles(userfiles)
+    extra_params_by_parent_is_empty = true
+    extra_params_by_parent.each do |_,v|
+      next if v.empty?
+      extra_params_by_parent_is_empty = false
+      break
+    end
+
+    cblist_content = extra_params_by_parent_is_empty ? CbrainFileList.create_csv_file_from_userfiles(userfiles) :
+                                               ExtendedCbrainFileList.create_csv_file_from_userfiles(userfiles)
 
     # Save result file
     result = create_file_for_request(CbrainFileList, "Loris-DQT-List.cbcsv", cblist_content)
