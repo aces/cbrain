@@ -30,6 +30,12 @@
       <p>
         <%= submit_tag "Send Invitations" %>
       </p>
+
+    <% end %>
+    <%= form_tag with_email_invitations_path do %>
+      <%= hidden_field_tag :group_id, @group.id %>
+      <%= text_field_tag :emails %>
+      <%= submit_tag "Send Invitations by emails" %>
     <% end %>
   <% else %>
     <strong style="color:red">No users available to invite.</strong>

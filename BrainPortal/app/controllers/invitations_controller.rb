@@ -27,6 +27,9 @@ class InvitationsController < ApplicationController
 
   before_action :login_required
 
+  # for uniformity with NH part group license check should be done before inviting people, e.g. by admins
+  before_action :custom_license_check, :only => [:create, :create_with_email]
+
   # Create an invitation
   def new #:nodoc:
     @group = Group.find(params[:group_id])
@@ -45,8 +48,75 @@ class InvitationsController < ApplicationController
     render :partial => "new"
   end
 
-  # Send an invitation
-  def create #:nodoc:
+  def with_email   # creates and sends invitation based either on email or username (works only for users already in shared projects)
+    # unlike create can reach non-accessible users (to confirm)
+
+    # better validation than in create method (perhaps to replace one in create), prevent user abusing system by
+    # instrumenting browser
+    @group = current_user.viewable_groups.where(:type => 'WorkGroup').find(params[:group_id])
+    raise ActiveRecord::RecordNotFound unless @group.can_be_accessed_by?(current_user)
+    group_id = @group.id
+    return if current_user.own_group.id == group_id # do not add extra user to the system group
+
+    # The form allows users to invite by emails or usernames, even though
+    # the parameter is only called :emails
+    user_specs      = (params[:emails].presence.try(:strip) || "").split(/[\s,]+/)
+    user_specs      = user_specs.map(&:presence).compact
+
+    if user_specs.empty?
+      cb_error "Please specify at least one correct CBRAIN username or email", :redirect => group_path(@group)
+    end
+
+    # Fetch the users
+    uids_by_email   = current_user.visible_users.where(:email => user_specs).pluck(:id)
+    uids_by_uname   = current_user.visible_users.where(:login => user_specs).pluck(:id)
+    user_ids        = uids_by_email | uids_by_uname
+    found_users     = current_user.visible_users.where(:id => user_ids).to_a
+    found_specs     = user_specs.select do |spec|
+      found_users.any? { |u| u.login == spec || u.email == spec }
+    end
+
+    not_found_specs = user_specs - found_specs
+
+    flash_warnings = []
+    flash_errors   = []
+    if not_found_specs.present?
+      flash_errors.push <<-MESSAGE
+        We are not able to invite user(s) identified by: #{not_found_specs.join(", ")}.
+        At the moment users are matched by emails or usernames.
+        Please confirm with your collaborators which email or username they use in NeuroHub.
+      MESSAGE
+    end
+
+      # Which invitations are pending?
+    already_sent_to = Invitation.where(active: true, user_id: user_ids, group_id: @group.id).pluck(:user_id)
+    rejected_ids    = user_ids & already_sent_to
+    if rejected_ids.present?
+      already_logins = User.where(:id => rejected_ids).pluck(:login).join(", ")
+      flash_warnings.push "Already invited: #{already_logins}"
+    end
+
+      # List of newly invited users
+    invited_users = User.find(user_ids - already_sent_to - @group.user_ids)
+    if invited_users.present?
+      Invitation.send_out(current_user, @group, invited_users)
+      flash[:notice] = "Your invitation was successfully sent to #{view_pluralize(invited_users.size,"user")}"
+    else
+      flash_errors << "No new users were found to invite."
+    end
+
+    flash[:warning] = flash_warnings.join "\n"      if flash_warnings.present?
+    flash[:error]   = flash_errors.join   "\n"      if flash_errors.present?
+
+    respond_to do |format|
+      format.html { redirect_to group_path(@group) }
+      format.xml  { head :ok }
+    end
+  end
+
+
+  # Send invitations
+  def create(user_ids = nil) #:nodoc:
     @group          = Group.find(params[:group_id])
     user_ids        = (params[:user_ids] || []).map(&:to_i)
     already_sent_to = Invitation.where(sender_id: current_user.id, active: true, user_id: user_ids, group_id: @group.id).all.map(&:user_id)
