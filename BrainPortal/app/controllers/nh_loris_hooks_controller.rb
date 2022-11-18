@@ -80,7 +80,7 @@ class NhLorisHooksController < NeurohubApplicationController
 
       # E.g: sub-123/anat/...T1w.nii.gz
       # Initialisation of the array of filenames to keep
-      current_params = extra_params_by_parent[parent_dir] ||= { :basenames => [] }
+      current_params =  extra_params_by_parent[parent_dir] ||= { :basenames => [] }
       # E.g: basename == file_T1w.nii.gz
       basename = filenames.last
       next parent_dir if current_params[:basenames].include?(basename)
@@ -97,7 +97,7 @@ class NhLorisHooksController < NeurohubApplicationController
     Userfile.class_eval do
       define_method :json_params= do |arg|
         @json_params = arg.to_s
-        Userfile.columns_hash["json_params"] = OpenStruct.new({type: :hash})
+        Userfile.columns_hash['json_params'] = OpenStruct.new({type: :hash})
       end
 
       define_method :json_params do
@@ -105,8 +105,10 @@ class NhLorisHooksController < NeurohubApplicationController
       end
     end
 
+    is_extended = false
     userfiles.each do |userfile|
       userfile.json_params=(extra_params_by_parent[userfile.name])
+      is_extended = true if extra_params_by_parent[userfile.name] && !extra_params_by_parent[userfile.name].empty?
     end
 
     # It is an error not to find exactly the same number of files as in
@@ -118,19 +120,14 @@ class NhLorisHooksController < NeurohubApplicationController
       cb_error "Could not find an exact match for the files. Found #{file_count} of #{exp_count} files"
     end
 
-    # Create CbrainFileList content and save it to DP
-    extra_params_by_parent_is_empty = true
-    extra_params_by_parent.each do |_,v|
-      next if v.empty?
-      extra_params_by_parent_is_empty = false
-      break
+    result = nil
+    if is_extended
+      cblist_content = ExtendedCbrainFileList.create_csv_file_from_userfiles(userfiles)
+      result = create_file_for_request(ExtendedCbrainFileList, "Extended-Loris-DQT-List.cbcsv", cblist_content)
+    else
+      cblist_content = CbrainFileList.create_csv_file_from_userfiles(userfiles)
+      result = create_file_for_request(CbrainFileList, "Loris-DQT-List.cbcsv", cblist_content)
     end
-
-    cblist_content = extra_params_by_parent_is_empty ? CbrainFileList.create_csv_file_from_userfiles(userfiles) :
-                                               ExtendedCbrainFileList.create_csv_file_from_userfiles(userfiles)
-
-    # Save result file
-    result = create_file_for_request(CbrainFileList, "Loris-DQT-List.cbcsv", cblist_content)
 
     # Info message and unmatched entries
     extra_response = {

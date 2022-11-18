@@ -247,9 +247,9 @@ class CbrainFileList < CSVFile
     userfiles.each do |userfile|
       row = []
       if (userfile.nil?)
-        row = [0] + Array.new(ATTRIBUTES_LIST.size - 1, "")
+        row = [0] + Array.new(self::ATTRIBUTES_LIST.size - 1, "")
       else
-        ATTRIBUTES_LIST.each do |att|
+        self::ATTRIBUTES_LIST.each do |att|
           val = userfile.send(att)  # attribute value in mode; can be an id of an assoc
           if att =~ /_id$/ # try to look up names in other models
             assoc_cache[[att,val]] ||= ( userfile.send(att.to_s.sub(/_id$/,"")).try(att == :user_id ? :login : :name) || "-")
