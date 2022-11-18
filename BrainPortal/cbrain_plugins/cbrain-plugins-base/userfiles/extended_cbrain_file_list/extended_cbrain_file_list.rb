@@ -39,4 +39,8 @@ class ExtendedCbrainFileList < CbrainFileList
     # When displayed in a web page, the associations to other models are shown by name.
     ATTRIBUTES_LIST = superclass::ATTRIBUTES_LIST + [ :json_params ]
 
+    def self.pretty_type #:nodoc:
+        "Extended CBRAIN List of files"
+    end
+
 end
