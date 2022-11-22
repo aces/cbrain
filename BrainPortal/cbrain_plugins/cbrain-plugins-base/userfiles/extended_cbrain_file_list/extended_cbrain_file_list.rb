@@ -43,4 +43,33 @@ class ExtendedCbrainFileList < CbrainFileList
         "Extended CBRAIN List of files"
     end
 
+    # "a/b/c" -> {"a" => ["a/b/c", "a/d/f"]}
+    def self.relpath_to_root_and_base(relpaths)
+      # Special situation when a file with a path
+      # is specified instead of just a basename.
+      relpaths.inject({}) do |results,relpath|
+        filenames =  Pathname.new(relpath).each_filename.to_a
+        # E.g: root == sub-123
+        parent_dir = filenames.first
+        res = results[parent_dir] ||= []
+        res << relpath if filenames.size != 1
+        results
+      end
+    end
+
+    # add json_params method to userfile object
+    def self.extend_userfile_json_params_reader(userfile,json_params_value)
+        userfile.define_singleton_method(:json_params) {
+            json_params_value
+        }
+    end
+
+    # userfile_name => {Id: values}
+    def self.extended_userfiles_by_name(userfiles,id_to_values)
+        userfiles.to_a.each do |userfile|
+            extend_userfile_json_params_reader(userfile,id_to_values[userfile.name])
+        end
+        userfiles
+    end
+
 end

@@ -65,51 +65,13 @@ class NhLorisHooksController < NeurohubApplicationController
     base = Userfile.where(nil) # As seen in userfiles_controller
     base = Userfile.restrict_access_on_query(current_user, base, :access_requested => :read)
 
-    # Special situation when a file with partial path is specified
-    # instead of just a basename.
-    extra_params_by_parent = {}
-
-    source_basenames = source_basenames.map do |filepath|
-      # file path can either be:
-      #    sub-123
-      #    sub-123/anat/file_T1w.nii.gz
-      filenames =  Pathname.new(filepath).each_filename.to_a
-      # E.g: root == sub-123
-      parent_dir = filenames.first
-      next parent_dir if filenames.size == 1
-
-      # E.g: sub-123/anat/...T1w.nii.gz
-      # Initialisation of the array of filenames to keep
-      current_params =  extra_params_by_parent[parent_dir] ||= { :basenames => [] }
-      # E.g: basename == file_T1w.nii.gz
-      basename = filenames.last
-      next parent_dir if current_params[:basenames].include?(basename)
-      current_params[:basenames] << basename
-
-      parent_dir
-    end.uniq
+    extended_values  = ExtendedCbrainFileList.relpath_to_root_and_base(source_basenames)
+    source_basenames = extended_values.keys
+    is_extended      = extended_values.any?{|parent_dir,pathlist| pathlist.present? }
 
     userfiles = base.where(:name => source_basenames)
     userfiles = userfiles.where(:data_provider_id => s_dp.id)    if s_dp
     userfiles = userfiles.where(:group_id         => s_group.id) if s_group
-
-    # Add setter and getter for json_params in Userfile class
-    Userfile.class_eval do
-      define_method :json_params= do |arg|
-        @json_params = arg.to_s
-        Userfile.columns_hash['json_params'] = OpenStruct.new({type: :hash})
-      end
-
-      define_method :json_params do
-        @json_params || nil
-      end
-    end
-
-    is_extended = false
-    userfiles.each do |userfile|
-      userfile.json_params=(extra_params_by_parent[userfile.name])
-      is_extended = true if extra_params_by_parent[userfile.name] && !extra_params_by_parent[userfile.name].empty?
-    end
 
     # It is an error not to find exactly the same number of files as in
     # the params' basenames array
@@ -122,6 +84,8 @@ class NhLorisHooksController < NeurohubApplicationController
 
     result = nil
     if is_extended
+      new_extended   = extended_values.transform_values {|relpaths| { :basenames => relpaths }.to_json }
+      userfiles      = ExtendedCbrainFileList.extended_userfiles_by_name(userfiles, new_extended)
       cblist_content = ExtendedCbrainFileList.create_csv_file_from_userfiles(userfiles)
       result = create_file_for_request(ExtendedCbrainFileList, "Extended-Loris-DQT-List.cbcsv", cblist_content)
     else
