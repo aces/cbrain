@@ -58,8 +58,9 @@ class ExtendedCbrainFileList < CbrainFileList
   # the method flush_internal_caches().
   #
   def ordered_params()
+    json_params_idx = ATTRIBUTES_LIST.index(:json_params)
     @extra_params ||= cached_csv_array.map do |row|
-      JSON.parse(row[-1])
+      JSON.parse(row[json_params_idx])
     end
 
     @extra_params
