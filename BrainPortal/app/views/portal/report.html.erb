@@ -297,7 +297,15 @@ in a tabular layout. Proceed as follow:
         <% @table_row_values.each do |row_key| %>
           <% total_of_row = Array.new(vector_size,0) %>
           <tr>
-          <% row_sort_value = row_key.present? ? row_model ? row_model.find(row_key).name : row_key : "(None)" %>
+          <%
+             row_sort_value = ""
+             if row_key.present?
+               row_sort_value = row_key
+               if row_model
+                 row_sort_value = row_model.where(:id => row_key).first.try(:name) || "#{row_model.name}-#{row_key}"
+               end
+             end
+          %>
           <th data-sortvalue="<%= row_sort_value %>"><%= row_key.nil? ? "(None)" : row_proc.call(row_key) %></th>
           <% @table_col_values.each do |col_key| %>
             <%
