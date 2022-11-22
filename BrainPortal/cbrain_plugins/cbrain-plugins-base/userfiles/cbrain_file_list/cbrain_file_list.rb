@@ -255,7 +255,8 @@ class CbrainFileList < CSVFile
             assoc_cache[[att,val]] ||= ( userfile.send(att.to_s.sub(/_id$/,"")).try(att == :user_id ? :login : :name) || "-")
             val = assoc_cache[[att,val]]
           end
-          if att !~ /_id$/ && userfile_model_hash[att.to_s].type == :integer ||  userfile_model_hash[att.to_s].type == :decimal # might need to check others too
+          att_type = (userfile_model_hash[att.to_s] && userfile_model_hash[att.to_s].type) || :json_params
+          if att !~ /_id$/ && att_type == :integer || att_type == :decimal # might need to check others too
             row << val
           else
             row << QUOTING_CHARACTER + val.gsub(QUOTING_CHARACTER, QUOTING_CHARACTER+QUOTING_CHARACTER) + QUOTING_CHARACTER

@@ -29,7 +29,7 @@
 #   232123,"myfile.txt",425,"TextFile","MainStoreProvider","jsmith","mygroup","{extra_param_1: value_1}"
 #   112233,"plan.pdf",3894532,"SingleFile","SomeDP","jsmith","secretproject", "{extra_param_2: value_2}"
 #   0,,,,,,,
-#   933,"hello.txt",3433434,"TextFile","SomeDP","jsmith","mygroup",{extra_param_3: value_3}
+#   933,"hello.txt",3433434,"TextFile","SomeDP","jsmith","mygroup","{extra_param_3: value_3}"
 #
 class ExtendedCbrainFileList < CbrainFileList
 
@@ -43,7 +43,7 @@ class ExtendedCbrainFileList < CbrainFileList
     "Extended CBRAIN List of files"
   end
 
-  # Returns an hash extract form the last column of the Extended CBCsv file
+  # Returns an hash extract from the last column of the Extended CBCsv file
   # as extracted by cached_csv_array(). Value will be a hash (can be empty)
   #
   #  [ {key_param_1_task_1: value_for_param_1_task_1, key_param_2_task_1: value_for_param_2_task_1},
@@ -59,16 +59,7 @@ class ExtendedCbrainFileList < CbrainFileList
   #
   def ordered_params()
     @extra_params ||= cached_csv_array.map do |row|
-      extra_param = row[-1] # can be nil
-      if (extra_param.present? && extra_param.is_a?(String))
-        begin
-            JSON.parse extra_param.gsub(/:([a-zA-z0-9]+)/,'"\\1"').gsub('=>', ':')
-        rescue
-             Hash.new()
-        end
-      else
-        Hash.new()
-      end
+      JSON.parse(row[-1])
     end
 
     @extra_params
@@ -89,4 +80,32 @@ class ExtendedCbrainFileList < CbrainFileList
     @extra_params            = nil
   end
 
+  # "a/b/c" -> {"a" => ["a/b/c", "a/d/f"]}
+  def self.relpath_to_root_and_base(relpaths)
+    # Special situation when a file with a path
+    # is specified instead of just a basename.
+    relpaths.inject({}) do |results,relpath|
+      filenames =  Pathname.new(relpath).each_filename.to_a
+      # E.g: root == sub-123
+      parent_dir = filenames.first
+      res = results[parent_dir] ||= []
+      res << relpath if filenames.size != 1
+      results
+    end
+  end
+
+  # add json_params reader method to userfile object
+  def self.extend_userfile_json_params_reader(userfile,json_params_value)
+    userfile.define_singleton_method(:json_params) {
+      json_params_value
+    }
+  end
+
+  # userfile_name => {Id: values}
+  def self.extended_userfiles_by_name(userfiles,id_to_values)
+    userfiles.to_a.each do |userfile|
+      extend_userfile_json_params_reader(userfile,id_to_values[userfile.name])
+    end
+    userfiles
+  end
 end
