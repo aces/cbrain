@@ -28,7 +28,7 @@ class InvitationsController < ApplicationController
   before_action :login_required
 
   # for uniformity with NH part group license check should be done before inviting people, e.g. by admins
-  before_action :custom_license_check, :only => [:create, :create_with_email]
+  before_action :custom_license_check, :only => [:create, :create_with_usernames]
 
   # Create an invitation
   def new #:nodoc:
@@ -48,7 +48,7 @@ class InvitationsController < ApplicationController
     render :partial => "new"
   end
 
-  def with_email   # creates and sends invitation based either on email or username (works only for users already in shared projects)
+  def create_with_usernames   # creates and sends invitation based either on email or username (works only for users already in shared projects)
     # unlike create can reach non-accessible users (to confirm)
 
     # better validation than in create method (perhaps to replace one in create), prevent user abusing system by

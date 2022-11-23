@@ -83,7 +83,7 @@ Rails.application.routes.draw do
 
   resources :invitations,     :only => [ :new, :create, :update, :destroy ] do
     collection do
-      post 'with_email'
+      post 'create_with_usernames'
     end
   end
 
