@@ -29,47 +29,90 @@
 #   232123,"myfile.txt",425,"TextFile","MainStoreProvider","jsmith","mygroup","{extra_param_1: value_1}"
 #   112233,"plan.pdf",3894532,"SingleFile","SomeDP","jsmith","secretproject", "{extra_param_2: value_2}"
 #   0,,,,,,,
-#   933,"hello.txt",3433434,"TextFile","SomeDP","jsmith","mygroup",{extra_param_3: value_3}
+#   933,"hello.txt",3433434,"TextFile","SomeDP","jsmith","mygroup","{extra_param_3: value_3}"
 #
 class ExtendedCbrainFileList < CbrainFileList
 
-    Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-    # Structure of the CSV file; only the ID is used when this object is used as input to something else.
-    # When displayed in a web page, the associations to other models are shown by name.
-    ATTRIBUTES_LIST = superclass::ATTRIBUTES_LIST + [ :json_params ]
+  # Structure of the CSV file; only the ID is used when this object is used as input to something else.
+  # When displayed in a web page, the associations to other models are shown by name.
+  ATTRIBUTES_LIST = superclass::ATTRIBUTES_LIST + [ :json_params ]
 
-    def self.pretty_type #:nodoc:
-        "Extended CBRAIN List of files"
+  def self.pretty_type #:nodoc:
+    "Extended CBRAIN List of files"
+  end
+
+  # Returns an hash extract from the last column of the Extended CBCsv file
+  # as extracted by cached_csv_array(). Value will be a hash (can be empty)
+  #
+  #  [ {key_param_1_task_1: value_for_param_1_task_1, key_param_2_task_1: value_for_param_2_task_1},
+  #    {key_param_1_task_1: value_for_param_1_task_1},
+  #    {},
+  #    {},
+  #    {key_param_1_task_5: value_for_param_1_task_5, key_param_2_task_5: value_for_param_2_task_5}
+  #  ]
+  #
+  # Note that this method caches internally its result. To clear the
+  # cache (if the userfile's content has changed for instance) call
+  # the method flush_internal_caches().
+  #
+  def ordered_params()
+    json_params_idx = ATTRIBUTES_LIST.index(:json_params)
+    @extra_params ||= cached_csv_array.map do |row|
+      JSON.parse(row[json_params_idx])
     end
 
-    # "a/b/c" -> {"a" => ["a/b/c", "a/d/f"]}
-    def self.relpath_to_root_and_base(relpaths)
-      # Special situation when a file with a path
-      # is specified instead of just a basename.
-      relpaths.inject({}) do |results,relpath|
-        filenames =  Pathname.new(relpath).each_filename.to_a
-        # E.g: root == sub-123
-        parent_dir = filenames.first
-        res = results[parent_dir] ||= []
-        res << relpath if filenames.size != 1
-        results
-      end
-    end
+    @extra_params
+  end
 
-    # add json_params method to userfile object
-    def self.extend_userfile_json_params_reader(userfile,json_params_value)
-        userfile.define_singleton_method(:json_params) {
-            json_params_value
-        }
-    end
+  # Many methods of this class cache their result internally
+  # to avoid reduplicating costly work. If the content of
+  # the CSV file change, calling flush_internal_caches() will
+  # clean these caches so they return new, accurate results.
+  def flush_internal_caches
+    super
+    @extra_params            = nil
+  end
 
-    # userfile_name => {Id: values}
-    def self.extended_userfiles_by_name(userfiles,id_to_values)
-        userfiles.to_a.each do |userfile|
-            extend_userfile_json_params_reader(userfile,id_to_values[userfile.name])
-        end
-        userfiles
+  # ["a/b/c", "a/d/e", "x/y/z", "x/w/a"]
+  #   return {"a" => ["a/b/c", "a/d/f"]
+  #           "x" => ["x/y/z", "x/w/a"]
+  #          }
+  def self.roots_to_fullpaths(relpaths)
+    # Special situation when a file with a path
+    # is specified instead of just a basename.
+    relpaths.inject({}) do |results,relpath|
+      filenames =  Pathname.new(relpath).each_filename.to_a
+      # E.g: root == sub-123
+      parent_dir = filenames.first
+      res = results[parent_dir] ||= []
+      res << relpath if filenames.size != 1
+      results
     end
+  end
+
+  # Add json_params reader method to userfile object
+  def self.extend_userfile_json_params_reader(userfile,json_params_value)
+    userfile.define_singleton_method(:json_params) {
+      json_params_value
+    }
+  end
+
+  # Extend each userfile with json_params_reader
+  def self.extended_userfiles_by_name(userfiles,id_to_values)
+    userfiles.to_a.each do |userfile|
+      extend_userfile_json_params_reader(userfile,id_to_values[userfile.name])
+    end
+    userfiles
+  end
+
+  # Add singleton method type for columns_hash
+  # with json_params key
+  def self.userfile_model_hash
+    Userfile.columns_hash["json_params"] = {}
+    Userfile.columns_hash["json_params"].define_singleton_method(:type) { :hash }
+    Userfile.columns_hash
+  end
 
 end

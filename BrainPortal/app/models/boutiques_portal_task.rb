@@ -322,9 +322,18 @@ class BoutiquesPortalTask < PortalTask
 
     # Array with the actual userfiles corresponding to the cbcsv
     mapCbcsvToUserfiles = cbcsvs.map { |f| f[1].ordered_raw_ids.map { |i| (i==0) ? nil : i } }
+    # Array with the actual extra json_params corresponding to the cbcsv
+    mapCbcsvToParams    =  cbcsvs.map do |f|
+                             cbcsv = f[1]
+                             cbcsv.is_a?(ExtendedCbrainFileList) ?
+                               cbcsv.ordered_params : []
+                            end
+
     # Task list to fill and total number of tasks to output
-    tasklist = []
-    nTasks   = mapCbcsvToUserfiles[0].length
+    tasklist         = []
+    nTasks           = mapCbcsvToUserfiles[0].length
+    valid_input_keys = descriptor.inputs.map(&:id)
+
     # Iterate over each task that needs to be generated
     for i in 0..(nTasks - 1)
       # Clone this task
@@ -335,6 +344,8 @@ class BoutiquesPortalTask < PortalTask
         #currTask.params[:interface_userfile_ids] << mapCbcsvToUserfiles unless currId.nil?
         currTask.invoke_params[cinput.id] = currId # If id = 0 or nil, currId = nil
         currTask.invoke_params.delete(cinput.id) if currId.nil?
+        extra_params_from_Cbcsv     = mapCbcsvToParams[j][i] || {}
+        currTask.invoke_params.merge!(extra_params_from_Cbcsv.slice(*valid_input_keys))
       end
       # Add the new task to our tasklist
       tasklist << currTask

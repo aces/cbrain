@@ -241,7 +241,6 @@ class CbrainFileList < CSVFile
   # for the array of +userfiles+. nil entries are allowed in +userfiles+
   # and will be properly encoded as missing rows with ID set to 0.
   def self.create_csv_file_from_userfiles(userfiles)
-    userfile_model_hash = Userfile.columns_hash
     text_rows           = []
     assoc_cache         = {}
     userfiles.each do |userfile|
@@ -255,8 +254,7 @@ class CbrainFileList < CSVFile
             assoc_cache[[att,val]] ||= ( userfile.send(att.to_s.sub(/_id$/,"")).try(att == :user_id ? :login : :name) || "-")
             val = assoc_cache[[att,val]]
           end
-          att_type = (userfile_model_hash[att.to_s] && userfile_model_hash[att.to_s].type) || :json_params
-          if att !~ /_id$/ && att_type == :integer || att_type == :decimal # might need to check others too
+          if att !~ /_id$/ && userfile_model_hash[att.to_s].type == :integer ||  userfile_model_hash[att.to_s].type == :decimal # might need to check others too
             row << val
           else
             row << QUOTING_CHARACTER + val.gsub(QUOTING_CHARACTER, QUOTING_CHARACTER+QUOTING_CHARACTER) + QUOTING_CHARACTER
@@ -267,6 +265,13 @@ class CbrainFileList < CSVFile
     end
     csv_file = text_rows.join(RECORD_TERMINATOR) + (text_rows.present? ? RECORD_TERMINATOR : "");
     csv_file
+  end
+
+  private
+
+  # Can be redefine in sub class
+  def self.userfile_model_hash
+    Userfile.columns_hash
   end
 
 end
