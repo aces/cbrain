@@ -70,19 +70,16 @@ class ExtendedCbrainFileList < CbrainFileList
   # to avoid reduplicating costly work. If the content of
   # the CSV file change, calling flush_internal_caches() will
   # clean these caches so they return new, accurate results.
-  #
-  # Methods that currently cache information are:
-  #
-  # cached_csv_array, ordered_raw_ids, userfiles_accessible_by_user and extra_params!
   def flush_internal_caches
-    @ids_with_zeros_and_nils = nil
-    @userfiles               = nil
-    @rows                    = nil
+    super
     @extra_params            = nil
   end
 
-  # "a/b/c" -> {"a" => ["a/b/c", "a/d/f"]}
-  def self.relpath_to_root_and_base(relpaths)
+  # ["a/b/c", "a/d/e", "x/y/z", "x/w/a"]
+  #   return {"a" => ["a/b/c", "a/d/f"]
+  #           "x" => ["x/y/z", "x/w/a"]
+  #          }
+  def self.roots_to_fullpaths(relpaths)
     # Special situation when a file with a path
     # is specified instead of just a basename.
     relpaths.inject({}) do |results,relpath|
@@ -93,6 +90,29 @@ class ExtendedCbrainFileList < CbrainFileList
       res << relpath if filenames.size != 1
       results
     end
+  end
+
+  # Add json_params reader method to userfile object
+  def self.extend_userfile_json_params_reader(userfile,json_params_value)
+    userfile.define_singleton_method(:json_params) {
+      json_params_value
+    }
+  end
+
+  # Extend each userfile with json_params_reader
+  def self.extended_userfiles_by_name(userfiles,id_to_values)
+    userfiles.to_a.each do |userfile|
+      extend_userfile_json_params_reader(userfile,id_to_values[userfile.name])
+    end
+    userfiles
+  end
+
+  # Add singleton method type for columns_hash
+  # with json_params key
+  def self.userfile_model_hash
+    Userfile.columns_hash["json_params"] = {}
+    Userfile.columns_hash["json_params"].define_singleton_method(:type) { :hash }
+    Userfile.columns_hash
   end
 
   # add json_params reader method to userfile object

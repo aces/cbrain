@@ -65,7 +65,7 @@ class NhLorisHooksController < NeurohubApplicationController
     base = Userfile.where(nil) # As seen in userfiles_controller
     base = Userfile.restrict_access_on_query(current_user, base, :access_requested => :read)
 
-    extended_values  = ExtendedCbrainFileList.relpath_to_root_and_base(source_basenames)
+    extended_values  = ExtendedCbrainFileList.roots_to_fullpaths(source_basenames)
     source_basenames = extended_values.keys
     is_extended      = extended_values.any?{|parent_dir,pathlist| pathlist.present? }
 
