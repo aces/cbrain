@@ -327,7 +327,7 @@ class BoutiquesPortalTask < PortalTask
                              cbcsv = f[1]
                              cbcsv.is_a?(ExtendedCbrainFileList) ?
                                cbcsv.ordered_params : []
-                            end
+                           end
 
     # Task list to fill and total number of tasks to output
     tasklist         = []
