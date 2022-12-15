@@ -107,12 +107,11 @@ class ExtendedCbrainFileList < CbrainFileList
     userfiles
   end
 
-  # Add singleton method type for columns_hash
-  # with json_params key
+  # Extended Userfile.columns_hash with json_params key
   def self.userfile_model_hash
-    Userfile.columns_hash["json_params"] = {}
-    Userfile.columns_hash["json_params"].define_singleton_method(:type) { :hash }
-    Userfile.columns_hash
+    extended_userfile_model_hash = Userfile.columns_hash.dup
+    extended_userfile_model_hash["json_params"].define_singleton_method(:type) { :hash }
+    extended_userfile_model_hash
   end
 
   # add json_params reader method to userfile object
