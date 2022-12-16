@@ -31,7 +31,8 @@ class DataProvidersController < ApplicationController
                            :browse, :register, :unregister, :delete ]
 
   before_action :login_required
-  before_action :manager_role_required, :only => [:new, :create]
+  # before_action :manager_role_required, :only => [:new, :create]
+  before_action :type_allowed?
   before_action :admin_role_required,   :only => [:report, :repair]
 
   def index #:nodoc:
@@ -819,6 +820,70 @@ class DataProvidersController < ApplicationController
     end
   end
 
+  # register all pd files
+  def autoregister
+    @provider = find_nh_storage(current_user, params[:id])
+
+    # Contact remote site and get list of files there
+    fileinfos = BrowseProviderFileCaching.get_recent_provider_list_all(@provider, current_user)
+
+    # Get currently registered files on DP
+    registered = Userfile.where( :data_provider_id => @provider.id )
+
+    # Match them together
+    FileInfo.array_match_all_userfiles(fileinfos, registered)
+
+    # Make validation checks
+    FileInfo.array_validate_for_registration(fileinfos)
+
+    # Register all new ones
+    added_ids = []
+    fileinfos.select do |fi|
+      fi.userfile.blank? &&
+          (fi.symbolic_type == :regular || fi.symbolic_type == :directory)
+    end.each do |fi|
+
+      basename = fi.name
+
+      # Guess best type
+      type     = Userfile.suggested_file_type(basename) || SingleFile
+      type     = FileCollection if fi.symbolic_type == :directory && ! (type < FileCollection)
+
+      # Make the object
+      userfile = type.new(
+          :name             => basename,
+          :user_id          => current_user.id,
+          :group_id         => @provider.group_id,
+          :data_provider_id => @provider.id,
+          :group_writable   => false,
+          :size             => (fi.symbolic_type == :regular ? fi.size : nil), # dir sizes set later
+          :num_files        => (fi.symbolic_type == :regular ? 1       : nil),
+          )
+      if userfile.save
+        added_ids << userfile.id
+        userfile.addlog("Registered on dataprovider '#{@provider.name}'.")
+      end
+
+    end
+
+    # Start size+num_files calculation in background
+    todo = Userfile.where(:id => added_ids, :size => nil)
+    CBRAIN.spawn_with_active_records_if(todo.count > 0, current_user, "Adjust file sizes") do
+      todo.each do |file|
+        file.set_size rescue nil
+      end
+    end
+
+    # TODO: auto-deregister missing files?
+
+    # Report
+    @file_counts = Userfile.where(:id => added_ids).group(:type).count
+    @file_sizes  = Userfile.where(:id => added_ids).group(:type).sum(:size)
+    flash.now[:notice] = "Registered #{view_pluralize(added_ids.size,"new file")}"
+    render show
+  end
+
+    
   private
 
   def data_provider_params #:nodoc:
@@ -851,8 +916,13 @@ class DataProvidersController < ApplicationController
     end
   end
 
+  def type_allowed?
+    return true if check_role(:site_manager) || check_role(:admin_user)
+    get_type_list.map(&:to_s).include? params['type']
+  end
+
   def get_type_list #:nodoc:
-    data_provider_list = [ "FlatDirSshDataProvider" ]
+    data_provider_list = [ "UserkeyFlatDirSshDataProvider" ]
     if check_role(:site_manager) || check_role(:admin_user)
       data_provider_list = DataProvider.descendants.map(&:name)
     end
