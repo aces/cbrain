@@ -310,7 +310,8 @@ class DataProvidersController < ApplicationController
     # a relative path "a/b/c"
     @browse_path = current_browse_path(@provider, params['browse_path'])
     @scope.custom['browse_path'] = @browse_path
-
+    # allow normal user browse his custom data provider for manual registration
+    @as_user ||= current_user if current_user.has_role?(:normal_user) && @provider.is_a?(UserkeyFlatDirSshDataProvider)
     begin
       # [ base, size, type, mtime ]
       @fileinfolist = BrowseProviderFileCaching.get_recent_provider_list_all(@provider, @as_user, @browse_path, params[:refresh])
