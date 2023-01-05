@@ -84,7 +84,7 @@ class NhLorisHooksController < NeurohubApplicationController
 
     result = nil
     if is_extended
-      new_extended   = extended_values.transform_values {|relpaths| { :basenames => relpaths }.to_json }
+      new_extended   = extended_values.transform_values {|relpaths| { :all_to_keep => relpaths }.to_json }
       userfiles      = ExtendedCbrainFileList.extended_userfiles_by_name(userfiles, new_extended)
       cblist_content = ExtendedCbrainFileList.create_csv_file_from_userfiles(userfiles)
       result = create_file_for_request(ExtendedCbrainFileList, "Extended-Loris-DQT-List.cbcsv", cblist_content)
