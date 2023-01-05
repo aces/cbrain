@@ -263,6 +263,7 @@ class BoutiquesPortalTask < PortalTask
   def final_task_list #:nodoc:
     descriptor = self.descriptor_for_final_task_list
     self.addlog(descriptor.file_revision_info.format("%f rev. %s %a %d"))
+    valid_input_keys = descriptor.inputs.map(&:id)
 
     # --------------------------------------
     # Special case where there is a single file input
@@ -286,6 +287,16 @@ class BoutiquesPortalTask < PortalTask
         tsk
       end
 
+      fillTaskExtra = lambda do |userfile,tsk,extra_param|
+        tsk.invoke_params[input.id] = userfile.id
+        tsk.sanitize_param(input)
+        tsk.description ||= ''
+        tsk.description  += " #{input.id}: #{userfile.name}"
+        tsk.invoke_params.merge!(extra_param.slice(*valid_input_keys))
+        tsk.description.strip!
+        tsk
+      end
+
       tasklist = self.params[:interface_userfile_ids].map do |userfile_id|
         f = Userfile.find_accessible_by_user( userfile_id, self.user, :access_requested => file_access_symbol() )
 
@@ -295,10 +306,22 @@ class BoutiquesPortalTask < PortalTask
           fillTask.( f, task )
 
         else # One task per userfile in the CbrainFileList
-          ufiles = f.userfiles_accessible_by_user!( self.user, nil, nil, file_access_symbol() )
-          # Skip files that are purposefully nil (e.g. given id 0 by the user)
-          subtasks = ufiles.select { |u| ! u.nil? }.map { |u| fillTask.( u, self.dup ) }
+          if f.is_a?( ExtendedCbrainFileList )
+            extra_params = f.ordered_params
+            ufiles = f.userfiles_accessible_by_user!( self.user, nil, nil, file_access_symbol() )
+            # Skip files that are purposefully nil (e.g. given id 0 by the user)
+            subtasks = []
+            ufiles.each_with_index do |u,i|
+              next if u.nil?
+              subtasks << fillTaskExtra.(u, self.dup, extra_params[i])
+            end
           subtasks # an array of tasks
+        else
+            ufiles = f.userfiles_accessible_by_user!( self.user, nil, nil, file_access_symbol() )
+            # Skip files that are purposefully nil (e.g. given id 0 by the user)
+            subtasks = ufiles.select { |u| ! u.nil? }.map { |u| fillTask.( u, self.dup ) }
+            subtasks # an array of tasks
+          end
         end
       end
 
@@ -332,7 +355,6 @@ class BoutiquesPortalTask < PortalTask
     # Task list to fill and total number of tasks to output
     tasklist         = []
     nTasks           = mapCbcsvToUserfiles[0].length
-    valid_input_keys = descriptor.inputs.map(&:id)
 
     # Iterate over each task that needs to be generated
     for i in 0..(nTasks - 1)
