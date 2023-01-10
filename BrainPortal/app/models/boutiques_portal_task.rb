@@ -278,21 +278,12 @@ class BoutiquesPortalTask < PortalTask
     if descriptor.file_inputs.size == 1
       input = descriptor.file_inputs.first
 
-      fillTask = lambda do |userfile,tsk|
+      fillTask = lambda do |userfile,tsk,extra_params=nil|
         tsk.invoke_params[input.id] = userfile.id
         tsk.sanitize_param(input)
         tsk.description ||= ''
         tsk.description  += " #{input.id}: #{userfile.name}"
-        tsk.description.strip!
-        tsk
-      end
-
-      fillTaskExtra = lambda do |userfile,tsk,extra_param|
-        tsk.invoke_params[input.id] = userfile.id
-        tsk.sanitize_param(input)
-        tsk.description ||= ''
-        tsk.description  += " #{input.id}: #{userfile.name}"
-        tsk.invoke_params.merge!(extra_param.slice(*valid_input_keys))
+        tsk.invoke_params.merge!(extra_params.slice(*valid_input_keys)) if extra_params
         tsk.description.strip!
         tsk
       end
@@ -301,27 +292,28 @@ class BoutiquesPortalTask < PortalTask
         f = Userfile.find_accessible_by_user( userfile_id, self.user, :access_requested => file_access_symbol() )
 
         # One task for that file
-        if (! f.is_a?( CbrainFileList ) || ! f.is_a?( ExtendedCbrainFileList ) || input.list) # in case of a list input, we *do* assign it the CbFileList
+        if (! f.is_a?( CbrainFileList ) || input.list) # in case of a list input, we *do* assign it the CbFileList
           task = self.dup
           fillTask.( f, task )
-
         else # One task per userfile in the CbrainFileList
-          if f.is_a?( ExtendedCbrainFileList )
-            extra_params = f.ordered_params
-            ufiles = f.userfiles_accessible_by_user!( self.user, nil, nil, file_access_symbol() )
-            # Skip files that are purposefully nil (e.g. given id 0 by the user)
-            subtasks = []
-            ufiles.each_with_index do |u,i|
-              next if u.nil?
-              subtasks << fillTaskExtra.(u, self.dup, extra_params[i])
-            end
-          subtasks # an array of tasks
-        else
-            ufiles = f.userfiles_accessible_by_user!( self.user, nil, nil, file_access_symbol() )
-            # Skip files that are purposefully nil (e.g. given id 0 by the user)
-            subtasks = ufiles.select { |u| ! u.nil? }.map { |u| fillTask.( u, self.dup ) }
-            subtasks # an array of tasks
+          ufiles               = f.userfiles_accessible_by_user!( self.user, nil, nil, file_access_symbol() )
+          ordered_extra_params = f.is_a?(ExtendedCbrainFileList) ? f.ordered_params : []
+
+          # Remove files that are purposefully nil (e.g. given id 0 by the user)
+          # Remove entries from ordered_extra_params if needed
+          nil_indexes = ufiles.each_with_index.select  { |v,index| v.nil? }.map { |_, index| index }
+          nil_indexes.reverse.each do |index|
+            ufiles.delete_at(index)
+            ordered_extra_params.delete_at(index)
           end
+
+          # Fill subtasks array
+          subtasks = []
+          ufiles.each_with_index do |u, index|
+            subtasks << fillTask.( u, self.dup, ordered_extra_params[index])
+          end
+
+          subtasks # an array of tasks
         end
       end
 
