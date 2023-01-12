@@ -212,6 +212,9 @@ namespace :cbrain do
       # Main processing loop for all classes
       klass_names.each do |klass_name|
 
+        puts "\n-------------------------------------------------------"
+        puts "Reloading ResourceUsage records for class #{klass_name}"
+
         # Find all files for klass_name
         globpattern = Rails.root + "data_dumps" + "#{klass_name}.*.yaml*" # matches .gz too
         files       = Dir.glob(globpattern)

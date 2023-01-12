@@ -38,7 +38,7 @@ the database:
   RAILS_ENV=something rake cbrain:resource_usage:dump[DESTROY_ALL,no]
 ```
 
-Second, re-insert monthly summaries of all records so that
+Second, re-insert monthly summaries of all removed records so that
 total historical usage by users is maintained:
 
 ```
@@ -47,7 +47,8 @@ total historical usage by users is maintained:
 
 Note that this last step will re-create all monthly summaries
 cumulatively using the info in all previous YAML dumps. This
-rake task can safely be run multiple times.
+rake task can safely be run multiple times, it will not duplicate
+summary information.
 
 ### See also
 
