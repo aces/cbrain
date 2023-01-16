@@ -29,10 +29,10 @@ class UsersController < ApplicationController
 
   include GlobusHelpers
 
-  api_available :only => [ :index, :create, :show, :destroy, :update]
+  api_available :only => [ :index, :create, :show, :destroy, :update, :key]
 
   before_action :login_required,        :except => [:request_password, :send_password]
-  before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password, :push_keys, :new_token]
+  before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password, :push_keys, :new_token, :key]
 
   def index #:nodoc:
     @scope = scope_from_session
@@ -424,6 +424,11 @@ class UsersController < ApplicationController
     new_session = cbrain_session.duplicate_with_new_token
     @new_token  = new_session.cbrain_api_token
   end
+
+  def key # ssh public key for private data providers
+    send_data current_user.ssh_key(create_it: true).public_key, :filename => 'mykey.txt'
+  end
+
 
   private
 

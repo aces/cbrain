@@ -42,9 +42,15 @@
                   :generate         => "ok"
                 ), :class => "button" %>
 
-  <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
-    <%= link_to 'Delete', data_provider_path(@provider), { :data => { :confirm => "Are you sure you want to delete '#{@provider.name}' ?" }, :method => :delete, :class => "button" } %>
-  <% end %>
+
+    <% if @provider.type == "UserkeyFlatDirSshDataProvider" %>
+      <%= link_to "Auto Register Files", autoregister_data_provider_path(), :class => "button", :method => :post %>
+      <%= link_to "Check", check_data_provider_path(), :class => "button" %>
+    <% end %>
+
+    <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
+      <%= link_to 'Delete', data_provider_path(@provider), { :data => { :confirm => "Are you sure you want to delete '#{@provider.name}' ?" }, :method => :delete, :class => "button" } %>
+    <% end %>
 
 </div>
 

@@ -31,8 +31,7 @@ class DataProvidersController < ApplicationController
                            :browse, :register, :unregister, :delete ]
 
   before_action :login_required
-  # before_action :manager_role_required, :only => [:new, :create]
-  before_action :type_allowed?
+
   before_action :admin_role_required,   :only => [:report, :repair]
 
   def index #:nodoc:
@@ -85,13 +84,16 @@ class DataProvidersController < ApplicationController
                                 )
 
     @typelist = get_type_list
+    render template: 'data_providers/normal_new' if current_user.has_role?(:normal_user) # normal user only allowed create UserkeyFlatDirSshDataProvider
   end
 
   def create #:nodoc:
-    @provider = DataProvider.sti_new(data_provider_params)
+    @provider = DataProvider.sti_new(data_provider_params) if current_user.has_role?(:admin)
+    # non-admins are limited to one dp type only
+    # todo allow any other types???
+    @provider = UserkeyFlatDirSshDataProvider.new(data_provider_params) unless current_user.has_role?(:admin)
     @provider.user_id  ||= current_user.id # disabled field in form DOES NOT send value!
     @provider.group_id ||= current_assignable_group.id
-
     if @provider.save
       add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid])
       @provider.addlog_context(self,"Created by #{current_user.login}")
@@ -821,9 +823,92 @@ class DataProvidersController < ApplicationController
     end
   end
 
+  # This action checks that the remote side of the DataProvider is
+  # accessible using SSH.
+  def check
+    id        = params[:id]
+    @provider = DataProvider.find(id)
+    unless @provider.has_owner_access?(current_user)
+      flash[:error] = "You cannot check a provider that you do not own."
+      respond_to do |format|
+        format.html { redirect_to :action => :show }
+        format.xml  { head :forbidden }
+        format.json { head :forbidden }
+      end
+      return
+    end
+
+    master  = @provider.master # This is a handler for the connection, not persistent.
+    tmpfile = "/tmp/dp_check.#{Process.pid}.#{rand(1000000)}"
+
+    # Check #1: the SSH connection can be established
+    if ! master.is_alive?
+      test_error "Cannot establish the SSH connection. Check the configuration: username, hostname, port are valid, and SSH key is installed."
+    end
+
+    # Check #2: we can run "true" on the remote site and get no output
+    status = master.remote_shell_command_reader("true",
+                                                :stdin  => "/dev/null",
+                                                :stdout => "#{tmpfile}.out",
+                                                :stderr => "#{tmpfile}.err",
+                                                )
+    stdout = File.read("#{tmpfile}.out") rescue "Error capturing stdout"
+    stderr = File.read("#{tmpfile}.err") rescue "Error capturing stderr"
+    if stdout.size != 0
+      stdout.strip! if stdout.present? # just to make it pretty while still reporting whitespace-only strings
+      test_error "Remote shell is not clean: got some bytes on stdout: '#{stdout}'"
+    end
+    if stderr.size != 0
+      stderr.strip! if stdout.present?
+      test_error "Remote shell is not clean: got some bytes on stderr: '#{stderr}'"
+    end
+    if ! status
+      test_error "Got non-zero return code when trying to run 'true' on remote side."
+    end
+
+    # Check #3: the remote directory exists
+    master.remote_shell_command_reader "test -d #{@provider.remote_dir.bash_escape} && echo DIR-OK", :stdout => tmpfile
+    out = File.read(tmpfile)
+    if out != "DIR-OK\n"
+      test_error "The remote directory doesn't seem to exist."
+    end
+
+    # Check #4: the remote directory is readable
+    master.remote_shell_command_reader "test -r #{@provider.remote_dir.bash_escape} && test -x #{@provider.remote_dir.bash_escape} && echo DIR-READ", :stdout => tmpfile
+    out = File.read(tmpfile)
+    if out != "DIR-READ\n"
+      test_error "The remote directory doesn't seem to be readable"
+    end
+
+    # Ok, all is well.
+    flash[:notice] = "The configuration was tested and seems to be operational."
+    redirect_to :action => :show
+
+  rescue UserKeyTestConnectionError => ex
+    flash[:error]  = ex.message
+    flash[:error] += "\nThis storage is marked as 'offline' until this test pass."
+    @provider.update_column(:online, false)
+    redirect_to :action => :show
+
+  ensure
+    File.unlink "#{tmpfile}.out" rescue true
+    File.unlink "#{tmpfile}.err" rescue true
+
+  end
+
   # register all pd files
   def autoregister
-    @provider = find_nh_storage(current_user, params[:id])
+    id        = params[:id]
+    @provider = DataProvider.find(id) 
+    unless @provider.has_owner_access?(current_user)
+       flash[:error] = "You cannot autoregister files of a provider that you do not own."
+       respond_to do |format|
+        format.html { redirect_to :action => :show }
+        format.xml  { head :forbidden }
+        format.json { head :forbidden }
+       end
+       return
+    end 
 
     # Contact remote site and get list of files there
     fileinfos = BrowseProviderFileCaching.get_recent_provider_list_all(@provider, current_user)
@@ -915,11 +1000,6 @@ class DataProvidersController < ApplicationController
         :containerized_path
       )
     end
-  end
-
-  def type_allowed?
-    return true if check_role(:site_manager) || check_role(:admin_user)
-    get_type_list.map(&:to_s).include? params['type']
   end
 
   def get_type_list #:nodoc:

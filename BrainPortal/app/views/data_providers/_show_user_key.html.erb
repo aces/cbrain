@@ -24,20 +24,27 @@
 
 <div>
   <div>
-    <div>Configuration Information</div>
+    <h3>Configuration Information</h3>
     <div>
       This is your own public SSH key that must be installed on the storage host.
     </div>
   </div>
   <div>
-    <div>SSH Key installation Instructions</div>
+    <h4>SSH Key installation Instructions</h4>
     <div>
-       A public SSH key needs to be added to the authorized keys of the user on the host. Paste the ssh key bellow in a text file the use the following command to add it to the authorized_keys file on the host.
-      <div>Command line</div>
-      <div>
-        <pre>
-$ cat mykey.txt | ssh user@host "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >>  ~/.ssh/authorized_keys"
-        </pre>
+       A public SSH key needs to be added to the authorized keys of the user on the host.
+       <%= link_to "Download", key_user_path(current_user) %> and open command line in the folder you downloaded the file (typically called Downloads) then use the following command to add it to the authorized_keys file on the host.
+      (If download did not work paste the ssh key bellow in a text file and rerun the command line)
+
+      <div class="display_cell" style="padding-left: 1em;">
+          <table>
+            <tr><th class="supertitle"> Command line </th></tr>
+            <tr><td>
+            <pre>
+             cat mykey.txt | ssh user@host "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >>  ~/.ssh/authorized_keys"
+            </pre>
+            </td></tr>
+          </table>
       </div>
       <div>
         Note that revealing this key's content to other people causes <em>no security risks at all</em>.
@@ -45,10 +52,14 @@ $ cat mykey.txt | ssh user@host "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >>  
       </div>
     </div>
   </div>
-  <div>
-    <div>Public SSH key</div>
-    <div>
-      <pre><%= current_user.ssh_key(create_it: true).public_key rescue "Error fetching public key" %></pre>
-    </div>
+
+
+  <div class="display_cell" style="padding-left: 1em;">
+    <table>
+      <tr><th colspan="2" class="supertitle">Public SSH Key</th></tr>
+      <tr><td>This key should be installed on the remote machines to allow access from CBRAIN.</td></tr>
+      <tr><td class="ssh_key"><%= pretty_ssh_key current_user.ssh_key(create_it: true).public_key rescue "Error fetching public key" %></td></tr>
+    </table>
   </div>
+
 </div>

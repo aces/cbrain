@@ -65,6 +65,7 @@ Rails.application.routes.draw do
       get  'change_password'
       post 'switch'
       put  'push_keys'
+      get  'key'
     end
     collection do
       get  'request_password'
@@ -111,6 +112,8 @@ Rails.application.routes.draw do
       get  'report'
       post 'report'
       post 'repair'
+      post 'check'
+      post 'autoregister'
     end
     collection do
       get  'dp_access'
