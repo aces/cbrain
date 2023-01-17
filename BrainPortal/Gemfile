@@ -38,6 +38,7 @@ gem "bcrypt_pbkdf"
 
 # Other utilities
 gem "sys-proctable", '~> 1.2.0'
+gem "mysql2",        '< 0.5'
 gem "log4r"
 gem "puma"
 gem "pbkdf2-ruby"
@@ -98,4 +99,3 @@ group :test do
   gem 'cbrain_client', '>= 5.1.3', :git => 'https://github.com/aces/cbrain-client-gem'
 end
 
-gem "mysql2", "~> 0.5.4"
