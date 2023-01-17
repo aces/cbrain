@@ -96,7 +96,7 @@ class CbrainFileList < CSVFile
   # as extracted by cached_csv_array(). IDs will be numeric, or for
   # missing rows, will contain nils. IDs can be zero.
   #
-  #  [ 12, 0, 45, nil nil, 433 ]
+  #  [ 12, 0, 45, nil, nil, 433 ]
   #
   # Note that this method caches internally its result. To clear the
   # cache (if the userfile's content has changed for instance) call
@@ -241,15 +241,14 @@ class CbrainFileList < CSVFile
   # for the array of +userfiles+. nil entries are allowed in +userfiles+
   # and will be properly encoded as missing rows with ID set to 0.
   def self.create_csv_file_from_userfiles(userfiles)
-    userfile_model_hash = Userfile.columns_hash
     text_rows           = []
     assoc_cache         = {}
     userfiles.each do |userfile|
       row = []
       if (userfile.nil?)
-        row = [0] + Array.new(ATTRIBUTES_LIST.size - 1, "")
+        row = [0] + Array.new(self::ATTRIBUTES_LIST.size - 1, "")
       else
-        ATTRIBUTES_LIST.each do |att|
+        self::ATTRIBUTES_LIST.each do |att|
           val = userfile.send(att)  # attribute value in mode; can be an id of an assoc
           if att =~ /_id$/ # try to look up names in other models
             assoc_cache[[att,val]] ||= ( userfile.send(att.to_s.sub(/_id$/,"")).try(att == :user_id ? :login : :name) || "-")
@@ -266,6 +265,13 @@ class CbrainFileList < CSVFile
     end
     csv_file = text_rows.join(RECORD_TERMINATOR) + (text_rows.present? ? RECORD_TERMINATOR : "");
     csv_file
+  end
+
+  private
+
+  # Can be redefine in sub class
+  def self.userfile_model_hash
+    Userfile.columns_hash
   end
 
 end

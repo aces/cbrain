@@ -263,6 +263,7 @@ class BoutiquesPortalTask < PortalTask
   def final_task_list #:nodoc:
     descriptor = self.descriptor_for_final_task_list
     self.addlog(descriptor.file_revision_info.format("%f rev. %s %a %d"))
+    valid_input_keys = descriptor.inputs.map(&:id)
 
     # --------------------------------------
     # Special case where there is a single file input
@@ -277,11 +278,12 @@ class BoutiquesPortalTask < PortalTask
     if descriptor.file_inputs.size == 1
       input = descriptor.file_inputs.first
 
-      fillTask = lambda do |userfile,tsk|
+      fillTask = lambda do |userfile,tsk,extra_params=nil|
         tsk.invoke_params[input.id] = userfile.id
         tsk.sanitize_param(input)
         tsk.description ||= ''
         tsk.description  += " #{input.id}: #{userfile.name}"
+        tsk.invoke_params.merge!(extra_params.slice(*valid_input_keys)) if extra_params
         tsk.description.strip!
         tsk
       end
@@ -293,11 +295,17 @@ class BoutiquesPortalTask < PortalTask
         if (! f.is_a?( CbrainFileList ) || input.list) # in case of a list input, we *do* assign it the CbFileList
           task = self.dup
           fillTask.( f, task )
-
         else # One task per userfile in the CbrainFileList
-          ufiles = f.userfiles_accessible_by_user!( self.user, nil, nil, file_access_symbol() )
-          # Skip files that are purposefully nil (e.g. given id 0 by the user)
-          subtasks = ufiles.select { |u| ! u.nil? }.map { |u| fillTask.( u, self.dup ) }
+          ufiles               = f.userfiles_accessible_by_user!( self.user, nil, nil, file_access_symbol() )
+          ordered_extra_params = f.is_a?(ExtendedCbrainFileList) ? f.ordered_params : []
+
+          # Fill subtasks array
+          subtasks = []
+          ufiles.each_with_index do |u, index|
+            next if u.nil?
+            subtasks << fillTask.( u, self.dup, ordered_extra_params[index])
+          end
+
           subtasks # an array of tasks
         end
       end
@@ -322,9 +330,17 @@ class BoutiquesPortalTask < PortalTask
 
     # Array with the actual userfiles corresponding to the cbcsv
     mapCbcsvToUserfiles = cbcsvs.map { |f| f[1].ordered_raw_ids.map { |i| (i==0) ? nil : i } }
+    # Array with the actual extra json_params corresponding to the cbcsv
+    mapCbcsvToParams    =  cbcsvs.map do |f|
+                             cbcsv = f[1]
+                             cbcsv.is_a?(ExtendedCbrainFileList) ?
+                               cbcsv.ordered_params : []
+                           end
+
     # Task list to fill and total number of tasks to output
-    tasklist = []
-    nTasks   = mapCbcsvToUserfiles[0].length
+    tasklist         = []
+    nTasks           = mapCbcsvToUserfiles[0].length
+
     # Iterate over each task that needs to be generated
     for i in 0..(nTasks - 1)
       # Clone this task
@@ -335,6 +351,8 @@ class BoutiquesPortalTask < PortalTask
         #currTask.params[:interface_userfile_ids] << mapCbcsvToUserfiles unless currId.nil?
         currTask.invoke_params[cinput.id] = currId # If id = 0 or nil, currId = nil
         currTask.invoke_params.delete(cinput.id) if currId.nil?
+        extra_params_from_Cbcsv     = mapCbcsvToParams[j][i] || {}
+        currTask.invoke_params.merge!(extra_params_from_Cbcsv.slice(*valid_input_keys))
       end
       # Add the new task to our tasklist
       tasklist << currTask

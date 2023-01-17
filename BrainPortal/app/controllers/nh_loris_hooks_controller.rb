@@ -64,6 +64,11 @@ class NhLorisHooksController < NeurohubApplicationController
     s_group = Group.where_id_or_name(source_group_id).first if source_group_id
     base = Userfile.where(nil) # As seen in userfiles_controller
     base = Userfile.restrict_access_on_query(current_user, base, :access_requested => :read)
+
+    extended_values  = ExtendedCbrainFileList.roots_to_fullpaths(source_basenames)
+    source_basenames = extended_values.keys
+    is_extended      = extended_values.any?{|parent_dir,pathlist| pathlist.present? }
+
     userfiles = base.where(:name => source_basenames)
     userfiles = userfiles.where(:data_provider_id => s_dp.id)    if s_dp
     userfiles = userfiles.where(:group_id         => s_group.id) if s_group
@@ -71,17 +76,22 @@ class NhLorisHooksController < NeurohubApplicationController
     # It is an error not to find exactly the same number of files as in
     # the params' basenames array
     found_names = userfiles.pluck(:name)
-    file_count = found_names.size
-    exp_count  = source_basenames.size
+    file_count  = found_names.size
+    exp_count   = source_basenames.size
     if (file_count == 0) || (strict_match && (file_count != exp_count))
       cb_error "Could not find an exact match for the files. Found #{file_count} of #{exp_count} files"
     end
 
-    # Create CbrainFileList content and save it to DP
-    cblist_content = CbrainFileList.create_csv_file_from_userfiles(userfiles)
-
-    # Save result file
-    result = create_file_for_request(CbrainFileList, "Loris-DQT-List.cbcsv", cblist_content)
+    result = nil
+    if is_extended
+      new_extended   = extended_values.transform_values {|relpaths| { :all_to_keep => relpaths }.to_json }
+      userfiles      = ExtendedCbrainFileList.extended_userfiles_by_name(userfiles, new_extended)
+      cblist_content = ExtendedCbrainFileList.create_csv_file_from_userfiles(userfiles)
+      result = create_file_for_request(ExtendedCbrainFileList, "Extended-Loris-DQT-List.cbcsv", cblist_content)
+    else
+      cblist_content = CbrainFileList.create_csv_file_from_userfiles(userfiles)
+      result = create_file_for_request(CbrainFileList, "Loris-DQT-List.cbcsv", cblist_content)
+    end
 
     # Info message and unmatched entries
     extra_response = {
