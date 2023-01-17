@@ -62,7 +62,7 @@ module BoutiquesOutputCacheCleaner
       "optional"      => false,
       "default-value" => true,
     )
-    descriptor.inputs <<= new_input
+    descriptor.inputs << new_input
 
     # Add new group with that input
     groups       = descriptor.groups || []
@@ -76,7 +76,7 @@ module BoutiquesOutputCacheCleaner
       )
       groups << cb_mod_group
     end
-    cb_mod_group.members <<= new_input.id
+    cb_mod_group.members << new_input.id
 
     descriptor.groups = groups
     descriptor
