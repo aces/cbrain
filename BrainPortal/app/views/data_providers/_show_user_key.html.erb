@@ -22,44 +22,29 @@
 #
 -%>
 
-<div>
-  <div>
-    <h3>Configuration Information</h3>
-    <div>
-      This is your own public SSH key that must be installed on the storage host.
-    </div>
-  </div>
-  <div>
-    <h4>SSH Key installation Instructions</h4>
-    <div>
-       A public SSH key needs to be added to the authorized keys of the user on the host.
-       <%= link_to "Download", key_user_path(current_user) %> and open command line in the folder you downloaded the file (typically called Downloads) then use the following command to add it to the authorized_keys file on the host.
-      (If download did not work paste the ssh key bellow in a text file and rerun the command line)
-
-      <div class="display_cell" style="padding-left: 1em;">
-          <table>
-            <tr><th class="supertitle"> Command line </th></tr>
-            <tr><td>
-            <pre>
-             cat mykey.txt | ssh user@host "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >>  ~/.ssh/authorized_keys"
-            </pre>
-            </td></tr>
-          </table>
-      </div>
-      <div>
-        Note that revealing this key's content to other people causes <em>no security risks at all</em>.
-        The information in this key is meant to be public and people cannot use it to access your information.
-      </div>
-    </div>
-  </div>
 
 
-  <div class="display_cell" style="padding-left: 1em;">
+<div class="display_cell" style="padding-left: 1em;">
     <table>
-      <tr><th colspan="2" class="supertitle">Public SSH Key</th></tr>
-      <tr><td>This key should be installed on the remote machines to allow access from CBRAIN.</td></tr>
-      <tr><td class="ssh_key"><%= pretty_ssh_key current_user.ssh_key(create_it: true).public_key rescue "Error fetching public key" %></td></tr>
-    </table>
-  </div>
+      <tr><th class="supertitle"> Configuration instructions </th></tr>
+      <tr><td>
 
+       <%= link_to "Download mykey.txt", key_user_path(current_user) %> file and open command line in the folder you downloaded the file (typically called Downloads).
+        <br>Then use the following command to add it to the authorized_keys file on the host. Remember to replace
+        REMOTE_USERNAME <br> and REMOTE_HOSTNAME stabs with the values that you provided in SSH parameters section
+      </td></tr>
+      <tr><th class="supertitle"> Command line </th></tr>
+      <tr><td>
+        <pre class="ssh_key"> cat mykey.txt | ssh REMOTE_USERNAME@REMOTE_HOSTNAME "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >>  ~/.ssh/authorized_keys"</pre>
+      </td></tr>
+      <tr><td>
+        If download did not work paste the ssh key bellow in a text file and rerun the command line
+      </tr></td>
+      <tr><th class="supertitle">Public SSH Key</th></tr>
+      <tr><td><pre class="ssh_key"><%= pretty_ssh_key current_user.ssh_key(create_it: true).public_key rescue "Error fetching public key" %></pre></td></tr>
+      <tr><td>
+        Note that revealing this key's content to other people causes no security risks. <br>
+        The information in this key is meant to be public and people cannot use it to access your information.
+      </tr></td>
+    </table>
 </div>
