@@ -84,14 +84,14 @@ class DataProvidersController < ApplicationController
                                 )
 
     @typelist = get_type_list
-    render template: 'data_providers/normal_new' if current_user.has_role?(:normal_user) # normal user only allowed create UserkeyFlatDirSshDataProvider
+    render template: 'data_providers/normal_new' unless current_user.has_role?(:admin) # normal user only allowed create UserkeyFlatDirSshDataProvider
   end
 
   def create #:nodoc:
-    @provider = DataProvider.sti_new(data_provider_params) if current_user.has_role?(:admin)
+    @provider = DataProvider.sti_new(data_provider_params) if current_user.has_role?(:admin_user)
     # non-admins are limited to one dp type only
     # todo allow any other types???
-    @provider = UserkeyFlatDirSshDataProvider.new(data_provider_params) unless current_user.has_role?(:admin)
+    @provider = UserkeyFlatDirSshDataProvider.new(data_provider_params) unless current_user.has_role?(:admin_user)
     @provider.user_id  ||= current_user.id # disabled field in form DOES NOT send value!
     @provider.group_id ||= current_assignable_group.id
     if @provider.save
@@ -993,7 +993,8 @@ class DataProvidersController < ApplicationController
       # they don't control.
       params.require_as_params(:data_provider).permit(
         :name, :description, :group_id, :time_zone,
-        :alternate_host,
+        :alternate_host, :remote_user, :remote_host, :alternate_host, :remote_dir,
+        :remote_port,
         :online, :read_only, :not_syncable,
         :datalad_repository_url, :datalad_relative_path,
         :license_agreements,
