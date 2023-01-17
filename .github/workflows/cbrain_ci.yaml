@@ -67,7 +67,7 @@ jobs:
 
       ###########################################################
       - name: Reload Cached Gems
-        uses: actions/cache@v1 # speeds up 'Prepare Ruby Gems' below
+        uses: actions/cache@v3 # speeds up 'Prepare Ruby Gems' below
         with:
           path: gem-cache
           key: ${{ runner.os }}-gems-${{ hashFiles('*/Gemfile') }}
