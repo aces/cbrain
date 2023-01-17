@@ -299,17 +299,10 @@ class BoutiquesPortalTask < PortalTask
           ufiles               = f.userfiles_accessible_by_user!( self.user, nil, nil, file_access_symbol() )
           ordered_extra_params = f.is_a?(ExtendedCbrainFileList) ? f.ordered_params : []
 
-          # Remove files that are purposefully nil (e.g. given id 0 by the user)
-          # Remove entries from ordered_extra_params if needed
-          nil_indexes = ufiles.each_with_index.select  { |v,index| v.nil? }.map { |_, index| index }
-          nil_indexes.reverse.each do |index|
-            ufiles.delete_at(index)
-            ordered_extra_params.delete_at(index)
-          end
-
           # Fill subtasks array
           subtasks = []
           ufiles.each_with_index do |u, index|
+            next if u.nil?
             subtasks << fillTask.( u, self.dup, ordered_extra_params[index])
           end
 
