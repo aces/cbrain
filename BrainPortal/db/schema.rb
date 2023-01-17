@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220913183448) do
+ActiveRecord::Schema.define(version: 20221007094232) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -263,8 +263,6 @@ ActiveRecord::Schema.define(version: 20220913183448) do
     t.string   "ssh_control_host"
     t.integer  "ssh_control_port"
     t.string   "ssh_control_rails_dir"
-    t.integer  "tunnel_mysql_port"
-    t.integer  "tunnel_actres_port"
     t.string   "cache_md5"
     t.boolean  "portal_locked",                             default: false, null: false
     t.integer  "cache_trust_expire",                        default: 0
@@ -290,7 +288,6 @@ ActiveRecord::Schema.define(version: 20220913183448) do
     t.text     "email_delivery_options",      limit: 65535
     t.string   "nh_support_email"
     t.string   "nh_system_from_email"
-    t.text     "nh_email_delivery_options",   limit: 65535
     t.string   "external_status_page_url"
     t.string   "docker_executable_name"
     t.string   "singularity_executable_name"

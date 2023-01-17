@@ -624,10 +624,14 @@ class ClusterTask < CbrainTask
 
     # Build script
     script  = ""
+    # flag to guaranty propagation of env variables to the singularity/apptainer
+    # as far I know only needed to reverse effect of --cleanenv option, and otherwise all vars are copied to the container
+    # yet potentially more cases may be identified
+    propagate = self.use_singularity?
     # Add prologues in specialization order
-    script += bourreau_glob_config.to_bash_prologue if bourreau_glob_config
-    script += tool_glob_config.to_bash_prologue     if tool_glob_config
-    script += tool_config.to_bash_prologue          if tool_config
+    script += bourreau_glob_config.to_bash_prologue propagate if bourreau_glob_config
+    script += tool_glob_config.to_bash_prologue     propagate if tool_glob_config
+    script += tool_config.to_bash_prologue          propagate if tool_config
     # Add CBRAIN special inits
     script += self.supplemental_cbrain_tool_config_init
     # Add the command
@@ -1813,9 +1817,9 @@ bash -c "exit $_cbrain_status_"
 # by ClusterTask
 #   #{ClusterTask.revision_info.to_s}
 
-#{bourreau_glob_config ? bourreau_glob_config.to_bash_prologue : ""}
-#{tool_glob_config     ? tool_glob_config.to_bash_prologue     : ""}
-#{tool_config          ? tool_config.to_bash_prologue          : ""}
+#{bourreau_glob_config ? bourreau_glob_config.to_bash_prologue(self.use_singularity?) : ""}
+#{tool_glob_config     ? tool_glob_config.to_bash_prologue(self.use_singularity?)     : ""}
+#{tool_config          ? tool_config.to_bash_prologue(self.use_singularity?)          : ""}
 #{self.supplemental_cbrain_tool_config_init}
 
 # CbrainTask '#{self.name}' commands section
@@ -2305,9 +2309,7 @@ docker_image_name=#{full_image_name.bash_escape}
   # Returns true if the task's ToolConfig is configured to point to a singularity image
   # for the task's processing.
   def use_singularity?
-    return self.tool_config.container_engine == "Singularity" &&
-         ( self.tool_config.containerhub_image_name.present? ||
-           self.tool_config.container_image_userfile_id.present? )
+    return self.tool_config.use_singularity?
   end
 
   # Return the 'singularity' command to be used for the task; this is fetched

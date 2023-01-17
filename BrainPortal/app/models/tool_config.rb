@@ -67,6 +67,21 @@ class ToolConfig < ApplicationRecord
 
   api_attr_visible :version_name, :description, :tool_id, :bourreau_id, :group_id, :ncpus
 
+  # given array of pairs variable/value builds export script, a prefix is added to variables options
+  def vars_to_export_script(varprefix="")
+    env = self.env_array || []
+    commands = ""
+    env.each do |name_val|
+      name = name_val[0]
+      val  = name_val[1]
+      name.strip!
+      #val.gsub!(/'/,"'\''")
+      commands += "export #{varprefix}#{name}=\"#{val}\"\n"
+    end
+    commands += "\n" if env.size > 0
+    commands
+  end
+
   # To make it somewhat compatible with the ResourceAccess module,
   # here's this model's own method for checking if it's visible to a user.
   def can_be_accessed_by?(user)
@@ -154,8 +169,10 @@ class ToolConfig < ApplicationRecord
 
   # Generates a partial BASH script that initializes environment
   # variables and is followed a the script prologue stored in the
-  # object.
-  def to_bash_prologue
+  # object. For singularity prologues, special prefixes are added to
+  # variable names to ensure they will be propagated to the container
+  # even in presence of --cleanenv parameteres and such
+  def to_bash_prologue(singularity=false)
     tool     = self.tool
     bourreau = self.bourreau
     group    = self.group
@@ -194,17 +211,25 @@ class ToolConfig < ApplicationRecord
 #---------------------------------------------------
 
     ENV_HEADER
-    env.each do |name_val|
-      name = name_val[0]
-      val  = name_val[1]
-      name.strip!
-      #val.gsub!(/'/,"'\''")
-      script += "export #{name}=\"#{val}\"\n"
+    script += vars_to_export_script
+
+    if singularity
+      script += <<-ENV_HEADER
+#---------------------------------------------------
+# Ensuring that environment variables are propagated:#{env.size == 0 ? " (NONE DEFINED)" : ""}
+#---------------------------------------------------
+
+      ENV_HEADER
+      script += vars_to_export_script("SINGULARITYENV_")
+      script += vars_to_export_script("APPTAINERENV_")  #  SINGULARITYENV is to be depricated
+
     end
     script += "\n" if env.size > 0
 
     prologue = self.script_prologue || ""
-    script += <<-SCRIPT_HEADER
+    script  += <<-SCRIPT_HEADER
+        
+
 #---------------------------------------------------
 # Script Prologue:#{prologue.blank? ? " (NONE SUPPLIED)" : ""}
 #---------------------------------------------------
@@ -289,6 +314,13 @@ class ToolConfig < ApplicationRecord
      else
        self.class.compare_versions(self.version_name,version) >= 0
      end
+  end
+
+  # true if singularity image is defined
+  def use_singularity?
+    return self.container_engine == "Singularity" &&
+        ( self.containerhub_image_name.present? ||
+            self.container_image_userfile_id.present? )
   end
 
   # This method calls any custom compare_versions() method defined

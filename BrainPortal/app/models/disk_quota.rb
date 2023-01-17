@@ -43,7 +43,7 @@ class DiskQuota < ApplicationRecord
   # uses more disk space or more total files on +data_provider_id+ than
   # the quota limit configured by the admin.
   #
-  # The quota record for the limites is first looked up specifically for the pair
+  # The quota record for the limits is first looked up specifically for the pair
   # (user, data_provider); if no quota record is found, the pair (0, data_provider)
   # will be fetched instead (meaning a default quota for all users on that DP)
   #
@@ -70,7 +70,7 @@ class DiskQuota < ApplicationRecord
   # Returns true if currently, the user specified by +user+ (specified by id)
   # uses more disk space or more total files on than configured in the limits
   # of this quota object. Since a quota object can contain '0' for the user attribute
-  # (meaning it's a default for all users), a user_id musy be given explicitely
+  # (meaning it's a default for all users), a user_id must be given explicitely
   # in argument in that case.
   def exceeded?(user_id = self.user_id)
 
