@@ -54,18 +54,17 @@
       <%= f.check_box :track_usage %>
     <% end %>
 
-    <% Make project public, so its files are visible to all the users %>
-    <%= f.check_box :public %>
-    <p>
-    A public project makes all its files visible to all the users. Be careful with this option!
-    You can always make project to public latter on.
-
     <p>
     Normal members will not be able to assign files or other resources
     to this project (but editors are always allowed to do so):
     <%= f.check_box :not_assignable %>
 
-    <% if current_user.has_role?(:normal_user) %>
+    <p>
+    Make public, so all user can access it. Be <b> careful </b> with this option! You can always make project to public latter on:
+    <%= f.check_box :public %>
+    <p>
+
+      <% if current_user.has_role?(:normal_user) %>
       <%= hidden_field_tag("group[user_ids][]", current_user.id.to_s) %>
     <% else %>
       <%= render :partial => 'users_form' %>

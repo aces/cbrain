@@ -280,7 +280,7 @@ class GroupsController < ApplicationController
     else # non admin users
       params.require_as_params(:group).permit(
         :name, :description, :not_assignable,
-        :user_ids => []
+        :public, :user_ids => []
       )
     end
   end
