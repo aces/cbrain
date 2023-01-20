@@ -25,16 +25,12 @@
 <table class="simple public_tools_list">
 
   <tr>
-    <th colspan="3"><strong><big>Tools</big></strong></th>
-  </tr>
-
-  <tr>
     <th>Name and description</th>
     <th>Versions</th>
     <th>Availability</th>
   </tr>
 
-<% @tools.each do |tool| %>
+<% tools.each do |tool| %>
   <%
     name        = tool.name
     description = (tool.description.presence || "").strip
@@ -43,7 +39,6 @@
                       .to_a
                       .select { |tc| tc.bourreau_id.present?  }
                       .select { |tc| tc.bourreau_id > 0       }
-                      .select { |tc| tc.bourreau.try(:online) }
                       .map(&:version_name)
                       .map(&:presence)
                       .compact

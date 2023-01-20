@@ -25,15 +25,11 @@
 <table class="simple public_tools_list">
 
   <tr>
-    <th colspan="2"><strong><big>Datasets</big></strong></th>
-  </tr>
-
-  <tr>
     <th>Name and description</th>
     <th>Availability</th>
   </tr>
 
-<% @groups.each do |group| %>
+<% groups.each do |group| %>
   <%
     name        = group.name
     description = (group.description.presence || "").strip

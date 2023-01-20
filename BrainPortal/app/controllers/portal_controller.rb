@@ -253,7 +253,6 @@ class PortalController < ApplicationController
              .select { |t| t.tool_configs.to_a.any? { |tc|
                 tc.bourreau_id.present?  &&
                 tc.bourreau_id > 0       &&
-                tc.bourreau.try(:online) && # comment out to show them all
                 tc.version_name.present?
                 }
              }
