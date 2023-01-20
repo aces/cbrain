@@ -131,7 +131,7 @@ class BoutiquesDescriptorMakerHandler < BoutiquesPortalTask
   rescue => ex
     return "Bosh validation failed: #{ex.class} #{ex.message}"
   ensure
-    File.unlink tmpfile
+    File.unlink(tmpfile) rescue nil
   end
 
   # Invokes bosh to generate a command preview.
