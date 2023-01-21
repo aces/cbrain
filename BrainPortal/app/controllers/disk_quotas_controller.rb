@@ -124,6 +124,53 @@ class DiskQuotasController < ApplicationController
     redirect_to disk_quotas_path
   end
 
+  # Returns a list of users with exceeded quotas
+  def report #:nodoc:
+    quota_to_user_ids = {}  # quota_obj => [uid, uid...]
+
+    # Scan DP-wide quota objects
+    DiskQuota.where(:user_id => 0).all.each do |quota|
+      exceed_size_user_ids = Userfile
+        .where(:data_provider_id => quota.data_provider_id)
+        .group(:user_id)
+        .sum(:size)
+        .select { |user_id,size| size >= quota.max_bytes }
+        .keys
+      exceed_numfiles_user_ids = Userfile
+        .where(:data_provider_id => quota.data_provider_id)
+        .group(:user_id)
+        .sum(:size)
+        .select { |user_id,size| size >= quota.max_files }
+        .keys
+      union_ids = exceed_size_user_ids | exceed_numfiles_user_ids
+      quota_to_user_ids[quota] = union_ids if union_ids.size > 0
+    end
+
+    # Scan user-specific quota objects
+    DiskQuota.where('user_id > 0').all.each do |quota|
+      quota_to_user_ids[quota] = [ quota.user_id] if quota.exceeded?
+    end
+
+    # Inverse relation: user_id => [ quota, quota ]
+    user_id_to_quotas = {}
+    quota_to_user_ids.each do |quota,user_ids|
+      user_ids.each do |user_id|
+        user_id_to_quotas[user_id] ||= []
+        user_id_to_quotas[user_id]  << quota
+      end
+    end
+
+    # Table content: [ [ user_id, quota ], [user_id, quota] ... ]
+    # Note: the rows are grouped by user_id, but not sorted in any way...
+    @user_id_and_quota = []
+    user_id_to_quotas.each do |user_id, quotas|
+      quotas.each do |quota|
+        @user_id_and_quota << [ user_id, quota ]
+      end
+    end
+
+  end
+
   private
 
   def disk_quota_params #:nodoc:

@@ -60,11 +60,6 @@
   <%
     t.pagination
 
-    t.column("Execution Server", :bourreau,
-      :sortable => true,
-      :filters  => default_filters_for(@base_scope, Bourreau)
-    ) { |tc| tc.bourreau ? link_to_bourreau_if_accessible(tc.bourreau) : html_colorize("(All servers)",'orange')}
-
     t.column("Tool Name", :tool,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, Tool)
@@ -75,6 +70,12 @@
         current_user.has_role?(:admin_user) ? link_to(tc.tool.name,edit_tool_path(tc.tool)) : tc.tool.name
       end
     end
+
+    t.column("Execution Server", :bourreau,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, Bourreau)
+    ) { |tc| tc.bourreau ? link_to_bourreau_if_accessible(tc.bourreau) : html_colorize("(All servers)",'orange')}
+
 
     t.column("Tool Project", 'tools.group_id',
       #:sortable => true,

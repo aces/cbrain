@@ -1,0 +1,86 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2023
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title 'Exceeded Quotas' %>
+
+<div class="menu_bar">
+  <%= link_to "Quota Records Table", disk_quotas_path(),    :class => :button %>
+  <%= link_to "New Quota Entry",     new_disk_quota_path(), :class => :button %>
+  <p>
+</div>
+
+<table>
+  <tr>
+    <th>User</th>
+    <th>DataProvider</th>
+    <th>Size</th>
+    <th>Size quota</th>
+    <th>Number of files</th>
+    <th>Number of files quota</th>
+    <th>Situation</th>
+    <th>Details</th>
+    <th>Quota record</th>
+  <tr>
+
+<% @user_id_and_quota.each do |user_id,quota| %>
+  <%
+    # the following next statement should never get triggered, unless
+    # at some point I enhance the controller code to show 'nearly exceeded' quotas
+    # and then we should remove it.
+  %>
+  <% situation = quota.exceeded?(user_id) %>
+  <% next unless situation.present? %>
+  <% user_class = quota.user_id == 0 ? "" : 'class="disk_quota_user_quota_highlight"'.html_safe %>
+  <% dp_class   = quota.user_id != 0 ? "" : 'class="disk_quota_dp_quota_highlight"'.html_safe   %>
+  <% bytes_class = situation.to_s =~ /bytes/ ? 'class="disk_quota_exceed_bytes"'.html_safe : "" %>
+  <% files_class = situation.to_s =~ /files/ ? 'class="disk_quota_exceed_files"'.html_safe : "" %>
+  <tr>
+    <td <%= user_class %>><%= link_to_user_if_accessible(user_id) %></td>
+    <td <%= dp_class %>><%= link_to_data_provider_if_accessible(quota.data_provider_id) %></td>
+    <td <%= bytes_class %>><%= colored_pretty_size(quota.cursize) %></td>
+    <td><%= colored_pretty_size(quota.max_bytes) %></td>
+    <td <%= files_class %>><%= quota.curfiles %></td>
+    <td><%= quota.max_files %></td>
+    <td><%= situation.to_s.humanize %></td>
+    <td><%=
+      link_to 'Table',
+              report_path(
+                  :table_name       => 'userfiles.combined_file_rep',
+                  :user_id          => user_id,
+                  :data_provider_id => quota.data_provider_id,
+                  :row_type         => :user_id ,
+                  :col_type         => :type,
+                  :generate         => "ok"
+              ), :class => "action_link"
+      %>
+    </td>
+    <td>
+      <% label = quota.user_id == 0 ? "(DP Quota)" : "(User Quota)" %>
+      <%= link_to("Show/Edit #{label}", disk_quota_path(quota), :class => "action_link") %>
+    </td>
+  </tr>
+<% end %>
+
+</table>
+
