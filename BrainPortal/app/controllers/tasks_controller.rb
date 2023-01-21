@@ -187,7 +187,7 @@ class TasksController < ApplicationController
     if tool_config_id # the prefered method
       @tool_config = ToolConfig.find(tool_config_id)
       if ! @tool_config.can_be_accessed_by?(current_user)
-         raise ActiveRecord::RecordNotFound("Cannot access ToolConfig ##{tool_config_id}")
+         raise ActiveRecord::RecordNotFound.new("Cannot access ToolConfig ##{tool_config_id}")
       end
     else # Try to propose a version; usually that's when we get just a tool_id
       if tool_id.blank?
@@ -197,7 +197,7 @@ class TasksController < ApplicationController
       end
       tool = Tool.find(tool_id)
       if ! tool.can_be_accessed_by?(current_user)
-         raise ActiveRecord::RecordNotFound("Cannot access Tool ##{tool_id}")
+         raise ActiveRecord::RecordNotFound.new("Cannot access Tool ##{tool_id}")
       end
       bourreau_id = Bourreau.find_all_accessible_by_user(current_user).where(:online => true).pluck(:id) if bourreau_id.nil? # try them all
       toolconfigs = ToolConfig.where(

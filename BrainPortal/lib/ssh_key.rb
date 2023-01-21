@@ -211,7 +211,7 @@ class SshKey
 
   # Returns the private key (in SSH format)
   def private_key(i_know_what_i_am_doing = false)
-    raise RuntimeError("Private key access denied") unless i_know_what_i_am_doing == 'I Know What I Am Doing'
+    raise RuntimeError.new("Private key access denied") unless i_know_what_i_am_doing == 'I Know What I Am Doing'
     File.read(private_key_path)
   end
 

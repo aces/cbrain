@@ -239,7 +239,7 @@ class UserfilesController < ApplicationController
     # Find and validate target userfile
     @userfile = Userfile.find_accessible_by_user(userfile_id, current_user, :access_requested => :read)
     if @userfile.nil?
-      raise ActiveRecord::RecordNotFound("Could not retrieve a userfile with ID: #{userfile_id}")
+      raise ActiveRecord::RecordNotFound.new("Could not retrieve a userfile with ID: #{userfile_id}")
     end
 
     # If it's a SingleFile
@@ -1091,7 +1091,7 @@ class UserfilesController < ApplicationController
           next if orig_provider.id == data_provider_id # no support for copy to same provider in the interface, yet.
           res = nil
           if task == :move
-            raise "not owner" unless u.has_owner_access?(current_user)
+            raise RuntimeError.new("Not owner") unless u.has_owner_access?(current_user)
             res = u.provider_move_to_otherprovider(new_provider, :crush_destination => crush_destination)
           else # task is :copy
             my_group_id  = current_assignable_group.id
@@ -2103,7 +2103,7 @@ class UserfilesController < ApplicationController
     # Otherwise we want to view a file inside a FileCollection.
     # Create a fake Userfile to pass information to the viewer
     sub_file_info = @top_userfile.provider_collection_index.detect { |u| u.name == sub_file_name }
-    raise ActiveRecord::RecordNotFound("Could not retrieve a file with the name #{sub_file_name} inside the FileCollection") if !sub_file_info
+    raise ActiveRecord::RecordNotFound.new("Could not retrieve a file with the name #{sub_file_name} inside the FileCollection") if !sub_file_info
 
     # Find the class for the new userfile object that will be used for viewing
     viewer_userfile_class = viewer_class_name.try(:constantize) || @top_userfile.class

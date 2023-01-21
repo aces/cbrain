@@ -56,9 +56,9 @@
   no_version_summary = ""
   if versus_without_tcs.present?
     if for_tool
-      no_version_summary << html_colorize("No versions configured for these tools: ")
-    else
       no_version_summary << html_colorize("No versions configured for these servers: ")
+    else
+      no_version_summary << html_colorize("No versions configured for these tools: ")
     end
 
     versus_without_tcs.each do |vs|

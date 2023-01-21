@@ -41,7 +41,11 @@ Rails.application.routes.draw do
   resources :custom_filters,  :except => [ :index ]
   resources :tags,            :except => [ :new, :edit ]
   resources :access_profiles, :except => [ :edit ]
-  resources :disk_quotas,     :only   => [ :new, :index, :show, :create, :destroy, :update ]
+  resources :disk_quotas,     :only   => [ :new, :index, :show, :create, :destroy, :update ] do
+    collection do
+      get 'report'
+    end
+  end
 
   # Standard CRUD resources, with extra actions
 
