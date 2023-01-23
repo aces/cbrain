@@ -118,9 +118,8 @@ module SelectBoxHelper
       selected = selector.to_s
     end
 
-    # for Admin filter out only public, invisible or non_assignable to reduce the clutter
-    if current_user.has_role? :admin_user
-      current_user_id = current_user.id
+    # for Admin filter out only public, invisible or non_assignable to reduce the clutter (unless groups passed)
+    if current_user.has_role?(:admin_user) && !options.has_key?(:groups)
       admin_ids = AdminUser.all.pluck(:id) || []
       groups   =   groups.select do |g|
         (   g.is_a?(SystemGroup) ||  # everyone group, to make a private tool public
