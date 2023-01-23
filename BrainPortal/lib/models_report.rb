@@ -154,7 +154,7 @@ class ModelsReport
     is_numeric  = token =~ /\A\d+\z/  || token == "-9998877" # ... because we'll find by ID
 
 
-    file_scope  = Userfile      .find_all_accessible_by_user(user) .order(:name)
+    file_scope  = Userfile      .find_all_accessible_by_user(user, :access_requested => :read).order(:name)
     task_scope  = CbrainTask    .find_all_accessible_by_user(user) .order(:id)
     rr_scope    = RemoteResource.find_all_accessible_by_user(user) .order(:name)
     dp_scope    = DataProvider  .find_all_accessible_by_user(user) .order(:name)
