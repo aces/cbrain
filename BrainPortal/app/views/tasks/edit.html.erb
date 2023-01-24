@@ -54,7 +54,7 @@
 
 
 <P>
-<%= submit_tag "Save modified parameters for this task", :class => "button" %>
+<%= submit_tag "Save modified parameters for this task", :class => "button", :disabled => @task.errors[:unsavable].present? %>
 <BR>
 
 <% end %>

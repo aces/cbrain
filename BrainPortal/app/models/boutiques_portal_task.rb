@@ -27,7 +27,9 @@ class BoutiquesPortalTask < PortalTask
   # This method returns the BoutiquesDescriptor
   # directly associated with the ToolConfig for the task
   def boutiques_descriptor
-    self.tool_config.boutiques_descriptor
+    self.tool_config.boutiques_descriptor ||
+    self.find_compatible_placeholder_descriptor ||   # Workaround #1 for misconfigured portal
+    self.generate_placeholder_descriptor             # Workaround #2 for misconfigured portal
   end
 
   # This method returns the same descriptor as
@@ -638,6 +640,103 @@ class BoutiquesPortalTask < PortalTask
   # for output.
   def file_access_symbol
     @_file_access ||= (self.class.properties[:readonly_input_files].present? || self.tool_config.try(:inputs_readonly) ? :read : :write)
+  end
+
+  # In the case of a misconfiguration of the portal, or if the file for
+  # the Boutiques descriptor has disappeared, this method will look at
+  # other ToolConfigs associated with the tool of the task and try find
+  # a replacement descriptor. It's not garanteed that this descriptor
+  # is compatible with the params of the task but it's probably good
+  # enough to show the task to the user.
+  #
+  # The task object itself will get a permanent ActiveRecord
+  # error added to its base to prevent any saving/editing/launching.
+  #
+  # See also the method generate_placeholder_descriptor which, in case
+  # we can't find a descriptor here, is called to create a fake
+  # descriptor out of thin air.
+  #
+  # Known limitations: if the original task was integrated with
+  # special modules that have custom entries that are different
+  # than the ones in the found descriptor, the callback methods
+  # setup(), before_form() etc might crash.
+  def find_compatible_placeholder_descriptor
+
+    # Build a list of tool configs to scan
+    tool_configs       = self.tool.tool_configs.order("created_at desc").to_a
+
+    # Find the most recently created one (hopefully, backwards compatible)
+    compat_tool_config = tool_configs.detect { |tc| tc.boutiques_descriptor } # first one is the one we use
+    return nil if ! compat_tool_config
+
+    # Add persistent errors, to make sure the task cannot be touched.
+    if self.errors.blank?
+      cur_version = self.tool_config.version_name
+      alt_version = compat_tool_config.version_name
+      self.errors.add(:base, "The Boutiques Descriptor for version '#{cur_version}' of this task has disappeared. This is a configuration error, contact the administrators.")
+      self.errors.add(:base, "A descriptor from another version ('#{alt_version}') is currently in use to allow you to view the parameters.")
+      self.errors.add(:unsavable, ": The parameters for this task cannot be modified.") # this special error prevents the save button from working
+    end
+
+    compat_tool_config.boutiques_descriptor
+  end
+
+  # In the case of a misconfiguration of the portal, or if the file for
+  # the Boutiques descriptor has disappeared, this method will look at the
+  # current params of the task and create out of thin air a new fake
+  # descriptor for it. This allows the user to (at least) view the task
+  # in the interface.
+  #
+  # The task object itself will get a permanent ActiveRecord
+  # error added to its base to prevent any saving/editing/launching.
+  #
+  # Known limitations: if the original task was integrated with
+  # special modules that require custom entries in the descriptor,
+  # the callback methods setup(), before_form() etc might crash.
+  # That's because the descriptor generated here contains an empty
+  # "custom" entry.
+  def generate_placeholder_descriptor
+
+    # Add persistent errors, to make sure the task cannot be touched.
+    if self.errors.blank?
+      cur_version = self.tool_config.version_name
+      self.errors.add(:base, "The Boutiques Descriptor for version '#{cur_version}' of this task has disappeared. This is a configuration error, contact the administrators.")
+      self.errors.add(:base, "A replacement descriptor is currently in use to allow you to view the parameters.")
+      self.errors.add(:base, "Because the type information for the parameters is missing, they are all shown as strings.")
+      self.errors.add(:unsavable, ": The parameters for this task cannot be modified.") # this special error prevents the save button from working
+    end
+
+    # Main descriptor
+    fake = BoutiquesSupport::BoutiquesDescriptor.new(
+      :name            => self.pretty_type,
+      :description     => 'Missing Boutiques Descriptor Placeholder',
+      "tool-version"   => self.tool_config.version_name,
+      "schema-version" => "0.5",
+      "command-line"   => "false", # as in, the unix command 'false'
+      :custom          => { 'cbrain:integrator_modules' => {} }, # we can't do better than that
+    )
+
+    # Create fake inputs for files
+    (self.params[:interface_userfile_ids] || []).each do |userfile_id|
+      fake.inputs << BoutiquesSupport::Input.new(
+        :id          => "inputfile-#{userfile_id}",
+        :name        => "inputfile-#{userfile_id}",
+        :type        => 'File',
+        :description => "Fake input file",
+      )
+    end
+
+    # Create fake inputs for all other params (including those that are files)
+    (self.invoke_params || {}).keys.each do |input_id|
+      fake.inputs << BoutiquesSupport::Input.new(
+        :id          => input_id,
+        :name        => input_id,
+        :type        => 'String',
+        :description => "Fake string input for key '#{input_id}'",
+      )
+    end
+
+    fake
   end
 
 end
