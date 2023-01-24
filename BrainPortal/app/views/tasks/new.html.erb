@@ -53,7 +53,7 @@
 
 <% unless @task.class.properties[:no_submit_button] %>
   <P>
-  <%= submit_tag "Start #{@task.pretty_name}", :class => "button" %>
+  <%= submit_tag "Start #{@task.pretty_name}", :class => "button", :disabled => @task.errors[:unsavable].present? %>
   <BR>
 <% end %>
 
