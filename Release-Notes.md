@@ -1,6 +1,111 @@
 
 ## CBRAIN/NeuroHub Release Notes
 
+#### Version 6.3.0 Released 2023-01-26
+
+(Nearly a full year since the previous release! The diff is 19,773 lines long!)
+
+User support and user interface improvements:
+
+* The S3 DataProvider class has been extended to fully support the
+  browse_path feature, allowing files to be registered at arbitrary
+  depth within the object namespace tree of the S3 bucket.
+* The launch button in the file manager was improved so that external
+  sites can directly link to a prepared pair of dataset/tool. Used
+  by the CONP project, mostly.
+* We added the standard 'This site use a cookie' banner.
+* The globally visible list of available tools and datasets was
+  cleaned up and re-arranged in two tabs, each with two tables for
+  the public and restricted thingies.
+* Added a new userfile model in the base distribution: ZipArchive.
+* Special API hooks for the LORIS projects were adjusted; although
+  they can also be used by non LORIS actors, they're pretty specific.
+
+Admin and codebase improvements:
+
+* A new type of user called an 'AutomatedUser' has been added; it
+  is basically the same as a NormalUser, but the type can help admins
+  identify accounts that are meant to be accessed by automated
+  systems (API calls etc).
+* A DataUsage model was added to track and count how often files
+  are being downloaded, copied, used in processing, or viewed. Admins
+  can selectively enable this on a project by project basis, and
+  counts are aggregated on a user + month-by-month basis.
+* A DiskQuota model was added, it allows administrator to impose
+  limits on the number of files and their total sizes for any user
+  on any data provider.
+* The communication channels between the portal and the bourreau
+  are now completely performed by setting up UNIX-domain sockets
+  on the Bourreau side. No longer do we open a network port on
+  localhost! The connections are established by proper -L and -R
+  SSH options, which now support such sockets.
+* A new rake task help developers and admins manage their CBRAIN
+  instances (cbrain:models:broken:*)
+* The boot mechanim for Bourreau was rewritten as plain bash shell
+  wrappers to allow a faster startup than then old Ruby bootstrapping
+  code. The Bourreau is still in Ruby, of course, but prepping it
+  up no longer requires a costly initial Ruby setup script.
+* Speaking of the boot system, Bourreaux servers now launch a
+  separate watchdog process (also a bash script) that will ping the
+  Bourreau every 20 minutes and force it to shutdown if the DB
+  connection (or any SSH tunnel) is shut down unexpectedly. This
+  keep the PID file from staying around for no reason.
+* We removed from the GitHub-hosted codebase the hardcoded cookie
+  secret keys; these were never really a security issue (given in
+  'production' mode the admin was suppoed to create them), but for
+  convenience now any true production or developement CBRAIN system
+  will generate their own secret key deterministically (yet in a
+  non-guessable way).
+* Admins can force specific users to not only link their account
+  to a GlobusAuth provider, it can also be a specific provider chosen
+  by the admin. And once the linkage is done, the password method
+  is permanently disabled for such users.
+* We cleaned up a bunch of system attributes that are no longer
+  used (like port numbers for DB and ActiveResource connections to
+  bourreaux, which are now always tunelled through SSH)
+* Admins users have access to the new 'last' command in the console,
+  and the 'p' (ping) command in the ibc interface.
+* Support for Apptainer as a the new Singularity engine.
+* Bourreaux can be configured to log to an external file some
+  information about each job submitted (user, jobid, name, user
+  globus name, etc).
+* When configuring a ToolConfig, the admin no longer has to explicitely
+  duplicate the environment variables that the tool needs depending
+  on whether the tools runs in Singularity/Apptainer or not. Before,
+  the admins had to set both XYZ=a and SINGULARITYENV_XYZ=a, now
+  it's done automatically.
+* Admins can now visualize directly in the interface the Boutiques
+  descriptor associated with a particular ToolConfig, for a tool
+  configured with the new integrator.
+* We cleaned up (removed) most of the controller actions that were
+  required by the Canadian agency that initialy funded CBRAIN (CANARIE).
+  These were being monitored by them but they discontinued their
+  side.
+* Admins can create notification messages that will show up in the
+  dashboard of all users (e.g. notice for downtime etc)
+
+Boutiques improvements:
+
+* The (relatively) new Boutiques integrator has been extended with lots
+  of modules to let integrators customize the behavior of their tools:
+  * BoutiquesAllowedExitCodes
+  * BoutiquesFileNameMatcher
+  * BoutiquesForcedOutputBrowsePath
+  * BoutiquesInputCacheCleaner
+  * BoutiquesInputSubdirMaker
+  * BoutiquesOutputCacheCleaner
+  * BoutiquesOutputFilenameRenamer
+
+* Launching task arrays with a CbrainFileList now allows the user
+  to provide extra parameters specific to each row in the file list.
+  To do so, the file list should be a ExtendedCbrainFileList and
+  the last column should contain a serialized JSON structure that
+  can merge to the Boutiques parameters of the task.
+
+* A new tool BoutiquesDescriptorMaker is provided as part of the
+  base distribution. It allows a developer to test 'live' what a
+  Boutiques descriptor would look like in CBRAIN.
+
 #### Version 6.2.0 Released 2022-01-28
 
 (After eleven months, the `git diff` output is over 12,000 lines long!)
