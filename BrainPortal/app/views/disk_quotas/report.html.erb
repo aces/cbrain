@@ -51,17 +51,17 @@
   %>
   <% situation = quota.exceeded?(user_id) %>
   <% next unless situation.present? %>
-  <% user_class = quota.user_id == 0 ? "" : 'class="disk_quota_user_quota_highlight"'.html_safe %>
-  <% dp_class   = quota.user_id != 0 ? "" : 'class="disk_quota_dp_quota_highlight"'.html_safe   %>
+  <% user_class = quota.is_for_user?         ? 'class="disk_quota_user_quota_highlight"'.html_safe : "" %>
+  <% dp_class   = quota.is_for_dp?           ? 'class="disk_quota_dp_quota_highlight"'.html_safe   : "" %>
   <% bytes_class = situation.to_s =~ /bytes/ ? 'class="disk_quota_exceed_bytes"'.html_safe : "" %>
   <% files_class = situation.to_s =~ /files/ ? 'class="disk_quota_exceed_files"'.html_safe : "" %>
   <tr>
     <td <%= user_class %>><%= link_to_user_if_accessible(user_id) %></td>
     <td <%= dp_class %>><%= link_to_data_provider_if_accessible(quota.data_provider_id) %></td>
     <td <%= bytes_class %>><%= colored_pretty_size(quota.cursize) %></td>
-    <td><%= colored_pretty_size(quota.max_bytes) %></td>
+    <td><%= pretty_quota_max_bytes(quota) %></td>
     <td <%= files_class %>><%= quota.curfiles %></td>
-    <td><%= quota.max_files %></td>
+    <td><%= pretty_quota_max_files(quota) %></td>
     <td><%= situation.to_s.humanize %></td>
     <td><%=
       link_to 'Table',
@@ -76,7 +76,7 @@
       %>
     </td>
     <td>
-      <% label = quota.user_id == 0 ? "(DP Quota)" : "(User Quota)" %>
+      <% label = quota.is_for_dp? ? "(DP Quota)" : "(User Quota)" %>
       <%= link_to("Show/Edit #{label}", disk_quota_path(quota), :class => "action_link") %>
     </td>
   </tr>

@@ -49,33 +49,41 @@
 
   <% t.cell("User") do %>
     <% if @disk_quota.new_record? %>
-      <%= user_select("disk_quota[user_id]", { :selector => (@disk_quota.user_id.presence || ""), :include_blank => '(Default For All Users)' }) %>
+      <%= user_select("disk_quota[user_id]", { :selector => @disk_quota.user_id, :include_blank => '(Default For All Users)' }) %>
     <% else %>
-      <%= @disk_quota.user_id.zero? ?
+      <%= @disk_quota.is_for_dp? ?
           html_colorize("(Default for all users)", 'orange') :
           link_to_user_if_accessible(@disk_quota.user) %>
     <% end %>
   <% end %>
 
-  <% t.edit_cell(:max_bytes, :content => colored_pretty_size(@disk_quota.max_bytes), :header => "Max Disk Space") do |f| %>
+  <% t.edit_cell(:max_bytes, :header => "Max Disk Space", :content => pretty_quota_max_bytes(@disk_quota)) do |f| %>
     <%= f.text_field :max_bytes, :size => 12 %>
     <div class="field_explanation">
        Sizes are in bytes; when entering a new value,
        you can use a unit as a suffix, such as in <em>2.3 kb</em> and <em>10 G</em>.
+       A value of <em>-1</em> means no files allowed at all.
     </div>
   <% end %>
 
   <% t.cell("Data Provider") do %>
     <% if @disk_quota.new_record? %>
-      <%= data_provider_select("disk_quota[data_provider_id]", { :selector => (@disk_quota.data_provider_id.presence || ""), :include_blank => '(Select a DataProvider)' }) %>
+      <%= data_provider_select("disk_quota[data_provider_id]", { :selector => @disk_quota.data_provider_id, :include_blank => '(Select a DataProvider)' }) %>
     <% else %>
       <%= link_to_data_provider_if_accessible(@disk_quota.data_provider) %>
     <% end %>
   <% end %>
 
-  <% t.edit_cell(:max_files, :header => "Max Num Files") do |f| %>
+  <% t.edit_cell(:max_files, :header => "Max Num Files", :content => pretty_quota_max_files(@disk_quota)) do |f| %>
     <%= f.text_field :max_files, :size => 12 %>
+    <div class="field_explanation">
+       A value of <em>-1</em> means no files allowed at all.
+    </div>
   <% end %>
 
 <% end %>
+
+
+<P>
+<%= render :partial => "layouts/log_report", :locals  => { :log  => @disk_quota.getlog, :title => 'Disk Quota Record Log' } %>
 

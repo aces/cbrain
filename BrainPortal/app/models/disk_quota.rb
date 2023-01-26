@@ -20,7 +20,23 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Model representing disk quotas
+# Model representing disk quotas.
+#
+# We have two type of quota records:
+# 1) User-specific quotas on a specific DP (user_id > 0)
+# 2) DP-wide quotas applying for all users (user_id == 0)
+#
+# Quotas are verified by callbacks in the Userfile model.
+# The methods here will try to fetch and process and
+# user's specific quota (user_id and data_provider_id both set)
+# before it falls back to the DP-wise quota (user_id == 0)
+#
+# The two main attributes are :max_size and :max_files
+# which puts limit to the sum(size) and sum(num_files)
+# of all the userfiles owned by a user on a specific DP.
+#
+# A quota record can be configuered with -1,-1, which prevents
+# a user from creating any file at all on a DP.
 class DiskQuota < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -29,6 +45,7 @@ class DiskQuota < ApplicationRecord
   validates_presence_of :data_provider_id
   validates_presence_of :max_bytes
   validates_presence_of :max_files
+  validate              :limits_are_reasonable
 
   belongs_to :user,          :optional => true # the value can be 0 but not nil
   belongs_to :data_provider, :optional => false
@@ -38,6 +55,18 @@ class DiskQuota < ApplicationRecord
   CACHED_USAGE_EXPIRATION = 1.minute
 
   attr_reader :cursize, :curfiles # values are filled when performing a check
+
+  def is_for_dp? #:nodoc:
+    self.user_id == 0
+  end
+
+  def is_for_user? #:nodoc:
+    self.user_id != 0
+  end
+
+  def none_allowed? #:nodoc:
+    self.max_files == -1
+  end
 
   # Returns true if currently, the user specified by +user_id+
   # uses more disk space or more total files on +data_provider_id+ than
@@ -106,6 +135,33 @@ class DiskQuota < ApplicationRecord
     return nil if user_id == 0 # just in case
     return nil if ! self.exceeded?(user_id)
     raise CbrainDiskQuotaExceeded.new(user_id, self.data_provider_id)
+  end
+
+  #####################################################
+  # Validations callbacks
+  #####################################################
+
+  # Checks that both limits have proper values.
+  # 1) Both values are >= 0 : all OK
+  # 2) max_bytes == -1 and max_files == -1 : locked quota (no other negative numbers are allowed)
+  #
+  # Note that a value of 0 will still allow a user to create ONE userfile entry,
+  # because quota failures happen only after the quota is exceeded. That's
+  # why a value of -1 exists, it prevents any files from being created.
+  #
+  # A DP-wode quota of (-1,-1) will prevent ALL users from creating files on a DP
+  # (similar than having the DP set to read-only) but you can give special privileges
+  # to individual users by creating user-specific quota records.
+  def limits_are_reasonable
+    # All quotas are OK with this rule
+    return true if (self.max_bytes >= 0 && self.max_files >= 0)
+    # Only -1 in both fields is allowed if using negative numbers
+    return true if (self.max_bytes == -1 && self.max_files == -1)
+
+    # Log errors
+    self.errors.add(:max_bytes, "must be -1, 0 or > 0") if self.max_bytes < -1
+    self.errors.add(:max_files, "must be -1, 0 or > 0") if self.max_files < -1
+    self.errors.add(:base,      "when using -1, both limits must be set to -1") if self.max_bytes == -1 || self.max_files == -1
   end
 
 end

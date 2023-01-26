@@ -57,7 +57,7 @@
       :sortable => true,
       :filters  => default_filters_for(@base_scope, User)
     ) do |dq|
-      if dq.user_id == 0
+      if dq.is_for_dp?
         html_colorize("(Default for all users)", 'orange')
       else
         link_to_user_if_accessible(dq.user)
@@ -71,12 +71,14 @@
 
     t.column("Max Size", :max_bytes,
       :sortable => true,
-    ) { |dq| colored_pretty_size(dq.max_bytes) }
+    ) { |dq| pretty_quota_max_bytes(dq) }
 
     t.column("Max Files", :max_files,
       :sortable => true,
-    ) { |dq| dq.max_files.to_s }
+    ) { |dq| pretty_quota_max_files(dq) }
 
+    # This column is a bit misleading: it shows the CURRENT USER's resources for all
+    # quota records that are DP-wide, and the AFFECTED USER'S resources for the user-specific quotas.
     t.column("My Usage") do |dq|
       what = dq.exceeded?(dq.user_id == 0 ? current_user.id : dq.user_id)
       if what.nil?
@@ -92,7 +94,7 @@
       link_to 'Table',
               report_path(
                   :table_name       => 'userfiles.combined_file_rep',
-                  :user_id          => (dq.user_id.zero? ? "" : dq.user_id),
+                  :user_id          => (dq.is_for_user? ? dq.user_id : ""),
                   :data_provider_id => dq.data_provider_id,
                   :row_type         => :user_id ,
                   :col_type         => :type,

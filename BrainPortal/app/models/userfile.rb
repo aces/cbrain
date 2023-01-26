@@ -1155,7 +1155,7 @@ class Userfile < ApplicationRecord
 
   # This method is invoked before the creation of any file.
   # It will raise an CbrainDiskQuotaExceeded exception if the
-  # user has exceeded a quota (space, or number of files) for the DP.
+  # user has already exceeded a quota (space, or number of files) for the DP.
   def check_exceeded_quota!
     DiskQuota.exceeded!(self.user_id, self.data_provider_id)
     true
