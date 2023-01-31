@@ -81,6 +81,25 @@ module CBRAINExtensions #:nodoc:
         to_xml({ :dasherize => false, :root => root_tag }.merge(options))
       end
 
+      # Returns a dup of the hash, where the keys are sorted, and
+      # any values that are arrays are also sorted. Applies these
+      # rules recursively. Assumes that all keys and all array values
+      # are things that can be compared, otherwise this will crash.
+      def resorted
+        res = self.class.new
+        self.keys.sort.each do |key|
+          val = self[key]
+          if val.is_a?(Hash)
+            res[key] = val.resorted
+          elsif val.is_a?(Array)
+            res[key] = val.sort.map { |x| x.respond_to?(:resorted) ? x.resorted : x }
+          else
+            res[key] = val
+          end
+        end
+        res
+      end
+
     end
   end
 end
