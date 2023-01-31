@@ -210,7 +210,7 @@
         for now.
         </div>
     <% end %>
-      
+
     <% t.edit_cell :containerhub_image_name, :content => link_to_userfile_if_accessible(@tool_config.container_image), :header => "ID of the container image" do |f| %>
       <%= f.text_field :container_image_userfile_id %>
       <div class="field_explanation">
@@ -227,8 +227,9 @@
         A specification can be either
         a full path (e.g. <em>file:/a/b/data.squashfs</em>),
         a path with a pattern (e.g. <em>file:/a/b/data*.squashfs</em>),
-        a registered file identified by ID (e.g. <em>userfile:123</em>)
-        or a SquashFS Data Provider identified by its ID or name (e.g. <em>dp:123</em>, <em>dp:DpNameHere</em>).
+        a registered file identified by ID (e.g. <em>userfile:123</em>),
+        a SquashFS Data Provider identified by its ID or name (e.g. <em>dp:123</em>, <em>dp:DpNameHere</em>)
+        or an ext3 capture overlay basename (e.g. <em>ext3capture:basename=SIZE</em> where size is <em>12G</em> or <em>12M</em>).
         In the case of a Data Provider, the overlays will be the files that the provider uses.
         Each overlay specification should be on a separate line.
         You can add comments, indicated with hash symbol <em>#</em>.

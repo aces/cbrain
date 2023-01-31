@@ -2345,7 +2345,7 @@ docker_image_name=#{full_image_name.bash_escape}
     # These will look like "-B .capt_abcd.ext2:/path/workdir/abcd:image-src=/"
     # While we are building these options, we're also creating
     # the ext3 filesystems at the same time, if needed.
-    esc_capture_mounts = self.tool_config.ext3capture_basenames.inject("") do |sing_opts,(basename,size)|
+    esc_capture_mounts = ext3capture_basenames().inject("") do |sing_opts,(basename,size)|
       fs_name    = ".capt_#{basename}.ext3"      # e.g. .capt_work.ext3
       mountpoint = "#{task_workdir}/#{basename}" # e.g. /path/to/workdir/work
       install_ext3fs_filesystem(fs_name,size)
@@ -2465,6 +2465,11 @@ chmod o+x . .. ../.. ../../..
       .select { |dir| File.directory?(dir) }
       .sort { |a,b| a <=> b } # ordered so deeper paths are last
     dirs
+  end
+
+  # Just invokes the same method on the task's ToolConfig.
+  def ext3capture_basenames
+    self.tool_config.ext3capture_basenames
   end
 
   # This method creates an empty +filename+ with +size+ bytes
