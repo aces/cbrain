@@ -2479,6 +2479,8 @@ chmod o+x . .. ../.. ../../..
   def install_ext3fs_filesystem(filename,size) #:nodoc:
     return true if File.file?(filename) # already exists, all ok
 
+    self.addlog("Creating EXT3 filesystem in '#{filename}' with size=#{size}")
+
     # Create an empty file of the proper size
     system("truncate -s #{size.bash_escape} #{filename.bash_escape}")
     status  = $? # A Process::Status object
