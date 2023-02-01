@@ -689,7 +689,7 @@ class ClusterTask < CbrainTask
       self.make_cluster_workdir
       self.apply_tool_config_environment do
         Dir.chdir(self.full_cluster_workdir) do
-          setup_success   = self.meta[:submit_without_setup] || self.setup
+          setup_success = self.meta[:submit_without_setup] || self.setup
           if ! setup_success  # as defined by subclass
             self.addlog("Failed to setup: 'false' returned by setup().")
             self.status_transition(self.status, "Failed To Setup")
@@ -2477,7 +2477,10 @@ chmod o+x . .. ../.. ../../..
   # and then formats it with a ext3 filesystem. If the filename already exists,
   # nothing is done.
   def install_ext3fs_filesystem(filename,size) #:nodoc:
-    return true if File.file?(filename) # already exists, all ok
+    if File.file?(filename) # already exists, all ok
+      self.addlog("EXT3 filesystem file '#{filename}' already exists")
+      return true
+    end
 
     self.addlog("Creating EXT3 filesystem in '#{filename}' with size=#{size}")
 

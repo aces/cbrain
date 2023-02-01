@@ -526,7 +526,7 @@ class ToolConfig < ApplicationRecord
 
       when 'ext3capture' # ext3 filesystem as a basename with an initial size
         # The basename is limited to letters, digits, numbers and dashes; the =SIZE suffix must end with G or M
-        if id_or_name !~ /\w[\w\.-]+=([1-9]\d*)[mg]/i
+        if id_or_name !~ /\A\w[\w\.-]+=([1-9]\d*)[mg]\z/i
           self.errors.add(:singularity_overlays_specs, "contains invalid ext3capture specification (must be like ext3capture:basename=1g or 2m etc)")
         end
 
