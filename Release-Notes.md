@@ -34,14 +34,14 @@ Admin and codebase improvements:
 * A DiskQuota model was added, it allows administrator to impose
   limits on the number of files and their total sizes for any user
   on any data provider.
-* The communication channels between the portal and the bourreau
+* The communication channels between the portal and the Bourreau
   are now completely performed by setting up UNIX-domain sockets
   on the Bourreau side. No longer do we open a network port on
   localhost! The connections are established by proper -L and -R
   SSH options, which now support such sockets.
 * A new rake task help developers and admins manage their CBRAIN
   instances (cbrain:models:broken:*)
-* The boot mechanim for Bourreau was rewritten as plain bash shell
+* The boot mechanism for Bourreau was rewritten as plain bash shell
   wrappers to allow a faster startup than then old Ruby bootstrapping
   code. The Bourreau is still in Ruby, of course, but prepping it
   up no longer requires a costly initial Ruby setup script.
@@ -52,7 +52,7 @@ Admin and codebase improvements:
   keep the PID file from staying around for no reason.
 * We removed from the GitHub-hosted codebase the hardcoded cookie
   secret keys; these were never really a security issue (given in
-  'production' mode the admin was suppoed to create them), but for
+  'production' mode the admin was supposed to create them), but for
   convenience now any true production or developement CBRAIN system
   will generate their own secret key deterministically (yet in a
   non-guessable way).
@@ -62,13 +62,13 @@ Admin and codebase improvements:
   is permanently disabled for such users.
 * We cleaned up a bunch of system attributes that are no longer
   used (like port numbers for DB and ActiveResource connections to
-  bourreaux, which are now always tunelled through SSH)
+  Bourreaux, which are now always tunnelled through SSH)
 * Admins users have access to the new 'last' command in the console,
   and the 'p' (ping) command in the ibc interface.
-* Support for Apptainer as a the new Singularity engine.
+* Support for Apptainer as the new Singularity engine.
 * Bourreaux can be configured to log to an external file some
   information about each job submitted (user, jobid, name, user
-  globus name, etc).
+  Globus name, etc).
 * When configuring a ToolConfig, the admin no longer has to explicitely
   duplicate the environment variables that the tool needs depending
   on whether the tools runs in Singularity/Apptainer or not. Before,
@@ -98,7 +98,7 @@ Boutiques improvements:
 
 * Launching task arrays with a CbrainFileList now allows the user
   to provide extra parameters specific to each row in the file list.
-  To do so, the file list should be a ExtendedCbrainFileList and
+  To do so, the file list should be an ExtendedCbrainFileList and
   the last column should contain a serialized JSON structure that
   can merge to the Boutiques parameters of the task.
 
@@ -224,7 +224,7 @@ New CBRAIN features: (some of these apply to NeuroHub too)
   UserkeyFlatDirSshDataProvider class in NeuroHub.
 * These keys (full pair) can be pushed to a Bourreau so that
   the CBRAIN code running there can connect as the user. Users
-  have control over which bourreau to push their key pair to.
+  have control over which Bourreau to push their key pair to.
 * CBRAIN can generate a new API token and show it to the user
   in their 'my account' page.
 * When a user accepts an invitation to join a project, the

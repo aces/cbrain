@@ -204,26 +204,27 @@
     <legend>Content</legend>
 
     <% if @userfile.archived? %>
+
       <%= html_colorize("This #{@userfile.pretty_type} has been archived.", 'red') %><br>
       Content viewers are disabled until the file is unarchived.
-    <% else %>
-      <% if ! @userfile.can_be_accessed_by?(current_user, :read) %>
+
+    <% elsif ! @userfile.can_be_accessed_by?(current_user, :read) %>
 
         (This file cannot be viewed by you; I wonder how you got here.)
 
-      <% elsif @userfile.data_provider.meta[:no_viewers] %>
+    <% elsif @userfile.data_provider.meta[:no_viewers] %>
 
         (This file cannot be viewed as it is stored on Data Provider
         <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
         which is marked as <strong>non-viewable</strong>)
 
-      <% elsif @userfile.data_provider.not_syncable? %>
+    <% elsif @userfile.data_provider.not_syncable? %>
 
         (This file cannot be viewed as it is stored on Data Provider
         <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
         which is configured to <strong>not allow synchronization</strong> <em>at all</em>)
 
-      <% elsif @sync_status == "Corrupted" %>
+    <% elsif @sync_status == "Corrupted" %>
 
         <span style="background-color: pink;">
           (The content of this file seems to be corrupted. This might be the result
@@ -232,26 +233,20 @@
           by a task, consider restarting the task's Post Processing stage.)
         </span>
 
-      <% elsif ! @userfile.data_provider.rr_allowed_syncing? %>
+    <% elsif ! @userfile.data_provider.rr_allowed_syncing? %>
 
         (This file cannot be viewed as it is stored on Data Provider
         <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
         which is configured to <strong>not allow synchronization</strong> to <em>this Portal</em>)
 
-      <% elsif (! @userfile.is_locally_synced?) && (! @userfile.data_provider.online?) %>
+    <% elsif (! @userfile.is_locally_synced?) && (! @userfile.data_provider.online?) %>
 
         (This data is not currently synchronized and its Data Provider
         <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
         is offline, so its content is not viewable for the moment)
 
-      <% elsif @userfile.is_locally_synced? && @userfile.viewers_with_applied_conditions.blank? %>
+    <% elsif ! @userfile.is_locally_synced? %>
 
-        (The contents of this file cannot be viewed: no viewer code available at this moment
-        for files of type '<%= @userfile.pretty_type %>')
-
-      <% else %>
-
-        <% if ! @userfile.is_locally_synced? %>
           <% if @sync_status =~ /^To/ %>
             (This data file is currently being synchronized. Wait a few seconds for this to complete)
           <% else %>
@@ -260,8 +255,13 @@
             to start the synchronization process.
             This may allow you to view displayable content<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>).
           <% end %>
-          <br>
-        <% end %>
+
+    <% elsif @userfile.viewers_with_applied_conditions.blank? %>
+
+        (The contents of this file cannot be viewed: no viewer code available at this moment
+        for files of type '<%= @userfile.pretty_type %>')
+
+    <% else %>
 
         <% if @userfile.viewers_with_applied_conditions.size > 1 %>
             Change view:
@@ -293,8 +293,9 @@
             <% end %>
           </div>
         </div>
-      <% end %>
+
     <% end %>
+
   </fieldset>
 
 </div>
