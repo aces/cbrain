@@ -484,6 +484,23 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
 
 
+  def self.a110_ensure_task_class_git_commits_cached
+
+    #----------------------------------------------------------------------------
+    puts "C> Ensuring git commits for tasks classes are pre-cached..."
+    #----------------------------------------------------------------------------
+
+    myself = RemoteResource.current_resource
+
+    ToolConfig.where(:bourreau_id => myself.id)
+        .map {|tc| tc.cbrain_task_class rescue nil}
+        .uniq
+        .compact  # to remove the nil
+        .each { |klass| klass.revision_info.self_update }
+  end
+  
+  
+  
   def self.z000_ensure_we_have_a_forwarded_ssh_agent #:nodoc:
 
     #----------------------------------------------------------------------------
@@ -501,4 +518,3 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
   end
 
 end
-

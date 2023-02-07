@@ -1502,6 +1502,8 @@ class TasksController < ApplicationController
       if (! preset_id.blank?) && preset = CbrainTask.where(:id => preset_id, :status => [ 'Preset', 'SitePreset' ]).first
         old_params = @task.params.clone
         @task.params         = preset.params
+        @task.description    = @task.description || ""
+        @task.description   += "\n\nDescription from preset configuration:\n\n#{preset.description}" if preset.description.present?
         @task.restore_untouchable_attributes(old_params, :include_unpresetable => true)
         if preset.group && preset.group.can_be_accessed_by?(current_user)
           @task.group = preset.group
