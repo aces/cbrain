@@ -52,7 +52,7 @@ module BoutiquesExt3Capturer
     # Get standard list as described in tool config
     initial_list = super.dup # [ [ basename, size], [basename, size], ... ]
 
-    # Get values in descriptos, as a hash
+    # Get values in descriptor, as a hash
     descriptor = self.descriptor_for_cluster_commands
     ext3_specs = descriptor.custom_module_info('BoutiquesExt3Capturer')
 

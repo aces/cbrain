@@ -2342,7 +2342,7 @@ docker_image_name=#{full_image_name.bash_escape}
     cache_dir_syml = "#{gridshare_dir}/DP_Cache"
 
     # (3) Ext3 capture mounts, if any.
-    # These will look like "-B .capt_abcd.ext2:/path/workdir/abcd:image-src=/"
+    # These will look like "-B .capt_abcd.ext3:/path/workdir/abcd:image-src=/"
     # While we are building these options, we're also creating
     # the ext3 filesystems at the same time, if needed.
     esc_capture_mounts = ext3capture_basenames().inject("") do |sing_opts,(basename,size)|
