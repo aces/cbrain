@@ -137,7 +137,7 @@ class BoutiquesClusterTask < ClusterTask
     end
 
     # Write down the file with the boutiques descriptor itself
-    boutiques_json_basename = "boutiques.#{self.run_id}.json"
+    boutiques_json_basename = ".boutiques.#{self.run_id}.json"
     File.open(boutiques_json_basename, "w") do |fh|
       cleaned_desc = descriptor.dup
       cleaned_desc.delete("groups") if cleaned_desc.groups.size == 0 # bosh is picky
@@ -393,7 +393,7 @@ class BoutiquesClusterTask < ClusterTask
   # Returns the basename of the JSON file
   # that holds the 'invoke' structure for bosh.
   def invoke_json_basename
-    "invoke.#{self.run_id}.json"
+    ".invoke.#{self.run_id}.json"
   end
 
   # Return true or false depending on if

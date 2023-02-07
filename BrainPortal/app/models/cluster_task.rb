@@ -779,11 +779,11 @@ class ClusterTask < CbrainTask
           saveok = saveok && self.save_results
           self.meta[:no_end_keyword_check] = nil
         end
-        self.update_size_of_cluster_workdir
         if ! saveok
           self.status_transition(self.status, "Failed On Cluster")
           self.addlog("Data processing failed on the cluster.")
         else
+          self.update_size_of_cluster_workdir # callbacks and modules might have cleaned up the files by now
           self.addlog("Post processing completed.")
           self.status_transition(self.status, "Completed")
         end
@@ -1868,7 +1868,7 @@ bash #{Rails.root.to_s.bash_escape}/vendor/cbrain/bin/runtime_info.sh > #{runtim
 
 # stdout and stderr captured below will be re-substituted in
 # the output and error of this script.
-bash '#{sciencefile}' > #{science_stdout_basename} 2> #{science_stderr_basename} </dev/null
+bash '#{sciencefile}' >> #{science_stdout_basename} 2> #{science_stderr_basename} </dev/null
 status="$?"
 
 echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      # where stdout captured below will be substituted
@@ -2330,17 +2330,27 @@ docker_image_name=#{full_image_name.bash_escape}
     # Numbers in (paren) correspond to the comment
     # block in the script, well below.
 
+    # (6) The path to the task's work directory
+    task_workdir  = self.full_cluster_workdir # a string
+
     # (1) additional singularity execution command options defined in ToolConfig
     container_exec_args = self.tool_config.container_exec_args.presence
 
-    # (2) The root of the shared area for all CBRAIN tasks
-    gridshare_dir = self.bourreau.cms_shared_dir
+    # (2) The root of the DataProvider cache
+    cache_dir      = self.bourreau.dp_cache_dir
+    gridshare_dir  = self.bourreau.cms_shared_dir # not mounted explicitely
+    cache_dir_syml = "#{gridshare_dir}/DP_Cache"
 
-    # (3) The root of the DataProvider cache
-    cache_dir     = self.bourreau.dp_cache_dir
-
-    # (6) The path to the task's work directory
-    task_workdir  = self.full_cluster_workdir
+    # (3) Ext3 capture mounts, if any.
+    # These will look like "-B .capt_abcd.ext3:/path/workdir/abcd:image-src=/"
+    # While we are building these options, we're also creating
+    # the ext3 filesystems at the same time, if needed.
+    esc_capture_mounts = ext3capture_basenames().inject("") do |sing_opts,(basename,size)|
+      fs_name    = ".capt_#{basename}.ext3"      # e.g. .capt_work.ext3
+      mountpoint = "#{task_workdir}/#{basename}" # e.g. /path/to/workdir/work
+      install_ext3fs_filesystem(fs_name,size)
+      "#{sing_opts} -B #{fs_name.bash_escape}:#{mountpoint.bash_escape}:image-src=/"
+    end
 
     # (4) More -B (bind mounts) for all the local data providers.
     # This will be a string "-B path1 -B path2 -B path3" etc.
@@ -2392,7 +2402,6 @@ if test ! -d #{cache_dir.bash_escape} ; then
   exit 2
 fi
 
-
 # CBRAIN internal consistency test 4: must have the gridshare_dir mounted inside the container
 if test ! -d #{gridshare_dir.bash_escape} ; then
   echo "Container missing mount point for gridshare directory:" #{gridshare_dir.bash_escape}
@@ -2413,16 +2422,17 @@ chmod o+x . .. ../.. ../../..
 # Invoke Singularity with our wrapper script above.
 # Tricks used here:
 # 1) we supply (if any) additional options for the exec command
-# 2) we mount the gridshare root directory
-# 3) we mount the local data provider cache root directory
-# 4) we mount each (if any) of the root directory for local data providers
-# 5) we mount (if any) file system overlays
+# 2) we mount the local data provider cache root directory
+# 3) we mount (if any) capture ext3 filesystems
+# 4) we mount each (if any) of the root directories for local data providers
+# 5) we mount (if any) other fixed file system overlays
 # 6) with -H we set the task's work directory as the singularity $HOME directory
 #{singularity_executable_name}                  \\
     exec                                        \\
     #{container_exec_args}                      \\
-    -B #{gridshare_dir.bash_escape}             \\
     -B #{cache_dir.bash_escape}                 \\
+    -B #{cache_dir_syml.bash_escape}            \\
+    #{esc_capture_mounts}                       \\
     #{esc_local_dp_mountpoints}                 \\
     #{overlay_mounts}                           \\
     -H #{task_workdir.bash_escape}              \\
@@ -2455,6 +2465,43 @@ chmod o+x . .. ../.. ../../..
       .select { |dir| File.directory?(dir) }
       .sort { |a,b| a <=> b } # ordered so deeper paths are last
     dirs
+  end
+
+  # Just invokes the same method on the task's ToolConfig.
+  def ext3capture_basenames
+    self.tool_config.ext3capture_basenames
+  end
+
+  # This method creates an empty +filename+ with +size+ bytes
+  # (where size is specified like what the unix 'truncate' command accepts)
+  # and then formats it with a ext3 filesystem. If the filename already exists,
+  # nothing is done.
+  def install_ext3fs_filesystem(filename,size) #:nodoc:
+    if File.file?(filename) # already exists, all ok
+      self.addlog("EXT3 filesystem file '#{filename}' already exists")
+      return true
+    end
+
+    self.addlog("Creating EXT3 filesystem in '#{filename}' with size=#{size}")
+
+    # Create an empty file of the proper size
+    system("truncate -s #{size.bash_escape} #{filename.bash_escape}")
+    status  = $? # A Process::Status object
+    if ! status.success?
+      cb_error "Cannot create EXT3 filesystem file '#{filename}': #{status.to_s}"
+    end
+
+    # Format it. Only works on linux obviously
+    system("echo y | mkfs.ext3 -t ext3 -q -E root_owner  #{filename.bash_escape}")
+    status  = $? # A Process::Status object
+    if ! status.success?
+      cb_error "Cannot format EXT3 filesystem file '#{filename}': #{status.to_s}"
+    end
+
+    true
+  rescue => ex
+    File.unlink(filename) rescue nil # keep directory clean of broken ext3 file
+    raise ex
   end
 
 

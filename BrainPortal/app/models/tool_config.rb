@@ -365,6 +365,8 @@ class ToolConfig < ApplicationRecord
   #         dp:1234
   #      # CBRAIN db registered file
   #         userfile:1234
+  #      # A ext3 capture filesystem, will NOT be returned here as an overlay
+  #         ext3capture:basename=12G
   def singularity_overlays_full_paths
     specs = parsed_overlay_specs
     specs.map do |knd, id_or_name|
@@ -388,6 +390,8 @@ class ToolConfig < ApplicationRecord
         cb_error "Userfile with id '#{id_or_name}' for overlay fetching not found." if ! userfile
         userfile.sync_to_cache() rescue cb_error "Userfile with id '#{id_or_name}' for fetching overlay failed to synchronize."
         userfile.cache_full_path()
+      when 'ext3capture'
+        [] # flatten will remove all that
       else
         cb_error "Invalid '#{knd}:#{id_or_name}' overlay."
       end
@@ -404,6 +408,16 @@ class ToolConfig < ApplicationRecord
     @_data_providers_with_overlays_ = specs.map do |kind, id_or_name|
       DataProvider.where_id_or_name(id_or_name).first if kind == 'dp'
     end.compact
+  end
+
+  # Returns pairs [ [ basename, size], ...] as in [ [ 'work', '28g' ]
+  def ext3capture_basenames
+    specs = parsed_overlay_specs
+    return [] if specs.empty?
+    specs
+      .map { |pair| pair[1] if pair[0] == 'ext3capture' }
+      .compact
+      .map { |basename_and_size| basename_and_size.split("=") }
   end
 
   #################################################################
@@ -461,6 +475,9 @@ class ToolConfig < ApplicationRecord
   #    userfile:333
   #    dp:123
   #    dp:dp_name
+  #    ext3capture:basename=SIZE
+  #    ext3capture:work=30G
+  #    ext3capture:tool_1.1.2=15M
   #
   def validate_overlays_specs #:nodoc:
     specs = parsed_overlay_specs
@@ -505,6 +522,12 @@ class ToolConfig < ApplicationRecord
           self.errors.add(:singularity_overlays_specs, "contains invalid DP '#{id_or_name}' (no such DP)")
         elsif ! dp.is_a?(SingSquashfsDataProvider)
           self.errors.add(:singularity_overlays_specs, "DataProvider '#{id_or_name}' is not a SingSquashfsDataProvider")
+        end
+
+      when 'ext3capture' # ext3 filesystem as a basename with an initial size
+        # The basename is limited to letters, digits, numbers and dashes; the =SIZE suffix must end with G or M
+        if id_or_name !~ /\A\w[\w\.-]+=([1-9]\d*)[mg]\z/i
+          self.errors.add(:singularity_overlays_specs, "contains invalid ext3capture specification (must be like ext3capture:basename=1g or 2m etc)")
         end
 
       else
