@@ -331,7 +331,7 @@ class SessionsController < ApplicationController
     # the same information afterwards. Thus the weird style alignment.
     user.addlog(      "Logged in on #{portal.name}/#{origin} with #{authentication_mechanism} from #{pretty_host} using #{pretty_brow}")
     portal.addlog("User #{user.login} logged in on #{origin} with #{authentication_mechanism} from #{pretty_host} using #{pretty_brow}")
-    user.update_attribute(:last_connected_at, Time.now)
+    user.update_column(:last_connected_at, Time.now)
 
     # Admin users start with some differences in behavior
     if user.has_role?(:admin_user)

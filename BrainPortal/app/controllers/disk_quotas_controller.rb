@@ -142,13 +142,16 @@ class DiskQuotasController < ApplicationController
         .sum(:size)
         .select { |user_id,size| size >= quota.max_files }
         .keys
-      union_ids = exceed_size_user_ids | exceed_numfiles_user_ids
+      union_ids  = exceed_size_user_ids | exceed_numfiles_user_ids
+      union_ids -= DiskQuota
+                   .where(:data_provider_id => quota.data_provider_id, :user_id => union_ids)
+                   .pluck(:user_id) # remove user IDs that have their own quota records
       quota_to_user_ids[quota] = union_ids if union_ids.size > 0
     end
 
     # Scan user-specific quota objects
     DiskQuota.where('user_id > 0').all.each do |quota|
-      quota_to_user_ids[quota] = [ quota.user_id] if quota.exceeded?
+      quota_to_user_ids[quota] = [ quota.user_id ] if quota.exceeded?
     end
 
     # Inverse relation: user_id => [ quota, quota ]

@@ -32,7 +32,7 @@ module DiskQuotasHelper
 
   # Returns a DiskQuota max_files in pretty form: 'None allowed' in red, or just a number
   def pretty_quota_max_files(quota)
-    quota.none_allowed? ? red_if(true, 'None allowed') : quota.max_files
+    quota.none_allowed? ? red_if(true, 'None allowed') : quota.max_files.to_s
   end
 
 end
