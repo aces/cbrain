@@ -731,6 +731,9 @@ class DataProvider < ApplicationRecord
     return false unless Userfile.is_legal_filename?(new_name)
     return false unless userfile.id # must be a fully saved file
 
+    # Check quota at destination
+    DiskQuota.exceeded!(new_user_id, otherprovider.id)
+
     # Find existing destination, if any
     target_exists = Userfile.where(
                       :name             => new_name,
@@ -827,6 +830,9 @@ class DataProvider < ApplicationRecord
     return true  if     self.id == otherprovider.id
     return false unless Userfile.is_legal_filename?(new_name)
     return false unless userfile.id # must be a fully saved file
+
+    # Check quota at destination
+    DiskQuota.exceeded!(new_user_id, otherprovider.id)
 
     # Find existing destination, if any
     target_exists = Userfile.where(
