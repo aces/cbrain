@@ -60,7 +60,7 @@
     <td <%= dp_class %>><%= link_to_data_provider_if_accessible(quota.data_provider_id) %></td>
     <td <%= bytes_class %>><%= colored_pretty_size(quota.cursize) %></td>
     <td><%= pretty_quota_max_bytes(quota) %></td>
-    <td <%= files_class %>><%= quota.curfiles %></td>
+    <td <%= files_class %>><%= number_with_commas(quota.curfiles) %></td>
     <td><%= pretty_quota_max_files(quota) %></td>
     <td><%= situation.to_s.humanize %></td>
     <td><%=

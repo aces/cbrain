@@ -74,7 +74,7 @@
     <% end %>
   <% end %>
 
-  <% t.edit_cell(:max_files, :header => "Max Num Files", :content => pretty_quota_max_files(@disk_quota)) do |f| %>
+  <% t.edit_cell(:max_files, :header => "Max Number Of Files", :content => pretty_quota_max_files(@disk_quota)) do |f| %>
     <%= f.text_field :max_files, :size => 12 %>
     <div class="field_explanation">
        A value of <em>-1</em> means no files allowed at all.

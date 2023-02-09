@@ -80,5 +80,12 @@ module BasicHelper
     ('&nbsp' * 4 * (level.presence || 0) + '&#x21b3;').html_safe
   end
 
+  # Renders 1234567 as 1,234,567
+  def number_with_commas(number)
+    s = number.to_s
+    return s if s !~ /\A\d+\z/ # anything not a series of digits is just returned as is
+    s.reverse.gsub(/(\d\d\d)(?=\d)/, '\1,').reverse
+  end
+
 end
 
