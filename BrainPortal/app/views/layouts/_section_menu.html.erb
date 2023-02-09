@@ -42,12 +42,13 @@
       <%= hover_dropdown(link_to(current_project.try(:name) || "All", current_project ? group_path(current_project) : groups_path), :dropdown_class => "project_select_dropdown") do %>
           <div class="title">Quick Project Switcher</div>
 
-          <% current_user.groups.where(:type => "WorkGroup", :invisible => false).order(:name).limit(20).all.each do |g| %>
+          <% current_user.groups.where(:type => "WorkGroup", :invisible => false, :creator_id => current_user.id).order(:name).limit(20).all.each do |g| %>
             <%= link_to h(crop_text_to(95, g.name)),
                 {:controller => :groups, :action => :switch, :id  => g.id}, {:method => :post, :class => "button"} %>
           <% end %>
 
           <div class="project_select_spacer"></div>
+          <%= link_to "#{current_user.own_group.name} (default private project)", {:controller => :groups, :action => :switch, :id  => current_user.own_group.id.to_s}, {:method => :post, :class => "button"} %>
           <%= link_to "All (no specific project: see all files and tasks)", {:controller => :groups, :action => :switch, :id  => "all"}, {:method => :post, :class => "button"} %>
           <%= link_to "(Full project list)", groups_path, :class => "button" %>
       <% end %>
