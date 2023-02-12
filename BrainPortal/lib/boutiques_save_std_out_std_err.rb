@@ -32,22 +32,58 @@ module BoutiquesSaveStdOutStdErr
   def save_results
     # Performs standard processing
     return false unless super
-
-    everything_ok = true
+    self.addlog("Saving results...")
 
     # Get the folder where to save the log files from the descriptor
     descriptor      = self.descriptor_for_save_results
     save_log_folder = descriptor.custom_module_info('BoutiquesSaveStdOutStdErr')
-    self.addlog("BoutiquesSaveStdOutStdErr: save_log_folder is '#{save_log_folder.inspect}'")
 
     # Save stdout and stderr
     parent_file   = Userfile.find((self.params[:invoke] ||= {})[descriptor.file_inputs.first.id])
-    everything_ok = save_log_file(science_stdout_basename(self.run_number), parent_file)
-    everything_ok = save_log_file(science_stderr_basename(self.run_number), parent_file)
 
-    everything_ok
+    # save stdout
+    hidden_science_stdout_basename = science_stdout_basename(self.run_number)
+    science_stdout_basename        = hidden_science_stdout_basename.gsub(/^\.science./, "")
+    copy_to_location               = save_log_folder["stdout_output_dir"] == true ?
+                                        science_stdout_basename :
+                                        (save_log_folder["stdout_output_dir"] || "") + science_stdout_basename
+
+    return false if !save_log_file(hidden_science_stdout_basename, copy_to_location, parent_file)
+
+    # save stderr
+    hidden_science_stderr_basename = science_stderr_basename(self.run_number)
+    science_stderr_basename        = hidden_science_stderr_basename.gsub(/^\.science./, "")
+    copy_to_location               = save_log_folder["stderr_output_dir"] == true ?
+                                        science_stderr_basename :
+                                        (save_log_folder["stderr_output_dir"] || "") + science_stderr_basename
+
+    return false if !save_log_file(hidden_science_stderr_basename, copy_to_location, parent_file)
+
+    true
   end
 
+  def descriptor_for_show_params  #:nodoc:
+    descriptor = descriptor_for_form
+
+    stdout_file = BoutiquesSupport::OutputFile.new({
+      "id"   => "stdout",
+      "name" => "stdout",
+      "description" => "Standard output of the tool",
+      "optional" => true
+    })
+
+    stderr_file = BoutiquesSupport::OutputFile.new({
+      "id" => "stderr",
+      "name" => "stderr",
+      "description" => "Standard error of the tool",
+      "optional" => true
+    })
+
+    descriptor["output-files"] << stdout_file if !descriptor["output-files"].find { |f| f["id"] == "stdout" }
+    descriptor["output-files"] << stderr_file if !descriptor["output-files"].find { |f| f["id"] == "stderr" }
+
+    descriptor
+  end
 
   # This method overrides the method in BoutiquesClusterTask.
   # If the name for the file contains a relative path such
@@ -80,22 +116,24 @@ module BoutiquesSaveStdOutStdErr
 
   private
 
-  def save_log_file(filename, parent_file)
-    save_filename = filename.gsub(/^./, '')
-
+  def save_log_file(original_filename, copy_to_location, parent_file)
     file = safe_userfile_find_or_new(LogFile,
-      :name             => save_filename,
+      :name             => copy_to_location,
       :data_provider_id => self.results_data_provider_id
     )
 
-    file.cache_copy_from_local_file(filename)
+    file.cache_copy_from_local_file(original_filename)
     if file.save
       file.move_to_child_of(parent_file)
-      self.addlog("Saved output file #{save_filename}")
+      self.addlog("Saved output file #{original_filename}")
+      self.params["_cbrain_output_stdout"] = file.id if original_filename == science_stdout_basename(self.run_number)
+      self.params["_cbrain_output_stderr"] = file.id if original_filename == science_stderr_basename(self.run_number)
     else
-      self.addlog("Could not save back result file #{save_filename}")
+      self.addlog("Could not save back result file #{original_filename}")
       return false
     end
+
+    self.save
 
     true
   end
