@@ -268,8 +268,8 @@ class BoutiquesPortalTask < PortalTask
     valid_input_keys = descriptor.inputs.map(&:id)
 
     # Add information about Boutiques module
-    module_information = boutiques_module_information();
-    module_information.map do |info|
+    module_information = boutiques_module_information()
+    module_information.each do |info|
        self.addlog(log_info)
     end
 
