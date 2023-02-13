@@ -53,15 +53,12 @@ module DynamicFormHelper
   # Except:
   #   - +options[:persistant_name]+: if provided, an additional hidden
   # input will be added to track the state of the select_all checkbox.
-  #   - +options["data-noload"]+: if true, the select_all checkbox will
-  # not be updated when the page is loaded.
   def select_all_checkbox(checkbox_class, options = {})
     options[:class] ||= ""
     options[:class]  +=  " select_all"
 
     options["data-checkbox-class"] = checkbox_class
 
-    options["data-noload"] = "true" if options["data-noload"]
     atts  = options.reject{|x| x.to_s === "persistant_name"}.to_html_attributes
 
     # Most common case just the select_all input

@@ -154,7 +154,7 @@
       :td_class    => 'left_align no_wrap',
       :fill_by_columns => true
       ) do |group,r,c| %>
-        <%= select_all_checkbox "sitegroup_#{group.id}", {:id => "sitegroup_#{group.id}", "data-noload" => true } %>
+        <%= select_all_checkbox "sitegroup_#{group.id}", :id => "sitegroup_#{group.id}" %>
         <label for="sitegroup_<%= group.id %>"><%= group.name -%></label>
   <% end %>
 
