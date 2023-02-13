@@ -58,7 +58,6 @@ module DynamicFormHelper
 
     options["data-checkbox-class"] = checkbox_class
 
-
     options["data-noload"] = "true" if options["data-noload"]
     atts  = options.reject{|x| x.to_s === "persistant_name"}.to_html_attributes
 
