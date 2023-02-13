@@ -651,9 +651,9 @@
     // Define on click event for each child of a `select_all` element.
     $(".select_all").each( (index,input) => {
       var checkbox_class = $(input).data("checkbox-class");
-      var onload         = $(input).data("onload");
+      var noload         = $(input).data("noload");
 
-      if (onload === "true") {
+      if (!noload) {
         $(input).load(click_select_all($(input)));
       }
 

@@ -57,7 +57,9 @@ module DynamicFormHelper
     options[:class]  +=  " select_all"
 
     options["data-checkbox-class"] = checkbox_class
-    options["data-onload"]         = options["data-onload"] ? "true" : "false"
+
+
+    options["data-noload"] = "true" if options["data-noload"]
     atts  = options.reject{|x| x.to_s === "persistant_name"}.to_html_attributes
 
     # Most common case just the select_all input
