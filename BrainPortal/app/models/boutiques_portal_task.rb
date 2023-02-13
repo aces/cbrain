@@ -269,7 +269,7 @@ class BoutiquesPortalTask < PortalTask
 
     # Add information about Boutiques module
     module_information = boutiques_module_information()
-    module_information.each do |info|
+    module_information.each do |log_info|
        self.addlog(log_info)
     end
 
