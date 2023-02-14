@@ -49,14 +49,16 @@ module DynamicFormHelper
   # Create a checkbox that will select or deselect all checkboxes on the page
   # of class +checkbox_class+.
   # Most +options+ are just treated as HTML attributes.
-  # Except +options[:persistant_name]+; if provided, 
-  # an additional hidden input will be added to track
-  # the state of the select_all checkbox.
+  #
+  # Except:
+  #   - +options[:persistant_name]+: if provided, an additional hidden
+  # input will be added to track the state of the select_all checkbox.
   def select_all_checkbox(checkbox_class, options = {})
     options[:class] ||= ""
     options[:class]  +=  " select_all"
 
     options["data-checkbox-class"] = checkbox_class
+
     atts  = options.reject{|x| x.to_s === "persistant_name"}.to_html_attributes
 
     # Most common case just the select_all input
@@ -66,11 +68,11 @@ module DynamicFormHelper
     # Add the hidden input; javascript code will update
     # its value as needed.
     hidden_options = {
-                      :name                 => options[:persistant_name], 
+                      :name                 => options[:persistant_name],
                       "data-checkbox-class" => checkbox_class,
                       :class                => "select_all_hidden"
-                     } 
-    
+                     }
+
     hidden_atts  = hidden_options.to_html_attributes
     hidden_input = "<input type='hidden' #{hidden_atts}>".html_safe
     inputs       = "#{input} #{hidden_input}".html_safe

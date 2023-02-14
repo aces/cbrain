@@ -117,7 +117,7 @@
 
     loaded_element.find("select").each(function(){
       var select = $(this);
-  
+
       var defined_width = (select.context.style.width);
       if ( defined_width !== '' ){
         select.chosen({ width: defined_width });
@@ -125,7 +125,7 @@
         select.chosen({ width: '25em' });
       }
     });
-		  
+
     /////////////////////////////////////////////////////////////////////
     //
     // UI Helper Methods see application_helper.rb for corresponding
@@ -631,8 +631,8 @@
       $(hidden_box).val( value );
     };
 
-    // Value of the header box is used to set 
-    // the checked status of child boxes 
+    // Value of the header box is used to set
+    // the checked status of child boxes
     var click_select_all = (header_box) => {
       var checkbox_class = header_box.data("checkbox-class");
 
@@ -649,27 +649,27 @@
     });
 
     // Define on click event for each child of a `select_all` element.
-    $(".select_all").each( (index,input) => { 
-      var checkbox_class = $(input).data("checkbox-class");
-
-      $(input).load(click_select_all($(input)));
-
-      var checkbox_class_elements = $('.' + checkbox_class);
-      checkbox_class_elements.each(function(index, element) {        
-        $(element).on("click", () => {
-          var number_of_checkbox = checkbox_class_elements.filter((i,e) => e.checked).length;
-          if (number_of_checkbox === 0) {
-            set_hidden_select_all($(input), "none");
-            input.checked = false; 
-          } else if (checkbox_class_elements.length === number_of_checkbox) {
-            set_hidden_select_all($(input), "all");
-            input.checked = true;
-          } else { 
-            set_hidden_select_all($(input), "some");
-            input.checked = false; 
-          }
+    $(".select_all").each( (index,input) => {
+      if ($(input).data("persistant_name") !== undefined) {
+        var checkbox_class = $(input).data("checkbox-class");
+        $(input).load(click_select_all($(input)));
+        var checkbox_class_elements = $('.' + checkbox_class);
+        checkbox_class_elements.each(function(index, element) {
+          $(element).on("click", () => {
+            var number_of_checkbox = checkbox_class_elements.filter((i,e) => e.checked).length;
+            if (number_of_checkbox === 0) {
+              set_hidden_select_all($(input), "none");
+              input.checked = false;
+            } else if (checkbox_class_elements.length === number_of_checkbox) {
+              set_hidden_select_all($(input), "all");
+              input.checked = true;
+            } else {
+              set_hidden_select_all($(input), "some");
+              input.checked = false;
+            }
+          });
         });
-      });
+      };
     });
 
     $(document).delegate(".select_master", "change", function() {
