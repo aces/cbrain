@@ -268,8 +268,7 @@ class BoutiquesPortalTask < PortalTask
     valid_input_keys = descriptor.inputs.map(&:id)
 
     # Add information about Boutiques module
-    module_information = boutiques_module_information()
-    module_information.each do |log_info|
+    boutiques_module_information().each do |log_info|
        self.addlog(log_info)
     end
 
@@ -744,7 +743,7 @@ class BoutiquesPortalTask < PortalTask
 
     fake
   end
-  
+
   private
 
   # Prepare an array with revision information of
