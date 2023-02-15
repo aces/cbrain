@@ -25,17 +25,16 @@
 # To use this module, you need to add the following lines in the descriptor:
 # "custom_module_info": {
 #   "BoutiquesSaveStdOutStdErr": {
-#     "stdout_output_dir": true,
-#     "stderr_output_dir": "path/to/dir/"
+#     "stdout_output_dir": "",
+#     "stderr_output_dir": "path/to/dir"
 #   }
 # }
 #
-# In case of a MultilevelSshDataProvider the "path/to/dir/" will be use to save
-# the output at this specific location.
-# In case of a no MultilevelSshDataProvider the "path/to/dir/" will be ignored.
+# In case of a MultilevelSshDataProvider the "path/to/dir" will be use to save the output.
+# In case of a no MultilevelSshDataProvider the "path/to/dir" will be ignored.
 #
-# The value of the key "stdout_output_dir" and "stderr_output_dir" can be set to true,
-# in this situation the files will be saved in directly in the root folder of the DataProvider.
+# The value of the key "stdout_output_dir" and "stderr_output_dir" can be set to an empty string,
+# in this situation the files will be saved directly in the root folder of the DataProvider.
 module BoutiquesSaveStdOutStdErr
 
   # Note: to access the revision info of the module,
@@ -43,54 +42,52 @@ module BoutiquesSaveStdOutStdErr
   # object method revision_info() won't work.
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # This method overrides the one in BoutiquesClusterTask
-  # Save the stdout and stderr files of the task as an output file,
-  # set it as a child of the first input file.
+  # This method overrides the one in BoutiquesClusterTask.
+  # Save the stdout and stderr files of the task as output files.
+  # The files will be saved as a child of the first input file.
   def save_results
-    return false unless super
-
     # Get the folder where to save the log files from the descriptor
     descriptor      = self.descriptor_for_save_results
-    save_log_folder = descriptor.custom_module_info('BoutiquesSaveStdOutStdErr')
+    module_info = descriptor.custom_module_info('BoutiquesSaveStdOutStdErr')
 
-    # Get parent file to set stderr and stdout as children of input file
-    parent_file   = Userfile.find((self.params[:invoke] ||= {})[descriptor.file_inputs.first.id])
+    # Get parent file to set stderr and stdout as children of first input file
+    main_input_id = descriptor.file_inputs.first.id
+    file_id       = self.invoke_params[main_input_id]
+    parent_file   = Userfile.find(file_id)
 
     # Save stdout
-    hidden_science_stdout_basename = science_stdout_basename(self.run_number)
-    science_stdout_basename        = hidden_science_stdout_basename.gsub(/^\.science./, "")
-    copy_to_location               = save_log_folder["stdout_output_dir"] == true ?
-                                        science_stdout_basename :
-                                        (save_log_folder["stdout_output_dir"] || "") + science_stdout_basename
-
-    return false if !save_log_file(hidden_science_stdout_basename, copy_to_location, parent_file)
+    science_stdout_basename = science_stdout_basename(self.run_number)
+    save_stdout_basename    = (Pathname.new(module_info["stdout_output_dir"]) +
+                              "#{self.pretty_type}-#{self.bname_tid_dashed}").to_s
+    stdout_file             = save_log_file(science_stdout_basename, save_stdout_basename, parent_file)
+    self.params["_cbrain_output_cbrain_stdout"] = [stdout_file.id] if stdout_file
 
     # Save stderr
-    hidden_science_stderr_basename = science_stderr_basename(self.run_number)
-    science_stderr_basename        = hidden_science_stderr_basename.gsub(/^\.science./, "")
-    copy_to_location               = save_log_folder["stderr_output_dir"] == true ?
-                                        science_stderr_basename :
-                                        (save_log_folder["stderr_output_dir"] || "") + science_stderr_basename
+    science_stderr_basename = science_stderr_basename(self.run_number)
+    save_stderr_basename    = (Pathname.new(module_info["stderr_output_dir"]) +
+                              "#{self.pretty_type}-#{self.bname_tid_dashed}").to_s
+    stderr_file             = save_log_file(science_stderr_basename, save_stderr_basename, parent_file)
+    self.params["_cbrain_output_cbrain_stderr"] = [stderr_file.id] if stderr_file
 
-    return false if !save_log_file(hidden_science_stderr_basename, copy_to_location, parent_file)
+    self.save
 
-    true
+    super
   end
 
   # Add the stdout and stderr files to the descriptor
   # for the show page of the task.
   def descriptor_for_show_params  #:nodoc:
-    descriptor = descriptor_for_form
+    descriptor = super.dup
 
     stdout_file = BoutiquesSupport::OutputFile.new({
-      "id"   => "stdout",
+      "id"   => "cbrain_stdout",
       "name" => "stdout",
       "description" => "Standard output of the tool",
       "optional" => true
     })
 
     stderr_file = BoutiquesSupport::OutputFile.new({
-      "id" => "stderr",
+      "id"   => "cbrain_stderr",
       "name" => "stderr",
       "description" => "Standard error of the tool",
       "optional" => true
@@ -133,27 +130,22 @@ module BoutiquesSaveStdOutStdErr
 
   private
 
-  # Save the log with original_filename to copy_to_location ast
-  # a child of parent_file to the results data provider.
-  def save_log_file(original_filename, copy_to_location, parent_file) #:nodoc:
-    file = safe_userfile_find_or_new(LogFile,
-      :name             => copy_to_location,
-      :data_provider_id => self.results_data_provider_id
-    )
+  # Save the log with original_file_path to filename as
+  # a child of parent_file on the results data provider.
+  def save_log_file(original_file_path, filename, parent_file) #:nodoc:
+    self.addlog("Saving log file #{filename}")
+    file = safe_userfile_find_or_new(LogFile, :name => filename)
 
-    file.cache_copy_from_local_file(original_filename)
-    if file.save
-      file.move_to_child_of(parent_file)
-      self.addlog("Saved output file #{original_filename}")
-      self.params["_cbrain_output_stdout"] = file.id if original_filename == science_stdout_basename(self.run_number)
-      self.params["_cbrain_output_stderr"] = file.id if original_filename == science_stderr_basename(self.run_number)
-      self.save
-    else
-      self.addlog("Could not save back result file #{original_filename}")
-      return false
+    if ! file.save
+      self.addlog("Could not save back log file #{filename}")
+      return nil
     end
 
-    true
+    file.cache_copy_from_local_file(original_file_path)
+    file.move_to_child_of(parent_file)
+    self.addlog("Saved log file #{filename}")
+
+    file
   end
 end
 
