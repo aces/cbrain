@@ -35,6 +35,9 @@
 #
 # The value of the key "stdout_output_dir" and "stderr_output_dir" can be set to an empty string,
 # in this situation the files will be saved directly in the root folder of the DataProvider.
+#
+# The output files will be saved as a LogFile with the name: <task.pretty_type>-<task.bname_tid_dashed>.std(out|err)
+#
 module BoutiquesSaveStdOutStdErr
 
   # Note: to access the revision info of the module,
@@ -58,14 +61,14 @@ module BoutiquesSaveStdOutStdErr
     # Save stdout
     science_stdout_basename = science_stdout_basename(self.run_number)
     save_stdout_basename    = (Pathname.new(module_info["stdout_output_dir"]) +
-                              "#{self.pretty_type}-#{self.bname_tid_dashed}").to_s
+                              "#{self.pretty_type}-#{self.bname_tid_dashed}.stdout").to_s
     stdout_file             = save_log_file(science_stdout_basename, save_stdout_basename, parent_file)
     self.params["_cbrain_output_cbrain_stdout"] = [stdout_file.id] if stdout_file
 
     # Save stderr
     science_stderr_basename = science_stderr_basename(self.run_number)
     save_stderr_basename    = (Pathname.new(module_info["stderr_output_dir"]) +
-                              "#{self.pretty_type}-#{self.bname_tid_dashed}").to_s
+                              "#{self.pretty_type}-#{self.bname_tid_dashed}.stderr").to_s
     stderr_file             = save_log_file(science_stderr_basename, save_stderr_basename, parent_file)
     self.params["_cbrain_output_cbrain_stderr"] = [stderr_file.id] if stderr_file
 
@@ -93,18 +96,20 @@ module BoutiquesSaveStdOutStdErr
       "optional" => true
     })
 
-    descriptor["output-files"] << stdout_file if !descriptor["output-files"].find { |f| f["id"] == "stdout" }
-    descriptor["output-files"] << stderr_file if !descriptor["output-files"].find { |f| f["id"] == "stderr" }
+    descriptor["output-files"] << stdout_file if !descriptor.output_files.find { |f| f["id"] == "cbrain_stdout" }
+    descriptor["output-files"] << stderr_file if !descriptor.output_files.find { |f| f["id"] == "cbrain_stderr" }
 
     descriptor
   end
+
+  private
 
   # This method overrides the method in BoutiquesClusterTask.
   # If the name for the file contains a relative path such
   # as "a/b/c/hello.txt", it will extract the "a/b/c" and
   # provide it in the browse_path attribute to the Userfile
   # constructor in super().
-  def safe_userfile_find_or_new(klass, attlist)
+  def safe_logfile_find_or_new(klass, attlist)
     name = attlist[:name]
     return super(klass, attlist) if ! (name.include? "/") # if there is no relative path, just do normal stuff
 
@@ -125,16 +130,14 @@ module BoutiquesSaveStdOutStdErr
     end
 
     # Invoke the standard code
-    return super(klass, attlist)
+    return safe_userfile_find_or_new(klass, attlist)
   end
-
-  private
 
   # Save the log with original_file_path to filename as
   # a child of parent_file on the results data provider.
   def save_log_file(original_file_path, filename, parent_file) #:nodoc:
     self.addlog("Saving log file #{filename}")
-    file = safe_userfile_find_or_new(LogFile, :name => filename)
+    file = safe_logfile_find_or_new(LogFile, :name => filename)
 
     if ! file.save
       self.addlog("Could not save back log file #{filename}")
