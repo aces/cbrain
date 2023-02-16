@@ -65,7 +65,7 @@
 
   <%= show_table(@access_profile, :form_helper => cf, :edit_condition => check_role(:admin_user), :header =>  @access_profile.new_record? ? 'Project Membership' : 'Projects In This Profile') do |t| %>
     <% group_names = (@access_profile.groups.sort_by(&:name).map { |g| link_to_group_if_accessible(g) }.join(", ").html_safe.presence) || "(None)" %>
-    <% t.edit_cell(:group_ids, :show_width => 2, :no_header => "Projects", :content => group_names) do %>
+    <% t.edit_cell(:group_ids, :show_width => 2, :no_header => "Projects", :td_options => { :class => "wrap" }, :content => group_names) do %>
 
       <%= render :partial => 'shared/group_tables', :locals => { :model => @access_profile } %>
 
