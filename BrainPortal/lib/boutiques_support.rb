@@ -60,14 +60,12 @@ module BoutiquesSupport
     Group          = Class.new(RestrictedHash) { allowed_keys group_prop_names  }
     ContainerImage = Class.new(RestrictedHash) { allowed_keys cont_prop_names   }
 
-    # Temporarily commented-out, as define_method() changed
-    ## Adds a comparison operator to these subobjects so that
-    ## they can be sorted
-    #[ Input, OutputFile, Group ].each do |klass|
-    #  klass.define_method(:'<=>') do |other|
-    #    self['id'] <=> other['id']
-    #  end
-    #end
+    # Adds a comparison operator to these subobjects so that
+    # they can be sorted.
+    # See also Hash.resorted in the CBRAIN core extensions.
+    [ Input, OutputFile, Group ].each do |klass|
+      klass.send(:define_method, :'<=>') { |other| self.id <=> other.id }
+    end
 
     def initialize(hash={})
       super(hash)
