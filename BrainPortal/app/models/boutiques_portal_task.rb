@@ -267,6 +267,11 @@ class BoutiquesPortalTask < PortalTask
     self.addlog(descriptor.file_revision_info.format("%f rev. %s %a %d"))
     valid_input_keys = descriptor.inputs.map(&:id)
 
+    # Add information about Boutiques module
+    boutiques_module_information().each do |log_info|
+       self.addlog(log_info)
+    end
+
     # --------------------------------------
     # Special case where there is a single file input
     # We generate one task per selected file, PLUS
@@ -737,6 +742,23 @@ class BoutiquesPortalTask < PortalTask
     end
 
     fake
+  end
+
+  private
+
+  # Prepare an array with revision information of
+  # all the Boutiques integrator modules used by the
+  # tools.
+  def boutiques_module_information #:nodoc:
+    descriptor = self.descriptor_for_final_task_list
+
+    integrator_modules = descriptor.custom['cbrain:integrator_modules'] || {}
+
+    integrator_modules.map do |module_name, _|
+      module_name = module_name.constantize
+      rev_info    = module_name::Revision_info
+      "#{rev_info.basename} rev. #{rev_info.short_commit} #{rev_info.time} (author: #{rev_info.author})"
+    end
   end
 
 end
