@@ -104,10 +104,16 @@ module BoutiquesSaveStdOutStdErr
 
   private
 
+  # If the name for the file doesn't contain a relative path
+  # it will just call safe_userfile_find_or_new().
+  #
   # If the name for the file contains a relative path such
   # as "a/b/c/hello.txt", it will extract the "a/b/c" and
-  # provide it in the browse_path attribute to the Userfile
-  # constructor in super().
+  # provide it in the browse_path attribute.
+  # The modified attlist will be passed to safe_userfile_find_or_new().
+  #
+  # This method will returns a file object for a logfile,
+  # prepared with a browse_path if necessary.
   def safe_logfile_find_or_new(klass, attlist)
     name = attlist[:name]
     return safe_userfile_find_or_new(klass, attlist) if ! (name.include? "/") # if there is no relative path, just do normal stuff
