@@ -23,12 +23,12 @@
 # This module allow to save the stdout and stderr files of a Boutiques task
 #
 # To use this module, you need to add the following lines in the descriptor:
-# "custom_module_info": {
-#   "BoutiquesSaveStdOutStdErr": {
-#     "stdout_output_dir": "",
-#     "stderr_output_dir": "path/to/dir"
+#   "custom_module_info": {
+#     "BoutiquesSaveStdOutStdErr": {
+#       "stdout_output_dir": "",
+#       "stderr_output_dir": "path/to/dir"
+#     }
 #   }
-# }
 #
 # In case of a MultilevelSshDataProvider the "path/to/dir" will be use to save the output.
 # In case of a no MultilevelSshDataProvider the "path/to/dir" will be ignored.
@@ -96,22 +96,21 @@ module BoutiquesSaveStdOutStdErr
       "optional" => true
     })
 
-    descriptor["output-files"] << stdout_file if !descriptor.output_files.find { |f| f["id"] == "cbrain_stdout" }
-    descriptor["output-files"] << stderr_file if !descriptor.output_files.find { |f| f["id"] == "cbrain_stderr" }
+    descriptor["output-files"] << stdout_file if !descriptor.output_files.any? { |f| f.id == "cbrain_stdout" }
+    descriptor["output-files"] << stderr_file if !descriptor.output_files.any? { |f| f.id == "cbrain_stderr" }
 
     descriptor
   end
 
   private
 
-  # This method overrides the method in BoutiquesClusterTask.
   # If the name for the file contains a relative path such
   # as "a/b/c/hello.txt", it will extract the "a/b/c" and
   # provide it in the browse_path attribute to the Userfile
   # constructor in super().
   def safe_logfile_find_or_new(klass, attlist)
     name = attlist[:name]
-    return super(klass, attlist) if ! (name.include? "/") # if there is no relative path, just do normal stuff
+    return safe_userfile_find_or_new(klass, attlist) if ! (name.include? "/") # if there is no relative path, just do normal stuff
 
     # Find all the info we need
     attlist = attlist.dup
