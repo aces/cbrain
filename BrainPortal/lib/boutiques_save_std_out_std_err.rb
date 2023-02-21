@@ -23,7 +23,7 @@
 # This module allow to save the stdout and stderr files of a Boutiques task
 #
 # To use this module, you need to add the following lines in the descriptor:
-#   "custom_module_info": {
+#   "cbrain:integrator_modules": {
 #     "BoutiquesSaveStdOutStdErr": {
 #       "stdout_output_dir": "",
 #       "stderr_output_dir": "path/to/dir"
@@ -50,7 +50,7 @@ module BoutiquesSaveStdOutStdErr
   # The files will be saved as a child of the first input file.
   def save_results
     # Get the folder where to save the log files from the descriptor
-    descriptor      = self.descriptor_for_save_results
+    descriptor  = self.descriptor_for_save_results
     module_info = descriptor.custom_module_info('BoutiquesSaveStdOutStdErr')
 
     # Get parent file to set stderr and stdout as children of first input file
@@ -84,14 +84,14 @@ module BoutiquesSaveStdOutStdErr
 
     stdout_file = BoutiquesSupport::OutputFile.new({
       "id"   => "cbrain_stdout",
-      "name" => "stdout",
+      "name" => "Standard output",
       "description" => "Standard output of the tool",
       "optional" => true
     })
 
     stderr_file = BoutiquesSupport::OutputFile.new({
       "id"   => "cbrain_stderr",
-      "name" => "stderr",
+      "name" => "Standard error",
       "description" => "Standard error of the tool",
       "optional" => true
     })
@@ -104,16 +104,9 @@ module BoutiquesSaveStdOutStdErr
 
   private
 
-  # If the name for the file doesn't contain a relative path
-  # it will just call safe_userfile_find_or_new().
-  #
-  # If the name for the file contains a relative path such
-  # as "a/b/c/hello.txt", it will extract the "a/b/c" and
-  # provide it in the browse_path attribute.
-  # The modified attlist will be passed to safe_userfile_find_or_new().
-  #
-  # This method will returns a file object for a logfile,
-  # prepared with a browse_path if necessary.
+  # Returns a Userfile object, prepared with a browse_path if necessary.
+  # To do that it can override the attlist to add a browse_path and then
+  # call the standard safe_userfile_find_or_new() method.
   def safe_logfile_find_or_new(klass, attlist)
     name = attlist[:name]
     return safe_userfile_find_or_new(klass, attlist) if ! (name.include? "/") # if there is no relative path, just do normal stuff
