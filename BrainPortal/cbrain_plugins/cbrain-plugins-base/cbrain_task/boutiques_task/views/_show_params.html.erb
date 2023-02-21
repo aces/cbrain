@@ -63,7 +63,11 @@
       <tr>
         <td class="tsk-sw-name"><%= param.name %></td>
         <td class="tsk-sw-val">
-          <%= format_param.(@task.invoke_params[param.id]) %>
+          <% if param.type == 'Flag' %>
+            <%= red_if(@task.invoke_params[param.id].to_s =~ /^1$|^true$/, "No", "Yes", { :color1 => 'red', :color2 => 'green' }) %>
+          <% else %>
+            <%= format_param.(@task.invoke_params[param.id]) %>
+          <% end %>
         </td>
       </tr>
     <%- end -%>

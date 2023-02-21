@@ -161,7 +161,9 @@ class BoutiquesClusterTask < ClusterTask
       commands = <<-COMMANDS
         # Main tool command, generated with bosh exec simulate
         #{simulout.strip}
-        echo $? > #{exit_status_filename.bash_escape}
+        status=$?
+        echo $status > #{exit_status_filename.bash_escape}
+        bash -c "exit $status" # clumsy but I can't think of any better way
       COMMANDS
     else # exec launch mode
       # The bosh launch command. This is all a single line, but broken up
@@ -171,7 +173,9 @@ class BoutiquesClusterTask < ClusterTask
         bosh exec launch                                                          \\
           #{boutiques_json_basename.bash_escape}                                  \\
           #{self.invoke_json_basename.bash_escape}
-          echo $? > #{exit_status_filename.bash_escape}
+          status=$?
+          echo $status > #{exit_status_filename.bash_escape}
+          bash -c "exit $status" # clumsy but I can't think of any better way
       COMMANDS
     end
     commands.gsub!(/(\S)  +(\S)/,'\1 \2') # make pretty
