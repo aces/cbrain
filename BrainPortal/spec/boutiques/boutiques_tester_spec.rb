@@ -50,6 +50,7 @@ describe "BrainPortal Boutiques Tests" do
   before(:all) do
     createInputFiles # Create required input files
     PWD = Dir.pwd # Save the starting dir form which the tests were launched
+    @admin = User.admin
   end
 
   before(:each) do
@@ -58,7 +59,7 @@ describe "BrainPortal Boutiques Tests" do
     # Build some of the cbrain environment
     @user, @group = FactoryBot.create(:user), FactoryBot.create(:group)
     @dp = FlatDirLocalDataProvider.new({
-      :online => true, :read_only => false, :remote_dir => '.', :name => "dp1", :user_id => @user.id, :group_id => @group.id
+      :online => true, :read_only => false, :remote_dir => '.', :name => "dp1", :user_id => @admin.id, :group_id => @group.id
     })
     @dp.save!
     # Lambda for constructing cbcsv files

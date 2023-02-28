@@ -121,7 +121,7 @@ FactoryBot.define do
     sequence(:name) { |n| "dataprovider_#{n}" }
     read_only       { true }
     type            { "FlatDirLocalDataProvider" }
-    association     :user, factory: :normal_user
+    association     :user, factory: :admin_user
     association     :group
   end
 

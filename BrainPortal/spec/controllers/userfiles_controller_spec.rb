@@ -32,21 +32,19 @@ end
 
 RSpec.describe UserfilesController, :type => :controller do
   let(:admin)                 { create(:admin_user, :login => "admin_user" ) }
+  let(:data_provider)         { create(:flat_dir_local_data_provider, :user => admin, :online => true, :group => EveryoneGroup.first, :read_only => false) }
   let(:site_manager)          { create(:site_manager) }
-  let(:dp_site_manager)       { create(:flat_dir_local_data_provider, :user => site_manager, :online => true, :read_only => false) }
   let(:user)                  { create(:normal_user, :site => site_manager.site) }
-  let(:dp_user)               { create(:flat_dir_local_data_provider, :user => user, :online => true, :read_only => false) }
   let(:admin_userfile)        { create(:single_file, :user => admin) }
   let(:admin_userfile_2)      { create(:single_file, :user => admin) }
-  let(:site_manager_userfile) { create(:single_file, :user => site_manager, :data_provider => dp_site_manager) }
+  let(:site_manager_userfile) { create(:single_file, :user => site_manager, :data_provider => data_provider) }
   let(:user_userfile)         { create(:single_file, :user => user, :data_provider => data_provider) }
   let(:child_userfile)        { create(:single_file, :user => admin, :parent_id => admin_userfile.id) }
-  let(:group_userfile)        { create(:single_file, :group_id => user.group_ids.last, :data_provider => dp_user) }
+  let(:group_userfile)        { create(:single_file, :group_id => user.group_ids.last, :data_provider => data_provider) }
   let(:public_group)          { create(:group, :public => true, :creator_id => admin.id )}
   let(:public_group_file)     { create(:single_file, :user=> user, :group_id => public_group.id, :data_provider => data_provider)}
   let(:mock_userfile)         { mock_model(TextFile, :id => 1).as_null_object }
   let(:mock_userfile2)        { mock_model(TextFile, :id => 2).as_null_object }
-  let(:data_provider)         { create(:flat_dir_local_data_provider, :user => user, :online => true, :read_only => false) }
   userfile = FactoryBot.attributes_for(:userfile)
 
   after(:all) do
