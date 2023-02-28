@@ -167,6 +167,9 @@
 
     /* sorting, filtering and pagination requests */
     dyntbl
+      .delegate('.dt-fpop-find > input', 'keydown', function (event) {
+        if (event.keyCode == 13) event.preventDefault();
+      })
       .undelegate('.dt-sort-btn, .dt-fpop-txt, .dt-pag-pages > a', 'click.dyn-tbl')
       .delegate(  '.dt-sort-btn, .dt-fpop-txt, .dt-pag-pages > a', 'click.dyn-tbl', function (event) {
         event.preventDefault();
