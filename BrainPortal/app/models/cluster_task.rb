@@ -20,12 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'stringio'
-require 'base64'
-require 'fileutils'
-require 'json'
-require 'json-schema'
-
 #Abstract model representing a job running on a cluster. This is the core class for
 #launching GridEngine/PBS/MOAB/UNIX jobs (etc) using Scir.
 #
@@ -2332,6 +2326,7 @@ docker_image_name=#{full_image_name.bash_escape}
 
     # (6) The path to the task's work directory
     task_workdir  = self.full_cluster_workdir # a string
+    short_workdir = "/cbrain_#{self.id}"
 
     # (1) additional singularity execution command options defined in ToolConfig
     container_exec_args = self.tool_config.container_exec_args.presence
@@ -2347,7 +2342,8 @@ docker_image_name=#{full_image_name.bash_escape}
     # the ext3 filesystems at the same time, if needed.
     esc_capture_mounts = ext3capture_basenames().inject("") do |sing_opts,(basename,size)|
       fs_name    = ".capt_#{basename}.ext3"      # e.g. .capt_work.ext3
-      mountpoint = "#{task_workdir}/#{basename}" # e.g. /path/to/workdir/work
+      #mountpoint = "#{task_workdir}/#{basename}" # e.g. /path/to/workdir/work
+      mountpoint = "#{short_workdir}/#{basename}" # e.g. /cbrain_123/work
       install_ext3fs_filesystem(fs_name,size)
       "#{sing_opts} -B #{fs_name.bash_escape}:#{mountpoint.bash_escape}:image-src=/"
     end
@@ -2431,11 +2427,13 @@ chmod o+x . .. ../.. ../../..
     exec                                        \\
     #{container_exec_args}                      \\
     -B #{cache_dir.bash_escape}                 \\
+    -B #{cache_dir_syml.bash_escape}:/DP_Cache  \\
     -B #{cache_dir_syml.bash_escape}            \\
-    #{esc_capture_mounts}                       \\
     #{esc_local_dp_mountpoints}                 \\
     #{overlay_mounts}                           \\
-    -H #{task_workdir.bash_escape}              \\
+    -B #{task_workdir.bash_escape}:#{short_workdir.bash_escape} \\
+    #{esc_capture_mounts}                       \\
+    -H #{short_workdir.bash_escape}              \\
     #{container_image_name.bash_escape}         \\
     ./#{singularity_wrapper_basename.bash_escape}
 
