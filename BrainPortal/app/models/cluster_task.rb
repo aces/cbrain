@@ -2466,7 +2466,7 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
 _cbrain_home_="$HOME"
 export HOME=#{new_home.bash_escape}
 
-#{command_script}
+#{script}
 
 # Restore system HOME (while preserving the latest exit code)
 _cbrain_status_="$?"
