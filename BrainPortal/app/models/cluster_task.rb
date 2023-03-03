@@ -2339,6 +2339,7 @@ docker_image_name=#{full_image_name.bash_escape}
       fs_name    = ".capt_#{basename}.ext3"      # e.g. .capt_work.ext3
       mountpoint = "#{effect_workdir}/#{basename}" # e.g. /path/to/workdir/work or /cbrain_123/work
       install_ext3fs_filesystem(fs_name,size)
+      safe_mkdir(basename)
       "#{sing_opts} -B #{fs_name.bash_escape}:#{mountpoint.bash_escape}:image-src=/"
     end
 
