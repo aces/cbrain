@@ -2436,7 +2436,7 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
     #{container_exec_args}                      \\
     -B #{cache_dir.bash_escape}                 \\
     -B #{cache_dir.bash_escape}:/DP_Cache       \\
-    -B #{gridshare.bash_escape}                 \\
+    -B #{gridshare_dir.bash_escape}             \\
     #{esc_local_dp_mountpoints}                 \\
     #{overlay_mounts}                           \\
     -B #{task_workdir.bash_escape}:#{effect_workdir.bash_escape} \\
