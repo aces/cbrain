@@ -2301,6 +2301,8 @@ docker_image_name=#{full_image_name.bash_escape}
     return self.bourreau.singularity_executable_name.presence || "singularity"
   end
 
+  # Returns true if the admin has configured this option in the
+  # task's ToolConfig attributes.
   def use_singularity_short_workdir?
     self.tool_config.singularity_use_short_workdir
   end
