@@ -2368,6 +2368,22 @@ docker_image_name=#{full_image_name.bash_escape}
     # Set singularity command
     singularity_commands = <<-SINGULARITY_COMMANDS
 
+# Note to developers:
+# During a standard CBRAIN task, this script is invoked with no arguments
+# at all. For debugging situations, an admin can invoke it with the single
+# argument "shell" to bypass the tool's execution and launch a convenient
+# interactive shell inside the container.
+
+# These two variables control the mode switching at the end of the script.
+mode="exec"
+sing_basename=./#{singularity_wrapper_basename.bash_escape} # note: the ./ is necessary
+
+# In 'shell' mode we replace them with other things.
+if test $# -eq 1 -a "X$1" = "Xshell" ; then
+  mode="shell"
+  sing_basename=""
+fi
+
 # Build a local wrapper script to run in a singularity container
 cat << \"SINGULARITYJOB\" > #{singularity_wrapper_basename.bash_escape}
 #!/bin/bash
@@ -2433,7 +2449,7 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
 # 6) we mount (if any) capture ext3 filesystems
 # 7) with -H we set the task's work directory as the singularity $HOME directory
 #{singularity_executable_name}                  \\
-    exec                                        \\
+    $mode                                       \\
     #{container_exec_args}                      \\
     -B #{cache_dir.bash_escape}                 \\
     -B #{cache_dir.bash_escape}:/DP_Cache       \\
@@ -2444,7 +2460,7 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
     #{esc_capture_mounts}                       \\
     -H #{effect_workdir.bash_escape}            \\
     #{container_image_name.bash_escape}         \\
-    ./#{singularity_wrapper_basename.bash_escape}
+    $sing_basename
 
     SINGULARITY_COMMANDS
 
