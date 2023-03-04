@@ -1,3 +1,4 @@
+
 #
 # CBRAIN Project
 #
@@ -18,3 +19,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+
+class AddShortTaskWorkdirToToolConfigs < ActiveRecord::Migration[5.0]
+  def change
+    add_column :tool_configs, :singularity_use_short_workdir, :boolean,
+      :default => false, :null => false, :after => :singularity_overlays_specs
+  end
+end

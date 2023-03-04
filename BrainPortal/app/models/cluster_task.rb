@@ -2301,8 +2301,8 @@ docker_image_name=#{full_image_name.bash_escape}
     return self.bourreau.singularity_executable_name.presence || "singularity"
   end
 
-  def use_singularity_rehoming?
-    self.tool_config.meta[:singularity_rehoming].present? # temporary dev
+  def use_singularity_short_workdir?
+    self.tool_config.singularity_use_short_workdir
   end
 
   # Returns the command line(s) associated with the task, wrapped in
@@ -2319,8 +2319,8 @@ docker_image_name=#{full_image_name.bash_escape}
 
     # (7) The path to the task's work directory
     task_workdir   = self.full_cluster_workdir # a string
-    short_workdir  = "/cbrain_#{self.id}" # only used in rehoming mode
-    effect_workdir = use_singularity_rehoming? ? short_workdir : task_workdir
+    short_workdir  = "/T#{self.id}" # only used in short workdir mode
+    effect_workdir = use_singularity_short_workdir? ? short_workdir : task_workdir
 
     # (1) additional singularity execution command options defined in ToolConfig
     container_exec_args = self.tool_config.container_exec_args.presence
@@ -2337,7 +2337,7 @@ docker_image_name=#{full_image_name.bash_escape}
     # the ext3 filesystems at the same time, if needed.
     esc_capture_mounts = ext3capture_basenames().inject("") do |sing_opts,(basename,size)|
       fs_name    = ".capt_#{basename}.ext3"      # e.g. .capt_work.ext3
-      mountpoint = "#{effect_workdir}/#{basename}" # e.g. /path/to/workdir/work or /cbrain_123/work
+      mountpoint = "#{effect_workdir}/#{basename}" # e.g. /path/to/workdir/work or /T123/work
       install_ext3fs_filesystem(fs_name,size)
       safe_mkdir(basename)
       "#{sing_opts} -B #{fs_name.bash_escape}:#{mountpoint.bash_escape}:image-src=/"
@@ -2402,11 +2402,11 @@ if test ! -d #{gridshare_dir.bash_escape} ; then
   exit 2
 fi
 
-# CBRAIN internal consistenct test 5: short task workdir rehoming (optional)
-# It's possible the path below will be the same as the task workdir if no rehoming
+# CBRAIN internal consistency test 5: short task workdir (optional).
+# It's possible the path below will be the same as the task workdir if no shortening
 # is configured, so the test becomes trivially like test 2.
 if test ! -d #{effect_workdir.bash_escape} ; then
-  echo "Container missing rehomed task work directory:" #{effect_workdir.bash_escape}
+  echo "Container missing shortened task work directory:" #{effect_workdir.bash_escape}
   exit 2
 fi
 
@@ -2426,7 +2426,7 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
 # 1) we supply (if any) additional options for the exec command
 # 2) we mount the local data provider cache root directory
 #   a) at its original cluster full path
-#   b) at /DP_Cache (used only during rehoming)
+#   b) at /DP_Cache (used only when shortening workdir)
 # 3) we mount the root of the gridshare area (for all tasks)
 # 4) we mount each (if any) of the root directories for local data providers
 # 5) we mount (if any) other fixed file system overlays
