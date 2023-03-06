@@ -1,4 +1,3 @@
-
 #
 # CBRAIN Project
 #
@@ -27,11 +26,11 @@ class DataProvidersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available :only => [ :index, :show, :is_alive,
-                           :browse, :register, :unregister, :delete ]
+  api_available :only => [:index, :show, :is_alive, :create_by_normal_user, :check,
+                        :browse, :register, :unregister, :delete]
 
   before_action :login_required
-  before_action :manager_role_required, :only => [:new, :create]
+  before_action :manager_role_required, :only => [:create]
   before_action :admin_role_required,   :only => [:report, :repair]
 
   def index #:nodoc:
@@ -84,10 +83,12 @@ class DataProvidersController < ApplicationController
                                 )
 
     @typelist = get_type_list
+    @groups   = current_user.assignable_groups | current_user.listable_groups #
+    render template: 'data_providers/normal_new' unless current_user.has_role?(:admin_user) # normal user only allowed create UserkeyFlatDirSshDataProvider
   end
 
-  def create #:nodoc:
-    @provider = DataProvider.sti_new(data_provider_params)
+  def create # admin only dp create (much more features)
+    @provider            = DataProvider.sti_new(data_provider_params)
     @provider.user_id  ||= current_user.id # disabled field in form DOES NOT send value!
     @provider.group_id ||= current_assignable_group.id
 
@@ -106,6 +107,38 @@ class DataProvidersController < ApplicationController
         format.html { render :action => :new }
         format.xml  { render :xml  => @provider.errors, :status => :unprocessable_entity }
         format.json { render :json => @provider.errors, :status => :unprocessable_entity }
+      end
+    end
+  end
+
+  # dp creation by normal user, currently only UserkeyFlatDirSshDataProvider
+  # allow user create his own data providers.  At the moment only ssh with UserkeyFlatDirSshDataProvider and few field only
+  def create_by_normal_user
+
+    normal_params = params.require_as_params(:data_provider)
+                        .permit(:name, :description, :group_id,
+                                :remote_user, :remote_host,
+                                :remote_port, :remote_dir
+                                )
+    group_id = normal_params[:date_provider][:group_id]
+    Group.where(id: current_user.assignable_group_ids).find(group_id) # ensure assignable, not sure need check visibility etc more
+    @provider = UserkeyFlatDirSshDataProvider.new(normal_params)
+    @provider.update_attributes(
+      :user_id => current_user.id
+    )
+    if @provider.save
+      @provider.addlog_context(self, "Created by #{current_user.login}")
+      @provider.meta[:browse_gid] = current_user.own_group.id
+      respond_to do |format|
+        format.html { redirect_to :action => :index, :format => :html }
+        format.xml  { render      :xml    => @provider }
+        format.json { render      :json   => @provider }
+      end
+    else
+      respond_to do |format|
+        format.html { render :action => :new_normal }
+        format.xml  { render :xml    => @provider.errors,  :status => :unprocessable_entity }
+        format.json { render :json   => @provider.errors,  :status => :unprocessable_entity }
       end
     end
   end
@@ -146,8 +179,9 @@ class DataProvidersController < ApplicationController
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
         format.html { redirect_to :action => :show }
-        format.xml  { render :xml   => @provider }
-        format.json { render :json  => @provider }
+        # remove? api is disabled on update
+        format.xml  { render      :xml    =>  @provider }
+        format.json { render      :json   =>  @provider }
       end
     else
       @provider.reload
@@ -177,7 +211,7 @@ class DataProvidersController < ApplicationController
       format.json { head :ok }
     end
   rescue ActiveRecord::DeleteRestrictionError => e
-    flash[:error]  = "Provider not destroyed: #{e.message}"
+    flash[:error] = "Provider not destroyed: #{e.message}"
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
@@ -819,6 +853,117 @@ class DataProvidersController < ApplicationController
     end
   end
 
+  # This action checks that the remote side of a Ssh DataProvider is
+  # accessible using SSH.
+  def check
+
+    id = params[:id]
+    @provider = DataProvider.find(id)
+    unless @provider.has_owner_access?(current_user)
+      flash[:error] = "You cannot check a provider that you do not own."
+      respond_to do |format|
+        format.html { redirect_to :action => :show }
+        format.xml  { head        :forbidden }
+        format.json { head        :forbidden }
+      end
+      return
+    end
+
+    id = params[:id]
+    @provider = DataProvider.find(id)
+    unless @provider.is_a? SshDataProvider
+      flash[:error] = "Presently, detailed check is only available to ssh providers."
+      respond_to do |format|
+        format.html { redirect_to :action => :show }
+        format.xml  { head        :forbidden }
+        format.json { head        :forbidden }
+      end
+      return
+    end
+
+    # todo perhaps move most to the model
+
+    master = @provider.master # This is a handler for the connection, not persistent.
+    tmpfile = "/tmp/dp_check.#{Process.pid}.#{rand(1000000)}"
+
+    # Check #1: the SSH connection can be established
+    if !master.is_alive?
+      test_error "Cannot establish the SSH connection. Check the configuration: username, hostname, port are valid, and SSH key is installed."
+    end
+
+    # Check #2: we can run "true" on the remote site and get no output
+    status = master.remote_shell_command_reader("true",
+                                                :stdin => "/dev/null",
+                                                :stdout => "#{tmpfile}.out",
+                                                :stderr => "#{tmpfile}.err",
+    )
+    stdout = File.read("#{tmpfile}.out") rescue "Error capturing stdout"
+    stderr = File.read("#{tmpfile}.err") rescue "Error capturing stderr"
+    if stdout.size != 0
+      stdout.strip! if stdout.present? # just to make it pretty while still reporting whitespace-only strings
+      test_error "Remote shell is not clean: got some bytes on stdout: '#{stdout}'"
+    end
+    if stderr.size != 0
+      stderr.strip! if stdout.present?
+      test_error "Remote shell is not clean: got some bytes on stderr: '#{stderr}'"
+    end
+    if !status
+      test_error "Got non-zero return code when trying to run 'true' on remote side."
+    end
+
+    # Check #3: the remote directory exists
+    master.remote_shell_command_reader "test -d #{@provider.remote_dir.bash_escape} && echo DIR-OK", :stdout => tmpfile
+    out = File.read(tmpfile)
+    if out != "DIR-OK\n"
+      test_error "The remote directory doesn't seem to exist."
+    end
+
+    # Check #4: the remote directory is readable
+    master.remote_shell_command_reader "test -r #{@provider.remote_dir.bash_escape} && test -x #{@provider.remote_dir.bash_escape} && echo DIR-READ", :stdout => tmpfile
+    out = File.read(tmpfile)
+    if out != "DIR-READ\n"
+      test_error "The remote directory doesn't seem to be readable"
+    end
+    @provider.online = true
+    # Ok, all is well.
+    flash[:notice] = "The configuration was tested and seems to be operational."
+    respond_to do |format|
+      format.html do
+        redirect_to :action => :show
+      end
+      format.xml  do
+        render :xml  => 'ok'
+      end
+      format.json do
+        render :json => 'ok'
+      end
+    end
+
+
+  rescue UserKeyTestConnectionError => ex
+    flash[:error]  = ex.message
+    flash[:error] += "\nThis storage is marked as 'offline' until this test pass."
+    @provider.update_column(:online, false)
+
+
+    respond_to do |format|
+      format.html do
+        redirect_to :action => :show
+      end
+      format.xml  do
+        render :xml  => 'fail'
+      end
+      format.json do
+        render :json => "fail. #{ex.message}"
+      end
+    end
+
+  ensure
+    File.unlink "#{tmpfile}.out" rescue true
+    File.unlink "#{tmpfile}.err" rescue true
+
+  end
+
   private
 
   def data_provider_params #:nodoc:
@@ -840,7 +985,10 @@ class DataProvidersController < ApplicationController
       # Normal users are not allowed to change
       # some parameters that would allow them to access things
       # they don't control.
+      # remote host data are only editable on user created private storage
       params.require_as_params(:data_provider).permit(
+        *(%w(remote_user remote_host
+             remote_dir remote_port) if @data_provider&.is_a? UserkeyFlatDirSshDataProvider),
         :name, :description, :group_id, :time_zone,
         :alternate_host,
         :online, :read_only, :not_syncable,
@@ -976,6 +1124,12 @@ class DataProvidersController < ApplicationController
       :num_unregistered                => 0,
       :num_erased                      => 0,
     }
+  end
+
+  # Utility method to raise an exception
+  # when testing for a DP's configuration.
+  def test_error(message) #:nodoc:
+    raise UserKeyTestConnectionError.new(message)
   end
 
 end

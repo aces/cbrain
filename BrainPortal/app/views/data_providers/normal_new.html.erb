@@ -1,0 +1,167 @@
+<%-
+  #
+  # CBRAIN Project
+  #
+  # Copyright (C) 2008-2012
+  # The Royal Institution for the Advancement of Learning
+  # McGill University
+  #
+  # This program is free software: you can redistribute it and/or modify
+  # it under the terms of the GNU General Public License as published by
+  # the Free Software Foundation, either version 3 of the License, or
+  # (at your option) any later version.
+  #
+  # This program is distributed in the hope that it will be useful,
+  # but WITHOUT ANY WARRANTY; without even the implied warranty of
+  # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  # GNU General Public License for more details.
+  #
+  # You should have received a copy of the GNU General Public License
+  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  #
+-%>
+
+<% title 'Add New Data Provider' %>
+
+<h2>Add New Data Provider</h2>
+
+<%= error_messages_for(@provider) %>
+
+<%= form_for @provider, :as => :data_provider, :url => {:action => "create_for_normal_user"}, :datatype => "script" do |f| -%>
+
+  <div class="generalbox">
+
+    <span title="The name of the data provider.">
+      <p>
+        <%= f.label :name, "Name" %><br/>
+        <%= f.text_field :name %>
+      </p>
+    </span>
+
+    <span title="Brief description of the data provider.">
+      <p>
+        <%= f.label :description, "Description" %><br/>
+        <%= f.text_area :description, :rows => 10, :cols => 40 %><br/>
+        <div class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</div>
+      </p>
+    </span>
+
+    <span title="Time zone where this data provider is located.">
+      <p>
+        <%= f.label :time_zone, "Time Zone" %><br/>
+        <%= f.time_zone_select :time_zone,
+                               ActiveSupport::TimeZone.all.select {|t| t.name =~ /canada/i},
+                               {:default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
+                                :include_blank => true}
+        %>
+      </p>
+    </span>
+
+
+    <span title="Project ownership of this data provider. Project members will have access to the provider, but will not be able configure it.">
+      <p>
+        <%= f.label :group_id, "Project" %><br/>
+        <%= group_select("data_provider[group_id]", {:selector => @provider, :groups => @groups}) %>
+      </p>
+    </span>
+
+
+    <span title="Is this data provider writable or read-only?">
+      <p>
+        <%= f.label :read_only, "Mode" %><br/>
+        <%= f.select :read_only, {"Read/Write" => false, "Read Only" => true} %>
+      </p>
+    </span>
+
+    <p>
+
+    <fieldset class="groupentry">
+      <legend>Physical Data Location</legend>
+      <span title="Directory used for storing files">
+        <p>
+         <%= f.label :remote_dir, "Full Directory Path" %><br/>
+         <%= f.text_field :remote_dir, :size => 80 %>
+        </p>
+      </span>
+
+    </fieldset>
+
+
+    <p>
+
+    <fieldset class="groupentry">
+      <legend>SSH parameters for remote Data Providers</legend>
+
+      <div title="Name of the remote machine on which the data provider is located.">
+        <p>
+          <%= f.label :remote_host, "Remote Hostname" %><br/>
+          <%= f.text_field :remote_host %>
+        </p>
+      </div>
+
+      <div title="Alternate name(s) (comma-separated) of the remote machine on which the data provider is located (required only for Smart data providers).">
+      <p>
+        <%= f.label :alternate_host, "Alternate Hostname(s)" %><br/>
+        <%= f.text_field :alternate_host %></p>
+      </div>
+
+      <div title="Username on the remote machine where the data provider is located.">
+        <p>
+          <%= f.label :remote_user, "Remote Username" %><br/>
+          <%= f.text_field :remote_user %></p>
+      </div>
+
+      <div title="Port number used to access remote machine on which the data provider is located. ">
+        <p>
+          <%= f.label :remote_port, "Remote Port Number" %><br/>
+          <%= f.text_field :remote_port, :size => 6 %>
+        </p>
+      </div>
+    </fieldset>
+
+    <p>
+
+    <fieldset class="groupentry">
+      <legend>Physical Data Location</legend>
+
+      <span title="Directory used for storing files">
+        <p>
+          <%= f.label :remote_dir, "Full Directory Path" %><br/>
+          <%= f.text_field :remote_dir, :size => 80 %>
+        </p>
+      </span>
+
+    </fieldset>
+
+    <p>
+
+    <fieldset class="groupentry">
+      <legend>Other properties</legend>
+
+      <p>
+      <label for='meta_must_move'>Files must be copied/moved upon registration (browsable DPs only):</label>
+      <%= check_box_tag 'meta[must_move]', "on", @provider.new_record? ? false : !@provider.meta[:must_move].blank? %>
+
+      <p>
+      <label for='meta_browse_gid'>Files can be browsed only by members of this project (browsable DPs only):</label>
+      <%= group_select 'meta[browse_gid]', {:selector => (@provider.new_record? ? nil : @provider.meta[:browse_gid])}, {:include_blank => "(Any Users)"} %>
+
+      <p>
+      <label for='meta_no_uploads'>Cannot be used for uploading files from the file manager:</label>
+        <%= check_box_tag 'meta[no_uploads]', "on", @provider.new_record? ? false : !@provider.meta[:no_uploads].blank? %>
+
+      <p>
+      <label for='meta_no_viwers'>Files cannot be viewed in the file manager:</label>
+      <%= check_box_tag 'meta[no_viewers]', "on", @provider.new_record? ? false : !@provider.meta[:no_viewers].blank? %>
+    </fieldset>
+
+
+    </div>
+  <p><%= submit_tag 'Create New Data Provider' %></p>
+
+<% end %>
+
+
+<%= render :partial => 'show_user_key' %>
+
+

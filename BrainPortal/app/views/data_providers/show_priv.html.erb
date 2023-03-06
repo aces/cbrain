@@ -30,9 +30,7 @@
       <%= link_to 'Browse', browse_data_provider_path(@provider), :class => "button" %>
     <% end %>
 
-    <% if current_user.has_role?(:admin_user) && @provider.method(:impl_provider_report).owner != DataProvider %>
-      <%= link_to 'Inconsistency Report', report_data_provider_path(@provider), :class => "button" %>
-    <% end %>
+
 
     <%= link_to 'File Registration Statistics', report_path(
                   :table_name       => 'userfiles.combined_file_rep',
@@ -44,6 +42,7 @@
 
 
     <% if @provider.type == "UserkeyFlatDirSshDataProvider" %>
+
       <%= link_to "Check", check_data_provider_path(), :class => "button" %>
     <% end %>
 
@@ -144,43 +143,7 @@
       <% end %>
     <% end %>
 
-    <% if @provider.is_a?(SingSquashfsDataProvider) || @provider.is_a?(SingBindmountDataProvider) %>
-    <%= show_table(@provider, :as => :data_provider, :header => "Containerized Storage Configuration", :edit_condition => true) do |t| %>
-      <% t.edit_cell(:containerized_path, :header => 'Containerized Data Path', :show_width => 2) do %>
-        <%= text_field_tag "data_provider[containerized_path]", @provider.containerized_path, :size => 80 %>
-      <% end %>
-    <% end %>
-    <% end %>
 
-    <%= show_table(@provider, :as => :data_provider, :header => "Cloud Storage Configuration", :edit_condition => true) do |t| %>
-      <% t.edit_cell(:cloud_storage_client_identifier, :header => 'Client Identifier', :show_width => 2)  do |f| %>
-        <%= f.text_field :cloud_storage_client_identifier, :size => 40, :autocomplete => 'off' %>
-      <% end %>
-      <% t.edit_cell(:cloud_storage_client_token, :content => '****************', :header => 'Client Token', :show_width => 2) do |f| %>
-        <%= f.password_field :cloud_storage_client_token, :size => 80, :autocomplete => 'off' %>
-      <% end %>
-      <% t.edit_cell(:cloud_storage_client_bucket_name, :header => 'Client Bucket Name', :show_width => 2) do %>
-        <%= text_field_tag "data_provider[cloud_storage_client_bucket_name]", @provider.cloud_storage_client_bucket_name, :size => 80 %>
-      <% end %>
-      <% t.edit_cell(:cloud_storage_client_path_start, :header => 'Client Starting Path', :show_width => 2) do %>
-        <%= text_field_tag "data_provider[cloud_storage_client_path_start]", @provider.cloud_storage_client_path_start, :size => 80 %>
-      <% end %>
-      <% t.edit_cell(:cloud_storage_endpoint, :header => 'Endpoint', :show_width => 2) do %>
-        <%= text_field_tag "data_provider[cloud_storage_endpoint]", @provider.cloud_storage_endpoint, :size => 80 %>
-      <% end %>
-      <% t.edit_cell(:cloud_storage_region, :header => 'Region', :show_width => 2) do %>
-        <%= text_field_tag "data_provider[cloud_storage_region]", @provider.cloud_storage_region, :size => 80 %>
-      <% end %>
-    <% end %>
-
-    <%= show_table(@provider, :as => :data_provider, :header => "Datalad Configuration", :edit_condition => true) do |t| %>
-      <% t.edit_cell(:datalad_repository_url, :header => 'Datalad Repository URL', :show_width => 2)  do |f| %>
-        <%= f.text_field :datalad_repository_url %>
-      <% end %>
-      <% t.edit_cell(:datalad_relative_path, :header => 'Datalad Relative Path', :show_width => 2) do |f| %>
-        <%= f.text_field :datalad_relative_path %>
-      <% end %>
-    <% end %>
   <% end %>
 
 

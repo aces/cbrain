@@ -223,7 +223,7 @@
 <div class="display_cell" style="padding-left: 1em;">
   <table>
     <tr><th colspan="2" class="supertitle">Public SSH Key for this CBRAIN Portal</th></tr>
-    <tr><td>This key should be installed on the host machines of SSH or Smart Data Providers to allow remote access.</td></tr>
+    <tr><td>This key should be installed on the host machines of SSH or Smart Data Providers (save User-key based) to allow remote access.</td></tr>
     <tr><td><PRE class="ssh_key"><%= pretty_ssh_key(RemoteResource.current_resource.get_ssh_public_key || 'Unknown! Talk to sysadmin!') %></PRE></td></tr>
   </table>
 </div>
