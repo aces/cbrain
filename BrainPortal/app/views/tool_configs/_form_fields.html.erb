@@ -245,6 +245,12 @@
       </div>
     <% end %>
 
+    <% t.boolean_edit_cell('tool_config[singularity_use_short_workdir]',
+         (@tool_config.singularity_use_short_workdir ? "1" : "0"),
+         "1", "0",
+         :header => "Use short workdirs inside Singularity")
+    %>
+
   <% end %>
 
 

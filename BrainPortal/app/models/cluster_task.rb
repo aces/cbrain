@@ -20,12 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'stringio'
-require 'base64'
-require 'fileutils'
-require 'json'
-require 'json-schema'
-
 #Abstract model representing a job running on a cluster. This is the core class for
 #launching GridEngine/PBS/MOAB/UNIX jobs (etc) using Scir.
 #
@@ -1784,27 +1778,16 @@ class ClusterTask < CbrainTask
     # Joined version of all the lines in the scientific script
     command_script = commands.join("\n")
 
-    # Add HOME switching back and forth
-    command_script = <<-HOME_SWITCHING
-# Preserve system HOME, then switch it to the task's workdir
-_cbrain_home_="$HOME"
-export HOME=#{self.full_cluster_workdir.bash_escape}
-
-#{command_script}
-
-# Restore system HOME (while preserving the latest exit code)
-_cbrain_status_="$?"
-export HOME="$_cbrain_home_"
-bash -c "exit $_cbrain_status_"
-    HOME_SWITCHING
-
     # In case of Docker or Singularity, we rewrite the scientific script inside
     # yet another wrapper script.
     if self.use_docker?
+      command_script = wrap_new_HOME(command_script, self.full_cluster_workdir)
       command_script = self.docker_commands(command_script)
     elsif self.use_singularity?
       load_singularity_image
-      command_script = self.singularity_commands(command_script)
+      command_script = self.singularity_commands(command_script) # note: invokes wrap_new_HOME itself
+    else
+      command_script = wrap_new_HOME(command_script, self.full_cluster_workdir)
     end
 
     # Create a bash science script out of the text
@@ -2318,6 +2301,12 @@ docker_image_name=#{full_image_name.bash_escape}
     return self.bourreau.singularity_executable_name.presence || "singularity"
   end
 
+  # Returns true if the admin has configured this option in the
+  # task's ToolConfig attributes.
+  def use_singularity_short_workdir?
+    self.tool_config.singularity_use_short_workdir
+  end
+
   # Returns the command line(s) associated with the task, wrapped in
   # a Singularity call if a Singularity image has to be used. +command_script+
   # is the raw scientific bash script.
@@ -2330,25 +2319,29 @@ docker_image_name=#{full_image_name.bash_escape}
     # Numbers in (paren) correspond to the comment
     # block in the script, well below.
 
-    # (6) The path to the task's work directory
-    task_workdir  = self.full_cluster_workdir # a string
+    # (7) The path to the task's work directory
+    task_workdir   = self.full_cluster_workdir # a string
+    short_workdir  = "/T#{self.id}" # only used in short workdir mode
+    effect_workdir = use_singularity_short_workdir? ? short_workdir : task_workdir
 
     # (1) additional singularity execution command options defined in ToolConfig
     container_exec_args = self.tool_config.container_exec_args.presence
 
     # (2) The root of the DataProvider cache
     cache_dir      = self.bourreau.dp_cache_dir
-    gridshare_dir  = self.bourreau.cms_shared_dir # not mounted explicitely
-    cache_dir_syml = "#{gridshare_dir}/DP_Cache"
 
-    # (3) Ext3 capture mounts, if any.
+    # (3) The root of the GridShare area (all tasks workdirs)
+    gridshare_dir  = self.bourreau.cms_shared_dir # not mounted explicitely
+
+    # (6) Ext3 capture mounts, if any.
     # These will look like "-B .capt_abcd.ext3:/path/workdir/abcd:image-src=/"
     # While we are building these options, we're also creating
     # the ext3 filesystems at the same time, if needed.
     esc_capture_mounts = ext3capture_basenames().inject("") do |sing_opts,(basename,size)|
       fs_name    = ".capt_#{basename}.ext3"      # e.g. .capt_work.ext3
-      mountpoint = "#{task_workdir}/#{basename}" # e.g. /path/to/workdir/work
+      mountpoint = "#{effect_workdir}/#{basename}" # e.g. /path/to/workdir/work or /T123/work
       install_ext3fs_filesystem(fs_name,size)
+      safe_mkdir(basename)
       "#{sing_opts} -B #{fs_name.bash_escape}:#{mountpoint.bash_escape}:image-src=/"
     end
 
@@ -2371,8 +2364,27 @@ docker_image_name=#{full_image_name.bash_escape}
       "#{sing_opts} --overlay=#{path.bash_escape}:ro"
     end
 
+    # Wrap new HOME environment
+    command_script = wrap_new_HOME(command_script, effect_workdir)
+
     # Set singularity command
     singularity_commands = <<-SINGULARITY_COMMANDS
+
+# Note to developers:
+# During a standard CBRAIN task, this script is invoked with no arguments
+# at all. For debugging situations, an admin can invoke it with the single
+# argument "shell" to bypass the tool's execution and launch a convenient
+# interactive shell inside the container.
+
+# These two variables control the mode switching at the end of the script.
+mode="exec"
+sing_basename=./#{singularity_wrapper_basename.bash_escape} # note: the ./ is necessary
+
+# In 'shell' mode we replace them with other things.
+if test $# -eq 1 -a "X$1" = "Xshell" ; then
+  mode="shell"
+  sing_basename=""
+fi
 
 # Build a local wrapper script to run in a singularity container
 cat << \"SINGULARITYJOB\" > #{singularity_wrapper_basename.bash_escape}
@@ -2408,6 +2420,17 @@ if test ! -d #{gridshare_dir.bash_escape} ; then
   exit 2
 fi
 
+# CBRAIN internal consistency test 5: short task workdir (optional).
+# It's possible the path below will be the same as the task workdir if no shortening
+# is configured, so the test becomes trivially like test 2.
+if test ! -d #{effect_workdir.bash_escape} ; then
+  echo "Container missing shortened task work directory:" #{effect_workdir.bash_escape}
+  exit 2
+fi
+
+# Make sure we are in the task's workdir now.
+cd #{effect_workdir.bash_escape} || exit 2
+
 # Scientific commands start here
 
 #{command_script}
@@ -2415,29 +2438,31 @@ SINGULARITYJOB
 
 # Make sure it is executable
 chmod 755 #{singularity_wrapper_basename.bash_escape}
-# Other should have executable right on all components
-# of the path in order to be mounted by singularity.
-chmod o+x . .. ../.. ../../..
 
 # Invoke Singularity with our wrapper script above.
 # Tricks used here:
 # 1) we supply (if any) additional options for the exec command
 # 2) we mount the local data provider cache root directory
-# 3) we mount (if any) capture ext3 filesystems
+#   a) at its original cluster full path
+#   b) at /DP_Cache (used only when shortening workdir)
+# 3) we mount the root of the gridshare area (for all tasks)
 # 4) we mount each (if any) of the root directories for local data providers
 # 5) we mount (if any) other fixed file system overlays
-# 6) with -H we set the task's work directory as the singularity $HOME directory
+# 6) we mount (if any) capture ext3 filesystems
+# 7) with -H we set the task's work directory as the singularity $HOME directory
 #{singularity_executable_name}                  \\
-    exec                                        \\
+    $mode                                       \\
     #{container_exec_args}                      \\
     -B #{cache_dir.bash_escape}                 \\
-    -B #{cache_dir_syml.bash_escape}            \\
-    #{esc_capture_mounts}                       \\
+    -B #{cache_dir.bash_escape}:/DP_Cache       \\
+    -B #{gridshare_dir.bash_escape}             \\
     #{esc_local_dp_mountpoints}                 \\
     #{overlay_mounts}                           \\
-    -H #{task_workdir.bash_escape}              \\
+    -B #{task_workdir.bash_escape}:#{effect_workdir.bash_escape} \\
+    #{esc_capture_mounts}                       \\
+    -H #{effect_workdir.bash_escape}            \\
     #{container_image_name.bash_escape}         \\
-    ./#{singularity_wrapper_basename.bash_escape}
+    $sing_basename
 
     SINGULARITY_COMMANDS
 
@@ -2451,6 +2476,24 @@ chmod o+x . .. ../.. ../../..
   ##################################################################
 
   private
+
+  # Add HOME switching back and forth to a bash script;
+  # preserve the status returned by the script too.
+  def wrap_new_HOME(script, new_home)
+    new_home_script = <<-HOME_SWITCHING
+# Preserve system HOME, then switch it
+_cbrain_home_="$HOME"
+export HOME=#{new_home.bash_escape}
+
+#{script}
+
+# Restore system HOME (while preserving the latest exit code)
+_cbrain_status_="$?"
+export HOME="$_cbrain_home_"
+bash -c "exit $_cbrain_status_"
+    HOME_SWITCHING
+    new_home_script
+  end
 
   # Returns an array of directory paths for all
   # online data providers that are local to the current

@@ -41,6 +41,13 @@
 #       }
 #   }
 #
+# This module will also erase EXT3 capture filesystems created by CBRAIN
+# if the basename of the filesystem, as configured in the ToolConfig, matches
+# one of the entries in this module's configuration. So in the code above,
+# the content of the file ".capt_work.ext3" would also be erased if a capture
+# filesystem was configured for "work". Patterns are not supported for
+# this feature.
+#
 module BoutiquesPostProcessingCleaner
 
   # Note: to access the revision info of the module,
@@ -79,6 +86,15 @@ module BoutiquesPostProcessingCleaner
         self.addlog("Cleaning up '#{path}' in work directory")
         system("/bin/rm","-rf",path)
       end
+    end
+
+    # Also erase ext3 catpure files IF they match one of the patterns
+    ext3capture_basenames.each do |basename, _|
+      next unless patterns.include?(basename) # must be exact match, e.g. 'work' == 'work'
+      fs_name = ".capt_#{basename}.ext3"      # e.g. .capt_work.ext3, see also in cluster_task.rb
+      next unless File.file?(fs_name)
+      self.addlog("Cleaning up EXT3 capture filesystem '#{fs_name}' in work directory")
+      File.delete(fs_name) rescue nil
     end
 
     true

@@ -168,11 +168,11 @@ class CbrainTask::Diagnostics < ClusterTask
       echo ""
 
       echo "==== Host Info ===="
-      uname -a
-      uptime
+      uname -a 2>/dev/null
+      uptime   2>/dev/null
       echo ""
 
-      if test -n "$(type lsb_release)" ; then
+      if test -n "$(type -p lsb_release)" ; then
         echo "==== LSB Release ===="
         lsb_release -a
         echo ""
@@ -185,8 +185,8 @@ class CbrainTask::Diagnostics < ClusterTask
       fi
 
       if test -e /proc/cpuinfo ; then
-        echo "==== Last CPU Info ===="
-        cat /proc/cpuinfo | perl -ne '@x=grep(/./,<>);unshift(@y,pop(@x)) while @x > 0 && $y[0] !~ /^processor/; END { print @y }'
+        echo "==== Compacted CPU Info ===="
+        cat /proc/cpuinfo | sort | uniq | grep -v -E 'apicid|^processor|core id'
         echo ""
       fi
 
@@ -204,6 +204,10 @@ class CbrainTask::Diagnostics < ClusterTask
 
       echo "==== Listing Content of Work Directory ===="
       ls -la
+      echo ""
+
+      echo "==== Listing Content of Work Directory With Dereferencing ===="
+      ls -laL
       echo ""
 
     _DIAGNOSTIC_COMMANDS_

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20221007094232) do
+ActiveRecord::Schema.define(version: 20230304184206) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -438,12 +438,12 @@ ActiveRecord::Schema.define(version: 20221007094232) do
 
   create_table "tool_configs", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "version_name"
-    t.text     "description",                 limit: 65535
+    t.text     "description",                   limit: 65535
     t.integer  "tool_id"
     t.integer  "bourreau_id"
-    t.text     "env_array",                   limit: 65535
-    t.text     "script_prologue",             limit: 65535
-    t.text     "script_epilogue",             limit: 65535
+    t.text     "env_array",                     limit: 65535
+    t.text     "script_prologue",               limit: 65535
+    t.text     "script_epilogue",               limit: 65535
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "group_id"
@@ -460,9 +460,10 @@ ActiveRecord::Schema.define(version: 20221007094232) do
     t.string   "containerhub_image_name"
     t.string   "container_engine"
     t.string   "container_index_location"
-    t.text     "singularity_overlays_specs",  limit: 65535
+    t.text     "singularity_overlays_specs",    limit: 65535
+    t.boolean  "singularity_use_short_workdir",               default: false, null: false
     t.string   "container_exec_args"
-    t.boolean  "inputs_readonly",                           default: false
+    t.boolean  "inputs_readonly",                             default: false
     t.string   "boutiques_descriptor_path"
     t.index ["bourreau_id"], name: "index_tool_configs_on_bourreau_id", using: :btree
     t.index ["tool_id"], name: "index_tool_configs_on_tool_id", using: :btree
