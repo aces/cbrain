@@ -265,13 +265,7 @@
 <p>
 
 
-<% if @provider.is_a?(UserkeyFlatDirSshDataProvider) || @provider.user_id == current_user.id %>
-    <%= render :partial => 'show_user_key' %>
-<% elsif (check_role(:admin_user) || @provider.user_id == current_user.id) && (@provider.is_a?(SshDataProvider) || @provider.is_a?(SmartDataProviderInterface)) %>
-
-<P>
-
-<% if @provider.type == "UserkeyFlatDirSshDataProvider" %>
+<% if @provider.type == "UserkeyFlatDirSshDataProvider" && @provider.has_owner_access?(current_user) %>
     <%= render :partial => 'show_user_key' %>
 <% else %>
 <div>
@@ -282,7 +276,6 @@
   </table>
 </div>
 
-<% end %>
 
 <% end %>
 

@@ -1,3 +1,4 @@
+
 #
 # CBRAIN Project
 #
@@ -26,8 +27,8 @@ class DataProvidersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available :only => [:index, :show, :is_alive, :create_by_normal_user, :check,
-                        :browse, :register, :unregister, :delete]
+  api_available :only => [ :index, :show, :is_alive, :create_by_normal_user, :check,
+                           :browse, :register, :unregister, :delete]
 
   before_action :login_required
   before_action :manager_role_required, :only => [:create]
@@ -87,7 +88,7 @@ class DataProvidersController < ApplicationController
     render template: 'data_providers/normal_new' unless current_user.has_role?(:admin_user) # normal user only allowed create UserkeyFlatDirSshDataProvider
   end
 
-  def create # admin only dp create (much more features)
+  def create # for manager dp create (much more features than normal user create)
     @provider            = DataProvider.sti_new(data_provider_params)
     @provider.user_id  ||= current_user.id # disabled field in form DOES NOT send value!
     @provider.group_id ||= current_assignable_group.id
@@ -896,9 +897,9 @@ class DataProvidersController < ApplicationController
 
     # Check #2: we can run "true" on the remote site and get no output
     status = master.remote_shell_command_reader("true",
-                                                :stdin => "/dev/null",
+                                                :stdin  => "/dev/null",
                                                 :stdout => "#{tmpfile}.out",
-                                                :stderr => "#{tmpfile}.err",
+                                                :stderr => "#{tmpfile}.err"
     )
     stdout = File.read("#{tmpfile}.out") rescue "Error capturing stdout"
     stderr = File.read("#{tmpfile}.err") rescue "Error capturing stderr"
@@ -927,7 +928,7 @@ class DataProvidersController < ApplicationController
     if out != "DIR-READ\n"
       test_error "The remote directory doesn't seem to be readable"
     end
-    @provider.online = true
+    @provider.update_column(:online, true)
     # Ok, all is well.
     flash[:notice] = "The configuration was tested and seems to be operational."
     respond_to do |format|
@@ -948,13 +949,12 @@ class DataProvidersController < ApplicationController
     flash[:error] += "\nThis storage is marked as 'offline' until this test pass."
     @provider.update_column(:online, false)
 
-
     respond_to do |format|
       format.html do
         redirect_to :action => :show
       end
       format.xml  do
-        render :xml  => 'fail'
+        render :xml  => "fail. #{ex.message}"
       end
       format.json do
         render :json => "fail. #{ex.message}"
