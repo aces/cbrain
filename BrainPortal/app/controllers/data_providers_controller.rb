@@ -158,6 +158,9 @@ class DataProvidersController < ApplicationController
        return
     end
 
+    Group.where(id: current_user.assignable_group_ids).find(group_id) if ! current_user.has_role?(:admin_user)
+    # regular, aka normal, users can change group, but only to ones (s)he see and allowed assign to
+
     new_data_provider_attr = data_provider_params
     new_data_provider_attr.delete :type # Type cannot be updated once it is set.
 
@@ -179,7 +182,7 @@ class DataProvidersController < ApplicationController
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
         format.html { redirect_to :action => :show }
-        # remove? api is disabled on update
+        # remove? for some reason api is disabled on update
         format.xml  { render      :xml    =>  @provider }
         format.json { render      :json   =>  @provider }
       end
@@ -987,10 +990,12 @@ class DataProvidersController < ApplicationController
       # they don't control.
       # remote host data are only editable on user created private storage
       params.require_as_params(:data_provider).permit(
-        *(%w(remote_user remote_host
-             remote_dir remote_port) if @data_provider&.is_a? UserkeyFlatDirSshDataProvider),
         :name, :description, :group_id, :time_zone,
         :alternate_host,
+        *([
+            :remote_user, :remote_host, :remote_port, :remote_dir
+        ] if @data_provider&.is_a? UserkeyFlatDirSshDataProvider
+        ), # allow change dir/host only for user own private storage
         :online, :read_only, :not_syncable,
         :datalad_repository_url, :datalad_relative_path,
         :license_agreements,

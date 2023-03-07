@@ -41,7 +41,7 @@
         If download did not work paste the ssh key bellow in a text file and rerun the command line
       </tr></td>
       <tr><th class="supertitle">Public SSH Key</th></tr>
-      <tr><td><pre class="ssh_key"><%= pretty_ssh_key current_user.ssh_key(create_it: true).public_key rescue "Error fetching public key" %></pre></td></tr>
+      <tr><td><pre class="ssh_key"><%= pretty_ssh_key @data_provider.user.ssh_key(create_it: true).public_key rescue "Error fetching public key" %></pre></td></tr>
       <tr><td>
         Note that revealing this key's content to other people causes no security risks. <br>
         The information in this key is meant to be public and people cannot use it to access your information.
