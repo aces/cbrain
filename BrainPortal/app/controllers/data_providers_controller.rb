@@ -66,9 +66,9 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html {
-        render template: 'data_providers/show_custom' unless current_user.has_role?(:admin_user) ||
-                                                       ! @provider.is_a?( UserkeyFlatDirSshDataProvider                                                                                        )
-      }# show.html.erb for most dp types and admin's
+        render template: 'data_providers/show_custom' if ! current_user.has_role?(:admin_user) &&
+                                                       @provider.is_a?( UserkeyFlatDirSshDataProvider                                                                                        )
+      }# show.html.erb for all other dp types and admin's
       format.xml  {
         render :xml  => @provider.for_api
       }

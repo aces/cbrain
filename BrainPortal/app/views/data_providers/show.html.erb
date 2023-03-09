@@ -264,23 +264,20 @@
 
 <p>
 
-
-<% if @provider.type == "UserkeyFlatDirSshDataProvider" && @provider.has_owner_access?(current_user) %>
-    <%= render :partial => 'show_user_key' %>
-<% else %>
-<div>
-  <table>
-    <tr><th colspan="2" class="supertitle">Public SSH Key for this CBRAIN Portal</th></tr>
-    <tr><td>This key should be installed on this Data Provider's host machine to allow remote access.</td></tr>
-    <tr><td><PRE class="ssh_key"><%= pretty_ssh_key(RemoteResource.current_resource.get_ssh_public_key || 'Unknown! Talk to sysadmin!') %></PRE></td></tr>
-  </table>
-</div>
-
-
-<% end %>
-
 <% if @provider.has_owner_access?(current_user) %>
-  <P>
+  <% if @provider.type == "UserkeyFlatDirSshDataProvider" %>
+    <%= render :partial => 'show_user_key' %>
+  <% else %>
+  <div>
+    <table>
+      <tr><th colspan="2" class="supertitle">Public SSH Key for this CBRAIN Portal</th></tr>
+      <tr><td>This key should be installed on this Data Provider's host machine to allow remote access.</td></tr>
+      <tr><td><PRE class="ssh_key"><%= pretty_ssh_key(RemoteResource.current_resource.get_ssh_public_key || 'Unknown! Talk to sysadmin!') %></PRE></td></tr>
+    </table>
+  </div>
+  <% end %>
+
+
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @provider.getlog, :title => "Data Provider Log" } %>
 <% end %>
 

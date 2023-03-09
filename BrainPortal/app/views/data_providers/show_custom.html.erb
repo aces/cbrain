@@ -22,7 +22,7 @@
 #
 -%>
 
-<% title 'Data Provider Info' %>
+<% title "Data Provider Info (User's Ssh Key based" %>
 
 <div class="menu_bar">
 
@@ -41,7 +41,7 @@
                 ), :class => "button" %>
 
 
-    <% if @provider.type == "UserkeyFlatDirSshDataProvider" %>
+    <% if @provider.type == "UserkeyFlatDirSshDataProvider" && @provider.has_owner_access?(current_user) %>
 
       <%= link_to "Check", check_data_provider_path(), :class => "button" %>
     <% end %>
@@ -224,28 +224,21 @@
 <p>
 
 
-<% if @provider.is_a?(UserkeyFlatDirSshDataProvider) || @provider.user_id == current_user.id %>
-    <%= render :partial => 'show_user_key' %>
-<% elsif (check_role(:admin_user) || @provider.user_id == current_user.id) && (@provider.is_a?(SshDataProvider) || @provider.is_a?(SmartDataProviderInterface)) %>
-
-<P>
-
-<% if @provider.type == "UserkeyFlatDirSshDataProvider" %>
-    <%= render :partial => 'show_user_key' %>
-<% else %>
-<div>
-  <table>
-    <tr><th colspan="2" class="supertitle">Public SSH Key for this CBRAIN Portal</th></tr>
-    <tr><td>This key should be installed on this Data Provider's host machine to allow remote access.</td></tr>
-    <tr><td><PRE class="ssh_key"><%= pretty_ssh_key(RemoteResource.current_resource.get_ssh_public_key || 'Unknown! Talk to sysadmin!') %></PRE></td></tr>
-  </table>
-</div>
-
-<% end %>
-
-<% end %>
-
 <% if @provider.has_owner_access?(current_user) %>
+
+  <% if @provider.type == "UserkeyFlatDirSshDataProvider" %>
+    <%= render :partial => 'show_user_key' %>
+  <% else %>
+    <div>
+      <table>
+        <tr><th colspan="2" class="supertitle">Public SSH Key for this CBRAIN Portal</th></tr>
+        <tr><td>This key should be installed on this Data Provider's host machine to allow remote access.</td></tr>
+        <tr><td><PRE class="ssh_key"><%= pretty_ssh_key(RemoteResource.current_resource.get_ssh_public_key || 'Unknown! Talk to sysadmin!') %></PRE></td></tr>
+      </table>
+    </div>
+
+  <% end %>
+
   <P>
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @provider.getlog, :title => "Data Provider Log" } %>
 <% end %>
