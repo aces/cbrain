@@ -65,7 +65,10 @@ class DataProvidersController < ApplicationController
     cb_notice "Provider not accessible by current user." unless @provider.can_be_accessed_by?(current_user)
 
     respond_to do |format|
-      format.html # show.html.erb
+      format.html {
+        render template: 'data_providers/show_custom' unless current_user.has_role?(:admin_user) ||
+                                                       ! @provider.is_a?( UserkeyFlatDirSshDataProvider                                                                                        )
+      }# show.html.erb for most dp types and admin's
       format.xml  {
         render :xml  => @provider.for_api
       }
@@ -85,7 +88,7 @@ class DataProvidersController < ApplicationController
 
     @typelist = get_type_list
     @groups   = current_user.assignable_groups | current_user.listable_groups #
-    render template: 'data_providers/normal_new' unless current_user.has_role?(:admin_user) # normal user only allowed create UserkeyFlatDirSshDataProvider
+    render template: 'data_providers/new_normal' unless current_user.has_role?(:admin_user) # normal user only allowed create UserkeyFlatDirSshDataProvider
   end
 
   def create # for manager dp create (much more features than normal user create)
@@ -130,14 +133,15 @@ class DataProvidersController < ApplicationController
     if @provider.save
       @provider.addlog_context(self, "Created by #{current_user.login}")
       @provider.meta[:browse_gid] = current_user.own_group.id
+      flash[:notice] = "Provider successfully created. Please click the check button to validate configuration"
       respond_to do |format|
-        format.html { redirect_to :action => :index, :format => :html }
+        format.html { redirect_to :action => :show, :format => :html }
         format.xml  { render      :xml    => @provider }
         format.json { render      :json   => @provider }
       end
     else
       respond_to do |format|
-        format.html { render :action => :new_normal }
+        format.html { render :action => :new}
         format.xml  { render :xml    => @provider.errors,  :status => :unprocessable_entity }
         format.json { render :json   => @provider.errors,  :status => :unprocessable_entity }
       end
@@ -885,49 +889,7 @@ class DataProvidersController < ApplicationController
       return
     end
 
-    # todo perhaps move most to the model
-
-    master = @provider.master # This is a handler for the connection, not persistent.
-    tmpfile = "/tmp/dp_check.#{Process.pid}.#{rand(1000000)}"
-
-    # Check #1: the SSH connection can be established
-    if !master.is_alive?
-      test_error "Cannot establish the SSH connection. Check the configuration: username, hostname, port are valid, and SSH key is installed."
-    end
-
-    # Check #2: we can run "true" on the remote site and get no output
-    status = master.remote_shell_command_reader("true",
-                                                :stdin  => "/dev/null",
-                                                :stdout => "#{tmpfile}.out",
-                                                :stderr => "#{tmpfile}.err"
-    )
-    stdout = File.read("#{tmpfile}.out") rescue "Error capturing stdout"
-    stderr = File.read("#{tmpfile}.err") rescue "Error capturing stderr"
-    if stdout.size != 0
-      stdout.strip! if stdout.present? # just to make it pretty while still reporting whitespace-only strings
-      test_error "Remote shell is not clean: got some bytes on stdout: '#{stdout}'"
-    end
-    if stderr.size != 0
-      stderr.strip! if stdout.present?
-      test_error "Remote shell is not clean: got some bytes on stderr: '#{stderr}'"
-    end
-    if !status
-      test_error "Got non-zero return code when trying to run 'true' on remote side."
-    end
-
-    # Check #3: the remote directory exists
-    master.remote_shell_command_reader "test -d #{@provider.remote_dir.bash_escape} && echo DIR-OK", :stdout => tmpfile
-    out = File.read(tmpfile)
-    if out != "DIR-OK\n"
-      test_error "The remote directory doesn't seem to exist."
-    end
-
-    # Check #4: the remote directory is readable
-    master.remote_shell_command_reader "test -r #{@provider.remote_dir.bash_escape} && test -x #{@provider.remote_dir.bash_escape} && echo DIR-READ", :stdout => tmpfile
-    out = File.read(tmpfile)
-    if out != "DIR-READ\n"
-      test_error "The remote directory doesn't seem to be readable"
-    end
+    @provider.check
     @provider.update_column(:online, true)
     # Ok, all is well.
     flash[:notice] = "The configuration was tested and seems to be operational."
@@ -1129,12 +1091,6 @@ class DataProvidersController < ApplicationController
       :num_unregistered                => 0,
       :num_erased                      => 0,
     }
-  end
-
-  # Utility method to raise an exception
-  # when testing for a DP's configuration.
-  def test_error(message) #:nodoc:
-    raise UserKeyTestConnectionError.new(message)
   end
 
 end
