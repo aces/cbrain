@@ -1851,7 +1851,7 @@ bash #{Rails.root.to_s.bash_escape}/vendor/cbrain/bin/runtime_info.sh > #{runtim
 
 # stdout and stderr captured below will be re-substituted in
 # the output and error of this script.
-bash '#{sciencefile}' >> #{science_stdout_basename} 2> #{science_stderr_basename} </dev/null
+bash '#{sciencefile}' >> #{science_stdout_basename} 2>> #{science_stderr_basename} </dev/null
 status="$?"
 
 echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      # where stdout captured below will be substituted
@@ -2344,6 +2344,9 @@ docker_image_name=#{full_image_name.bash_escape}
       safe_mkdir(basename)
       "#{sing_opts} -B #{fs_name.bash_escape}:#{mountpoint.bash_escape}:image-src=/"
     end
+    # This list will be used to make a device number check: all components
+    # must be on a device different from the one for the work directory.
+    capture_basenames = ext3capture_basenames.map { |basename,_| basename }
 
     # (4) More -B (bind mounts) for all the local data providers.
     # This will be a string "-B path1 -B path2 -B path3" etc.
@@ -2430,6 +2433,23 @@ fi
 
 # Make sure we are in the task's workdir now.
 cd #{effect_workdir.bash_escape} || exit 2
+
+# CBRAIN internal consistency test 6: all mounted ext3 filesystems should be
+# on a device different from the task's workdir. Otherwise something went
+# wrong with the mounts. Singularity or Apptainer can sometimes do that
+# if the command is improperly built (order of mounts args etc).
+workdir_devid=$(stat -c %d .)  # dev number of task workdir
+for mount in #{capture_basenames.map(&:bash_escape).join(" ")} ; do
+   mnt_devid=$(stat -c %d $mount 2>/dev/null)
+   if test -z "$mnt_devid" ; then
+     echo "Container missing mount point for '$mount'."
+     exit 2
+   fi
+   if test "$workdir_devid" -eq "$mnt_devid" ; then
+     echo "Container has mount point for '$mount' but it is not mounted to an external filesystem."
+     exit 2
+   fi
+done
 
 # Scientific commands start here
 
