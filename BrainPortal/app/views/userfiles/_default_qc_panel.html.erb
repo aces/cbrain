@@ -22,15 +22,29 @@
 #
 -%>
 
-<% if ! @userfile.is_locally_synced? %>
-  This file must be synced locally to view QC data.
-<% else %>
-  <% if @userfile.is_a?(ImageFile) %>
-    <%= image_tag url_for(:action  => :content, :id => @userfile.id) %><br>
+<% div_id_to_replace = "sub_viewer_#{@userfile.id}" %>
+
+<div id=<%= div_id_to_replace %>>
+  <% if ! @userfile.is_locally_synced? %>
+    This file must be synced locally to view QC data.
   <% else %>
-    <span class="warning">
-    This file does not seem to contain any QC data, or no template is available to QC this file type.
-    </span>
+    <% link = data_link(@userfile.name, @userfile, div_id_to_replace) %>
+    <% if link =~ /data-url=/%>
+        <%= link %>
+      </div>
+    <% else %>
+      <span class="warning">
+        This file does not seem to contain any QC data, or no template is available to QC this file type.
+      </span>
+    <% end %>
   <% end %>
-<% end %>
+</div>
+
+<script type="application/javascript">
+  // Click by find he link inside rge link_div
+  var className     = "sub_viewable_link <%= div_id_to_replace %>";
+  var subViewerLink = document.getElementsByClassName(className)[0];
+  if (subViewerLink) { subViewerLink.click() };
+</script>
+
 
