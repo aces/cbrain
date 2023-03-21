@@ -87,10 +87,12 @@ module UserfilesHelper
 
     file_lstat = full_path_name.lstat  # lstat doesn't follow symlinks, so we can tell if it is one
 
-    return h(display_name) if !file_lstat.file? && !userfile.is_a?(SingleFile)
+    # return if userfile class is a FileCollection and file is not a file (i.e. a directory)
+    return h(display_name) if userfile.is_a?(FileCollection) && !file_lstat.file?
 
-    matched_class = SingleFile.descendants.unshift(SingleFile).find { |c| file_name =~ c.file_name_pattern } ||
-                    userfile.class
+    matched_class   = SingleFile.descendants.unshift(SingleFile).find { |c| file_name =~ c.file_name_pattern }
+    matched_class ||= userfile.class if userfile.is_a?(SingleFile)
+
     viewer        = matched_class.class_viewers.first.partial rescue nil
 
     if matched_class && viewer
