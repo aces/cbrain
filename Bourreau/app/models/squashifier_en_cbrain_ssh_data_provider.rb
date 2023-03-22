@@ -1,0 +1,1 @@
+../../../BrainPortal/app/models/squashifier_en_cbrain_ssh_data_provider.rb
