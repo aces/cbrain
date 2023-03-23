@@ -96,10 +96,11 @@ class SquashifierEnCbrainSshDataProvider < EnCbrainSshDataProvider
     tmpdirbase  = ".tmp.mksq.#{Process.pid}"
     # Note about the mksquashfs command: by supplying a single source argument ('basename'), the
     # *content* of that directory is put directly at the top of the created squashfs filesystem.
+    mem_opt     = self.class.mksquashfs_has_mem_option? ? "-mem 64m" : ""
     mksqu_out   = bash_this(
       "cd #{cacheparent.to_s.bash_escape} && " +
       "mkdir -p #{tmpdirbase.bash_escape} && " +
-      "mksquashfs #{basename.bash_escape} #{tmpdirbase.bash_escape}/#{SQ_BASENAME.bash_escape} -processors 1 -no-progress -noappend -no-xattrs -mem 64m 2>&1 1>/dev/null || echo mksquashfs command failed"
+      "mksquashfs #{basename.bash_escape} #{tmpdirbase.bash_escape}/#{SQ_BASENAME.bash_escape} -processors 1 -no-progress -noappend -no-xattrs #{mem_opt} 2>&1 1>/dev/null || echo mksquashfs command failed"
     )
     # Perform cleanup of expected messages (stupid mksquashfs program is too verbose)
     #[
@@ -154,6 +155,15 @@ class SquashifierEnCbrainSshDataProvider < EnCbrainSshDataProvider
     if cacheparent.to_s.present? && tmpdirbase.present? && File.directory?("#{cacheparent.to_s.bash_escape}/#{tmpdirbase.bash_escape}")
       system "rm -rf #{cacheparent.to_s.bash_escape}/#{tmpdirbase.bash_escape}"
     end
+  end
+
+  # Check the capabilities of the local mksquashfs program.
+  # Returns true if it has -mem . Value cached in class variable.
+  def self.mksquashfs_has_mem_option?
+    return @_mksquashfs_mem_ if defined?(@_mksquashfs_mem_)
+    system "mksquashfs 2>&1 | grep -e -mem >/dev/null"
+    @_mksquashfs_mem_ = $?.success?
+    @_mksquashfs_mem_
   end
 
 end
