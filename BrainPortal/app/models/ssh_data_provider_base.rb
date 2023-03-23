@@ -107,6 +107,29 @@ module SshDataProviderBase
     self.master(user, userfile).remote_shell_command_reader(command, :stdin => '/dev/null') do |fh|
       text = fh.read
     end
+
+    filter_out_ssh_stderr_messages(text)
+  end
+
+  # Same as superclass, but because we sometimes issue local commands
+  # that indirectly connect through ssh, we also filter out the same error
+  # messages as in remote_bash_this().
+  def bash_this(command) #:nodoc:
+    text = super
+    filter_out_ssh_stderr_messages(text)
+  end
+
+  private
+
+  # Remove common warning messages generally printed on stderr...
+  def filter_out_ssh_stderr_messages(text)
+    # 1) From ssh
+    text.sub!(/^Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
+
+    # 1) From ssh-keysign when ssh to localhost from a different GID
+    text.sub!(/^setresgid \d+: Operation not permitted\s*/i,"")
+    text.sub!(/^ssh_keysign: no reply\s*/i,"")
+    text.sub!(/^sign using hostkey.*failed\s*/i,"")
     text
   end
 

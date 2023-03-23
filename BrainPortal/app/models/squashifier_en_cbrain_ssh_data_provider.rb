@@ -139,7 +139,6 @@ class SquashifierEnCbrainSshDataProvider < EnCbrainSshDataProvider
 
     # It's IMPORTANT that the destination be specified with a bare ':' in front.
     text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{dest_escaped} 2>&1")
-    text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
     cb_error "Error syncing userfile to data provider, rsync returned:\n#{text}" unless text.blank?
     unless self.provider_file_exists?(userfile).to_s =~ /file|dir/
       cb_error "Error syncing userfile to data provider: no destination file found after rsync?\n" +
