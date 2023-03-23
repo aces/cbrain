@@ -51,7 +51,7 @@ class SquashifierEnCbrainSshDataProvider < EnCbrainSshDataProvider
 
   # Name of the squashfs file that will contain a filecollection's squashified content
   # This is a constant name independant of what the collection's own name is.
-  SQ_BASENAME = "CBRAIN_SquashedContent.sqs"
+  SQ_BASENAME = "CBRAIN_SquashedContent.squashfs"
 
   # This returns the category of the data provider
   def self.pretty_category_name #:nodoc:
