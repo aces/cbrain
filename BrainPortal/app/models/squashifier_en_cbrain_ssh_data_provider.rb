@@ -99,7 +99,7 @@ class SquashifierEnCbrainSshDataProvider < EnCbrainSshDataProvider
     mksqu_out   = bash_this(
       "cd #{cacheparent.to_s.bash_escape} && " +
       "mkdir -p #{tmpdirbase.bash_escape} && " +
-      "mksquashfs #{basename.bash_escape} #{tmpdirbase.bash_escape}/#{SQ_BASENAME.bash_escape} -processors 1 -no-progress -noappend -no-xattrs >/dev/null"
+      "mksquashfs #{basename.bash_escape} #{tmpdirbase.bash_escape}/#{SQ_BASENAME.bash_escape} -processors 1 -no-progress -noappend -no-xattrs -mem 64m >/dev/null || echo mksquashfs command failed"
     )
     # Perform cleanup of expected messages (stupid mksquashfs program is too verbose)
     #[
