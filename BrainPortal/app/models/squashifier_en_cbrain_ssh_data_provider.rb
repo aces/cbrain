@@ -72,7 +72,7 @@ class SquashifierEnCbrainSshDataProvider < EnCbrainSshDataProvider
     unsqu_out   = bash_this(
       "cd #{cacheparent.to_s.bash_escape} && " +
       "mv #{basename.bash_escape} #{tmpdirbase} && " +
-      "unsquashfs -f -n -p 1 -no-xattrs -d #{basename.bash_escape} #{tmpdirbase.bash_escape}/#{SQ_BASENAME.bash_escape} >/dev/null && " +
+      "unsquashfs -f -n -p 1 -no-xattrs -d #{basename.bash_escape} #{tmpdirbase.bash_escape}/#{SQ_BASENAME.bash_escape} 2>&1 1>/dev/null && " +
       "rm -rf #{tmpdirbase}"
     )
     # Perform cleanup of expected messages (stupid unsquashfs program is too verbose)
@@ -99,7 +99,7 @@ class SquashifierEnCbrainSshDataProvider < EnCbrainSshDataProvider
     mksqu_out   = bash_this(
       "cd #{cacheparent.to_s.bash_escape} && " +
       "mkdir -p #{tmpdirbase.bash_escape} && " +
-      "mksquashfs #{basename.bash_escape} #{tmpdirbase.bash_escape}/#{SQ_BASENAME.bash_escape} -processors 1 -no-progress -noappend -no-xattrs -mem 64m >/dev/null || echo mksquashfs command failed"
+      "mksquashfs #{basename.bash_escape} #{tmpdirbase.bash_escape}/#{SQ_BASENAME.bash_escape} -processors 1 -no-progress -noappend -no-xattrs -mem 64m 2>&1 1>/dev/null || echo mksquashfs command failed"
     )
     # Perform cleanup of expected messages (stupid mksquashfs program is too verbose)
     #[
