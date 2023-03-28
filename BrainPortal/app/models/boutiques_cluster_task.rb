@@ -331,7 +331,8 @@ class BoutiquesClusterTask < ClusterTask
 
     # Get basename, use it to guess the class
     name = File.basename(pathname)
-    userfile_class   = Userfile.suggested_file_type(name)
+    userfile_class   = custom['BoutiquesOutputFileTypeSetter'] && custom['BoutiquesOutputFileTypeSetter'][output.id].constantize rescue nil
+    userfile_class ||= Userfile.suggested_file_type(name)
     userfile_class ||= ( File.directory?(pathname) ? FileCollection : SingleFile )
 
     # Add a run ID to the file name, to make sure the file doesn't exist.
