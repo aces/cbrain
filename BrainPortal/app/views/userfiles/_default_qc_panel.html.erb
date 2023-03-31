@@ -41,9 +41,9 @@
 </div>
 
 <script type="application/javascript">
-  // Click by find he link inside rge link_div
-  var classNames    = "sub_viewable_link <%= div_id_to_replace %>";
-  var subViewerLink = document.getElementsByClassName(classNames)[0];
+  // Find the link inside the div and click it
+  var subViewerDiv  = $("#<%= div_id_to_replace %>");
+  var subViewerLink = subViewerDiv.find(".ajax_onclick_show_element");
   if (subViewerLink) { subViewerLink.click() };
 </script>
 
