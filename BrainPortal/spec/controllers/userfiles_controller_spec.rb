@@ -702,7 +702,7 @@ RSpec.describe UserfilesController, :type => :controller do
         session[:session_id] = 'session_id'
         allow(controller).to    receive(:current_user).and_return(admin)
         allow(admin).to         receive(:license_agreement_set).and_return([])
-        allow(admin).to         receive(:unsigned_license_agreements).and_return([])
+        allow(admin).to         receive(:cbrain_unsigned_license_agreements).and_return([])
         allow(DataProvider).to  receive_message_chain(:find_all_accessible_by_user, :where, :first).and_return(mock_model(DataProvider).as_null_object)
         allow(CBRAIN).to        receive(:spawn_with_active_records).and_yield
         allow(Userfile).to      receive(:find_accessible_by_user).and_return(mock_userfile)

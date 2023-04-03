@@ -88,7 +88,7 @@ class NeurohubPortalController < NeurohubApplicationController
       flash[:error] = 'Redirecting to CBRAIN, this license is best viewed via CBRAIN'
       redirect_to :controller => :portal, :action => :show_license, :license => @license
       return
-end
+    end
 
     @is_signed = current_user.custom_licenses_signed.include?(@license_id)
     render :nh_show_infolicense if @license&.end_with? "_info" # info license does not require to accept it

@@ -157,12 +157,11 @@ class User < ApplicationRecord
     neurohub_license_agreement_set - (add_prefix signed_license_agreements)
   end
 
-  # all h and cbrain agreements (on accessible objects)
+  # all NeuroHub and cbrain agreements (on accessible objects)
   def license_agreement_set
     all_object_with_license = RemoteResource.find_all_accessible_by_user(self) +
                               Tool.find_all_accessible_by_user(self) +
                               DataProvider.find_all_accessible_by_user(self)
-
     license_agreements = []
     # List all license_agreements
     all_object_with_license.each do |o|
@@ -212,7 +211,6 @@ class User < ApplicationRecord
     self.meta[:signed_license_agreements] = signed_agreements
     self.addlog("Signed license agreement '#{@license}'.")
   end
-
 
   #############################################################
   #

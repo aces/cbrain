@@ -210,6 +210,7 @@ class PortalController < ApplicationController
 
   def sign_license #:nodoc:
     @license = params[:license]
+    #todo add @license.length check, max 4k perhaps?
     unless params.has_key?(:agree)
       flash[:error] = "CBRAIN cannot be used without signing the End User Licence Agreement."
       redirect_to "/logout"

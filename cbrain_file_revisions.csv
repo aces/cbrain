@@ -283,6 +283,9 @@ ca0d9a40fa5d6ed3dbfb8bea7b6d0e203b022f5a -#- 2022-05-03 17:00:47 -0400 -#- Pierr
 5cc2e8488608abd4a90eae0a18cd865f8159147a -#- 2022-04-18 09:34:44 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/messages_controller.rb
 02ffac07d8fcd0b19875c496d5dbdb865331415b -#- 2022-07-28 12:49:11 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/neurohub_application_controller.rb
 7c73cae7f8a1a8e78a91ec90566fcd7158620577 -#- 2022-04-16 13:08:30 -0400 -#- Pierre Rioux -#- BrainPortal/app/controllers/neurohub_portal_controller.rb
+fa68a44bee394caedb3ec707819777d44e6d64e6 -#- 2020-11-02 12:30:57 -0500 -#- MontrealSergiy -#- BrainPortal/app/controllers/messages_controller.rb
+fa68a44bee394caedb3ec707819777d44e6d64e6 -#- 2020-11-02 12:30:57 -0500 -#- MontrealSergiy -#- BrainPortal/app/controllers/neurohub_application_controller.rb
+df83dc571792dcee95506b370f2a25f29ba4a627 -#- 2020-07-23 23:30:08 -0400 -#- Natacha Beck -#- BrainPortal/app/controllers/neurohub_portal_controller.rb
 783f532abb91f341b2725b6263209513a463a372 -#- 2021-11-24 15:39:35 -0500 -#- Pierre Rioux -#- BrainPortal/app/controllers/nh_invitations_controller.rb
 65de15a23183bd21f5fb70cbc77f62cdd2dd07c0 -#- 2023-01-17 17:15:09 -0500 -#- Natacha Beck -#- BrainPortal/app/controllers/nh_loris_hooks_controller.rb
 fa68a44bee394caedb3ec707819777d44e6d64e6 -#- 2020-11-02 12:30:57 -0500 -#- MontrealSergiy -#- BrainPortal/app/controllers/nh_messages_controller.rb

@@ -31,7 +31,7 @@ RSpec.describe DataProvidersController, :type => :controller do
     before(:each) do
       allow(controller).to receive(:current_user).and_return(admin_user)
       allow(admin_user).to receive(:license_agreement_set).and_return([])
-      allow(admin_user).to receive(:unsigned_license_agreements).and_return([])
+      allow(admin_user).to receive(:cbrain_unsigned_license_agreements).and_return([])
       session[:user_id]    = admin_user.id
       session[:session_id] = 'session_id'
     end

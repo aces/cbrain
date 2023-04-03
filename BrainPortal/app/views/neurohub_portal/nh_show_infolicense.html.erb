@@ -1,0 +1,60 @@
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<div class="nh_content" id="nh_portal_license">
+  <% is_signed = current_user.signed_license_agreements.include?(@license) %>
+  <%- # license - %>
+  <div class="card">
+    <div class="card-section">
+
+      <div class="nh_form">
+        <div class="card-item">
+          <% if !is_signed %>
+
+            <%= form_tag :action => :nh_sign_license, :license => @license %>
+            <%= hidden_field_tag :license, @license %>
+            <p class="card-label">Carefully read the following</p>
+          <% else %>
+            <p class="card-label">This information has been already shown to you</p>
+          <% end %>
+
+          <div class="card-text license-text">
+            <% content = File.read(Rails.root +
+                                       "public/licenses/#{@license}.html") rescue "(Error fetching license text)" %>
+            <% content.gsub!(/<input\s/i, "<INPUT DISABLED CHECKED ") if is_signed %>
+            <%= content.html_safe %>
+          </div>
+
+
+          <% if !is_signed %>
+            <div class="btn-section">
+              <%= submit_tag "I have read this, Continue to NeuroHub", :name => :agree, :class => "btn-solid primary m-1" %>
+            </div>
+            </form>
+          <% end %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

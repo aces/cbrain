@@ -22,6 +22,14 @@
 
 # Module containing common methods for set and access the
 # license agreements
+# Cbrain License texts are stored in public/licenses folder.
+# Portal license with id/filename that starts from nh- are shown only on neurohub portal.
+# Note that licenses gpl-1 and nh-gpl-1 are considered equivalent.
+# that is user who already signed nh-gpl-1 does not have to sign gpl_1
+#
+# suffix _info indicates informational page which should be shown just once
+# those pages have 'Continue' button instead of Agree/Disagree
+
 module LicenseAgreements
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -54,7 +62,7 @@ module LicenseAgreements
     unless agrs.is_a? Array
       agrs = agrs.to_s.split(/[,\s]+/)
     end
-    agrs = agrs.map { |a| a.sub(/\.html\z/, "").gsub(/[^\w-]+/, "") }.uniq.sort
+    agrs = agrs.map { |a| a.sub(/\.html\z/, "").gsub(/[^\/\w-]+/, "") }.uniq.sort
     @license_agreements = agrs
   end
 
@@ -91,10 +99,11 @@ module LicenseAgreements
     orig_agreements = (@_license_agreements_original || []).sort
     return true if new_agreements == orig_agreements
     self.meta[:license_agreements] = license_agreements
-    @_license_agreements_original = license_agreements
+    @_license_agreements_original  = license_agreements
     # Unset all licenses signed when a new license is added
     User.all.each do |u|
-      u.all_licenses_signed = nil
+      u.all_licenses_signed      = nil
+      u.neurohub_licenses_signed = nil
     end
     true
   end
