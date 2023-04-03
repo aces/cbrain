@@ -196,6 +196,16 @@ class PortalController < ApplicationController
 
   def show_license #:nodoc:
     @license = params[:license].gsub(/[^\w-]+/, "")
+
+    # to reduce user confusion
+    # NeuroHub signed licenses are showed in NeuroHub, CBRAIN signed licenses are shown in CBRAIN
+    if @license.start_with? 'nh-'
+      flash[:error] = 'You are redirected to NeuroHub, this license is best viewed via NeuroHub'
+      redirect_to :controller => :neurohub_portal, :action => :nh_show_license, :license => @license
+      return
+    end
+
+    render :show_infolicense if @license&.end_with? "_info" # info license does not require to accept it
   end
 
   def sign_license #:nodoc:
@@ -214,10 +224,7 @@ class PortalController < ApplicationController
         return
       end
     end
-    signed_agreements = current_user.meta[:signed_license_agreements] || []
-    signed_agreements << @license
-    current_user.meta[:signed_license_agreements] = signed_agreements
-    current_user.addlog("Signed license agreement '#{@license}'.")
+    current_user.accept_license_agreement @license
     redirect_to start_page_path
   end
 

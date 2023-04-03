@@ -3169,7 +3169,7 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
 =============================================================
 */
 
-#nh_show_license {
+#nh_show_license, #nh_portal_license {
   .status {
     @include text("xs");
     svg {
@@ -3220,6 +3220,7 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
     border: 1px solid $DEFAULT_ALT;
     border-radius: 2px;
     overflow: scroll;
+    box-sizing: border-box;
   }
   .license-list {
     background: $PRIMARY_WASH;
@@ -3262,6 +3263,15 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
         @include p(0);
       }
     }
+  }
+}
+
+#nh_portal_license {
+  * , *:before, *:after {
+    box-sizing: border-box;
+  }
+  .license-text {
+    overflow: auto;
   }
 }
 

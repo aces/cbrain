@@ -148,14 +148,17 @@ class User < ApplicationRecord
     self.meta[:signed_license_agreements] || []
   end
 
-  def unsigned_license_agreements #:nodoc:
-    license_agreement_set = self.license_agreement_set
-
-    # Difference between all license agreements and whom signed by the user
-    license_agreement_set - self.signed_license_agreements(license_agreement_set)
+  def cbrain_unsigned_license_agreements #:nodoc:
+    # Difference between all cbrain license agreements and signed by the user
+    cbrain_license_agreement_set - (strip_prefix signed_license_agreements)
   end
 
-  def license_agreement_set #:nodoc:
+  def neurohub_unsigned_license_agreements #:nodoc:
+    neurohub_license_agreement_set - (add_prefix signed_license_agreements)
+  end
+
+  # all h and cbrain agreements (on accessible objects)
+  def license_agreement_set
     all_object_with_license = RemoteResource.find_all_accessible_by_user(self) +
                               Tool.find_all_accessible_by_user(self) +
                               DataProvider.find_all_accessible_by_user(self)
@@ -170,6 +173,17 @@ class User < ApplicationRecord
     RemoteResource.current_resource.license_agreements  + license_agreements
   end
 
+  # cbrain required licenses
+  def cbrain_license_agreement_set
+    license_agreement_set.reject {|l| l.start_with?('nh-')}
+  end
+
+  # neurohub license agreement set
+  def neurohub_license_agreement_set
+    RemoteResource.current_resource.license_agreements.select {|l| l.start_with?('nh-')}
+  end
+
+  # a flag that all required cbrain licenses are signed
   def all_licenses_signed #:nodoc:
     self.meta.reload
     self.meta[:all_licenses_signed]
@@ -179,6 +193,26 @@ class User < ApplicationRecord
     self.meta.reload
     self.meta[:all_licenses_signed] = x
   end
+
+  # neurohub specific licenses are signed flag
+  def neurohub_licenses_signed #:nodoc:
+    self.meta.reload
+    self.meta['neurohub_licenses_signed']
+  end
+
+  # neurohub specific licenses are signed flag setter
+  def neurohub_licenses_signed=(x) #:nodoc:
+    self.meta.reload
+    self.meta['neurohub_licenses_signed'] = x
+  end
+
+  def accept_license_agreement(license)  # logs and saves signed agreement id (either on cbrain or neurohub side)
+    signed_agreements = self.meta[:signed_license_agreements] || []
+    signed_agreements << license
+    self.meta[:signed_license_agreements] = signed_agreements
+    self.addlog("Signed license agreement '#{@license}'.")
+  end
+
 
   #############################################################
   #
@@ -611,6 +645,22 @@ class User < ApplicationRecord
     end
     self.group_ids = group_ids
     true
+  end
+
+  # strips prefix in a string array
+  def strip_prefix(a, prefix='nh-')
+    a.map {|l| l.sub(/\A#{prefix}/, "")}
+  end
+
+  # add prefix to string array if missing
+  def add_prefix(a, prefix='nh-')
+    a.map do |l|
+      if l.start_with? prefix
+        l
+      else
+        prefix + l
+      end
+    end
   end
 
 end

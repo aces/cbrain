@@ -257,9 +257,19 @@
 
   <% end %>
 
-  <% if @user.signed_license_agreements.present? %>
+  <% info_pages, true_licenses = @user.signed_license_agreements.partition { |x| x.end_with?('_info')} %>
+
+  <% if true_licenses.present? %>
     <%= show_table(@user, :as => :user, :header => "License Agreements", :width => 3) do |t| %>
-      <% @user.signed_license_agreements.each  do |la| %>
+      <% true_licenses.each  do |la| %>
+        <% t.cell("", :no_header => true) { link_to la, "/show_license/#{la}" } %>
+      <% end  %>
+    <% end %>
+  <% end %>
+
+  <% if info_pages.present? %>
+    <%= show_table(@user, :as => :user, :header => "Important Information Pages Previosly Shown", :width => 3) do |t| %>
+      <% info_pages.each  do |la| %>
         <% t.cell("", :no_header => true) { link_to la, "/show_license/#{la}" } %>
       <% end  %>
     <% end %>
