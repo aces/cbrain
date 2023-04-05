@@ -268,7 +268,7 @@
   <% end %>
 
   <% if info_pages.present? %>
-    <%= show_table(@user, :as => :user, :header => "Important Information Pages Previosly Shown", :width => 3) do |t| %>
+    <%= show_table(@user, :as => :user, :header => "Important Informational and Subscription Pages", :width => 3) do |t| %>
       <% info_pages.each  do |la| %>
         <% t.cell("", :no_header => true) { link_to la, "/show_license/#{la}" } %>
       <% end  %>
