@@ -433,6 +433,7 @@ class BoutiquesPortalTask < PortalTask
     msg2 = lambda { |e| " cbcsv accessibility error in #{f.name}! Possibly due to cbcsv malformation. (Received error: #{e.inspect})" }
     errFlag = true # Whether the error checking found a problem
     begin # Check that the user has access to all of the files in the cbcsv
+      f.sync_to_cache # We need the content of the cbcsv
       f.userfiles_accessible_by_user!(self.user, nil, nil, file_access_symbol()) # side effect: cache entries within f
       for i in f.ordered_raw_ids.select{ |r| (! r.nil?) && (r.to_s != '0') }
         accessible = Userfile.find_accessible_by_user( i, self.user, :access_requested => file_access_symbol() ) rescue nil

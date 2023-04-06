@@ -238,9 +238,16 @@ class ToolConfigsController < ApplicationController
 
     respond_to do |format|
       new_record = @tool_config.new_record?
-      if @tool_config.save_with_logging(current_user, %w( env_array script_prologue script_epilogue ncpus extra_qsub_args
-                                                          container_image_userfile_id containerhub_image_name
-                                                          container_engine container_index_location ))
+      if @tool_config.save_with_logging(current_user,
+         %w( version_name env_array script_prologue script_epilogue ncpus extra_qsub_args
+             container_image_userfile_id containerhub_image_name
+             container_engine container_index_location container_exec_args
+             inputs_readonly
+             singularity_overlays_specs singularity_use_short_workdir
+             boutiques_descriptor_path
+           )
+        )
+
         if new_record
           flash[:notice] = "Tool configuration is successfully created."
         else
@@ -298,6 +305,7 @@ class ToolConfigsController < ApplicationController
       :group_id, :ncpus, :container_image_userfile_id, :containerhub_image_name, :container_index_location,
       :inputs_readonly,
       :container_engine, :extra_qsub_args, :singularity_overlays_specs, :container_exec_args,
+      :singularity_use_short_workdir,
       :boutiques_descriptor_path,
       # The configuration of a tool in a VM managed by a
       # ScirCloud Bourreau is defined by the following

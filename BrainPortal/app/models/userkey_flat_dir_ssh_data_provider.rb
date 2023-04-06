@@ -88,5 +88,15 @@ class UserkeyFlatDirSshDataProvider < FlatDirSshDataProvider
     self.master(user, userfile).ssh_shared_options
   end
 
+  #################################################################
+  # Model Callbacks
+  #################################################################
+
+  # Normally, DPs can only be owned by admins. However, this DP class
+  # is meant to be owned by normal users.
+  def owner_is_appropriate #:nodoc:
+    return true
+  end
+
 end
 

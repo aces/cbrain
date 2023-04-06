@@ -26,11 +26,10 @@ describe ResourceAccess do
   let(:normal_user)    { create(:normal_user) }
   let(:site_manager)   { create(:site_manager) }
   let(:admin)          { create(:admin_user) }
-  let(:scratch_dp)     { ScratchDataProvider.main }
-  let(:free_resource)  { create(:ssh_data_provider) }
-  let(:group_resource) { create(:ssh_data_provider, :group => user.groups.last) }
-  let(:site_resource)  { create(:ssh_data_provider, :user => create(:normal_user, :site => user.site)) }
-  let(:owned_resource) { create(:ssh_data_provider, :user => user) }
+  let(:free_resource)  { create(:cbrain_task) }
+  let(:group_resource) { create(:cbrain_task, :group => user.groups.last) }
+  let(:site_resource)  { create(:cbrain_task, :user => create(:normal_user, :site => user.site)) }
+  let(:owned_resource) { create(:cbrain_task, :user => user) }
 
 
   describe "#can_be_accessed_by?" do
@@ -147,7 +146,7 @@ describe ResourceAccess do
         site_resource
         owned_resource
         # BTW: fails if the rake task 'db:sanity:check' was not run
-        expect(DataProvider.find_all_accessible_by_user(admin).map(&:id)).to match_array([scratch_dp.id, free_resource.id, group_resource.id, site_resource.id, owned_resource.id])
+        expect(CbrainTask.find_all_accessible_by_user(admin).map(&:id)).to match_array([free_resource.id, group_resource.id, site_resource.id, owned_resource.id])
       end
     end
 
@@ -158,7 +157,7 @@ describe ResourceAccess do
         group_resource
         site_resource
         owned_resource
-        expect(DataProvider.find_all_accessible_by_user(site_manager).map(&:id)).to match_array([group_resource.id, site_resource.id, owned_resource.id])
+        expect(CbrainTask.find_all_accessible_by_user(site_manager).map(&:id)).to match_array([group_resource.id, site_resource.id, owned_resource.id])
       end
     end
 
@@ -169,7 +168,7 @@ describe ResourceAccess do
         group_resource
         site_resource
         owned_resource
-        expect(DataProvider.find_all_accessible_by_user(user).map(&:id)).to match_array([group_resource.id, owned_resource.id])
+        expect(CbrainTask.find_all_accessible_by_user(user).map(&:id)).to match_array([group_resource.id, owned_resource.id])
       end
     end
 
@@ -180,48 +179,48 @@ describe ResourceAccess do
       let(:user) { admin }
 
       it "should find owned resources" do
-        expect(DataProvider.find_accessible_by_user(owned_resource.id, admin).id).to eq(owned_resource.id)
+        expect(CbrainTask.find_accessible_by_user(owned_resource.id, admin).id).to eq(owned_resource.id)
       end
       it "should find site-associated resources" do
-        expect(DataProvider.find_accessible_by_user(site_resource.id, admin).id).to eq(site_resource.id)
+        expect(CbrainTask.find_accessible_by_user(site_resource.id, admin).id).to eq(site_resource.id)
       end
       it "should find group-associated resources" do
-        expect(DataProvider.find_accessible_by_user(group_resource.id, admin).id).to eq(group_resource.id)
+        expect(CbrainTask.find_accessible_by_user(group_resource.id, admin).id).to eq(group_resource.id)
       end
       it "should find non-associated resources" do
-        expect(DataProvider.find_accessible_by_user(free_resource.id, admin).id).to eq(free_resource.id)
+        expect(CbrainTask.find_accessible_by_user(free_resource.id, admin).id).to eq(free_resource.id)
       end
     end
     describe "for site managers" do
       let(:user) { site_manager }
 
       it "should find owned resources" do
-        expect(DataProvider.find_accessible_by_user(owned_resource.id, site_manager).id).to eq(owned_resource.id)
+        expect(CbrainTask.find_accessible_by_user(owned_resource.id, site_manager).id).to eq(owned_resource.id)
       end
       it "should find site-associated resources" do
-        expect(DataProvider.find_accessible_by_user(site_resource.id, site_manager).id).to eq(site_resource.id)
+        expect(CbrainTask.find_accessible_by_user(site_resource.id, site_manager).id).to eq(site_resource.id)
       end
       it "should find group-associated resources" do
-        expect(DataProvider.find_accessible_by_user(group_resource.id, site_manager).id).to eq(group_resource.id)
+        expect(CbrainTask.find_accessible_by_user(group_resource.id, site_manager).id).to eq(group_resource.id)
       end
       it "should raise ActiveRecord::RecordNotFound when used to find non-associated resources" do
-        expect{DataProvider.find_accessible_by_user(free_resource.id, site_manager)}.to raise_error(ActiveRecord::RecordNotFound)
+        expect{CbrainTask.find_accessible_by_user(free_resource.id, site_manager)}.to raise_error(ActiveRecord::RecordNotFound)
       end
     end
     describe "for users" do
       let(:user) { normal_user }
 
       it "should find owned resources" do
-        expect(DataProvider.find_accessible_by_user(owned_resource.id, user).id).to eq(owned_resource.id)
+        expect(CbrainTask.find_accessible_by_user(owned_resource.id, user).id).to eq(owned_resource.id)
       end
       it "should rause ActiveRecord::RecordNotFound when used to find site-associated resources" do
-        expect{DataProvider.find_accessible_by_user(site_resource.id, user)}.to raise_error(ActiveRecord::RecordNotFound)
+        expect{CbrainTask.find_accessible_by_user(site_resource.id, user)}.to raise_error(ActiveRecord::RecordNotFound)
       end
       it "should find group-associated resources" do
-        expect(DataProvider.find_accessible_by_user(group_resource.id, user).id).to eq(group_resource.id)
+        expect(CbrainTask.find_accessible_by_user(group_resource.id, user).id).to eq(group_resource.id)
       end
       it "should rause ActiveRecord::RecordNotFound when used to find non-associated resources" do
-        expect{DataProvider.find_accessible_by_user(free_resource.id, user)}.to raise_error(ActiveRecord::RecordNotFound)
+        expect{CbrainTask.find_accessible_by_user(free_resource.id, user)}.to raise_error(ActiveRecord::RecordNotFound)
       end
     end
   end

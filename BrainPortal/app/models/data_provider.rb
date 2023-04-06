@@ -238,6 +238,8 @@ class DataProvider < ApplicationRecord
                           :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
                           :allow_blank => true
 
+  validate                :owner_is_appropriate
+
   belongs_to              :user
   belongs_to              :group
   has_many                :userfiles, :dependent => :restrict_with_exception
@@ -1064,6 +1066,21 @@ class DataProvider < ApplicationRecord
   end
 
 
+
+  #################################################################
+  # Model Callbacks
+  #################################################################
+
+  # This verifies that the user_id matches an Admin user.
+  # For security reason, no data providers should by default
+  # be owned by normal users.
+  #
+  # This method can be overrided in subclasses.
+  def owner_is_appropriate #:nodoc:
+    return true if User.where(:id => self.user_id).first.is_a?(AdminUser)
+    self.errors.add(:user_id, 'must be an administrator')
+    return false
+  end
 
   #################################################################
   # Class-level cache-handling methods
