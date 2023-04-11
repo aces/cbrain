@@ -60,7 +60,7 @@ module DynamicFormHelper
     options["data-checkbox-class"]  = checkbox_class
     options["data-persistant-name"] = true if options[:persistant_name]
 
-    atts = options.to_html_attributes
+    atts  = options.reject{|x| x.to_s == "persistant_name"}.to_html_attributes
 
     # Most common case just the select_all input
     input = "<input type='checkbox' #{atts}>".html_safe
