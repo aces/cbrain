@@ -113,7 +113,7 @@ class BoutiquesPortalTask < PortalTask
         "#{iname} #{ioptional}\n"
       }.join("")
 
-    if !single_file_input? && (num_in_files < num_needed_inputs || num_in_files > num_needed_inputs + num_opt_inputs)
+    if !single_file_input? && (num_in_files < num_needed_inputs || num_in_files > num_needed_inputs+num_opt_inputs)
       message = "This task requires #{num_needed_inputs} mandatory file(s) and #{num_opt_inputs} optional file(s)\n" +
         input_infos
       cb_error message
@@ -298,8 +298,9 @@ class BoutiquesPortalTask < PortalTask
       tasklist = self.params[:interface_userfile_ids].map do |userfile_id|
         f = Userfile.find_accessible_by_user( userfile_id, self.user, :access_requested => file_access_symbol() )
 
-        # One task for that file
-        if (! f.is_a?( CbrainFileList ) || input.list) # in case of a list input, we *do* assign it the CbFileList
+        # In case of a list input or of single_file_input, we *do* assign it the CbFileList
+        if (!single_file_input? && (! f.is_a?( CbrainFileList ) || input.list)) ||
+           ( single_file_input? &&  ! f.is_a?( CbrainFileList ))
           task = self.dup
           fillTask.( f, task )
         else # One task per userfile in the CbrainFileList
@@ -528,17 +529,20 @@ class BoutiquesPortalTask < PortalTask
         end
 
         file_ids = value.blank? ? self.params[:interface_userfile_ids] : [value]
-        file_ids = Userfile.find_all_accessible_by_user( current_user,
+        file_ids = Userfile.find_all_accessible_by_user( self.user,
                                                          :access_requested => file_access_symbol
-                                                       ).where(:id => file_ids).pluck(&:id) rescue nil
+                                                       ).where(:id => file_ids).pluck(:id, :name) rescue nil
 
-        next nil if file_ids.blank? # remove bad value
+        if !file_ids.present?
+          params_errors.add(invokename, ": invalid or missing userfile")
+          next nil # remove bad value
+        end
 
-        file_ids.each do |file_id|
-          if @taken_files.include?(file.id)
-            params_errors.add(invokename, ": file name already in use (#{file.name})")
+        file_ids.each do |file_id, file_name|
+          if @taken_files.include?(file_id)
+            params_errors.add(invokename, ": file name already in use (#{file_name})")
           else
-            @taken_files.add(file.id)
+            @taken_files.add(file_id)
           end
         end
 
