@@ -100,6 +100,7 @@ class WorkGroup < Group
     else
       @_pretty_category_name
     end
+    @_pretty_category_name
   end
 
   def short_pretty_type #:nodoc:
