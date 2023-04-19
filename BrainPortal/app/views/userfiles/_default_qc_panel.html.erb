@@ -30,8 +30,7 @@
   <% else %>
     <% link = data_link(@userfile.name, @userfile, div_id_to_replace) %>
     <% if link =~ /data-url=/%>
-        <%= link %>
-      </div>
+      <div><%= link %></div>
     <% else %>
       <span class="warning">
         This file does not seem to contain any QC data, or no template is available to QC this file type.
