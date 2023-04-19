@@ -22,28 +22,31 @@
 #
 -%>
 
-<% div_id_to_replace = "sub_viewer_#{@userfile.id}" %>
-
-<div id=<%= div_id_to_replace %>>
-  <% if ! @userfile.is_locally_synced? %>
+<% if ! @userfile.is_locally_synced? %>
+  <span class="warning">
     This file must be synced locally to view QC data.
+  </span>
+<% else %>
+  <% div_id_to_replace = "sub_viewer_#{@userfile.id}" %>
+  <% link = data_link(@userfile.name, @userfile, div_id_to_replace) %>
+  <% if link =~ /data-url=/%>
+    <div id="<%= div_id_to_replace %>">
+      <%= link %>
+    </div>
   <% else %>
-    <% link = data_link(@userfile.name, @userfile, div_id_to_replace) %>
-    <% if link =~ /data-url=/%>
-      <div><%= link %></div>
-    <% else %>
-      <span class="warning">
-        This file does not seem to contain any QC data, or no template is available to QC this file type.
-      </span>
-    <% end %>
+    <span class="warning">
+      This file does not seem to contain any QC data, or no template is available to QC this file type.
+    </span>
   <% end %>
-</div>
+<% end %>
 
 <script type="application/javascript" defer>
   // Find the link inside the div and click it
-  var subViewerDiv  = $("#<%= div_id_to_replace %>");
-  var subViewerLink = subViewerDiv.find(".ajax_onclick_show_element");
-  if (subViewerLink) { subViewerLink.click() };
+  <% if div_id_to_replace %>
+    var subViewerDiv  = $("#<%= div_id_to_replace %>");
+    var subViewerLink = subViewerDiv.find(".ajax_onclick_show_element");
+    if (subViewerLink) { subViewerLink.click() };
+  <% end %>
 </script>
 
 
