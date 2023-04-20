@@ -29,24 +29,19 @@
 <% else %>
   <% div_id_to_replace = "sub_viewer_#{@userfile.id}" %>
   <% link = data_link(@userfile.name, @userfile, div_id_to_replace) %>
-  <% if link =~ /data-url=/%>
+  <% if link =~ /data-url=/ %>
     <div id="<%= div_id_to_replace %>">
       <%= link %>
     </div>
+    <script type="application/javascript" defer>
+        var subViewerDiv  = $("#<%= div_id_to_replace %>");
+        var subViewerLink = subViewerDiv.find(".ajax_onclick_show_element");
+        if (subViewerLink) { subViewerLink.click() };
+    </script>
   <% else %>
     <span class="warning">
       This file does not seem to contain any QC data, or no template is available to QC this file type.
     </span>
   <% end %>
 <% end %>
-
-<script type="application/javascript" defer>
-  // Find the link inside the div and click it
-  <% if div_id_to_replace %>
-    var subViewerDiv  = $("#<%= div_id_to_replace %>");
-    var subViewerLink = subViewerDiv.find(".ajax_onclick_show_element");
-    if (subViewerLink) { subViewerLink.click() };
-  <% end %>
-</script>
-
 
