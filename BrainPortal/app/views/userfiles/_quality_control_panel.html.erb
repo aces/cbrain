@@ -36,10 +36,12 @@
     <legend>Navigation: file <%= @current_index + 1 %> out of <%= @filelist.size %></legend>
     <%= link_to_userfile_if_accessible(@userfile, current_user, :html_options => { :target => '_blank' }) %>
     <p>
-    <% if @current_index > 0 %>
+    <% not_first_file = @current_index != 0 %>
+    <% not_last_file  = @current_index < @filelist.size - 1 %>
+    <% if  not_first_file %>
       <%= submit_button "Previous File", :name => :previous %>
     <% end %>
-    <% if @current_index < @filelist.size - 1 %>
+    <% if not_last_file %>
       <%= submit_button "Next File", :name => :next %>
     <% end %>
   </fieldset>
@@ -66,7 +68,9 @@
 
 <p>
 
-<%= submit_tag "Update (and go to next file)", :name => :update %>
+<% update_message  = "Update" %>
+<% update_message += " (and go to next file)" if not_last_file %>
+<%= submit_tag "#{update_message}", :name => :update, :data => {:current_file_id => @userfile.id } %>
 
 <hr>
 
