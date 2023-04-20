@@ -78,7 +78,7 @@ class WorkGroup < Group
   end
 
   def pretty_category_name(as_user = nil) #:nodoc:
-
+    return @_pretty_category_name if @_pretty_category_name
     if @_pretty_category_name.blank?
       if self.invisible?
         @_pretty_category_name = 'Invisible Project'
