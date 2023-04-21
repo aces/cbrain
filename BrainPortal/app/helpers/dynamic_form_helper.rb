@@ -57,9 +57,10 @@ module DynamicFormHelper
     options[:class] ||= ""
     options[:class]  +=  " select_all"
 
-    options["data-checkbox-class"] = checkbox_class
+    options["data-checkbox-class"]  = checkbox_class
+    options["data-persistant-name"] = options[:persistant_name].present?
 
-    atts  = options.reject{|x| x.to_s === "persistant_name"}.to_html_attributes
+    atts  = options.reject { |x| x.to_s == "persistant_name" }.to_html_attributes
 
     # Most common case just the select_all input
     input = "<input type='checkbox' #{atts}>".html_safe

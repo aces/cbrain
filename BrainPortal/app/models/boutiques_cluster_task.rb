@@ -249,6 +249,10 @@ class BoutiquesClusterTask < ClusterTask
         self.addlog("Attempting to save result file #{path}")
         name, userfile_class = name_and_type_for_output_file(output, path)
 
+        # Select an alternative and safe output type when guessing it produces a mismatch
+        userfile_class = SingleFile     if File.file?(path)      && !(userfile_class <= SingleFile)
+        userfile_class = FileCollection if File.directory?(path) && !(userfile_class <= FileCollection)
+
         # Save the file (possible overwrite if race condition)
         outfile = safe_userfile_find_or_new(userfile_class, :name => name)
 

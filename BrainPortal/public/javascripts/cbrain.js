@@ -650,7 +650,7 @@
 
     // Define on click event for each child of a `select_all` element.
     $(".select_all").each( (index,input) => {
-      if ($(input).data("persistant_name") !== undefined) {
+      if ($(input).data("persistant-name")) {
         var checkbox_class = $(input).data("checkbox-class");
         $(input).load(click_select_all($(input)));
         var checkbox_class_elements = $('.' + checkbox_class);
