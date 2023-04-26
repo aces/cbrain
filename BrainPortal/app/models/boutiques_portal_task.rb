@@ -137,7 +137,7 @@ class BoutiquesPortalTask < PortalTask
 
     # Required parameters
     descriptor.required_inputs.each do |input|
-      sanitize_param(input)
+      sanitize_param(input) if !single_file_input?
     end
 
     # Optional parameters
@@ -297,10 +297,11 @@ class BoutiquesPortalTask < PortalTask
 
       tasklist = self.params[:interface_userfile_ids].map do |userfile_id|
         f = Userfile.find_accessible_by_user( userfile_id, self.user, :access_requested => file_access_symbol() )
-
-        # In case of a list input or of single_file_input, we *do* assign it the CbFileList
-        if (!single_file_input? && (! f.is_a?( CbrainFileList ) || input.list)) ||
-           ( single_file_input? &&  ! f.is_a?( CbrainFileList ))
+        # One task for that file
+        if !single_file_input? && (! f.is_a?( CbrainFileList ) || input.list) # in case of a list input, we *do* assign it the CbFileList
+          task = self.dup
+          fillTask.( f, task )
+        elsif single_file_input? && ! f.is_a?( CbrainFileList ) # One task for that file
           task = self.dup
           fillTask.( f, task )
         else # One task per userfile in the CbrainFileList
@@ -523,27 +524,21 @@ class BoutiquesPortalTask < PortalTask
       # Make sure the file ID is valid, accessible, not already used and
       # of the correct type.
       when :file
-        if !(Integer(value) rescue nil) && !single_file_input?
+        unless (Integer(value) rescue nil)
           params_errors.add(invokename, ": invalid or missing userfile")
           next nil # remove bad value
         end
 
-        file_ids = value.blank? ? self.params[:interface_userfile_ids] : [value]
-        file_ids = Userfile.find_all_accessible_by_user( self.user,
-                                                         :access_requested => file_access_symbol
-                                                       ).where(:id => file_ids).pluck(:id, :name) rescue nil
-
-        if !file_ids.present?
-          params_errors.add(invokename, ": invalid or missing userfile")
+        file = Userfile.find_accessible_by_user(value, self.user, :access_requested => file_access_symbol()) rescue nil
+        unless file
+          params_errors.add(invokename, ": cannot find userfile (ID #{value})")
           next nil # remove bad value
         end
 
-        file_ids.each do |file_id, file_name|
-          if @taken_files.include?(file_id)
-            params_errors.add(invokename, ": file name already in use (#{file_name})")
-          else
-            @taken_files.add(file_id)
-          end
+        if @taken_files.include?(file.id)
+          params_errors.add(invokename, ": file name already in use (#{file.name})")
+        else
+          @taken_files.add(file.id)
         end
 
       end

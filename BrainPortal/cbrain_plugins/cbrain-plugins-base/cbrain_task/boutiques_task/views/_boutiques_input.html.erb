@@ -78,16 +78,20 @@
 
   <%# File input dropdown %>
   <%- elsif type == :file -%>
-      <%= render :partial => task_partial(:dropdown), :locals =>
-            { :id        => input.cb_invoke_html_id(false), # false disable list input's '[]'
-              :name      => input.cb_invoke_html_name(false), # false disable list input's '[]'
-              :options   => interface_files.map { |userfile|  [ userfile.id, userfile.browse_name ] },
-              :optional  => opt,
-              :default   => interface_files.count == 1 ? interface_files.first.id.to_s : nil,
-              :value     => value,
-              :none_msg  => '(Nothing to select)', # not used
-            }
-      %>
+      <%- if @descriptor.inputs.count { |x| x.type == 'File' } == 1 %>
+        <span class="tsk-prm-par">One or multiple tasks will be launched based on your selected files.</span>
+      <%- else %>
+        <%= render :partial => task_partial(:dropdown), :locals =>
+              { :id        => input.cb_invoke_html_id(false), # false disable list input's '[]'
+                :name      => input.cb_invoke_html_name(false), # false disable list input's '[]'
+                :options   => interface_files.map { |userfile|  [ userfile.id, userfile.browse_name ] },
+                :optional  => opt,
+                :default   => interface_files.count == 1 ? interface_files.first.id.to_s : nil,
+                :value     => value,
+                :none_msg  => '(Nothing to select)', # not used
+              }
+        %>
+      <%- end %>
 
   <%# Strings and numbers %>
   <%- elsif type == :string || type == :number %>
