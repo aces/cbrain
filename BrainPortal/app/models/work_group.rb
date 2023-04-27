@@ -31,7 +31,7 @@ class WorkGroup < Group
   # This method optimizes the DB lookups necessary to
   # create the pretty_category_name of a set of WorkGroups
   def self.prepare_pretty_category_names(groups = [], as_user = nil)
-    wgs     = Array(groups).select { |g| g.is_a?(WorkGroup) && !g.invisible? }
+    wgs     = Array(groups).select { |g| g.is_a?(WorkGroup) && !g.invisible? && !g.public?}
     wg_ids  = wgs.map(&:id)
 
     wg_ucnt = WorkGroup.joins("LEFT JOIN groups_users ON groups_users.group_id=groups.id LEFT JOIN users ON users.id=groups_users.user_id").where('groups.id' => wg_ids).group('groups.id').count('users.login') # how many users per workgroup
