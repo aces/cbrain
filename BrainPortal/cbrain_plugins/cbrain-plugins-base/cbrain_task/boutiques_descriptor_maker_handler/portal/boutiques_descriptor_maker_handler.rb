@@ -56,6 +56,7 @@ class BoutiquesDescriptorMakerHandler < BoutiquesPortalTask
       self.errors.add(:base, "Your descriptor has syntax errors")
       desc_user_posted = self.descriptor_when_json_error
     end
+    desc_user_posted.delete(:groups) if desc_user_posted.groups.blank?
     added_input = self.boutiques_descriptor.input_by_id('_bdm_json_descriptor').dup
     desc_user_posted.inputs.unshift(added_input)
     desc_user_posted
@@ -89,6 +90,7 @@ class BoutiquesDescriptorMakerHandler < BoutiquesPortalTask
     if self.errors.empty? && (params[:_bdm_reorder] == 'on' || params[:_bdm_pad] == 'on')
       btq    = descriptor_from_posted_form
       btq    = btq.pretty_ordered    if params[:_bdm_reorder] == 'on'
+      btq.delete(:groups) if btq.groups.blank?
       json   = btq.super_pretty_json if params[:_bdm_pad]     == 'on'
       json ||= JSON.pretty_generate(btq)
       self.invoke_params[:_bdm_json_descriptor] = json

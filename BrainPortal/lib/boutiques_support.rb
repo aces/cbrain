@@ -380,6 +380,7 @@ module BoutiquesSupport
       final['inputs'].map!       { |input|  max_pad_keys.(input)  }
       final['output-files'].map! { |output| max_pad_keys.(output) } if final['output-files'].present?
       final['groups'].map!       { |group|  max_pad_keys.(group)  } if final['groups'].present?
+      final.delete('groups') if final['groups'].blank?
 
       final['container-image'] &&= max_pad_keys.(final['container-image'])
       final['custom']          &&= max_pad_keys.(final['custom'])
