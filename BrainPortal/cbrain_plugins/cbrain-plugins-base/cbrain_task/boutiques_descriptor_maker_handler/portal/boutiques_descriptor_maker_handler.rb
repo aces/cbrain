@@ -76,6 +76,7 @@ class BoutiquesDescriptorMakerHandler < BoutiquesPortalTask
   # there is nothing to launch.
   def after_form
     desc = descriptor_for_form
+
     if self.errors.empty?
       self.bosh_validation_messages = generate_validation_messages(desc)
       if self.bosh_validation_messages.to_s.strip != "OK"
@@ -84,6 +85,15 @@ class BoutiquesDescriptorMakerHandler < BoutiquesPortalTask
         self.bosh_command_preview = generate_command_preview(desc, self.invoke_params)
       end
     end
+
+    if self.errors.empty? && (params[:_bdm_reorder] == 'on' || params[:_bdm_pad] == 'on')
+      btq    = descriptor_from_posted_form
+      btq    = btq.pretty_ordered    if params[:_bdm_reorder] == 'on'
+      json   = btq.super_pretty_json if params[:_bdm_pad]     == 'on'
+      json ||= JSON.pretty_generate(btq)
+      self.invoke_params[:_bdm_json_descriptor] = json
+    end
+
     if self.errors.empty?
       # We must add at least one error to prevent CBRAIN from attempting to launch something.
       self.errors.add(:base, <<-ALL_OK
@@ -93,6 +103,7 @@ class BoutiquesDescriptorMakerHandler < BoutiquesPortalTask
          ALL_OK
       )
     end
+
     ""
   end
 
