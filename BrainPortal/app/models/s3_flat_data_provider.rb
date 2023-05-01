@@ -390,8 +390,25 @@ class S3FlatDataProvider < DataProvider
     src_idx = src_fileinfos.index_by { |fi| fi.name }
     dst_idx = dst_fileinfos.index_by { |fi| fi.name }
 
+    # Hash of all possible directory prefixes at source
+    all_src_prefixes = src_idx
+      .keys  # names of all source files and dirs
+      .map { |path| File.dirname(path) }  # parents of all of them
+      .uniq
+      .map do |dirpath|
+        prefixes = [ dirpath ]
+        while (parent=File.dirname(dirpath)) != '.'
+          raise "Woh, got an absolute path back to root filesystem?!?" if parent == '/'
+          prefixes << parent
+          dirpath   = parent
+        end
+        prefixes
+      end
+      .flatten
+      .index_by(&:itself) # will also do uniq
+
     # Build two lists
-    delete_dest  = dst_fileinfos.select { |fi| ! src_idx[fi.name] }
+    delete_dest  = dst_fileinfos.select { |fi| ! src_idx[fi.name] && ! all_src_prefixes[fi.name] }
     delete_dest += dst_fileinfos.select { |fi| src_idx[fi.name] && src_idx[fi.name].symbolic_type != fi.symbolic_type }
     add_dest     = src_fileinfos.select do |src_fi|
 

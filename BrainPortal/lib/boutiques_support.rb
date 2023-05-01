@@ -75,7 +75,7 @@ module BoutiquesSupport
       self.output_files      = self.output_files    || []
       self.groups            = self.groups          || []
       self.custom            = self.custom          || {}
-      self.container_image &&= self.container_image # we need to to remain nil if already nil
+      self.container_image &&= self.container_image # we need it to remain nil if already nil
       self
     end
 
@@ -233,6 +233,172 @@ module BoutiquesSupport
       end
       newstring
     end
+
+    PRETTY_ORDER_TOP = %w(
+      name
+      tool-version
+      author
+      description
+      url
+      descriptor-url
+      online-platform-urls
+      doi
+      tool-doi
+      shell
+      command-line
+      schema-version
+      container-image
+      inputs
+      groups
+      output-files
+      error-codes
+      suggested-resources
+      tags
+      tests
+      custom
+    )
+    PRETTY_ORDER_INPUT = %w(
+      id
+      name
+      description
+      type
+      optional
+      integer
+      minimum
+      exclusive-minimum
+      maximum
+      exclusive-maximum
+      list
+      list-separator
+      min-list-entries
+      max-list-entries
+      default-value
+      command-line-flag
+      command-line-flag-separator
+      value-key
+      value-choices
+      value-disables
+      disables-inputs
+      requires-inputs
+    )
+    PRETTY_ORDER_OUTPUT = %w(
+      id
+      name
+      description
+      optional
+      list
+      command-line-flag
+      value-key
+      path-template
+      path-template-stripped-extensions
+    )
+    PRETTY_ORDER_GROUP = %w(
+      id
+      name
+      description
+      all-or-none
+      one-is-required
+      members
+    )
+
+    # Returns a dup() of the current descriptor, but with
+    # the fields re-ordered so as to create a 'pretty'
+    # layout when printed out (as JSON, YAML etc).
+    #
+    # The order puts things like the name, description, command
+    # version number etc near the top, then then inputs, the
+    # groups, the outputs, and the custom sections.
+    def pretty_ordered
+      ordered  = Hash.new # we use a plain hash to hold the newly ordered elems.
+      selfcopy = self.dup
+      PRETTY_ORDER_TOP.each { |k| ordered[k] = selfcopy.delete(k).dup if selfcopy.has_key?(k) }
+      selfcopy.each { |k,v| puts "Top miss: #{k}" ; ordered[k] = v.dup }
+      final = self.class.new(ordered)
+
+      # Order fields in each input
+      final.inputs = final.inputs.map do |input|
+        ordered  = Hash.new
+        selfcopy = input.dup
+        PRETTY_ORDER_INPUT.each { |k| ordered[k] = selfcopy.delete(k).dup if selfcopy.has_key?(k) }
+        selfcopy.each { |k,v| puts "Inp miss: #{k}" ; ordered[k] = v.dup }
+        input.class.new(ordered)
+      end
+
+      # Order fields in each output-file
+      final.output_files = final.output_files.map do |output|
+        ordered  = Hash.new
+        selfcopy = output.dup
+        PRETTY_ORDER_OUTPUT.each { |k| ordered[k] = selfcopy.delete(k).dup if selfcopy.has_key?(k) }
+        selfcopy.each { |k,v| puts "Out miss: #{k}" ; ordered[k] = v.dup }
+        output.class.new(ordered)
+      end
+
+      # Order fields in each group
+      final.groups = final.groups.map do |group|
+        ordered  = Hash.new
+        selfcopy = group.dup
+        PRETTY_ORDER_GROUP.each { |k| ordered[k] = selfcopy.delete(k).dup if selfcopy.has_key?(k) }
+        selfcopy.each { |k,v| puts "Group miss: #{k}" ; ordered[k] = v.dup }
+        group.class.new(ordered)
+      end
+
+      final
+    end
+
+    # Returns a JSON text version of the descriptor but with
+    # the fields aligned with pretty whitespaces, e.g.
+    # instead of
+    #
+    #   "name": "megatool",
+    #   "tool-version": "3.14.15926",
+    #   "url": "https://example.com",
+    #
+    # we get
+    #
+    #   "name":         "megatool",
+    #   "tool-version": "3.14.15926",
+    #   "url":          "https://example.com",
+    def super_pretty_json
+
+      # Internally, the alignment is made by padding property names with '|'
+      # and then stripping them out of the normal JSON generated.
+      pad_keys = ->(hash,length) do
+        hash.transform_keys! { |k| k.to_s.size >= length ? k : k + ('|' * (length-k.size) ) }
+      end
+      maxkeylength = ->(hash) { hash.keys.map(&:to_s).map(&:size).max }
+
+      # Returns a modified hash with keys all padded with '|'
+      max_pad_keys = ->(hash) do
+        copy = HashWithIndifferentAccess.new.merge(hash.dup)
+        max  = maxkeylength.(copy)
+        pad_keys.(copy,max)
+        copy
+      end
+
+      final  = HashWithIndifferentAccess.new.merge(self.dup)
+
+      final['inputs'].map!       { |input|  max_pad_keys.(input)  }
+      final['output-files'].map! { |output| max_pad_keys.(output) } if final['output-files'].present?
+      final['groups'].map!       { |group|  max_pad_keys.(group)  } if final['groups'].present?
+      final.delete('groups') if final['groups'].blank?
+
+      final['container-image'] &&= max_pad_keys.(final['container-image'])
+      final['custom']          &&= max_pad_keys.(final['custom'])
+
+      final = max_pad_keys.(final)
+
+      json_with_bars = JSON.pretty_generate(final)
+      new_json = json_with_bars
+        .gsub( /\|+": / ) do |bars|
+          spaces = bars.size - 3; '": ' + (' ' * spaces)
+        end
+
+      new_json
+    end
+
+    #------------------------------------------------------
+    # Aditional methods for the sub-objects of a descriptor
+    #------------------------------------------------------
 
     class Input
 

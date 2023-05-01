@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20230304184206) do
+ActiveRecord::Schema.define(version: 20230418205141) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -408,7 +408,7 @@ ActiveRecord::Schema.define(version: 20230304184206) do
     t.datetime "accessed_at"
     t.datetime "synced_at"
     t.index ["remote_resource_id"], name: "index_sync_status_on_remote_resource_id", using: :btree
-    t.index ["userfile_id", "remote_resource_id"], name: "index_sync_status_on_userfile_id_and_remote_resource_id", using: :btree
+    t.index ["userfile_id", "remote_resource_id"], name: "index_sync_status_on_userfile_id_and_remote_resource_id", unique: true, using: :btree
     t.index ["userfile_id"], name: "index_sync_status_on_userfile_id", using: :btree
   end
 

@@ -83,8 +83,8 @@ elsif program_name =~ /rake/
   #
   # Rake Exceptions By First Argument
   #
-  skip_validations_for = [ /^db:/, /^cbrain:plugins/, /^cbrain:test/, /^route/, /^assets/, /^cbrain:nagios/ ]
-  first_arg   = ARGV.detect { |x| x =~ /^[\w:]+$/i } # first thing that looks like abc:def:ghi
+  skip_validations_for = [ /^db:/, /^cbrain:plugins/, /^cbrain:test/, /^route/, /^assets/, /^cbrain:nagios/, /^cbrain:boutiques:rewrite/ ]
+  first_arg   = ARGV.detect { |x| x =~ /^[\w:]+/i } # first thing that looks like abc:def:ghi
   first_arg ||= '(none)'
   if skip_validations_for.any? { |p| first_arg =~ p }
     #------------------------------------------------------------------------------
