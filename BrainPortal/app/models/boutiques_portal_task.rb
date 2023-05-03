@@ -758,7 +758,7 @@ class BoutiquesPortalTask < PortalTask
     integrator_modules.map do |module_name, _|
       module_name = module_name.constantize
       rev_info    = module_name::Revision_info
-      "#{rev_info.basename} rev. #{rev_info.short_commit} #{rev_info.time} (author: #{rev_info.author})"
+      rev_info.format("%f rev. %s %a %d")
     end
   end
 
