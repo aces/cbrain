@@ -29,7 +29,7 @@
   $(document).ajaxError(function (event, xhr, settings, error) {
     var flash = $('.flash_error'),
         xml   = $(xhr.responseXML),
-        rjson  = xhr.responseJSON;
+        rjson = xhr.responseJSON;
     if (xhr.status === 0) return true;
     //if (rjson && rjson.notice) return true;
 

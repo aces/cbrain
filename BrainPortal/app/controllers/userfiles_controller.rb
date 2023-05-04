@@ -549,8 +549,9 @@ class UserfilesController < ApplicationController
         flash[:error]  += "It might help to rename the file.\n" if flash[:error].include? "Name is already"
         respond_to do |format|
           format.html { redirect_to redirect_path }
-          format.json { render :json => { :notice => flash[:error] }, :status => :unprocessable_entity
-                        flash.discard
+          format.json {
+                          render :json => { :notice => flash[:error] }, :status => :unprocessable_entity
+                          flash.discard # no need to repeat error message
                       }
         end
         return
