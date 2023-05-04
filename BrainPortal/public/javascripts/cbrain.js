@@ -28,9 +28,10 @@
   /* Generic AJAX error handler */
   $(document).ajaxError(function (event, xhr, settings, error) {
     var flash = $('.flash_error'),
-        xml   = $(xhr.responseXML);
-
+        xml   = $(xhr.responseXML),
+        rjson  = xhr.responseJSON;
     if (xhr.status === 0) return true;
+    //if (rjson && rjson.notice) return true;
 
     if (!flash.length)
       flash = $('<div class="flash_error">')
@@ -44,6 +45,8 @@
           .get()
           .join('<br />')
       );
+    else if (rjson && rjson.notice)
+      flash.html(rjson.notice.replace(/\n/g, "<br />"))
     else
       flash.html(
         'Error sending background request: <br />' +
