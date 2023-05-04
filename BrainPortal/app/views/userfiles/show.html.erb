@@ -152,7 +152,7 @@
         <% if @userfile.zenodo_doi.starts_with?( ZenodoHelper::ZenodoSandboxDOIPrefix ) %>
           Published: <%= link_to_deposit(@userfile.zenodo_deposit_id) %>
         <% else %>
-          Published: <%= link_to_doi(@userfile.zenodo_doi) %>
+          Published: <%= link_to_zenodo_doi(@userfile.zenodo_doi) %>
         <% end %>
       <% elsif @userfile.zenodo_deposit_id.present? %>
           In progress: <%= link_to_deposit(@userfile.zenodo_deposit_id) %>

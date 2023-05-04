@@ -150,7 +150,7 @@
         <% if @task.zenodo_doi.starts_with?( ZenodoHelper::ZenodoSandboxDOIPrefix ) %>
           Published: <%= link_to_deposit(@task.zenodo_deposit_id) %>
         <% else %>
-          Published: <%= link_to_doi(@task.zenodo_doi) %>
+          Published: <%= link_to_zenodo_doi(@task.zenodo_doi) %>
         <% end %>
       <% elsif @task.zenodo_deposit_id.present? %>
           In progress: <%= link_to_deposit(@task.zenodo_deposit_id) %>
