@@ -23,19 +23,29 @@
 -%>
 
 <%
+    public_groups = []
     if current_user.has_role? :admin_user
-      work_groups  = WorkGroup.where(invisible: false).all
-      invis_groups = WorkGroup.where(invisible: true).all
+      admin_ids         = AdminUser.all.pluck(:id) || []
+      public_groups     = WorkGroup.where( invisible: false, public: true ).all
+      nonassign_groups  = WorkGroup.joins(:users).where( invisible: false, public: false,
+                                   not_assignable: true, "users.id" => admin_ids ).all
+      nonassign_groups |= WorkGroup.where( invisible: false, public: false,
+                                   not_assignable: true, creator_id: admin_ids ).all
+      nonassign_groups  = nonassign_groups.uniq
+      work_groups       = model.groups.select { |g| g.is_a?(WorkGroup) && ! g.invisible && ! g.public  &&
+                                                         ! nonassign_groups.include?(g) }
+      invis_groups      = WorkGroup.where( invisible: true ).all
     elsif current_user.has_role? :site_manager
-      work_groups  = current_user.site.groups.where( :type  => "WorkGroup", :invisible => false ).all | current_user.groups.where( :type => "WorkGroup", :invisible => false )
-      invis_groups = current_user.site.groups.where( :type  => "WorkGroup", :invisible => true )
+      work_groups   = current_user.site.groups.where( :type  => "WorkGroup", :invisible => false ).all | current_user.groups.where( :type => "WorkGroup", :invisible => false )
+      invis_groups  = current_user.site.groups.where( :type  => "WorkGroup", :invisible => true )
     else
-      work_groups  = []
-      invis_groups = []
+      work_groups   = []
+      invis_groups  = []
     end
-    work_groups  = work_groups.sort  { |a,b| a.name <=> b.name }
-    invis_groups = invis_groups.sort { |a,b| a.name <=> b.name }
-    class_name   = model.class.sti_root_class.to_s.underscore
+    work_groups   = work_groups.sort  { |a,b| a.name <=> b.name }
+    invis_groups  = invis_groups.sort { |a,b| a.name <=> b.name }
+    public_groups = public_groups.sort { |a,b| a.name <=> b.name }
+    class_name    = model.class.sti_root_class.to_s.underscore
 %>
 
 <%
@@ -75,3 +85,26 @@
 
 <% end %>
 
+
+
+<% if public_groups.present? %>
+
+  <br>
+  <label>Public Projects</label>
+  <%= array_to_table(public_groups, :cols => 4, :td_class => 'left_align no_wrap') do |group,r,c| %>
+    <%= group_check_box.(group) %>
+  <% end %>
+
+<% end %>
+
+
+
+<% if nonassign_groups.present? %>
+
+  <br>
+  <label>Non-Assignable Projects</label>
+  <%= array_to_table(nonassign_groups, :cols => 4, :td_class => 'left_align no_wrap') do |group,r,c| %>
+    <%= group_check_box.(group) %>
+  <% end %>
+
+<% end %>

@@ -118,6 +118,21 @@ module SelectBoxHelper
       selected = selector.to_s
     end
 
+    # for Admin filter out only public, invisible or non_assignable to reduce the clutter (unless groups passed)
+    if current_user.has_role?(:admin_user) && !options.has_key?(:groups)
+      admin_ids = AdminUser.all.pluck(:id) || []
+      groups   =   groups.select do |g|
+        (   g.is_a?(SystemGroup) ||  # everyone group, to make a private tool public
+            g.is_a?(UserGroup) && (admin_ids & g.user_ids).present? ||  # admin usergroups
+            g.public ||
+            g.invisible ||
+            g.not_assignable && (g.user_ids & admin_ids ).present? ||          # notassingable admin groups
+            g.not_assignable && admin_ids.include?(g.creator_id) ||     # notassignable created by admin
+            (selected == g.id.to_s) || selected.include?(g.id.to_s)  # already selected
+        )
+      end
+    end
+
     # Optimize the labels for UserGroups and SiteGroups, by extracting in a hash
     group_labels = {}
     group_labels.merge!(UserGroup.prepare_pretty_labels(groups))
@@ -145,15 +160,17 @@ module SelectBoxHelper
 
     # Step 1: My Work Projects first
     ordered_category_grouped << [ "My Work Projects", category_grouped_pairs.delete("My Work Projects") ] if category_grouped_pairs["My Work Projects"]
-
+    ordered_category_grouped << [ "My Public Work Projects", category_grouped_pairs.delete("My Public Work Projects") ] if category_grouped_pairs["My Public Work Projects"]
     # Step 2: All personal work projects first
-    category_grouped_pairs.keys.select { |proj| proj =~ /Personal Work Projects/ }.sort.each do |proj|
+    category_grouped_pairs.keys.select { |proj| proj =~ /Personal (Public )?Work Projects/ }.sort.each do |proj|
        ordered_category_grouped << [ proj, category_grouped_pairs.delete(proj) ]
     end
-
     # Step 3: Other project categories, in that order
-    [ "Shared Work Projects", "Empty Work Projects", "Site Projects", "User Projects", "System Projects", "Invisible Projects", "Everyone Projects" ].each do |proj|
+    [ "Shared Work Projects", "Empty Work Projects", "Site Projects", "System Projects", "Invisible Projects", "Everyone Projects", "User Projects"].each do |proj|
       ordered_category_grouped << [ proj, category_grouped_pairs.delete(proj) ] if category_grouped_pairs[proj]
+      proj = proj.sub(" ", " Public ")
+      ordered_category_grouped << [ proj, category_grouped_pairs.delete(proj) ] if category_grouped_pairs[proj]
+
     end
 
     # Step 4: Other mysterious categories ?!?
