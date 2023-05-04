@@ -78,7 +78,8 @@
 
   <%# File input dropdown %>
   <%- elsif type == :file -%>
-      <%- if @descriptor.inputs.count { |x| x.type == 'File' } == 1 %>
+      <%- if @descriptor.inputs.count { |x| x.type == 'File'            } == 1 &&
+             @descriptor.inputs.count { |x| x.type == 'File' && !x.list } == 1 %>
         <span class="tsk-prm-par">One or multiple tasks will be launched based on your selected files.</span>
       <%- else %>
         <%= render :partial => task_partial(:dropdown), :locals =>

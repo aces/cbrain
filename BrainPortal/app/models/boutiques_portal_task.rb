@@ -282,7 +282,7 @@ class BoutiquesPortalTask < PortalTask
     #
     # then we will generate 7 tasks in total.
     # --------------------------------------
-    if descriptor.file_inputs.size == 1
+    if single_file_input?
       input = descriptor.file_inputs.first
 
       fillTask = lambda do |userfile,tsk,extra_params=nil|
@@ -297,11 +297,9 @@ class BoutiquesPortalTask < PortalTask
 
       tasklist = self.params[:interface_userfile_ids].map do |userfile_id|
         f = Userfile.find_accessible_by_user( userfile_id, self.user, :access_requested => file_access_symbol() )
+
         # One task for that file
-        if !single_file_input? && (! f.is_a?( CbrainFileList ) || input.list) # in case of a list input, we *do* assign it the CbFileList
-          task = self.dup
-          fillTask.( f, task )
-        elsif single_file_input? && ! f.is_a?( CbrainFileList ) # One task for that file
+        if (! f.is_a?( CbrainFileList ) || input.list) # in case of a list input, we *do* assign it the CbFileList
           task = self.dup
           fillTask.( f, task )
         else # One task per userfile in the CbrainFileList
@@ -760,7 +758,7 @@ class BoutiquesPortalTask < PortalTask
     integrator_modules.map do |module_name, _|
       module_name = module_name.constantize
       rev_info    = module_name::Revision_info
-      "#{rev_info.basename} rev. #{rev_info.short_commit} #{rev_info.time} (author: #{rev_info.author})"
+      rev_info.format("%f rev. %s %a %d")
     end
   end
 
@@ -769,7 +767,7 @@ class BoutiquesPortalTask < PortalTask
   # Check if the descriptor has a single file input.
   def single_file_input?
     return @single_file_input if ! @single_file_input.nil?
-    @single_file_input = self.descriptor_for_form.inputs.count { |x| x.type == 'File' } == 1
+    @single_file_input = self.descriptor_for_form.file_inputs.size == 1
   end
 
 end
