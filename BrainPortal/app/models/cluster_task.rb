@@ -515,14 +515,14 @@ class ClusterTask < CbrainTask
   # and add a log entry to each userfile identifying that
   # it was processed by the current task. An optional
   # comment can be appended to the message.
-  def addlog_to_userfiles_processed(userfiles,comment = "")
+  def addlog_to_userfiles_processed(userfiles, comment = "", caller_level=0)
     userfiles = [ userfiles ] unless userfiles.is_a?(Array)
     myname   = self.fullname
     mylink   = "/tasks/#{self.id}"  # can't use show_task_path() on Bourreau side
     mymarkup = "[[#{myname}][#{mylink}]]"
     userfiles.each do |u|
       next unless u.is_a?(Userfile) && u.id
-      u.addlog_context(self,"Processed by task #{mymarkup} #{comment}",3)
+      u.addlog_context(self,"Processed by task #{mymarkup} #{comment}",3+caller_level)
     end
   end
 
@@ -530,14 +530,14 @@ class ClusterTask < CbrainTask
   # and add a log entry to each userfile identifying that
   # it was created by the current task. An optional
   # comment can be appended to the message.
-  def addlog_to_userfiles_created(userfiles,comment = "")
+  def addlog_to_userfiles_created(userfiles, comment = "", caller_level=0)
     userfiles = [ userfiles ] unless userfiles.is_a?(Array)
     myname   = self.fullname
     mylink   = "/tasks/#{self.id}" # can't use show_task_path() on Bourreau side
     mymarkup = "[[#{myname}][#{mylink}]]"
     userfiles.each do |u|
       next unless u.is_a?(Userfile) && u.id
-      u.addlog_context(self,"Created/updated by #{mymarkup} #{comment}",3)
+      u.addlog_context(self,"Created/updated by #{mymarkup} #{comment}",3+caller_level)
     end
   end
 
@@ -546,7 +546,7 @@ class ClusterTask < CbrainTask
   # and records for each created file what were the creators, and for
   # each creator file what files were created, along with a link
   # to the task itself. An optional comment can be appended to the header message.
-  def addlog_to_userfiles_these_created_these(creatorlist, createdlist, comment = "")
+  def addlog_to_userfiles_these_created_these(creatorlist, createdlist, comment="", caller_level=0)
 
     # Two lists of userfiles. Make sure their contents are OK.
     creatorlist = Array(creatorlist).select { |u| u.is_a?(Userfile) && u.id }
@@ -564,9 +564,9 @@ class ClusterTask < CbrainTask
     # Add an entry to each creator files, listing created files
     creatorlist.each do |creator|
       if createdlist.size == 1 # a common case; create shorter log entry then.
-        creator.addlog_context(self, "Used by task #{mymarkup} to create #{createdMarkups[0]}. #{comment}", 4)
+        creator.addlog_context(self, "Used by task #{mymarkup} to create #{createdMarkups[0]}. #{comment}", 4+caller_level)
       else
-        creator.addlog_context(self, "Used by task #{mymarkup}, list of #{createdlist.size} created files follow. #{comment}", 4)
+        creator.addlog_context(self, "Used by task #{mymarkup}, list of #{createdlist.size} created files follow. #{comment}", 4+caller_level)
         createdMarkups.each_slice(5).each do |files_4|
           creator.addlog(files_4.join(", "))
         end
@@ -576,9 +576,9 @@ class ClusterTask < CbrainTask
     # Add an entry to each created files, listing creators
     createdlist.each do |created|
       if creatorlist.size == 1 # a common case; create shorter log entry then.
-        created.addlog_context(self, "Created/updated by task #{mymarkup} from file #{creatorMarkups[0]}. #{comment}", 4)
+        created.addlog_context(self, "Created/updated by task #{mymarkup} from file #{creatorMarkups[0]}. #{comment}", 4+caller_level)
       else
-        created.addlog_context(self, "Created/updated by task #{mymarkup}, list of #{creatorlist.size} used files follow. #{comment}", 4)
+        created.addlog_context(self, "Created/updated by task #{mymarkup}, list of #{creatorlist.size} used files follow. #{comment}", 4+caller_level)
         creatorMarkups.each_slice(5).each do |files_4|
           created.addlog(files_4.join(", "))
         end
@@ -1849,13 +1849,38 @@ date '+CBRAIN Task Starting At %s : %F %T' 1>&2
 # Record runtime environment
 bash #{Rails.root.to_s.bash_escape}/vendor/cbrain/bin/runtime_info.sh > #{runtime_info_basename}
 
-# stdout and stderr captured below will be re-substituted in
-# the output and error of this script.
-bash '#{sciencefile}' >> #{science_stdout_basename} 2>> #{science_stderr_basename} </dev/null
-status="$?"
+# With apptainer/singularity jobs, we sometimes get an error booting the container,
+# so we try up to five times.
+for singularity_attempts in 1 2 3 4 5 ; do  # note: the number 5 is used a bit below in an 'if'
+  SECONDS=0 # this is a special bash variable, see the doc
 
-echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      # where stdout captured below will be substituted
-echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      1>&2 # where stderr captured below will be substituted
+  # stdout and stderr captured below will be re-substituted in
+  # the output and error of this script here (this one!)
+  bash '#{sciencefile}' >> #{science_stdout_basename} 2>> #{science_stderr_basename} </dev/null
+  status="$?"
+
+  test $status -eq 0 && break # all is good
+
+  # Detect failed boot of singularity container
+  if ! grep -i 'FATAL.*container.*creation.*failed' #{science_stderr_basename} >/dev/null ; then
+    break # move on, for any other error or even non zero successes
+  fi
+
+  # Detect that final attempt to boot failed
+  if test $singularity_attempts -eq 5 ; then
+    echo "Apptainer container boot attempts all failed, giving up."
+    status=99 # why not
+    break
+  fi
+
+  # Cleanup and try again
+  echo "Apptainer boot attempt number $singularity_attempts failed, trying again."
+  grep -v -i 'FATAL.*container.*creation.*failed' < #{science_stderr_basename} > #{science_stderr_basename}.clean
+  mv -f #{science_stderr_basename}.clean #{science_stderr_basename}
+done
+
+echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      # where stdout captured above will be substituted
+echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      1>&2 # where stderr captured above will be substituted
 date "+CBRAIN Task Ending With Status $status After $SECONDS seconds, at %s : %F %T"
 date "+CBRAIN Task Ending With Status $status After $SECONDS seconds, at %s : %F %T" 1>&2
 
