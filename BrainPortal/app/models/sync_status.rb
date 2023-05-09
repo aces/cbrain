@@ -540,7 +540,7 @@ class SyncStatus < ApplicationRecord
   end
 
   # This method changes the status attribute
-  # in the current task object to +to_state+ but
+  # in the current sync_status object to +to_state+ but
   # also makes sure the current value is +from_state+ .
   # The change is performed in a transaction where
   # the record is locked, to ensure the transition is

@@ -98,10 +98,15 @@ class CbrainTask < ApplicationRecord
                          else
                            value = s
                          end
-                         where(:status => value)
+                         where("cbrain_tasks.status" => value)
                        }
 
-  scope :active, lambda { status( :active ) }
+  scope :active,         -> { status( :active ) }
+  scope :failed,         -> { status( :failed ) }
+  scope :failed_setup,   -> { where( "cbrain_tasks.status" => 'Failed To Setup'       ) }
+  scope :failed_cluster, -> { where( "cbrain_tasks.status" => 'Failed On Cluster'     ) }
+  scope :failed_post,    -> { where( "cbrain_tasks.status" => 'Failed To PostProcess' ) }
+  scope :completed,      -> { where( "cbrain_tasks.status" => 'Completed'             ) }
 
   scope :real_tasks,
         -> { where( "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" ) }

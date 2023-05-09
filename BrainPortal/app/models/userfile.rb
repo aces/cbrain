@@ -649,11 +649,11 @@ class Userfile < ApplicationRecord
   # local userfile, and get to the cache quickly if it's already there.
   #
   # The +attributes+ describes a userfile's attribute for tracking
-  # the data; normally only the 'name' is required is should be specific
+  # the data. Normally only the 'name' is required and it should be specific
   # enough to represent a particular piece of data (e.g. a container
   # image name with full version in it). A block must be given to the
-  # method, and it will be invoked if the data is not already cached;
-  # it will receive a single argument, the path to the caching subsystem
+  # method, and it will be invoked if the data is not already cached.
+  # The block will receive a single argument, the path to the caching subsystem
   # where the userfile's data should be installed (the path is the same
   # as that returned by 'DataProvider#cache_full_path()'. The block is
   # expected to fill this path with appropriate files and/or directories.

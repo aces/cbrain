@@ -286,16 +286,18 @@ class BoutiquesPortalTask < PortalTask
       input = descriptor.file_inputs.first
 
       fillTask = lambda do |userfile,tsk,extra_params=nil|
-        tsk.invoke_params[input.id] = userfile.id
+        tsk.params[:interface_userfile_ids] |= [ userfile.id.to_s ]
+        tsk.invoke_params[input.id]          = userfile.id
         tsk.sanitize_param(input)
-        tsk.description ||= ''
-        tsk.description  += " #{input.id}: #{userfile.name}"
+        tsk.description = "#{input.id}: #{userfile.name}\n#{tsk.description}".strip
         tsk.invoke_params.merge!(extra_params.slice(*valid_input_keys)) if extra_params
         tsk.description.strip!
         tsk
       end
 
-      tasklist = self.params[:interface_userfile_ids].map do |userfile_id|
+      original_userfiles_ids = self.params[:interface_userfile_ids].dup
+      self.params[:interface_userfile_ids] = [] # zap it; we'll re-introduce each userfile.id as needed
+      tasklist = original_userfiles_ids.map do |userfile_id|
         f = Userfile.find_accessible_by_user( userfile_id, self.user, :access_requested => file_access_symbol() )
 
         # One task for that file
