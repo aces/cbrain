@@ -546,7 +546,7 @@ class UserfilesController < ApplicationController
         userfile.errors.each do |field, error|
           flash[:error] += "#{field.to_s.capitalize} #{error}.\n"
         end
-        flash[:error]  += "It might help to rename the file.\n" if flash[:error].include? "Name is already"
+        flash[:error]  += "It might help to rename the file.\n" if flash[:error].include? "Name has already been taken"
         respond_to do |format|
           format.html { redirect_to redirect_path }
           format.json {
