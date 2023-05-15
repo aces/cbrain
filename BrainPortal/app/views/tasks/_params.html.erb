@@ -44,11 +44,36 @@
   :
 </h2>
 
-<div class="generalbox">
-<%= error_messages_for(@task) %>
-<% if raw_partial.(:task_params) %>
-  <%= render :inline => raw_partial.(:task_params), :locals => locals %>
-<% else %>
-  <%= render :partial => task_partial('task_params'), :locals => locals %>
+<%
+input_notes =
+  @task.class.superclass == PortalTask ?
+    @task.class.properties[:input_notes] :
+    @task.descriptor_for_before_form[:custom] && @task.descriptor_for_before_form[:custom]["cbrain:input_notes"]
+input_notes ||= []
+
+if input_notes.any?
+%>
+  <div style='width:max-content; display: grid;'>
+    <div class="generalbox">
+      <h3><%= input_notes.count == 1 ? "Note" : "Notes" %>:</h3>
+      <ul>
+        <% input_notes.each do |li_text| %>
+          <li><%= li_text.html_safe %></li>
+        <% end %>
+      </ul>
+    </div>
+    <br>
 <% end %>
+
+<div class="generalbox">
+  <%= error_messages_for(@task) %>
+  <% if raw_partial.(:task_params) %>
+    <%= render :inline => raw_partial.(:task_params), :locals => locals %>
+  <% else %>
+    <%= render :partial => task_partial('task_params'), :locals => locals %>
+  <% end %>
 </div>
+
+<% if input_notes.any? %>
+  </div>
+<% end %>
