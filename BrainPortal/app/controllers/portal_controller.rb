@@ -200,7 +200,7 @@ class PortalController < ApplicationController
     # to reduce user confusion
     # NeuroHub signed licenses are showed in NeuroHub, CBRAIN signed licenses are shown in CBRAIN
     if @license.start_with? 'nh-'
-      flash[:error] = 'You are redirected to NeuroHub, this license is best viewed via NeuroHub'
+      flash[:notice] = 'You are redirected to NeuroHub, this license is best viewed via NeuroHub'
       redirect_to :controller => :neurohub_portal, :action => :nh_show_license, :license => @license
       return
     end
