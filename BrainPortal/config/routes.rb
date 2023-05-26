@@ -276,8 +276,8 @@ Rails.application.routes.draw do
     get   '/myaccount'              => 'nh_users#myaccount'
 
     # License routes
-    get  '/nh_show_license/#license', :controller => :neurohub_portal, :action => :nh_show_license
-    post '/nh_sign_license/#license', :controller => :neurohub_portal, :action => :nh_sign_license
+    get  '/nh_show_license/:license', :controller => :neurohub_portal, :action => :nh_show_license
+    post '/nh_sign_license/:license', :controller => :neurohub_portal, :action => :nh_sign_license
 
     # Globus authentication
     get   '/nh_globus'              => 'nh_sessions#nh_globus'
