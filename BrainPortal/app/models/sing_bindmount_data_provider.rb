@@ -160,9 +160,9 @@ class SingBindmountDataProvider < SshDataProvider
     # As of rsync 3.1.2, rsync does the escaping of the remote path properly itself
     source_escaped = remotefull.to_s.bash_escape if self.class.local_rsync_protects_args?
     text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{source_colon}#{source_escaped}#{sourceslash} #{shell_escape(localfull)} 2>&1")
-    cb_error "Error syncing userfile to local cache, rsync returned:\n#{text}" unless text.blank?
+    cb_error "Error syncing userfile ##{userfile.id} to local cache, rsync returned:\n#{text}" unless text.blank?
     unless File.exist?(localfull)
-      cb_error "Error syncing userfile to local cache: no destination file found after rsync?\n" +
+      cb_error "Error syncing userfile ##{userfile.id} to local cache: no destination file found after rsync?\n" +
                "Make sure you are running rsync 3.0.6 or greater!"
     end
     true

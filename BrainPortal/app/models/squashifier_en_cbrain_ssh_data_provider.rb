@@ -83,7 +83,7 @@ class SquashifierEnCbrainSshDataProvider < EnCbrainSshDataProvider
     #  /^created \d+.*/i,
     #].each { |regex| unsqu_out.sub!(regex,"") }
     unsqu_out.strip! # remove all blanks on each side, whatever's left is the culprit
-    cb_error "Error syncing userfile to local cache, unsquashfs commands returned:\n#{unsqu_out}" unless unsqu_out.blank?
+    cb_error "Error syncing userfile ##{userfile.id} to local cache, unsquashfs commands returned:\n#{unsqu_out}" unless unsqu_out.blank?
     true
   end
 
@@ -108,7 +108,7 @@ class SquashifierEnCbrainSshDataProvider < EnCbrainSshDataProvider
     #  /^created \d+.*/i,
     #].each { |regex| unsqu_out.sub!(regex,"") }
     mksqu_out.strip!
-    cb_error "Error syncing userfile to provider, mksquashfs commands returned:\n#{mksqu_out}" unless mksqu_out.blank?
+    cb_error "Error syncing userfile ##{userfile.id} to provider, mksquashfs commands returned:\n#{mksqu_out}" unless mksqu_out.blank?
 
     # Invoke the normal code; duplicated from superclasses unfortunately
 
@@ -140,9 +140,9 @@ class SquashifierEnCbrainSshDataProvider < EnCbrainSshDataProvider
 
     # It's IMPORTANT that the destination be specified with a bare ':' in front.
     text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{dest_escaped} 2>&1")
-    cb_error "Error syncing userfile to data provider, rsync returned:\n#{text}" unless text.blank?
+    cb_error "Error syncing userfile ##{userfile.id} to data provider, rsync returned:\n#{text}" unless text.blank?
     unless self.provider_file_exists?(userfile).to_s =~ /file|dir/
-      cb_error "Error syncing userfile to data provider: no destination file found after rsync?\n" +
+      cb_error "Error syncing userfile ##{userfile.id} to data provider: no destination file found after rsync?\n" +
                "Make sure you are running rsync 3.0.6 or greater!\n"
     end
     # -------
