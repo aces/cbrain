@@ -128,6 +128,9 @@ class SingSquashfsDataProvider < SshDataProvider
     source_escaped = provider_is_remote ? remote_shell_escape(remotefull) : remotefull.to_s.bash_escape
     # As of rsync 3.1.2, rsync does the escaping of the remote path properly itself
     source_escaped = remotefull.to_s.bash_escape if self.class.local_rsync_protects_args?
+    # We need the SSH agent even when doing local transfers
+    CBRAIN.with_unlocked_agent
+
     text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{source_colon}#{source_escaped}#{sourceslash} #{shell_escape(localfull)} 2>&1")
     cb_error "Error syncing userfile ##{userfile.id} to local cache, rsync returned:\n#{text}" unless text.blank?
     unless File.exist?(localfull)
