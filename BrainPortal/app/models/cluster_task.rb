@@ -2580,7 +2580,7 @@ bash -c "exit $_cbrain_status_"
     end
 
     # Format it. Only works on linux obviously
-    system("echo y | mkfs.ext3 -t ext3 -q -E root_owner  #{filename.bash_escape}")
+    system("echo y | mkfs.ext3 -t ext3 -m 0 -q -E root_owner #{filename.bash_escape}")
     status  = $? # A Process::Status object
     if ! status.success?
       cb_error "Cannot format EXT3 filesystem file '#{filename}': #{status.to_s}"

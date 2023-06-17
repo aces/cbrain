@@ -220,7 +220,7 @@ class BoutiquesPortalTask < PortalTask
     # Check the content of all CbrainFileLists (cbcsv)
     # ------------------------------------------------
     # Get all the input cbcsv files
-    cbcsvs  = self.cbcsv_files
+    cbcsvs  = self.cbcsv_files # [ [input, cbcsv_userfile], [input, cbcsv_userfile], ... ]
     numRows = nil # Keep track of number of files per cbcsv
     # Validate each cbcsv (all columns match per row, user has access to the file)
     for input, cbcsv in cbcsvs
@@ -232,8 +232,8 @@ class BoutiquesPortalTask < PortalTask
       # If the number of rows does not match, error
       # We need only check this for inputs that are not "list".
       if ! input.list
-        currNumRows = (cbcsv.ordered_raw_ids || []).length
-        numRows     = numRows.nil? ? currNumRows : numRows
+        currNumRows   = (cbcsv.ordered_raw_ids || []).length
+        numRows     ||= currNumRows
         if currNumRows != numRows
           params_errors.add(invokename, " does not have the same number of files (#{currNumRows}) as in other present cbcsvs (#{numRows})")
           next
@@ -328,7 +328,7 @@ class BoutiquesPortalTask < PortalTask
     # --------------------------------------
 
     # Grab all the cbcsv input files
-    cbcsvs = self.cbcsv_files(descriptor)
+    cbcsvs = self.cbcsv_files(descriptor) # [ [input, cbcsv_userfile], [input, cbcsv_userfile], ... ]
     cbcsvs.reject! { |pair| pair[0].list } # ignore file inputs with list=true; they just get the CBCSV directly
 
     # Default case: just return self as a single task
