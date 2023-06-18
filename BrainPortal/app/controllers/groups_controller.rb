@@ -275,12 +275,12 @@ class GroupsController < ApplicationController
       params.require_as_params(:group).permit(
         :name, :description, :not_assignable,
         :site_id, :creator_id, :invisible, :track_usage,
-        :user_ids => []
+        :public, :user_ids => []
       )
     else # non admin users
       params.require_as_params(:group).permit(
         :name, :description, :not_assignable,
-        :user_ids => []
+        :public, :user_ids => []
       )
     end
   end
