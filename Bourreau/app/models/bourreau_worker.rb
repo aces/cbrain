@@ -213,8 +213,8 @@ class BourreauWorker < Worker
       user_max_tasks = @rr.meta[:task_limit_user_default] if user_max_tasks.blank?
       user_max_tasks = user_max_tasks.to_i # nil, "" and "0" means unlimited
       # Go through tasks in random order, but with non-New states having higher priority
-      user_tasks     = (by_user[user_id].select { |t| t.status != 'New' }).shuffle +
-                       (by_user[user_id].select { |t| t.status == 'New' }).shuffle
+      user_tasks     = (by_user[user_id].select { |t| t.status == 'New' }).shuffle +
+                       (by_user[user_id].select { |t| t.status != 'New' }).shuffle  # tasks are pop()ed
 
       # Loop for each task
       while user_tasks.size > 0
