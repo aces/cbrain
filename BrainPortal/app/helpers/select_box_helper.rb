@@ -152,7 +152,7 @@ module SelectBoxHelper
     end
 
     # Step 3: Other project categories, in that order
-    [ "Shared Work Projects", "Empty Work Projects", "Site Projects", "User Projects", "System Projects", "Invisible Projects", "Everyone Projects" ].each do |proj|
+    [ "Shared Work Projects", "Empty Work Projects", "Site Projects", "User Projects", "System Projects", "Invisible Projects", "Everyone Projects", "Public Projects" ].each do |proj|
       ordered_category_grouped << [ proj, category_grouped_pairs.delete(proj) ] if category_grouped_pairs[proj]
     end
 

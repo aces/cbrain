@@ -76,6 +76,14 @@
       </div>
     <% end %>
 
+    <% t.edit_cell("Public", :content => check_box_tag(nil ,nil, @group.public?, :disabled => true)) do |f| %>
+      <%= f.check_box :public %>
+      <div class="field_explanation">
+        If checked, a public project makes all its files visible to all the users. <span class="warning">Be careful </span>
+        with this option!
+      </div>
+    <% end %>
+
     <% if current_user.has_role?(:admin_user) && @group.is_a?(WorkGroup) %>
 
       <% t.edit_cell("Invisible", :content => check_box_tag(nil ,nil, @group.invisible?, :disabled => true)) do |f| %>

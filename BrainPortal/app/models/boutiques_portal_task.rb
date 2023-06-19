@@ -267,6 +267,12 @@ class BoutiquesPortalTask < PortalTask
     self.addlog(descriptor.file_revision_info.format("%f rev. %s %a %d"))
     valid_input_keys = descriptor.inputs.map(&:id)
 
+    # Add author(s) information
+    authors = Array(descriptor.custom['cbrain:author'])
+    authors = authors.empty? ? "No CBRAIN author information" :
+                                authors.join(", ")
+    self.addlog("CBRAIN Author(s): #{authors}")
+
     # Add information about Boutiques module
     boutiques_module_information().each do |log_info|
        self.addlog(log_info)

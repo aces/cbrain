@@ -59,7 +59,11 @@
     to this project (but editors are always allowed to do so):
     <%= f.check_box :not_assignable %>
 
-    <% if current_user.has_role?(:normal_user) %>
+    <p>
+    Make the project public, so that all users can access the files. Be careful with this option! You can always make the project public later on:
+    <%= f.check_box :public %>
+    <p>
+      <% if current_user.has_role?(:normal_user) %>
       <%= hidden_field_tag("group[user_ids][]", current_user.id.to_s) %>
     <% else %>
       <%= render :partial => 'users_form' %>
