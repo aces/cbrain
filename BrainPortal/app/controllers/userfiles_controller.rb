@@ -438,7 +438,10 @@ class UserfilesController < ApplicationController
           flash[:notice] = "Marked #{updated} files as newer on their Data Provider."
           redirect_to :action  => :index
         end
-        format.json { head :ok }
+        format.json do
+           render :json   => { :notice => "Marked #{updated} files as newer on provider" },
+                  :status => :ok
+        end
       end
       return
     end
@@ -1708,13 +1711,13 @@ class UserfilesController < ApplicationController
         :variable_text  => report
       )
     end
-    rescue => e
-      Message.send_message(current_user,
-        :message_type  => 'error',
-        :header  => "File extraction failed",
-        :description  => "Some errors occurred while extracting files from archive '#{archive_file_name}'",
-        :variable_text  => e.message
-      )
+  rescue => e
+    Message.send_message(current_user,
+      :message_type  => 'error',
+      :header  => "File extraction failed",
+      :description  => "Some errors occurred while extracting files from archive '#{archive_file_name}'",
+      :variable_text  => e.message
+    )
   end
 
   # This method creates a tar file of the userfiles listed
