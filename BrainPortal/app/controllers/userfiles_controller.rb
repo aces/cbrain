@@ -433,8 +433,13 @@ class UserfilesController < ApplicationController
       SyncStatus.where(:userfile_id => @userfiles.map(&:id), :status => [ "InSync" ]).all.each do |ss|
         updated += 1 if ss.status_transition(ss.status,"ProvNewer")
       end
-      flash[:notice] = "Marked #{updated} files as newer on their Data Provider."
-      redirect_to :action  => :index
+      respond_to do |format|
+        format.html do
+          flash[:notice] = "Marked #{updated} files as newer on their Data Provider."
+          redirect_to :action  => :index
+        end
+        format.json { head :ok }
+      end
       return
     end
 
