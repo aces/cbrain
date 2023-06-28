@@ -129,6 +129,18 @@ class BoutiquesDescriptorMakerHandler < BoutiquesPortalTask
     text = descriptor_text_from_posted_form
     return nil unless text
     desc = BoutiquesSupport::BoutiquesDescriptor.new_from_string(text) rescue nil
+
+    # Check for something bosh doesn't verify: input IDs mentioned in groups
+    # that do not exist
+    (desc&.groups || []).each do |group|
+      members = group.members || []
+      badid = members.detect { |inputid| (desc.input_by_id(inputid) rescue nil).nil? }
+      if badid
+        self.errors.add(:base, "The group '#{group.name}' has a member input id '#{badid}' which doesn't exist")
+      end
+    end
+    desc = nil if self.errors.include? :base
+
     desc
   end
 
