@@ -515,13 +515,12 @@ class BoutiquesPortalTask < PortalTask
         # a string param is used as a path
         params_errors.add(invokename, " cannot contain newlines")          if value.to_s =~ /[\n\r]/
         params_errors.add(invokename, " cannot start with this character") if value.to_s =~ /^[\.\/]+/
+        params_errors.add(invokename, " cannot move up dirs")              if value.to_s.include? "/../"
 
       # Try to match against various common representation of true and false
       when :flag
-        if value.is_a?(String)
-          value = true  if value =~ /\A(true|t|yes|y|on|1)\z/i
-          value = false if value =~ /\A(false|f|no|n|off|0|)\z/i
-        end
+        value = true  if value.to_s =~ /\A(true|t|yes|y|on|1)\z/i
+        value = false if value.to_s =~ /\A(false|f|no|n|off|0|)\z/i
 
         if ! [ true, false ].include?(value)
           params_errors.add(invokename, ": not true or false (#{value})")

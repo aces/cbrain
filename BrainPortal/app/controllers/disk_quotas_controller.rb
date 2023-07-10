@@ -139,8 +139,8 @@ class DiskQuotasController < ApplicationController
       exceed_numfiles_user_ids = Userfile
         .where(:data_provider_id => quota.data_provider_id)
         .group(:user_id)
-        .sum(:size)
-        .select { |user_id,size| size >= quota.max_files }
+        .sum(:num_files)
+        .select { |user_id,num_files| num_files >= quota.max_files }
         .keys
       union_ids  = exceed_size_user_ids | exceed_numfiles_user_ids
       union_ids -= DiskQuota
@@ -199,7 +199,7 @@ class DiskQuotasController < ApplicationController
   # Supported suffixes are T, G, M, K, TB, GB, MB, KB, B (case insensitive).
   # Negative values are parsed, but the DiskQuota model only accepts the special -1
   def guess_size_units(sizestring)
-    match = sizestring.match /\A\s*(-?\d*\.?\d+)\s*([tgmk]?)\s*b?\s*\z/i
+    match = sizestring.match(/\A\s*(-?\d*\.?\d+)\s*([tgmk]?)\s*b?\s*\z/i)
     return "" unless match # parsing error
     number = match[1]
     suffix = match[2].presence&.downcase || 'u'
