@@ -28,7 +28,7 @@
 
 <%= error_messages_for(@provider) %>
 
-<%= form_for @provider, :as => :data_provider, :url => {:action => "create_for_normal_user"}, :datatype => "script" do |f| -%>
+<%= form_for @provider, :as => :data_provider, :url => {:action => "create_user_dp"}, :method => "post", :datatype => "script" do |f| -%>
 
   <div class="generalbox">
 
@@ -119,29 +119,6 @@
         </p>
       </div>
     </fieldset>
-
-    <p>
-
-    <fieldset class="groupentry">
-      <legend>Advanced properties</legend>
-
-      <p>
-      <label for='meta_must_move'>Files must be copied/moved upon registration (browsable DPs only):</label>
-      <%= check_box_tag 'meta[must_move]', "on", @provider.new_record? ? false : !@provider.meta[:must_move].blank? %>
-
-      <p>
-      <label for='meta_browse_gid'>Files can be browsed only by members of this project (browsable DPs only):</label>
-      <%= group_select 'meta[browse_gid]', {:selector => (@provider.new_record? ? nil : @provider.meta[:browse_gid])}, {:include_blank => "(Any Users)"} %>
-
-      <p>
-      <label for='meta_no_uploads'>Cannot be used for uploading files from the file manager:</label>
-        <%= check_box_tag 'meta[no_uploads]', "on", @provider.new_record? ? false : !@provider.meta[:no_uploads].blank? %>
-
-      <p>
-      <label for='meta_no_viwers'>Files cannot be viewed in the file manager:</label>
-      <%= check_box_tag 'meta[no_viewers]', "on", @provider.new_record? ? false : !@provider.meta[:no_viewers].blank? %>
-    </fieldset>
-
 
     </div>
   <p><%= submit_tag 'Create New Data Provider' %></p>

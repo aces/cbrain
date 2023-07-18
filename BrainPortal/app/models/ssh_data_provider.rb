@@ -350,7 +350,7 @@ class SshDataProvider < DataProvider
   # Utility method to raise an exception
   # when testing for a DP's configuration.
   def test_error(message) #:nodoc:
-    raise UserKeyTestConnectionError.new(message)
+    raise DataProviderTestConnectionError.new(message)
   end
 
   # Returns a list of all files in remote directory +dirname+, with all their

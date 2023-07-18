@@ -3,7 +3,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2023
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -267,7 +267,7 @@
 <% if @provider.has_owner_access?(current_user) %>
   <% if @provider.type == "UserkeyFlatDirSshDataProvider" %>
     <%= render :partial => 'show_user_key' %>
-  <% else %>
+  <% elsif (@provider.is_a?(SshDataProvider) || @provider.is_a?(SmartDataProviderInterface)) %>
   <div>
     <table>
       <tr><th colspan="2" class="supertitle">Public SSH Key for this CBRAIN Portal</th></tr>
@@ -276,7 +276,6 @@
     </table>
   </div>
   <% end %>
-
 
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @provider.getlog, :title => "Data Provider Log" } %>
 <% end %>

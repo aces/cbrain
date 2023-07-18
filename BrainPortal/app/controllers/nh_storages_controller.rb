@@ -29,9 +29,6 @@ class NhStoragesController < NeurohubApplicationController
 
   before_action :login_required
 
-  # A private exception class when testing connectivity
-  class UserKeyTestConnectionError < RuntimeError ; end
-
   def new #:nodoc:
     @nh_dp       = UserkeyFlatDirSshDataProvider.new
     @nh_projects = find_nh_projects(current_user)
@@ -210,7 +207,7 @@ class NhStoragesController < NeurohubApplicationController
     flash[:notice] = "The configuration was tested and seems to be operational."
     redirect_to :action => :show
 
-  rescue UserKeyTestConnectionError => ex
+  rescue DataProviderTestConnectionError => ex
     flash[:error]  = ex.message
     flash[:error] += "\nThis storage is marked as 'offline' until this test pass."
     @nh_dp.update_column(:online, false)

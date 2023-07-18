@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2023
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -23,8 +23,7 @@
 # This class provides an exception class for
 # representing a user key connection error.
 # At the moment it does not guaranty though that connection is good.
-# Currently # used on CbrainTask objects.
-class UserKeyTestConnectionError < CbrainException
+class DataProviderTestConnectionError < CbrainError
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

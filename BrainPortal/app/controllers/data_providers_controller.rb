@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2023
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -27,7 +27,7 @@ class DataProvidersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available :only => [ :index, :show, :is_alive, :create_by_normal_user, :check,
+  api_available :only => [ :index, :show, :is_alive, :create_user_dp, :check,
                            :browse, :register, :unregister, :delete]
 
   before_action :login_required
@@ -61,14 +61,13 @@ class DataProvidersController < ApplicationController
   def show  #:nodoc:
     data_provider_id = params[:id]
     @provider        = DataProvider.find(data_provider_id)
-
     cb_notice "Provider not accessible by current user." unless @provider.can_be_accessed_by?(current_user)
 
-    respond_to do |format|
-      format.html {
-        render template: 'data_providers/show_custom' if ! current_user.has_role?(:admin_user) &&
-                                                       @provider.is_a?( UserkeyFlatDirSshDataProvider                                                                                        )
-      }# show.html.erb for all other dp types and admin's
+    # delete_me
+    # redirect_to action: 'show_user_dp', id: data_provider_id unless @provider.is_a? UserkeyFlatDirSshDataProvider
+
+      respond_to do |format|
+      format.html # show.html.erb
       format.xml  {
         render :xml  => @provider.for_api
       }
@@ -79,19 +78,29 @@ class DataProvidersController < ApplicationController
   end
 
   def new #:nodoc:
+    redirect_to action: 'new_user_dp' if ! current_user.has_role?(:admin_user)
     provider_group_id = current_assignable_group.id
     @provider = DataProvider.new( :user_id   => current_user.id,
                                   :group_id  => provider_group_id,
                                   :online    => true,
                                   :read_only => false
                                 )
-
+    @groups   = current_user.assignable_groups | current_user.listable_groups
     @typelist = get_type_list
-    @groups   = current_user.assignable_groups | current_user.listable_groups #
-    render template: 'data_providers/new_normal' unless current_user.has_role?(:admin_user) # normal user only allowed create UserkeyFlatDirSshDataProvider
   end
 
-  def create # for manager dp create (much more features than normal user create)
+  def new_user_dp #:nodoc:
+    provider_group_id = current_assignable_group.id
+    @provider = UserkeyFlatDirSshDataProvider.new( :user_id   => current_user.id,
+                                                   :group_id  => provider_group_id,
+                                                   :online    => true,
+                                                   :read_only => false
+    )
+    @groups   = current_user.assignable_groups
+  end
+
+  # for manager dp create (much more features than normal user create)
+  def create
     @provider            = DataProvider.sti_new(data_provider_params)
     @provider.user_id  ||= current_user.id # disabled field in form DOES NOT send value!
     @provider.group_id ||= current_assignable_group.id
@@ -115,21 +124,19 @@ class DataProvidersController < ApplicationController
     end
   end
 
-  # dp creation by normal user, currently only UserkeyFlatDirSshDataProvider
-  # allow user create his own data providers.  At the moment only ssh with UserkeyFlatDirSshDataProvider and few field only
-  def create_by_normal_user
+  # create by normal user,  only UserkeyFlatDirSshDataProvider
+  def create_user_dp
 
     normal_params = params.require_as_params(:data_provider)
                         .permit(:name, :description, :group_id,
                                 :remote_user, :remote_host,
                                 :remote_port, :remote_dir
                                 )
-    group_id = normal_params[:date_provider][:group_id]
-    Group.where(id: current_user.assignable_group_ids).find(group_id) # ensure assignable, not sure need check visibility etc more
-    @provider = UserkeyFlatDirSshDataProvider.new(normal_params)
-    @provider.update_attributes(
-      :user_id => current_user.id
-    )
+    group_id = normal_params[:group_id]
+    current_user.assignable_group_ids.find(group_id) # ensure assignable, not sure need check visibility etc more
+    @provider         = UserkeyFlatDirSshDataProvider.new(normal_params)
+    @provider.user_id = current_user.id # prevent creation of dp on behalf of other users
+
     if @provider.save
       @provider.addlog_context(self, "Created by #{current_user.login}")
       @provider.meta[:browse_gid] = current_user.own_group.id
@@ -140,8 +147,9 @@ class DataProvidersController < ApplicationController
         format.json { render      :json   => @provider }
       end
     else
+      @groups   = current_user.assignable_groups
       respond_to do |format|
-        format.html { render :action => :new}
+        format.html { render :action => :new_user_dp}
         format.xml  { render :xml    => @provider.errors,  :status => :unprocessable_entity }
         format.json { render :json   => @provider.errors,  :status => :unprocessable_entity }
       end
@@ -163,8 +171,12 @@ class DataProvidersController < ApplicationController
        return
     end
 
-    Group.where(id: current_user.assignable_group_ids).find(group_id) if ! current_user.has_role?(:admin_user)
-    # regular, aka normal, users can change group, but only to ones (s)he see and allowed assign to
+    # hacking prevention
+    group_id = params[:group_id]
+    current_user.assignable_group_ids.find(group_id) if ! current_user.has_role?(:admin_user)
+    # this guaranties that users do not change group to something
+    # they should not have access to it
+    #
 
     new_data_provider_attr = data_provider_params
     new_data_provider_attr.delete :type # Type cannot be updated once it is set.
@@ -862,7 +874,8 @@ class DataProvidersController < ApplicationController
   end
 
   # This action checks that the remote side of a Ssh DataProvider is
-  # accessible using SSH.
+  # accessible using SSH. Regretfully, does not guaranty that connection is possible.
+  # If check failes it raises an exception of class DataProviderTestConnectionError
   def check
 
     id = params[:id]
@@ -877,8 +890,6 @@ class DataProvidersController < ApplicationController
       return
     end
 
-    id = params[:id]
-    @provider = DataProvider.find(id)
     unless @provider.is_a? SshDataProvider
       flash[:error] = "Presently, detailed check is only available to ssh providers."
       respond_to do |format|
@@ -906,7 +917,7 @@ class DataProvidersController < ApplicationController
     end
 
 
-  rescue UserKeyTestConnectionError => ex
+  rescue DataProviderTestConnectionError => ex
     flash[:error]  = ex.message
     flash[:error] += "\nThis storage is marked as 'offline' until this test pass."
     @provider.update_column(:online, false)
@@ -956,7 +967,7 @@ class DataProvidersController < ApplicationController
         :alternate_host,
         *([
             :remote_user, :remote_host, :remote_port, :remote_dir
-        ] if @data_provider&.is_a? UserkeyFlatDirSshDataProvider
+        ] if @provider&.is_a? UserkeyFlatDirSshDataProvider
         ), # allow change dir/host only for user own private storage
         :online, :read_only, :not_syncable,
         :datalad_repository_url, :datalad_relative_path,
