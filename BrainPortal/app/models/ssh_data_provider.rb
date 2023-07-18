@@ -298,7 +298,9 @@ class SshDataProvider < DataProvider
     super(issue)
   end
 
-  def check  # raises exception if connection is down or common config issues detected (although not guaranty work)
+  # raises exception DataProviderTestConnectionError if connection is down or
+  # common config issues detected (although not guaranty that connection works)
+  def check
     # todo discuss is exception really appropriate here? could be some config_issues?
     # are we going to use it outside of check action?
     master = self.master # This is a handler for the connection, not persistent.

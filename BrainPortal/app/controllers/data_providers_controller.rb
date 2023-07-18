@@ -229,7 +229,7 @@ class DataProvidersController < ApplicationController
       format.json { head :ok }
     end
   rescue ActiveRecord::DeleteRestrictionError => e
-    flash[:error] = "Provider not destroyed: #{e.message}"
+    flash[:error]  = "Provider not destroyed: #{e.message}"
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
