@@ -43,7 +43,7 @@
                 ), :class => "button" %>
 
 
-    <% @provider.respond_to?(:check) %>
+    <% if @provider.respond_to?(:check) %>
       <%= link_to "Check", check_data_provider_path(), :class => "button" %>
     <% end %>
 
@@ -267,7 +267,7 @@
 <% if @provider.has_owner_access?(current_user) %>
   <% if @provider.type == "UserkeyFlatDirSshDataProvider" %>
     <%= render :partial => 'show_user_key' %>
-  <% elsif (@provider.is_a?(SshDataProvider) || @provider.is_a?(SmartDataProviderInterface)) %>
+  <% elsif @provider.is_a?(SshDataProvider) || @provider.is_a?(SmartDataProviderInterface) %>
   <div>
     <table>
       <tr><th colspan="2" class="supertitle">Public SSH Key for this CBRAIN Portal</th></tr>
