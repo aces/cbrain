@@ -99,8 +99,7 @@ class DataProvidersController < ApplicationController
     @groups   = current_user.assignable_groups
   end
 
-  # for manager dp create (much more features than normal user create)
-  def create
+  def create  #:nodoc:
     @provider            = DataProvider.sti_new(data_provider_params)
     @provider.user_id  ||= current_user.id # disabled field in form DOES NOT send value!
     @provider.group_id ||= current_assignable_group.id
@@ -126,11 +125,10 @@ class DataProvidersController < ApplicationController
 
   # create by normal user,  only UserkeyFlatDirSshDataProvider
   def create_user_dp
-
     normal_params = params.require_as_params(:data_provider)
                         .permit(:name, :description, :group_id,
                                 :remote_user, :remote_host,
-                                :remote_port, :remote_dir
+                                :remote_port, :remote_dir, :time_zone
                                 )
     group_id = normal_params[:group_id]
     current_user.assignable_group_ids.find(group_id) # ensure assignable, not sure need check visibility etc more
