@@ -959,14 +959,9 @@ class DataProvidersController < ApplicationController
       # Normal users are not allowed to change
       # some parameters that would allow them to access things
       # they don't control.
-      # remote host data are only editable on user created private storage
       params.require_as_params(:data_provider).permit(
         :name, :description, :group_id, :time_zone,
         :alternate_host,
-        *([
-            :remote_user, :remote_host, :remote_port, :remote_dir
-        ] if @provider&.is_a? UserkeyFlatDirSshDataProvider
-        ), # allow change dir/host only for user own private storage
         :online, :read_only, :not_syncable,
         :datalad_repository_url, :datalad_relative_path,
         :license_agreements,
