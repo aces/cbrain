@@ -32,7 +32,7 @@
   <% if check_role(:site_manager) || check_role(:admin_user) %>
     <%= link_to "Create New Data Provider", new_data_provider_path, :class => "button menu_button" %>
   <% else %>
-    <%= link_to "Create New Data Provider", {:action => :new_user_dp}, :class => "button menu_button" %>
+    <%= link_to "Create My Private Data Provider", {:action => :new_user_dp}, :class => "button menu_button" %>
   <% end %>
 
   <%= link_to "Check All", nil, {:class => "button check_all_dp",} %>

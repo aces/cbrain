@@ -974,6 +974,7 @@ class DataProvidersController < ApplicationController
     data_provider_list = [ "FlatDirSshDataProvider" ]
     if check_role(:site_manager) || check_role(:admin_user)
       data_provider_list = DataProvider.descendants.map(&:name)
+      data_provider_list.delete(UserkeyFlatDirSshDataProvider.name)
     end
     grouped_options = data_provider_list.to_a.hashed_partitions { |name| name.constantize.pretty_category_name }
     grouped_options.delete(nil) # data providers that can not be on this list return a category name of nil, so we remove them

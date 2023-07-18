@@ -43,7 +43,7 @@
                 ), :class => "button" %>
 
 
-    <% if @provider.type == "UserkeyFlatDirSshDataProvider" %>
+    <% @provider.respond_to?(:check) %>
       <%= link_to "Check", check_data_provider_path(), :class => "button" %>
     <% end %>
 
