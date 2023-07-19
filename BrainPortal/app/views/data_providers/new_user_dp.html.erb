@@ -3,7 +3,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2023
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -22,110 +22,67 @@
 #
 -%>
 
-<% title 'Add New Data Provider' %>
+<% title 'Add New Private Data Provider' %>
 
-<h2>Add New SSH based Data Provider</h2>
+<h2>Add New Private SSH based Data Provider</h2>
 
 <%= error_messages_for(@provider) %>
 
-<%= form_for @provider, :as => :data_provider, :url => {:action => "create_user_dp"}, :method => "post", :datatype => "script" do |f| -%>
-
-  <div class="generalbox">
-
-    <span title="The name of the data provider.">
-      <p>
-        <%= f.label :name, "Name" %><br/>
-        <%= f.text_field :name %>
-      </p>
-    </span>
-
-    <span title="Brief description of the data provider.">
-      <p>
-        <%= f.label :description, "Description" %><br/>
-        <%= f.text_area :description, :rows => 10, :cols => 40 %><br/>
-        <div class="field_explanation">The first line should be a short summary, and the rest are for any special notes.</div>
-      </p>
-    </span>
-
-    <span title="Time zone where this data provider is located.">
-      <p>
-        <%= f.label :time_zone, "Time Zone" %><br/>
-        <%= f.time_zone_select :time_zone,
-                               ActiveSupport::TimeZone.all.select {|t| t.name =~ /canada/i},
-                               {:default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
-                                :include_blank => true}
-        %>
-      </p>
-    </span>
-
-
-    <span title="Project ownership of this data provider. Project members will have access to the provider, but will not be able configure it.">
-      <p>
-        <%= f.label :group_id, "Project" %><br/>
-        <%= group_select("data_provider[group_id]", {:selector => @provider, :groups => @groups}) %>
-      </p>
-    </span>
-
-
-    <span title="Is this data provider writable or read-only?">
-      <p>
-        <%= f.label :read_only, "Mode" %><br/>
-        <%= f.select :read_only, {"Read/Write" => false, "Read Only" => true} %>
-      </p>
-    </span>
-
-    <p>
-
-    <fieldset class="groupentry">
-      <legend>Physical Data Location</legend>
-      <span title="Directory used for storing files">
-        <p>
-         <%= f.label :remote_dir, "Full Directory Path" %><br/>
-         <%= f.text_field :remote_dir, :size => 80 %>
-        </p>
-      </span>
-
-    </fieldset>
-
-
-    <p>
-
-    <fieldset class="groupentry">
-      <legend>SSH parameters for remote Data Providers</legend>
-
-      <div title="Name of the remote machine on which the data provider is located.">
-        <p>
-          <%= f.label :remote_host, "Remote Hostname" %><br/>
-          <%= f.text_field :remote_host %>
-        </p>
-      </div>
-
-      <div title="Alternate name(s) (comma-separated) of the remote machine on which the data provider is located (required only for Smart data providers).">
-      <p>
-        <%= f.label :alternate_host, "Alternate Hostname(s)" %><br/>
-        <%= f.text_field :alternate_host %></p>
-      </div>
-
-      <div title="Username on the remote machine where the data provider is located.">
-        <p>
-          <%= f.label :remote_user, "Remote Username" %><br/>
-          <%= f.text_field :remote_user %></p>
-      </div>
-
-      <div title="Port number used to access remote machine on which the data provider is located. ">
-        <p>
-          <%= f.label :remote_port, "Remote Port Number" %><br/>
-          <%= f.text_field :remote_port, :size => 6 %>
-        </p>
-      </div>
-    </fieldset>
-
-    </div>
-  <p><%= submit_tag 'Create New Data Provider' %></p>
-
-<% end %>
-
-
 <%= render :partial => 'show_user_key' %>
+
+<div class="display_inline_block" style="min-width: 50%">
+  <%= show_table(@provider, :as => :data_provider, :url => {:action => "create_user_dp"}, :edit_condition => true, :width => 1) do |t| %>
+
+    <% t.edit_cell(:name) do |f| %>
+      <%= f.text_field :name %>
+      <div class="field_explanation">Select short, but easy to remember name for your data provider</div>
+    <% end %>
+
+    <% t.edit_cell(:description, :content => full_description(@provider.description)) do  |f| %>
+      <%= f.text_area :description, :rows => 10, :cols => 40 %><br>
+      <div class="field_explanation">Brief description of the data provider. The first line should be a short summary, and the rest are for any special notes</div>
+    <% end %>
+
+    <% time_zone = @provider.time_zone # rescue "(Unset)" or if @provider.new_record? # for potential future reuse for user edit     %>
+
+    <% t.edit_cell(:time_zone, :content => time_zone) do |f| %>
+      <%= f.select :time_zone, time_zone_options_for_select(time_zone, /canada/i), :include_blank => true %>
+    <% end %>
+
+    <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@provider.group) ) do %>
+      <%= group_select("data_provider[group_id]", { :selector => @provider }) %>
+    <% end %>
+
+    <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
+      <% t.edit_cell(:remote_dir, :header => "Physical Data Location", :show_width => 2) do |f| %>
+        <%= f.text_field :remote_dir, :size => 80 %>
+          <div class="field_explanation">Full path to the directory where files wil be saved</div>
+      <% end %>
+    <% end %>
+
+    <% t.edit_cell(:remote_host, :header => "Host name") do |f| %>
+      <%= f.text_field :remote_host %>
+      <div class="field_explanation">Full domain name or Internet address of the machine on which the data provider is located</div>
+    <% end %>
+
+    <% t.edit_cell(:alternate_host, :header => "Alternate hostname(s)")  do |f| %>
+      <%= f.text_field :alternate_host, :size => 60 %><br />
+      <div class="field_explanation">Comma-separated list of alternate hostnames; hostname1,hostname2,hostname3,...</div>
+    <% end %>
+
+    <% t.edit_cell(:remote_port) do |f| %>
+      <%= f.text_field :remote_port, :size => 6 %>
+      <div class="field_explanation"> Port number used to access remote machine on which the data provider is located  </div>
+    <% end %>
+
+    <% t.edit_cell(:remote_user) do |f| %>
+      <%= f.text_field :remote_user %>
+      <div class="field_explanation"> Username on the remote machine where the data provider is located </div>
+    <% end %>
+  <% end %>
+</div>
+
+
+
 
 
