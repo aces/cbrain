@@ -298,6 +298,7 @@ class SshDataProvider < DataProvider
     super(issue)
   end
 
+  # checks connection and other common problems
   # raises exception DataProviderTestConnectionError if connection is down or
   # common config issues detected (although not guaranty that connection works)
   def check
@@ -307,15 +308,15 @@ class SshDataProvider < DataProvider
     tmpfile = "/tmp/dp_check.#{Process.pid}.#{rand(1000000)}"
 
     # Check #1: the SSH connection can be established
-    if !self.is_alive?
+    if ! master.is_alive?
       test_error "Cannot establish the SSH connection. Check the configuration: username, hostname, port are valid, and SSH key is installed."
     end
 
     # Check #2: we can run "true" on the remote site and get no output
-    status = self.remote_shell_command_reader("true",
-                                              :stdin  => "/dev/null",
-                                              :stdout => "#{tmpfile}.out",
-                                              :stderr => "#{tmpfile}.err"
+    status = master.remote_shell_command_reader("true",
+                                                :stdin  => "/dev/null",
+                                                :stdout => "#{tmpfile}.out",
+                                                :stderr => "#{tmpfile}.err"
     )
     stdout = File.read("#{tmpfile}.out") rescue "Error capturing stdout"
     stderr = File.read("#{tmpfile}.err") rescue "Error capturing stderr"
@@ -332,14 +333,14 @@ class SshDataProvider < DataProvider
     end
 
     # Check #3: the remote directory exists
-    master.remote_shell_command_reader "test -d #{@provider.remote_dir.bash_escape} && echo DIR-OK", :stdout => tmpfile
+    master.remote_shell_command_reader "test -d #{self.remote_dir.bash_escape} && echo DIR-OK", :stdout => tmpfile
     out = File.read(tmpfile)
     if out != "DIR-OK\n"
       test_error "The remote directory doesn't seem to exist."
     end
 
     # Check #4: the remote directory is readable
-    master.remote_shell_command_reader "test -r #{@provider.remote_dir.bash_escape} && test -x #{@provider.remote_dir.bash_escape} && echo DIR-READ", :stdout => tmpfile
+    master.remote_shell_command_reader "test -r #{self.remote_dir.bash_escape} && test -x #{self.remote_dir.bash_escape} && echo DIR-READ", :stdout => tmpfile
     out = File.read(tmpfile)
     if out != "DIR-READ\n"
       test_error "The remote directory doesn't seem to be readable"

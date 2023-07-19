@@ -63,9 +63,6 @@ class DataProvidersController < ApplicationController
     @provider        = DataProvider.find(data_provider_id)
     cb_notice "Provider not accessible by current user." unless @provider.can_be_accessed_by?(current_user)
 
-    # delete_me
-    # redirect_to action: 'show_user_dp', id: data_provider_id unless @provider.is_a? UserkeyFlatDirSshDataProvider
-
       respond_to do |format|
       format.html # show.html.erb
       format.xml  {
@@ -138,9 +135,9 @@ class DataProvidersController < ApplicationController
     if @provider.save
       @provider.addlog_context(self, "Created by #{current_user.login}")
       @provider.meta[:browse_gid] = current_user.own_group.id
-      flash[:notice] = "Provider successfully created. Please click the check button to validate configuration"
+      flash[:notice] = "Provider successfully created. Please click the Test Config button to validate configuration"
       respond_to do |format|
-        format.html { redirect_to :action => :show, :format => :html }
+        format.html { redirect_to :action => :show}
         format.xml  { render      :xml    => @provider }
         format.json { render      :json   => @provider }
       end
