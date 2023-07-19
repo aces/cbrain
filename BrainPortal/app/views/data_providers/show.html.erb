@@ -44,7 +44,7 @@
 
 
     <% if @provider.respond_to?(:check) %>
-      <%= link_to "Test Config", check_data_provider_path(), :method => :post, :class => "button" %>
+      <%= link_to "Test Configuration", check_data_provider_path(), :method => :post, :class => "button" %>
     <% end %>
 
     <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
