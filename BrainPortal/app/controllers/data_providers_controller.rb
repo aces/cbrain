@@ -75,7 +75,7 @@ class DataProvidersController < ApplicationController
   end
 
   def new #:nodoc:
-    redirect_to action: 'new_user_dp' if ! current_user.has_role?(:admin_user)
+    redirect_to :action => :new_user_dp if ! current_user.has_role?(:admin_user)
     provider_group_id = current_assignable_group.id
     @provider = DataProvider.new( :user_id   => current_user.id,
                                   :group_id  => provider_group_id,
