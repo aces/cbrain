@@ -1153,10 +1153,15 @@ class UserfilesController < ApplicationController
     failed_list               = {}
     CBRAIN.spawn_with_active_records_if(! api_request?, current_user, "Delete files") do
       idlist = to_delete.raw_first_column(:id).shuffle
+      reset_dpids = {}
       idlist.each_with_index do |userfile_id,count|
         userfile = Userfile.find(userfile_id) rescue nil # that way we instantiate one record at a time
         next unless userfile # in case it was destroyed externally
         Process.setproctitle "Delete ID=#{userfile.id} #{count+1}/#{idlist.size}"
+        if ! reset_dpids[userfile.data_provider_id]
+          userfile.data_provider.reset_connection if userfile.data_provider.respond_to?(:reset_connection)
+          reset_dpids[userfile.data_provider_id] = true
+        end
         begin
           userfile.destroy
           deleted_success_list << userfile

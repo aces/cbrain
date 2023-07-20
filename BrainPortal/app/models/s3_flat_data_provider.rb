@@ -77,6 +77,10 @@ class S3FlatDataProvider < DataProvider
                                           )
   end
 
+  def reset_connection #:nodoc:
+    @s3_connection = nil
+  end
+
   def impl_is_alive? #:nodoc:
     return true if s3_connection.connected?
     # Try to create the bucket once
