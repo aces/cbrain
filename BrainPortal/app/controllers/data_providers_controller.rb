@@ -135,9 +135,11 @@ class DataProvidersController < ApplicationController
     if @provider.save
       @provider.addlog_context(self, "Created by #{current_user.login}")
       @provider.meta[:browse_gid] = current_user.own_group.id
-      flash[:notice] = "Provider successfully created. Please click the Test Config button to validate configuration"
+      flash[:notice] = "Provider successfully created. Please click the Test Configuration."\
+        " This will run tests on the current storage configuration. Note that if these tests fail,"\
+        " the storage will be marked 'offline'."
       respond_to do |format|
-        format.html { redirect_to :action => :show}
+        format.html { redirect_to :action => :show, :id => @provider.id}
         format.xml  { render      :xml    => @provider }
         format.json { render      :json   => @provider }
       end
@@ -194,9 +196,8 @@ class DataProvidersController < ApplicationController
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
         format.html { redirect_to :action => :show }
-        # remove? for some reason api is disabled on update
-        format.xml  { render      :xml    =>  @provider }
-        format.json { render      :json   =>  @provider }
+        format.xml  { render :xml    =>  @provider }
+        format.json { render :json   =>  @provider }
       end
     else
       @provider.reload
@@ -870,7 +871,7 @@ class DataProvidersController < ApplicationController
 
   # This action checks that the remote side of a Ssh DataProvider is
   # accessible using SSH. Regretfully, does not guaranty that connection is possible.
-  # If check failes it raises an exception of class DataProviderTestConnectionError
+  # If check fails it raises an exception of class DataProviderTestConnectionError
   def check
 
     id = params[:id]
@@ -971,7 +972,8 @@ class DataProvidersController < ApplicationController
     data_provider_list = [ "FlatDirSshDataProvider" ]
     if check_role(:site_manager) || check_role(:admin_user)
       data_provider_list = DataProvider.descendants.map(&:name)
-      data_provider_list.delete(UserkeyFlatDirSshDataProvider.name)
+      data_provider_list.delete(UserkeyFlatDirSshDataProvider.name) # this type is for regular users
+                                                                    # not for admins
     end
     grouped_options = data_provider_list.to_a.hashed_partitions { |name| name.constantize.pretty_category_name }
     grouped_options.delete(nil) # data providers that can not be on this list return a category name of nil, so we remove them
