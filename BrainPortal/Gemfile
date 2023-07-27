@@ -31,6 +31,7 @@ gem 'rails', '~> 5.0.6'
 # Network components mostly
 gem "net-ssh",       :require => 'net/ssh'
 gem "net-sftp",      :require => 'net/sftp'
+gem "x25519"
 gem "rbnacl"
 gem "ed25519"
 gem "rbnacl-libsodium"
