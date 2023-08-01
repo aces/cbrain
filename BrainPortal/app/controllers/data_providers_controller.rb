@@ -108,8 +108,8 @@ class DataProvidersController < ApplicationController
       flash[:notice] = "Provider successfully created."
       respond_to do |format|
         format.html { redirect_to :action => :index, :format => :html}
-        format.xml  { render :xml  => @provider }
-        format.json { render :json => @provider }
+        format.xml  { render :xml   => @provider }
+        format.json { render :json  => @provider }
       end
     else
       @typelist = get_type_list
