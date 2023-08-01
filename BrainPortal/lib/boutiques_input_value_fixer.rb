@@ -26,34 +26,24 @@
 # In the descriptor, the spec would look like:
 #
 #    "custom": {
-#     "cbrain:integrator_modules": {
-#         "BoutiquesInputValueFixer": {
-#             "n_cpus": 1,
-#             "mem": "4G",
-#             "customquery": nil,
-#             "level": "group"
+#        "cbrain:integrator_modules": {
+#            "BoutiquesInputValueFixer": {
+#               "n_cpus": 1,
+#               "mem": "4G",
+#               "customquery": null,
+#               "level": "group"
 #         }
 #     }
-# }
-# It is required to supply fixed_values in the specification is "closed" in the sense that
-# contains all the implied parameter fixes or deletions. If some of dependent/implied input
-# assignments or deletions are missed, the module will attempt to do it automatically, yet
-# the present solution is crude, and does not guaranty best results (tobe investigated).
-# *** Examples of implied fixing ***
-# Example 1 (Mild case) let parameters -min_mem_use and -max_mem_Gig and -all_mem be mutually exclusive. Then
-# choosing one option to be present (assigning fixed value), say -max_mem_Gig to 16 without removing the other two
-# is not ideal. Indeed keeping options -max_mem_Gig and -all_mem
-# as user will be able to chose run tool with an option exclusive to already chosen -max_mem_Gig, resulting in
-# unpredicatable and likely erroneous results. Yet an experienced user, who might know well parameters of tool
-# still able to enter correct results by ignoring -max_mem_Gig and -all_mem. Such cases might be addressed but we
-# do expect Fixer to address more convoluted cases than the described
 #
-# Example 2 (A more severe case of implied dependencies)
-# # change is possible. Let consider a case when the above boutiques has also 'one-is-required' flag for the same group.
-# In this case fixing value of one parameter while keeping one-is-required and flag, the
+# It is recommended to supply fixed_values in the specification is "closed" in the sense that
+# contains all the parameter that depend on the fixed, that is participate in input-requires,
+# value-requires, input-disables, value-disables, and address the group constraints.
+# Otherwise the module will do it automatically, yet
+# the present solution is crude, and does not guaranty optimal results.
+# Some nuances can be lost.
+# This is because our main use-case
+# is resource control parameter, which seldom involve dependencies.
 #
-# Fixer aims at avoiding second case of the stopping user from entering inputs, possible with given choice of fixed inputs
-# yet does try hard at blocking all the combos impossible in the original boutiques.
 module BoutiquesInputValueFixer
 
   # Note: to access the revision info of the module,
@@ -61,54 +51,62 @@ module BoutiquesInputValueFixer
   # object method revision_info() won't work.
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # the hash of param values to be fixed or be ommited ()  #
+
+  # the hash of param values to be fixed or be omited ()  #
   def fixed_values
     self.boutiques_descriptor.custom_module_info('BoutiquesInputValueFixer')
   end
 
   # deletes fixed inputs listed in the custom 'integrator_modules'
-
   def descriptor_without_fixed_inputs(descriptor)
     # input parameters are marked by null values will be excluded from the command line
     # the major use case are Flags, but also may be useful to address params with 'default'
 
+    fixed_input_ids = fixed_values.keys
     descriptor_dup = descriptor.dup
-    todelete = fixed_values.keys.select do |i_id|  # this variables are flagged to be removed rather than assigned value
+    fully_removed = fixed_values.keys.select do |i_id|  # this variables are flagged to be removed rather than assigned value
                                                    # in the spec, so they will be treated slightly different
-      begin
-        input = descriptor_dup.input_by_id(i_id)
-      rescue CbrainError # it is hard to predict how all the desciptors_after are related ... a bit complex to track
-        next             # if one `descriptor_after` affected by another, some inputs could be already deleted
-      end
+      input = descriptor_dup.input_by_id(i_id)
       value = fixed_values[i_id]
       value.nil? || (input.type == 'Flag') &&  (value.presence.to_s.strip =~ /no|0|nil|none|null|false/i || value.blank?)
-
+      deep_copy
     end
 
     # generally speaking, boutiques input groups can have three different constraints,
-    # here we address mutually exclusion group only.
+    # here we address mutually exclusion group only, which is the only one present in dynamic GUI (rest are evaluated
+    # after submission of parameter).
 
     descriptor_dup.groups.each do |g| # filter groups, relax restriction to ensure that form can still be submitted
       members = g.members - fixed_values.keys
       # disable a mutualy exclusive group if its param assigned fixed value by this modifier
       # if one simply deletes the fixed param,
       if g.mutually_exclusive && members.length != g.members.length # params can be mutually exclusive e.g. --use-min-mem vs --mem-mb
-        if (fixed_values.keys & g.members - todelete).present? # at least some group members are actually assigned vals rather than deleted
+        if (fixed_input_ids & g.members - fully_removed).present? # at least some group members are actually assigned vals rather than deleted
           g.mutually_exclusive = false
-          block_inputs(descriptor_dup, members - fixed_values.keys)
-          # a better solution is to delete rest of group params completely
-          # a bit more complex though and might result in recursive code or nested loops
+          if g.one_is_required.present?
+            g.one_is_required = false
+          end
+          block_inputs(descriptor_dup, members)
         end
       end
 
-      # all-or-none is not reflected in dynamic gui, uncomment once fixed
+
+      # all-or-none is not reflected in dynamic gui, and used less often
+      # perhaps address once gui extended to
+      # support all the constraints
+
+      # yet in the case the constraint added by somebody who unfamiliar or forgot to remove
+      # this in the case the dynamic validation is enabled for one is required, when
+      # mishandled this constraint might create big troubles
+
+
 
       # removes  'one-is-required' or disables group when one or more element fixed, e.g.
       # if g.all_or_none && members.length != g.members.length
-      #   # if (g.members & todelete).present?
+      #   # if (g.members & fully_removed).present?
       #   #   # todo delete all member inputs, or disable by injecting pairwise required/disable dependencies
       #   # end
-      #   if (fixed_values.keys & g.members - todelete).present? # if one is set, rest should be to
+      #   if (fixed_values.keys & g.members - fully_removed).present? # if one is set, rest should be to
       #     g.members.each do |i_id|
       #       begin
       #         input = descriptor.input_by_id(i_id)
@@ -120,10 +118,11 @@ module BoutiquesInputValueFixer
       #   end
       # end
 
-      # presently one-is-required is checked only statically, no GUI support
+      # presently one-is-required is checked only statically, yet
+      # enabling the GUI support to that constraint my cause issues.
       # removes one-is-required flag if one element fixed
-      # if g.one_is_required && members.length != g.members.length
-      #   if (fixed_values.keys & g.members - todelete).present?
+      # if g.one_is_required || g.&& members.length != g.members.length
+      #   if (fixed_values.keys & g.members - fully_removed).present?
       #     g.one_is_required == false
       #   end
       # end
@@ -146,9 +145,8 @@ module BoutiquesInputValueFixer
     descriptor_dup
   end
 
-  # this is blocks an input parameter, rather than explicitly deleting it
-  # it is a bit unorthodox yet expected to be used for relatively rare case when fixing or deleting
-  # one input has negative implications.
+  # this is blocks an input parameter by 'self-disabling', rather than explicitly deleting it
+  # it is a bit unorthodox yet expected to be used seldom
   def block_inputs(descriptor, input_ids)
     input_ids.each do |input_id|
 
@@ -172,7 +170,7 @@ module BoutiquesInputValueFixer
 
   # show all the params
   def descriptor_for_show_params
-    self.invoke_params.merge!(fixed_values) # show hidden parameters, used would not be able to edit them, so should be save
+    self.invoke_params.merge!(fixed_values) # shows 'fixed' parameters, used would not be able to edit them, so should be save
     super    # standard values
   end
 
