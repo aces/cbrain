@@ -108,8 +108,8 @@ class DataProvidersController < ApplicationController
       flash[:notice] = "Provider successfully created."
       respond_to do |format|
         format.html { redirect_to :action => :index, :format => :html}
-        format.xml  { render :xml  => @provider }
-        format.json { render :json => @provider }
+        format.xml  { render  :xml  => @provider }
+        format.json { render  :json => @provider }
       end
     else
       @typelist = get_type_list
@@ -127,7 +127,7 @@ class DataProvidersController < ApplicationController
                         .permit(:name, :description, :group_id,
                                 :remote_user, :remote_host,
                                 :remote_port, :remote_dir, :time_zone
-                                )
+                               )
     group_id = normal_params[:group_id]
     current_user.assignable_group_ids.find(group_id) # ensure assignable, not sure need check visibility etc more
     @provider         = UserkeyFlatDirSshDataProvider.new(normal_params)
@@ -874,7 +874,6 @@ class DataProvidersController < ApplicationController
   # accessible using SSH. Regretfully, does not guaranty that connection is possible.
   # If check fails it raises an exception of class DataProviderTestConnectionError
   def check
-
     id = params[:id]
     @provider = DataProvider.find(id)
     unless @provider.has_owner_access?(current_user)
