@@ -302,14 +302,23 @@ class SshDataProvider < DataProvider
   # raises exception DataProviderTestConnectionError if connection is down or
   # common config issues detected (although not guaranty that connection works)
   def check
-    # todo discuss is exception really appropriate here? could be some config_issues?
-    # are we going to use it outside of check action?
-    master = self.master # This is a handler for the connection, not persistent.
     tmpfile = "/tmp/dp_check.#{Process.pid}.#{rand(1000000)}"
+    err_message = find_connection_issues(tmpfile) # finding connection problems if any
+    File.unlink "#{tmpfile}.out" rescue true
+    File.unlink "#{tmpfile}.err" rescue true
+    raise DataProviderTestConnectionError.new(err_message) if err_message
+    true
+  end
+
+  protected
+
+  # an auxiliary method, protected as might leave tmp files
+  def find_connection_issues(tmpfile)
+    master = self.master # This is a handler for the connection, not persistent.
 
     # Check #1: the SSH connection can be established
     if ! master.is_alive?
-      test_error "Cannot establish the SSH connection. Check the configuration: username, hostname, port are valid, and SSH key is installed."
+      return "Cannot establish the SSH connection. Check the configuration: username, hostname, port are valid, and SSH key is installed."
     end
 
     # Check #2: we can run "true" on the remote site and get no output
@@ -322,38 +331,30 @@ class SshDataProvider < DataProvider
     stderr = File.read("#{tmpfile}.err") rescue "Error capturing stderr"
     if stdout.size != 0
       stdout.strip! if stdout.present? # just to make it pretty while still reporting whitespace-only strings
-      test_error "Remote shell is not clean: got some bytes on stdout: '#{stdout}'"
+      return "Remote shell is not clean: got some bytes on stdout: '#{stdout}'"
     end
     if stderr.size != 0
       stderr.strip! if stdout.present?
-      test_error "Remote shell is not clean: got some bytes on stderr: '#{stderr}'"
+      return "Remote shell is not clean: got some bytes on stderr: '#{stderr}'"
     end
     if !status
-      test_error "Got non-zero return code when trying to run 'true' on remote side."
+      return "Got non-zero return code when trying to run 'true' on remote side."
     end
 
     # Check #3: the remote directory exists
     master.remote_shell_command_reader "test -d #{self.remote_dir.bash_escape} && echo DIR-OK", :stdout => tmpfile
     out = File.read(tmpfile)
     if out != "DIR-OK\n"
-      test_error "The remote directory doesn't seem to exist."
+      return "The remote directory doesn't seem to exist."
     end
 
     # Check #4: the remote directory is readable
     master.remote_shell_command_reader "test -r #{self.remote_dir.bash_escape} && test -x #{self.remote_dir.bash_escape} && echo DIR-READ", :stdout => tmpfile
     out = File.read(tmpfile)
     if out != "DIR-READ\n"
-      test_error "The remote directory doesn't seem to be readable"
+      return "The remote directory doesn't seem to be readable"
     end
-    true
-  end
-
-  protected
-
-  # Utility method to raise an exception
-  # when testing for a DP's configuration.
-  def test_error(message) #:nodoc:
-    raise DataProviderTestConnectionError.new(message)
+    false
   end
 
   # Returns a list of all files in remote directory +dirname+, with all their
