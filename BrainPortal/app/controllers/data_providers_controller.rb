@@ -170,11 +170,9 @@ class DataProvidersController < ApplicationController
     end
 
     # hacking prevention
+    # this guaranties that users do not change group to something
     group_id = params[:group_id]
     current_user.assignable_group_ids.find(group_id) if ! current_user.has_role?(:admin_user)
-    # this guaranties that users do not change group to something
-    # they should not have access to it
-    #
 
     new_data_provider_attr = data_provider_params
     new_data_provider_attr.delete :type # Type cannot be updated once it is set.
@@ -197,8 +195,8 @@ class DataProvidersController < ApplicationController
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
         format.html { redirect_to :action => :show }
-        format.xml  { render :xml    =>  @provider }
-        format.json { render :json   =>  @provider }
+        format.xml  { render :xml   =>  @provider }
+        format.json { render :json  =>  @provider }
       end
     else
       @provider.reload
