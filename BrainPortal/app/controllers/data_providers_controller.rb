@@ -77,6 +77,7 @@ class DataProvidersController < ApplicationController
   def new #:nodoc:
     redirect_to :action => :new_user_dp if ! current_user.has_role?(:admin_user)
     provider_group_id = current_assignable_group.id
+    
     @provider = DataProvider.new( :user_id   => current_user.id,
                                   :group_id  => provider_group_id,
                                   :online    => true,
@@ -88,12 +89,12 @@ class DataProvidersController < ApplicationController
 
   def new_user_dp #:nodoc:
     provider_group_id = current_assignable_group.id
-    @provider = UserkeyFlatDirSshDataProvider.new( :user_id   => current_user.id,
-                                                   :group_id  => provider_group_id,
-                                                   :online    => true,
-                                                   :read_only => false
-    )
-    @groups   = current_user.assignable_groups
+    @provider         = UserkeyFlatDirSshDataProvider.new( :user_id   => current_user.id,
+                                                           :group_id  => provider_group_id,
+                                                           :online    => true,
+                                                           :read_only => false
+                                                         )
+    @groups           = current_user.assignable_groups
   end
 
   def create  #:nodoc:
@@ -107,8 +108,8 @@ class DataProvidersController < ApplicationController
       flash[:notice] = "Provider successfully created."
       respond_to do |format|
         format.html { redirect_to :action => :index, :format => :html}
-        format.xml  { render :xml   => @provider }
-        format.json { render :json  => @provider }
+        format.xml  { render :xml  => @provider }
+        format.json { render :json => @provider }
       end
     else
       @typelist = get_type_list
