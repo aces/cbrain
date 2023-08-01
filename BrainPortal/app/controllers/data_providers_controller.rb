@@ -915,15 +915,9 @@ class DataProvidersController < ApplicationController
     @provider.update_column(:online, false)
 
     respond_to do |format|
-      format.html do
-        redirect_to :action => :show
-      end
-      format.xml  do
-        render :xml  => "fail. #{ex.message}"
-      end
-      format.json do
-        render :json => "fail. #{ex.message}"
-      end
+      format.html { redirect_to :action => :show }
+      format.xml  { render      :xml    => 'not ok' }
+      format.json { render      :xml    => 'not ok' }
     end
   end
 
