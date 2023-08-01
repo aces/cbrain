@@ -63,7 +63,7 @@ class DataProvidersController < ApplicationController
     @provider        = DataProvider.find(data_provider_id)
     cb_notice "Provider not accessible by current user." unless @provider.can_be_accessed_by?(current_user)
 
-      respond_to do |format|
+    respond_to do |format|
       format.html # show.html.erb
       format.xml  {
         render :xml  => @provider.for_api
