@@ -78,6 +78,7 @@ class S3FlatDataProvider < DataProvider
   end
 
   def reset_connection #:nodoc:
+    Aws.empty_connection_pools! rescue nil
     @s3_connection = nil
   end
 
