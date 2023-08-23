@@ -95,7 +95,7 @@ class BoutiquesBootIntegrator
   # This method scans a directory for JSON boutiques descriptors and
   # loads them all.
   def self.link_all(dir = CBRAIN::BoutiquesDescriptorsPlugins_Dir)
-    jsons=Dir.glob(Pathname.new(dir) + "*.json")
+    jsons=Dir.glob(Pathname.new(dir) + "*.json").sort
     jsons.each do |json|
       self.link_from_json_file(json)
     end

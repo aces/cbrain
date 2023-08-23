@@ -152,7 +152,11 @@ class BoutiquesClusterTask < ClusterTask
           #{boutiques_json_basename.bash_escape}
       SIMULATE
       simulate_com.gsub!("\n"," ")
-      simulout = IO.popen(simulate_com) { |fh| fh.read }
+      begin
+         simulout = IO.popen(simulate_com) { |fh| fh.read }
+      rescue => ex
+         cb_error "The 'bosh exec simulate' command failed: #{ex.class} #{ex.message}"
+      end
       simul_status = $? # a Process::Status object
       if ! simul_status.success?
         cb_error "The 'bosh exec simulate' command failed with return code #{simul_status.exitstatus}"

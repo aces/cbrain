@@ -57,7 +57,11 @@ module BoutiquesOutputCacheCleaner
     new_input = BoutiquesSupport::Input.new(
       "name"          => "Enable Output Cache Cleaning",
       "id"            => "cbrain_enable_output_cache_cleaner",
-      "description"   => "If set, the cached content of produced outputs are erased when the task completes successfuly.",
+      "description"   => <<-DESC,
+        If set, the cached content of produced outputs are erased when the task completes successfully.
+        This does not affect the actual outputs of the task, only their cached content on the execution server.
+        Turn off this option only if you need a copy of the outputs on the server, e.g. for further processing.
+      DESC
       "type"          => "Flag",
       "optional"      => false,
       "default-value" => true,

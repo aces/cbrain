@@ -153,6 +153,10 @@ class DiskQuota < ApplicationRecord
   # (similar than having the DP set to read-only) but you can give special privileges
   # to individual users by creating user-specific quota records.
   def limits_are_reasonable
+
+    # Already checked by other validate_presence callbacks
+    return false if self.max_bytes.blank? || self.max_files.blank?
+
     # All quotas are OK with this rule
     return true if (self.max_bytes >= 0 && self.max_files >= 0)
     # Only -1 in both fields is allowed if using negative numbers
