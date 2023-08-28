@@ -487,15 +487,16 @@ class ClusterTask < CbrainTask
     Dir.chdir(self.full_cluster_workdir) do
 
       # copying code
+      #      note, presently we do not keep track what (user)file is copied so no exception is raised
+      #      if file or link exists already
       return userfile.cache_copy_to_local_file(full_path) if copy_file
-      #   presently we do not keep track what (user)file is copied so no exception is raised
-      #   if file or link exists already
+
 
       # symlinking code
-      #   Do nothing if symlink already exists with proper value.
-      #   If there is something not a symlink in the way, or a symlink with a different
-      #   value, the symlink() method will crash, which is what we want to
-      #   catch the error in the situation.
+      #      Do nothing if symlink already exists with proper value.
+      #      If there is something not a symlink in the way, or a symlink with a different
+      #      value, the symlink() method will crash, which is what we want to
+      #      catch the error in the situation.
       unless File.symlink?(file_path.to_s) && File.readlink(file_path.to_s) == target.to_s
         File.symlink(target.to_s, file_path.to_s)
       end
