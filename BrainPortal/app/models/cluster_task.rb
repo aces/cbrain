@@ -492,7 +492,7 @@ class ClusterTask < CbrainTask
       #   if file or link exists already
 
       # symlinking code
-      #   Do nothing is symlink already exists with proper value.
+      #   Do nothing if symlink already exists with proper value.
       #   If there is something not a symlink in the way, or a symlink with a different
       #   value, the symlink() method will crash, which is what we want to
       #   catch the error in the situation.
