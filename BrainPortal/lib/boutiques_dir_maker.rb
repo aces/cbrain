@@ -45,7 +45,7 @@ module BoutiquesDirMaker
   ############################################
 
   # Add mkdir to json descriptor
-  def cluster_commands
+  def descriptor_for_cluster_commands
     descriptor = super.dup()
     dir_names  = descriptor.custom_module_info('BoutiquesDirMaker')
 
@@ -55,7 +55,9 @@ module BoutiquesDirMaker
     self.addlog("Creating directories with BoutiquesDirMaker.")
     self.addlog("#{basename} rev. #{commit}")
 
-    dir_names = dir_names.map {|x| "'" + x.gsub(/[^0-9A-Za-z.\/\-_\[\]]|(\.\.+)/, '') + "'"}  # silent sanitizing and quotes
+    dir_names = dir_names.map do |x|
+      "'#{ x.gsub(/[^0-9A-Za-z.\/\-_\[\]]|(\.\.+)/, '_') }'"  # silent sanitizing and quotes
+    end
 
     descriptor.command_line = "mkdir -p '" + dir_names.join(' ') + "; " + descriptor.command_line
 
