@@ -1,1 +1,1 @@
-../BrainPortal/lib/boutiques_dir_maker.rb
+../../BrainPortal/lib/boutiques_dir_maker.rb
