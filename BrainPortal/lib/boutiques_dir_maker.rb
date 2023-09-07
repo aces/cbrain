@@ -55,11 +55,16 @@ module BoutiquesDirMaker
     self.addlog("Creating directories with BoutiquesDirMaker.")
     self.addlog("#{basename} rev. #{commit}")
 
-    dir_names = dir_names.map do |x|
-      "'#{ x.gsub(/[^0-9A-Za-z.\/\-_\[\]]|(\.\.+)/, '_') }'"  # silent sanitizing and quotes
+
+
+    dir_names.each do |x|
+      if Pathname(x).absolute?
+         raise CbrainError("#{x} is absolute paths, which are presently not supported")
+      end
+      x.gsub!(/[^0-9A-Za-z.\/\-_\[\]]|(\.\.+)/, '_')  # silent sanitizing and quotes
     end
 
-    descriptor.command_line = "mkdir -p '" + dir_names.join(' ') + "; " + descriptor.command_line
+    descriptor.command_line = "mkdir -p " + dir_names.join(' ') + "; " + descriptor.command_line
 
     descriptor
   end
