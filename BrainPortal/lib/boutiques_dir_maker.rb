@@ -23,8 +23,8 @@
 # Some tools expect that a directory e.g. results, etc exists in the working directory
 #
 # While traditionally we add to the boutiques command line prefix akin to 'mkdir -p [OUTPUT];'
-# external collabortors might deslike poluting the command line with technical staff
-# or need a clean boutiques descriptro which does not create any new folders
+# external collaborators might dislike polluting the command line with technical staff
+# or need a clean boutiques descriptor which does not create any new folders
 # For example :
 #
 #
@@ -32,6 +32,9 @@
 #
 #     "BoutiquesDirMaker":
 #          [ "[OUTDIR]", "[OUTDIR]/[THRESHOLD]_res", "tmp" ]
+#
+# Absolute paths and special symbols are not supported, please use only alphanumericals,
+# underscores, hyphens, spaces, and square brackets
 #
 module BoutiquesDirMaker
 
@@ -55,8 +58,6 @@ module BoutiquesDirMaker
     self.addlog("Creating directories with BoutiquesDirMaker.")
     self.addlog("#{basename} rev. #{commit}")
 
-
-
     dir_names.each do |x|
       if Pathname(x).absolute?
          raise CbrainError("#{x} is absolute paths, which are presently not supported")
@@ -64,7 +65,8 @@ module BoutiquesDirMaker
       x.gsub!(/[^0-9A-Za-z.\/\-_\[\]]|(\.\.+)/, '_')  # silent sanitizing and quotes
     end
 
-    descriptor.command_line = "mkdir -p " + dir_names.join(' ') + "; " + descriptor.command_line
+    # adds folder creation, the quotation is used to allow for spaces
+    descriptor.command_line = "mkdir -p '" + dir_names.join("' '") + "'; " + descriptor.command_line
 
     descriptor
   end
