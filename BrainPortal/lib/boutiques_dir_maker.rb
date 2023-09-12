@@ -33,7 +33,7 @@ require 'fileutils'
 #          [ "[OUTDIR]", "[OUTDIR]/[THRESHOLD]_res", "tmp" ]
 #
 # Please avoid special characters save underscore and hyphen, and
-# use relative paths. Boutiques templates (hereafter called patterns) are supported.
+# use relative paths. Boutiques templates (hereafter called patterns) are supported
 #
 module BoutiquesDirMaker
 
@@ -58,8 +58,9 @@ module BoutiquesDirMaker
     descriptor = self.descriptor_for_setup
     patterns   = descriptor.custom_module_info('BoutiquesDirMaker')
 
-    # invoke main setup
-    return false if ! super
+    # invoke overridden method
+    commands = super
+    return false if ! commands # early return
 
     substitutions_by_token  = descriptor.build_substitutions_by_tokens_hash(
       JSON.parse(File.read(self.invoke_json_basename))
@@ -69,14 +70,19 @@ module BoutiquesDirMaker
     paths = patterns.map do |pattern|
       # Replace tokens
       path = descriptor.apply_substitutions(pattern, substitutions_by_token)
+
       if Pathname(path).absolute?
         self.addlog("BoutiquesDirMaker skips '#{pattern}', dir '#{path}', absolute paths are not supported")
         next
       end
-      path.gsub!(/[^0-9A-Za-z.\/\-_]+|(\.\.+)/, '_')  #
+
+      # replacing weird and special characters
+      if path.gsub!(/[^0-9A-Za-z.\/\-_ ]+|(\.\.+)/, '_')
+        self.addlog("Note, special symbols are encountered in directory name which is replace with '#{path}'")
+      end
+      path
     end
-    self.addlog("The templates are evaluated as #{paths}")
     FileUtils.mkdir_p paths.compact
-    true
+    commands
   end
 end
