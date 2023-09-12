@@ -73,9 +73,10 @@ module BoutiquesDirMaker
         self.addlog("BoutiquesDirMaker skips '#{pattern}', dir '#{path}', absolute paths are not supported")
         next
       end
-      path.gsub!(/[^0-9A-Za-z.\/\-_]+|(\.\.+)/, '_')
+      path.gsub!(/[^0-9A-Za-z.\/\-_]+|(\.\.+)/, '_')  #
     end
-    FileUtils.mkdir_p paths
+    self.addlog("The templates are evaluated as #{paths}")
+    FileUtils.mkdir_p paths.compact
     true
   end
 end
