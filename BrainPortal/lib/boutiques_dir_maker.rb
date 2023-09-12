@@ -20,21 +20,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+require 'fileutils'
+
 # Some tools expect that a directory e.g. results, etc exists in the working directory
 #
 # While traditionally we add to the boutiques command line prefix akin to 'mkdir -p [OUTPUT];'
 # external collaborators might dislike polluting the command line with technical staff
 # or need a clean boutiques descriptor which does not create any new folders
-# For example :
-#
-#
-# and in the `cbrain:integrator_modules` section look like:
+# The the `cbrain:integrator_modules` section look like:
 #
 #     "BoutiquesDirMaker":
 #          [ "[OUTDIR]", "[OUTDIR]/[THRESHOLD]_res", "tmp" ]
 #
-# Absolute paths and special symbols are not supported, please use only alphanumericals,
-# underscores, hyphens, spaces, and square brackets
+# Please avoid special characters save underscore and hyphen, and
+# use relative paths. Boutiques templates (hereafter called patterns) are supported.
 #
 module BoutiquesDirMaker
 
@@ -47,27 +46,36 @@ module BoutiquesDirMaker
   # Bourreau (Cluster) Side Modifications
   ############################################
 
-  # Add mkdir to json descriptor
-  def descriptor_for_cluster_commands
-    descriptor = super.dup()
-    dir_names  = descriptor.custom_module_info('BoutiquesDirMaker')
+  # create few sub directories in the work folder
+  def cluster_commands #:nodoc:
 
     # Log revision information
+    self.addlog("Creating directories with BoutiquesDirMaker.")
     basename = Revision_info.basename
     commit   = Revision_info.short_commit
-    self.addlog("Creating directories with BoutiquesDirMaker.")
     self.addlog("#{basename} rev. #{commit}")
 
-    dir_names.each do |x|
-      if Pathname(x).absolute?
-         raise CbrainError("#{x} is absolute paths, which are presently not supported")
+    descriptor = self.descriptor_for_setup
+    patterns   = descriptor.custom_module_info('BoutiquesDirMaker')
+
+    # invoke main setup
+    return false if ! super
+
+    substitutions_by_token  = descriptor.build_substitutions_by_tokens_hash(
+      JSON.parse(File.read(self.invoke_json_basename))
+    )
+
+    # Process each directory pattern
+    paths = patterns.map do |pattern|
+      # Replace tokens
+      path = descriptor.apply_substitutions(pattern, substitutions_by_token)
+      if Pathname(path).absolute?
+        self.addlog("BoutiquesDirMaker skips '#{pattern}', dir '#{path}', absolute paths are not supported")
+        next
       end
-      x.gsub!(/[^0-9A-Za-z.\/\-_\[\]]|(\.\.+)/, '_')  # silent sanitizing and quotes
+      path.gsub!(/[^0-9A-Za-z.\/\-_]+|(\.\.+)/, '_')
     end
-
-    # adds folder creation, the quotation is used to allow for spaces
-    descriptor.command_line = "mkdir -p '" + dir_names.join("' '") + "'; " + descriptor.command_line
-
-    descriptor
+    FileUtils.mkdir_p paths
+    true
   end
 end
