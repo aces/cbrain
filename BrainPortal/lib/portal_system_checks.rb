@@ -119,11 +119,11 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
     puts "C> Making sure we have a CBRAIN key for the agent..."
     #----------------------------------------------------------------------------
 
-    cbrain_identity_file = "#{CBRAIN::Rails_UserHome}/.ssh/id_cbrain_portal"
+    cbrain_identity_file = "#{CBRAIN::Rails_UserHome}/.ssh/id_cbrain_ed25519"
     if ! File.exists?(cbrain_identity_file)
       puts "C> \t- Creating identity file '#{cbrain_identity_file}'."
       with_modified_env('SSH_ASKPASS' => '/bin/true', 'DISPLAY' => 'none:0.0') do
-        system("/bin/bash","-c","ssh-keygen -t rsa -f #{cbrain_identity_file.bash_escape} -C 'CBRAIN_Portal_Key' </dev/null >/dev/null 2>/dev/null")
+        system("/bin/bash","-c","ssh-keygen -t ed25519 -f #{cbrain_identity_file.bash_escape} -C 'CBRAIN_Portal_Key' </dev/null >/dev/null 2>/dev/null")
       end
     end
 
@@ -132,8 +132,8 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
     else
       CBRAIN.with_unlocked_agent
       curkeys=agent.list_keys
-      if curkeys.size > 0
-        puts "C> \t- Identity already present in agent: #{curkeys[0]}"
+      if digest = curkeys.detect { |string| string.to_s =~ /\(ED25519\)/i } # = not ==
+        puts "C> \t- Identity already present in agent: #{digest}"
       else
         ok = with_modified_env('SSH_ASKPASS' => '/bin/true', 'DISPLAY' => 'none:0.0') do
           agent.add_key_file(cbrain_identity_file) rescue nil # will raise exception if anything wrong
@@ -146,6 +146,20 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
         end
       end
     end
+
+    # Add old key if it exists.
+    old_identity_file = "#{CBRAIN::Rails_UserHome}/.ssh/id_cbrain_portal"
+    if File.exists?(old_identity_file)
+      ok_old = with_modified_env('SSH_ASKPASS' => '/bin/true', 'DISPLAY' => 'none:0.0') do
+        agent.add_key_file(old_identity_file) rescue nil
+      end
+      if ok_old
+        puts "C> \t- Added OLD identity to agent from file: '#{old_identity_file}'."
+      else
+        puts "C> \t- WARNING: cannot add OLD identity from file: '#{old_identity_file}'."
+      end
+    end
+
   end
 
 
