@@ -172,13 +172,13 @@ class DataProvidersController < ApplicationController
     group_id = params[:group_id]
     current_user.assignable_group_ids.find(group_id) if ! current_user.has_role?(:admin_user)
 
-    new_data_provider_attr = data_provider_params
+    new_data_provider_attr = data_provider_params(@provider)
     new_data_provider_attr.delete :type # Type cannot be updated once it is set.
 
     # Fields that stay the same if the form provides a blank entry:
     new_data_provider_attr.delete :cloud_storage_client_token if new_data_provider_attr[:cloud_storage_client_token].blank?
 
-    if @provider.update_attributes_with_logging(new_data_provider_attr, current_user, @provider.changed_attributes.keys)
+    if @provider.update_attributes_with_logging(new_data_provider_attr, current_user, @provider.attributes.keys)
       meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/\Adp_no_copy_\d+\z|\Arr_no_sync_\d+\z/)
       add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid] + meta_flags_for_restrictions)
       flash[:notice] = "Provider successfully updated."
