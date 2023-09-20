@@ -27,12 +27,13 @@ class DataProvidersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available :only => [ :index, :show, :is_alive, :create_user_dp, :check,
-                           :browse, :register, :unregister, :delete ]
+  api_available :only => [ :index, :show, :is_alive,
+                           :browse, :register, :unregister, :delete,
+                           :create_personal, :check_personal, ]
 
   before_action :login_required
-  before_action :manager_role_required, :only => [:create]
-  before_action :admin_role_required,   :only => [:report, :repair]
+  before_action :manager_role_required, :only => [:new, :create]
+  before_action :admin_role_required,   :only => [:new, :create, :report, :repair]
 
   def index #:nodoc:
     @scope = scope_from_session
@@ -75,8 +76,7 @@ class DataProvidersController < ApplicationController
   end
 
   def new #:nodoc:
-    redirect_to :action => :new_user_dp if ! current_user.has_role?(:admin_user)
-    provider_group_id = current_assignable_group.id    
+    provider_group_id = current_assignable_group.id
     @provider = DataProvider.new( :user_id   => current_user.id,
                                   :group_id  => provider_group_id,
                                   :online    => true,
@@ -84,16 +84,6 @@ class DataProvidersController < ApplicationController
                                 )
 
     @typelist = get_type_list
-  end
-
-  def new_user_dp #:nodoc:
-    provider_group_id = current_assignable_group.id
-    @provider         = UserkeyFlatDirSshDataProvider.new( :user_id   => current_user.id,
-                                                           :group_id  => provider_group_id,
-                                                           :online    => true,
-                                                           :read_only => false
-                                                         )
-    @groups           = current_user.assignable_groups
   end
 
   def create  #:nodoc:
@@ -107,8 +97,8 @@ class DataProvidersController < ApplicationController
       flash[:notice] = "Provider successfully created."
       respond_to do |format|
         format.html { redirect_to :action => :index, :format => :html}
-        format.xml  { render :xml   =>  @provider }
-        format.json { render :json  =>  @provider }
+        format.xml  { render :xml   => @provider }
+        format.json { render :json  => @provider }
       end
     else
       @typelist = get_type_list
@@ -120,36 +110,45 @@ class DataProvidersController < ApplicationController
     end
   end
 
+  def new_personal #:nodoc:
+    provider_group_id = current_assignable_group.id
+    @provider         = UserkeyFlatDirSshDataProvider.new( :user_id   => current_user.id,
+                                                           :group_id  => provider_group_id,
+                                                           :online    => true,
+                                                           :read_only => false
+                                                         )
+    @groups           = current_user.assignable_groups
+  end
+
   # create by normal user,  only UserkeyFlatDirSshDataProvider
-  def create_user_dp
+  def create_personal
     normal_params = params.require_as_params(:data_provider)
                           .permit(:name, :description, :group_id,
                                   :remote_user, :remote_host,
-                                  :remote_port, :remote_dir, :time_zone
+                                  :remote_port, :remote_dir
                                  )
     group_id = normal_params[:group_id]
     current_user.assignable_group_ids.find(group_id) # ensure assignable, not sure need check visibility etc more
     @provider         = UserkeyFlatDirSshDataProvider.new(normal_params)
     @provider.user_id = current_user.id # prevent creation of dp on behalf of other users
 
-    if @provider.save
-      @provider.addlog_context(self, "Created by #{current_user.login}")
-      @provider.meta[:browse_gid] = current_user.own_group.id
-      flash[:notice] = "Provider successfully created. Please click the Test Configuration."\
-        " This will run tests on the current storage configuration. Note that if these tests fail,"\
-        " the storage will be marked 'offline'."
-      respond_to do |format|
-        format.html { redirect_to :action => :show, :id => @provider.id}
-        format.xml  { render      :xml    => @provider }
-        format.json { render      :json   => @provider }
-      end
-    else
+    if ! @provider.save
       @groups   = current_user.assignable_groups
       respond_to do |format|
-        format.html { render :action => :new_user_dp}
-        format.xml  { render :xml    => @provider.errors,  :status => :unprocessable_entity }
+        format.html { render :action => :new_personal}
         format.json { render :json   => @provider.errors,  :status => :unprocessable_entity }
       end
+    end
+
+    @provider.addlog_context(self, "Created by #{current_user.login}")
+    @provider.meta[:browse_gid] = current_user.own_group.id
+    flash[:notice] = "Provider successfully created. Please click the Test Configuration button."\
+      " This will run tests on the current storage configuration. Note that if these tests fail,"\
+      " the storage will be marked 'offline'."
+
+    respond_to do |format|
+      format.html { redirect_to :action => :show, :id => @provider.id}
+      format.json { render      :json   => @provider }
     end
   end
 
@@ -179,29 +178,18 @@ class DataProvidersController < ApplicationController
     # Fields that stay the same if the form provides a blank entry:
     new_data_provider_attr.delete :cloud_storage_client_token if new_data_provider_attr[:cloud_storage_client_token].blank?
 
-    if @provider.update_attributes_with_logging(new_data_provider_attr, current_user,
-         %w(
-           remote_user remote_host remote_port remote_dir
-           not_syncable cloud_storage_client_identifier cloud_storage_client_token
-           cloud_storage_client_bucket_name cloud_storage_client_path_start
-           cloud_storage_endpoint cloud_storage_region
-           datalad_repository_url datalad_relative_path
-           containerized_path
-         )
-      )
+    if @provider.update_attributes_with_logging(new_data_provider_attr, current_user, @provider.changed_attributes.keys)
       meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/\Adp_no_copy_\d+\z|\Arr_no_sync_\d+\z/)
       add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid] + meta_flags_for_restrictions)
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
         format.html { redirect_to :action => :show }
-        format.xml  { render :xml   =>  @provider }
         format.json { render :json  =>  @provider }
       end
     else
       @provider.reload
       respond_to do |format|
         format.html { render :action => 'show' }
-        format.xml  { render :xml    => @provider.errors, :status  => :unprocessable_entity }
         format.json { render :json   => @provider.errors, :status  => :unprocessable_entity }
       end
     end
@@ -870,7 +858,7 @@ class DataProvidersController < ApplicationController
   # This action checks that the remote side of a Ssh DataProvider is
   # accessible using SSH. Regretfully, does not guaranty that connection is possible.
   # If check fails it raises an exception of class DataProviderTestConnectionError
-  def check
+  def check_personal
     id = params[:id]
     @provider = DataProvider.find(id)
     unless @provider.has_owner_access?(current_user)
@@ -893,20 +881,17 @@ class DataProvidersController < ApplicationController
       return
     end
 
-    @provider.check
-    @provider.update_column(:online, true)
+    # Do active checks of the connection. Will
+    # raise DataProviderTestConnectionError if anything is wrong.
+    @provider.check_connection!
+
     # Ok, all is well.
+    @provider.update_column(:online, true)
     flash[:notice] = "The configuration was tested and seems to be operational."
+
     respond_to do |format|
-      format.html do
-        redirect_to :action => :show
-      end
-      format.xml  do
-        render :xml  => 'ok'
-      end
-      format.json do
-        render :json => 'ok'
-      end
+      format.html { redirect_to :action => :show }
+      format.json { render      :json   => 'ok'  }
     end
 
   rescue DataProviderTestConnectionError => ex
@@ -916,14 +901,13 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to :action => :show }
-      format.xml  { render      :xml    => 'not ok' }
-      format.json { render      :xml    => 'not ok' }
+      format.json { render      :json   => 'not ok' }
     end
   end
 
   private
 
-  def data_provider_params #:nodoc:
+  def data_provider_params(for_data_provider=nil) #:nodoc:
     if current_user.has_role?(:admin_user)
       params.require_as_params(:data_provider).permit(
         :name, :user_id, :group_id, :remote_user, :remote_host, :alternate_host,
@@ -938,17 +922,15 @@ class DataProvidersController < ApplicationController
         :license_agreements,
         :containerized_path
       )
-    else
-      # Normal users are not allowed to change
-      # some parameters that would allow them to access things
-      # they don't control.
+    elsif for_data_provider.is_a?(UserkeyFlatDirSshDataProvider)
       params.require_as_params(:data_provider).permit(
-        :name, :description, :group_id, :time_zone,
-        :alternate_host,
+        :name, :description, :group_id,
+        :remote_user, :remote_host, :remote_port, :remote_dir,
         :online, :read_only, :not_syncable,
-        :datalad_repository_url, :datalad_relative_path,
-        :license_agreements,
-        :containerized_path
+      )
+    else # place for future expansion; be careful to not introduce security bugs
+      params.require_as_params(:data_provider).permit(
+        :description,
       )
     end
   end

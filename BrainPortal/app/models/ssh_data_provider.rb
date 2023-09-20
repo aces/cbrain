@@ -298,23 +298,22 @@ class SshDataProvider < DataProvider
     super(issue)
   end
 
-  # checks connection and other common problems
-  # raises exception DataProviderTestConnectionError if connection is down or
-  # common config issues detected (although not guaranty that connection works)
-  def check
-    tmpfile = "/tmp/dp_check.#{Process.pid}.#{rand(1000000)}"
-    err_message = find_connection_issues(tmpfile) # finding connection problems if any
-    File.unlink "#{tmpfile}.out" rescue true
-    File.unlink "#{tmpfile}.err" rescue true
-    raise DataProviderTestConnectionError.new(err_message) if err_message
+  # Checks connection and other common problems.
+  # Raises exception DataProviderTestConnectionError if connection is down or
+  # common config issues detected. Returns true if everything is OK.
+  def check_connection!
+    err_message = self.find_connection_issues
+    raise DataProviderTestConnectionError.new(err_message) if err_message.present?
     true
   end
 
   protected
 
-  # an auxiliary method, protected as might leave tmp files
-  def find_connection_issues(tmpfile)
-    master = self.master # This is a handler for the connection, not persistent.
+  # Verifies the configuration and returns a string with a descriptive
+  # error message if something is wrong.
+  def find_connection_issues
+    master  = self.master # This is a handler for the connection, not persistent.
+    tmpfile = "/tmp/dp_check.#{Process.pid}.#{rand(1000000)}" # prefix for .out and .err capture files
 
     # Check #1: the SSH connection can be established
     if ! master.is_alive?
@@ -342,19 +341,23 @@ class SshDataProvider < DataProvider
     end
 
     # Check #3: the remote directory exists
-    master.remote_shell_command_reader "test -d #{self.remote_dir.bash_escape} && echo DIR-OK", :stdout => tmpfile
-    out = File.read(tmpfile)
+    master.remote_shell_command_reader "test -d #{self.remote_dir.bash_escape} && echo DIR-OK", :stdout => "#{tmpfile}.out"
+    out = File.read("#{tmpfile}.out")
     if out != "DIR-OK\n"
       return "The remote directory doesn't seem to exist."
     end
 
     # Check #4: the remote directory is readable
-    master.remote_shell_command_reader "test -r #{self.remote_dir.bash_escape} && test -x #{self.remote_dir.bash_escape} && echo DIR-READ", :stdout => tmpfile
-    out = File.read(tmpfile)
+    master.remote_shell_command_reader "test -r #{self.remote_dir.bash_escape} && test -x #{self.remote_dir.bash_escape} && echo DIR-READ", :stdout => "#{tmpfile}.out"
+    out = File.read("#{tmpfile}.out")
     if out != "DIR-READ\n"
       return "The remote directory doesn't seem to be readable"
     end
-    false
+
+    return nil # No error messages means all is OK
+  ensure
+    File.unlink("#{tmpfile}.out") rescue nil
+    File.unlink("#{tmpfile}.err") rescue nil
   end
 
   # Returns a list of all files in remote directory +dirname+, with all their

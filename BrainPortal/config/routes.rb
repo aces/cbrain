@@ -115,13 +115,13 @@ Rails.application.routes.draw do
       get  'report'
       post 'report'
       post 'repair'
-      post 'check'
+      post 'check_personal'
     end
     collection do
       get  'dp_access'
       get  'dp_transfers'
-      get  'new_user_dp'
-      post 'create_user_dp'
+      get  'new_personal'
+      post 'create_personal'
     end
   end
 
