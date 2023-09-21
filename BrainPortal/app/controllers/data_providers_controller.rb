@@ -138,6 +138,7 @@ class DataProvidersController < ApplicationController
         format.html { render :action => :new_personal}
         format.json { render :json   => @provider.errors,  :status => :unprocessable_entity }
       end
+      return
     end
 
     @provider.addlog_context(self, "Created by #{current_user.login}")
