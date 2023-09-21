@@ -201,7 +201,9 @@ class NhStoragesController < NeurohubApplicationController
 
     @nh_dp.update_column(:online, true)
 
-    @nh_dp.check
+    # Performs an active check of the connection; will
+    # raise DataProviderTestConnectionError if something is wrong.
+    @nh_dp.check_connection!
 
     # Ok, all is well.
     flash[:notice] = "The configuration was tested and seems to be operational."
@@ -212,11 +214,6 @@ class NhStoragesController < NeurohubApplicationController
     flash[:error] += "\nThis storage is marked as 'offline' until this test pass."
     @nh_dp.update_column(:online, false)
     redirect_to :action => :show
-
-  ensure
-    File.unlink "#{tmpfile}.out" rescue true
-    File.unlink "#{tmpfile}.err" rescue true
-
   end
 
 end

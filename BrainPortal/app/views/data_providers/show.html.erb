@@ -24,6 +24,10 @@
 
 <% title 'Data Provider Info' %>
 
+<% has_owner_access = (check_role(:admin_user) || @provider.user_id == current_user.id) %>
+<% is_userkey_dp    = @provider.is_a?(UserkeyFlatDirSshDataProvider) %>
+<% needs_ssh_config = @provider.is_a?(SshDataProvider) || @provider.is_a?(SmartDataProviderInterface) %>
+
 <div class="menu_bar">
 
     <% if @provider.is_browsable?(current_user) && @provider.online? %>
@@ -34,20 +38,21 @@
       <%= link_to 'Inconsistency Report', report_data_provider_path(@provider), :class => "button" %>
     <% end %>
 
-    <%= link_to 'File Registration Statistics', report_path(
-                  :table_name       => 'userfiles.combined_file_rep',
-                  :data_provider_id => @provider.id,
-                  :row_type         => :user_id ,
-                  :col_type         => :type,
-                  :generate         => "ok"
-                ), :class => "button" %>
-
-
-    <% if @provider.respond_to?(:check) %>
-      <%= link_to "Test Configuration", check_data_provider_path(), :method => :post, :class => "button" %>
+    <% if @provider.userfiles.count > 0 %>
+      <%= link_to 'File Registration Statistics', report_path(
+                    :table_name       => 'userfiles.combined_file_rep',
+                    :data_provider_id => @provider.id,
+                    :row_type         => :user_id ,
+                    :col_type         => :type,
+                    :generate         => "ok"
+                  ), :class => "button" %>
     <% end %>
 
-    <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
+    <% if @provider.respond_to?(:check_connection!) %>
+      <%= link_to "Test Configuration", check_personal_data_provider_path(@provider), :method => :post, :class => "button" %>
+    <% end %>
+
+    <% if has_owner_access %>
       <%= link_to 'Delete', data_provider_path(@provider), { :data => { :confirm => "Are you sure you want to delete '#{@provider.name}' ?" }, :method => :delete, :class => "button" } %>
     <% end %>
 
@@ -59,7 +64,7 @@
 
 <div class="display_inline_block" style="min-width: 50%">
 
-  <%= show_table(@provider, :as => :data_provider, :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+  <%= show_table(@provider, :as => :data_provider, :edit_condition => has_owner_access) do |t| %>
 
     <% t.edit_cell(:name) do |f| %>
       <%= f.text_field :name %>
@@ -69,7 +74,7 @@
       <%= f.text_area :description, :rows => 10, :cols => 40 %><br>
     <% end %>
 
-    <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
+    <% if has_owner_access %>
       <% t.attribute_cell(:type) %>
     <% else %>
       <% t.empty_cell %>
@@ -95,63 +100,65 @@
       <%= f.select :not_syncable, [["Fully syncable", false], ["NOT syncable", true]] %>
     <% end %>
 
-    <% t.cell("Site") { link_to_site_if_accessible(@provider.site) } %>
-
-    <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
-      <% t.cell("Revision Info (DataProvider)") { DataProvider.revision_info.format() } %>
-    <% else %>
-      <% t.empty_cell %>
-    <% end %>
-    <% joint_licenses = @provider.license_agreements.join("\n") %>
-    <% licenses = @provider.license_agreements.count == 0 ? "(None)": @provider.license_agreements.join("\n") %>
-    <% t.edit_cell(:license_agreements, :content => licenses) do |f| %>
-      <%= f.text_area :license_agreements, :value => joint_licenses, :content => joint_licenses, :rows => 5, :cols => 40 %><br>
-      <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
+    <% if current_user.has_role?(:admin_user) %>
+      <% t.cell("Revision Info (DataProvider)", :show_width => 2) { DataProvider.revision_info.format() } %>
+      <% t.cell("Revision Info (#{@provider.type})", :show_width => 2) { @provider.revision_info.format() } %>
     <% end %>
 
-    <% t.edit_cell(:time_zone, :content => (@provider.time_zone || "(Unset)") ) do |f| %>
-      <%= f.select :time_zone, time_zone_options_for_select(@provider.time_zone, /canada/i), :include_blank => true %>
+    <% if ! is_userkey_dp %>
+      <% t.edit_cell(:time_zone, :content => (@provider.time_zone || "(Unset)"), :show_width => 2 ) do |f| %>
+        <%= f.select :time_zone, time_zone_options_for_select(@provider.time_zone, /canada/i), :include_blank => true %>
+      <% end %>
     <% end %>
 
-    <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
-      <% t.cell("Revision Info (#{@provider.type})") { @provider.revision_info.format() } %>
-    <% else %>
-      <% t.empty_cell %>
-    <% end %>
-
-    <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
+    <% if has_owner_access %>
       <% t.edit_cell(:remote_dir, :header => "Physical Data Location", :show_width => 2) do |f| %>
         <%= f.text_field :remote_dir, :size => 80 %>
       <% end %>
     <% end %>
 
+    <% if current_user.has_role?(:admin_user) %>
+       <% joint_licenses = @provider.license_agreements.join("\n") %>
+       <% licenses = @provider.license_agreements.count == 0 ? "(None)": @provider.license_agreements.join("\n") %>
+       <% t.edit_cell(:license_agreements, :content => licenses, :show_width => 2) do |f| %>
+         <%= f.text_area :license_agreements, :value => joint_licenses, :content => joint_licenses, :rows => 5, :cols => 40 %><br>
+         <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
+       <% end %>
+    <% else %>
+      <% t.empty_cell %>
+    <% end %>
+
   <% end %>
 
-  <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
-    <%= show_table(@provider, :as => :data_provider, :header => "SSH parameters for remote Data Providers", :edit_condition => true) do |t| %>
-      <% t.edit_cell(:remote_host)  do |f| %>
-        <%= f.text_field :remote_host %>
+  <% if has_owner_access && needs_ssh_config %>
+    <%= show_table(@provider, :as => :data_provider, :header => "SSH parameters", :edit_condition => true) do |t| %>
+      <% t.edit_cell(:remote_host, :show_width => 2)  do |f| %>
+        <%= f.text_field :remote_host, :size => 40 %>
       <% end %>
-      <% t.edit_cell(:alternate_host, :header => "Alternate hostname(s)")  do |f| %>
-        <%= f.text_field :alternate_host, :size => 60 %><br />
-        <div class="field_explanation">Comma-separated list of alternate hostnames; hostname1,hostname2,hostname3,...</div>
+      <% if check_role(:admin_user) %>
+        <% t.edit_cell(:alternate_host, :show_width => 2, :header => "Alternate hostname(s)")  do |f| %>
+          <%= f.text_field :alternate_host, :size => 100 %><br />
+          <div class="field_explanation">Comma-separated list of alternate hostnames; hostname1,hostname2,hostname3,...</div>
+        <% end %>
+      <% end %>
+      <% t.edit_cell(:remote_user) do |f| %>
+        <%= f.text_field :remote_user, :size => 40 %>
       <% end %>
       <% t.edit_cell(:remote_port) do |f| %>
         <%= f.text_field :remote_port, :size => 6 %>
       <% end %>
-      <% t.edit_cell(:remote_user) do |f| %>
-        <%= f.text_field :remote_user %>
-      <% end %>
     <% end %>
+  <% end %>
 
-    <% if @provider.is_a?(SingSquashfsDataProvider) || @provider.is_a?(SingBindmountDataProvider) %>
+  <% if @provider.is_a?(SingSquashfsDataProvider) || @provider.is_a?(SingBindmountDataProvider) %>
     <%= show_table(@provider, :as => :data_provider, :header => "Containerized Storage Configuration", :edit_condition => true) do |t| %>
       <% t.edit_cell(:containerized_path, :header => 'Containerized Data Path', :show_width => 2) do %>
         <%= text_field_tag "data_provider[containerized_path]", @provider.containerized_path, :size => 80 %>
       <% end %>
     <% end %>
-    <% end %>
+  <% end %>
 
+  <% if @provider.is_a?(S3DataProvider) || @provider.is_a?(S3FlatDataProvider) %>
     <%= show_table(@provider, :as => :data_provider, :header => "Cloud Storage Configuration", :edit_condition => true) do |t| %>
       <% t.edit_cell(:cloud_storage_client_identifier, :header => 'Client Identifier', :show_width => 2)  do |f| %>
         <%= f.text_field :cloud_storage_client_identifier, :size => 40, :autocomplete => 'off' %>
@@ -172,7 +179,9 @@
         <%= text_field_tag "data_provider[cloud_storage_region]", @provider.cloud_storage_region, :size => 80 %>
       <% end %>
     <% end %>
+  <% end %>
 
+  <% if @provider.is_a?(DataladDataProvider) %>
     <%= show_table(@provider, :as => :data_provider, :header => "Datalad Configuration", :edit_condition => true) do |t| %>
       <% t.edit_cell(:datalad_repository_url, :header => 'Datalad Repository URL', :show_width => 2)  do |f| %>
         <%= f.text_field :datalad_repository_url %>
@@ -264,10 +273,10 @@
 
 <p>
 
-<% if @provider.has_owner_access?(current_user) %>
-  <% if @provider.type == "UserkeyFlatDirSshDataProvider" %>
+<% if has_owner_access %>
+  <% if is_userkey_dp %>
     <%= render :partial => 'show_user_key' %>
-  <% elsif @provider.is_a?(SshDataProvider) || @provider.is_a?(SmartDataProviderInterface) %>
+  <% elsif needs_ssh_config %>
   <div>
     <table>
       <tr><th colspan="2" class="supertitle">Public SSH Key for this CBRAIN Portal</th></tr>
@@ -276,6 +285,8 @@
     </table>
   </div>
   <% end %>
+
+  <p>
 
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @provider.getlog, :title => "Data Provider Log" } %>
 <% end %>

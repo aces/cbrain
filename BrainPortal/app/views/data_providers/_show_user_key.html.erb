@@ -23,28 +23,41 @@
 -%>
 
 
-<div class="display_cell" style="padding-left: 1em;">
   <table>
-    <tr><th class="supertitle"> Configuration instructions </th></tr>
-    <tr><td>
-      Download
-      <%= link_to "mykey.pub", "data:plain;charset=utf-8,#{url_encode(@provider.user.ssh_key(create_it: true).public_key) rescue "Error fetching public key" }" , download: "mykey.pub" %>
-      file and open command line in the folder you downloaded the file (typically called Downloads).
-      <br>Then use the following command to add it to the authorized_keys file on the host. Remember to replace
-      REMOTE_USERNAME <br> and REMOTE_HOSTNAME stabs with the values that you provided in SSH parameters section
+    <tr><th class="supertitle">SSH Key Configuration Instructions</th></tr>
+
+    <tr><td class="left_align medium_paragraphs">
+      The box below shows your personal, public SSH key that the CBRAIN system will use
+      to connect to your Data Provider. It is one line of text that needs to be installed
+      in your home directory on the remote host you configured for your Data Provider.
+      <p>
+      <Strong>For experts:</strong> if you are already familiar with this type of setup, you can simply cut-and-paste the
+      key with a text editor in the file <em>.ssh/authorized_keys</em> on the remote system.
+      Make sure permissions on the folder <em>.ssh</em> are 'rwx------' and on the file <em>authorized_keys</em> are 'rw-------'.
+      <p>
+      <Strong>For newcomers:</strong> consider downloading the key using the link below and saving it as a file 'mykey.pub' on
+      your current computer (or any computer). Then in a bash shell, run the 'ssh-copy-id' command as
+      explained below and it will automatically connect to the remote host
+      and install the key for you. The full command is:<p>
     </td></tr>
-    <tr><th class="supertitle"> Command line </th></tr>
-    <tr><td>
-      <pre class="ssh_key"> cat mykey.pub | ssh REMOTE_USERNAME@REMOTE_HOSTNAME "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >>  ~/.ssh/authorized_keys</pre>
+
+    <tr><td class="left_align medium_paragraphs">
+      <pre>ssh-copy-id -f -i mykey.pub -p <%= @provider.remote_port.presence || '22' %> <%= @provider.remote_user.presence || '[username_from_config_above]' %>@<%= @provider.remote_host.presence || '[hostname_from_config_above]' %></pre>
     </td></tr>
-    <tr><td>
-      If download did not work paste the ssh key bellow in a text file and rerun the command line
-    </tr></td>
-    <tr><th class="supertitle">Public SSH Key</th></tr>
-    <tr><td><pre class="ssh_key"><%= pretty_ssh_key @provider.user.ssh_key(create_it: true).public_key rescue "Error fetching public key" %></pre></td></tr>
-    <tr><td>
-      Note that revealing this key's content to other people causes no security risks. <br>
+
+    <tr><td class="left_align medium_paragraphs">
+      Note that revealing this key's content to other people causes no security risks.
       The information in this key is meant to be public and people cannot use it to access your information.
     </tr></td>
+
+    <tr><th class="supertitle">Your Personal CBRAIN Public SSH Key</th></tr>
+
+    <tr><td><pre class="ssh_key"><%= pretty_ssh_key @provider.user.ssh_key(create_it: true).public_key rescue "Error fetching public key" %></pre></td></tr>
+
+    <tr><td>
+      Download link:
+      <%= link_to "mykey.pub", "data:plain;charset=utf-8,#{url_encode(@provider.user.ssh_key(create_it: true).public_key) rescue "Error fetching public key" }" , download: "mykey.pub" %>
+    </td></tr>
+
   </table>
-</div>
+
