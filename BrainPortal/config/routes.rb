@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2023
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -115,10 +115,13 @@ Rails.application.routes.draw do
       get  'report'
       post 'report'
       post 'repair'
+      post 'check_personal'
     end
     collection do
       get  'dp_access'
       get  'dp_transfers'
+      get  'new_personal'
+      post 'create_personal'
     end
   end
 

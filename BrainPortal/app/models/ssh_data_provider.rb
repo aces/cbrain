@@ -297,7 +297,67 @@ class SshDataProvider < DataProvider
     super(issue)
   end
 
+  # Checks connection and other common problems.
+  # Raises exception DataProviderTestConnectionError if connection is down or
+  # common config issues detected. Returns true if everything is OK.
+  def check_connection!
+    err_message = self.find_connection_issues
+    raise DataProviderTestConnectionError.new(err_message) if err_message.present?
+    true
+  end
+
   protected
+
+  # Verifies the configuration and returns a string with a descriptive
+  # error message if something is wrong.
+  def find_connection_issues
+    master  = self.master # This is a handler for the connection, not persistent.
+    tmpfile = "/tmp/dp_check.#{Process.pid}.#{rand(1000000)}" # prefix for .out and .err capture files
+
+    # Check #1: the SSH connection can be established
+    if ! master.is_alive?
+      return "Cannot establish the SSH connection. Check the configuration: username, hostname, port are valid, and SSH key is installed."
+    end
+
+    # Check #2: we can run "true" on the remote site and get no output
+    status = master.remote_shell_command_reader("true",
+                                                :stdin  => "/dev/null",
+                                                :stdout => "#{tmpfile}.out",
+                                                :stderr => "#{tmpfile}.err"
+    )
+    stdout = File.read("#{tmpfile}.out") rescue "Error capturing stdout"
+    stderr = File.read("#{tmpfile}.err") rescue "Error capturing stderr"
+    if stdout.size != 0
+      stdout.strip! if stdout.present? # just to make it pretty while still reporting whitespace-only strings
+      return "Remote shell is not clean: got some bytes on stdout: '#{stdout}'"
+    end
+    if stderr.size != 0
+      stderr.strip! if stdout.present?
+      return "Remote shell is not clean: got some bytes on stderr: '#{stderr}'"
+    end
+    if !status
+      return "Got non-zero return code when trying to run 'true' on remote side."
+    end
+
+    # Check #3: the remote directory exists
+    master.remote_shell_command_reader "test -d #{self.remote_dir.bash_escape} && echo DIR-OK", :stdout => "#{tmpfile}.out"
+    out = File.read("#{tmpfile}.out")
+    if out != "DIR-OK\n"
+      return "The remote directory doesn't seem to exist."
+    end
+
+    # Check #4: the remote directory is readable
+    master.remote_shell_command_reader "test -r #{self.remote_dir.bash_escape} && test -x #{self.remote_dir.bash_escape} && echo DIR-READ", :stdout => "#{tmpfile}.out"
+    out = File.read("#{tmpfile}.out")
+    if out != "DIR-READ\n"
+      return "The remote directory doesn't seem to be readable"
+    end
+
+    return nil # No error messages means all is OK
+  ensure
+    File.unlink("#{tmpfile}.out") rescue nil
+    File.unlink("#{tmpfile}.err") rescue nil
+  end
 
   # Returns a list of all files in remote directory +dirname+, with all their
   # associated metadata; size, permissions, access times, owner, group, etc.
