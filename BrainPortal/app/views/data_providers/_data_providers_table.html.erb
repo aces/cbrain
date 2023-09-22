@@ -3,7 +3,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2023
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -30,10 +30,14 @@
 <div class="menu_bar">
 
   <% if check_role(:site_manager) || check_role(:admin_user) %>
-    <%= link_to "Create New Data Provider", new_data_provider_path, :class => "button menu_button" %>
+    <%= link_to "Create New System Data Provider", new_data_provider_path, :class => "button menu_button" %>
   <% end %>
 
-  <%= link_to "Check All", nil, {:class => "button check_all_dp",} %>
+  <%= link_to "Create Personal Data Provider", new_personal_data_providers_path, :class => "button menu_button" %>
+
+  <% if check_role(:admin_user) %>
+    <%= link_to "Check All", nil, {:class => "button check_all_dp",} %>
+  <% end %>
 
   <%= link_to "User Access Report",
              {:controller  => :data_providers, :action  => :dp_access},

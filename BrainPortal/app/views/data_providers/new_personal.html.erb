@@ -1,0 +1,100 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2023
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title 'Add New Personal Data Provider' %>
+
+<h2>Add New Personal SSH-based Data Provider</h2>
+
+<%= error_messages_for(@provider) %>
+
+<%= form_for @provider, :as => :data_provider, :url => { :action => "create_personal" }, :datatype => "script" do |f| -%>
+
+  <div class="generalbox">
+
+    <div title="The name of the data provider.">
+      <%= f.label :name, "Name" %><br>
+      <%= f.text_field :name %>
+      <div class="field_explanation">This should be a simple identifier with no special characters or spaces</div>
+    </div>
+
+    <p>
+
+    <div title="Brief description of the data provider.">
+      <%= f.label :description, "Description" %><br>
+      <%= f.text_area :description, :rows => 3, :cols => 85 %>
+      <div class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</div>
+    </div>
+
+    <p>
+
+    <div title="Project ownership of this data provider. Project members will have access to the provider, but will not be able configure it.">
+      <%= f.label :group_id, "Project" %><br>
+      <%= group_select("data_provider[group_id]", { :groups => @groups, :selector => @provider.group_id.to_s }) %>
+      <div class="field_explanation">This will control which users within CBRAIN can view and access the files on your storage. The default and recommended project is your own private project, '<%= current_user.own_group.name %>'.</div>
+    </div>
+
+    <p>
+
+    <fieldset class="groupentry">
+      <legend>SSH parameters</legend>
+
+      <div title="Name of the remote machine on which the data provider is located.">
+        <%= f.label :remote_host, "Remote Hostname" %><br>
+        <%= f.text_field :remote_host, :size => 40 %>
+      </div>
+
+      <p>
+
+      <div title="Username on the remote machine where the data provider is located.">
+        <%= f.label :remote_user, "Remote Username" %><br>
+        <%= f.text_field :remote_user, :size => 40 %>
+      </div>
+
+      <p>
+
+      <div title="Port number used to access remote machine on which the data provider is located. ">
+        <%= f.label :remote_port, "Remote Port Number" %><br>
+        <%= f.text_field :remote_port, :size => 6 %>
+      </div>
+
+      <p>
+
+      <div title="Directory used for storing files">
+        <%= f.label :remote_dir, "Full Directory Path" %><br>
+        <%= f.text_field :remote_dir, :size => 80 %>
+      </div>
+
+    </fieldset>
+  </div>
+
+  <p>
+
+  <%= render :partial => 'show_user_key' %>
+
+  <p>
+
+  <%= submit_tag 'Create New Data Provider' %></p>
+
+<% end %>
+

@@ -29,9 +29,6 @@ class NhStoragesController < NeurohubApplicationController
 
   before_action :login_required
 
-  # A private exception class when testing connectivity
-  class UserKeyTestConnectionError < RuntimeError ; end
-
   def new #:nodoc:
     @nh_dp       = UserkeyFlatDirSshDataProvider.new
     @nh_projects = find_nh_projects(current_user)
@@ -204,70 +201,19 @@ class NhStoragesController < NeurohubApplicationController
 
     @nh_dp.update_column(:online, true)
 
-    master  = @nh_dp.master # This is a handler for the connection, not persistent.
-    tmpfile = "/tmp/dp_check.#{Process.pid}.#{rand(1000000)}"
-
-    # Check #1: the SSH connection can be established
-    if ! master.is_alive?
-      test_error "Cannot establish the SSH connection. Check the configuration: username, hostname, port are valid, and SSH key is installed."
-    end
-
-    # Check #2: we can run "true" on the remote site and get no output
-    status = master.remote_shell_command_reader("true",
-      :stdin  => "/dev/null",
-      :stdout => "#{tmpfile}.out",
-      :stderr => "#{tmpfile}.err",
-    )
-    stdout = File.read("#{tmpfile}.out") rescue "Error capturing stdout"
-    stderr = File.read("#{tmpfile}.err") rescue "Error capturing stderr"
-    if stdout.size != 0
-      stdout.strip! if stdout.present? # just to make it pretty while still reporting whitespace-only strings
-      test_error "Remote shell is not clean: got some bytes on stdout: '#{stdout}'"
-    end
-    if stderr.size != 0
-      stderr.strip! if stdout.present?
-      test_error "Remote shell is not clean: got some bytes on stderr: '#{stderr}'"
-    end
-    if ! status
-      test_error "Got non-zero return code when trying to run 'true' on remote side."
-    end
-
-    # Check #3: the remote directory exists
-    master.remote_shell_command_reader "test -d #{@nh_dp.remote_dir.bash_escape} && echo DIR-OK", :stdout => tmpfile
-    out = File.read(tmpfile)
-    if out != "DIR-OK\n"
-      test_error "The remote directory doesn't seem to exist."
-    end
-
-    # Check #4: the remote directory is readable
-    master.remote_shell_command_reader "test -r #{@nh_dp.remote_dir.bash_escape} && test -x #{@nh_dp.remote_dir.bash_escape} && echo DIR-READ", :stdout => tmpfile
-    out = File.read(tmpfile)
-    if out != "DIR-READ\n"
-      test_error "The remote directory doesn't seem to be readable"
-    end
+    # Performs an active check of the connection; will
+    # raise DataProviderTestConnectionError if something is wrong.
+    @nh_dp.check_connection!
 
     # Ok, all is well.
     flash[:notice] = "The configuration was tested and seems to be operational."
     redirect_to :action => :show
 
-  rescue UserKeyTestConnectionError => ex
+  rescue DataProviderTestConnectionError => ex
     flash[:error]  = ex.message
     flash[:error] += "\nThis storage is marked as 'offline' until this test pass."
     @nh_dp.update_column(:online, false)
     redirect_to :action => :show
-
-  ensure
-    File.unlink "#{tmpfile}.out" rescue true
-    File.unlink "#{tmpfile}.err" rescue true
-
-  end
-
-  private
-
-  # Utility method to raise an exception
-  # when testing for a DP's configuration.
-  def test_error(message) #:nodoc:
-    raise UserKeyTestConnectionError.new(message)
   end
 
 end
