@@ -33,24 +33,15 @@ module GroupsHelper
     return group.to_s.downcase unless group.is_a?(Group)
 
     # SystemGroup subclasses; UserGroup => "user", EveryoneGroup => "everyone"
-    return group.class.name.demodulize.match(/\A([A-Z][a-z]+)/).to_s.downcase if group.is_a?(SystemGroup)
+    return "user"     if group.is_a?(UserGroup)
+    return "everyone" if group.is_a?(EveryoneGroup)
+    return "site"     if group.is_a?(SiteGroup)
 
     group_user_count ||= group.users.count
 
-    return "invisible" if group.invisible?
     return "public"    if group.public?
-    return "empty"     if group_user_count == 0
     return "shared"    if group_user_count > 1
-    return "personal"
+    return "private"
   end
 
-  # Produces a centered legend for every distinct group type in +groups+
-  def group_legend(groups)
-    return if groups.blank?
-
-    center_legend(nil, groups.map { |g| css_group_type(g) }.uniq.map { |g|
-      # 9675: UTF8 white circle, 9679: UTF8 black circle
-      ["<span class=\"#{g}_project_point\">&##{g == "all" ? "x25ef" : "x2b24"};</span>", "#{g.titleize} Project"]
-    })
-  end
 end
