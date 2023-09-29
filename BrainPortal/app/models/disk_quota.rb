@@ -96,6 +96,29 @@ class DiskQuota < ApplicationRecord
     raise CbrainDiskQuotaExceeded.new(user_id, data_provider_id)
   end
 
+
+  # Returns true if currently, the user specified by +user_id+
+  # uses uses almost all disk space or more total files on +data_provider_id+ than
+  # the quota limit configured by the admin. A share is considered almost all
+  # if it exceeds fraction. Fraction should be a number greater than 0 and smaller
+  # than 1
+  #
+  # The quota record for the limits is first looked up specifically for the pair
+  # (user, data_provider); if no quota record is found, the pair (0, data_provider)
+  # will be fetched instead (meaning a default quota for all users on that DP)
+  #
+  # Possible returned values:
+  # nil              : all is OK
+  # :bytes           : disk space is exceeded
+  # :files           : number of files is exceeded
+  # :bytes_and_files : both are exceeded
+  def self.almost_exceeded?(user_id, data_provider_id)
+    quota   = self.where(:user_id => user_id, :data_provider_id => data_provider_id).first
+    quota ||= self.where(:user_id => 0      , :data_provider_id => data_provider_id).first
+    return nil if quota.nil?
+    quota.almost_exceeded?(user_id)
+  end
+
   # Returns true if currently, the user specified by +user+ (specified by id)
   # uses more disk space or more total files on than configured in the limits
   # of this quota object. Since a quota object can contain '0' for the user attribute
@@ -135,6 +158,38 @@ class DiskQuota < ApplicationRecord
     return nil if user_id == 0 # just in case
     return nil if ! self.exceeded?(user_id)
     raise CbrainDiskQuotaExceeded.new(user_id, self.data_provider_id)
+  end
+
+  # same as exceeded but evaluates true also when almost all allowed disk space or file
+  # quota are used
+  def almost_exceeded?(user_id = self.user_id, fraction = 0.95)
+
+    return nil if user_id == 0 # just in case
+
+    @cursize, @curfiles = Rails.cache.fetch(
+      "disk_usage-u=#{user_id}-dp=#{data_provider_id}",
+      :expires_in => CACHED_USAGE_EXPIRATION
+    ) do
+      req = Userfile
+              .where(:user_id          => user_id)
+              .where(:data_provider_id => data_provider_id)
+      [ req.sum(:size), req.sum(:num_files) ]
+    end
+
+    what_is_exceeded = nil
+
+    # exceeded? method, as a side effect sets @cursize and @
+
+    if @cursize  > self.max_bytes * fraction
+      what_is_exceeded = :bytes
+    end
+
+    if @curfiles > self.max_files * fraction
+      what_is_exceeded &&= :bytes_and_files
+      what_is_exceeded ||= :files
+    end
+
+    return what_is_exceeded # one of nil, :bytes, :files, or :bytes_and_files
   end
 
   #####################################################
