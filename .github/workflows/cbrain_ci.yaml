@@ -24,7 +24,7 @@ jobs:
     ###########################################################
     services:
       mariadb:
-        image: mariadb/server
+        image: mariadb
         env: # the docker container's autosetup use MYSQL_ variables
           MYSQL_ROOT_PASSWORD: that_is_nothing
           MYSQL_DATABASE:      cbrain_test
