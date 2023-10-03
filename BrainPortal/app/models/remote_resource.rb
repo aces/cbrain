@@ -524,8 +524,8 @@ class RemoteResource < ApplicationRecord
     cb_error "SSH public key only accessible for the current resource." unless self.id == self.class.current_resource.id
     return @ssh_public_key if @ssh_public_key
     home = CBRAIN::Rails_UserHome
-    if File.exists?("#{home}/.ssh/id_cbrain_portal.pub")
-      @ssh_public_key = File.read("#{home}/.ssh/id_cbrain_portal.pub") rescue ""
+    if File.exists?("#{home}/.ssh/id_cbrain_ed25519.pub")
+      @ssh_public_key = File.read("#{home}/.ssh/id_cbrain_ed25519.pub") rescue ""
     else
       @ssh_public_key = ""
     end
