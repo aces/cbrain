@@ -382,7 +382,7 @@ class User < ApplicationRecord
   # If option +create_it+ is true, create the key files if necessary.
   # If option +ok_no_files+ is true, will return the object even if
   # the key files don't exist yet (default it to raise an exception)
-  def ssh_key(options = { :create_id => false, :ok_no_files => false })
+  def ssh_key(options = { :create_it => false, :ok_no_files => false })
     name = "u#{self.id}" # Avoiding username in ssh filenames or in comment.
     return SshKey.find_or_create(name) if options[:create_it]
     return SshKey.new(name)            if options[:ok_no_files]

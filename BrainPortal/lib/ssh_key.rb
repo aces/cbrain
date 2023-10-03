@@ -39,7 +39,7 @@ class SshKey
   CONFIG = { #:nodoc:
     :ssh_keys_dir     => (Rails.root rescue nil) ? "#{Rails.root.to_s}/user_keys" : "/not/yet/configured",
     :exec_ssh_keygen  => `bash -c "type -p ssh-keygen"`.strip,
-    :ssh_keygen_type  => "rsa",
+    :ssh_keygen_type  => "ed25519",
     :debug            => false,
   }
 
