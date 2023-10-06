@@ -493,9 +493,9 @@ class ToolConfig < ApplicationRecord
 
       case kind # different validations rules for file, userfile and dp specs
       when 'file', 'old style file' # full path specification for a local file, e.g. "file:/myfiles/c.sqs"
-        if id_or_name !~ /^\/\S+\.(sqs|squashfs)$/i
+        if id_or_name !~ /^\/\S+\.(sqs|sqfs|squashfs)$/
           self.errors.add(:singularity_overlays_specs,
-            " contains invalid #{kind} named '#{id_or_name}'. It should be a full path that ends in .squashfs or .sqs")
+            " contains invalid #{kind} named '#{id_or_name}'. It should be a full path that ends in .squashfs, .sqs or .sqfs")
         end
 
       when 'userfile' # db-registered file spec, e.g. "userfile:42"
@@ -510,9 +510,9 @@ class ToolConfig < ApplicationRecord
           self.errors.add(:singularity_overlays_specs,
             %{" contains invalid userfile id '#{id_or_name}'. The file with id '#{id_or_name}' is not found."}
           )
-        elsif ! userfile.name.end_with?('.sqs') && ! userfile.name.end_with?('.squashfs')
+        elsif userfile.name.to_s !~ /\.(sqs|sqfs|squashfs)$/
           self.errors.add(:singularity_overlays_specs,
-          " contains invalid userfile with id '#{id_or_name}' and name '#{userfile.name}'. File name should end in .squashfs or .sqs")
+          " contains invalid userfile with id '#{id_or_name}' and name '#{userfile.name}'. File name should end in .squashfs, .sqs or .sqfs")
           # todo maybe or/and check file type?
         end
 

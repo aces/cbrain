@@ -61,11 +61,11 @@ class SquashifierEnCbrainSshDataProvider < EnCbrainSshDataProvider
   def impl_sync_to_cache(userfile) #:nodoc:
     return super if userfile.is_a?(SingleFile)
 
-    # Normal code will fetch (remote) basename/basename.sqs into (local) basename/basename.sqs
+    # Normal code will fetch (remote) basename/basename.squashfs into (local) basename/basename.squashfs
     super
 
     # Then we unsquash it all
-    fullpath    = cache_full_path(userfile) # path to dir; in it is the .sqs file
+    fullpath    = cache_full_path(userfile) # path to dir; in it is the .squashfs file
     cacheparent = fullpath.parent
     basename    = userfile.name
     tmpdirbase  = ".tmp.unsq.#{Process.pid}"
