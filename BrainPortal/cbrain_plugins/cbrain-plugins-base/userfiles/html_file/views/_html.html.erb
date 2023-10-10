@@ -1,0 +1,41 @@
+
+<%
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2023
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+%>
+
+
+
+<%= link_to h("Open in a separate tab"), url_for(:controller  => :userfiles, :id  => @userfile.id, :action  => :display, :viewer => :html, :content_viewer => "on", :file_name => @userfile.name), :target => "_blank" if params[:action] == "show" %>
+
+<iframe sandbox
+    src="<%= stream_userfile_path(@userfile, :disposition => 'inline')%>"
+    class="bigiframe"
+    style="width:100%; height: 100%;"
+ >
+    HTML Viewer
+</iframe>
+HTML was sandboxed and filtered for greter safety
+<%= link_to h("Show as is in a separate tab, without any safety filters"), stream_userfile_path(@userfile, :disposition => 'inline'), :target => "_blank" %>
+
+
+
+
