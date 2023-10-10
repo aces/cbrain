@@ -34,15 +34,5 @@ class HtmlFile < TextFile
   def self.pretty_type #:nodoc:
     "HTML File"
   end  
-
-  # def is_viewable? #:nodoc:
-  #   # check for unsafe elements (js?forms?)
-  #   if ! self.is_locally_synced?
-  #     return [ "hdf image file not yet synchronized" ]
-  #   else
-  #     true
-  #   end
-  # end
-
+  
 end
-
