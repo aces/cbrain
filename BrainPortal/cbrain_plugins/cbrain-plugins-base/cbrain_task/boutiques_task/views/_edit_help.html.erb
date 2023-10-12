@@ -59,6 +59,11 @@
   <p>
 <% end %>
 
+<% if @descriptor.author.present? %>
+  <strong>Tool Author:</strong> <%= @descriptor.author %>
+  <br>
+<% end %>
+
 <% if @descriptor.tool_doi.present? %>
   <strong>Tool DOI:</strong> <%= link_to @descriptor.tool_doi, @descriptor.tool_doi, :target => '_blank', :class => 'action_link' %>
   <br>
@@ -70,7 +75,7 @@
 <% end %>
 
 <% if @descriptor.descriptor_url.present? %>
-  <strong>Boutiques Descriptor::</strong> <%= link_to @descriptor.descriptor_url, @descriptor.descriptor_url, :target => '_blank', :class => 'action_link' %>
+  <strong>Boutiques Descriptor:</strong> <%= link_to @descriptor.descriptor_url, @descriptor.descriptor_url, :target => '_blank', :class => 'action_link' %>
   <br>
 <% end %>
 
