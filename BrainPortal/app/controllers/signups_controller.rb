@@ -64,6 +64,8 @@ class SignupsController < ApplicationController
       flash[:error] = "It seems some error occurred. The email notification was probably not sent. There's nothing we can do about this."
     end
 
+    send_admin_notification(@signup)
+
     sleep 1
     redirect_to signup_path(@signup)
   end
@@ -128,7 +130,6 @@ class SignupsController < ApplicationController
       @signup.confirmed = true
       @signup.save
       @propose_view = can_edit?(@signup)
-      send_admin_notification(@signup)
       return # renders confirm.html.erb
     end
 
