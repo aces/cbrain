@@ -21,7 +21,7 @@
 #
 
 #Abstract model representing a job running on a cluster. This is the core class for
-#launching GridEngine/PBS/MOAB/UNIX jobs (etc) using Scir.
+#launching Slurm/GridEngine/PBS/MOAB/UNIX jobs (etc) using Scir.
 #
 #=Attributes:
 #[<b>user_id</b>] The id of the user who requested this task.
@@ -1957,6 +1957,7 @@ exit $status
         self.cluster_jobid = jobid
         self.status_transition(self.status, "Queued")
         self.addlog("Queued as job ID '#{jobid}'.")
+        self.addlog("Job '#{jobid}' walltime is #{job.walltime}, extra args are '#{job.tc_extra_qsub_args}'" )
       rescue NoVmAvailableError => ex
         # When the task is executed in a VM, it may not be submitted
         # right away when no VMs are available. In such a case, method
