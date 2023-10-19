@@ -1,0 +1,112 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2023
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+  <% @groups = @groups.to_a.unshift('ALL')%>
+  <%=
+    dynamic_scoped_table(@groups,
+      :id         => 'groups_table',
+      :class      => [ :resource_list ],
+      :scope      => @scope,
+      :order_map  => {
+        :site    => { :a => 'sites.name',  :j => Site },
+        :creator => { :a => 'users.login', :j => User }
+      },
+      :filter_map => {
+        :site    => { :a => 'site_id'    },
+        :creator => { :a => 'creator_id' }
+      }
+    ) do |t|
+      t.paginate
+
+      t.row do |g|
+        next unless (g == "ALL")
+        switch = link_to 'Switch', { :action => :switch, :id => "all"},
+                                    :class   => 'action_link',
+                                    :method  => :post
+        row_content =
+          {:name           => "All",
+           :description    => "Represents all the projects",
+           :type           => "All Projects",
+           :site           => "",
+           :creator_id     => "",
+           :users          => "",
+           :files          => @group_id_2_userfile_counts[nil] || "(None)",
+           :tasks          => @group_id_2_task_counts[nil] || "(None)",
+           :switch         => switch,
+          }
+        {
+          :override => lambda { |g,r,t|
+            row_content.map { |k,v|
+              "<td class=\"#{k}\" data-column=\"#{k}\">#{v}</td>"}.join.html_safe
+          }
+        }
+      end
+
+
+
+      t.column("Name", :name,
+        :sortable => true
+      ) { |g| link_to_group_if_accessible(g) }
+
+      t.column("Description", :description,
+        :sortable => true,
+      ) { |g| overlay_description(g.description) }
+
+      t.column("Project Type", :type,
+        :sortable => true,
+        :filters  => default_filters_for(@base_scope, :type)
+      ) { |g| g.pretty_category_name(current_user) }
+
+      t.column("Site", :site,
+        :sortable => true,
+        :filters  => default_filters_for(@base_scope, Site)
+      ) { |g| link_to_site_if_accessible(g.site) }
+
+      t.column("Creator", :creator_id,
+        :sortable => true,
+        :filters => scoped_filters_for(
+          @base_scope, @view_scope, :creator_id,
+          scope: @scope,
+          label: 'users.login',
+          association: [User, 'id', 'creator_id']
+        )
+      ) { |g| link_to_user_if_accessible(g.creator) }
+
+      t.column("Users", :users) do |g|
+        @group_id_2_user_counts[g.id].to_s.presence || html_colorize("(none)", "red")
+      end
+      t.column("Files", :files) do |g|
+        index_count_filter @group_id_2_userfile_counts[g.id], :userfiles, { :group_id => g.id }, :show_zeros => true
+      end
+      t.column("Tasks", :tasks) do |g|
+        index_count_filter @group_id_2_task_counts[g.id], :tasks, { :group_id => g.id }, :show_zeros => true
+      end
+
+      t.column("Switch", :switch) do |g|
+        link_to 'Switch', { :action => :switch, :id => g.id },
+          :class   => 'action_link',
+          :method  => :post
+      end
+    end
+  %>

@@ -1,0 +1,99 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2023
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+# This partial must receive tab_groups as an array of Groups (with or without the single special string 'ALL')
+%>
+
+  <% current_user_id = current_user.id %>
+
+  <div style="display: inline-block">
+    <% css_small = "small" if @scope.custom[:small_buttons] %>
+    <% tab_groups.each do |g| %>
+
+      <% if g == "ALL" %>
+        <div style="color:black" data-href="<%= url_for(:action => :switch, :id => "all") %>" data-method="post" class="project_button <%= css_small %>">
+          <h4 style="color:black">All</h4>
+          <hr>
+          Files: <%= @group_id_2_userfile_counts[nil] || "(None)" %><br>
+          Tasks: <%= @group_id_2_task_counts[nil] || "(None)" %><br>
+        </div>
+      <% else %>
+
+        <%
+          user_count = @group_id_2_user_counts[g.id].to_i
+          css_type   = css_group_type(g, user_count)
+          desc_first = nil
+          desc_rest  = nil
+          if g.description.present?
+            desc_lines = g.description.lines.to_a
+            desc_first = desc_lines.shift.presence
+            desc_rest  = desc_lines.join.presence
+          end
+         %>
+
+        <div data-href="<%= url_for(:action => :switch, :id => g.id) %>" data-method="post" class="project_button <%= css_small %> <%= css_type %>_project">
+          <h4><%= crop_text_to(25, g.name) %></h4>
+          <hr>
+
+          <% if g.creator_id != current_user_id || user_count > 1 %>
+            <span class="project_user_count">
+              <% if g.creator_id != current_user_id %>
+                Creator: <%= g.creator&.login %>
+              <% end %>
+              <% if user_count > 1 %>
+                (<%= pluralize(user_count,"user") %>)
+              <% end %>
+            </span>
+            <br>
+          <% end %>
+
+          <span class="project_files_count">
+          Files: <%= @group_id_2_userfile_counts[g.id].to_i %>
+          </span>
+
+          <span class="project_tasks_count">
+          Tasks: <%= @group_id_2_task_counts[g.id].to_i %>
+          </span>
+
+          <% if desc_first %>
+            <div class="project_button_description"><%= crop_text_to(35, desc_first) %></div>
+          <% end %>
+
+          <div class="project_button_details">
+            <% if desc_rest %>
+              <div class="project_button_description project_details"><%= crop_text_to(120, desc_rest) %></div>
+            <% end %>
+
+            <%= link_to g.can_be_edited_by?(current_user) ? "Edit" : "Show", group_path(g), :class => "project_edit_button project_button_bottom_link", :title => "Edit" %>
+
+            <% if g.is_a?(WorkGroup) && g.can_be_edited_by?(current_user) %>
+              <%= link_to "X", group_path(g), :method => :delete, :class => "project_delete_button project_button_bottom_link", :title => "Delete", :data => { :confirm => "Are you sure you want to delete project '#{h g.name}'?" } %>
+            <% end %>
+          </div>
+
+        </div>
+      <% end %>
+    <% end %>
+  </div>
