@@ -134,7 +134,7 @@
       <%= render :partial => 'view_buttons_tab', :locals => { :tab_groups => my_shared_groups } %>
     <% end %>
 
-    <%= other_users_shared_groups.presence && tb.tab("Other Users Shared Projects") do %>
+    <%= other_users_shared_groups.presence && tb.tab("Projects Shared With Me") do %>
       <p class="medium_paragraphs">
         These are projects created by other users who have invited you to join them.
         Files and tasks assigned to a project are visible to all users of that project.
@@ -157,14 +157,16 @@
       <%= render :partial => 'view_buttons_tab', :locals => { :tab_groups => site_groups } %>
     <% end %>
 
-    <%= user_groups.presence && tb.tab("Other Users System Projects") do %>
-      <p class="medium_paragraphs">Admin only</p>
-      <%= render :partial => 'view_buttons_tab', :locals => { :tab_groups => user_groups } %>
-    <% end %>
+    <% if current_user.has_role?(:admin_user) %>
+      <%= user_groups.presence && tb.tab("Other Users System Projects") do %>
+        <p class="medium_paragraphs">Admin only</p>
+        <%= render :partial => 'view_buttons_tab', :locals => { :tab_groups => user_groups } %>
+      <% end %>
 
-    <%= other_users_private_groups.presence && tb.tab("Other Users Private Projects") do %>
-      <p class="medium_paragraphs">Admin only</p>
-      <%= render :partial => 'view_buttons_tab', :locals => { :tab_groups => other_users_private_groups } %>
+      <%= other_users_private_groups.presence && tb.tab("Other Users Private Projects") do %>
+        <p class="medium_paragraphs">Admin only</p>
+        <%= render :partial => 'view_buttons_tab', :locals => { :tab_groups => other_users_private_groups } %>
+      <% end %>
     <% end %>
 
     <%= tb.tab("Special 'ALL' Project") do %>
