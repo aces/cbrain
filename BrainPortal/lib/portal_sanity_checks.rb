@@ -373,5 +373,23 @@ class PortalSanityChecks < CbrainChecker #:nodoc:
     scratch.meta['no_viewers'] = 'on'  # files can't be viewed in interface
   end
 
+  def self.ensure_expired_messages_are_purged #:nodoc:
+
+    #-----------------------------------------------------------------------------
+    puts "C> Ensuring expired Messages are purged"
+    #-----------------------------------------------------------------------------
+
+    todel = Message.all.to_a
+      .select { |m| m.expiry.present? }
+      .select { |m| m.expiry < Time.now }
+    if todel.size > 0
+      puts "C> \t - There are #{todel.size} messages to delete."
+      todel.each { |m| m.destroy }
+    else
+      puts "C> \t - There are no messages to delete."
+    end
+
+  end
+
 end
 
