@@ -3421,3 +3421,31 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
     }
   }
 }
+
+
+/* Subprojects /Neurohub links */
+
+.neurohub-tool {
+  height: $BAR_HEIGHT + rem; // patch that sets height for link_to element that does not return a link
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  a {
+    @extend .btn-text;
+
+    @extend .external;
+    @include text("xs");
+    padding: 0;
+    height: 100%;
+    text-decoration: none;
+    width: 100%;
+  }
+  img {
+    object-fit: contain;
+  }
+  .mini-logo {
+    height: 3em;
+  }
+}
+

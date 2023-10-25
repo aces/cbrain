@@ -28,7 +28,7 @@ class NeurohubPortalController < NeurohubApplicationController
   before_action :login_required
 
   # Main welcome/dashboard page
-  def welcome #:nodoc:
+  def news #:nodoc:
     @username = current_user.login
     bourreau_ids = Bourreau.find_all_accessible_by_user(current_user).raw_first_column("remote_resources.id")
     user_ids     = current_user.available_users.raw_first_column(:id)
@@ -40,6 +40,11 @@ class NeurohubPortalController < NeurohubApplicationController
       .to_a
       .select { |m| m.expiry.nil? || m.expiry > Time.now }
   end
+
+  def welcome
+    # tbd
+  end
+
 
   # This action searches among all sorts of models for IDs or strings,
   # and reports links to the matches found.
