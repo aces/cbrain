@@ -2,7 +2,7 @@
 #
 # NeuroHub Project
 #
-# Copyright (C) 2020
+# Copyright (C) 2020-2023
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -42,7 +42,7 @@ class NeurohubPortalController < NeurohubApplicationController
   end
 
   def welcome
-    # tbd
+    @username = current_user.login
   end
 
 

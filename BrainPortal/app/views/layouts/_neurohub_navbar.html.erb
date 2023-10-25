@@ -39,8 +39,7 @@
         </div>
         <div class="nh_navbar_buttons">
             <%= link_to 'Dashboard', neurohub_path,   { :class => "btn-nav secondary", "data-active"=> request.path_info.include?('welcome') || action_name==="welcome"   } %>
-            <%= link_to 'Projects', nh_projects_path, { :class => "btn-nav secondary", "data-active"=> request.path_info.include?('nh_projects') && action_name==="index" } %>
-            <%= link_to "Storage", nh_storages_path,  { :class => "btn-nav secondary", "data-active"=> request.path_info.include?('nh_storages') && action_name==="index" } %>
+            <%= link_to 'News', nh_news_path, { :class => "btn-nav secondary", "data-active"=> request.path_info.include?('welcome') && action_name==="news" } %>
             <% if @nh_invites_count > 0 %>
                 <%= link_to 'Invitations', nh_invitations_path, { :class => "btn-nav secondary badge", "data-badge"=> @nh_new_invites_count > 0 ? @nh_new_invites_count : nil, "data-active"=> request.path_info.include?('nh_invitations') && action_name==="index" } %>
             <% end %>
