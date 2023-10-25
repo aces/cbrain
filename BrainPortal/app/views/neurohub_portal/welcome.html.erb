@@ -21,60 +21,63 @@
 #
 -%>
 
-<%
-  require 'csv'
-  require 'ostruct'
-  csv_text       = File.read('public/neurohub_components/soft.csv')
-  csv            = CSV.parse(csv_text, :headers => true)
-  hashes         = csv.map {|row| row.to_hash.stringify_keys.transform_keys(&:downcase)} # rows to chashes
-  grouped_hashes = hashes.group_by {|h| h['boxid']}  # software components are grouped by categories
 
-  categories = grouped_hashes.values.map do |category|  # areas/categories
-    args              = category.first
-    args['subtitles'] = category.pluck('subtitle')  # specific tools or framework names
-    args['urls']      = category.pluck('url')       # links to sign up/login/landing page
-    args['images']    = category.pluck('image')     # logos
-    OpenStruct.new(args)
-  end
-%>
+<% cache('categorical_welcome_grid_v_1', expires_in: 30.minutes ) do %>
+  <%
+    require 'csv'
+    require 'ostruct'
+    csv_text       = File.read('public/neurohub_components/soft.csv')
+    csv            = CSV.parse(csv_text, :headers => true)
+    hashes         = csv.map {|row| row.to_hash.stringify_keys.transform_keys(&:downcase)} # rows to chashes
+    grouped_hashes = hashes.group_by {|h| h['boxid']}  # software components are grouped by categories
+
+    categories = grouped_hashes.values.map do |category|  # areas/categories
+      args              = category.first
+      args['subtitles'] = category.pluck('subtitle')  # specific tools or framework names
+      args['urls']      = category.pluck('url')       # links to sign up/login/landing page
+      args['images']    = category.pluck('image')     # logos
+      OpenStruct.new(args)
+    end
+  %>
 
 
-<% title("Dashboard", '') %>
+  <% title("Dashboard", '') %>
 
-<div id="nh_neurohub_portal_welcome">
-  <div class="main">
-    <div id="nh_projects" class="nh_content">
+  <div id="nh_neurohub_portal_welcome">
+    <div class="main">
+      <div id="nh_projects" class="nh_content">
 
-    <%- # Neurohub subcomponents -%>
+      <%- # Neurohub subcomponents -%>
 
-      <div class="grid">
-        <% categories.each do |category| %>
-          <div class="card">
-            <div class="btn-text primary card_heading">
-               </p><%=  category.title %>
-            </div>
-            <div class="card_text neurohub-tool ">
-              <% category.urls.each_with_index do |url, i| %>
-                <% if url.present? %>
+        <div class="grid">
+          <% categories.each do |category| %>
+            <div class="card">
+              <div class="btn-text primary card_heading">
+                 </p><%=  category.title %>
+              </div>
+              <div class="card_text neurohub-tool ">
+                <% category.urls.each_with_index do |url, i| %>
+                  <% if url.present? %>
 
-                  <%= link_to image_tag("/neurohub_components/" + category.images[i],
-                                        class: "mini-logo"),
-                            url if category.images[i].present? %>
-                  <%= link_to category.subtitles[i], url if category.subtitles[i].present? %>
+                    <%= link_to image_tag("/neurohub_components/" + category.images[i],
+                                          class: "mini-logo"),
+                              url if category.images[i].present? %>
+                    <%= link_to category.subtitles[i], url if category.subtitles[i].present? %>
 
-                <% else %>
-                  <%# if no url provided just put image and text%>
-                  image_tag("/neurohub_components/logos/" + category.images[i])
-                  <%=  category.subtitles[i] %>
+                  <% else %>
+                    <%# if no url provided just put image and text%>
+                    image_tag("/neurohub_components/logos/" + category.images[i])
+                    <%=  category.subtitles[i] %>
+                  <% end %>
                 <% end %>
-              <% end %>
+              </div>
+              <div class="card_text card_description">
+                <%= category.description.presence %>
+              </div>
             </div>
-            <div class="card_text card_description">
-              <%= category.description.presence %>
-            </div>
-          </div>
-        <% end %>
-      </div>>
+          <% end %>
+        </div>>
+      </div>
     </div>
   </div>
-</div>
+<% end %>
