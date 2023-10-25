@@ -24,13 +24,13 @@
 <%
   require 'csv'
   require 'ostruct'
-  csv_text = File.read('public/neurohub_components/soft.csv')
-  csv = CSV.parse(csv_text, :headers => true)
-  hashes = csv.map {|row| row.to_hash.stringify_keys.transform_keys(&:downcase)} # rows to chashes
+  csv_text       = File.read('public/neurohub_components/soft.csv')
+  csv            = CSV.parse(csv_text, :headers => true)
+  hashes         = csv.map {|row| row.to_hash.stringify_keys.transform_keys(&:downcase)} # rows to chashes
   grouped_hashes = hashes.group_by {|h| h['boxid']}  # software components are grouped by categories
 
   categories = grouped_hashes.values.map do |category|  # areas/categories
-    args = category.first
+    args              = category.first
     args['subtitles'] = category.pluck('subtitle')  # specific tools or framework names
     args['urls']      = category.pluck('url')       # links to sign up/login/landing page
     args['images']    = category.pluck('image')     # logos
