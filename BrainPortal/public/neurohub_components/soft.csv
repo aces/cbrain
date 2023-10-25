@@ -1,5 +1,5 @@
 Title,Subtitle,logo,rectangle,url,image,group,color,boxid,infopage,description
-Big Data Processing,,,,https://portal.cbrain.mcgill.ca,cbrain.png,,blue,1,, The cornerstone components delivering massive parallel data prosession on supercomputer clusters
+Big Data Processing,,,,https://portal.cbrain.mcgill.ca,cbrain.png,,blue,1,,"Web app streamlining collaborative massive parallel data processing on computer clusters, cornerstone of NeuroHub"
 C-Big,,,,https://cbigr.loris.ca,loris.png,,gray,2,,"LORIS-powered internal and public beta collections of neurological data of patients and healthy subjects"
 C-Big,,,,https://www.mcgill.ca/neuro/research/c-big-repository/resources-researchers,c-big.png,,gray,2,,
 UKBB Data Query,,,,https://ukbb.loris.ca/,loris.png,,gray,3,,"Records of participants having imaging data in UK Biobank, one of largest biomedical data collection"
@@ -8,7 +8,7 @@ Upcoming LORIS managed Datasets,,,,https://loris.ca,newloris.jpg,,gray,4,,
 Data Exploration,,,,https://jupyterhub.beluga.alliancecan.ca,jupyterhub.png,,brown,5,https://docs.alliancecan.ca/wiki/JupyterHub,
 Data Sharing,,,,https://www.zenodo.org,zenodo.png,,black,6,,
 Data Sharing,,,,https://osf.io,osf_black.jpeg,,black,6,,
-Open Publishing,,,,https://cbigr.loris.caneurolibre.org,neurolibre.svg,,DarkSlateGray,7,,Preprint service
+Open Publishing,,,,https://cbigr.loris.caneurolibre.org,neurolibre.svg,,DarkSlateGray,7,,Preprint and journal services
 Open Publishing,Apperture Neuro,,,https://apertureneuro.org/,appertureneuro.png,,DarkSlateGray,7,,"Low cost, open-access Journal for brain imaging and neuroscience"
 Open Data,,,,https://conp.ca,conp.png,,DarkSlateblue,8,,
 Open Data,,,,https://openneuro.org,openneuro.png,,DarkSlateblue,8,,
