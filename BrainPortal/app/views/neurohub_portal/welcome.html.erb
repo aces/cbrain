@@ -1,6 +1,6 @@
 <%-
 #
-# NeuroHub category
+# NeuroHub Project
 #
 # Copyright (C) 2020-2023
 # The Royal Institution for the Advancement of Learning
@@ -24,6 +24,10 @@
 
 <% cache('categorical_welcome_grid_v_1', expires_in: 30.minutes ) do %>
   <%
+    # The info about neurohub collection of data framework is extracted from a spreadsheet
+    # so can be adjusted without CBRAIN reboot
+    # Once the the collection is more stable, can be moved into model/controller
+
     require 'csv'
     require 'ostruct'
     csv_text       = File.read('public/neurohub_components/soft.csv')
@@ -47,7 +51,7 @@
     <div class="main">
       <div id="nh_projects" class="nh_content">
 
-      <%- # Neurohub subcomponents -%>
+      <%# Neurohub subcomponents grid -%>
 
         <div class="grid">
           <% categories.each do |category| %>
