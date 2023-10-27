@@ -59,8 +59,9 @@
               <div class="btn-text primary card_heading">
                  <%= category.title %>
               </div>
-              <div class="card_text neurohub-tool ">
+
                 <% category.urls.each_with_index do |url, i| %>
+                  <div class="card_text neurohub-tool ">
                   <% if url.present? %>
 
                     <%= link_to image_tag("/neurohub_components/" + category.images[i],
@@ -73,8 +74,9 @@
                     image_tag("/neurohub_components/logos/" + category.images[i])
                     <%=  category.subtitles[i] %>
                   <% end %>
+                  </div>
                 <% end %>
-              </div>
+
               <div class="card_text card_description">
                 <%= category.description.presence %>
               </div>
