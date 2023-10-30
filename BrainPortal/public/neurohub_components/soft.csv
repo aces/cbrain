@@ -1,9 +1,9 @@
 Title,Subtitle,logo,rectangle,url,image,group,color,boxid,infopage,description
 Big Data Processing,,,,https://portal.cbrain.mcgill.ca,cbrain.png,,blue,1,,"Web app streamlining collaborative massive parallel data processing on computer clusters, cornerstone of NeuroHub"
-C-Big,,,,https://cbigr.loris.ca,loris.png,,gray,2,,"LORIS-powered internal and public beta collections of neurological data of patients and healthy subjects"
+C-Big,,,,https://cbigr.loris.ca,loris.png,,gray,2,,LORIS-powered internal and public beta collections of neurological data of patients and healthy subjects
 C-Big,,,,https://www.mcgill.ca/neuro/research/c-big-repository/resources-researchers,c-big.png,,gray,2,,
 UKBB Data Query,,,,https://ukbb.loris.ca/,loris.png,,gray,3,,"Records of participants having imaging data in UK Biobank, one of largest biomedical data collection"
-UKBB Data Query,,,,https://ukbb.loris.ca/,ukbiobank.webp,,gray,3,
+UKBB Data Query,,,,https://ukbb.loris.ca/,ukbiobank.webp,,gray,3,,
 Upcoming LORIS managed Datasets,,,,https://loris.ca,newloris.jpg,,gray,4,,
 Data Exploration,,,,https://jupyterhub.beluga.alliancecan.ca,jupyterhub.png,,brown,5,https://docs.alliancecan.ca/wiki/JupyterHub,
 Data Sharing,,,,https://www.zenodo.org,zenodo.png,,black,6,,
@@ -14,4 +14,4 @@ Open Data,,,,https://conp.ca,conp.png,,DarkSlateblue,8,,
 Open Data,,,,https://openneuro.org,openneuro.png,,DarkSlateblue,8,,
 Upcoming,,,,https://neurobioinfo.github.io/MTSvieweR,mtsviewer.png,,gainsboro,9,,
 Upcoming,SERQ,,,https://seqr.broadinstitute.org/,seqr.png,,gainsboro,9,,
-Coming sooner than latter,Brain-Heart Interconnectome (McGill – OttawaU),,,https://www.uottawa.ca/research-innovation/brain-heart-interconnectome,,,gainsboro,10,,
+Coming sooner than latter,Brain-Heart Interconnectome (McGill – OttawaU),,,https://www.uottawa.ca/research-innovation/brain-heart-interconnectome,,,gainsboro,9,,
