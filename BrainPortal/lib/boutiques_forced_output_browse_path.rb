@@ -75,8 +75,25 @@ module BoutiquesForcedOutputBrowsePath
     config      = descriptor.custom_module_info('BoutiquesForcedOutputBrowsePath')
     browse_path = config[output.id]  # "a/b/c"
     return [ name, type ] if browse_path.blank? # no configured browse_path for this output
+    browse_path = apply_value_keys(browse_path) # replaces [XYZ] strings with values from params
     combined    = (Pathname.new(browse_path) + name).to_s # "a/b/c/name"
     [ combined, type ]
+  end
+
+  # Returns a modified version of browse_path where the
+  # substrings [XYZ] are replaced by the value-keys of
+  # the invoke structure.
+  def apply_value_keys(browse_path)
+    descriptor = self.descriptor_for_save_results
+
+    # Prepare the substitution hash
+    substitutions_by_token  = descriptor.build_substitutions_by_tokens_hash(
+                                JSON.parse(File.read(self.invoke_json_basename))
+                              )
+
+    new_browse_path = descriptor.apply_substitutions(browse_path, substitutions_by_token)
+
+    new_browse_path
   end
 
 end

@@ -210,6 +210,7 @@ module BoutiquesSupport
       self.inputs.map do |input|
         next nil if input.value_key.blank?
         value = invoke_structure[input.id]
+        value = input.default_value if value.nil?
         next nil if value.nil?
         [ input.value_key, value ]
       end.compact.to_h
