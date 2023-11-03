@@ -418,7 +418,7 @@ class BoutiquesPortalTask < PortalTask
     (
       val.nil? || # most of the time, the interface sends NO value at all, which is what we prefer
       (type == 'Flag' && val == "0")   || # checkboxes send their values as strings 0 and 1,
-      (type == 'Flag' && val == false)    # but normally they are transformed into bool in sanitize_params
+      (type == 'Flag' && val == false)    # but normally they are transformed into bool in sanitize_param()
     )
   end
 
@@ -482,6 +482,11 @@ class BoutiquesPortalTask < PortalTask
     name = input.id
     type = input.type.downcase.to_sym # old code convention from previous integrator
 
+    # For strings, we support a special list of parameters
+    # that can be empty strings.
+    descriptor = self.descriptor_for_after_form
+    empty_string_allowed = Array(descriptor.custom['cbrain:allow_empty_strings']).include?(name)
+
     # Taken userfile names. An error will be raised if two input files have the
     # same name.
     @taken_files ||= Set.new
@@ -510,7 +515,7 @@ class BoutiquesPortalTask < PortalTask
       when :string
         value = value.to_s if value.is_a?(Symbol)
         params_errors.add(invokename, " not a string (#{value})")      unless value.is_a?(String)
-        params_errors.add(invokename, " is blank")                         if value.blank?
+        params_errors.add(invokename, " is blank")                         if value.blank? && !empty_string_allowed
         # The following two checks are to prevent cases when
         # a string param is used as a path
         params_errors.add(invokename, " cannot contain newlines")          if value.to_s =~ /[\n\r]/
