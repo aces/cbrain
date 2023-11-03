@@ -255,7 +255,7 @@ class NocController < ApplicationController
 
       # Count of active statuses
       info[:status_counts] = b.is_a?(BrainPortal) ? [] :
-        b.cbrain_tasks.where(["updated_at > ?", since_when ])
+        b.cbrain_tasks.where(["updated_at > ? or status in (?)", since_when, CbrainTask::RUNNING_STATUS ])
                       .group(:status)
                       .count
                       .to_a  # [ [ status, count ], [ status, count ] ... ]
