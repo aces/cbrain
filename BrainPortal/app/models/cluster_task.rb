@@ -419,7 +419,6 @@ class ClusterTask < CbrainTask
   def make_available(userfile, file_path, userfile_sub_path = nil, start_dir = nil, copy_file = false)
     cb_error "File path argument must be relative" if
       file_path.to_s.blank? || file_path.to_s =~ /\A\//
-
     # Determine starting dir for relative symlink target calculation
     base_dir = start_dir || self.full_cluster_workdir
 
@@ -482,15 +481,15 @@ class ClusterTask < CbrainTask
       File.unlink(full_path) if File.symlink?(full_path.to_s) # potential race condition here
     end
 
-
     # Create the symlink or copy input data
     Dir.chdir(self.full_cluster_workdir) do
 
       # copying code
       #      note, presently we do not keep track what (user)file is copied so no exception is raised
       #      if file or link exists already
-      return userfile.cache_copy_to_local_file(full_path) if copy_file
 
+        # linking target is actually cached data, i.e. source
+        userfile.data_provider.lsync!(src=target, dst=file_path) if copy_file
 
       # symlinking code
       #      Do nothing if symlink already exists with proper value.
