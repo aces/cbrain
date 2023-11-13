@@ -81,7 +81,7 @@ class BoutiquesClusterTask < ClusterTask
       next if userfile_id.blank? # that happens when it's an optional file
       userfile    = Userfile.find(userfile_id)
 
-      # this flag indicates should one
+      # this flag indicates should one copy any input files rather than link (e.g. to fight side effects/races)
       copy_file = descriptor.custom.dig('cbrain:full-copy-input-files')&.include?(input.id)
 
       # Most common situation
