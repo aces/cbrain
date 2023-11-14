@@ -487,16 +487,15 @@ class ClusterTask < CbrainTask
       # copying code
       #      note, presently we do not keep track what (user)file is copied so no exception is raised
       #      if file or link exists already
-
-        # linking target is actually cached data, i.e. source
-        userfile.data_provider.lsync!(src=target, dst=file_path) if copy_file
+      #      more, target is actually cached dp data, i.e. source
+      userfile.data_provider.lsync!(src=target, dst=file_path) if copy_file
 
       # symlinking code
       #      Do nothing if symlink already exists with proper value.
       #      If there is something not a symlink in the way, or a symlink with a different
       #      value, the symlink() method will crash, which is what we want to
       #      catch the error in the situation.
-      unless File.symlink?(file_path.to_s) && File.readlink(file_path.to_s) == target.to_s
+      unless File.symlink?(file_path.to_s) && File.readlink(file_path.to_s) == target.to_s || copy_file
         File.symlink(target.to_s, file_path.to_s)
       end
     end
