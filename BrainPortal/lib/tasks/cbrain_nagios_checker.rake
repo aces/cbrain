@@ -43,6 +43,7 @@ namespace :cbrain do
       task :dps => :environment do
 
         CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
+        PortalSystemChecks.check([:z000_ensure_we_have_a_local_ssh_agent])
 
         # Restores STDOUT and STDERR so that nagios
         # can capture our pretty message at the end.
