@@ -3266,6 +3266,42 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
   }
 }
 
+#nh_portal_license {
+  .status {
+    @include text("xs");
+    svg {
+      @include mr(1);
+      width: 1rem;
+    }
+    &.success {
+      color: $SUCCESS_ALT;
+      svg {
+        fill: $SUCCESS_ALT;
+        stroke: $SUCCESS_ALT;
+      }
+    }
+    &.error {
+      color: $ERROR_BG;
+      svg {
+        fill: $ERROR_BG;
+        stroke: $ERROR_BG;
+      }
+    }
+  }
+
+
+  * , *:before, *:after {
+    box-sizing: border-box;
+  }
+  .license-text {
+    overflow: auto;
+  }
+  .btn-section {
+    align-self: flex-start;
+    flex: unset;
+  }
+}
+
 /*
 =============================================================
 | STORAGES

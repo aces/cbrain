@@ -60,5 +60,38 @@ class NeurohubPortalController < NeurohubApplicationController
     @projects = report[:projects]
   end
 
-end
+  def nh_sign_license #:nodoc:
+    @license = params[:license]
+    unless params.has_key?(:agree) # no validation for info pages
+      flash[:error] = "#Neurohub cannot be used without signing the End User Licence Agreement."
+      redirect_to '/signout'
+      return
+    end
+    num_checkboxes = params[:num_checkboxes].to_i
+    if num_checkboxes > 0
+      num_checks = params.keys.grep(/\Alicense_check/).size
+      if num_checks < num_checkboxes
+        flash[:error] = "There was a problem with your submission. Please read the agreement and check all checkboxes."
+        redirect_to :action => :nh_show_license, :license => @license
+        return
+      end
+    end
+    current_user.accept_license_agreement @license
+    redirect_to :action => :welcome
+  end
 
+  def nh_show_license #:nodoc:
+    @license = params[:license].gsub(/[^\w-]+/, "")
+
+    # NeuroHub signed licenses to be shown in NeuroHub, CBRAIN signed licenses to be shown in CBRAIN
+    unless @license.start_with? 'nh-'
+      flash[:error] = 'Redirecting to CBRAIN, this license is best viewed via CBRAIN'
+      redirect_to :controller => :portal, :action => :show_license, :license => @license
+      return
+    end
+
+    @is_signed = current_user.custom_licenses_signed.include?(@license_id)
+    render :nh_show_infolicense if @license&.end_with? "_info" # info license does not require to accept it
+  end
+
+end

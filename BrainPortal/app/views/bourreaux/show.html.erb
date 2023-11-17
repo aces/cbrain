@@ -88,7 +88,10 @@
     <% licenses = @bourreau.license_agreements.count == 0 ? "(None)": @bourreau.license_agreements.join("\n") %>
     <% t.edit_cell(:license_agreements, :content => licenses) do |f| %>
       <%= f.text_area :license_agreements, :value => @bourreau.license_agreements.join("\n"), :rows => 5, :cols => 40 %><br>
-      <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
+      <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.
+        the licenses starting with <i>nh-</i> prefix are reserved for NeuroHub. <i> _info </i> suffix indicates optional information
+        which does not oblige user to accept anything. It should be used to communicating important information.
+      </div>
     <% end %>
 
     <% if is_bourreau %>

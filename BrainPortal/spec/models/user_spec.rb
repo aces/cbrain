@@ -192,19 +192,19 @@ describe User do
 
 
 
-  describe "#unsigned_license_agreements" do
+  describe "#cbrain_unsigned_license_agreements" do
     before (:each) do
       allow(RemoteResource).to receive_message_chain(:current_resource, :license_agreements).and_return(["license1","license2"])
     end
 
     it "should return an empty array if user signed all agreements" do
       normal_user.meta[:signed_license_agreements] = ["license1","license2"]
-      expect(normal_user.unsigned_license_agreements).to eq([])
+      expect(normal_user.cbrain_unsigned_license_agreements).to eq([])
     end
 
     it "should return an array with the unsigned agreements" do
       normal_user.meta[:signed_license_agreements] = ["license1"]
-      expect(normal_user.unsigned_license_agreements).to eq(["license2"])
+      expect(normal_user.cbrain_unsigned_license_agreements).to eq(["license2"])
     end
 
   end
