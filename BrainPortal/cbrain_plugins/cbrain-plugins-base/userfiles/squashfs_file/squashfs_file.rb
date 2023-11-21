@@ -28,7 +28,7 @@ class SquashfsFile < SingleFile
   has_viewer :name => 'SquashFS Filesystem', :partial => :squashfs_file, :if => :is_viewable?
 
   def self.file_name_pattern #:nodoc:
-    /\.(sqs|squashfs|sqfs)\z/i
+    /\.(sqs|squashfs|sqfs|sfs)\z/i
   end
 
   def self.pretty_type #:nodoc:
