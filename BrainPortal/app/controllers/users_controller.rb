@@ -410,14 +410,14 @@ class UsersController < ApplicationController
                                           )
       begin
         answer = bourreau.send_command(command)
-        raise "Could not push SSH key to #{bourreau.name}." unless answer.dig :command_execution_status == "OK"
+        raise "Could not push SSH key to #{bourreau.name}." unless answer.dig(:command_execution_status) == "OK"
         flash[:notice] += "Pushed user SSH key to #{bourreau.name}.\n"
-      rescue => e
+      rescue => exception
         flash[:error]  += "Could not push SSH key to #{bourreau.name}.\n"
-        bourreau.addlog("Could not push #{current_user.login}'s SSH key to #{bourreau.name}, due to #{e.message}.")
+        ExceptionLog.log_exception(exception, current_user, request)
       end
     end
-
+    flash[:error] += "We are are looking into the issue. If you do not hear from us soon, please just try latter." if flash[:error].present?
     redirect_to :action => :show
   end
 
