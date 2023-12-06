@@ -11,9 +11,9 @@ function usage {
 
 This is CBRAIN's $0 version $VERSION by Pierre Rioux
 
-Usage: $0 [-v] [-[1234567]] path_to_portal_or_bourreau
+Usage: $0 [-v] [[-|+][1234567]] path_to_portal_or_bourreau
 
-This script will attempt to update all the GIT repository for a CBRAIN
+This script will attempt to update all the GIT repositories for a CBRAIN
 installation, including those in the plugins. It has to be invoked
 with a single argument, the path to either the BrainPortal or the Bourreau
 directory of the CBRAIN distribution. For a portal installation,
@@ -31,21 +31,29 @@ These are the steps that are performed:
 
 A) for both Bourreau and BrainPortal:
 
-  - git pull of the main CBRAIN repo
-  - git pull of each installed plugins
-  - bundle install
-  - rake cbrain:plugins:clean:all
-  - rake cbrain:plugins:install:all
+  1 - git pull of the main CBRAIN repo
+  2 - git pull of each installed plugins
+  3 - bundle install
+  4 - rake cbrain:plugins:clean:all
+    - rake cbrain:plugins:install:all
 
 B) for BrainPortal only:
 
-  - rake db:migrate
-  - rake db:sanity:check
-  - rake assets:precompile
-  - chmod -R a+rX BrainPortal/public
+  5 - rake db:migrate
+  6 - rake db:sanity:check
+  7 - rake assets:precompile
+    - chmod -R a+rX BrainPortal/public
 
 Note: you might have to set your RAILS_ENV environment variable
 for the rake tasks to work properly.
+
+With option -v, the outputs of the commands run will be shown.
+
+With option -N, where N is a number between 1 and 7, the script
+will run be starting from step N.
+
+With option +N, where N is a number between 1 and 7, the script
+will run ONLY the step N.
 USAGE
   exit 20
 }
@@ -58,13 +66,27 @@ USAGE
 verbose=""
 test $# -gt 0 && test "X$1" == "X-v" && shift && verbose="1"
 
+# Which steps to execute
+skipto="1"   # first step to execute
+stopat="99"  # last step to execute
+
 # With a -number in argument, will skip to that step
-skipto="1"
 if test $# -gt 0 ; then
   if test "X$1" = "X-1" -o "X$1" = "X-2" -o "X$1" = "X-3" -o \
           "X$1" = "X-4" -o "X$1" = "X-5" -o "X$1" = "X-6" -o \
           "X$1" = "X-7" ; then # I'm too lazy to check with regex
     skipto=$( echo "$1" | tr -d - )
+    shift
+  fi
+fi
+
+# With a +number in argument, execute ONLY that step
+if test $# -gt 0 ; then
+  if test "X$1" = "X+1" -o "X$1" = "X+2" -o "X$1" = "X+3" -o \
+          "X$1" = "X+4" -o "X$1" = "X+5" -o "X$1" = "X+6" -o \
+          "X$1" = "X+7" ; then # I'm too lazy to check with regex
+    skipto=$( echo "$1" | tr -d + )
+    stopat=$skipto
     shift
   fi
 fi
@@ -126,19 +148,21 @@ function runcapture {
 # ACTUAL UPDATE STEPS
 #============================================================================
 
-if test -z "$skipto" -o "$skipto" -le "1" ; then
+step=1
+if test $step -ge $skipto -a $step -le $stopat ; then
 
-Step 1: GIT Update CBRAIN Base
-runcapture "git pull"
+Step $step: GIT Update CBRAIN Base
+runcapture "git pull --verbose"
 runcapture "git fetch --tags"
 
 fi
 
 
 #============================================================================
-if test -z "$skipto" -o "$skipto" -le "2" ; then
+step=2
+if test $step -ge $skipto -a $step -le $stopat ; then
 
-Step 2: GIT Update CBRAIN Plugins
+Step $step: GIT Update CBRAIN Plugins
 pushd cbrain_plugins >/dev/null || exit
 for plugin in * ; do
   test ! -d "$plugin"                       && continue
@@ -147,7 +171,7 @@ for plugin in * ; do
   test ! -d "$plugin/.git"                  && continue
   echo " => $plugin"
   pushd "$plugin" >/dev/null || exit 20
-  runcapture "git pull"
+  runcapture "git pull --verbose"
   runcapture "git fetch --tags"
   popd >/dev/null || exit 20
 done
@@ -156,17 +180,19 @@ popd >/dev/null || exit 20
 fi
 
 #============================================================================
-if test -z "$skipto" -o "$skipto" -le "3" ; then
+step=3
+if test $step -ge $skipto -a $step -le $stopat ; then
 
-Step 3: Bundle Install
+Step $step: Bundle Install
 runcapture "bundle install"
 
 fi
 
 #============================================================================
-if test -z "$skipto" -o "$skipto" -le "4" ; then
+step=4
+if test $step -ge $skipto -a $step -le $stopat ; then
 
-Step 4: Re-install All Plugins
+Step $step: Re-install All Plugins
 test "$base" == "BrainPortal" && runcapture "rake cbrain:plugins:clean:all"
 test "$base" == "Bourreau"    && runcapture "rake cbrain:plugins:clean:plugins"
 test "$base" == "BrainPortal" && runcapture "rake cbrain:plugins:install:all"
@@ -175,10 +201,11 @@ test "$base" == "Bourreau"    && runcapture "rake cbrain:plugins:install:plugins
 fi
 
 #============================================================================
-if test -z "$skipto" -o "$skipto" -le "5" ; then
+step=5
+if test $step -ge $skipto -a $step -le $stopat ; then
 
 if test "$base" == "BrainPortal" ; then
-  Step 5: Database Migrations
+  Step $step: Database Migrations
   runcapture "rake db:migrate"
 fi
 
@@ -186,20 +213,22 @@ fi
 
 
 #============================================================================
-if test -z "$skipto" -o "$skipto" -le "6" ; then
+step=6
+if test $step -ge $skipto -a $step -le $stopat ; then
 
 if test "$base" == "BrainPortal" ; then
-  Step 6: Database Sanity Checks
+  Step $step: Database Sanity Checks
   runcapture "rake db:sanity:check"
 fi
 
 fi
 
 #============================================================================
-if test -z "$skipto" -o "$skipto" -le "7" ; then
+step=7
+if test $step -ge $skipto -a $step -le $stopat ; then
 
 if test "$base" == "BrainPortal" ; then
-  Step 7: Asset Compilations
+  Step $step: Asset Compilations
   runcapture "rake assets:precompile"
   runcapture "chmod -R a+rX public"
 fi
