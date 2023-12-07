@@ -625,15 +625,21 @@ class ToolConfig < ApplicationRecord
   def self.registered_boutiques_descriptor(tool_name, tool_version) #:nodoc:
     @_descriptors_ ||= {}
     key = [ tool_name, tool_version ] # two strings
+    @_descriptors_[key] = @_descriptors_[key]&.reload_if_file_timestamp_changed
     @_descriptors_[key]
   end
 
   def boutiques_descriptor
+    if @_descriptor_
+      @_descriptor_       = @_descriptor_.reload_if_file_timestamp_changed
+      key                 = [ self.tool.name, self.version_name ] # two strings
+      @_descriptors_[key] = @_descriptor_
+      return @_descriptor_
+    end
     path = boutiques_descriptor_path.presence
     if ! path
       return self.class.registered_boutiques_descriptor(self.tool.name, self.version_name)
     end
-    return @_descriptor_ if @_descriptor_
     path = Pathname.new(path)
     path = Pathname.new(CBRAIN::BoutiquesDescriptorsPlugins_Dir) + path if path.relative?
     @_descriptor_ = BoutiquesSupport::BoutiquesDescriptor.new_from_file(path)

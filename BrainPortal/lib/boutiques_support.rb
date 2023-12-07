@@ -151,7 +151,7 @@ module BoutiquesSupport
   class BoutiquesDescriptor
 
     attr_accessor :from_file    # not a hash attribute; a file name, for info
-
+    attr_accessor :mtime_of_file # not a hash attribute, a file timestamp, for caching
 
     def initialize(hash={})
       super(hash)
@@ -175,8 +175,15 @@ module BoutiquesSupport
 
     def self.new_from_file(path)
       obj = self.new_from_string(File.read(path))
-      obj.from_file = path
+      obj.from_file     = path
+      obj.mtime_of_file = File.mtime(path)
       obj
+    end
+
+    def reload_if_file_timestamp_changed()
+      filepath = self.from_file
+      return self if filepath.blank? || File.mtime(filepath) == self.mtime_of_file
+      self.class.new_from_file(filepath)
     end
 
     def validate
@@ -186,7 +193,8 @@ module BoutiquesSupport
     # When dup'ing, also copy the from_file attribute
     def dup #:nodoc:
       copy = super
-      copy.from_file = self.from_file
+      copy.from_file     = self.from_file
+      copy.mtime_of_file = self.mtime_of_file
       copy
     end
 
