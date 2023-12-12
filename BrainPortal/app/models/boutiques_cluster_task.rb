@@ -257,8 +257,9 @@ class BoutiquesClusterTask < ClusterTask
         userfile_class = SingleFile     if File.file?(path)      && !(userfile_class <= SingleFile)
         userfile_class = FileCollection if File.directory?(path) && !(userfile_class <= FileCollection)
 
-        # Save the file (possible overwrite if race condition)
+        # Save the file
         outfile = safe_userfile_find_or_new(userfile_class, :name => name)
+        new_out = outfile.new_record?
 
         unless outfile.save
           messages = outfile.errors.full_messages.join("; ")
@@ -269,10 +270,15 @@ class BoutiquesClusterTask < ClusterTask
         end
 
         # Transfer content to DataProvider
+        self.addlog("Created result file '#{name}' (ID #{outfile.id})") if   new_out
+        self.addlog("Reused result file '#{name}' (ID #{outfile.id})")  if ! new_out
+        self.addlog("Uploading content to #{outfile.data_provider.type} '#{outfile.data_provider.name}' (ID #{outfile.data_provider_id})")
         outfile.cache_copy_from_local_file(path)
+        self.addlog("Content uploaded")
+
+        # Record ID of output file in task's params
         params["_cbrain_output_#{output.id}"] ||= []
         params["_cbrain_output_#{output.id}"]  |= [ outfile.id ]
-        self.addlog("Saved result file #{name}")
 
         # Add provenance logs
         all_file_input_ids = descriptor.file_inputs.map do |input|
