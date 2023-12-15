@@ -22,8 +22,8 @@
 
 # This class implements a Data Provider which fetches
 # files out of one or several SquashFS files. The
-# implementation requires Singularity 3.2 or better to
-# be installed on the host, as well as a singularity
+# implementation requires Apptainer 1.1 / Singularity 3.7 or better to
+# be installed on the host, as well as a singularity/apptainer
 # container image that contains the basic Linux
 # commands and the 'rsync' command too.
 class SingSquashfsDataProvider < SshDataProvider
@@ -35,14 +35,14 @@ class SingSquashfsDataProvider < SshDataProvider
   # be forever, really.
   BROWSE_CACHE_EXPIRATION = 6.months #:nodoc:
 
-  # This is the basename of the singularity image
+  # This is the basename of the apptainer image
   # we use to access the squashfs filesystems; we
   # expect this image to be installed in the same
   # directory that contain them. Its minimum
   # requirements are that 1) basic UNIX commands
   # exist on it 2) the rsync command is installed
   # in it too.
-  SINGULARITY_IMAGE_BASENAME = 'sing_squashfs.simg'
+  APPTAINER_IMAGE_BASENAME = 'sing_squashfs.simg'
 
   # We use this to point to the directory INSIDE the container
   # were the root of the data is stored
@@ -75,17 +75,17 @@ class SingSquashfsDataProvider < SshDataProvider
   # Raise an exception with a message indicating what is wrong with the config.
   # This method is not part of the official method API
   def check_remote_config! #:nodoc:
-    # Check we have one singularity image file
-    remote_cmd  = "cd #{self.remote_dir.bash_escape};test -f #{SINGULARITY_IMAGE_BASENAME} && echo OK-Exists"
+    # Check we have one Apptainer image file
+    remote_cmd  = "cd #{self.remote_dir.bash_escape};test -f #{APPTAINER_IMAGE_BASENAME} && echo OK-Exists"
     text        = self.remote_bash_this(remote_cmd)
     # The following check will also make sure the remote shell is clean!
-    cb_error "No installed singularity image #{SINGULARITY_IMAGE_BASENAME}, or remote shell is unclean" unless text =~ /\AOK-Exists\s*\z/
+    cb_error "No installed Apptainer image #{APPTAINER_IMAGE_BASENAME}, or remote shell is unclean" unless text =~ /\AOK-Exists\s*\z/
 
     # Check we have at least one .squashfs file in the remote_dir
     sq_files = get_squashfs_basenames
     cb_error "No .squashfs files found" unless sq_files.present?
 
-    # Check we have singularity version 3.2 or better
+    # Check we have singularity version 3.7 or better or apptainer 1.1 or better
     remote_cmd = "(singularity --version 2>/dev/null || apptainer --version 2>/dev/null)"
     text       = self.remote_bash_this(remote_cmd)
     cb_error "Can't find singularity version number on remote host" unless text =~ /^((singularity|apptainer) version )?(\d+)\.(\d+)/
@@ -237,7 +237,7 @@ class SingSquashfsDataProvider < SshDataProvider
   public
 
   # Returns the full paths to the overlays
-  def singularity_overlays_full_paths #:nodoc:
+  def apptainer_overlays_full_paths #:nodoc:
     self.get_squashfs_basenames.map do |basename|
       Pathname.new(self.remote_dir) + basename
     end.map(&:to_s)
@@ -248,7 +248,7 @@ class SingSquashfsDataProvider < SshDataProvider
   # Returns true if we have to use 'ssh' to
   # connect to the remote server. Returns false
   # when we can optimize requests by running
-  # singularity locally. The local situation is
+  # apptainer/singularity locally. The local situation is
   # detected pretty much like in the Smart DP
   # module: if the hostname is the same as *remote_host*
   # or *alternate_host*, and if the *remote_dir* exists
@@ -288,14 +288,14 @@ class SingSquashfsDataProvider < SshDataProvider
     @sq_files
   end
 
-  def singularity_exec_prefix #:nodoc:
+  def apptainer_exec_prefix #:nodoc:
     sq_files     = get_squashfs_basenames
     overlay_opts = sq_files.map { |f| "--overlay=#{f.bash_escape}:ro" }.join(" ")
-    "cd #{self.remote_dir.bash_escape} && singularity -s exec #{overlay_opts} #{SINGULARITY_IMAGE_BASENAME}"
+    "cd #{self.remote_dir.bash_escape} && singularity -s exec #{overlay_opts} #{APPTAINER_IMAGE_BASENAME}"
   end
 
   def remote_rsync_command #:nodoc:
-    "#{singularity_exec_prefix} rsync"
+    "#{apptainer_exec_prefix} rsync"
   end
 
   # Builds a prefix for a +rsync+ command, such as
@@ -318,7 +318,7 @@ class SingSquashfsDataProvider < SshDataProvider
   end
 
   def remote_in_sing_bash_this(com) #:nodoc:
-    newcom = "#{singularity_exec_prefix} bash -c #{com.bash_escape}"
+    newcom = "#{apptainer_exec_prefix} bash -c #{com.bash_escape}"
     remote_bash_this(newcom)
   end
 

@@ -159,13 +159,13 @@ describe ToolConfig do
    context "fill HEADER" do
       it "should print 'Configuration: tool_config.id'" do
         expect(tool_config.to_bash_prologue).to                    match(/Configuration\s?:\s+#\s+#{tool_config.id}/)
-        expect(tool_config.to_bash_prologue(singularity: true)).to match(/Configuration\s?:\s+#\s+#{tool_config.id}/)
+        expect(tool_config.to_bash_prologue(apptainer: true)).to match(/Configuration\s?:\s+#\s+#{tool_config.id}/)
       end
 
       it "should print 'Tool: ALL' if specific tool is not defined"  do
         tool_config.tool = nil
         expect(tool_config.to_bash_prologue).to                    match(/Tool\s?:\s+ALL/)
-        expect(tool_config.to_bash_prologue(singularity: true)).to match(/Tool\s?:\s+ALL/)
+        expect(tool_config.to_bash_prologue(apptainer: true)).to match(/Tool\s?:\s+ALL/)
       end
 
       it "should print 'Tool: tool_config.tool.name' if specific tool is defined"  do

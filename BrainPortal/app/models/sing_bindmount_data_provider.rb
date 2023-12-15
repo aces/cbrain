@@ -22,22 +22,22 @@
 
 # This class implements a Data Provider which fetches
 # files out of a single filesystem file. The
-# implementation requires Singularity 3.2 or better to
-# be installed on the host, as well as a singularity
+# implementation requires Apptainer 1.1 or Singularity 3.7 and better
+# be installed on the host, as well as an Apptainer
 # container image that contains the basic Linux
 # commands and the 'rsync' command too.
 #
 # For the moment the DP is read-only. Allowing
 # write access would require a mechanism in CBRAIN
-# to prevent more than one singularity process to
+# to prevent more than one Apptainer process to
 # be accessing the mounted file at any one time.
 #
 # Bind mounts are performed using a command such as:
 #
-#   singularity shell -B filesystem.img:/my/mount/point:image-src=/inside/dir,ro sing_squashfs.simg
+#   apptainer shell -B filesystem.img:/my/mount/point:image-src=/inside/dir,ro sing_squashfs.simg
 #
 # where:
-# 1- sing_squashfs.simg is a singularity image file,
+# 1- sing_squashfs.simg is an Apptainer image file,
 # 2- filesystem.img is either a ext3 or squashfs filesystem,
 # 3- /inside/dir is a path inside that filesystem,
 # 4- /my/mount/point is a path where the data will be mounted under
@@ -51,7 +51,7 @@
 #
 # The attribute 'remote_dir' must be a full path to the location of
 # the filesystem image 'filesystem.img' (even though it is not a 'dir').
-# The singularity image file will be expected to be called 'sing_squashfs.simg'
+# The apptainer image file will be expected to be called 'sing_squashfs.simg'
 # and be located in the same subdirectory as 'filesystem.img'.
 class SingBindmountDataProvider < SshDataProvider
 
@@ -64,14 +64,14 @@ class SingBindmountDataProvider < SshDataProvider
   # TODO: Change this is the DP is ever made writable!
   BROWSE_CACHE_EXPIRATION = 2.months #:nodoc:
 
-  # This is the basename of the singularity image
+  # This is the basename of the Apptainer image
   # we use to access the remote filesystem; we
   # expect this image to be installed in the same
   # directory that contains it. Its minimum
   # requirements are that 1) basic UNIX commands
   # exist on it 2) the rsync command is installed
   # in it too.
-  SINGULARITY_IMAGE_BASENAME = 'sing_squashfs.simg'
+  APPTAINER_IMAGE_BASENAME = 'sing_squashfs.simg'
 
   # We use this to point to the directory INSIDE the container
   # were the root of the data is stored.
@@ -91,7 +91,7 @@ class SingBindmountDataProvider < SshDataProvider
 
   # This returns the category of the data provider
   def self.pretty_category_name #:nodoc:
-    "Singularity Bind Mount"
+    "Apptainer Bind Mount"
   end
 
   # This uses the new CBRAIN capability of registering
@@ -109,20 +109,20 @@ class SingBindmountDataProvider < SshDataProvider
   # Raise an exception with a message indicating what is wrong with the config.
   # This method is not part of the official method API
   def check_remote_config! #:nodoc:
-    # Check we have one singularity image file
-    remote_cmd  = "cd #{self.real_remote_dir.to_s.bash_escape} && test -f #{SINGULARITY_IMAGE_BASENAME} && echo OK-Exists"
+    # Check we have one apptainer image file
+    remote_cmd  = "cd #{self.real_remote_dir.to_s.bash_escape} && test -f #{APPTAINER_IMAGE_BASENAME} && echo OK-Exists"
     text        = self.remote_bash_this(remote_cmd)
     # The following check will also make sure the remote shell is clean!
-    cb_error "No installed singularity image #{SINGULARITY_IMAGE_BASENAME}, or remote shell is unclean" unless text =~ /\AOK-Exists\s*\z/
+    cb_error "No installed apptainer image #{APPTAINER_IMAGE_BASENAME}, or remote shell is unclean" unless text =~ /\AOK-Exists\s*\z/
 
     # Check we have the remote filesystem file
     remote_cmd  = "test -f #{self.remote_dir.to_s.bash_escape} && echo OK-Exists"
     cb_error "Filesystem file '#{self.remote_dir}' not found" unless text =~ /\AOK-Exists\s*\z/
 
-    # Check we have singularity version 3.7 or better
+    # Check we have apptainer 1.1 or better or singularity version 3.7 or better
     remote_cmd = "(singularity --version 2>/dev/null || apptainer --version 2>/dev/null)"
     text       = self.remote_bash_this(remote_cmd)
-    cb_error "Can't find singularity version number on remote host" unless text =~ /^((singularity|apptainer) version )?(\d+)\.(\d+)/
+    cb_error "Can't find apptainer version number on remote host" unless text =~ /^((singularity|apptainer) version )?(\d+)\.(\d+)/
     _, _, tool, major, minor = Regexp.last_match.to_a
     major = major.to_i
     minor = minor.to_i
@@ -268,7 +268,7 @@ class SingBindmountDataProvider < SshDataProvider
   # Returns true if we have to use 'ssh' to
   # connect to the remote server. Returns false
   # when we can optimize requests by running
-  # singularity locally. The local situation is
+  # apptainer locally. The local situation is
   # detected pretty much like in the Smart DP
   # module: if the hostname is the same as *remote_host*
   # or *alternate_host*, and if the *remote_dir* exists
@@ -294,8 +294,8 @@ class SingBindmountDataProvider < SshDataProvider
     @provider_is_remote
   end
 
-  def singularity_exec_prefix #:nodoc:
-    "cd #{self.real_remote_dir.to_s.bash_escape} && singularity -s exec #{self.local_bind_opt} #{SINGULARITY_IMAGE_BASENAME}"
+  def apptainer_exec_prefix #:nodoc:
+    "cd #{self.real_remote_dir.to_s.bash_escape} && singularity -s exec #{self.local_bind_opt} #{APPTAINER_IMAGE_BASENAME}"
   end
 
   def local_bind_opt #:nodoc:
@@ -303,7 +303,7 @@ class SingBindmountDataProvider < SshDataProvider
   end
 
   def remote_rsync_command #:nodoc:
-    "#{singularity_exec_prefix} rsync"
+    "#{apptainer_exec_prefix} rsync"
   end
 
   def real_remote_dir #:nodoc:
@@ -334,7 +334,7 @@ class SingBindmountDataProvider < SshDataProvider
   end
 
   def remote_in_sing_bash_this(com) #:nodoc:
-    newcom = "#{singularity_exec_prefix} bash -c #{com.bash_escape}"
+    newcom = "#{apptainer_exec_prefix} bash -c #{com.bash_escape}"
     remote_bash_this(newcom)
   end
 
