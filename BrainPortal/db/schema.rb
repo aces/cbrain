@@ -460,7 +460,7 @@ ActiveRecord::Schema.define(version: 20231214214549) do
     t.string   "containerhub_image_name"
     t.string   "container_engine"
     t.string   "container_index_location"
-    t.text     "apptainer_overlays_specs",    limit: 65535
+    t.text     "apptainer_overlays_specs",      limit: 65535
     t.boolean  "apptainer_use_short_workdir",                 default: false, null: false
     t.string   "container_exec_args"
     t.boolean  "inputs_readonly",                             default: false
