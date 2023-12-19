@@ -37,12 +37,12 @@
 #     }
 #   }
 #
-# The module's behavior is to copy the STDOUT and STDERR files that CBRAIN
-# captures separately, and install them in some subdirectory that (normally)
+# The module's behavior is to copy some CBRAIN-specific files (e.g. the STDOUT and STDERR
+# capture files of the task) and install them in some subdirectory that (normally)
 # will be saved as an output. It can also copy other useful configuration files,
 # as shown in the example above.
 #
-# The copy code will get triggered before CBRAIN runs it normal post-processing
+# The copy code will get triggered before CBRAIN runs its normal post-processing
 # code, so before it is aware whether or not the task completed successfully,
 # or failed.
 #
@@ -67,7 +67,7 @@
 #   # Path with a value-key AND a glob to find a subdirectory ses-N :
 #   "work/[SUBJECT_ID]/ses-*/logs/stdout_[SUBJECT_ID].log"
 #
-# When tring to find the final path for the copy, the parent dir
+# When tring to find the final path for the copied file, the parent dir
 # is initially globbed(), and if a single directory is returned,
 # it will be used. If none are found, the parent of THAT
 # is checked and if it exists, the missing last component directory
@@ -120,6 +120,10 @@ module BoutiquesTaskLogsCopier
     # If we have not configured a capture path, do nothing.
     return if destpath.blank?
 
+    # If for some reason the task's work directory doesn't have
+    # the required file, ignore it too.
+    return if ! File.file?(stdlogfile)
+
     descriptor = self.descriptor_for_save_results
 
     # Prepare the substitution hash and apply it
@@ -165,9 +169,8 @@ module BoutiquesTaskLogsCopier
       dirglobs = [ mkdir_path ]
     end
 
-
     destdir = dirglobs.first
-    if !  path_is_in_workdir?(destdir)
+    if ! path_is_in_workdir?(destdir)
       self.addlog "Misconfigured module BoutiquesTaskLogsCopier: path pattern '#{destpath}' is outside of the task's workdirectory; #{typeinfo} file not saved."
       return
     end
