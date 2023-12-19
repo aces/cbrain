@@ -27,22 +27,28 @@
 #   "custom": {
 #     "cbrain:integrator_modules": {
 #       "BoutiquesTaskLogsCopier": {
-#          "stdout": "local/path/[PARAM1]/ses*/basename[PARAM2]_{taskid}_stdout.log",
-#          "stderr": "local/path/[PARAM1]/ses*/basename[PARAM2]_{taskid}_stderr.log",
+#          "stdout":     "local/path/[PARAM1]/ses*/basename[PARAM2]_{taskid}_stdout.log",
+#          "stderr":     "local/path/[PARAM1]/ses*/basename[PARAM2]_{taskid}_stderr.log",
+#          "runtime":    "blah/blah/runtime.kv",
+#          "descriptor": "blah/blah/descriptor.json",
+#          "invoke":     "blah/blah/params.json",
+#          "jobscript":  "blah/blah/cbrain_script.sh"
 #       }
 #     }
 #   }
 #
 # The module's behavior is to copy the STDOUT and STDERR files that CBRAIN
 # captures separately, and install them in some subdirectory that (normally)
-# will be saved as an output.
+# will be saved as an output. It can also copy other useful configuration files,
+# as shown in the example above.
 #
 # The copy code will get triggered before CBRAIN runs it normal post-processing
 # code, so before it is aware whether or not the task completed successfully,
 # or failed.
 #
 # Configuration errors in the paths will raise a fatal exception. A missing
-# output directory path, however, will only generate a warning.
+# output directory path, however, will only generate a warning within
+# the task's processing logs.
 #
 # The pathnames patterns provided can include standard filesystem glob elements
 # and Boutiques value-key parameters. The module will try to make sure that
@@ -86,8 +92,18 @@ module BoutiquesTaskLogsCopier
     destpaths  = descriptor.custom_module_info('BoutiquesTaskLogsCopier')
 
     # Copy STDOUT and STDERR, if possible
-    install_std_log_file(science_stdout_basename, destpaths[:stdout], "stdout")
-    install_std_log_file(science_stderr_basename, destpaths[:stderr], "stderr")
+    install_std_log_file(science_stdout_basename, destpaths[:stdout],     "stdout")
+    install_std_log_file(science_stderr_basename, destpaths[:stderr],     "stderr")
+
+    # Copy Boutiques configuration files
+    install_std_log_file(boutiques_json_basename, destpaths[:descriptor], "boutiques descriptor")
+    install_std_log_file(invoke_json_basename,    destpaths[:invoke],     "boutiques parameters")
+
+    # Copy Runtime info file
+    install_std_log_file(runtime_info_basename,   destpaths[:runtime],    "runtime info")
+
+    # Copy sbatch/qsub script
+    install_std_log_file(science_script_basename, destpaths[:jobscript],  "jobscript")
 
     # Performs standard processing
     super
@@ -100,6 +116,9 @@ module BoutiquesTaskLogsCopier
   #
   # See the examples at the top of the module.
   def install_std_log_file(stdlogfile, destpath, typeinfo)
+
+    # If we have not configured a capture path, do nothing.
+    return if destpath.blank?
 
     descriptor = self.descriptor_for_save_results
 
@@ -118,9 +137,9 @@ module BoutiquesTaskLogsCopier
     # and patterns are normally configured by the administrator, who
     # should know better than to misconfigure the module or
     # point at paths outside the task's work directory.
-    cb_error "Misconfigured module BoutiquesTaskLogsCopier with absolute #{typeinfo} path pattern '#{destpath}'" if destpath.absolute?
+    cb_error "Misconfigured module BoutiquesTaskLogsCopier for #{typeinfo} with absolute path pattern '#{destpath}'" if destpath.absolute?
     if prefixglob.to_s.blank? || prefixglob.to_s == '.'
-      cb_error "Misconfigured module BoutiquesTaskLogsCopier without a prefix subdirectory in #{typeinfo} '#{destpath}'"
+      cb_error "Misconfigured module BoutiquesTaskLogsCopier without a prefix subdirectory for #{typeinfo} '#{destpath}'"
     end
 
     # Try to find one and only one directory where to install the file.
@@ -128,7 +147,7 @@ module BoutiquesTaskLogsCopier
 
     # If we get a pattern that matches several places, we can't do anything.
     if dirglobs.size > 1
-      self.addlog "Warning: too many intermediate subdirectories match pattern '#{prefixglob}'; #{typeinfo} capture file not saved."
+      self.addlog "Warning: too many intermediate subdirectories match pattern '#{prefixglob}'; #{typeinfo} file not saved."
       return
     end
 
@@ -138,7 +157,7 @@ module BoutiquesTaskLogsCopier
       parent_of_prefix_glob = prefixglob.parent
       parent_of_prefix_dirs = Pathname.glob(parent_of_prefix_glob)
       if parent_of_prefix_dirs.size != 1
-        self.addlog "Warning: cannot find intermediate subdirectories matching pattern '#{prefixglob}'; #{typeinfo} capture file not saved."
+        self.addlog "Warning: cannot find intermediate subdirectories matching pattern '#{prefixglob}'; #{typeinfo} file not saved."
         return
       end
       mkdir_path = (Pathname.new(parent_of_prefix_dirs.first) + prefixglob.basename).to_s
@@ -149,11 +168,11 @@ module BoutiquesTaskLogsCopier
 
     destdir = dirglobs.first
     if !  path_is_in_workdir?(destdir)
-      self.addlog "Misconfigured module BoutiquesTaskLogsCopier: path pattern '#{destpath}' is outside of the task's workdirectory; #{typeinfo} capture file not saved."
+      self.addlog "Misconfigured module BoutiquesTaskLogsCopier: path pattern '#{destpath}' is outside of the task's workdirectory; #{typeinfo} file not saved."
       return
     end
 
-    self.addlog "Copying #{typeinfo} capture file to '#{destdir}/#{basename}'"
+    self.addlog "Copying #{typeinfo} file to '#{destdir}/#{basename}'"
     FileUtils.copy_file(stdlogfile, "#{destdir}/#{basename}")
 
   end
