@@ -307,9 +307,11 @@ class S3FlatDataProvider < DataProvider
     cache_parent   = cache_fullpath.parent
     parent_length  = "#{cache_parent}/".length # used in substr below
     glob_pattern   = userfile.is_a?(FileCollection) ? "/**/*" : ""
-    Dir.glob("#{userfile.cache_full_path}#{glob_pattern}").map do |fullpath|   # /path/to/userfilebase/d1/d2/f1.txt
-      stats   = File.lstat(fullpath) # not stat() !
-      relpath = fullpath[parent_length,999999]                # userfilebase/d1/d2/f1.txt
+    Dir.glob("#{userfile.cache_full_path}#{glob_pattern}", File::FNM_DOTMATCH).map do |fullpath|   # /path/to/userfilebase/d1/d2/f1.txt
+      next if fullpath.ends_with? "/."         # skip spurious entries for self-referencing sub directories
+      next if fullpath.ends_with? "/.."        # skip spurious entries for referencing parent directories (never happens?)
+      stats   = File.lstat(fullpath)           # not stat() !
+      relpath = fullpath[parent_length,999999] # userfilebase/d1/d2/f1.txt
       # This struct is defined in DataProvider
       FileInfo.new(
         :name          => relpath,
@@ -326,7 +328,7 @@ class S3FlatDataProvider < DataProvider
         :ctime         => stats.ctime,
         :mtime         => stats.mtime,
       )
-    end.compact # the compact is in case we ever insert a 'next' in the map() above
+    end.compact
   end
 
   # Scan the Amazon bucket and returns a list of FileInfo objects
