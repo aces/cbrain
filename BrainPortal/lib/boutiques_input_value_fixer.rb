@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2021
+# Copyright (C) 2008-2023
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -22,28 +22,27 @@
 
 # This module allows one to fix some of input parameters to specific values
 # The fixed input(s) would no longer be shown to the user in the form.
+# The inputs assigned null value will be removed (do not use with mandatory input parameters)
 #
 # In the descriptor, the spec would look like:
 #
-#    "custom": {
-#        "cbrain:integrator_modules": {
-#            "BoutiquesInputValueFixer": {
+#   "custom": {
+#       "cbrain:integrator_modules": {
+#           "BoutiquesInputValueFixer": {
 #               "n_cpus": 1,
 #               "mem": "4G",
-#               "customquery": null,
+#               "optional_custom_query": null,
 #               "level": "group"
-#         }
-#     }
+#           }
+#       }
+#   }
 #
-# It is recommended to supply fixed_values in the specification is "closed" in the sense that
-# contains all the parameter that depend on the fixed, that is participate in input-requires,
-# value-requires, input-disables, value-disables, and address the group constraints.
-# Otherwise the module will do it automatically, yet
-# the present solution is crude, and does not guaranty optimal results.
-# Some nuances can be lost.
-# This is because our main use-case
-# is resource control parameter, which seldom involve dependencies.
-#
+# Our main use case is resource related parameter which seldom participate
+# in dependencies and constraints.
+# Therefore we remove parameters from the form in a straighforward fashion
+# and do not address indirect transitive dependencies, that is,
+# if say i1-requires->i2-requires->i3 while i2 is deleted, dependency
+# of i3 on i1 no longer be reflected in form UI dynamically
 module BoutiquesInputValueFixer
 
   # Note: to access the revision info of the module,
@@ -63,13 +62,12 @@ module BoutiquesInputValueFixer
     # the major use case are Flags, but also may be useful to address params with 'default'
 
     fixed_input_ids = fixed_values.keys
-    descriptor_dup = descriptor.dup
-    fully_removed = fixed_values.keys.select do |i_id|  # this variables are flagged to be removed rather than assigned value
+    descriptor_dup  = descriptor.dup
+    fully_removed   = fixed_input_ids.select do |i_id|  # this variables are flagged to be removed rather than assigned value
                                                    # in the spec, so they will be treated slightly different
       input = descriptor_dup.input_by_id(i_id)
       value = fixed_values[i_id]
-      value.nil? || (input.type == 'Flag') &&  (value.presence.to_s.strip =~ /no|0|nil|none|null|false/i || value.blank?)
-      deep_copy
+      value.nil? || (input.type == 'Flag') &&  (value.presence.to_s.strip =~ /0|null|false/i || value.blank?)
     end
 
     # generally speaking, boutiques input groups can have three different constraints,
@@ -77,69 +75,42 @@ module BoutiquesInputValueFixer
     # after submission of parameter).
 
     descriptor_dup.groups.each do |g| # filter groups, relax restriction to ensure that form can still be submitted
-      members = g.members - fixed_values.keys
-      # disable a mutualy exclusive group if its param assigned fixed value by this modifier
-      # if one simply deletes the fixed param,
-      if g.mutually_exclusive && members.length != g.members.length # params can be mutually exclusive e.g. --use-min-mem vs --mem-mb
-        if (fixed_input_ids & g.members - fully_removed).present? # at least some group members are actually assigned vals rather than deleted
-          g.mutually_exclusive = false
-          if g.one_is_required.present?
-            g.one_is_required = false
-          end
-          block_inputs(descriptor_dup, members)
-        end
+      members = g.members - fixed_input_ids
+
+      # some actions at least some group members are actually assigned vals rather than deleted
+      if (fixed_input_ids & g.members - fully_removed).present? #
+        # since one input parameter is already selected permanently (fixed),
+        # we can drop one_is_required constraint
+        g.one_is_required = false  # as result group's checkbox is unselected in form rendering
+
+        # as one of mutually exclusive parameters is selected by setting a fixed value
+        # the rest of group should be disabled, no remaining
+        # Whenever deleting all remaining parameters of the group is preferred to disabling
+        # boutiques author/admin can modify the list of fixed values accordingly
+        block_inputs(descriptor_dup, members) if g.mutually_exclusive
+        g.mutually_exclusive = false  # will make form's javascript smaller/faster
+
+        # all-or-none constraint is seldom used, does not affect form until validation,
+        # and generally presents less pitfalls
+        # Therefor, at the moment all-or-none is not addressed here
+
       end
-
-
-      # all-or-none is not reflected in dynamic gui, and used less often
-      # perhaps address once gui extended to
-      # support all the constraints
-
-      # yet in the case the constraint added by somebody who unfamiliar or forgot to remove
-      # this in the case the dynamic validation is enabled for one is required, when
-      # mishandled this constraint might create big troubles
-
-
-
-      # removes  'one-is-required' or disables group when one or more element fixed, e.g.
-      # if g.all_or_none && members.length != g.members.length
-      #   # if (g.members & fully_removed).present?
-      #   #   # todo delete all member inputs, or disable by injecting pairwise required/disable dependencies
-      #   # end
-      #   if (fixed_values.keys & g.members - fully_removed).present? # if one is set, rest should be to
-      #     g.members.each do |i_id|
-      #       begin
-      #         input = descriptor.input_by_id(i_id)
-      #       rescue CbrainError  # if descriptor was already processed
-      #         next
-      #       end
-      #       input.optional = false
-      #     end
-      #   end
-      # end
-
-      # presently one-is-required is checked only statically, yet
-      # enabling the GUI support to that constraint my cause issues.
-      # removes one-is-required flag if one element fixed
-      # if g.one_is_required || g.&& members.length != g.members.length
-      #   if (fixed_values.keys & g.members - fully_removed).present?
-      #     g.one_is_required == false
-      #   end
-      # end
-
       g.members = members
     end
-    descriptor_dup.groups = descriptor_dup.groups.select {|g| g.members.present? } # delete empty group
+
+    # remove empty groups
+    descriptor_dup.groups = descriptor_dup.groups.select {|g| g.members.present? }
 
     # delete fixed inputs
     descriptor_dup.inputs = descriptor_dup.inputs.select { |i| ! fixed_values.key?(i.id) } # filter out fixed inputs
 
-    # crude erase of fixed inputs from dependencies.
+    # straight-forward delete of fixed inputs from dependencies
+    # indirect and transitive dependencies may be lost but will be validated after form submission
     descriptor_dup.inputs.each do |i|
-      i.requires_inputs = i.requires_inputs - fixed_values.keys if i.requires_inputs.present?
-      i.disables_inputs = i.disables_inputs - fixed_values.keys if i.disables_inputs.present?
-      i.value_requires.each { |v, a| i.value_requires[v] -= fixed_values.keys } if i.value_requires.present?
-      i.value_disables.each { |v, a| i.value_disables[v] -= fixed_values.keys } if i.value_disables.present?
+      i.requires_inputs = i.requires_inputs - fixed_input_ids if i.requires_inputs.present?
+      i.disables_inputs = i.disables_inputs - fixed_input_ids if i.disables_inputs.present?
+      i.value_requires.each { |v, a| i.value_requires[v] -= fixed_input_ids } if i.value_requires.present?
+      i.value_disables.each { |v, a| i.value_disables[v] -= fixed_input_ids } if i.value_disables.present?
     end
 
     descriptor_dup
@@ -158,7 +129,7 @@ module BoutiquesInputValueFixer
     end
   end
 
-  # adjust descriptor to allow check # of supplied files
+  # adjust descriptor to allow check the number of supplied files
   def descriptor_for_before_form
     descriptor_without_fixed_inputs(super)
   end
@@ -177,7 +148,7 @@ module BoutiquesInputValueFixer
   # validation step - the original boutiques with combined invocation, for the greatest accuracy
   # note, error messages might involve fixed variables
   def after_form
-    self.invoke_params.merge!(fixed_values) # put back fixed values into invocation, if needed
+    self.invoke_params.merge!(fixed_values.compact) # put back fixed values into invocation, if needed
     super    # Performs standard processing
   end
 
