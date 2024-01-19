@@ -125,7 +125,7 @@ module BoutiquesInputValueFixer
       #input.disables_if input.disables_inputs.present?
       input.disables_inputs ||= []
       input.disables_inputs |= [input_id]
-      input.name += " --- disabled by admin ---"
+      input.name += " ( unavailable )"
     end
   end
 
