@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2023
+# Copyright (C) 2008-2024
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -20,9 +20,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# This module allows one to fix some of input parameters to specific values
+# This module allows one to fix some of input parameters to specific constand values
 # The fixed input(s) would no longer be shown to the user in the form.
-# The inputs assigned null value will be removed (do not use with mandatory input parameters)
+# The optional inputs assigned null value will be removed 
+# (do not use with mandatory input parameters)
 #
 # In the descriptor, the spec would look like:
 #
@@ -51,7 +52,7 @@ module BoutiquesInputValueFixer
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
 
-  # the hash of param values to be fixed or be omited ()  #
+  # the hash of input parameter values to be fixed or, if value is null, to be omited  
   def fixed_values
     self.boutiques_descriptor.custom_module_info('BoutiquesInputValueFixer')
   end
@@ -59,7 +60,7 @@ module BoutiquesInputValueFixer
   # deletes fixed inputs listed in the custom 'integrator_modules'
   def descriptor_without_fixed_inputs(descriptor)
     # input parameters are marked by null values will be excluded from the command line
-    # the major use case are Flags, but also may be useful to address params with 'default'
+    # other will be given fixed falues during execution; neither is shown in form UI
 
     fixed_input_ids = fixed_values.keys
     descriptor_dup  = descriptor.dup
@@ -71,8 +72,9 @@ module BoutiquesInputValueFixer
     end
 
     # generally speaking, boutiques input groups can have three different constraints,
-    # here we address mutually exclusion group only, which is the only one present in dynamic GUI (rest are evaluated
-    # after submission of parameter).
+    # here we address mutually exclusive constraint, which is the only one present in GUI javascript (rest are evaluated
+    # after submission of parameter), and 'one is required' which might affect the initial rendering of the form
+    # ( though IMHO red stars or other indicators to draw user attention should eventually implemented )
 
     descriptor_dup.groups.each do |g| # filter groups, relax restriction to ensure that form can still be submitted
       members = g.members - fixed_input_ids
@@ -90,9 +92,10 @@ module BoutiquesInputValueFixer
         block_inputs(descriptor_dup, members) if g.mutually_exclusive
         g.mutually_exclusive = false  # will make form's javascript smaller/faster
 
-        # all-or-none constraint is seldom used, does not affect form until validation,
+        # all-or-none constraint is seldom used, does not affect form itself,
+        # and only validated after the form submission
         # and generally presents less pitfalls
-        # Therefor, at the moment all-or-none is not addressed here
+        # Therefore, at the moment, 'all or none' constraint is not addressed here
 
       end
       g.members = members
@@ -141,7 +144,7 @@ module BoutiquesInputValueFixer
 
   # show all the params
   def descriptor_for_show_params
-    self.invoke_params.merge!(fixed_values) # shows 'fixed' parameters, used would not be able to edit them, so should be save
+    self.invoke_params.merge!(fixed_values) # shows 'fixed' parameters, user would not be able to edit them
     super    # standard values
   end
 
