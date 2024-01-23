@@ -20,6 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+require 'reline'   # Readline.get_screen_size fails me
+
 # We need some sort of constant to refer to the console's
 # context, which has access to all the pretty helpers etc.
 ConsoleCtx = self # also in pretty_view.rb in the same directory
@@ -56,7 +58,7 @@ class InteractiveBourreauControl
     @bourreaux = bourreaux_list
     @width     = term_width
     if term_width.blank? || term_width.to_i < 1
-      _,numcols = Readline.get_screen_size rescue [25,120]
+      _,numcols = Reline.get_screen_size rescue [25,120]
       @width          = numcols
     end
     @selected = {}
@@ -113,7 +115,7 @@ Operations Mode : #{@mode == "each_command" ?
       OPERATIONS
 
       userinput     = initial_command.presence
-      userinput   ||= Readline.readline("Do something (h for help): ",false)
+      userinput   ||= Reline.readline("Do something (h for help): ",false)
       userinput     = "Q" if userinput.nil?
       inputkeywords = userinput.downcase.split(/\W+/).map(&:presence).compact
 
@@ -124,7 +126,7 @@ Operations Mode : #{@mode == "each_command" ?
       end
       puts ""
       if dowait && initial_command.blank?
-        Readline.readline("Press RETURN to continue: ",false)
+        Reline.readline("Press RETURN to continue: ",false)
         puts ""
       end
       initial_command = nil
@@ -357,7 +359,7 @@ Operations Mode : #{@mode == "each_command" ?
       puts " * @r@ will be substituted by the Bourreau's RAILS root path"
       puts " * @d@ will be substituted by the Bourreau's DP cache dir path"
       puts " * @g@ will be substituted by the Bourreau's gridshare dir path"
-      comm = Readline.readline("Bash command: ")
+      comm = Reline.readline("Bash command: ")
       bash_command_on_bourreaux(comm)
       return true
     end

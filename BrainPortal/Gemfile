@@ -32,10 +32,12 @@ gem 'rails', '~> 5.0.6'
 gem "net-ssh",       :require => 'net/ssh'
 gem "net-sftp",      :require => 'net/sftp'
 gem "x25519"
-gem "rbnacl"
 gem "ed25519"
-gem "rbnacl-libsodium"
 gem "bcrypt_pbkdf"
+# You can comment-out the following two gems if you don't mind not having 'userkey' data providers.
+# They are usually the most tricky to compile and integrate into the app.
+gem "rbnacl"
+gem "rbnacl-libsodium"
 
 # Other utilities
 gem "sys-proctable", '~> 1.2.0'
@@ -67,7 +69,7 @@ gem "activemodel-serializers-xml"
 
 gem 'sassc-rails' # "rake assets:precompile" fails if this gems is put into the :assets group
 group :assets do
-  gem 'therubyracer'
+  #gem 'therubyracer'  # very old; consider installing ANY other JS engine, like 'node'. If not, try 'mini_racer'.
   gem 'coffee-rails'
   gem 'uglifier'
 end
