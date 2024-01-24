@@ -40,10 +40,10 @@
 #
 # Our main use case is resource related parameter which seldom participate
 # in dependencies and constraints.
-# Therefore we remove parameters from the form in a straighforward fashion
-# and do not address indirect transitive dependencies, that is,
+# Therefore we remove parameters from the form in a straightforward fashion
+# and do not address indirect or transitive dependencies. For instance,
 # if say i1-requires->i2-requires->i3 while i2 is deleted, dependency
-# of i3 on i1 no longer be reflected in form UI dynamically
+# of i3 on i1 no longer be reflected in web form UI dynamically
 module BoutiquesInputValueFixer
 
   # Note: to access the revision info of the module,
@@ -60,7 +60,7 @@ module BoutiquesInputValueFixer
   # deletes fixed inputs listed in the custom 'integrator_modules'
   def descriptor_without_fixed_inputs(descriptor)
     # input parameters are marked by null values will be excluded from the command line
-    # other will be given fixed falues during execution; neither is shown in form UI
+    # other will be given fixed values during execution; neither should appear in web form UI
 
     fixed_input_ids = fixed_values.keys
     descriptor_dup  = descriptor.dup
@@ -72,8 +72,8 @@ module BoutiquesInputValueFixer
     end
 
     # generally speaking, boutiques input groups can have three different constraints,
-    # here we address mutually exclusive constraint, which is the only one present in GUI javascript (rest are evaluated
-    # after submission of parameter), and 'one is required' which might affect the initial rendering of the form
+    # here we address 1) mutually exclusive constraint, which is the only one present in GUI javascript (the rest are evaluated
+    # after submission of the form), 2) 'one is required' constraint that affect the initial rendering of the form
     # ( though IMHO red stars or other indicators to draw user attention should eventually implemented )
 
     descriptor_dup.groups.each do |g| # filter groups, relax restriction to ensure that form can still be submitted
@@ -107,8 +107,9 @@ module BoutiquesInputValueFixer
     # delete fixed inputs
     descriptor_dup.inputs = descriptor_dup.inputs.select { |i| ! fixed_values.key?(i.id) } # filter out fixed inputs
 
-    # straight-forward delete of fixed inputs from dependencies
-    # indirect and transitive dependencies may be lost but will be validated after form submission
+    # straight-forward delete of fixed inputs from dependencies.
+    # Indirect and transitive dependencies may be lost for UI
+    # but will be validated after form submission
     descriptor_dup.inputs.each do |i|
       i.requires_inputs = i.requires_inputs - fixed_input_ids if i.requires_inputs.present?
       i.disables_inputs = i.disables_inputs - fixed_input_ids if i.disables_inputs.present?
@@ -119,13 +120,11 @@ module BoutiquesInputValueFixer
     descriptor_dup
   end
 
-  # this is blocks an input parameter by 'self-disabling', rather than explicitly deleting it
+  # this blocks an input parameter by 'self-disabling', rather than explicitly deleting it
   # it is a bit unorthodox yet expected to be used seldom
   def block_inputs(descriptor, input_ids)
     input_ids.each do |input_id|
-
       input = descriptor.input_by_id(input_id) rescue next
-      #input.disables_if input.disables_inputs.present?
       input.disables_inputs ||= []
       input.disables_inputs |= [input_id]
       input.name += " ( unavailable )"
