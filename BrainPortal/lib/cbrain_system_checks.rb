@@ -325,6 +325,20 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
 
 
 
+  def self.a090_ensure_userfile_sti_enabled #:nodoc:
+    #----------------------------------------------------------------------------
+    puts "C> checking Userfile STI"
+    #----------------------------------------------------------------------------
+    begin
+      Userfile.distinct.pluck(:type).map &:constantize
+    rescue NameError => e
+      raise e unless Rails.env.development? || Rails.env.test?
+      puts "C> \t- WARNING: STI column refers to undefined type: '#{e.message}'."
+    end
+  end
+
+
+
   private
 
   # Shows a list of currently configured BrainPortals

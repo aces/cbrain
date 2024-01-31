@@ -285,5 +285,19 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
   end
 
+
+
+  def self.z020_ensure_task_sti_enabled #:nodoc:
+    #----------------------------------------------------------------------------
+    puts "C> checking CbrainTask STI"
+    #----------------------------------------------------------------------------
+    begin
+      CbrainTask.distinct.pluck(:type).map &:constantize
+    rescue NameError => e
+      raise e unless Rails.env.development? || Rails.env.test?
+      puts "C> \t- WARNING: STI column refers to undefined type: '#{e.message}'."
+    end
+  end
+
 end
 
