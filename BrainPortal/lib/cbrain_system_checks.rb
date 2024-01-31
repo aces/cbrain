@@ -325,16 +325,22 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.a090_ensure_userfile_sti_enabled #:nodoc:
+  def self.z020_ensure_userfile_sti_enabled #:nodoc:
     #----------------------------------------------------------------------------
-    puts "C> checking Userfile STI"
+    puts "C> Checking Userfile STI column"
     #----------------------------------------------------------------------------
-    begin
-      Userfile.distinct.pluck(:type).map &:constantize
+    #  simplifying development of new plugins in parallel
+    level = Rails.env.development? ? 'Warning' : 'Error'
+    issue = false
+    Userfile.distinct.pluck(:type).each do |name|
+      name.constantize
     rescue NameError => e
-      raise e unless Rails.env.development? || Rails.env.test?
-      puts "C> \t- WARNING: STI column refers to undefined type: '#{e.message}'."
+      issue = e.message
+      puts "C> \t- #{level}: Invalid type: #{name}."
+    else
+      puts "C> The STI column of Userfile refers to valid types. All is good."
     end
+    raise Exception("The STI column of Userfile refer to invalid types. #{issue}") if issue && level == "Error"
   end
 
 
