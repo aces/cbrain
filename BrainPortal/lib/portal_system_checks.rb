@@ -290,17 +290,15 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
   def self.z020_ensure_task_sti_enabled #:nodoc:
 
     #----------------------------------------------------------------------------
-    puts "C> Checking CbrainTask STI column"
+    puts "C> Checking CbrainTask STI column ..."
     #----------------------------------------------------------------------------
 
     level = Rails.env.development? ? 'Warning' : 'Error'
-    not_loaded = CbrainTask.distinct.pluck(:type).select do |name|
-      name.safe_constantize.nil?
-    end.each do |name|
-      puts "C> \t- #{level}: Invalid STI type: " + name
+    puts not_loaded = CbrainTask.distinct.pluck(:type).select do |name|
+      "C> \t- #{level}: Invalid STI type: " + name if name.safe_constantize.nil?
     end
-    return if not_loaded.empty? || level == "Warning"
-    raise "The STI column of CbrainTask refer to invalid type(s)."
+
+    raise "Invalid types in the STI column of CbrainTask" unless not_loaded.empty? || level == "Warning"
   end
 
 end
