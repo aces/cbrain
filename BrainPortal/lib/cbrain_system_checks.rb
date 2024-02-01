@@ -325,22 +325,20 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.z020_ensure_userfile_sti_enabled #:nodoc:
+  def self.a090_ensure_userfile_sti_enabled #:nodoc:
+
     #----------------------------------------------------------------------------
     puts "C> Checking Userfile STI column"
     #----------------------------------------------------------------------------
-    #  simplifying development of new plugins in parallel
+
     level = Rails.env.development? ? 'Warning' : 'Error'
-    issue = false
-    Userfile.distinct.pluck(:type).each do |name|
-      name.constantize
-    rescue NameError => e
-      issue = e.message
-      puts "C> \t- #{level}: Invalid type: #{name}."
-    else
-      puts "C> The STI column of Userfile refers to valid types. All is good."
+    not_loaded = Userfile.distinct.pluck(:type).select do |name|
+      name.safe_constantize.nil?
+    end.each do |name|
+      puts "C> \t- #{level}: Invalid STI type: " + name
     end
-    raise Exception("The STI column of Userfile refer to invalid types. #{issue}") if issue && level == "Error"
+    return if not_loaded.empty? || level == "Warning"
+    raise "The STI column of Userfile refer to invalid type(s)."
   end
 
 
