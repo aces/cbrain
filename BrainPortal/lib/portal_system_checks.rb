@@ -293,12 +293,12 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
     puts "C> Checking CbrainTask STI column ..."
     #----------------------------------------------------------------------------
 
-    level = Rails.env.development? ? 'Warning' : 'Error'
-    puts not_loaded = CbrainTask.distinct.pluck(:type).select do |name|
+    level    = Rails.env.development? ? 'Warning' : 'Error'
+    messages = CbrainTask.distinct.pluck(:type).map do |name|
       "C> \t- #{level}: Invalid STI type: " + name if name.safe_constantize.nil?
-    end
-
-    raise "Invalid types in the STI column of CbrainTask" unless not_loaded.empty? || level == "Warning"
+    end.compact
+    puts messages
+    raise "Invalid types in the STI column of CbrainTask" unless messages.empty? || level == "Warning"
   end
 
 end
