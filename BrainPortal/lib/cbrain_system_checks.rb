@@ -317,20 +317,8 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
 
 
   def self.a060_ensure_userfile_sti_enabled #:nodoc:
-
-    #----------------------------------------------------------------------------
-    puts "C> Checking Userfile STI column ..."
-    #----------------------------------------------------------------------------
-
-    level    = Rails.env.development? ? 'Warning' : 'Error'
-    messages = Userfile.distinct.pluck(:type).map do |name|
-      "C> \t- #{level}: Invalid STI type: " + name unless name.safe_constantize
-    end.compact
-    puts messages
-    raise "Invalid type(s) in the STI column of Userfile."  unless messages.empty? || level == "Warning"
+    validate_sti(Userfile)
   end
-
-
 
   def self.a080_ensure_set_starttime_revision #:nodoc:
     #-----------------------------------------------------------------------------
