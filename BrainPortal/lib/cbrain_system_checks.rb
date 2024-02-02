@@ -324,7 +324,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
 
     level    = Rails.env.development? ? 'Warning' : 'Error'
     messages = Userfile.distinct.pluck(:type).map do |name|
-       "C> \t- #{level}: Invalid STI type: " + name if name.safe_constantize.nil?
+      "C> \t- #{level}: Invalid STI type: " + name unless name.safe_constantize
     end.compact
     puts messages
     raise "Invalid type(s) in the STI column of Userfile."  unless messages.empty? || level == "Warning"

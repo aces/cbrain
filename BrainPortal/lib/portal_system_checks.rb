@@ -295,7 +295,7 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
     level    = Rails.env.development? ? 'Warning' : 'Error'
     messages = CbrainTask.distinct.pluck(:type).map do |name|
-      "C> \t- #{level}: Invalid STI type: " + name if name.safe_constantize.nil?
+      "C> \t- #{level}: Invalid STI type: " + name unless name.safe_constantize
     end.compact
     puts messages
     raise "Invalid types in the STI column of CbrainTask" unless messages.empty? || level == "Warning"
