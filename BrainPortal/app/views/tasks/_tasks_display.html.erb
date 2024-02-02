@@ -285,6 +285,27 @@
       end
     end
   %>
+  <%
+    t.column("Data Provider ID", :data_provider_id,
+      :sortable => true
+    ) do |type,id,count,task|
+   %>
+   <%=
+      case type
+      when :task
+        task.results_data_provider_id
+      when :batch, :loaded_batch
+          CbrainTask
+            .real_tasks
+            .where(:batch_id => id)
+            .distinct
+            .pluck(:results_data_provider_id)
+            .sort
+            .to_sentence rescue ""
+      end
+    %>
+  <% end %>
+
 <% end %>
 
 <%-
