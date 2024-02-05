@@ -42,17 +42,19 @@
     :class      => [ :resource_list ],
     :render     => false,
     :order_map  => {
-      :owner        => { :a => 'users.login',               :j =>  User                                },
-      :project      => { :a => 'groups.name',               :j =>  Group                               },
-      :server       => { :a => 'remote_resources.name',     :j => [Bourreau,   'id', 'bourreau_id']    },
-      :version      => { :a => 'tool_configs.version_name', :j => [ToolConfig, 'id', 'tool_config_id'] },
-      :workdir_size => { :a => 'cluster_workdir_size'                                                  },
+      :owner                    => { :a => 'users.login',               :j =>  User                                           },
+      :project                  => { :a => 'groups.name',               :j =>  Group                                          },
+      :server                   => { :a => 'remote_resources.name',     :j => [Bourreau,    'id', 'bourreau_id']              },
+      :version                  => { :a => 'tool_configs.version_name', :j => [ToolConfig,  'id', 'tool_config_id']           },
+      :results_data_provider    => { :a => 'data_providers.name',       :j => [DataProvider,'id', 'results_data_provider_id'] },
+      :workdir_size             => { :a => 'cluster_workdir_size'                                                             },
     },
     :filter_map => {
-      :owner   => { :a => 'user_id'        },
-      :project => { :a => 'group_id'       },
-      :server  => { :a => 'bourreau_id'    },
-      :version => { :a => 'tool_config_id' },
+      :owner                    => { :a => 'user_id'                  },
+      :project                  => { :a => 'group_id'                 },
+      :server                   => { :a => 'bourreau_id'              },
+      :version                  => { :a => 'tool_config_id'           },
+      :results_data_provider    => { :a => 'results_data_provider_id'         },
     }
   ) do |t|
 %>
@@ -286,25 +288,20 @@
     end
   %>
   <%
-    t.column("Data Provider ID", :data_provider_id,
-      :sortable => true
+    t.column("Provider", :results_data_provider,
+      :sortable => true,
+      :filters  => scoped_filters_for(
+        @base_scope, @custom_scope, :results_data_provider_id,
+        scope: @scope,
+        label: 'data_providers.name',
+        association: [DataProvider, 'id', 'results_data_provider_id']
+      )
     ) do |type,id,count,task|
-   %>
-   <%=
-      case type
-      when :task
-        task.results_data_provider_id
-      when :batch, :loaded_batch
-          CbrainTask
-            .real_tasks
-            .where(:batch_id => id)
-            .distinct
-            .pluck(:results_data_provider_id)
-            .sort
-            .to_sentence rescue ""
-      end
-    %>
-  <% end %>
+      @_did_to_data_provider_cache                                ||= {}
+      @_did_to_data_provider_cache[task.results_data_provider_id] ||= task.results_data_provider
+      link_to_data_provider_if_accessible(@_did_to_data_provider_cache[task.results_data_provider_id]) unless type == :loaded_batch
+    end
+  %>
 
 <% end %>
 
