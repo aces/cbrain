@@ -45,6 +45,7 @@ class ApplicationController < ActionController::Base
   helper_method :start_page_path
 
   # These will be executed in order
+  before_action :check_for_banned_ip
   before_action :check_account_validity
   before_action :prepare_messages
   before_action :adjust_system_time_zone
@@ -400,6 +401,17 @@ class ApplicationController < ActionController::Base
       context.define_singleton_method(:current_user) { options[:define_current_user] }
     end
     context.instance_eval(&block)
+  end
+
+  # If the IP address connecting to us was banned in the past,
+  # we just completely stop all activity right there with code 401
+  def check_for_banned_ip
+    req_ip = cbrain_request_remote_ip
+    is_banned = BannedIps.banned_ip?(req_ip)
+    return true if ! is_banned
+    Rails.logger.info "Requests from IP '#{req_ip}' are banned"
+    head :unauthorized
+    return false
   end
 
 end

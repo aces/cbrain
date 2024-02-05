@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# This script can be adjusted by an administrator
+# to provide a mechanism to ban an IP address.
+#
+# This script will receive a single argument,
+# an IP address.
+#
+# Currently, CBRAIN will invoke it if a signup
+# request form was posted too quickly (less than
+# 10 seconds after the form was generated).
+
+ip_to_ban="$1"
+
+# Special safety check to never ban the local IP
+if test "X$ip_to_ban" = "X127.0.0.1" ; then
+  echo "$0 not banning IP '$ip_to_ban'"
+  exit 0
+fi
+
+echo "$0 invoked to ban IP '$ip_to_ban'"
+
