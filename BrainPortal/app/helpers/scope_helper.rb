@@ -235,7 +235,7 @@ module ScopeHelper
       model = model.to_s.classify.constantize unless
         (model <= ApplicationRecord rescue nil)
       association = model.reflect_on_all_associations(:belongs_to)
-        .find { |a| a.foreign_key == attribute }
+        .find { |a| a.foreign_key.to_s == attribute.to_s }
 
       if association
         attribute = association.name.to_s
