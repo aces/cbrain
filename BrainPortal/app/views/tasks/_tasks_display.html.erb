@@ -262,6 +262,22 @@
   <% end %>
 
   <%
+    t.column("Results On", :results_data_provider,
+      :sortable => true,
+      :filters  => scoped_filters_for(
+        @base_scope, @custom_scope, :results_data_provider_id,
+        scope: @scope,
+        label: 'data_providers.name',
+        association: [DataProvider, 'id', 'results_data_provider_id']
+      )
+    ) do |type,id,count,task|
+      @_did_to_data_provider_cache                                ||= {}
+      @_did_to_data_provider_cache[task.results_data_provider_id] ||= task.results_data_provider
+      link_to_data_provider_if_accessible(@_did_to_data_provider_cache[task.results_data_provider_id]) unless type == :loaded_batch
+    end
+  %>
+
+  <%
     t.column("Time Submitted", :created_at,
       :sortable => true
     ) do |type,id,count,task|
@@ -285,21 +301,6 @@
           :datetime
         ) rescue ""
       end
-    end
-  %>
-  <%
-    t.column("Provider", :results_data_provider,
-      :sortable => true,
-      :filters  => scoped_filters_for(
-        @base_scope, @custom_scope, :results_data_provider_id,
-        scope: @scope,
-        label: 'data_providers.name',
-        association: [DataProvider, 'id', 'results_data_provider_id']
-      )
-    ) do |type,id,count,task|
-      @_did_to_data_provider_cache                                ||= {}
-      @_did_to_data_provider_cache[task.results_data_provider_id] ||= task.results_data_provider
-      link_to_data_provider_if_accessible(@_did_to_data_provider_cache[task.results_data_provider_id]) unless type == :loaded_batch
     end
   %>
 
