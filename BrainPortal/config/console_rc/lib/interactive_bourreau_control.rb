@@ -59,7 +59,7 @@ class InteractiveBourreauControl
     @bourreaux = bourreaux_list
     @width     = term_width
     if term_width.blank? || term_width.to_i < 1
-      _,numcols = Readline.get_screen_size rescue [25,120]
+      _,numcols = Reline.get_screen_size rescue [25,120]
       @width          = numcols
     end
     @selected = {}
