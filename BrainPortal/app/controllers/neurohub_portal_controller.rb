@@ -2,7 +2,7 @@
 #
 # NeuroHub Project
 #
-# Copyright (C) 2020
+# Copyright (C) 2020-2023
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -28,7 +28,7 @@ class NeurohubPortalController < NeurohubApplicationController
   before_action :login_required
 
   # Main welcome/dashboard page
-  def welcome #:nodoc:
+  def news #:nodoc:
     @username = current_user.login
     bourreau_ids = Bourreau.find_all_accessible_by_user(current_user).raw_first_column("remote_resources.id")
     user_ids     = current_user.available_users.raw_first_column(:id)
@@ -40,6 +40,11 @@ class NeurohubPortalController < NeurohubApplicationController
       .to_a
       .select { |m| m.expiry.nil? || m.expiry > Time.now }
   end
+
+  def welcome
+    @username = current_user.login
+  end
+
 
   # This action searches among all sorts of models for IDs or strings,
   # and reports links to the matches found.

@@ -272,6 +272,7 @@ Rails.application.routes.draw do
 
     # Special named routes
     get   '/neurohub'               => 'neurohub_portal#welcome'
+    get   '/nh_news'                => 'neurohub_portal#news'
     get   '/styleguide'             => 'neurohub_portal#styleguide'
     get   '/nh_search'              => 'neurohub_portal#search'
     get   '/signin'                 => 'nh_sessions#new'

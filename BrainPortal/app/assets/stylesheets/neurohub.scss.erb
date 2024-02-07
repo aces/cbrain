@@ -3421,3 +3421,61 @@ $DASHBOARD_CARD_MIN_WIDTH: 25;
     }
   }
 }
+
+/*
+=============================================================
+| component/projects categories
+=============================================================
+/* Subprojects, components of Neurohub grid */
+
+.neurohub-tool {
+  height: $BAR_HEIGHT + rem; // patch that sets height for link_to element that does not return a link
+  display: flex;
+  padding: 10px;
+  padding-right: 15px;
+  justify-content: center;
+
+  width: 90%;
+  object-fit: contain;
+  flex-direction: column;
+
+  a {
+    object-fit: contain;
+    @extend .btn-text;
+
+    @extend .external;
+    @include text("xs");
+    padding: 0;
+    height: 100%;
+    text-decoration: none;
+    padding: 3px;
+  }
+
+  img {
+    object-fit: contain;
+  }
+
+  .mini-logo {
+    height: 3.5em;
+  }
+}
+
+.card_category_description {
+  @include p(5);
+  padding: 5px;
+  /*flex: 1 1 5rem;*/
+  overflow: hidden;
+  position: relative;
+  &::after {
+    // overflow gradient
+    content: "";
+    background: linear-gradient(rgba(255, 255, 255, 0), $DEFAULT_BG);
+    width: 100%;
+    height: 0.1rem;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+  }
+}
+
+

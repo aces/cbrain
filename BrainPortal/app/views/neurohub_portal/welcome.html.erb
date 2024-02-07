@@ -2,7 +2,7 @@
 #
 # NeuroHub Project
 #
-# Copyright (C) 2020
+# Copyright (C) 2020-2023
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -21,188 +21,73 @@
 #
 -%>
 
-<%
-    new_invites = Invitation.where(user_id: current_user.id, active: true, read: false).all || []
-%>
+
+<% cache('categorical_welcome_grid_v_1', expires_in: 30.minutes ) do %>
+  <%
+    # The info about neurohub collection of data framework is extracted from a spreadsheet
+    # so can be adjusted without CBRAIN reboot
+    # Once the the collection is more stable, can be moved into model/controller
+
+    require 'csv'
+    require 'ostruct'
+    csv_text       = File.read('public/neurohub_components/soft.csv')
+    csv            = CSV.parse(csv_text, :headers => true)
+    hashes         = csv.map {|row| row.to_hash.stringify_keys.transform_keys(&:downcase)} # rows to chashes
+    grouped_hashes = hashes.group_by {|h| h['boxid']}  # software components are grouped by categories
+
+    categories = grouped_hashes.values.map do |category|  # areas/categories
+      args              = category.first
+      args['subtitles'] = category.pluck('subtitle')  # specific tools or framework names
+      args['urls']      = category.pluck('url')       # links to sign up/login/landing page
+      args['images']    = category.pluck('image')     # logos
+      OpenStruct.new(args)
+    end
+  %>
 
 
-<% title("Dashboard", '') %>
+  <% title("Dashboard", '') %>
 
-<div id="nh_neurohub_portal_welcome">
-  <div class="main">
-    <div class="notifications">
-      <% if new_invites.count > 0 %>
-        <div id="mb-7" class="nh_invitations">
-          <div class="section primary">
-            <p class="section-title">New Notifications</p>
-              <% new_invites.each do |invitation| %>
-                <div class="card">
-                  <div class="card-row header">
-                    <p class="card-item"><%= invitation.header.html_safe %></p>
-                  </div>
-                  <div class="btn-section">
-                    <%= button_to 'Accept', nh_invitation_path(invitation.id), :method => :put, :class => "btn-solid primary btn" %>
-                    <%= button_to 'Decline', nh_invitation_path(invitation.id), :method => :delete, :class => "btn-solid secondary wash btn" %>
-                    <%= button_to 'Save for Later', nh_invitation_path(invitation.id, :read => true), :method => :put, :class => "btn-solid primary wash btn" %>
-                  </div>
-                </div>
-              <% end %>
-          </div>
-        </div>
-      <% end %>
+  <div id="nh_neurohub_portal_welcome">
+    <div class="main">
+      <div id="nh_projects" class="nh_content">
 
-      <div class="section secondary flex-1">
-        <div class="section-title">
-          <img src="/images/neurohub/NH_hbhl_icon_RGB.png" alt="neurohub-logo"/>
-          NeuroHub News
-        </div>
+      <%# Neurohub subcomponents grid -%>
 
-        <% @dashboard_messages.each do |message| %>
-          <div class="card">
-            <div class="card-row header bg-secondary-alt">
-              <p class="heading-xs default-bg"><%= message.header %></p>
-            </div>
-            <div class="card-item dashboard-news">
-              (Posted: <%= message.created_at.strftime("%B %e, %Y") %>)<br>
-              <%= (message.description.presence || "").html_safe %>
-            </div>
-          </div>
-        <% end %>
-
-      </div>
-    </div>
-
-    <div class="section user">
-        <div class="card">
-        <%=
-          scope_link('<p class="btn-text cbrain external card-heading">Latest Tasks</p>'.html_safe,
-            'tasks#index', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
-            url: { :controller => :tasks, :action => :index },
-            link: { :target => "_blank" }
-          )
-        %>
-        <% if @tasks.size > 0 %>
-          <div>
-            <% for task in @tasks %>
-              <div class="card-row">
-                <div class="card-section">
-                  <div class="card-item btn-text cbrain">
-                    <div class="card-icon"><%= nh_icon_task %></div>
-                      <%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau, :html_options => { :target => "_blank" }) %>
-                  </div>
-                  <div class="card-item btn-text cbrain">
-                    <div class="card-icon"><%= nh_icon_user %></div>
-                    <div class="text-ellipsis flex-1">
-                      <%= link_to_user_if_accessible(task.user, nil, :html_options => { :target => "_blank" })%>
-                    </div>
-                  </div>
-                  <div class="card-item" style="max-width:150px">
-                    <div class="text-ellipsis flex-1">
-                      <%= colored_status(task.status) %>
-                    </div>
-                  </div>
-                </div>
-                <div class="card-section">
-                  <div class="card-item btn-text primary">
-                    <div class="card-icon"><%= nh_icon_project %></div>
-                    <div class="text-ellipsis flex-1">
-                      <%= link_to task.group.name, {:controller => :nh_projects, :action => :show, :id => task.group.id}, :method  => :get %>
-                    </div>
-                  </div>
-
-                  <div class="card-item">
-                    <div class="text-ellipsis flex-1">
-                      <%= to_localtime(task.updated_at,:date) %>
-                      <%= to_localtime(task.updated_at,:time) %>
-                    </div>
-                  </div>
-                </div>
+        <div class="grid">
+          <% categories.each do |category| %>
+            <div class="card" >
+              <div class="btn-text primary card_heading"
+                 <% if category.color.present? %>
+                    style="color: <%= category.color %>;>"
+                 <% end %>
+              >
+                <%=  category.title %>
               </div>
-            <% end %>
-          </div>
-        <% else %>
-          <%- # empty state -%>
-          <div class="card-item">
-            <div class="empty-wrapper">
-              <div style="position: unset" class="empty">
-                <div>
-                  <div class="empty-icon">
-                    <%= nh_empty_tasks %>
-                  </div>
-                  <p class="empty-text">No tasks have been updated lately.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        <% end %>
-        </div>
-        <div class="card">
-            <%=
-            scope_link('<p class="btn-text cbrain external card-heading">Latest Updated Files</p>'.html_safe,
-              'userfiles#index', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
-              url: { :controller => :userfiles, :action => :index },
-              link: { :target => "_blank" }
-            )
-          %>
-          <% if @files.size > 0 %>
-            <div>
-              <% for file in @files %>
-                <div class="card-row">
-                  <div class="card-section">
-                    <div class="card-item btn-text cbrain">
-                      <div class="card-icon"><%= nh_icon_file %></div>
-                      <div class="text-ellipsis flex-1">
-                        <%= link_to_userfile_if_accessible(file, nil, :html_options => { :target => "_blank" }) %>
-                      </div>
-                    </div>
-                    <div class="card-item btn-text cbrain">
-                      <div class="card-icon"><%= nh_icon_user %></div>
-                      <div class="text-ellipsis flex-1">
-                        <%= link_to_user_if_accessible(file.user, nil, :html_options => { :target => "_blank" }) %>
-                      </div>
-                    </div>
-                    <div class="card-item" style="max-width:150px">
-                      <div class="text-ellipsis flex-1">
-                        <%= colored_pretty_size(file.size) %>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card-section">
-                    <div class="card-item btn-text primary">
-                      <div class="card-icon"><%= nh_icon_project %></div>
-                      <div class="text-ellipsis flex-1">
-                        <%= link_to(file.group.name,{:controller => :nh_projects, :action => :show, :id => file.group.id}, :method  => :get) %>
-                      </div>
-                    </div>
-                    <div class="card-item">
-                      <div class="text-ellipsis flex-1">
-                        <%= to_localtime(file.updated_at,:date) %>
-                        <%= to_localtime(file.updated_at,:time) %>
-                      </div>
-                    </div>
-                  </div>
 
-                </div>
-              <% end %>
-            </div>
-          <% else %>
-            <%- # empty state -%>
-            <div class="card-item">
-              <div class="empty-wrapper">
-                <div style="position: unset" class="empty">
-                  <div>
-                    <div class="empty-icon">
-                      <%= nh_empty_files %>
-                    </div>
-                    <p class="empty-text">No files have been updated lately.</p>
+                <% category.urls.each_with_index do |url, i| %>
+                  <div class="card_text neurohub-tool ">
+                  <% if url.present? %>
+
+                    <%= link_to image_tag("/neurohub_components/" + category.images[i],
+                                          class: "mini-logo"),
+                              url if category.images[i].present? %>
+                    <%= link_to category.subtitles[i], url if category.subtitles[i].present? %>
+
+                  <% else %>
+                    <%# if no url provided just put image and text%>
+                    image_tag("/neurohub_components/logos/" + category.images[i])
+                    <%=  category.subtitles[i] %>
+                  <% end %>
                   </div>
-                </div>
+                <% end %>
+
+              <div class="card_text card_category_description">
+                <%= category.description.presence %>
               </div>
             </div>
           <% end %>
+        </div>>
       </div>
     </div>
-
   </div>
-
-</div>
+<% end %>

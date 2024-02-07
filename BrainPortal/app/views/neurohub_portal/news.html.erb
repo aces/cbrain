@@ -1,0 +1,208 @@
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+    new_invites = Invitation.where(user_id: current_user.id, active: true, read: false).all || []
+%>
+
+
+<% title("Dashboard", '') %>
+
+<div id="nh_neurohub_portal_welcome">
+  <div class="main">
+    <div class="notifications">
+      <% if new_invites.count > 0 %>
+        <div id="mb-7" class="nh_invitations">
+          <div class="section primary">
+            <p class="section-title">New Notifications</p>
+              <% new_invites.each do |invitation| %>
+                <div class="card">
+                  <div class="card-row header">
+                    <p class="card-item"><%= invitation.header.html_safe %></p>
+                  </div>
+                  <div class="btn-section">
+                    <%= button_to 'Accept', nh_invitation_path(invitation.id), :method => :put, :class => "btn-solid primary btn" %>
+                    <%= button_to 'Decline', nh_invitation_path(invitation.id), :method => :delete, :class => "btn-solid secondary wash btn" %>
+                    <%= button_to 'Save for Later', nh_invitation_path(invitation.id, :read => true), :method => :put, :class => "btn-solid primary wash btn" %>
+                  </div>
+                </div>
+              <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="section secondary flex-1">
+        <div class="section-title">
+          <img src="/images/neurohub/NH_hbhl_icon_RGB.png" alt="neurohub-logo"/>
+          NeuroHub News
+        </div>
+
+        <% @dashboard_messages.each do |message| %>
+          <div class="card">
+            <div class="card-row header bg-secondary-alt">
+              <p class="heading-xs default-bg"><%= message.header %></p>
+            </div>
+            <div class="card-item dashboard-news">
+              (Posted: <%= message.created_at.strftime("%B %e, %Y") %>)<br>
+              <%= (message.description.presence || "").html_safe %>
+            </div>
+          </div>
+        <% end %>
+
+      </div>
+    </div>
+
+    <div class="section user">
+        <div class="card">
+        <%=
+          scope_link('<p class="btn-text cbrain external card-heading">Latest Tasks</p>'.html_safe,
+            'tasks#index', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
+            url: { :controller => :tasks, :action => :index },
+            link: { :target => "_blank" }
+          )
+        %>
+        <% if @tasks.size > 0 %>
+          <div>
+            <% for task in @tasks %>
+              <div class="card-row">
+                <div class="card-section">
+                  <div class="card-item btn-text cbrain">
+                    <div class="card-icon"><%= nh_icon_task %></div>
+                      <%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau, :html_options => { :target => "_blank" }) %>
+                  </div>
+                  <div class="card-item btn-text cbrain">
+                    <div class="card-icon"><%= nh_icon_user %></div>
+                    <div class="text-ellipsis flex-1">
+                      <%= link_to_user_if_accessible(task.user, nil, :html_options => { :target => "_blank" })%>
+                    </div>
+                  </div>
+                  <div class="card-item" style="max-width:150px">
+                    <div class="text-ellipsis flex-1">
+                      <%= colored_status(task.status) %>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-section">
+                  <div class="card-item btn-text primary">
+                    <div class="card-icon"><%= nh_icon_project %></div>
+                    <div class="text-ellipsis flex-1">
+                      <%= link_to task.group.name, {:controller => :nh_projects, :action => :show, :id => task.group.id}, :method  => :get %>
+                    </div>
+                  </div>
+
+                  <div class="card-item">
+                    <div class="text-ellipsis flex-1">
+                      <%= to_localtime(task.updated_at,:date) %>
+                      <%= to_localtime(task.updated_at,:time) %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <%- # empty state -%>
+          <div class="card-item">
+            <div class="empty-wrapper">
+              <div style="position: unset" class="empty">
+                <div>
+                  <div class="empty-icon">
+                    <%= nh_empty_tasks %>
+                  </div>
+                  <p class="empty-text">No tasks have been updated lately.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+        </div>
+        <div class="card">
+            <%=
+            scope_link('<p class="btn-text cbrain external card-heading">Latest Updated Files</p>'.html_safe,
+              'userfiles#index', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
+              url: { :controller => :userfiles, :action => :index },
+              link: { :target => "_blank" }
+            )
+          %>
+          <% if @files.size > 0 %>
+            <div>
+              <% for file in @files %>
+                <div class="card-row">
+                  <div class="card-section">
+                    <div class="card-item btn-text cbrain">
+                      <div class="card-icon"><%= nh_icon_file %></div>
+                      <div class="text-ellipsis flex-1">
+                        <%= link_to_userfile_if_accessible(file, nil, :html_options => { :target => "_blank" }) %>
+                      </div>
+                    </div>
+                    <div class="card-item btn-text cbrain">
+                      <div class="card-icon"><%= nh_icon_user %></div>
+                      <div class="text-ellipsis flex-1">
+                        <%= link_to_user_if_accessible(file.user, nil, :html_options => { :target => "_blank" }) %>
+                      </div>
+                    </div>
+                    <div class="card-item" style="max-width:150px">
+                      <div class="text-ellipsis flex-1">
+                        <%= colored_pretty_size(file.size) %>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card-section">
+                    <div class="card-item btn-text primary">
+                      <div class="card-icon"><%= nh_icon_project %></div>
+                      <div class="text-ellipsis flex-1">
+                        <%= link_to(file.group.name,{:controller => :nh_projects, :action => :show, :id => file.group.id}, :method  => :get) %>
+                      </div>
+                    </div>
+                    <div class="card-item">
+                      <div class="text-ellipsis flex-1">
+                        <%= to_localtime(file.updated_at,:date) %>
+                        <%= to_localtime(file.updated_at,:time) %>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <%- # empty state -%>
+            <div class="card-item">
+              <div class="empty-wrapper">
+                <div style="position: unset" class="empty">
+                  <div>
+                    <div class="empty-icon">
+                      <%= nh_empty_files %>
+                    </div>
+                    <p class="empty-text">No files have been updated lately.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+      </div>
+    </div>
+
+  </div>
+
+</div>
