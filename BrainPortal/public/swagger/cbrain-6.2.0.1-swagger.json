@@ -519,6 +519,34 @@
         }
       }
     },
+    "/nh_storages" : {
+      "post" : {
+        "summary" : "Create a new personal data provider (a.k.a: Neurohub storage).",
+        "description" : "This method creates a new personal data provider, which allows users to store their own data.\n",
+        "tags": ["NhStorages"],
+        "consumes": ["application/json", "multipart/form-data"],
+        "parameters" : [ {
+          "name" : "nh_storage_mod_req",
+          "in" : "body",
+          "description" : "An object describing the NeuroHub storage to create",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/DataProviderModReq"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Data provider created successfully.",
+            "schema" : {
+              "$ref" : "#/definitions/DataProvider"
+            }
+          },
+          "422" : {
+            "description" : "Attributes are invalid, or data provider already exists."
+          }
+        }
+      }
+    },
     "/data_providers/{id}" : {
       "get" : {
         "summary" : "Get information on a particular Data Provider.",
@@ -540,6 +568,26 @@
           },
           "401" : {
             "description" : "No session created yet."
+          }
+        }
+      },
+      "delete" : {
+        "summary" : "Delete a Data Provider.",
+        "description" : "This method allows the deletion of a Data Provider. This will not delete\nthe files on the Data Provider, but will remove the Data Provider from\nCBRAIN.\n",
+        "tags" : [ "DataProviders" ],
+        "parameters" : [ {
+          "name" : "id",
+          "type" : "integer",
+          "description" : "ID of the Data Provider to delete.",
+          "required" : true,
+          "in" : "path"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Data Provider was deleted."
+          },
+          "409" : {
+            "description" : "Data Provider cannot be deleted."
           }
         }
       }
@@ -1854,6 +1902,14 @@
       "properties" : {
         "tag" : {
           "$ref" : "#/definitions/Tag"
+        }
+      }
+    },
+    "DataProviderModReq": {
+      "type" : "object",
+      "properties" : {
+        "data_provider" : {
+          "$ref" : "#/definitions/DataProvider"
         }
       }
     },

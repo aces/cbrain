@@ -28,8 +28,8 @@ class DataProvidersController < ApplicationController
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   api_available :only => [ :index, :show, :is_alive,
-                           :browse, :register, :unregister, :delete,
-                           :create_personal, :check_personal, ]
+                           :browse, :register, :unregister, :create, :delete,
+                           :create_personal, :check_personal, :destroy]
 
   before_action :login_required
   before_action :manager_role_required, :only => [:new, :create]
@@ -98,7 +98,7 @@ class DataProvidersController < ApplicationController
       respond_to do |format|
         format.html { redirect_to :action => :index, :format => :html}
         format.xml  { render :xml   => @provider }
-        format.json { render :json  => @provider }
+        format.json { render :json  => @provider.for_api }
       end
     else
       @typelist = get_type_list
