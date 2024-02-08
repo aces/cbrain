@@ -112,6 +112,11 @@ class RemoteCommand < RestrictedHash
 
     :ssh_key_pub, :ssh_key_priv, # when installing new ssh key
 
+    # -------- COPY FILES PARAMETERS --------
+
+    :userfile_ids,          # an input for the command, a list of userfile ids as string. "1,2,3"
+    :dest_data_provider_id, # destination DP id
+
     # -------- ERROR TRACES --------
 
     :exception_class,      # filled by receiver if an exception occured
