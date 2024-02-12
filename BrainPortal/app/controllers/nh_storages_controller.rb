@@ -29,8 +29,6 @@ class NhStoragesController < NeurohubApplicationController
 
   before_action :login_required
 
-  api_available :only => [ :create ]
-
   def new #:nodoc:
     @nh_dp       = UserkeyFlatDirSshDataProvider.new
     @nh_projects = find_nh_projects(current_user)
@@ -70,18 +68,12 @@ class NhStoragesController < NeurohubApplicationController
       @nh_dp.addlog_context(self,"Created by #{current_user.login}")
       @nh_dp.meta[:browse_gid] = current_user.own_group.id # only the owner can browse this in CBRAIN
       flash[:notice] = "Private storage #{@nh_dp.name} was successfully created"
-      respond_to do |format|
-        format.html { redirect_to :action => :show, :id => @nh_dp.id }
-        format.json { render :json => @nh_dp.for_api }
-      end
+      redirect_to :action => :show, :id => @nh_dp.id
     else
       @nh_projects = find_nh_projects(current_user) # for form
       @nh_projects = ensure_assignable_nh_projects(current_user, @nh_projects)
       flash[:error] = "Cannot create storage #{@nh_dp.name}"
-      respond_to do |format|
-        format.html { render :action => :new }
-        format.json { render :json => { :errors => @nh_dp.errors }, :status => :unprocessable_entity }
-      end
+      render :action => :new
     end
 
   end

@@ -28,7 +28,7 @@ class DataProvidersController < ApplicationController
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   api_available :only => [ :index, :show, :is_alive,
-                           :browse, :register, :unregister, :create, :delete,
+                           :browse, :register, :unregister, :delete,
                            :create_personal, :check_personal, :destroy]
 
   before_action :login_required
@@ -115,22 +115,44 @@ class DataProvidersController < ApplicationController
     @provider         = UserkeyFlatDirSshDataProvider.new( :user_id   => current_user.id,
                                                            :group_id  => provider_group_id,
                                                            :online    => true,
-                                                           :read_only => false
+                                                           :read_only => false,
                                                          )
     @groups           = current_user.assignable_groups
   end
 
-  # create by normal user,  only UserkeyFlatDirSshDataProvider
+  # Create by normal user, only UserkeyFlatDirSshDataProvider
+  # S3DataProvider, S3FlatDataProvider, S3MultiLevelDataProvider
   def create_personal
     normal_params = params.require_as_params(:data_provider)
                           .permit(:name, :description, :group_id,
                                   :remote_user, :remote_host,
-                                  :remote_port, :remote_dir
+                                  :remote_port, :remote_dir,
+                                  :type,
+                                  :cloud_storage_client_identifier,
+                                  :cloud_storage_client_token,
+                                  :cloud_storage_client_bucket_name,
+                                  :cloud_storage_client_path_start,
+                                  :cloud_storage_endpoint,
+                                  :cloud_storage_region,
                                  )
+
+    authorized_type = [UserkeyFlatDirSshDataProvider, S3DataProvider, S3FlatDataProvider, S3MultiLevelDataProvider]
+    dp_type         = normal_params[:type] || "UserkeyFlatDirSshDataProvider"
+
+    # Check if the type is an authorized class
+    if ! authorized_type.include?(dp_type.constantize)
+      respond_to do |format|
+        format.html { render :action => :new_personal}
+        format.json { render :json   => { :error => "DataProvider type is not authorized" },  :status => :unprocessable_entity }
+      end
+    end
+
     group_id = normal_params[:group_id]
     current_user.assignable_group_ids.find(group_id) # ensure assignable, not sure need check visibility etc more
-    @provider         = UserkeyFlatDirSshDataProvider.new(normal_params)
-    @provider.user_id = current_user.id # prevent creation of dp on behalf of other users
+    @provider          = dp_type.constantize.new(normal_params)
+    @provider.user_id  = current_user.id # prevent creation of dp on behalf of other users
+    @provider.online   = true
+    @provider.group_id = current_assignable_group.id
 
     if ! @provider.save
       @groups   = current_user.assignable_groups
