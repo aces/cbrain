@@ -517,32 +517,28 @@
             "description" : "No session created yet."
           }
         }
-      }
-    },
-    "/nh_storages" : {
-      "post" : {
-        "summary" : "Create a new personal data provider (a.k.a: Neurohub storage).",
-        "description" : "This method creates a new personal data provider, which allows users to store their own data.\n",
-        "tags": ["NhStorages"],
-        "consumes": ["application/json", "multipart/form-data"],
+      },
+      "create_personal" : {
+        "summary" : "Create a new personal Data Provider",
+        "description" : "This method creates a new personal Data Provider for the current user, allowed types are UserkeyFlatDirSshDataProvider, S3DataProvider, S3FlatDataProvider, S3MultiLevelDataProvider.\n",
         "parameters" : [ {
-          "name" : "nh_storage_mod_req",
+          "name" : "data_provider_mod_req",
           "in" : "body",
-          "description" : "An object describing the NeuroHub storage to create",
-          "required" : true,
           "schema" : {
             "$ref" : "#/definitions/DataProviderModReq"
-          }
+          },
+          "required" : true
         } ],
+        "tags" : [ "DataProviders" ],
         "responses" : {
-          "200" : {
-            "description" : "Data provider created successfully.",
+          "201" : {
+            "description" : "Returns the created DataProvider object.\n",
             "schema" : {
               "$ref" : "#/definitions/DataProvider"
             }
           },
-          "422" : {
-            "description" : "Attributes are invalid, or data provider already exists."
+          "401" : {
+            "description" : "No DataProvider created yet.\n"
           }
         }
       }

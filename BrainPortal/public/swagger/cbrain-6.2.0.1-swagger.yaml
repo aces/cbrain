@@ -490,6 +490,29 @@ paths:
               $ref: '#/definitions/DataProvider'
         '401':
           description: No session created yet.
+    create_personal:
+      summary: Create a new personal Data Provider
+      description: >
+        This method creates a new personal Data Provider for the current user,
+        allowed types are UserkeyFlatDirSshDataProvider, S3DataProvider,
+        S3FlatDataProvider, S3MultiLevelDataProvider.
+      parameters:
+        - name: data_provider_mod_req
+          in: body
+          schema:
+            $ref: '#/definitions/DataProviderModReq'
+          required: true
+      tags:
+        - DataProviders
+      responses:
+        '201':
+          description: |
+            Returns the created DataProvider object.
+          schema:
+            $ref: '#/definitions/DataProvider'
+        '401':
+          description: |
+            No DataProvider created yet.
   '/data_providers/{id}':
     get:
       summary: Get information on a particular Data Provider.
@@ -511,6 +534,25 @@ paths:
             $ref: '#/definitions/DataProvider'
         '401':
           description: No session created yet.
+    delete:
+      summary: Delete a Data Provider.
+      description: |
+        This method allows the deletion of a Data Provider. This will not delete
+        the files on the Data Provider, but will remove the Data Provider from
+        CBRAIN.
+      tags:
+        - DataProviders
+      parameters:
+        - name: id
+          type: integer
+          description: ID of the Data Provider to delete.
+          required: true
+          in: path
+      responses:
+        '200':
+          description: Data Provider was deleted.
+        '409':
+          description: Data Provider cannot be deleted.
   '/data_providers/{id}/browse':
     get:
       summary: List the files on a Data Provider.
@@ -1663,6 +1705,11 @@ definitions:
     properties:
       tag:
         $ref: '#/definitions/Tag'
+  DataProviderModReq:
+    type: object
+    properties:
+      data_provider:
+        $ref: '#/definitions/DataProvider'
   GroupModReq:
     type: object
     properties:
