@@ -75,7 +75,6 @@ class NhStoragesController < NeurohubApplicationController
       flash[:error] = "Cannot create storage #{@nh_dp.name}"
       render :action => :new
     end
-
   end
 
   def index  #:nodoc:
