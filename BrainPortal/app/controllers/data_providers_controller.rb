@@ -97,7 +97,7 @@ class DataProvidersController < ApplicationController
       flash[:notice] = "Provider successfully created."
       respond_to do |format|
         format.html { redirect_to :action => :index, :format => :html}
-        format.xml  { render :xml   => @provider }
+        format.xml  { render :xml   => @provider.for_api }
         format.json { render :json  => @provider.for_api }
       end
     else
@@ -121,7 +121,7 @@ class DataProvidersController < ApplicationController
   end
 
   # Create by normal user, only UserkeyFlatDirSshDataProvider
-  # S3DataProvider, S3FlatDataProvider, S3MultiLevelDataProvider
+  # S3FlatDataProvider, S3MultiLevelDataProvider
   def create_personal
     normal_params = params.require_as_params(:data_provider)
                           .permit(:name, :description, :group_id,
@@ -136,11 +136,12 @@ class DataProvidersController < ApplicationController
                                   :cloud_storage_region,
                                  )
 
-    authorized_type = [UserkeyFlatDirSshDataProvider, S3DataProvider, S3FlatDataProvider, S3MultiLevelDataProvider]
+    authorized_type = [UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider]
     dp_type         = normal_params[:type] || "UserkeyFlatDirSshDataProvider"
 
     # Check if the type is an authorized class
     if ! authorized_type.include?(dp_type.constantize)
+      flash[:error] = "DataProvider type is not authorized"
       respond_to do |format|
         format.html { render :action => :new_personal}
         format.json { render :json   => { :error => "DataProvider type is not authorized" },  :status => :unprocessable_entity }
