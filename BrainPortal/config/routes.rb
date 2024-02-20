@@ -67,6 +67,7 @@ Rails.application.routes.draw do
   resources :users,           :except => [ :edit ] do
     member do
       get  'change_password'
+      post 'create_user_session'
       post 'switch'
       put  'push_keys'
     end
