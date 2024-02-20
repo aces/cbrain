@@ -29,7 +29,7 @@ class UsersController < ApplicationController
 
   include GlobusHelpers
 
-  api_available :only => [ :index, :create, :show, :destroy, :update, :switch, :create_user_session]
+  api_available :only => [ :index, :create, :show, :destroy, :update, :create_user_session]
 
   before_action :login_required,        :except => [:request_password, :send_password]
   before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password, :push_keys, :new_token]
