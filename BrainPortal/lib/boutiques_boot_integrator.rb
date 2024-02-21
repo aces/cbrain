@@ -72,7 +72,7 @@ class BoutiquesBootIntegrator
       # The real meat is in ParentClass.
       klass = Class.new(parent)
       BoutiquesTask.const_set klass_name.to_sym, klass
-      klass.const_set :Revision_info, CbrainFileRevision[path] # the class gets the JSON file's rev info
+      klass.const_set :Revision_info, CbrainFileRevision[__FILE__]
     end
 
     # Add special module functionality if necessary

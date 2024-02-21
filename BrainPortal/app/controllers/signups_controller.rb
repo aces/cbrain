@@ -56,7 +56,7 @@ class SignupsController < ApplicationController
     form_generated_at_int = form_generated_at_s.to_i rescue Time.now.to_i
     form_generated_at     = Time.at(form_generated_at_int)
     # If form was generated less then 10 seconds ago, ban the IP address
-    return ban_ip("Signup form filled too quickly") if Time.now - form_generated_at < 10.0
+    return ban_ip("Signup form filled too quickly") if @signup.email.present? && (Time.now - form_generated_at < 10.0)
 
     unless can_edit?(@signup)
       redirect_to login_path
