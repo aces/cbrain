@@ -329,7 +329,7 @@ class UsersController < ApplicationController
     end
   end
 
-  # Only use via API and accessible only to admin users
+  # API-only action for admin users only
   def create_user_session #:nodoc:
     for_user_id = params[:id]
     for_user    = User.find(for_user_id)
@@ -339,9 +339,9 @@ class UsersController < ApplicationController
       session_id: SecureRandom.hex,
       active: true,
       data: {
-        :guessed_remote_host => cbrain_session[:guessed_remote_host],
-        :guessed_remote_ip   => cbrain_session[:guessed_remote_ip],
-        :api                 => true
+        guessed_remote_host: cbrain_session[:guessed_remote_host],
+        guessed_remote_ip: cbrain_session[:guessed_remote_ip],
+        api: true
       }
     )
     new_user_session.save!
@@ -372,10 +372,7 @@ class UsersController < ApplicationController
     # ... but we must adjust the CBRAIN session object too
     cbrain_session.user_id = @user.id
 
-    respond_to do |format|
-      format.html { redirect_to start_page_path }
-      format.json { head :ok }
-    end
+    redirect_to start_page_path
   end
 
   def request_password #:nodoc:
