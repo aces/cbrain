@@ -29,10 +29,11 @@ class UsersController < ApplicationController
 
   include GlobusHelpers
 
-  api_available :only => [ :index, :create, :show, :destroy, :update]
+  api_available :only => [ :index, :create, :show, :destroy, :update, :create_user_session]
 
   before_action :login_required,        :except => [:request_password, :send_password]
   before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password, :push_keys, :new_token]
+  before_action :admin_role_required,   :only =>   [:create_user_session]
 
   def index #:nodoc:
     @scope = scope_from_session
@@ -262,7 +263,7 @@ class UsersController < ApplicationController
 
     @user = @user.class_update
 
-    success = false; 
+    success = false;
     if @user.save_with_logging(current_user, %w( full_name login email role city country account_locked ) )
       @user = User.find(@user.id) # fully reload with new class if needed
       @user.addlog_object_list_updated("Groups", Group, original_group_ids, @user.group_ids, current_user)
@@ -273,15 +274,15 @@ class UsersController < ApplicationController
       changed_ap_ids = remove_ap_ids + added_ap_ids
       changed_ap_ids.each do |id|
         ap                  = AccessProfile.find(id)
-        ap_user_ids         = ap.user_ids 
+        ap_user_ids         = ap.user_ids
         initial_ap_user_ids = added_ap_ids.include?(id) ? ap_user_ids - [@user.id] : ap_user_ids + [@user.id]
         ap.addlog_object_list_updated("Users", User, initial_ap_user_ids, ap_user_ids,  current_user, :login)
       end
       success = true;
-    end 
+    end
 
     respond_to do |format|
-      if success 
+      if success
         flash[:notice] = "User #{@user.login} was successfully updated."
         format.html  { redirect_to :action => :show }
         format.xml   { render :xml  => @user.for_api }
@@ -326,6 +327,31 @@ class UsersController < ApplicationController
       format.xml  { head :conflict }
       format.json { head :conflict}
     end
+  end
+
+  # API-only action for admin users only
+  def create_user_session #:nodoc:
+    for_user_id = params[:id]
+    for_user    = User.find(for_user_id)
+
+    new_user_session = LargeSessionInfo.new(
+      user_id:    for_user_id,
+      session_id: SecureRandom.hex,
+      active: true,
+      data: {
+        guessed_remote_host: cbrain_session[:guessed_remote_host],
+        guessed_remote_ip: cbrain_session[:guessed_remote_ip],
+        api: true
+      }
+    )
+    new_user_session.save!
+
+    new_session_info = {
+      cbrain_api_token: new_user_session.session_id,
+      user_id:          for_user_id
+    }
+
+    render :json => new_session_info
   end
 
   def switch #:nodoc:
