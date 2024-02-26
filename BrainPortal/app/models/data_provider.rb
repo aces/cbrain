@@ -860,7 +860,7 @@ class DataProvider < ApplicationRecord
     newfile.updated_at       = Time.now
     newfile.immutable        = false
     # Check if DP has_browse_path_capabilities? if not, set browse_path to nil
-    newfile.browse_path     = nil if !DataProvider.find(otherprovider.id).has_browse_path_capabilities?
+    newfile.browse_path     = nil if !otherprovider.has_browse_path_capabilities?
     newfile.save
 
     # Trigger callbacks for tracking size changes
