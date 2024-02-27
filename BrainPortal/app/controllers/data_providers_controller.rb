@@ -123,24 +123,10 @@ class DataProvidersController < ApplicationController
   # Create by normal user, only UserkeyFlatDirSshDataProvider
   # S3FlatDataProvider, S3MultiLevelDataProvider
   def create_personal
-    normal_params = params.require_as_params(:data_provider)
-                          .permit(:name, :description, :group_id,
-                                  :remote_user, :remote_host,
-                                  :remote_port, :remote_dir,
-                                  :type,
-                                  :cloud_storage_client_identifier,
-                                  :cloud_storage_client_token,
-                                  :cloud_storage_client_bucket_name,
-                                  :cloud_storage_client_path_start,
-                                  :cloud_storage_endpoint,
-                                  :cloud_storage_region,
-                                 )
-
-    authorized_type = [UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider]
-    dp_type         = normal_params[:type] || "UserkeyFlatDirSshDataProvider"
-
     # Check if the type is an authorized class
-    if ! authorized_type.include?(dp_type.constantize)
+    dp_type         = (params[:type] || "UserkeyFlatDirSshDataProvider").constantize
+    authorized_type = [UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider]
+    if ! authorized_type.include?(dp_type)
       flash[:error] = "DataProvider type is not authorized"
       respond_to do |format|
         format.html { render :action => :new_personal}
@@ -148,9 +134,20 @@ class DataProvidersController < ApplicationController
       end
     end
 
+    # Whitelist params
+    whitelist_params = dp_type == UserkeyFlatDirSshDataProvider ?
+    [:remote_user, :remote_host, :remote_port, :remote_dir]     :
+    [:cloud_storage_client_identifier, :cloud_storage_client_token,
+     :cloud_storage_client_bucket_name, :cloud_storage_client_path_start,
+     :cloud_storage_endpoint, :cloud_storage_region]
+
+    allowed_params = [:name, :description, :group_id, :type] + whitelist_params
+    normal_params    = params.require_as_params(:data_provider)
+                             .permit(allowed_params)
+
     group_id = normal_params[:group_id]
     current_user.assignable_group_ids.find(group_id) # ensure assignable, not sure need check visibility etc more
-    @provider          = dp_type.constantize.new(normal_params)
+    @provider          = dp_type.new(normal_params)
     @provider.user_id  = current_user.id # prevent creation of dp on behalf of other users
     @provider.online   = true
     @provider.group_id = current_assignable_group.id
