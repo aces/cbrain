@@ -99,8 +99,8 @@ class UsersController < ApplicationController
         render :xml  => @user.for_api_xml
       end
       format.json do
-        # Append the SSH key to the JSON response
-        render :json => @user.for_api.merge(public_key: @ssh_key.public_key)
+        # Append the SSH key to the JSON response if it exists
+        render :json => @user.for_api.merge(public_key: @ssh_key.try(:public_key))
       end
     end
   end
