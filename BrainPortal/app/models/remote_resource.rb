@@ -701,7 +701,7 @@ class RemoteResource < ApplicationRecord
   def send_command_copy_files(userfile_ids, dest_data_provider_id, requester_user_id)
     command = RemoteCommand.new(
       :command               => 'copy_files',
-      :userfile_ids          => userfile_ids,
+      :userfile_ids          => userfile_ids.join(","),
       :dest_data_provider_id => dest_data_provider_id,
       :requester_user_id     => requester_user_id,
     )
