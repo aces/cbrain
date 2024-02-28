@@ -142,6 +142,9 @@ class DataProvidersController < ApplicationController
      :cloud_storage_endpoint, :cloud_storage_region]
 
     allowed_params = [:name, :description, :group_id, :type] + whitelist_params
+
+    # Default group is the user's own group
+    params[:data_provider][:group_id] ||= current_user.own_group.id
     normal_params    = params.require_as_params(:data_provider)
                              .permit(allowed_params)
 
