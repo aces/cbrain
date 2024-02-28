@@ -124,29 +124,20 @@ class DataProvidersController < ApplicationController
   # S3FlatDataProvider, S3MultiLevelDataProvider
   def create_personal
     # Check if the type is an authorized class
-    dp_type         = (params[:type] || "UserkeyFlatDirSshDataProvider").constantize
+    dp_type         = (params[:data_provider][:type] || "UserkeyFlatDirSshDataProvider").constantize
     authorized_type = [UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider]
+
     if ! authorized_type.include?(dp_type)
-      flash[:error] = "DataProvider type is not authorized"
       respond_to do |format|
         format.html { render :action => :new_personal}
         format.json { render :json   => { :error => "DataProvider type is not authorized" },  :status => :unprocessable_entity }
       end
+      return
     end
 
-    # Whitelist params
-    whitelist_params = dp_type == UserkeyFlatDirSshDataProvider ?
-    [:remote_user, :remote_host, :remote_port, :remote_dir]     :
-    [:cloud_storage_client_identifier, :cloud_storage_client_token,
-     :cloud_storage_client_bucket_name, :cloud_storage_client_path_start,
-     :cloud_storage_endpoint, :cloud_storage_region]
-
-    allowed_params = [:name, :description, :group_id, :type] + whitelist_params
-
-    # Default group is the user's own group
+    # Set the group_id to the current user's own group
     params[:data_provider][:group_id] ||= current_user.own_group.id
-    normal_params    = params.require_as_params(:data_provider)
-                             .permit(allowed_params)
+    normal_params = filtered_create_personal_params(params, dp_type)
 
     group_id = normal_params[:group_id]
     current_user.assignable_group_ids.find(group_id) # ensure assignable, not sure need check visibility etc more
@@ -1086,6 +1077,18 @@ class DataProvidersController < ApplicationController
       :num_unregistered                => 0,
       :num_erased                      => 0,
     }
+  end
+
+  def filtered_create_personal_params(params,type)
+    whitelist_params = type == UserkeyFlatDirSshDataProvider ?
+    [:remote_user, :remote_host, :remote_port, :remote_dir]     :
+    [:cloud_storage_client_identifier, :cloud_storage_client_token,
+     :cloud_storage_client_bucket_name, :cloud_storage_client_path_start,
+     :cloud_storage_endpoint, :cloud_storage_region]
+
+    allowed_params = [:name, :description, :group_id, :type] + whitelist_params
+
+    params.require_as_params(:data_provider).permit(allowed_params)
   end
 
 end
