@@ -1086,7 +1086,7 @@ class DataProvidersController < ApplicationController
     }
   end
 
-  def filtered_create_personal_params(params,type)
+  def filtered_create_personal_params(params,type) #:nodoc:
     whitelist_params = type == UserkeyFlatDirSshDataProvider ?
     [:remote_user, :remote_host, :remote_port, :remote_dir]     :
     [:cloud_storage_client_identifier, :cloud_storage_client_token,
