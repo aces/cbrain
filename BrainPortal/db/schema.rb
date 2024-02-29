@@ -121,7 +121,7 @@ ActiveRecord::Schema.define(version: 20240226230749) do
     t.index ["user_id"], name: "index_data_providers_on_user_id", using: :btree
   end
 
-  create_table "data_usage", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci" do |t|
+  create_table "data_usage", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer  "user_id",                          null: false
     t.integer  "group_id",                         null: false
     t.string   "yearmonth",                        null: false
@@ -137,7 +137,7 @@ ActiveRecord::Schema.define(version: 20240226230749) do
     t.datetime "updated_at",                       null: false
   end
 
-  create_table "disk_quotas", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci" do |t|
+  create_table "disk_quotas", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer  "user_id"
     t.integer  "data_provider_id"
     t.decimal  "max_bytes",        precision: 24
@@ -183,7 +183,7 @@ ActiveRecord::Schema.define(version: 20240226230749) do
     t.index ["type"], name: "index_groups_on_type", using: :btree
   end
 
-  create_table "groups_editors", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci" do |t|
+  create_table "groups_editors", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer "group_id"
     t.integer "user_id"
     t.index ["group_id", "user_id"], name: "index_groups_editors_on_group_id_and_user_id", unique: true, using: :btree
@@ -204,7 +204,7 @@ ActiveRecord::Schema.define(version: 20240226230749) do
     t.index ["key"], name: "index_help_documents_on_key", unique: true, using: :btree
   end
 
-  create_table "large_session_infos", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci" do |t|
+  create_table "large_session_infos", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "session_id",                               null: false
     t.text     "data",       limit: 65535
     t.datetime "created_at"
@@ -295,7 +295,7 @@ ActiveRecord::Schema.define(version: 20240226230749) do
     t.index ["type"], name: "index_remote_resources_on_type", using: :btree
   end
 
-  create_table "resource_usage", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci" do |t|
+  create_table "resource_usage", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "type"
     t.decimal  "value",                    precision: 24
     t.integer  "user_id"
@@ -383,7 +383,6 @@ ActiveRecord::Schema.define(version: 20240226230749) do
     t.boolean  "hidden",                           default: false
     t.integer  "remote_resource_id"
     t.string   "form_page"
-    t.string   "maillist_consent"
   end
 
   create_table "sites", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
@@ -465,7 +464,6 @@ ActiveRecord::Schema.define(version: 20240226230749) do
     t.string   "container_exec_args"
     t.boolean  "inputs_readonly",                             default: false
     t.string   "boutiques_descriptor_path"
-    t.boolean  "copy_input",                                  default: false
     t.index ["bourreau_id"], name: "index_tool_configs_on_bourreau_id", using: :btree
     t.index ["tool_id"], name: "index_tool_configs_on_tool_id", using: :btree
   end
@@ -541,8 +539,6 @@ ActiveRecord::Schema.define(version: 20240226230749) do
     t.boolean  "account_locked",       default: false, null: false
     t.string   "zenodo_main_token"
     t.string   "zenodo_sandbox_token"
-    t.string   "maillist_consent"
-    t.string   "envoke_id"
     t.index ["login"], name: "index_users_on_login", using: :btree
     t.index ["type"], name: "index_users_on_type", using: :btree
   end
