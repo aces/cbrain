@@ -130,6 +130,7 @@ class DataProvidersController < ApplicationController
     authorized_type     = [UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider]
 
     if ! authorized_type.include?(dp_type)
+      flash[:error] = "DataProvider type is not authorized"
       respond_to do |format|
         format.html { render :action => :new_personal}
         format.json { render :json   => { :error => "DataProvider type is not authorized" },  :status => :unprocessable_entity }
