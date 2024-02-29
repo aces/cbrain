@@ -129,14 +129,7 @@ class DataProvidersController < ApplicationController
     dp_type             = (dataprovider_params[:type] || "UserkeyFlatDirSshDataProvider").constantize
     authorized_type     = [UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider]
 
-    if ! authorized_type.include?(dp_type)
-      flash[:error] = "DataProvider type is not authorized"
-      respond_to do |format|
-        format.html { render :action => :new_personal}
-        format.json { render :json   => { :error => "DataProvider type is not authorized" },  :status => :unprocessable_entity }
-      end
-      return
-    end
+    # Create the provider
 
     # Set the group_id to the current user's own group
     own_group_id = current_user.own_group.id
@@ -150,6 +143,15 @@ class DataProvidersController < ApplicationController
     @provider          = dp_type.new(normal_params)
     @provider.user_id  = current_user.id # prevent creation of dp on behalf of other users
     @provider.online   = true
+
+    if ! authorized_type.include?(dp_type)
+      flash[:error] = "DataProvider type is not authorized"
+      respond_to do |format|
+        format.html { render :action => :new_personal}
+        format.json { render :json   => { :error => "DataProvider type is not authorized" },  :status => :unprocessable_entity }
+      end
+      return
+    end
 
     if ! @provider.save
       @groups   = current_user.assignable_groups
@@ -168,7 +170,7 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to :action => :show, :id => @provider.id}
-      format.json { render      :json   => @provider }
+      format.json { render      :json   => @provider.for_api }
     end
   end
 
