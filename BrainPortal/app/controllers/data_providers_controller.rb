@@ -123,9 +123,11 @@ class DataProvidersController < ApplicationController
   # Create by normal user, only UserkeyFlatDirSshDataProvider
   # S3FlatDataProvider, S3MultiLevelDataProvider
   def create_personal
+    dataprovider_params = params[:data_provider]
+
     # Check if the type is an authorized class
-    dp_type         = (params[:data_provider][:type] || "UserkeyFlatDirSshDataProvider").constantize
-    authorized_type = [UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider]
+    dp_type             = (dataprovider_params[:type] || "UserkeyFlatDirSshDataProvider").constantize
+    authorized_type     = [UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider]
 
     if ! authorized_type.include?(dp_type)
       respond_to do |format|
@@ -136,15 +138,17 @@ class DataProvidersController < ApplicationController
     end
 
     # Set the group_id to the current user's own group
-    params[:data_provider][:group_id] ||= current_user.own_group.id
-    normal_params = filtered_create_personal_params(params, dp_type)
+    own_group_id = current_user.own_group.id
+    group_id     = dataprovider_params[:group_id] ||= own_group_id
 
-    group_id = normal_params[:group_id]
-    current_user.assignable_group_ids.find(group_id) # ensure assignable, not sure need check visibility etc more
+    # Check if the group_id is assignable
+    group_id     = own_group_id if !current_user.assignable_group_ids.find(group_id).size
+    params[:data_provider][:group_id] = group_id
+
+    normal_params      = filtered_create_personal_params(params, dp_type)
     @provider          = dp_type.new(normal_params)
     @provider.user_id  = current_user.id # prevent creation of dp on behalf of other users
     @provider.online   = true
-    @provider.group_id = current_assignable_group.id
 
     if ! @provider.save
       @groups   = current_user.assignable_groups
