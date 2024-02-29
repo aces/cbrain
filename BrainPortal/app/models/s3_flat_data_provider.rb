@@ -60,6 +60,8 @@ class S3FlatDataProvider < DataProvider
 
   before_save :canonify_path_start
 
+  api_attr_visible :cloud_storage_client_identifier, :cloud_storage_client_bucket_name, :cloud_storage_client_path_start, :cloud_storage_endpoint, :cloud_storage_region
+
   # This returns the category of the data provider
   def self.pretty_category_name #:nodoc:
     "Cloud"

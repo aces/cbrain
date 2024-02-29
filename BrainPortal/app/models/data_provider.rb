@@ -1055,26 +1055,6 @@ class DataProvider < ApplicationRecord
   #     is_fast_syncing                      => true/false
   #     content_storage_shared_between_users => true/false
   def for_api
-    extra_info = {};
-
-    # Add extra info for the UserkeyFlatDirSshDataProvider
-    extra_info = {
-      'remote_user'                          => self.remote_user,
-      'remote_host'                          => self.remote_host,
-      'remote_dir'                           => self.remote_dir,
-      'remote_port'                          => self.remote_port,
-    } if self.is_a?(UserkeyFlatDirSshDataProvider)
-
-    # Add extra info for the S3FlatDataProvider and S3MultiLevelDataProvider
-    extra_info = {
-      'cloud_storage_client_identifier'      => self.cloud_storage_client_identifier,
-      'cloud_storage_client_bucket_name'     => self.cloud_storage_client_bucket_name,
-      'cloud_storage_client_path_start'      => self.cloud_storage_client_path_start,
-      'cloud_storage_endpoint'               => self.cloud_storage_endpoint,
-      'cloud_storage_region'                 => self.cloud_storage_region,
-    } if self.is_a?(S3FlatDataProvider) || self.is_a?(S3MultiLevelDataProvider)
-
-
     super.merge(
       {
         'is_browsable'                         => self.is_browsable?                         ,
@@ -1082,7 +1062,7 @@ class DataProvider < ApplicationRecord
         'allow_file_owner_change'              => self.allow_file_owner_change?              ,
         'content_storage_shared_between_users' => self.content_storage_shared_between_users? ,
       }
-    ).merge(extra_info)
+    )
   end
 
 
