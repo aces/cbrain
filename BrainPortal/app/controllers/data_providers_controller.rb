@@ -29,7 +29,7 @@ class DataProvidersController < ApplicationController
 
   api_available :only => [ :index, :show, :is_alive,
                            :browse, :register, :unregister, :delete,
-                           :create_personal, :check_personal, ]
+                           :create_personal, :check_personal, :destroy]
 
   before_action :login_required
   before_action :manager_role_required, :only => [:new, :create]
@@ -97,8 +97,8 @@ class DataProvidersController < ApplicationController
       flash[:notice] = "Provider successfully created."
       respond_to do |format|
         format.html { redirect_to :action => :index, :format => :html}
-        format.xml  { render :xml   => @provider }
-        format.json { render :json  => @provider }
+        format.xml  { render :xml   => @provider.for_api }
+        format.json { render :json  => @provider.for_api }
       end
     else
       @typelist = get_type_list
@@ -115,25 +115,29 @@ class DataProvidersController < ApplicationController
     @provider         = UserkeyFlatDirSshDataProvider.new( :user_id   => current_user.id,
                                                            :group_id  => provider_group_id,
                                                            :online    => true,
-                                                           :read_only => false
+                                                           :read_only => false,
                                                          )
     @groups           = current_user.assignable_groups
   end
 
-  # create by normal user,  only UserkeyFlatDirSshDataProvider
+  # Can be create by normal user,
+  # only UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider
   def create_personal
-    normal_params = params.require_as_params(:data_provider)
-                          .permit(:name, :description, :group_id,
-                                  :remote_user, :remote_host,
-                                  :remote_port, :remote_dir
-                                 )
-    group_id = normal_params[:group_id]
-    current_user.assignable_group_ids.find(group_id) # ensure assignable, not sure need check visibility etc more
-    @provider         = UserkeyFlatDirSshDataProvider.new(normal_params)
-    @provider.user_id = current_user.id # prevent creation of dp on behalf of other users
+    @provider = DataProvider.new(base_provider_params).class_update
+    @provider.update_attributes(userkey_provider_params) if @provider.is_a?(UserkeyFlatDirSshDataProvider)
+    @provider.update_attributes(s3_provider_params)      if @provider.is_a?(S3FlatDataProvider)
+
+    authorized_type     = [UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider]
+    @provider.errors.add(:type, "is not allowed") unless authorized_type.include?(@provider.type)
+
+    # Fix some attributes
+    @provider.user_id  = current_user.id
+    @provider.group_id = current_user.own_group.id unless
+      current_user.assignable_group_ids.include?(@provider.group_id)
+    @provider.online   = true
 
     if ! @provider.save
-      @groups   = current_user.assignable_groups
+      @groups = current_user.assignable_groups
       respond_to do |format|
         format.html { render :action => :new_personal}
         format.json { render :json   => @provider.errors,  :status => :unprocessable_entity }
@@ -149,7 +153,7 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to :action => :show, :id => @provider.id}
-      format.json { render      :json   => @provider }
+      format.json { render      :json   => @provider.for_api }
     end
   end
 
@@ -1065,4 +1069,29 @@ class DataProvidersController < ApplicationController
     }
   end
 
+  def base_provider_params #:nodoc:
+    params.require_as_params(:data_provider).permit(common_params_list)
+  end
+
+  def userkey_provider_params #:nodoc:
+    params.require_as_params(:data_provider).permit(userkey_params_list)
+  end
+
+  def s3_provider_params #:nodoc:
+    params.require_as_params(:data_provider).permit(s3_params_list)
+  end
+
+  def common_params_list #:nodoc:
+    [:name, :description, :group_id, :type]
+  end
+
+  def userkey_params_list #:nodoc:
+    [:remote_user, :remote_host, :remote_port, :remote_dir]
+  end
+
+  def s3_params_list #:nodoc:
+    [ :cloud_storage_client_identifier, :cloud_storage_client_token,
+      :cloud_storage_client_bucket_name, :cloud_storage_client_path_start,
+      :cloud_storage_endpoint, :cloud_storage_region]
+  end
 end

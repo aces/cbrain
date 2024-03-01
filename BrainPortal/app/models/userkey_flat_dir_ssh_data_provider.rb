@@ -30,6 +30,8 @@ class UserkeyFlatDirSshDataProvider < FlatDirSshDataProvider
 
   validates_presence_of :remote_user, :remote_host, :remote_dir
 
+  api_attr_visible :remote_user, :remote_host, :remote_dir, :remote_port
+
   def impl_is_alive? #:nodoc:
     user = self.user # we use the owner as the way to check if it's alive
     return false unless self.master(user, nil).is_alive?
