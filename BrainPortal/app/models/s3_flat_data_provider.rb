@@ -60,7 +60,7 @@ class S3FlatDataProvider < DataProvider
 
   before_save :canonify_path_start
 
-  api_attr_visible :cloud_storage_client_identifier, :cloud_storage_client_bucket_name, :cloud_storage_client_path_start, :cloud_storage_endpoint, :cloud_storage_region
+  api_attr_visible :cloud_storage_client_bucket_name, :cloud_storage_client_path_start, :cloud_storage_endpoint, :cloud_storage_region
 
   # This returns the category of the data provider
   def self.pretty_category_name #:nodoc:
@@ -442,6 +442,16 @@ class S3FlatDataProvider < DataProvider
     return [ add_dest.sort    { |a,b| a.name <=> b.name },
              delete_dest.sort { |a,b| a.name <=> b.name },
            ]
+  end
+
+  #################################################################
+  # Model Callbacks
+  #################################################################
+
+  # Normally, DPs can only be owned by admins. However, this DP class
+  # is meant to be owned by normal users.
+  def owner_is_appropriate #:nodoc:
+    return true
   end
 
 end

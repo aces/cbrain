@@ -120,41 +120,26 @@ class DataProvidersController < ApplicationController
     @groups           = current_user.assignable_groups
   end
 
-  # Create by normal user, only UserkeyFlatDirSshDataProvider
-  # S3FlatDataProvider, S3MultiLevelDataProvider
+  # Can be create by normal user,
+  # only UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider
   def create_personal
-    dataprovider_params = params[:data_provider]
+    dp_type   = (params[:data_provider][:type] || "UserkeyFlatDirSshDataProvider").constantize
 
-    # Check if the type is an authorized class
-    dp_type             = (dataprovider_params[:type] || "UserkeyFlatDirSshDataProvider").constantize
+    @provider = dp_type.new(base_provider_params)
+    @provider.update_attributes(userkey_provider_params) if @provider.is_a?(UserkeyFlatDirSshDataProvider)
+    @provider.update_attributes(s3_provider_params)      if @provider.is_a?(S3FlatDataProvider)
+
     authorized_type     = [UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider]
+    @provider.errors.add(:type, "is not an allowed") unless authorized_type.include?(@provider.type)
 
-    # Create the provider
-
-    # Set the group_id to the current user's own group
-    own_group_id = current_user.own_group.id
-    group_id     = dataprovider_params[:group_id] ||= own_group_id
-
-    # Check if the group_id is assignable
-    group_id     = own_group_id if !current_user.assignable_group_ids.find(group_id).size
-    params[:data_provider][:group_id] = group_id
-
-    normal_params      = filtered_create_personal_params(params, dp_type)
-    @provider          = dp_type.new(normal_params)
-    @provider.user_id  = current_user.id # prevent creation of dp on behalf of other users
+    # Fix some attributes
+    @provider.user_id  = current_user.id
+    @provider.group_id = current_user.own_group.id unless
+       current_user.assignable_group_ids.include?(@provider.group_id)
     @provider.online   = true
 
-    if ! authorized_type.include?(dp_type)
-      flash[:error] = "DataProvider type is not authorized"
-      respond_to do |format|
-        format.html { render :action => :new_personal}
-        format.json { render :json   => { :error => "DataProvider type is not authorized" },  :status => :unprocessable_entity }
-      end
-      return
-    end
-
     if ! @provider.save
-      @groups   = current_user.assignable_groups
+      @groups = current_user.assignable_groups
       respond_to do |format|
         format.html { render :action => :new_personal}
         format.json { render :json   => @provider.errors,  :status => :unprocessable_entity }
@@ -1086,16 +1071,36 @@ class DataProvidersController < ApplicationController
     }
   end
 
-  def filtered_create_personal_params(params,type) #:nodoc:
-    whitelist_params = type == UserkeyFlatDirSshDataProvider ?
-    [:remote_user, :remote_host, :remote_port, :remote_dir]     :
-    [:cloud_storage_client_identifier, :cloud_storage_client_token,
-     :cloud_storage_client_bucket_name, :cloud_storage_client_path_start,
-     :cloud_storage_endpoint, :cloud_storage_region]
+  def base_provider_params #:nodoc:
+    params.require_as_params(:data_provider).permit(common_params_list)
+  end
 
-    allowed_params = [:name, :description, :group_id, :type] + whitelist_params
+  def userkey_provider_params #:nodoc:
+    params.require_as_params(:data_provider).permit(userkey_params_list)
+  end
+
+  def s3_provider_params #:nodoc:
+    params.require_as_params(:data_provider).permit(s3_params_list)
+  end
+
+  def filtered_create_personal_params(params,type) #:nodoc:
+    whitelist_params = type == UserkeyFlatDirSshDataProvider ? userkey_params_list : s3_params_list
+    allowed_params   = common_params_list + whitelist_params
 
     params.require_as_params(:data_provider).permit(allowed_params)
   end
 
+  def common_params_list #:nodoc:
+    [:name, :description, :group_id, :type]
+  end
+
+  def userkey_params_list #:nodoc:
+    [:remote_user, :remote_host, :remote_port, :remote_dir]
+  end
+
+  def s3_params_list #:nodoc:
+    [ :cloud_storage_client_identifier, :cloud_storage_client_token,
+      :cloud_storage_client_bucket_name, :cloud_storage_client_path_start,
+      :cloud_storage_endpoint, :cloud_storage_region]
+  end
 end
