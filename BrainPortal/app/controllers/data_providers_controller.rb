@@ -128,7 +128,7 @@ class DataProvidersController < ApplicationController
     @provider.update_attributes(s3_provider_params)      if @provider.is_a?(S3FlatDataProvider)
 
     authorized_type     = [UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider]
-    @provider.errors.add(:type, "is not an allowed") unless authorized_type.include?(@provider.type)
+    @provider.errors.add(:type, "is not allowed") unless authorized_type.include?(@provider.type)
 
     # Fix some attributes
     @provider.user_id  = current_user.id
