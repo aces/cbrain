@@ -20,6 +20,88 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# A module that provides loading and validaton of Boutiques descriptors.
+#
+# See also the Boutiques repository: https://github.com/boutiques/boutiques
+#
+# The modules provides one main Ruby class, BoutiquesSupport::BoutiquesDescriptor,
+# and several smaller data classes representing components of a descriptor.
+# These classes are subclasses of RestrictedHash, a type of Hash class that
+# only recognize a select set of keys and raise an exception when other keys
+# are used.
+#
+# Methods of BoutiquesSupport::BoutiquesDescriptor (which inherits from RestrictedHash)
+#
+# Creation methods:
+#
+#   desc = BoutiquesSupport::BoutiquesDescriptor.new()     # a blank descriptor
+#   desc = BoutiquesSupport::BoutiquesDescriptor.new(hash) # filled from a hash
+#   desc = BoutiquesSupport::BoutiquesDescriptor.new_from_string(jsontext)
+#   desc = BoutiquesSupport::BoutiquesDescriptor.new_from_file(path_to_json)
+#
+# Accessor methods:
+#
+# Note that when an attribute name contains a dash (-) then the corresponding
+# method name is written with an underscore (_).
+#
+#   desc.name = 'SuperTool'  # set the name
+#   toolname  = desc.name    # gets the name
+#   ver       = desc.tool_version  # gets 'tool-version'
+#   inputs    = desc.inputs  # array of BoutiquesSupport::Input objects
+#   custom    = desc.custom  # 'custom' object within descriptor
+#
+# The same conventions apply to Boutiques::Input, Boutiques::OutputFile
+# and Boutiques::Group. See the schema of a Boutiques descriptor for the
+# list of allowed attributes in each object.
+#
+# Other utility methods are documented in the source code but might not
+# appear in RDOC-generated documentation. Among these, many are
+# used by the BoutiquesTask integrator.
+#
+#   # Returns the name of the tool NNNN, appropriate to use as
+#   # a class name as BoutiquesTask::NNNN
+#   desc.name_as_ruby_class
+#
+#   # Returns all tags as a flat array
+#   desc.flat_tag_list
+#
+#   # Finds a specific BoutiquesSupport:Input by ID
+#   desc.input_by_id(inputid)
+#
+#   # Subset of the list of inputs with just the optional ones
+#   desc.optional_inputs
+#
+#   # Subset of the list of inputs with just the mandatory ones
+#   desc.required_inputs
+#
+#   # Subset of the list of inputs with just the multi-valued ones
+#   desc.list_inputs
+#
+#   # Subset of the list of inputs with just the File inputs
+#   desc.file_inputs
+#
+#   # List of File inputs that are optional
+#   desc.optional_file_inputs
+#
+#   # List of File inputs that are mandatory
+#   desc.required_file_inputs
+#
+#   # Returns the entry for a custom Boutiques integration module
+#   desc.custom_module_info(modulename)
+#
+#   # Utility for building a replacement hash for the inputs based on
+#   # the values in invoke_structure
+#   desc.build_substitutions_by_tokens_hash(invoke_structure)
+#
+#   # Utility to perform the subsitutions of tokens in a string
+#   desc.apply_substitutions(string, substitutions_by_tokens, to_strip=[])
+#
+#   # Returns a new descriptor with the attributes in a canonical beautiful order
+#   desc.pretty_ordered
+#
+#   # Generates a JSON with nice spacing
+#   desc.super_pretty_json
+#
 module BoutiquesSupport
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
