@@ -123,9 +123,7 @@ class DataProvidersController < ApplicationController
   # Can be create by normal user,
   # only UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider
   def create_personal
-    dp_type   = (params[:data_provider][:type] || "UserkeyFlatDirSshDataProvider").constantize
-
-    @provider = dp_type.new(base_provider_params)
+    @provider = DataProvider.new(base_provider_params).class_update
     @provider.update_attributes(userkey_provider_params) if @provider.is_a?(UserkeyFlatDirSshDataProvider)
     @provider.update_attributes(s3_provider_params)      if @provider.is_a?(S3FlatDataProvider)
 
@@ -135,7 +133,7 @@ class DataProvidersController < ApplicationController
     # Fix some attributes
     @provider.user_id  = current_user.id
     @provider.group_id = current_user.own_group.id unless
-       current_user.assignable_group_ids.include?(@provider.group_id)
+      current_user.assignable_group_ids.include?(@provider.group_id)
     @provider.online   = true
 
     if ! @provider.save
@@ -1081,13 +1079,6 @@ class DataProvidersController < ApplicationController
 
   def s3_provider_params #:nodoc:
     params.require_as_params(:data_provider).permit(s3_params_list)
-  end
-
-  def filtered_create_personal_params(params,type) #:nodoc:
-    whitelist_params = type == UserkeyFlatDirSshDataProvider ? userkey_params_list : s3_params_list
-    allowed_params   = common_params_list + whitelist_params
-
-    params.require_as_params(:data_provider).permit(allowed_params)
   end
 
   def common_params_list #:nodoc:
