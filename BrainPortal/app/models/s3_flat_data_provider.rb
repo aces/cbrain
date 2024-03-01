@@ -449,7 +449,7 @@ class S3FlatDataProvider < DataProvider
   #################################################################
 
   # Normally, DPs can only be owned by admins. However, this DP class
-  # is meant to be owned by normal users.
+  # can be owned by normal users.
   def owner_is_appropriate #:nodoc:
     return true
   end
