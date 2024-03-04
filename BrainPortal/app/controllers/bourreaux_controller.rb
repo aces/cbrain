@@ -610,6 +610,29 @@ class BourreauxController < ApplicationController
 
   end
 
+  # API method to copy files from one DP to another via a bourreau
+  def file_copy #:nodoc:
+    userfile_ids     = params[:userfile_ids]
+    data_provider_id = params[:dataprovider_id]
+    bourreau_id      = params[:bourreau_id]
+
+    bourreau         = Bourreau.find(bourreau_id)
+    data_provider    = DataProvider.find(data_provider_id)
+
+    # Check if the user has access to the bourreau and the data provider
+    if !bourreau.can_be_accessed_by?(current_user) || !data_provider.can_be_accessed_by?(current_user)
+      render :json => { :error => "Access denied" }, :status => :forbidden
+    end
+
+    # Filter out userfiles that are not accessible by the user
+    userfile_ids = userfile_ids.select do |userfile_id|
+      userfile = Userfile.find(userfile_id)
+      userfile.can_be_accessed_by?(current_user)
+    end
+
+    bourreau.send_command_copy_files(userfile_ids, data_provider_id, current_user.id)
+    render :json => { :status => "ok" }
+  end
 
   private
 
