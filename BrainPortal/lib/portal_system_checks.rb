@@ -203,5 +203,11 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
     )
   end
 
+
+
+  def self.z020_ensure_task_sti_enabled #:nodoc:
+    validate_sti(CbrainTask)
+  end
+
 end
 

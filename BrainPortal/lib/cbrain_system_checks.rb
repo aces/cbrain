@@ -336,6 +336,10 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
 
 
 
+  def self.a060_ensure_userfile_sti_enabled #:nodoc:
+    validate_sti(Userfile)
+  end
+
   def self.a080_ensure_set_starttime_revision #:nodoc:
     #-----------------------------------------------------------------------------
     puts  "C> Current application tag or revision: #{CBRAIN::CBRAIN_StartTime_Revision}"

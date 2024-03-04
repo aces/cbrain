@@ -517,4 +517,12 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
   end
 
+
+
+  def self.z010_ensure_task_sti_enabled #:nodoc:
+    myself      = RemoteResource.current_resource
+    local_tasks = CbrainTask.where(bourreau_id: myself.id)
+    validate_sti(local_tasks)
+  end
+
 end
