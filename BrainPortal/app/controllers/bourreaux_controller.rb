@@ -33,7 +33,7 @@ class BourreauxController < ApplicationController
   api_available :except  => :row_data
 
   before_action :login_required
-  before_action :manager_role_required, :except  => [:index, :show, :row_data, :load_info, :rr_disk_usage, :cleanup_caches, :rr_access, :rr_access_dp, :update, :start, :stop]
+  before_action :manager_role_required, :except  => [:index, :show, :row_data, :load_info, :rr_disk_usage, :cleanup_caches, :rr_access, :rr_access_dp, :update, :start, :stop, :file_copy]
 
   def index #:nodoc:
     @scope = scope_from_session
@@ -622,14 +622,13 @@ class BourreauxController < ApplicationController
     # Check if the user has access to the bourreau and the data provider
     if !bourreau.can_be_accessed_by?(current_user) || !data_provider.can_be_accessed_by?(current_user)
       render :json => { :error => "Access denied" }, :status => :forbidden
+      return
     end
 
-    # Filter out userfiles that are not accessible by the user
-    userfile_ids = userfile_ids.select do |userfile_id|
-      userfile = Userfile.find(userfile_id)
-      userfile.can_be_accessed_by?(current_user)
-    end
-
+    # Filter out userfile_ids that are not readable by the user
+    userfile_ids = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read)
+                        .where(:id => userfile_ids).pluck(:id)
+    
     bourreau.send_command_copy_files(userfile_ids, data_provider_id, current_user.id)
     render :json => { :status => "ok" }
   end
