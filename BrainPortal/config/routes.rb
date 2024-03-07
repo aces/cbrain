@@ -92,6 +92,7 @@ Rails.application.routes.draw do
     member do
       post 'start'
       post 'stop'
+      post 'file_copy'
       get  'row_data'
       get  'info'
       get  'cache_disk_usage'
