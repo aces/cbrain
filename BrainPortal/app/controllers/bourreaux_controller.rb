@@ -630,7 +630,7 @@ class BourreauxController < ApplicationController
                         .where(:id => userfile_ids).pluck(:id)
     
     bourreau.send_command_copy_files(userfile_ids, data_provider_id, current_user.id)
-    render :json => { :status => "ok" }
+    render :json => { :status => "ok", :message => "#{userfile_ids.count} files are being copied" }
   end
 
   private
