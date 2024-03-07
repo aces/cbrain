@@ -612,9 +612,9 @@ class BourreauxController < ApplicationController
 
   # API method to copy files from one DP to another via a bourreau
   def file_copy #:nodoc:
+    bourreau_id      = params[:id]
     userfile_ids     = params[:userfile_ids]
     data_provider_id = params[:dataprovider_id]
-    bourreau_id      = params[:bourreau_id]
 
     bourreau         = Bourreau.find(bourreau_id)
     data_provider    = DataProvider.find(data_provider_id)
@@ -630,7 +630,7 @@ class BourreauxController < ApplicationController
                         .where(:id => userfile_ids).pluck(:id)
     
     bourreau.send_command_copy_files(userfile_ids, data_provider_id, current_user.id)
-    render :json => { :status => "ok", :message => "#{userfile_ids.count} files are being copied" }
+    render :json => { :status => "ok", :file_copied_count => userfile_ids.size }
   end
 
   private
