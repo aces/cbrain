@@ -408,14 +408,16 @@ class UsersController < ApplicationController
                                            :ssh_key_pub       => pub_key,
                                            :ssh_key_priv      => priv_key,
                                           )
-      answer = bourreau.send_command(command)
-      if answer.command_execution_status == 'OK'
+      begin
+        answer = bourreau.send_command(command)
+        raise "Could not push SSH key to #{bourreau.name}." unless answer.dig(:command_execution_status) == "OK"
         flash[:notice] += "Pushed user SSH key to #{bourreau.name}.\n"
-      else
+      rescue => exception
         flash[:error]  += "Could not push SSH key to #{bourreau.name}.\n"
+        ExceptionLog.log_exception(exception, current_user, request)
       end
     end
-
+    flash[:error] += "We are are looking into the issue. If you do not hear from us soon, please just try latter." if flash[:error].present?
     redirect_to :action => :show
   end
 
