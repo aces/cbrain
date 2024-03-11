@@ -375,7 +375,10 @@ class ClusterTask < CbrainTask
 
   # Make a given +userfile+ available to the task
   # for processing at +file_path+, which is a relative
-  # path inside the work directory of the task.
+  # path inside the work directory of the task by creating
+  # a soft link to the userfile or its cache. ( Or, in presence
+  # of explicit flag 'copy_input' - a copy performed.)
+  #
   # For example, to access the userfile with ID 6 at
   # <workdir>/mincfiles/input.mnc, do:
   #
@@ -413,10 +416,9 @@ class ClusterTask < CbrainTask
   # from which the symlink's relative path to the dp_cache is
   # computed. This is useful for containerized tasks that have mounted
   # to a location different than the original task directory.
-  def make_available(userfile, file_path, userfile_sub_path = nil, start_dir = nil)
+  def make_available(userfile, file_path, userfile_sub_path = nil, start_dir = nil, copy_file = false)
     cb_error "File path argument must be relative" if
       file_path.to_s.blank? || file_path.to_s =~ /\A\//
-
     # Determine starting dir for relative symlink target calculation
     base_dir = start_dir || self.full_cluster_workdir
 
@@ -479,13 +481,21 @@ class ClusterTask < CbrainTask
       File.unlink(full_path) if File.symlink?(full_path.to_s) # potential race condition here
     end
 
-    # Create the symlink
+    # Create the symlink or copy input data
     Dir.chdir(self.full_cluster_workdir) do
-      # Do nothing is symlink already exists with proper value.
-      # If there is something not a symlink in the way, or a symlink with a different
-      # value, the symlink() method will crash, which is what we want to
-      # catch the error in the situation.
-      unless File.symlink?(file_path.to_s) && File.readlink(file_path.to_s) == target.to_s
+
+      # copying code
+      #      note, presently we do not keep track what (user)file is copied so no exception is raised
+      #      if file or link exists already
+      #      more, target is actually cached dp data, i.e. source
+      userfile.data_provider.lsync!(src=target, dst=file_path) if copy_file
+
+      # symlinking code
+      #      Do nothing if symlink already exists with proper value.
+      #      If there is something not a symlink in the way, or a symlink with a different
+      #      value, the symlink() method will crash, which is what we want to
+      #      catch the error in the situation.
+      unless File.symlink?(file_path.to_s) && File.readlink(file_path.to_s) == target.to_s || copy_file
         File.symlink(target.to_s, file_path.to_s)
       end
     end

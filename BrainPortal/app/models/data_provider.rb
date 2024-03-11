@@ -548,6 +548,33 @@ class DataProvider < ApplicationRecord
     true
   end
 
+  # This method provides a quick way to synchronize (copy) a file or
+  # folder, while more or less respecting data provider's simpler
+  # file ignore setting (e.g. .git etc)
+  #
+  # This can be eventually replaced with faster Globus server on
+  # most clusters while rsync still can be use on Globusless machines
+  #
+  # Note that if +dst+ is a path to an existing filesystem
+  # entry, it will be crushed and replaced; this is true even if
+  # +dst+ if of a different type than the +src+, e.g.
+  # if +src+ is a single file and +dst+ is a path to
+  # a existing subdirectory /a/b/c/, then 'c' will be erased and
+  # replaced by a file.
+  def lsync!(src, dst)
+    return unless File.exist? src
+    if File.directory?(src)
+      FileUtils.remove_entry(dst.to_s, true) if File.exists?(dst.to_s) && ! File.directory?(dst.to_s)
+      Dir.mkdir(dst.to_s) unless File.directory?(dst.to_s)
+      needslash="/"
+    else
+      FileUtils.remove_entry(dst.to_s, true) if File.exists?(dst.to_s) && File.directory?(dst.to_s)
+    end
+    rsyncout = bash_this("rsync -a --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{shell_escape(src.to_s)}#{needslash} #{shell_escape(dst.to_s)} 2>&1")
+    cb_error "Failed to rsync cache file '#{dst.to_s}' to task file '#{dst.to_s}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
+    true
+  end
+
   # Deletes the cached copy of the content of +userfile+;
   # does not affect the real file on the provider side.
   def cache_erase(userfile)
