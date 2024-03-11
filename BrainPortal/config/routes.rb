@@ -44,6 +44,7 @@ Rails.application.routes.draw do
   resources :disk_quotas,     :only   => [ :new, :index, :show, :create, :destroy, :update ] do
     collection do
       get 'report'
+      get 'report_almost'
     end
   end
 

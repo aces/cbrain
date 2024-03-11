@@ -31,8 +31,12 @@ class DiskQuotasController < ApplicationController
   def index #:nodoc:
     @scope = scope_from_session
 
-    @base_scope   = base_scope.includes([:user, :data_provider])
-    @view_scope   = @scope.apply(@base_scope)
+    # Browsing as a different user? Make sure the target user is set.
+    @as_user                    = browse_as params['as_user_id']
+    @scope.custom['as_user_id'] = @as_user.id  # can also be current user
+
+    @base_scope = base_scope.includes([:user, :data_provider])
+    @view_scope = @scope.apply(@base_scope)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 15 })
     @disk_quotas = @scope.pagination.apply(@view_scope)
@@ -174,7 +178,70 @@ class DiskQuotasController < ApplicationController
 
   end
 
+  # Returns a list of users exceeding and almost exceeded quotas
+  def report_almost
+    almost = 0.95 # share of resource use qualifying for 'almost exceeding'
+    quota_to_user_ids = {}  # quota_obj => [uid, uid...]
+
+    # Scan DP-wide quota objects
+    DiskQuota.where(:user_id => 0).all.each do |quota|
+      exceed_size_user_ids     = Userfile
+                                   .where(:data_provider_id => quota.data_provider_id)
+                                   .group(:user_id)
+                                   .sum(:size)
+                                   .select { |user_id,size| size >= quota.max_bytes * almost }
+                                   .keys
+      exceed_numfiles_user_ids = Userfile
+                                   .where(:data_provider_id => quota.data_provider_id)
+                                   .group(:user_id)
+                                   .sum(:num_files)
+                                   .select { |user_id,num_files| num_files >= quota.max_files * almost }
+                                   .keys
+
+      union_ids  = exceed_size_user_ids | exceed_numfiles_user_ids
+      union_ids -= DiskQuota
+                     .where(:data_provider_id => quota.data_provider_id, :user_id => union_ids)
+                     .pluck(:user_id) # remove user IDs that have their own quota records
+      quota_to_user_ids[quota] = union_ids if union_ids.size > 0
+    end
+
+    # Scan user-specific quota objects
+    DiskQuota.where('user_id > 0').all.each do |quota|
+      quota_to_user_ids[quota] = [ quota.user_id ] if quota.almost_exceeded?
+    end
+
+    # Inverse relation: user_id => [ quota, quota ]
+    user_id_to_quotas = {}
+    quota_to_user_ids.each do |quota,user_ids|
+      user_ids.each do |user_id|
+        user_id_to_quotas[user_id] ||= []
+        user_id_to_quotas[user_id]  << quota
+      end
+    end
+
+    # Table content: [ [ user_id, quota ], [user_id, quota] ... ]
+    # Note: the rows are grouped by user_id, but not sorted in any way...
+    @user_id_and_quota = []
+    user_id_to_quotas.each do |user_id, quotas|
+      quotas.each do |quota|
+        @user_id_and_quota << [ user_id, quota ]
+      end
+    end
+
+  end
+
+
   private
+
+  # Browse the disc quota list as a user with id +as_user_id+
+  def browse_as(as_user_id) #:nodoc:
+    scope     = scope_from_session("disk_quota#browse")
+    users     = current_user.available_users
+    as_user   = users.where(:id => as_user_id).first
+    as_user ||= users.where(:id => scope.custom['as_user_id']).first
+    as_user ||= current_user
+    as_user
+  end
 
   def disk_quota_params #:nodoc:
     params.require(:disk_quota).permit(
@@ -186,7 +253,9 @@ class DiskQuotasController < ApplicationController
   def base_scope #:nodoc:
     scope = DiskQuota.where(nil)
     unless current_user.has_role?(:admin_user)
-      dp_ids = DataProvider.all.select { |dp| dp.can_be_accessed_by?(current_user) }.map(&:id)
+      dp_ids = DataProvider.all.select do |dp|
+        dp.can_be_accessed_by?(current_user) && dp.can_be_accessed_by?(@as_user)
+      end.map(&:id)
       scope = scope.where(
         :data_provider_id => dp_ids,
         :user_id          => [ 0, current_user.id ],
