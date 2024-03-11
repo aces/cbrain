@@ -1957,7 +1957,7 @@ exit $status
         self.cluster_jobid = jobid
         self.status_transition(self.status, "Queued")
         self.addlog("Queued as job ID '#{jobid}'" +
-            " with walltime #{job.walltime}s and extra args are '#{job.tc_extra_qsub_args.presence || 'none provided'}'." )
+            " with walltime #{job.walltime}s and extra args are '#{job.tc_extra_qsub_args.presence || '(none provided)'}'." )
       rescue NoVmAvailableError => ex
         # When the task is executed in a VM, it may not be submitted
         # right away when no VMs are available. In such a case, method
