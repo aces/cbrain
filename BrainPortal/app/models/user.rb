@@ -527,8 +527,8 @@ class User < ApplicationRecord
 
   # Create a random string (currently for passwords).
   def self.random_string
-    length = rand(5) + 4
-    s = ""
+    length = rand(4) + 8
+    s = "T"
     length.times do
       c = rand(75) + 48 # ascii range from '0' to 'z'
       redo if c == 92 || c == 96  # \ or '

@@ -106,6 +106,9 @@ class CbrainTask < ApplicationRecord
   scope :failed_setup,   -> { where( "cbrain_tasks.status" => 'Failed To Setup'       ) }
   scope :failed_cluster, -> { where( "cbrain_tasks.status" => 'Failed On Cluster'     ) }
   scope :failed_post,    -> { where( "cbrain_tasks.status" => 'Failed To PostProcess' ) }
+  scope :setting_up,     -> { where( "cbrain_tasks.status" => 'Setting Up'            ) }
+  scope :on_cpu,         -> { where( "cbrain_tasks.status" => 'On CPU'                ) }
+  scope :post_proc,      -> { where( "cbrain_tasks.status" => 'Post Processing'       ) }
   scope :completed,      -> { where( "cbrain_tasks.status" => 'Completed'             ) }
 
   scope :real_tasks,
