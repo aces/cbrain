@@ -280,9 +280,17 @@ class TasksController < ApplicationController
       end
     end
 
+    # Warn about archived files
+    archived_files = @files.select { |f| f.is_a?(FileCollection) && f.archived? }
+    if archived_files.present?
+        flash.now[:notice] ||= ""
+        flash.now[:notice]  += "\nWarning: some of the files you selected are currently archived. This is probably not how you want to process them. Consider unarchiving them before launching this task. Archived files: #{archived_files.map(&:name).join(", ")}"
+    end
+
     # Print message of the tool config was 'guessed'
     if autoconfig
-      flash.now[:notice] = "We have automatically chosen the latest version and execution server for this tool (version #{@tool_config.version_name} on #{@task.bourreau.name}), please double-check this configuration."
+      flash.now[:notice] ||= ""
+      flash.now[:notice]  += "\nWe have automatically chosen the latest version and execution server for this tool (version #{@tool_config.version_name} on #{@task.bourreau.name}), please double-check this configuration."
       #@task.errors.add(:tool_config_id, "was chosen for you, make sure this is what you want.")
     end
 
