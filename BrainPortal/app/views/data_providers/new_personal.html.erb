@@ -30,6 +30,14 @@
 
 <%= form_for @provider, :as => :data_provider, :url => { :action => "create_personal" }, :datatype => "script" do |f| -%>
 
+  <%
+    # Note about the type: the form currently only supports the UserkeyFlatDirSshDataProvider
+    # but the controller also supports the S3MultiLevelDataProvider. Eventually we
+    # will allow both. If a user modifies the form in their browser they can still create
+    # their own S3 type, but that's ok.
+  %>
+  <%= hidden_field_tag 'data_provider[type]', 'UserkeyFlatDirSshDataProvider' %>
+
   <div class="generalbox">
 
     <div title="The name of the data provider.">
