@@ -220,7 +220,6 @@ class ToolConfig < ApplicationRecord
 #---------------------------------------------------
 
       ENV_HEADER
-      script += vars_to_export_script("SINGULARITYENV_")  #  todo SINGULARITYENV is to be depricated
       script += vars_to_export_script("APPTAINERENV_")
 
     end
@@ -318,8 +317,8 @@ class ToolConfig < ApplicationRecord
 
   # true if apptainer image is defined
   def use_apptainer?
-    return (self.container_engine == "Singularity" ||
-            self.container_engine == "Apptainer") &&    # Singularity will be probably deprecated by Boutiques
+    return (self.container_engine == "Singularity" ||     # Currently Boutiques keeps singularity only
+            self.container_engine == "Apptainer") &&    # Singularity will be probably deprecated by Boutiques soon
         ( self.containerhub_image_name.present? ||
             self.container_image_userfile_id.present? )
   end
@@ -447,7 +446,7 @@ class ToolConfig < ApplicationRecord
     end
 
     if self.container_engine.present? && (self.container_engine == "Singularity" ||  self.container_engine == "Apptainer")
-    if self.container_index_location.present? && self.container_index_location !~ /\A[a-z0-9]+\:\/\/\z/i
+      if self.container_index_location.present? && self.container_index_location !~ /\A[a-z0-9]+\:\/\/\z/i
         errors[:container_index_location] = "is invalid for container engine Apptainer. Should end in '://'."
       end
     elsif self.container_engine.present? && self.container_engine == "Docker"
