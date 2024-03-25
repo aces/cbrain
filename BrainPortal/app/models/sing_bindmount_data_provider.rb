@@ -134,7 +134,7 @@ class SingBindmountDataProvider < SshDataProvider
 
     # Check that inside the container, the containerized path exists
     checkdir     = "test -d #{self.containerized_path.bash_escape} && echo OK-Exists"
-    text         = remote_in_sing_bash_this(checkdir)
+    text         = remote_in_apptainer_bash_this(checkdir)
     cb_error "No path '#{self.containerized_path}' inside container" unless text =~ /\AOK-Exists\s*\z/
 
     # Well, we passed all the tests
@@ -179,7 +179,7 @@ class SingBindmountDataProvider < SshDataProvider
 
     file_infos = Rails.cache.fetch(cache_key, :expires_in => BROWSE_CACHE_EXPIRATION) do
       dir  = Pathname.new(self.containerized_path) + browse_path.to_s
-      text = remote_in_sing_stat_all(dir,".",true)
+      text = remote_in_apptainer_stat_all(dir,".",true)
       stat_reports_to_fileinfos(text)
     end
 
@@ -211,7 +211,7 @@ class SingBindmountDataProvider < SshDataProvider
     type_opt   = allowed_types == [ :regular   ] ? "f" :
                  allowed_types == [ :directory ] ? "d" :
                  nil # we can still filter for other combinations on Ruby side
-    text       = remote_in_sing_stat_all(basedir, subdir, one_level, type_opt)
+    text       = remote_in_apptainer_stat_all(basedir, subdir, one_level, type_opt)
     file_infos = stat_reports_to_fileinfos(text)
 
     # Apply more complex filters if necessary
@@ -333,12 +333,12 @@ class SingBindmountDataProvider < SshDataProvider
     rsync
   end
 
-  def remote_in_sing_bash_this(com) #:nodoc:
+  def remote_in_apptainer_bash_this(com) #:nodoc:
     newcom = "#{apptainer_exec_prefix} bash -c #{com.bash_escape}"
     remote_bash_this(newcom)
   end
 
-  def remote_in_sing_stat_all(basedir, subdir, one_level = true, find_type = nil) #:nodoc:
+  def remote_in_apptainer_stat_all(basedir, subdir, one_level = true, find_type = nil) #:nodoc:
     max_depth   = one_level ? "-maxdepth 1"        : ""
     type_opt    = find_type ? "-type #{find_type}" : ""
     # Linux 'stat' command formats:
@@ -354,7 +354,7 @@ class SingBindmountDataProvider < SshDataProvider
     # Linux 'find' command format:
     find_format = "E=%y,%m,%s,%U,%u,%G,%g,%A@,%T@,%C@,%p\\n"
     com = "cd #{basedir.to_s.bash_escape} && find #{subdir.to_s.bash_escape} #{max_depth} #{type_opt} -printf \"#{find_format}\""
-    remote_in_sing_bash_this(com)
+    remote_in_apptainer_bash_this(com)
   end
 
   # Given a text file report such as this:
