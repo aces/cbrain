@@ -92,6 +92,7 @@ class RemoteResource < ApplicationRecord
   belongs_to            :user
   belongs_to            :group
   has_many              :sync_status
+  has_many              :background_activities, :dependent => :destroy
 
   # Resource usage is kept forever even if remote resource is destroyed.
   has_many              :resource_usage

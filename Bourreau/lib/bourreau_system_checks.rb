@@ -498,9 +498,9 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
         .compact  # to remove the nil
         .each { |klass| klass.revision_info.self_update }
   end
-  
-  
-  
+
+
+
   def self.z000_ensure_we_have_a_forwarded_ssh_agent #:nodoc:
 
     #----------------------------------------------------------------------------
@@ -517,4 +517,37 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
   end
 
+
+
+  def self.z020_start_background_activity_workers #:nodoc:
+
+    #----------------------------------------------------------------------------
+    puts "C> Starting Background Activity Workers..."
+    #----------------------------------------------------------------------------
+
+    worker_name = 'BourreauActivity'
+    num_workers = 1 # hardcoded, usually that's enough for a Bourreau
+
+    baclogger = Log4r::Logger[worker_name]
+    unless baclogger
+      baclogger = Log4r::Logger.new(worker_name)
+      baclogger.add(Log4r::RollingFileOutputter.new('background_activity_outputter',
+                    :filename  => "#{Rails.root}/log/#{worker_name}.combined..log",
+                    :formatter => Log4r::PatternFormatter.new(:pattern => "%d %l %m"),
+                    :maxsize   => 1000000, :trunc => 600000))
+      baclogger.level = Log4r::INFO
+    end
+
+    worker_pool = WorkerPool.create_or_find_pool(BackgroundActivityWorker,
+       num_workers, # number of instances
+       { :name           => worker_name,
+         :check_interval => 15,
+         :worker_log     => baclogger,
+       }
+    )
+    puts "C> \t- Started: PID=#{worker_pool.workers.map(&:pid).join(", ")}"
+
+  end
+
 end
+

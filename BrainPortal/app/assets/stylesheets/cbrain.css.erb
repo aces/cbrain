@@ -1105,8 +1105,16 @@ pre {
   color: #05A3D6;
 }
 
+.selected a.active_bac {
+  color: red;
+}
+
 .unselected a {
   color: white;
+}
+
+.unselected a.active_bac {
+  color: yellow;
 }
 
 #active_project_div {
@@ -2294,6 +2302,112 @@ img {
 
 .message_display_table tr.message_unread {
   border-style: solid;
+}
+
+/* % ######################################################### */
+/* % Background Activity Index */
+/* % ######################################################### */
+
+#bac_form progress {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.background_activity_progress {
+  height: 3em;
+  width: 40em;
+  background-color: #eee;
+  border: 0.5em solid black;
+}
+
+.background_activity_progress::-webkit-progress-bar {
+  background-color: #eee;
+}
+
+/* COLORS FOR STATIC (FINAL) states */
+
+.bac_all_ok::-moz-progress-bar {
+  background-color: #0d0;
+}
+
+.bac_all_ok::-webkit-progress-value {
+  background-color: #0d0;
+}
+
+.bac_mixed::-moz-progress-bar {
+  background-color: #dd0;
+}
+
+.bac_mixed::-webkit-progress-value {
+  background-color: #dd0;
+}
+
+.bac_all_fail::-moz-progress-bar {
+  background-color: #d00;
+}
+
+.bac_all_fail::-webkit-progress-value {
+  background-color: #d00;
+}
+
+/* ANIMATED COLORS FOR IN_PROGRESS */
+
+@keyframes progress-green-glowing {
+    0% { background-color: #0d0; }
+   25% { background-color: #090; }
+   50% { background-color: #050; }
+   75% { background-color: #090; }
+  100% { background-color: #0d0; }
+}
+
+@keyframes progress-yellow-glowing {
+    0% { background-color: #dd0; }
+   25% { background-color: #990; }
+   50% { background-color: #550; }
+   75% { background-color: #990; }
+  100% { background-color: #dd0; }
+}
+
+@keyframes progress-red-glowing {
+    0% { background-color: #d00; }
+   25% { background-color: #900; }
+   50% { background-color: #500; }
+   75% { background-color: #900; }
+  100% { background-color: #d00; }
+}
+
+@keyframes progress-grey-glowing {
+    0% { border-color: #ddd; }
+   25% { border-color: #999; }
+   50% { border-color: #555; }
+   75% { border-color: #999; }
+  100% { border-color: #ddd; }
+}
+
+.bac_InProgress[value] {
+  animation: progress-grey-glowing 3503ms infinite;
+}
+
+.bac_InProgress.bac_all_ok::-moz-progress-bar {
+  animation: progress-green-glowing 3503ms infinite;
+}
+.bac_InProgress.bac_all_ok::-webkit-progress-value {
+  animation: progress-green-glowing 3503ms infinite;
+}
+
+.bac_InProgress.bac_mixed::-moz-progress-bar {
+  animation: progress-yellow-glowing 3503ms infinite;
+}
+.bac_InProgress.bac_mixed::-webkit-progress-value {
+  animation: progress-yellow-glowing 3503ms infinite;
+}
+
+.bac_InProgress.bac_all_fail::-moz-progress-bar {
+  animation: progress-red-glowing 3503ms infinite;
+}
+.bac_InProgress.bac_all_fail::-webkit-progress-value {
+  animation: progress-red-glowing 3503ms infinite;
 }
 
 /* % ######################################################### */

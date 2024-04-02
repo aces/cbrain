@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240226230749) do
+ActiveRecord::Schema.define(version: 20240315173856) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -37,6 +37,24 @@ ActiveRecord::Schema.define(version: 20240226230749) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.index ["ar_id", "ar_table_name"], name: "index_active_record_logs_on_ar_id_and_ar_table_name", using: :btree
+  end
+
+  create_table "background_activities", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci" do |t|
+    t.string   "type",                                         null: false
+    t.integer  "user_id"
+    t.integer  "remote_resource_id"
+    t.string   "status",                                       null: false
+    t.string   "handler_lock"
+    t.text     "items",              limit: 65535,             null: false
+    t.integer  "current_item",                     default: 0
+    t.integer  "num_successes",                    default: 0
+    t.integer  "num_failures",                     default: 0
+    t.text     "messages",           limit: 65535
+    t.text     "options",            limit: 65535
+    t.datetime "created_at",                                   null: false
+    t.datetime "updated_at",                                   null: false
+    t.datetime "start_at"
+    t.string   "repeat"
   end
 
   create_table "cbrain_tasks", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|

@@ -57,7 +57,7 @@ if program_name =~ /console/
     puts "C> \t- Note:  You can skip all CBRAIN validations by temporarily setting the\n"
     puts "C> \t         environment variable 'CBRAIN_SKIP_VALIDATIONS' to '1'.\n"
     CbrainSystemChecks.check(:all)
-    PortalSystemChecks.check(:all)
+    PortalSystemChecks.check(:all, :except => [ :z020_start_background_activity_workers ])
   end
   Process.setproctitle "CBRAIN Console #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}"
 

@@ -1,0 +1,121 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2024
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+
+<% title 'Schedule Maintenance Activity' %>
+
+<h2>Schedule Maintenance Activity</h2>
+
+<%= error_messages_for @bac, :object_name => "activity" %>
+
+<% @bac.options ||= {} %>
+<%= hidden_field_tag 'background_activity[options][dummy]','val' %>
+
+<%= form_for @bac, :as => :background_activity, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+
+  <div class="generalbox">
+
+    <p><%= f.label :user_id, "User" %><br>
+    <%= user_select("background_activity[user_id]", { :selector => @bac.user_id } ) %>
+
+    <p><%= f.label :remote_resource_id, "Portal or Execution Server" %><br>
+    <%= bourreau_select("background_activity[remote_resource_id]", {
+       :bourreaux => RemoteResource.all.order(:name).to_a,
+       :selector => @bac.remote_resource_id } ) %>
+
+    <p><%= f.label :start_date, "Initial Start Date" %><br>
+    <%= text_field_tag :start_date, @start_date, :class => "datepicker" %>
+
+    <%=
+       select_tag :start_hour, options_for_select((0..23).map { |i| sprintf("%2.2d",i) }, :selected => @start_hour)
+    %>
+    <%=
+      select_tag :start_min,  options_for_select((0..59).step(5).map { |i| sprintf("%2.2d",i) }, :selected => @start_min)
+    %>
+
+    <p><%= f.label :repeat, "Repeat Frequency" %><br>
+    <%= f.select :repeat,
+        {  # hardcoded for the moment
+           "One Shot" => 'one_shot',
+           "Every 30 minutes" => 'start+30',
+           "Monday @ 10:00" => 'monday@10:00',
+           "this list is temp" => 'temp',
+        },
+        :prompt => "(How often and when to repeat)"
+    %>
+    <p>
+    <%= f.label :type, "Activity Type" %><br>
+    <%= f.select :type,
+        {  # hardcoded for the moment
+           "Move Files"            => 'BackgroundActivity::MoveFile',
+           "Copy Files"            => 'BackgroundActivity::CopyFile',
+           "Archive Collections"   => 'BackgroundActivity::ArchiveCollection',
+           "Unarchive Collections" => 'BackgroundActivity::UnarchiveCollection',
+           "Debug Test"            => 'BackgroundActivity::RandomActivity',
+        },
+        :prompt => "Type of activity"
+    %>
+
+    <fieldset>
+      <legend>Move File</legend>
+        blah blah
+    </fieldset>
+
+    <fieldset>
+      <legend>Copy File</legend>
+        blah blah
+    </fieldset>
+
+    <fieldset>
+      <legend>Archive or Unarchive Collections</legend>
+      <%= label_tag      'background_activity[options][userfile_custom_filter_id]', "Userfile Custom Filter" %>
+      <%= select_tag     'background_activity[options][userfile_custom_filter_id]',
+          options_for_select(
+            [["(Select one of your filters)",""]] + UserfileCustomFilter.where(:user_id => current_user.id).order(:name).pluck(:name,:id),
+            :selector => @bac.options[:userfile_custom_filter_id].to_s
+          )
+      %>
+    </fieldset>
+
+    <fieldset>
+      <legend>Debug Test</legend>
+      <%= label_tag      'background_activity[options][mintime]', "Minimum seconds:" %>
+      <%= text_field_tag 'background_activity[options][mintime]', @bac.options[:mintime], :size => 3 %>
+      <%= label_tag      'background_activity[options][maxtime]', "Maximum seconds:" %>
+      <%= text_field_tag 'background_activity[options][maxtime]', @bac.options[:maxtime], :size => 3 %>
+      <p>
+      <%= label_tag      'background_activity[options][count_ok]', "Number of OKs:" %>
+      <%= text_field_tag 'background_activity[options][count_ok]', @bac.options[:count_ok], :size => 3 %>
+      <%= label_tag      'background_activity[options][count_fail]', "Number of FAILs:" %>
+      <%= text_field_tag 'background_activity[options][count_fail]', @bac.options[:count_fail], :size => 3 %>
+      <%= label_tag      'background_activity[options][count_exc]', "Number of EXCs:" %>
+      <%= text_field_tag 'background_activity[options][count_exc]', @bac.options[:count_exc], :size => 3 %>
+    </fieldset>
+
+  </div>
+
+  <p><%= submit_tag 'Schedule new activity' %>
+
+<% end %>
+

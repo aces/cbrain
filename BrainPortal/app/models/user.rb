@@ -100,6 +100,7 @@ class User < ApplicationRecord
   has_many                :tags,            :dependent => :destroy
   has_many                :custom_filters,  :dependent => :destroy
   has_many                :exception_logs,  :dependent => :destroy
+  has_many                :background_activities, :dependent => :destroy
   # Resource usage is kept forever even if account is destroyed.
   has_many                :resource_usage
 
