@@ -307,25 +307,27 @@ class BackgroundActivity < ApplicationRecord
   # Callback that subclasses can invoke as a before_save
   # to verify that the background activity is configured to run on a bourreau
   def must_be_on_bourreau!
-    throw :abort unless Bourreau.where(:id => self.remote_resource_id).exists?
-    true
+    return true if Bourreau.where(:id => self.remote_resource_id).exists?
+    self.errors.add(:remote_resource_id, 'is not a Bourreau')
+    throw :abort
   end
 
   # Callback that subclasses can invoke as a before_save
   # to verify that the background activity is configured to run on a portal
   def must_be_on_portal!
-    throw :abort unless BrainPortal.where(:id => self.remote_resource_id).exists?
-    true
+    return true if BrainPortal.where(:id => self.remote_resource_id).exists?
+    self.errors.add(:remote_resource_id, 'is not a BrainPortal')
+    throw :abort
   end
 
   def self.validates_bac_presence_of_option(*keys)
-    Array(keys).each do |key| # symbols
+    keys.each do |key| # symbols
       validate { |bac| bac.options_have!(key) } # closure on key
     end
   end
 
   def self.validates_dynamic_bac_presence_of_option(*keys)
-    Array(keys).each do |key| # symbols
+    keys.each do |key| # symbols
       validate { |bac| dynamic_and_options_have!(key) } # closure on key
     end
   end

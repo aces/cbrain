@@ -37,12 +37,12 @@
   <div class="generalbox">
 
     <p><%= f.label :user_id, "User" %><br>
-    <%= user_select("background_activity[user_id]", { :selector => @bac.user_id } ) %>
+    <%= user_select("background_activity[user_id]", { :selected => @bac.user_id } ) %>
 
     <p><%= f.label :remote_resource_id, "Portal or Execution Server" %><br>
     <%= bourreau_select("background_activity[remote_resource_id]", {
        :bourreaux => RemoteResource.all.order(:name).to_a,
-       :selector => @bac.remote_resource_id } ) %>
+       :selected => @bac.remote_resource_id } ) %>
 
     <p><%= f.label :start_date, "Initial Start Date" %><br>
     <%= text_field_tag :start_date, @start_date, :class => "datepicker" %>
@@ -81,7 +81,7 @@
           [ "Fridays at..."    ,            'friday@'    ],
           [ "Saturdays at..."  ,            'saturday@'  ],
           [ "Sundays at..."    ,            'sunday@'    ],
-        ] )
+        ], :selected => @repeat )
     %>
     (For <strong>at...</strong>:
     <%= select_tag :repeat_hour,
@@ -113,7 +113,7 @@
       </legend>
       Remember to select a <strong>file</strong> custom filter in the Dynamic Items section below.
       <p>
-      To: <%= data_provider_select 'move_file_dp_id', { :selector => @move_file_dp_id.to_s }, :include_blank => '(Select a Data Provider)' %>
+      To: <%= data_provider_select 'move_file_dp_id', { :selected => @move_file_dp_id.to_s }, :include_blank => '(Select a Data Provider)' %>
       <p>
       Crush files at destination if they exist: <%= check_box_tag :move_crush, '1', @move_crush %>
     </fieldset>
@@ -125,7 +125,7 @@
       </legend>
       Remember to select a <strong>task</strong> custom filter in the Dynamic Items section below.
       <p>
-      To: <%= data_provider_select 'archive_task_dp_id', { :selector => @archive_task_dp_id.to_s }, :include_blank => '(Select a Data Provider)' %><br>
+      To: <%= data_provider_select 'archive_task_dp_id', { :selected => @archive_task_dp_id.to_s }, :include_blank => '(Select a Data Provider)' %><br>
       <small>(Leave blank to archive directly in the work directories)</small>
     </fieldset>
 
@@ -152,7 +152,7 @@
       <%= select_tag     'background_activity[options][userfile_custom_filter_id]',
           options_for_select(
             [["(Select one of your filters)",""]] + UserfileCustomFilter.where(:user_id => current_user.id).order(:name).pluck(:name,:id),
-            :selector => @bac.options[:userfile_custom_filter_id].to_s
+            :selected => @bac.options[:userfile_custom_filter_id].to_s
           )
       %>
       <p>
@@ -162,7 +162,7 @@
       <%= select_tag     'background_activity[options][task_custom_filter_id]',
           options_for_select(
             [["(Select one of your filters)",""]] + TaskCustomFilter.where(:user_id => current_user.id).order(:name).pluck(:name,:id),
-            :selector => @bac.options[:task_custom_filter_id].to_s
+            :selected => @bac.options[:task_custom_filter_id].to_s
           )
       %>
     </fieldset>

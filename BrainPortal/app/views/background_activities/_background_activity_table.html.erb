@@ -116,7 +116,7 @@
 
     <% t.column("Scheduled At", :start_at, :sortable => true) do |bac| %>
       <% if bac.start_at.present? %>
-        <%= to_localtime(bac.updated_at, :datetime) %><br>
+        <%= to_localtime(bac.start_at, :datetime) %><br>
         <% if bac.start_at >= Time.now %>
           (in <%= pretty_elapsed(bac.start_at.to_i - Time.now.to_i, :num_components => 2) %>)
         <% else %>

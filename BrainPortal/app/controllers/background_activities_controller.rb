@@ -143,25 +143,39 @@ class BackgroundActivitiesController < ApplicationController
 
   # This code makes a bunch of verification so that the ID
   # really is the ID of a custom filter owned by the current user
-  def add_options_for_compress_file
+  def add_options_userfile_custom_filter_id
     opt       = params_options.permit( :userfile_custom_filter_id )
     filter_id = opt[:userfile_custom_filter_id]
-    filter    = UserfileCustomFilter.where(:user_id => current_user.id).find(filter_id)
-    @bac.options[:userfile_custom_filter_id] = filter.id
+    filter    = UserfileCustomFilter.where(:id => filter_id, :user_id => current_user.id).first
+    @bac.options[:userfile_custom_filter_id] = filter&.id
   end
 
-  # Also use for Copy File
+  # This code makes a bunch of verification so that the ID
+  # really is the ID of a custom filter owned by the current user
+  def add_options_task_custom_filter_id
+    opt       = params_options.permit( :task_custom_filter_id )
+    filter_id = opt[:task_custom_filter_id]
+    filter    = TaskCustomFilter.where(:id => filter_id, :user_id => current_user.id).first
+    @bac.options[:task_custom_filter_id] = filter&.id
+  end
+
+  def add_options_for_compress_file
+    add_options_userfile_custom_filter_id
+  end
+
+  # Also use for 'Copy' File
   def add_options_for_move_file #:nodoc:
     @move_file_dp_id = params[:move_file_dp_id]
     @move_crush      = params[:move_crush].present?
     @bac.options[:dest_data_provider_id] = @move_file_dp_id
     @bac.options[:crush_destination]     = @move_crush
+    add_options_userfile_custom_filter_id()
   end
 
-  # Also use for Copy File
   def add_options_for_archive_task #:nodoc:
     @archive_task_dp_id = params[:archive_task_dp_id]
     @bac.options[:archive_data_provider_id] = @archive_task_dp_id.presence # can be nil
+    add_options_task_custom_filter_id()
   end
 
 end
