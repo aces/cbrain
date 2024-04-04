@@ -89,7 +89,7 @@
         t.column("Status", :status,
           :sortable => true,
           :filters  => default_filters_for(@base_scope, :status)
-        ) { |bac| bac.status }
+        ) { |bac| bac.status.underscore.humanize }
 
       end
     %>
@@ -117,8 +117,18 @@
     <% t.column("Scheduled At", :start_at, :sortable => true) do |bac| %>
       <% if bac.start_at.present? %>
         <%= to_localtime(bac.updated_at, :datetime) %><br>
-        (in <%= pretty_elapsed(bac.start_at.to_i - Time.now.to_i, :num_components => 2) %>)
+        <% if bac.start_at >= Time.now %>
+          (in <%= pretty_elapsed(bac.start_at.to_i - Time.now.to_i, :num_components => 2) %>)
+        <% else %>
+          <span class="warning">
+            (overdue by <%= pretty_elapsed(bac.start_at.to_i - Time.now.to_i, :num_components => 2) %>)
+          </span>
+        <% end %>
       <% end %>
+    <% end %>
+
+    <% t.column("Repeat", :repeat, :sortable => true) do |bac| %>
+      <%= bac.repeat %>
     <% end %>
 
     <% t.column("Last Updated", :updated_at, :sortable => true) do |bac| %>
@@ -136,9 +146,8 @@
       <progress class="background_activity_progress bac_<%=bac.status%> <%= ok_fail_class %>" id="bac_<%= bac.id %>" value="<%= bac.current_item %>" max="<%= bac.items.size %>"><%= bac.current_item %>/<%= bac.items.size %></progress><br>
       On <%= bac.remote_resource.name %> |
       <% is_scheduled = bac.status.to_s =~ /scheduled/i %>
-      <% is_dynamic   = is_scheduled && bac.items.size == 1 && bac.items[0] == 'DYNAMIC' %>
       <%= bac.status.underscore.humanize %>:
-      <% if is_dynamic %>
+      <% if bac.is_configured_for_dynamic_items? %>
         ITEMS=(Dynamic)
       <% elsif is_scheduled %>
         ITEMS=<%= bac.items.size %>

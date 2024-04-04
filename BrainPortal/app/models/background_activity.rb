@@ -37,6 +37,8 @@ class BackgroundActivity < ApplicationRecord
   validates_presence_of :items
   validate              :items_is_array
 
+  validate              :repeat_is_correct
+
   belongs_to :user
   belongs_to :remote_resource
 
@@ -45,6 +47,20 @@ class BackgroundActivity < ApplicationRecord
               Cancelled                   Suspended
     Scheduled CancelledScheduled SuspendedScheduled
   )
+
+  # The different repeat patterns we support in the repeat attribute.
+  # These are used in a validation method, repeat_is_correct()
+  REPEAT_REGEXES = %w[
+    one_shot (start)\+(\d+) (tomorrow)@(\d\d):(\d\d)
+    (monday)@(\d\d):(\d\d) (tuesday)@(\d\d):(\d\d) (wednesday)@(\d\d):(\d\d)
+    (thursday)@(\d\d):(\d\d) (friday)@(\d\d):(\d\d) (saturday)@(\d\d):(\d\d) (sunday)@(\d\d):(\d\d)
+  ].map { |s| Regexp.new('\A'+s+'\z') }
+
+  # This constant string is place as the single element
+  # in the items array when that array will be filled later on.
+  # See also the methods configure_for_dynamic_items! and
+  # is_configured_for_dymanic_items?
+  DYNAMIC_TOKEN = '(DYNAMICALLY FETCHED)' #:nodoc:
 
   def pretty_name
     self.class.to_s.demodulize + " on #{self.items.size} items"
@@ -56,6 +72,27 @@ class BackgroundActivity < ApplicationRecord
     throw :abort
   end
 
+  def repeat_is_correct
+    self.repeat='one_shot' if self.repeat.blank?
+    repeat_error = ->(message) { self.errors.add(:repeat, message) }
+    match = REPEAT_REGEXES.detect { |r| m=r.match(self.repeat) and break m }
+    repeat_error.('is not valid') if ! match
+
+    if match && match.length == 3 # for start+NNN
+      repeat_minutes = match[2]
+      repeat_error.('has an invalid start+NNN minutes') if repeat_minutes.to_i < 10 || repeat_minutes.to_i > 10080
+    end
+
+    if match && match.length == 4 # for all the keyword@HH:MM
+      hour, min = match[2], match[3]
+      repeat_error.('has an invalid hour') if hour !~ /[01][0-9]|2[0123]/
+      repeat_error.('has invalid minutes') if min !~ /[012345][0-9]/
+    end
+
+    throw :abort if self.errors.count > 0
+    true
+  end
+
   def items_is_array
     return true if self.items.is_a?(Array)
     self.errors.add(:items, 'is not an array')
@@ -63,6 +100,7 @@ class BackgroundActivity < ApplicationRecord
   end
 
   def self.local_new(user_id, items, remote_resource_id=CBRAIN::SelfRemoteResourceId)
+    remote_resource_id ||= CBRAIN::SelfRemoteResourceId
     self.new(
       :status             => 'InProgress',
       :user_id            => user_id,
@@ -160,8 +198,7 @@ class BackgroundActivity < ApplicationRecord
       self.update_column(:handler_lock, lock_key)
     end
     return true
-  rescue => ex
-    # couldn't obtain lock
+  rescue # couldn't obtain lock
     false
   end
 
@@ -215,7 +252,7 @@ class BackgroundActivity < ApplicationRecord
     newbac.handler_lock = nil
     newbac.start_at     = nil
     newbac.repeat       = nil
-    newbac.prepare_scheduled_items
+    newbac.prepare_dynamic_items
     newbac.save
   end
 
@@ -242,8 +279,8 @@ class BackgroundActivity < ApplicationRecord
 
       if nextday == 'tomorrow'
         daystart = DateTime.now.tomorrow.at_beginning_of_day.getlocal
-      elsif
-        daystart = Date.parse(nextday) # this return a day before or after today
+      else
+        daystart = Date.parse(nextday) # this returns a day before or after today
         daystart = DateTime.parse(daystart.to_s + DateTime.now.zone)
       end
 
@@ -252,7 +289,7 @@ class BackgroundActivity < ApplicationRecord
       return self.save
     end
 
-    # The schedule attribute has a value we don't understand
+    # The repeat attribute has a value we don't understand
     self.update_column(:status, 'InternalError')
 
   end
@@ -265,6 +302,63 @@ class BackgroundActivity < ApplicationRecord
     self.num_failures  = 0
     self.messages      = nil
     self.save
+  end
+
+  # Callback that subclasses can invoke as a before_save
+  # to verify that the background activity is configured to run on a bourreau
+  def must_be_on_bourreau!
+    throw :abort unless Bourreau.where(:id => self.remote_resource_id).exists?
+    true
+  end
+
+  # Callback that subclasses can invoke as a before_save
+  # to verify that the background activity is configured to run on a portal
+  def must_be_on_portal!
+    throw :abort unless BrainPortal.where(:id => self.remote_resource_id).exists?
+    true
+  end
+
+  def self.validates_bac_presence_of_option(*keys)
+    Array(keys).each do |key| # symbols
+      validate { |bac| bac.options_have!(key) } # closure on key
+    end
+  end
+
+  def self.validates_dynamic_bac_presence_of_option(*keys)
+    Array(keys).each do |key| # symbols
+      validate { |bac| dynamic_and_options_have!(key) } # closure on key
+    end
+  end
+
+  def options_have!(key)
+    opts = self.options || {}
+    return true if opts[key].present?
+    self.errors.add(:options, "is missing #{key.to_s.humanize}")
+  end
+
+  def dynamic_and_options_have!(key)
+    return true if ! is_configured_for_dynamic_items?
+    options_have!(key)
+  end
+
+  def populate_items_from_userfile_custom_filter
+    return unless self.is_configured_for_dynamic_items?
+    userfile_custom_filter = UserfileCustomFilter.find(self.options[:userfile_custom_filter_id])
+    self.items = userfile_custom_filter.filter_scope(FileCollection.all).pluck(:id)
+  end
+
+  def populate_items_from_task_custom_filter
+    return unless self.is_configured_for_dynamic_items?
+    task_custom_filter = TaskCustomFilter.find(self.options[:task_custom_filter_id])
+    self.items = task_custom_filter.filter_scope(CbrainTask.all).pluck(:id)
+  end
+
+  def is_configured_for_dynamic_items?
+    self.items.present? && self.items.size == 1 && self.items.first == DYNAMIC_TOKEN
+  end
+
+  def configure_for_dynamic_items!
+    self.items = [ DYNAMIC_TOKEN ]
   end
 
   protected
@@ -288,7 +382,7 @@ class BackgroundActivity < ApplicationRecord
   # is created out of a 'Scheduled' object.
   # This is the place a subclass can prepare the
   # list of items when that list is dynamic.
-  def prepare_scheduled_items
+  def prepare_dynamic_items
     true
   end
 

@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Tracks a background activity job
+# Register files on a browsable DataProvider
 class BackgroundActivity::RegisterFile < BackgroundActivity
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:

@@ -20,15 +20,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Tracks a background activity job
+# Copy a file
 class BackgroundActivity::CopyFile < BackgroundActivity
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  validates_bac_presence_of_option         :dest_data_provider_id
+  validates_dynamic_bac_presence_of_option :userfile_custom_filter_id
+
   def pretty_name
-    num=self.items.size
-    dest=DataProvider.where(:id => self.options[:dest_data_provider_id]).first&.name || "Unknown"
-    "Copy #{num} file#{num > 1 ? 's' : ''} to #{dest}"
+    "Copy files"
   end
 
   # Helper for scheduling a copy of files immediately.

@@ -37,13 +37,13 @@ class BackgroundActivitiesController < ApplicationController
   def create #:nodoc:
     @bac = BackgroundActivity.new(base_bac_params).class_update
     @bac.status    = 'Scheduled'
-    @bac.items     = [ 'DYNAMIC' ] # this keyword is used by the index page too
     @bac.options   = {}
+    @bac.configure_for_dynamic_items!
 
     @bac.errors.add(:type, "is not a proper type") if @bac.class == BackgroundActivity # exact test
 
     # Parse starts time
-    spar = start_time_params
+    spar = schedule_params
     @start_date, @start_hour, @start_min = spar[:start_date], spar[:start_hour], spar[:start_min]
     datestring = "#{@start_date} #{@start_hour}:#{@start_min}"
     @bac.start_at = nil
@@ -54,16 +54,19 @@ class BackgroundActivitiesController < ApplicationController
     end
     @bac.errors.add(:base, "Start date or time is invalid (no past date and max six months ahead)") if @bac.start_at.blank?
 
-    # Configure type-specific options
-    if @bac.is_a?(BackgroundActivity::RandomActivity)
-      add_options_for_random_activity
-    end
-    if @bac.is_a?(BackgroundActivity::ArchiveCollection) ||
-       @bac.is_a?(BackgroundActivity::UnarchiveCollection)
-      add_options_for_archive_collection
-    end
+    # Parse repeat pattern
+    @repeat, @repeat_hour, @repeat_min = spar[:repeat], spar[:repeat_hour], spar[:repeat_min]
+    repeat  = @repeat
+    repeat += "#{@repeat_hour}:#{@repeat_min}" if repeat.ends_with? '@'
+    @bac.repeat = repeat
 
-    if (@bac.errors.present?) || (! @bac.save)
+    # Configure type-specific options
+    add_options_for_random_activity    if @bac.is_a?(BackgroundActivity::RandomActivity)
+    add_options_for_compress_file      if @bac.is_a?(BackgroundActivity::CompressFile) || @bac.is_a?(BackgroundActivity::UncompressFile)
+    add_options_for_move_file          if @bac.is_a?(BackgroundActivity::MoveFile)     || @bac.is_a?(BackgroundActivity::CopyFile)
+    add_options_for_archive_task       if @bac.is_a?(BackgroundActivity::ArchiveTaskWorkdir)
+
+    if (@bac.errors.present?) || (! @bac.valid?) || (! @bac.save)
       render :action => :new
       return
     end
@@ -115,8 +118,9 @@ class BackgroundActivitiesController < ApplicationController
       )
   end
 
-  def start_time_params
-    params.permit %w( start_date start_hour start_min )
+  def schedule_params
+    params.permit %w( start_date start_hour  start_min
+                      repeat     repeat_hour repeat_min )
   end
 
   def params_options
@@ -139,11 +143,25 @@ class BackgroundActivitiesController < ApplicationController
 
   # This code makes a bunch of verification so that the ID
   # really is the ID of a custom filter owned by the current user
-  def add_options_for_archive_collection
+  def add_options_for_compress_file
     opt       = params_options.permit( :userfile_custom_filter_id )
     filter_id = opt[:userfile_custom_filter_id]
     filter    = UserfileCustomFilter.where(:user_id => current_user.id).find(filter_id)
     @bac.options[:userfile_custom_filter_id] = filter.id
+  end
+
+  # Also use for Copy File
+  def add_options_for_move_file #:nodoc:
+    @move_file_dp_id = params[:move_file_dp_id]
+    @move_crush      = params[:move_crush].present?
+    @bac.options[:dest_data_provider_id] = @move_file_dp_id
+    @bac.options[:crush_destination]     = @move_crush
+  end
+
+  # Also use for Copy File
+  def add_options_for_archive_task #:nodoc:
+    @archive_task_dp_id = params[:archive_task_dp_id]
+    @bac.options[:archive_data_provider_id] = @archive_task_dp_id.presence # can be nil
   end
 
 end

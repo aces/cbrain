@@ -20,36 +20,52 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Tracks a background activity job
-class BackgroundActivity::ArchiveCollection < BackgroundActivity
+# Uncompress files or file collections.
+class BackgroundActivity::UncompressFile < BackgroundActivity
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  validates_dynamic_bac_presence_of_option :userfile_custom_filter_id
+
   def pretty_name
-    num=self.items.size
-    "Archive #{num} file#{num > 1 ? 's' : ''}"
+    "Uncompress files"
   end
 
   # Helper for scheduling a copy of files immediately.
-  def self.setup!(user_id, userfile_ids, remote_resource_id)
+  def self.setup!(user_id, userfile_ids, remote_resource_id=nil)
     ba         = self.local_new(user_id, userfile_ids, remote_resource_id)
     ba.save!
     ba
   end
 
   def process(item)
-    userfile = FileCollection.where(:archived => false).find(item)
-    return [ false, "FileCollection #{item} is under transfer" ] if
+    userfile = Userfile.find(item)
+    return process_single_file(userfile) if userfile_is_a?(SingleFile)
+    return process_collection(userfile)  if userfile_is_a?(FileCollection)
+  end
+
+  def process_single_file(userfile)
+    name = userfile.name
+    return [ false, "File #{name} is under transfer" ] if
       userfile.sync_status.to_a.any? { |ss| ss.status =~ /^To/ }
-    message = userfile.provider_archive
+    return [ false, "File #{name} is not compressed" ] if
+      userfile.name !~ /\.gz\z/i
+    userfile.gzip_content(:uncompress)
+    [ true, "Uncompressed: #{name}" ]
+  end
+
+  def process_collection(userfile)
+    name = userfile.name
+    return [ false, "FileCollection #{name} is under transfer" ] if
+      userfile.sync_status.to_a.any? { |ss| ss.status =~ /^To/ }
+    message = userfile.provider_unarchive
     ok      = message.blank?
-    message = ok ? "Archived: #{item}" : message
+    message = ok ? "Unarchived: #{name}" : message
     [ ok, message ]
   end
 
-  def prepare_scheduled_items
-    userfile_custom_filter = UserfileCustomFilter.find(self.options[:userfile_custom_filter_id])
-    self.items = userfile_custom_filter.filter_scope(FileCollection.all).pluck(:id)
+  def prepare_dynamic_items
+    populate_items_from_userfile_custom_filter
   end
 
 end

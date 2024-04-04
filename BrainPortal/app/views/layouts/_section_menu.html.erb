@@ -124,6 +124,7 @@
            </li>
          <% end %>
 
+         <% if !current_user.has_role?(:normal_user) || (cbrain_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
            <li <%= set_selected(params[:controller], :background_activities) %>>
              <%=
                label = 'Actions'; label_class = ""
@@ -134,6 +135,7 @@
                link_to label, background_activities_path, :class => label_class
              %>
            </li>
+         <% end %>
 
        </ul>
     </div>  <!-- End id="main_menu" -->

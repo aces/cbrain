@@ -20,16 +20,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Tracks a background activity job
+# Register and move files on a browsable DataProvider
 class BackgroundActivity::RegisterAndMoveFile < BackgroundActivity::RegisterFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def pretty_name
-    cnt         = self.items.size
-    source_name = DataProvider.where(:id => self.options[:src_data_provider_id]).first&.name || "Unknown"
     dest_name   = DataProvider.where(:id => self.options[:dest_data_provider_id]).first&.name || "Unknown"
-    "Register #{cnt} file#{cnt > 1 ? 's' : ''} on #{source_name} and move to #{dest_name}"
+    super + " and move to #{dest_name}"
   end
 
   # Helper for scheduling a registration and move of the files immediately.
