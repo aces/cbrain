@@ -40,8 +40,8 @@ class BackgroundActivity::UncompressFile < BackgroundActivity
 
   def process(item)
     userfile = Userfile.find(item)
-    return process_single_file(userfile) if userfile_is_a?(SingleFile)
-    return process_collection(userfile)  if userfile_is_a?(FileCollection)
+    return process_single_file(userfile) if userfile.is_a?(SingleFile)
+    return process_collection(userfile)  if userfile.is_a?(FileCollection)
   end
 
   def process_single_file(userfile)

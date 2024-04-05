@@ -171,21 +171,21 @@ class BackgroundActivity < ApplicationRecord
   end
 
   def cancel!
-    self.update_column(:status, 'Cancelled')          if self.status == 'InProgress'
-    self.update_column(:status, 'CancelledScheduled') if self.status == 'Scheduled'
-    self.status == 'Cancelled'
+    self.update_column(:status, 'Cancelled')          if self.status == 'InProgress' || self.status == 'Suspended'
+    self.update_column(:status, 'CancelledScheduled') if self.status == 'Scheduled'  || self.status == 'SuspendedScheduled'
+    self.status.starts_with? 'Cancelled'
   end
 
   def suspend!
     self.update_column(:status, 'Suspended')          if self.status == 'InProgress'
     self.update_column(:status, 'SuspendedScheduled') if self.status == 'Scheduled'
-    self.status == 'Cancelled'
+    self.status.starts_with? 'Suspended'
   end
 
   def unsuspend!
     self.update_column(:status, 'InProgress')         if self.status == 'Suspended'
     self.update_column(:status, 'Scheduled')          if self.status == 'SuspendedScheduled'
-    self.status == 'Cancelled'
+    self.status.match /InProgress|Scheduled/
   end
 
   def get_lock

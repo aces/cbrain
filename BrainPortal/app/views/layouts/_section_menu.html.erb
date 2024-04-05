@@ -127,7 +127,7 @@
          <% if !current_user.has_role?(:normal_user) || (cbrain_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
            <li <%= set_selected(params[:controller], :background_activities) %>>
              <%=
-               label = 'Actions'; label_class = ""
+               label = 'In Background'; label_class = ""
                if @count_background_activities_in_progress.present? && @count_background_activities_in_progress > 0
                  label += " (#{@count_background_activities_in_progress})"
                  label_class = "active_bac"

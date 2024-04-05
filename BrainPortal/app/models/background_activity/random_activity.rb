@@ -44,7 +44,7 @@ class BackgroundActivity::RandomActivity < BackgroundActivity
   # Helper for scheduling a set of tests immediately.
   def self.setup!(user_id, mintime=1.seconds, maxtime=5.seconds, num_successes = 100,num_failures = 0, num_exceptions = 0)
     ba = self.local_new(user_id, []) # items will be filled in setup()
-    ba.setup(mintime,maxtime,num_successes,num_failures,num_exception)
+    ba.setup(mintime,maxtime,num_successes,num_failures,num_exceptions)
     ba.save!
     ba
   end
