@@ -35,7 +35,7 @@
 </div>
 
 <fieldset class="bac_explanations" style="display: none">
-  <legend>Background Activities</legend>
+  <legend>About Background Activities</legend>
   <p class="long_paragraphs">
   This page shows "background activities" as progress bars. Each
   activity applies a single operation to a set of things (usually,
@@ -126,7 +126,6 @@
 
     <%
       t.column("Activity Type", :type,
-        :hidden   => true,
         :sortable => true,
         :filters  => scoped_filters_for(
           @base_scope, @scope, :type,
@@ -144,21 +143,25 @@
       ) { |m| m.pretty_name }
     %>
 
-    <% t.column("Scheduled At", :start_at, :sortable => true) do |bac| %>
-      <% if bac.start_at.present? %>
-        <%= to_localtime(bac.start_at, :datetime) %><br>
-        <% if bac.start_at >= Time.now %>
-          (in <%= pretty_elapsed(bac.start_at.to_i - Time.now.to_i, :num_components => 2) %>)
-        <% else %>
-          <span class="warning">
-            (overdue by <%= pretty_elapsed(bac.start_at.to_i - Time.now.to_i, :num_components => 2) %>)
-          </span>
+    <% if current_user.has_role? :admin_user %>
+
+      <% t.column("Scheduled At", :start_at, :sortable => true) do |bac| %>
+        <% if bac.start_at.present? %>
+          <%= to_localtime(bac.start_at, :datetime) %><br>
+          <% if bac.start_at >= Time.now %>
+            (in <%= pretty_elapsed(bac.start_at.to_i - Time.now.to_i, :num_components => 2) %>)
+          <% else %>
+            <span class="warning">
+              (overdue by <%= pretty_elapsed(bac.start_at.to_i - Time.now.to_i, :num_components => 2) %>)
+            </span>
+          <% end %>
         <% end %>
       <% end %>
-    <% end %>
 
-    <% t.column("Repeat", :repeat, :sortable => true) do |bac| %>
-      <%= bac.repeat %>
+      <% t.column("Repeat", :repeat, :sortable => true) do |bac| %>
+        <%= bac.repeat %>
+      <% end %>
+
     <% end %>
 
     <% t.column("Last Updated", :updated_at, :sortable => true) do |bac| %>
@@ -176,14 +179,15 @@
       <progress class="background_activity_progress bac_<%=bac.status%> <%= ok_fail_class %>" id="bac_<%= bac.id %>" value="<%= bac.current_item %>" max="<%= bac.items.size %>"><%= bac.current_item %>/<%= bac.items.size %></progress><br>
       On <%= bac.remote_resource.name %> |
       <% is_scheduled = bac.status.to_s =~ /scheduled/i %>
-      <%= bac.status.underscore.humanize %>:
+      <strong><%= bac.status.underscore.humanize %>:</strong>
       <% if bac.is_configured_for_dynamic_items? %>
         ITEMS=(Dynamic)
       <% elsif is_scheduled %>
         ITEMS=<%= bac.items.size %>
       <% else %>
-        <%= bac.current_item %>/<%= bac.items.size %>
-        OK=<%= bac.num_successes %> FAIL=<%= bac.num_failures %>
+        <%= bac.current_item %>/<%= bac.items.size %> |
+        <%= red_if(bac.num_successes != 0, "OK=#{bac.num_successes}",    nil, :color1 => 'red', :color2 => 'green') %>,
+        <%= red_if(bac.num_failures  == 0, "Failed=#{bac.num_failures}", nil, :color1 => 'red', :color2 => 'black') %>
       <% end %>
       <% if current_user.has_role? :admin_user %>
         HANDLER=<%= bac.handler_lock.presence || '(None)' %>
