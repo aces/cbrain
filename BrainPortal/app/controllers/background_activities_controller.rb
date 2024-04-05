@@ -37,7 +37,7 @@ class BackgroundActivitiesController < ApplicationController
   def create #:nodoc:
     @bac = BackgroundActivity.new(base_bac_params).class_update
     @bac.status    = 'Scheduled'
-    @bac.options   = {}
+    @bac.options   = {}.with_indifferent_access
     @bac.configure_for_dynamic_items!
 
     @bac.errors.add(:type, "is not a proper type") if @bac.class == BackgroundActivity # exact test
@@ -65,6 +65,7 @@ class BackgroundActivitiesController < ApplicationController
     add_options_for_compress_file      if @bac.is_a?(BackgroundActivity::CompressFile) || @bac.is_a?(BackgroundActivity::UncompressFile)
     add_options_for_move_file          if @bac.is_a?(BackgroundActivity::MoveFile)     || @bac.is_a?(BackgroundActivity::CopyFile)
     add_options_for_archive_task       if @bac.is_a?(BackgroundActivity::ArchiveTaskWorkdir)
+    add_options_for_clean_cache        if @bac.is_a?(BackgroundActivity::CleanCache)
 
     if (@bac.errors.present?) || (! @bac.valid?) || (! @bac.save)
       render :action => :new
@@ -176,6 +177,17 @@ class BackgroundActivitiesController < ApplicationController
     @archive_task_dp_id = params[:archive_task_dp_id]
     @bac.options[:archive_data_provider_id] = @archive_task_dp_id.presence # can be nil
     add_options_task_custom_filter_id()
+  end
+
+  def add_options_for_clean_cache #:nodoc:
+    opt = params_options.permit(
+           :days_older,   # a string
+           :with_user_ids => [], :without_user_ids => [],
+           :with_types => [], :without_types => [] )
+    @bac.options.merge! opt.to_h.with_indifferent_access # use to_h, not to_hash !!!
+    if @bac.options[:days_older].to_s !~ /\A\d\z|\A[1-9]\d{1,2}\z/
+      @bac.errors.add(:options,'does not specify a number of days between 0 and 999')
+    end
   end
 
 end

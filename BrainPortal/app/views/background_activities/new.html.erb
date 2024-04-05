@@ -169,6 +169,62 @@
 
     <fieldset>
       <legend>
+        <%= f.radio_button :type, 'BackgroundActivity::CleanCache' %>
+        <%= f.label        :type, 'Clean DataProvider Caches', :value => 'BackgroundActivity::CleanCache' %>
+      </legend>
+
+      <table class="simple">
+
+        <tr>
+          <td>
+            <%= label_tag      'background_activity[options][days_older]', "Files last accessed at least:" %>
+          </td>
+          <td>
+            <%= text_field_tag 'background_activity[options][days_older]', @bac.options[:days_older], :size => 3 %> days ago
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <%= label_tag      'background_activity[options][with_user_ids][]', "Belonging to users:" %>
+          </td>
+          <td>
+            <%= user_select("background_activity[options][with_user_ids][]", { :selector => @bac.options[:with_user_ids] }, :multiple => true ) %>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <%= label_tag      'background_activity[options][without_user_ids][]', "But not to users:" %>
+          </td>
+          <td>
+            <%= user_select("background_activity[options][without_user_ids][]", { :selector => @bac.options[:without_user_ids] }, :multiple => true ) %>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <%= label_tag      'background_activity[options][with_types][]', "Of type:" %>
+          </td>
+          <td>
+            <%= userfile_type_select("background_activity[options][with_types][]", { :selector => @bac.options[:with_types] }, :multiple => true ) %>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <%= label_tag      'background_activity[options][without_types][]', "But not type:" %>
+          </td>
+          <td>
+            <%= userfile_type_select("background_activity[options][without_types][]", { :selector => @bac.options[:without_types] }, :multiple => true ) %>
+          </td>
+        </tr>
+
+      </table>
+    </fieldset>
+
+    <fieldset>
+      <legend>
         <%= f.radio_button :type, 'BackgroundActivity::RandomActivity' %>
         <%= f.label        :type, 'Fake Activity Tests', :value => 'BackgroundActivity::RandomActivity' %>
       </legend>
