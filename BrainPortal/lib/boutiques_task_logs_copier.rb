@@ -32,7 +32,8 @@
 #          "runtime":    "blah/blah/runtime.kv",
 #          "descriptor": "blah/blah/descriptor.json",
 #          "invoke":     "blah/blah/params.json",
-#          "jobscript":  "blah/blah/cbrain_script.sh"
+#          "jobscript":  "blah/blah/cbrain_script.sh",
+#          "cbrain_params": "blah/blah/cbparams.json"
 #       }
 #     }
 #   }
@@ -104,6 +105,12 @@ module BoutiquesTaskLogsCopier
 
     # Copy sbatch/qsub script
     install_std_log_file(science_script_basename, destpaths[:jobscript],  "jobscript")
+
+    # Create then copy the cbrain params file, if needed
+    if destpaths[:cbrain_params].present?
+      File.open(".cbrain_params.json","w") { |fh| fh.write JSON.pretty_generate(self.params) }
+      install_std_log_file(".cbrain_params.json", destpaths[:cbrain_params], "cbrain parameters")
+    end
 
     # Performs standard processing
     super
