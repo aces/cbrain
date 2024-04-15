@@ -29,6 +29,7 @@ class BackgroundActivity::TerminateTask < BackgroundActivity
 
   before_save :must_be_on_bourreau!
 
+  # This validation applies to subclasses too
   validates_dynamic_bac_presence_of_option :task_custom_filter_id
 
   def pretty_name

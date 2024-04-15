@@ -40,14 +40,13 @@ class BackgroundActivity::UnregisterFile < BackgroundActivity
 
   def process(item)
     userfile = Userfile.find(item)
-    name = userfile.name
-    return [ false, "File #{name} is under transfer" ] if
+    return [ false, "File is under transfer" ] if
       userfile.sync_status.to_a.any? { |ss| ss.status =~ /^To/ }
-    return [ false, "File #{name} is not on a browsable DataProvider" ] if
+    return [ false, "File is not on a browsable DataProvider" ] if
       ! userfile.data_provider.is_browsable?
     userfile.keep_dp_content_on_destroy = true
     ok = userfile.destroy # only remove entries from DB, does not affect file content
-    [ ok, "File #{name} unregistered" ]
+    [ ok, "Unregistered" ]
   end
 
   # Currently, there is no user interface to schedule

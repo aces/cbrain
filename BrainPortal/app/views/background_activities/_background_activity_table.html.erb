@@ -152,7 +152,7 @@
             (in <%= pretty_elapsed(bac.start_at.to_i - Time.now.to_i, :num_components => 2) %>)
           <% else %>
             <span class="warning">
-              (overdue by <%= pretty_elapsed(bac.start_at.to_i - Time.now.to_i, :num_components => 2) %>)
+              (overdue by <%= pretty_elapsed(Time.now.to_i - bac.start_at.to_i, :num_components => 2) %>)
             </span>
           <% end %>
         <% end %>
@@ -175,6 +175,7 @@
         ok_fail_class = "bac_all_ok"   if bac.num_successes  > 0 && bac.num_failures == 0
         ok_fail_class = "bac_all_fail" if bac.num_successes == 0 && bac.num_failures  > 0
         ok_fail_class = "bac_mixed"    if bac.num_successes  > 0 && bac.num_failures  > 0
+        messages = bac.uniq_counted_messages
       %>
       <progress class="background_activity_progress bac_<%=bac.status%> <%= ok_fail_class %>" id="bac_<%= bac.id %>" value="<%= bac.current_item %>" max="<%= bac.items.size %>"><%= bac.current_item %>/<%= bac.items.size %></progress><br>
       On <%= bac.remote_resource.name %> |
@@ -189,8 +190,12 @@
         <%= red_if(bac.num_successes != 0, "OK=#{bac.num_successes}",    nil, :color1 => 'red', :color2 => 'green') %>,
         <%= red_if(bac.num_failures  == 0, "Failed=#{bac.num_failures}", nil, :color1 => 'red', :color2 => 'black') %>
       <% end %>
-      <% if current_user.has_role? :admin_user %>
-        HANDLER=<%= bac.handler_lock.presence || '(None)' %>
+      <% if current_user.has_role?(:admin_user) && bac.handler_lock.present? %>
+        <span class="warning">ACTIVE=<%= bac.handler_lock %></span>
+      <% end %>
+      <% if messages.present? %>
+        <% messages = messages.map { |m| h(m) }.join("<br>").html_safe %>
+        | <%= html_tool_tip('(Messages)') { messages } %>
       <% end %>
     <% end %>
 

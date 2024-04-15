@@ -20,14 +20,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Destroy a CBRAIN task.
+# Removes the workdir of a CBRAIN task.
 #
 # Must be run on a Bourreau only (see superclass).
 class BackgroundActivity::RemoveTaskWorkdir < BackgroundActivity::TerminateTask
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-
-  validates_dynamic_bac_presence_of_option :task_custom_filter_id
 
   def pretty_name
     "Remove task workdirs"
@@ -36,7 +34,7 @@ class BackgroundActivity::RemoveTaskWorkdir < BackgroundActivity::TerminateTask
   def process(item)
     super(item) # invokes the terminate code; will skip tasks that don't need to be terminated
     cbrain_task  = CbrainTask.find(item)
-    ok           = cbrain_task.remove_cluster_workdir
+    ok           = cbrain_task.send(:remove_cluster_workdir) # it's a protected method
     return [ true,  "Cleaned" ] if   ok
     return [ false, "Skipped" ] if ! ok
   end

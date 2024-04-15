@@ -64,7 +64,8 @@ class BackgroundActivitiesController < ApplicationController
     add_options_for_random_activity    if @bac.is_a?(BackgroundActivity::RandomActivity)
     add_options_for_compress_file      if @bac.is_a?(BackgroundActivity::CompressFile) || @bac.is_a?(BackgroundActivity::UncompressFile)
     add_options_for_move_file          if @bac.is_a?(BackgroundActivity::MoveFile)     || @bac.is_a?(BackgroundActivity::CopyFile)
-    add_options_for_archive_task       if @bac.is_a?(BackgroundActivity::ArchiveTaskWorkdir)
+    add_options_for_archive_task_wd    if @bac.is_a?(BackgroundActivity::ArchiveTaskWorkdir)
+    add_options_for_remove_task_wd     if @bac.is_a?(BackgroundActivity::RemoveTaskWorkdir)
     add_options_for_clean_cache        if @bac.is_a?(BackgroundActivity::CleanCache)
 
     if (@bac.errors.present?) || (! @bac.valid?) || (! @bac.save)
@@ -77,6 +78,7 @@ class BackgroundActivitiesController < ApplicationController
   # GET /background_activities
   def index #:nodoc:
     @scope = scope_from_session
+    scope_default_order(@scope, :updated_at, :desc)
     @base_scope = BackgroundActivity.all.includes( [:user, :remote_resource] )
     if ! current_user.has_role? :admin_user
       @base_scope = @base_scope.where(:user_id => current_user.id)
@@ -173,9 +175,13 @@ class BackgroundActivitiesController < ApplicationController
     add_options_userfile_custom_filter_id()
   end
 
-  def add_options_for_archive_task #:nodoc:
+  def add_options_for_archive_task_wd #:nodoc:
     @archive_task_dp_id = params[:archive_task_dp_id]
     @bac.options[:archive_data_provider_id] = @archive_task_dp_id.presence # can be nil
+    add_options_task_custom_filter_id()
+  end
+
+  def add_options_for_remove_task_wd #:nodoc:
     add_options_task_custom_filter_id()
   end
 

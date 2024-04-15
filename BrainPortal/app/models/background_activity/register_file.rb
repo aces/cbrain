@@ -62,7 +62,7 @@ class BackgroundActivity::RegisterFile < BackgroundActivity
       :browse_path      => browse_path,
     )
     if ! userfile.save
-      return [ false, userfile.errors.full_messages.join(", ") ]
+      return [ false, userfile.errors.full_messages.sort.join(", ") ]
     end
     userfile.addlog "Registered on Data Provider '#{dp.name}' by user '#{user.login}'"
     userfile.addlog "Owner set to '#{as_user.login}'" if as_user_id != self.user_id

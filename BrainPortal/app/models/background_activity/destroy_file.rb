@@ -21,33 +21,21 @@
 #
 
 # Copy a file
-class BackgroundActivity::CopyFile < BackgroundActivity
+class BackgroundActivity::DestroyFile < BackgroundActivity
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  validates_bac_presence_of_option         :dest_data_provider_id
   validates_dynamic_bac_presence_of_option :userfile_custom_filter_id
 
   def pretty_name
-    "Copy files"
-  end
-
-  # Helper for scheduling a copy of files immediately.
-  def self.setup!(user_id, userfile_ids, remote_resource_id, dest_data_provider_id, options={})
-    ba         = self.local_new(user_id, userfile_ids, remote_resource_id)
-    ba.options = options.merge( :dest_data_provider_id => dest_data_provider_id )
-    ba.save!
-    ba
+    "Destroy files"
   end
 
   def process(item)
     userfile     = Userfile.find(item)
-    dest_dp_id   = self.options[:dest_data_provider_id]
-    dest_dp      = DataProvider.find(dest_dp_id)
-    new_userfile = userfile.provider_copy_to_otherprovider(dest_dp, self.options || {})
-    return [ true, new_userfile.id ] if new_userfile.is_a?(Userfile)
-    return [ true, "Skipped"      ]  if new_userfile == true
-    return [ false, "Failed to copy '#{userfile.name}'" ]
+    ok           = userfile.destroy
+    return [ true,  "Destroyed" ] if   ok
+    return [ false, "Skipped"   ] if ! ok
   end
 
   def prepare_dynamic_items

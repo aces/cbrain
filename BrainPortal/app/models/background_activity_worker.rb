@@ -24,10 +24,10 @@ class BackgroundActivityWorker < Worker
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-
   def setup
     @myself    = RemoteResource.current_resource
     @myself_id = @myself.id
+    worker_log.info "Starting BackgroundActivityWorker"
   end
 
   def main_process_is_alive?

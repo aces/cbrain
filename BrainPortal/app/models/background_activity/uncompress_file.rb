@@ -45,22 +45,20 @@ class BackgroundActivity::UncompressFile < BackgroundActivity
   end
 
   def process_single_file(userfile)
-    name = userfile.name
-    return [ false, "File #{name} is under transfer" ] if
+    return [ false, "File is under transfer" ] if
       userfile.sync_status.to_a.any? { |ss| ss.status =~ /^To/ }
-    return [ false, "File #{name} is not compressed" ] if
+    return [ false, "File is not compressed" ] if
       userfile.name !~ /\.gz\z/i
     userfile.gzip_content(:uncompress)
-    [ true, "Uncompressed: #{name}" ]
+    [ true, "Uncompressed" ]
   end
 
   def process_collection(userfile)
-    name = userfile.name
-    return [ false, "FileCollection #{name} is under transfer" ] if
+    return [ false, "FileCollection is under transfer" ] if
       userfile.sync_status.to_a.any? { |ss| ss.status =~ /^To/ }
     message = userfile.provider_unarchive
     ok      = message.blank?
-    message = ok ? "Unarchived: #{name}" : message
+    message = ok ? "Unarchived" : message
     [ ok, message ]
   end
 

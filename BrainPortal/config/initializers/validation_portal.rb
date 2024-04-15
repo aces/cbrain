@@ -97,7 +97,7 @@ elsif program_name =~ /rake/
     puts "C> \t- All validations will run for rake task '#{first_arg}'."
     #------------------------------------------------------------------------------
     CbrainSystemChecks.check(:all)
-    PortalSystemChecks.check(:all)
+    PortalSystemChecks.check(:all, :except => [ :z020_start_background_activity_workers ])
   end
 
 # ----- RAILS GENERATE -----

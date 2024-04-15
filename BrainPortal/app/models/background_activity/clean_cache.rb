@@ -33,8 +33,7 @@ class BackgroundActivity::CleanCache < BackgroundActivity
 
   def process(item)
     userfile = Userfile.find(item)
-    name = userfile.name
-    return [ false, "File #{name} is under transfer" ] if
+    return [ false, "File is under transfer" ] if
       userfile.local_sync_status&.status.to_s =~ /^To/
     userfile.cache_erase
     [ true, userfile.id ]

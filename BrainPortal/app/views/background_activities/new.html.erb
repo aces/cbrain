@@ -120,6 +120,14 @@
 
     <fieldset>
       <legend>
+        <%= f.radio_button :type, 'BackgroundActivity::RemoveTaskWorkdir' %>
+        <%= f.label        :type, 'Remove Task Workdirs', :value => 'BackgroundActivity::RemoveTaskWorkdir' %>
+      </legend>
+      Remember to select a <strong>task</strong> custom filter in the Dynamic Items section below.
+    </fieldset>
+
+    <fieldset>
+      <legend>
         <%= f.radio_button :type, 'BackgroundActivity::ArchiveTaskWorkdir' %>
         <%= f.label        :type, 'Archive Task Workdirs', :value => 'BackgroundActivity::ArchiveTaskWorkdir' %>
       </legend>

@@ -124,10 +124,11 @@
            </li>
          <% end %>
 
-         <% if !current_user.has_role?(:normal_user) || (cbrain_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
+         <% # if !current_user.has_role?(:normal_user) || (cbrain_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
+         <% if current_user.has_role?(:admin_user) %>
            <li <%= set_selected(params[:controller], :background_activities) %>>
              <%=
-               label = 'In Background'; label_class = ""
+               label = 'Ongoing'; label_class = ""
                if @count_background_activities_in_progress.present? && @count_background_activities_in_progress > 0
                  label += " (#{@count_background_activities_in_progress})"
                  label_class = "active_bac"
