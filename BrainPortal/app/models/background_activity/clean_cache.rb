@@ -27,8 +27,24 @@ class BackgroundActivity::CleanCache < BackgroundActivity
 
   validates_dynamic_bac_presence_of_option :days_older
 
+  DEFAULT_DAYS_OLD = 7 #:nodoc:
+
   def pretty_name
-    "Clean cache"
+    days = self.options[:days_older] || DEFAULT_DAYS_OLD
+    "Clean Cache (#{days} days)"
+  end
+
+  def pretty_description
+    plus_uids   = User.where(:id => (self.options[:with_user_ids].presence || [])).order(:login).pluck(:login)
+    minus_uids  = User.where(:id => (self.options[:without_user_ids].presence || [])).order(:login).pluck(:login)
+    plus_types  = self.options[:with_types].presence || []
+    minus_types = self.options[:without_types].presence || []
+    desc  = ""
+    desc +=    "With Users=(#{plus_uids.join(", ")})\n"   if plus_uids.present?
+    desc += "Without Users=(#{minus_uids.join(", ")})\n"  if minus_uids.present?
+    desc +=    "With Types=(#{plus_types.join(", ")})\n"  if plus_types.present?
+    desc += "Without Types=(#{minus_types.join(", ")})\n" if minus_types.present?
+    desc
   end
 
   def process(item)
@@ -40,7 +56,7 @@ class BackgroundActivity::CleanCache < BackgroundActivity
   end
 
   def prepare_dynamic_items
-    days_older       = self.options[:days_older] || 30
+    days_older       = self.options[:days_older] || DEFAULT_DAYS_OLD
     with_user_ids    = self.options[:with_user_ids]
     without_user_ids = self.options[:without_user_ids]
     with_types       = self.options[:with_types]

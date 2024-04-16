@@ -138,7 +138,16 @@ class BackgroundActivity < ApplicationRecord
 
   # Returns a pretty name; default is "Activity name on n items"
   def pretty_name
-    self.class.to_s.demodulize + " on #{self.items.size} items"
+    base_pretty  = self.class.to_s.demodulize + " on #{self.items.size} items"
+    filter_name  = self.options_custom_filter_name
+    base_pretty += " (#{filter_name})" if filter_name
+    base_pretty
+  end
+
+  # Returns a longer description of the activity. Default is "".
+  # In the interfaces, this shows up as an overlay.
+  def pretty_description
+    ""
   end
 
   protected
@@ -477,6 +486,20 @@ class BackgroundActivity < ApplicationRecord
     return unless self.is_configured_for_dynamic_items?
     task_custom_filter = TaskCustomFilter.find(self.options[:task_custom_filter_id])
     self.items = task_custom_filter.filter_scope(scope).pluck(:id)
+  end
+
+  # Returns the name of the Userfile or Task custom filter
+  # configured in the options hash, if any. Can be used by pretty_name()
+  def options_custom_filter_name
+    myoptions = self.options || {}
+    ucf_id = myoptions[:userfile_custom_filter_id].presence
+    if ucf_id
+      return UserfileCustomFilter.where(:id => ucf_id).first&.name
+    end
+    tcf_id = myoptions[:task_custom_filter_id].presence
+    if tcf_id
+      return TaskCustomFilter.where(:id => tcf_id).first&.name
+    end
   end
 
   ###########################################

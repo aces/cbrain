@@ -139,8 +139,14 @@
             }
           end
         )
-      #) { |m| m.type.to_s.demodulize.underscore.humanize }
-      ) { |m| m.pretty_name }
+      ) do |bac|
+          desc = bac.pretty_description.presence
+          if desc
+             html_tool_tip(bac.pretty_name) { desc }
+          else
+             bac.pretty_name
+          end
+        end
     %>
 
     <% if current_user.has_role? :admin_user %>

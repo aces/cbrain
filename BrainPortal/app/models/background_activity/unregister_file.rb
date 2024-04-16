@@ -27,10 +27,6 @@ class BackgroundActivity::UnregisterFile < BackgroundActivity
 
   validates_dynamic_bac_presence_of_option :userfile_custom_filter_id
 
-  def pretty_name
-    "Unregister files"
-  end
-
   # Helper for scheduling a copy of files immediately.
   def self.setup!(user_id, userfile_ids, remote_resource_id=nil)
     ba         = self.local_new(user_id, userfile_ids, remote_resource_id)

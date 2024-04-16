@@ -31,10 +31,6 @@ class BackgroundActivity::UnarchiveTaskWorkdir < BackgroundActivity
 
   validates_dynamic_bac_presence_of_option :task_custom_filter_id
 
-  def pretty_name
-    "Unarchive Task Workdirs"
-  end
-
   def process(item)
     cbrain_task = CbrainTask.find(item)
     if cbrain_task.archived_status == :userfile # automatically guess which kind of unarchiving to do

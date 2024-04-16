@@ -27,10 +27,6 @@ class BackgroundActivity::DestroyFile < BackgroundActivity
 
   validates_dynamic_bac_presence_of_option :userfile_custom_filter_id
 
-  def pretty_name
-    "Destroy files"
-  end
-
   def process(item)
     userfile     = Userfile.find(item)
     ok           = userfile.destroy

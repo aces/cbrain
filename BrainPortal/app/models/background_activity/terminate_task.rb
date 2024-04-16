@@ -32,10 +32,6 @@ class BackgroundActivity::TerminateTask < BackgroundActivity
   # This validation applies to subclasses too
   validates_dynamic_bac_presence_of_option :task_custom_filter_id
 
-  def pretty_name
-    "Terminate tasks"
-  end
-
   def process(item)
     cbrain_task  = CbrainTask.find(item)
     ok           = cbrain_task.terminate
