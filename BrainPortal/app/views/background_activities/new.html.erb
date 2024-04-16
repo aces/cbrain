@@ -37,12 +37,12 @@
   <div class="generalbox">
 
     <p><%= f.label :user_id, "User" %><br>
-    <%= user_select("background_activity[user_id]", { :selected => @bac.user_id } ) %>
+    <%= user_select("background_activity[user_id]", :selector => @bac.user_id.to_s) %>
 
     <p><%= f.label :remote_resource_id, "Portal or Execution Server" %><br>
     <%= bourreau_select("background_activity[remote_resource_id]", {
        :bourreaux => RemoteResource.all.order(:name).to_a,
-       :selected => @bac.remote_resource_id } ) %>
+       :selector => @bac.remote_resource_id.to_s } ) %>
 
     <p><%= f.label :start_date, "Initial Start Date" %><br>
     <%= text_field_tag :start_date, @start_date, :class => "datepicker" %>
@@ -73,6 +73,7 @@
           [ "Every 30 minutes" ,            'start+30'   ],
           [ "Every hour"       ,            'start+60'   ],
           [ "Every 12 hours"   ,            'start+720'  ],
+          [ "Every 24 hours"   ,            'start+1440' ],
           [ "Tomorrow and everyday at..." , 'tomorrow@'  ],
           [ "Mondays at..."    ,            'monday@'    ],
           [ "Tuesdays at..."   ,            'tuesday@'   ],

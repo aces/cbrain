@@ -414,7 +414,7 @@ class BackgroundActivity < ApplicationRecord
     # "tomorrow@HH:MM"
     # "monday@HH:MM" .. "sunday@HH:MM"
     if rep_code =~ /(tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)@(\d\d):(\d\d)/i
-      _,nextday,hour,minutes = Rexexp.last_match.to_a
+      _,nextday,hour,minutes = Regexp.last_match.to_a
 
       if nextday == 'tomorrow'
         daystart = DateTime.now.tomorrow.at_beginning_of_day.getlocal
@@ -423,8 +423,8 @@ class BackgroundActivity < ApplicationRecord
         daystart = DateTime.parse(daystart.to_s + DateTime.now.zone)
       end
 
-      self.start = daystart + hour.to_i.hours + minutes.to_i.minutes
-      self.start = self.start + 7.days if self.start < DateTime.now
+      self.start_at = daystart + hour.to_i.hours + minutes.to_i.minutes
+      self.start_at = self.start_at + 7.days if self.start_at < DateTime.now
       return self.save
     end
 
