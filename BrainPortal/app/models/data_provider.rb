@@ -247,6 +247,8 @@ class DataProvider < ApplicationRecord
   # Resource usage is kept forever even if data provider is destroyed.
   has_many                :resource_usage
 
+  after_create            :update_copy_policies
+
   api_attr_visible        :name, :type, :user_id, :group_id, :online, :read_only, :description
 
   # This value is used to trigger DP cache wipes
@@ -808,6 +810,32 @@ class DataProvider < ApplicationRecord
 
     true
   end
+
+  # updates copying policies for exisiting dataproviders
+  def update_copy_policies
+
+    # Define the conditions to select records
+    conditions = {
+      ar_table_name: 'data_providers',
+      meta_key:      'dp_no_copy_new',
+      meta_value:    'disabled'
+    }
+
+    # Select the records based on the conditions
+    records_to_insert = MetaDataStore.where(conditions).pluck(:ar_id).map do |ar_id|
+      {
+        ar_table_name: 'data_providers',
+        ar_id:         ar_id,
+        meta_key:      "dp_no_copy_#{self.id}",
+        meta_value:    'disabled'
+      }
+    end
+
+    # Insert the selected records
+    MetaDataStore.create(records_to_insert)  # might be slow, yet in Rails 6, can be updated
+    # to insert_all for SQL-like performance
+  end
+
 
   # Copy a +userfile+ from the current provider to +otherprovider+.
   # Returns the new userfile if data was actually copied, true if
