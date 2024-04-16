@@ -29,8 +29,9 @@ class BackgroundActivitiesController < ApplicationController
 
   # Admin only, HTML only
   def new #:nodoc:
-    @bac         = BackgroundActivity.new
-    @bac.user_id = current_user.id
+    @bac                    = BackgroundActivity.new
+    @bac.user_id            = current_user.id
+    @bac.remote_resource_id = CBRAIN::SelfRemoteResourceId
   end
 
   # Admin only, HTML only

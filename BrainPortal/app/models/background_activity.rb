@@ -59,6 +59,7 @@
 # Subclasses need to define these methods:
 #
 #   pretty_name                 # optional
+#   pretty_description          # optional
 #   process(item)               # mandatory
 #   before_first_item           # optional
 #   after_last_item             # optional
@@ -136,9 +137,12 @@ class BackgroundActivity < ApplicationRecord
   # Main Implementable Methods For Subclasses
   ###########################################
 
-  # Returns a pretty name; default is "Activity name on n items"
+  # Returns a pretty name; default is "Activity name" from the
+  # class name BackgroundActivity::ActivityName, with
+  # the name of the tasl of userfile custom filter found in
+  # the options hash, if any, in parentheses at the end.
   def pretty_name
-    base_pretty  = self.class.to_s.demodulize + " on #{self.items.size} items"
+    base_pretty  = self.class.to_s.demodulize.underscore.humanize
     filter_name  = self.options_custom_filter_name
     base_pretty += " (#{filter_name})" if filter_name
     base_pretty
