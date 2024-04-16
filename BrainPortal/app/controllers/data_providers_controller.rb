@@ -152,7 +152,7 @@ class DataProvidersController < ApplicationController
       format.json { render      :json   => @provider }
     end
   end
-
+  require 'pry'
   def update #:nodoc:
     @user     = current_user
     id        = params[:id]
@@ -178,9 +178,12 @@ class DataProvidersController < ApplicationController
 
     # Fields that stay the same if the form provides a blank entry:
     new_data_provider_attr.delete :cloud_storage_client_token if new_data_provider_attr[:cloud_storage_client_token].blank?
+    binding.pry
+    if @provider.update_attributes_with_logging(new_data_provider_attr, current_user, @provider.attributes.keys + [])
+      mass_flags                  = 'dp_no_copy_new|dp_no_copy_toggle|rr_no_sync_new|rr_no_sync_toggle'  # few_special flags that control other
+      # todo cast params to hash for rails 5.1 as `ActionController::Parameters` no longer inherits from hash
+      meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/\Adp_no_copy_\d+\z|\Arr_no_sync_\d+|#{mass_flags}\z/)
 
-    if @provider.update_attributes_with_logging(new_data_provider_attr, current_user, @provider.attributes.keys)
-      meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/\Adp_no_copy_\d+\z|\Arr_no_sync_\d+\z/)
       add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid] + meta_flags_for_restrictions)
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
