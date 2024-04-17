@@ -113,7 +113,7 @@ class BoutiquesPortalTask < PortalTask
         "#{iname} #{ioptional}\n"
       }.join("")
 
-    if num_in_files < num_needed_inputs || num_in_files > num_needed_inputs+num_opt_inputs
+    if !single_file_input? && (num_in_files < num_needed_inputs || num_in_files > num_needed_inputs+num_opt_inputs)
       message = "This task requires #{num_needed_inputs} mandatory file(s) and #{num_opt_inputs} optional file(s)\n" +
         input_infos
       cb_error message
@@ -137,7 +137,7 @@ class BoutiquesPortalTask < PortalTask
 
     # Required parameters
     descriptor.required_inputs.each do |input|
-      sanitize_param(input)
+      sanitize_param(input) if !single_file_input?
     end
 
     # Optional parameters
@@ -288,7 +288,7 @@ class BoutiquesPortalTask < PortalTask
     #
     # then we will generate 7 tasks in total.
     # --------------------------------------
-    if descriptor.file_inputs.size == 1
+    if single_file_input?
       input = descriptor.file_inputs.first
 
       fillTask = lambda do |userfile,tsk,extra_params=nil|
@@ -772,6 +772,14 @@ class BoutiquesPortalTask < PortalTask
       rev_info    = module_name::Revision_info
       rev_info.format("%f rev. %s %a %d")
     end
+  end
+
+  private
+
+  # Check if the descriptor has a single file input.
+  def single_file_input?
+    return @single_file_input if ! @single_file_input.nil?
+    @single_file_input = self.descriptor_for_form.file_inputs.size == 1
   end
 
 end
