@@ -32,7 +32,7 @@ class BackgroundActivity::UnarchiveTaskWorkdir < BackgroundActivity
   validates_dynamic_bac_presence_of_option :task_custom_filter_id
 
   def process(item)
-    cbrain_task = CbrainTask.find(item)
+    cbrain_task = CbrainTask.where(:bourreau_id => CBRAIN::SelfRemoteResourceId).find(item)
     if cbrain_task.archived_status == :userfile # automatically guess which kind of unarchiving to do
       ok = cbrain_task.unarchive_work_directory_from_userfile
     else

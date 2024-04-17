@@ -33,7 +33,7 @@ class BackgroundActivity::TerminateTask < BackgroundActivity
   validates_dynamic_bac_presence_of_option :task_custom_filter_id
 
   def process(item)
-    cbrain_task  = CbrainTask.find(item)
+    cbrain_task  = CbrainTask.where(:bourreau_id => CBRAIN::SelfRemoteResourceId).find(item)
     ok           = cbrain_task.terminate
     return [ true, "Terminated" ] if   ok
     return [ true, "Skipped"    ] if ! ok # yes, we return true anyway
