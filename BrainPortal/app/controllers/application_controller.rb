@@ -47,6 +47,7 @@ class ApplicationController < ActionController::Base
   # These will be executed in order
   before_action :check_for_banned_ip
   before_action :check_account_validity
+  before_action :count_background_activities
   before_action :prepare_messages
   before_action :adjust_system_time_zone
   before_action :adjust_remote_ip_and_host
@@ -296,6 +297,21 @@ class ApplicationController < ActionController::Base
   ########################################################################
   # CBRAIN Messaging System Filters
   ########################################################################
+
+  # Count the number of active BackgroundActivities
+  def count_background_activities #:nodoc:
+    return unless current_user
+    return if     request.format.blank? || request.xhr?
+    return unless request.format.to_sym == :html
+    @count_background_activities_in_progress =
+      BackgroundActivity.where(
+        :status  => 'InProgress',
+        :user_id => current_user.id,
+      ).count
+    @count_tasks_in_progress =
+      CbrainTask.active.where( :user_id => current_user.id ).count
+    true
+  end
 
   # Find new messages and prepare them to be displayed at the top of the page.
   def prepare_messages #:nodoc:

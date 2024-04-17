@@ -1,0 +1,211 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2024
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<div class="menu_bar">
+  <%= show_hide_toggle "About", ".bac_explanations", :class => 'button', :slide_effect => true, :slide_duration => 'fast'  %>
+  <%= link_to "Refresh This List", background_activities_path, :class => "button" %>
+  <%= external_submit_button "Cancel Activities", "bac_form", :class  => "button", :confirm  => "Are you sure you want to cancel the selected background activities?" %>
+  <% if current_user.has_role? :admin_user %>
+    <%= external_submit_button "Suspend Activities", "bac_form", :class  => "button", :confirm  => "Are you sure you want to suspend the selected background activities?" %>
+    <%= external_submit_button "Unsuspend Activities", "bac_form", :class  => "button", :confirm  => "Are you sure you want to reactivate the selected background activities?" %>
+    <%= external_submit_button "Destroy Activities", "bac_form", :class  => "button", :confirm  => "Are you sure you want to destroy the selected background activities?" %>
+    <%= link_to "Create New Scheduled Activity", new_background_activity_path, :class => "button" %>
+  <% end %>
+</div>
+
+<fieldset class="bac_explanations" style="display: none">
+  <legend>About Background Activities</legend>
+  <p class="long_paragraphs">
+  This page shows "background activities" as progress bars. Each
+  activity applies a single operation to a set of things (usually,
+  files or tasks). These activities are often the result of clicking
+  on buttons in other pages, when you get a message that <em>something
+  was started in background</em>. Activities that are in progress
+  are shown with glowing borders. Individual operations within an
+  activity can succeed or fail. Sometimes, the failure is not
+  significant (e.g. trying to compress a file that is already
+  compressed).
+  <p class="long_paragraphs">
+  You can cancel activities, but remember that cancelled activities
+  can never be restarted. You will have to redo whatever operation
+  created the activity.
+  <% if current_user.has_role? :admin_user %>
+  <p class="long_paragraphs">
+  As an admin, you can create maintenance activities that can be
+  scheduled for later. See the accompanying form for more help. You
+  can also suspend activities; these are resumable. You can suspend
+  activities that are in progress, or scheduled in the future.
+  <% end %>
+  <p class="long_paragraphs">
+  The progress bars in this page are <strong>not live</strong>, so
+  you need to click the <em>Refresh</em> button to get an update
+  on the progress of your activities.
+</fieldset>
+
+<%=
+  render(:partial => 'shared/active_filters', :locals  => {
+    :scope => @scope,
+    :model => BackgroundActivity,
+  })
+%>
+
+<%= form_tag({ :controller => :background_activities, :action => :operation }, :method => :post, :id => "bac_form") do %>
+  <%=
+    dynamic_scoped_table(@bacs,
+      :id         => "bac_table",
+      :class      => [ :resource_list ],
+      :scope      => @scope,
+      :order_map  => {
+        :user            => { :a => 'users.login',           :j => User           },
+        :remote_resource => { :a => 'remote_resources.name', :j => RemoteResource },
+      },
+      :filter_map => {
+        :user            => { :a => 'user_id'   },
+        :remote_resource => { :a => 'remote_resource_id'  },
+        :last_updated    => { :a => 'updated_at', :o => '<=' },
+      }
+    ) do |t|
+  %>
+
+    <%
+      # t.paginate
+      t.selectable("bac_ids[]")
+
+      t.row do |bac| {
+        :class => [
+          "bac_id_#{bac.id}",
+          "bac_status_#{bac.status}"
+        ]
+      } end
+    %>
+
+    <%
+      if current_user.has_role? :admin_user
+        t.column("User", :user,
+          :sortable => true,
+          :filters  => filter_values_for(
+            @base_scope, :user_id,
+            label: 'users.login',
+            association: [User, 'id', 'user_id']
+          )
+        ) { |bac| bac.user.try(:login) }
+
+        t.column("Server", :remote_resource,
+          :sortable => true,
+          :filters  => default_filters_for(@base_scope, RemoteResource)
+        ) { |bac| link_to_bourreau_if_accessible(bac.remote_resource) }
+
+        t.column("Status", :status,
+          :sortable => true,
+          :filters  => default_filters_for(@base_scope, :status)
+        ) { |bac| bac.status.underscore.humanize }
+
+      end
+    %>
+
+    <%
+      t.column("Activity Type", :type,
+        :sortable => true,
+        :filters  => scoped_filters_for(
+          @base_scope, @scope, :type,
+          format: lambda do |format_info|
+            value, label, base, view = *format_info
+            {
+              :value     => value,
+              :label     => "#{label.demodulize.underscore.humanize} (of #{base})",
+              :indicator => view,
+              :empty     => view == 0
+            }
+          end
+        )
+      ) do |bac|
+          desc = bac.pretty_description.presence
+          if desc
+             html_tool_tip(bac.pretty_name) { desc }
+          else
+             bac.pretty_name
+          end
+        end
+    %>
+
+    <% if current_user.has_role? :admin_user %>
+
+      <% t.column("Scheduled At", :start_at, :sortable => true) do |bac| %>
+        <% if bac.start_at.present? %>
+          <%= to_localtime(bac.start_at, :datetime) %><br>
+          <% if bac.start_at >= Time.now %>
+            (in <%= pretty_elapsed(bac.start_at.to_i - Time.now.to_i, :num_components => 2) %>)
+          <% else %>
+            <span class="warning">
+              (overdue by <%= pretty_elapsed(Time.now.to_i - bac.start_at.to_i, :num_components => 2) %>)
+            </span>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <% t.column("Repeat", :repeat, :sortable => true) do |bac| %>
+        <%= bac.repeat %>
+      <% end %>
+
+    <% end %>
+
+    <% t.column("Last Updated", :updated_at, :sortable => true) do |bac| %>
+        <%= to_localtime(bac.updated_at, :datetime) %><br>
+        (<%= pretty_elapsed(Time.now.to_i - bac.updated_at.to_i, :num_components => 2) %> ago)
+    <% end %>
+
+    <% t.column("Progress", :header, :sortable => false) do |bac| %>
+      <%
+        ok_fail_class = ""
+        ok_fail_class = "bac_all_ok"   if bac.num_successes  > 0 && bac.num_failures == 0
+        ok_fail_class = "bac_all_fail" if bac.num_successes == 0 && bac.num_failures  > 0
+        ok_fail_class = "bac_mixed"    if bac.num_successes  > 0 && bac.num_failures  > 0
+        messages = bac.uniq_counted_messages
+      %>
+      <progress class="background_activity_progress bac_<%=bac.status%> <%= ok_fail_class %>" id="bac_<%= bac.id %>" value="<%= bac.current_item %>" max="<%= bac.items.size %>"><%= bac.current_item %>/<%= bac.items.size %></progress><br>
+      On <%= bac.remote_resource.name %> |
+      <% is_scheduled = bac.status.to_s =~ /scheduled/i %>
+      <strong><%= bac.status.underscore.humanize %>:</strong>
+      <% if bac.is_configured_for_dynamic_items? %>
+        ITEMS=(Dynamic)
+      <% elsif is_scheduled %>
+        ITEMS=<%= bac.items.size %>
+      <% else %>
+        <%= bac.current_item %>/<%= bac.items.size %> |
+        <%= red_if(bac.num_successes != 0, "OK=#{bac.num_successes}",    nil, :color1 => 'red', :color2 => 'green') %>,
+        <%= red_if(bac.num_failures  == 0, "Failed=#{bac.num_failures}", nil, :color1 => 'red', :color2 => 'black') %>
+      <% end %>
+      <% if current_user.has_role?(:admin_user) && bac.handler_lock.present? %>
+        <span class="warning">ACTIVE=<%= bac.handler_lock %></span>
+      <% end %>
+      <% if messages.present? %>
+        <% messages = messages.map { |m| h(m) }.join("<br>").html_safe %>
+        | <%= html_tool_tip('(Messages)') { messages } %>
+      <% end %>
+    <% end %>
+
+  <% end %>
+
+<% end %>
+

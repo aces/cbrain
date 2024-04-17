@@ -95,6 +95,10 @@ class Userfile < ApplicationRecord
   attr_accessor           :tree_children
   attr_accessor           :rank_order
 
+  # Flag to keep the DP content when erasing the userfile;
+  # this flag is checked by a callback before_destroy()
+  attr_accessor           :keep_dp_content_on_destroy
+
   # Utility named scopes
   scope :name_like,     -> (n) { where("userfiles.name LIKE ?", "%#{n.strip}%") }
 
@@ -1053,7 +1057,7 @@ class Userfile < ApplicationRecord
   # Before destroy callback
   def erase_data_provider_content_and_cache #:nodoc:
     self.cache_erase rescue true
-    self.provider_erase
+    self.provider_erase unless self.keep_dp_content_on_destroy
     true
   end
 

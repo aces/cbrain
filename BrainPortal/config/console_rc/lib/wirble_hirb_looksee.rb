@@ -69,6 +69,9 @@ extend Hirb::Console
                           copies_count      copies_numfiles
                           task_setups_count task_setups_numfiles
                         ),
+  'BackgroundActivity' => %i( id type user_id remote_resource_id
+                              status current_item num_successes num_failures
+                        ),
 
 }.each do |klassname,fields|
   fields = fields.dup

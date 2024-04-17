@@ -62,3 +62,15 @@ Content:
    To cleanup: see the code at the top of "mk_tst_access" to remove the
    users and workgroups.
 
+3- background_activity/[ftr]bac.tst
+
+These three files schedule BackgroundActivity objects ; a bunch of values
+are hardcoded with IDs and names of personal development files and data providers,
+you'll need to adjust these values to make this run. Normally, these files
+are simply "loaded" in the console while a portal runs un background (to get
+a BackgroundActiviutyWorker process running).
+
+  tbac.rb : tests some BACs related to tasks
+  fbac.rb : tests some BACs related to files
+  rbac.rb : tests some BACs related to registration of files on browsable DPs
+

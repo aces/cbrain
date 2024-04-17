@@ -76,7 +76,14 @@
              <%= link_to 'Files', userfiles_path %>
            </li>
            <li <%= set_selected(params[:controller], :tasks) %>>
-             <%= link_to 'Tasks', :controller => :tasks, :action => :index %>
+             <%=
+               label = 'Tasks'; label_class = ""
+               if @count_tasks_in_progress.present? && @count_tasks_in_progress > 0
+                 label += " (#{@count_tasks_in_progress})"
+                 label_class = "active_bac"
+               end
+               link_to label, tasks_path, :class => label_class
+             %>
            </li>
          <% end %>
          <% unless current_user.has_role?(:normal_user) %>
@@ -114,6 +121,20 @@
            </li>
            <li <%= set_selected(params[:controller], :signups) %>>
              <%= link_to 'Signups', signups_path %>
+           </li>
+         <% end %>
+
+         <% # if !current_user.has_role?(:normal_user) || (cbrain_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
+         <% if current_user.has_role?(:admin_user) %>
+           <li <%= set_selected(params[:controller], :background_activities) %>>
+             <%=
+               label = 'Ongoing'; label_class = ""
+               if @count_background_activities_in_progress.present? && @count_background_activities_in_progress > 0
+                 label += " (#{@count_background_activities_in_progress})"
+                 label_class = "active_bac"
+               end
+               link_to label, background_activities_path, :class => label_class
+             %>
            </li>
          <% end %>
 

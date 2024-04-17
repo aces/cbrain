@@ -36,6 +36,13 @@ Rails.application.routes.draw do
   # ResourceUsage
   resources :resource_usage,  :only => [ :index ]
 
+  # BackgroundActivity
+  resources :background_activities,  :only => [ :index, :new, :create ] do
+    collection do
+      post 'operation'
+    end
+  end
+
   # Standard CRUD resources
   resources :sites,           :except => [ :edit ]
   resources :custom_filters,  :except => [ :index ]

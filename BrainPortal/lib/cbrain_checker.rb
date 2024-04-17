@@ -57,9 +57,10 @@ class CbrainChecker
 
 
   # Runs the checks that are in the check_to_run array
-  def self.check(checks_to_run)
+  def self.check(checks_to_run, options={})
 
-    checks = checks_to_run == :all ? self.all : checks_to_run
+    checks  = checks_to_run == :all ? self.all : checks_to_run
+    checks -= options[:except] if options[:except].present?
 
     checks.each do |check|
       begin
