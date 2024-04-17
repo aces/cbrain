@@ -1,0 +1,52 @@
+
+<%-
+  #
+  # NeuroHub Project
+  #
+  # Copyright (C) 2020
+  # The Royal Institution for the Advancement of Learning
+  # McGill University
+  #
+  # This program is free software: you can redistribute it and/or modify
+  # it under the terms of the GNU General Public License as published by
+  # the Free Software Foundation, either version 3 of the License, or
+  # (at your option) any later version.
+  #
+  # This program is distributed in the hope that it will be useful,
+  # but WITHOUT ANY WARRANTY; without even the implied warranty of
+  # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  # GNU General Public License for more details.
+  #
+  # You should have received a copy of the GNU General Public License
+  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  #
+-%>
+
+<% title("License #{@license_id}", '') %>
+
+<div id="nh_portal_license" class="nh_content">
+  <% is_signed = current_user.signed_license_agreements.include?(@license) %>
+  <%- # license - %>
+  <div class="card">
+    <div class="card-section">
+        <div class="nh_form">
+
+          <% if ! is_signed %>
+            <%= form_tag :action => :nh_sign_license, :license => @license %>
+              <%= hidden_field_tag :license, @license %>
+          <% end %>
+
+          <%= render :partial => 'show_license_text', :locals => {is_signed: is_signed} %>
+
+          <% if ! is_signed %>
+              <div class="status error"><%= nh_icon_error %> This license agreement is not yet signed. </div>
+              <div class="btn-section">
+                <%= submit_tag "I agree with the above statement", :name => :agree, :class => "btn-solid primary m-1" %>
+                <%= submit_tag "I do not agree", :name => :not_agree, :class => "btn-text primary bg-primary-wash m-1" %>
+              </div>
+            </form>
+          <% end %>
+        </div>
+    </div>
+  </div>
+</div>

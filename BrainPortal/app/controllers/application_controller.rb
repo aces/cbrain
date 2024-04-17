@@ -121,7 +121,7 @@ class ApplicationController < ActionController::Base
   # or sign license agreements.
   def check_account_validity #:nodoc:
     return false unless current_user
-    return true  if     params[:controller] == "sessions"
+    return true  if     params[:controller] =~ /sessions$/
     return false unless check_mandatory_globus_id_linkage()
     return false unless check_password_reset()
     return false unless check_license_agreements()
@@ -150,7 +150,7 @@ class ApplicationController < ActionController::Base
     return true if params[:controller] == "portal" && params[:action] =~ /license$/
     return true if params[:controller] == "users"  && (params[:action] == "change_password" || params[:action] == "update")
 
-    unsigned_agreements = current_user.unsigned_license_agreements
+    unsigned_agreements = current_user.cbrain_unsigned_license_agreements
     unless unsigned_agreements.empty?
       if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
         respond_to do |format|
