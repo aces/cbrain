@@ -466,6 +466,7 @@ class BackgroundActivity < ApplicationRecord
   # the items list will be filled later, dynamically
   def configure_for_dynamic_items!
     self.items = [ DYNAMIC_TOKEN ]
+    self
   end
 
   def is_configured_for_dynamic_items?

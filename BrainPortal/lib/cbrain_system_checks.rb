@@ -310,27 +310,8 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
       DataProvider.cache_revision_of_last_init(:force)
 
     # Just crud removal needed.
-    else
-
+    elsif BackgroundActivity::WipeOldCache.setup! # schedules a check and cleanup in background
       puts "C> \t- Wiping old files in Data Provider cache (in background)."
-
-      CBRAIN.spawn_with_active_records(User.admin, "CacheCleanup") do
-        wiped = DataProvider.cleanup_leftover_cache_files("Yeah, Do it!", :update_dollar_zero => true) rescue []
-        unless wiped.empty?
-          Rails.logger.info "Wiped #{wiped.size} old files in DP cache."
-          Message.send_message(User.admin,
-            :type          => :system,
-            :header        => "Report of cache crud removal on #{myself.is_a?(BrainPortal) ? "Portal" : "Execution Server"} '#{myself.name}'",
-            :description   => "These relative paths in the local Data Provider cache were\n" +
-                              "removed as there are no longer any userfiles matching them.\n",
-            :variable_text => "#{wiped.size} cache subpaths:\n" + wiped.sort
-                              .each_slice(10).map { |pp| pp.join(" ") }.join("\n"),
-            :critical      => true,
-            :send_email    => false
-          ) rescue true
-        end
-      end
-
     end
   end
 

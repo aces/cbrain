@@ -1294,67 +1294,6 @@ class DataProvider < ApplicationRecord
     @ig_patterns ||= RemoteResource.current_resource.dp_ignore_patterns || []
   end
 
-  # This method removes from the cache all files
-  # and directories that are spurious (that is, do not
-  # correspond to actual userfiles in the DB). Unless
-  # +do_id+ is true, no files are actually erased.
-  # Always returns an array of strings for the subpaths that
-  # are/were superfluous, each like "01/23/45".
-  # This whole process can take some time, and is mostly used
-  # only once, at boot time.
-  def self.cleanup_leftover_cache_files(do_it=false, options={})
-    rr_id = RemoteResource.current_resource.id
-    Dir.chdir(self.cache_rootdir) do
-      dirlist = []
-
-      # The find command below has been tested on Linux and Mac OS X
-      # It MUST generate exactly three levels deep so it can properly
-      # infer the original file ID !
-      IO.popen("find . -mindepth 3 -maxdepth 3 -type d -print","r") { |fh| dirlist = fh.readlines rescue [] }
-      uids2path = {} # this is the main list of what to delete (preliminary)
-      dirlist.each do |path|  # path should be  "./01/23/45\n"
-        next unless path =~ /\A\.\/(\d+)\/(\d+)\/(\d+)\s*\z/ # make sure
-        idstring = Regexp.last_match[1..3].join("")
-        uids2path[idstring.to_i] = path.strip.sub(/\A\.\//,"") #  12345 => "01/23/45"
-      end
-
-      # Might as well clean spurious SyncStatus entries too.
-      # These are the ones that say something's in the cache,
-      # yet we couldn't find any files on disk.
-      supposedly_in_cache      = SyncStatus.where( :remote_resource_id => rr_id, :status => [ 'InSync', 'CacheNewer' ] )
-      supposedly_in_cache_uids = supposedly_in_cache.raw_first_column(:userfile_id)
-      not_in_cache_uids        = supposedly_in_cache_uids - uids2path.keys
-      supposedly_in_cache.where( :userfile_id => not_in_cache_uids ).destroy_all
-
-      return [] if uids2path.empty?
-
-      # We wipe from the cache some dirs for which no
-      # userfile exists, or dirs for which the userfile exist
-      # but has no known synchronization status.
-      all_uids        = Userfile.where({}).raw_first_column(:id)
-      all_synced_uids = SyncStatus.where( :remote_resource_id => rr_id ).raw_first_column(:userfile_id)
-      keep_cache_uids = all_uids & all_synced_uids & uids2path.keys
-      keep_cache_uids.each { |id| uids2path.delete(id) } # prune the list: leave only the paths to delete!
-
-      return [] if uids2path.empty?
-
-      # Erase entries on disk!
-      if do_it
-        maybe_spurious_parents={}
-        uids2path.keys.sort.each_with_index do |id,i|  # 12345
-          path = uids2path[id]                         # "01/23/45"
-          Process.setproctitle "Cache Spurious PATH=#{path} #{i+1}/#{uids2path.size}" if options[:update_dollar_zero]
-          system("chmod","-R","u+rwX",path)   # uppercase X affects only directories
-          FileUtils.remove_entry(path, true) rescue true
-          maybe_spurious_parents[path.sub(/\/\d+\z/,"")]      = 1  # "01/23"
-          maybe_spurious_parents[path.sub(/\/\d+\/\d+\z/,"")] = 1  # "01"
-        end
-        maybe_spurious_parents.keys.sort { |a,b| b <=> a }.each { |parent| Dir.rmdir(parent) rescue true }
-      end
-      return uids2path.values
-    end
-  end
-
 
 
   #################################################################
