@@ -93,6 +93,17 @@
     <div class="noc_count" style="color: <%= num_excep_color %>"><%= @num_exceptions %></div>
   </div>
   <% end %>
+
+  <% if @num_bacs_progress + @num_bacs_completed + @num_bacs_failed + @num_bacs_partial > 0 %>
+  <div class="noc_panel">
+    <div class="noc_header">Background Activities</div><br>
+    <div class="noc_count">
+      <% # Note: that very long line is to make sure no spaces are inserted anywhere within the div %>
+      <%= (@num_bacs_progress > 0).presence && html_colorize(@num_bacs_progress,'blue') %><%= (@num_bacs_completed > 0 && @num_bacs_progress > 0).presence && '/' %><%= (@num_bacs_completed > 0).presence && html_colorize(@num_bacs_completed,'green') %><%= (@num_bacs_partial > 0 && (@num_bacs_progress+@num_bacs_completed > 0)).presence && '/' %><%= (@num_bacs_partial > 0).presence && html_colorize(@num_bacs_partial,'yellow') %><%= (@num_bacs_failed > 0 && (@num_bacs_progress+@num_bacs_completed+@num_bacs_partial > 0)).presence && '/' %><%= (@num_bacs_failed > 0).presence && html_colorize(@num_bacs_failed,'red') %>
+    </div>
+  </div>
+  <% end %>
+
 </div>
 
 

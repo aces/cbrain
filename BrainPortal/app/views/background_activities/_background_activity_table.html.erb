@@ -197,7 +197,7 @@
         <%= red_if(bac.num_failures  == 0, "Failed=#{bac.num_failures}", nil, :color1 => 'red', :color2 => 'black') %>
       <% end %>
       <% if current_user.has_role?(:admin_user) && bac.handler_lock.present? %>
-        <span class="warning">ACTIVE=<%= bac.handler_lock %></span>
+        | <span class="warning">LOCK=<%= bac.handler_lock %></span>
       <% end %>
       <% if messages.present? %>
         <% messages = messages.map { |m| h(m) }.join("<br>").html_safe %>

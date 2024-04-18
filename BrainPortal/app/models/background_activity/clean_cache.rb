@@ -57,10 +57,16 @@ class BackgroundActivity::CleanCache < BackgroundActivity
 
   def prepare_dynamic_items
     days_older       = self.options[:days_older] || DEFAULT_DAYS_OLD
-    with_user_ids    = self.options[:with_user_ids]
-    without_user_ids = self.options[:without_user_ids]
-    with_types       = self.options[:with_types]
-    without_types    = self.options[:without_types]
+    with_user_ids    = self.options[:with_user_ids]    || []
+    without_user_ids = self.options[:without_user_ids] || []
+    with_types       = self.options[:with_types]       || []
+    without_types    = self.options[:without_types]    || []
+
+    # Don't touch files belonging to users that have active CBRAIN tasks
+    act_tasks_user_ids = CbrainTask.active
+      .where(:bourreau_id => CBRAIN::SelfRemoteResourceId)
+      .group(:user_id).pluck(:user_id)
+    without_user_ids += act_tasks_user_ids
 
     # Base scopes: files cached locally and having been access longer that days_older
     scope = Userfile.all.joins(:sync_status)

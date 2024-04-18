@@ -309,6 +309,17 @@ class NocController < ApplicationController
     # Number of exceptions
     @num_exceptions = ExceptionLog.where([ "created_at > ?", since_when ]).count
     @num_exceptions = rand(fake) if fake
+
+    # Number of BackgroundActivities (non scheduled) updated
+    bacs = BackgroundActivity
+      .where(:status => [ 'InProgress', 'Completed', 'Failed', 'PartiallyCompleted' ])
+      .where([ "updated_at > ?", since_when ])
+      .group(:status).count
+    @num_bacs_progress  = bacs['InProgress']         || 0  # in blue
+    @num_bacs_completed = bacs['Completed']          || 0  # in green
+    @num_bacs_partial   = bacs['PartiallyCompleted'] || 0  # in yellow
+    @num_bacs_failed    = bacs['Failed']             || 0  # in red
+
   end
 
   # Show IP address
