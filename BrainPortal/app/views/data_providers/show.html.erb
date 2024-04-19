@@ -225,8 +225,10 @@
     <%= show_table(@provider, :as => :data_provider, :width => 5, :header => 'Files can be copied or moved to these other Data Providers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
       <% if dps_by_category[:official] %>
 
-
-        <% t.boolean_edit_cell("Toggle all", 0, :header => "All", :class => 'checkbox_label') do %>
+        <% t.row(:class => 'subheader') do %>
+          <strong>Mass controls </strong>
+        <% end %>
+        <% t.boolean_edit_cell("Unsaved toggle", "", "", "", :header => "Toggle all", :class => 'checkbox_label') do %>
           <%#= select_all_checkbox("dp_box", :persistant_name => meta_key, :id => :existing_select_all) %>
           <%= select_all_checkbox("dp_box", :id => :existing_select_all) %>
         <% end %>
