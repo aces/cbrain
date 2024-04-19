@@ -400,6 +400,30 @@ DataUsage #%d
   end
 end
 
+class BackgroundActivity
+  def pretview
+    report = <<-VIEW
+%s #%d (%s)
+  Owner:    %d (%s)
+  Resource: %d (%s)
+  NumItems: %d
+  NumOK:    %d
+  NumBAD:   %d
+  Updated:  %s
+  StartAt:  %s
+  Repeat:   %s
+    VIEW
+    sprintf report,
+      self.class.to_s.demodulize, self.id, self.status,
+      self.user_id, self.user.login,
+      self.remote_resource_id, self.remote_resource.name,
+      self.items.size,
+      self.num_successes, self.num_failures,
+      ConsoleCtx.send(:pretty_past_date,updated_at),
+      self.start_at.presence || '(None)',
+      self.repeat
+  end
+end
 
 
 (CbrainConsoleFeatures ||= []) << <<FEATURES

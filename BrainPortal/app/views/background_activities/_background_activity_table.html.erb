@@ -31,6 +31,12 @@
     <%= external_submit_button "Unsuspend Activities", "bac_form", :class  => "button", :confirm  => "Are you sure you want to reactivate the selected background activities?" %>
     <%= external_submit_button "Destroy Activities", "bac_form", :class  => "button", :confirm  => "Are you sure you want to destroy the selected background activities?" %>
     <%= link_to "Create New Scheduled Activity", new_background_activity_path, :class => "button" %>
+    <%= scope_filter_link("Hide Scheduled", "background_activities#index", :replace,
+          [ { :a => :status, :o => 'in', :v => %w( InProgress Completed PartiallyCompleted Failed InternalError Cancelled Suspended ) } ],
+          :url => { :controller => :background_activities, :action => :index },
+          :link => { :class => "button" }
+        )
+    %>
   <% end %>
 </div>
 
@@ -182,19 +188,24 @@
         ok_fail_class = "bac_all_fail" if bac.num_successes == 0 && bac.num_failures  > 0
         ok_fail_class = "bac_mixed"    if bac.num_successes  > 0 && bac.num_failures  > 0
         messages = bac.uniq_counted_messages
+        is_scheduled = bac.status.to_s =~ /scheduled/i
       %>
-      <progress class="background_activity_progress bac_<%=bac.status%> <%= ok_fail_class %>" id="bac_<%= bac.id %>" value="<%= bac.current_item %>" max="<%= bac.items.size %>"><%= bac.current_item %>/<%= bac.items.size %></progress><br>
-      On <%= bac.remote_resource.name %> |
-      <% is_scheduled = bac.status.to_s =~ /scheduled/i %>
-      <strong><%= bac.status.underscore.humanize %>:</strong>
+      <% if ! is_scheduled %>
+        <progress class="background_activity_progress bac_<%=bac.status%> <%= ok_fail_class %>" id="bac_<%= bac.id %>" value="<%= bac.current_item %>" max="<%= bac.items.size %>"><%= bac.current_item %>/<%= bac.items.size %></progress><br>
+      <% end %>
+      <strong><%= bac.status.underscore.humanize %></strong>
+      on <%= bac.remote_resource.name %> |
       <% if bac.is_configured_for_dynamic_items? %>
-        ITEMS=(Dynamic)
+        (Dynamic items list)
       <% elsif is_scheduled %>
-        ITEMS=<%= bac.items.size %>
+        (<%= bac.items.size %> items)
       <% else %>
-        <%= bac.current_item %>/<%= bac.items.size %> |
-        <%= red_if(bac.num_successes != 0, "OK=#{bac.num_successes}",    nil, :color1 => 'red', :color2 => 'green') %>,
-        <%= red_if(bac.num_failures  == 0, "Failed=#{bac.num_failures}", nil, :color1 => 'red', :color2 => 'black') %>
+        <%= bac.current_item %>/<%= bac.items.size %>
+        <% if bac.status != 'Completed' && (bac.num_successes > 0 || bac.num_failures > 0) %>
+          |
+          <%= red_if(bac.num_successes != 0, "OK=#{bac.num_successes}",    nil, :color1 => 'red', :color2 => 'green') %>,
+          <%= red_if(bac.num_failures  == 0, "Failed=#{bac.num_failures}", nil, :color1 => 'red', :color2 => 'black') %>
+        <% end %>
       <% end %>
       <% if current_user.has_role?(:admin_user) && bac.handler_lock.present? %>
         | <span class="warning">LOCK=<%= bac.handler_lock %></span>
