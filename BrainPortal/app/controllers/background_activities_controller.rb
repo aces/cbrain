@@ -102,6 +102,7 @@ class BackgroundActivitiesController < ApplicationController
     op      = :suspend!   if params[:commit] =~ /\bsuspend/i
     op      = :unsuspend! if params[:commit] =~ /unsuspend/i
     op      = :destroy    if params[:commit] =~ /destroy/i
+    op      = :activate!  if params[:commit] =~ /activate/i
     bac_ids = Array(params[:bac_ids])
     bacs = BackgroundActivity.where(:id => bac_ids)
     bacs = bacs.where(:user_id => current_user.id) if ! current_user.has_role? :admin_user

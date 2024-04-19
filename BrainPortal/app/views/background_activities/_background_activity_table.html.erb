@@ -30,6 +30,7 @@
     <%= external_submit_button "Suspend Activities", "bac_form", :class  => "button", :confirm  => "Are you sure you want to suspend the selected background activities?" %>
     <%= external_submit_button "Unsuspend Activities", "bac_form", :class  => "button", :confirm  => "Are you sure you want to reactivate the selected background activities?" %>
     <%= external_submit_button "Destroy Activities", "bac_form", :class  => "button", :confirm  => "Are you sure you want to destroy the selected background activities?" %>
+    <%= external_submit_button "Activate Now!", "bac_form", :class  => "button", :confirm  => "Are you sure you want to activate the selected background activities?" %>
     <%= link_to "Create New Scheduled Activity", new_background_activity_path, :class => "button" %>
     <%= scope_filter_link("Hide Scheduled", "background_activities#index", :replace,
           [ { :a => :status, :o => 'in', :v => %w( InProgress Completed PartiallyCompleted Failed InternalError Cancelled Suspended ) } ],

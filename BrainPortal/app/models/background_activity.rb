@@ -358,8 +358,8 @@ class BackgroundActivity < ApplicationRecord
 
   # Note: does not lock first
   def process_next_items_for_duration(time)
-    start_at = Time.now
-    while (Time.now - start_at) < time
+    start = Time.now
+    while (Time.now - start) < time
       break if ! self.process_next_item # returns nil if items all processed or status not InProgress
     end
   end
@@ -391,12 +391,24 @@ class BackgroundActivity < ApplicationRecord
     end
   end
 
+  # If the current object is a scheduled one,
+  # will lock it and invoke schedule_dup().
+  def activate!
+    return nil unless self.status == 'Scheduled' || self.status == 'SuspendedScheduled'
+    return nil unless self.get_lock
+    newbac = self.schedule_dup
+    self.remove_lock
+    newbac
+  end
+
   # Given an object in Scheduled state, will duplicate
   # it, and prepare the dup for immediate execution.
   # If the object is invalid (cannot be saved), then
   # it is discarded with no warnings.
+  #
+  # Returns the new object, or nil if no new object was created.
   def schedule_dup
-    return nil unless self.status == 'Scheduled'
+    return nil unless self.status == 'Scheduled' || self.status == 'SuspendedScheduled'
     newbac              = self.dup
     newbac.status       = 'InProgress'
     newbac.handler_lock = nil
@@ -404,6 +416,7 @@ class BackgroundActivity < ApplicationRecord
     newbac.repeat       = nil
     newbac.prepare_dynamic_items
     newbac.save if ! newbac.is_configured_for_dynamic_items?
+    newbac.id.present? ? newbac : nil
   end
 
   # Parses the string in the repeat attribute and reschedule
