@@ -22,6 +22,8 @@
 #
 -%>
 
+<script src="show.js"></script>
+
 <% title 'Data Provider Info' %>
 
 <% has_owner_access = (check_role(:admin_user) || @provider.user_id == current_user.id) %>
@@ -229,13 +231,15 @@
           <strong>Mass controls </strong>
         <% end %>
         <% t.boolean_edit_cell("Unsaved toggle", "", "", "", :header => "Toggle all", :class => 'checkbox_label') do %>
-          <%#= select_all_checkbox("dp_box", :persistant_name => meta_key, :id => :existing_select_all) %>
-          <%= select_all_checkbox("dp_box", :id => :existing_select_all) %>
+          <%#= select_all_checkbox("dp_box", :persistant_name => meta_key, :id => :dp_select_all) %>
+          <%= select_all_checkbox("dp_box", :id => :dp_select_all) %>
         <% end %>
-        <% meta_key = "dp_no_copy_new" %>
-        <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "disabled",  :header => "Default to", :class => 'checkbox_label')  %>
+        <% default_key = "dp_no_copy_default" %>
+        <!-- copy to new dataproviders allowed by default   -->
+        <% default_value = @provider.meta[default_key] || "copy" %>
+        <% t.boolean_edit_cell("meta[#{default_key}]", default_value, "copy", "disabled",  :header => "Default to", :class => 'checkbox_label')  %>
         <% t.cell("on all future providers",  :no_header => "explanations")do %>
-          &nbsp (on all the future providers)
+          &nbsp on all new (in italic) and the future providers
         <% end %>
         <% t.blank_row %>
         <% t.row(:class => 'subheader') do %>
@@ -244,7 +248,14 @@
 
         <% dps_by_category[:official].sort_by(&:name).each do |dp| %>
           <% meta_key = "dp_no_copy_#{dp.id}" %>
-          <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "disabled", :header => "#{dp.name}", :class => 'checkbox_label', :input_options => { class: "dp_box" } ) %>
+          <% meta_value = @provider.meta[meta_key] %>
+          <% if meta_value.present? %>
+            <% t.boolean_edit_cell("meta[#{meta_key}]", meta_value, "copy", "disabled", :header => "#{dp.name}", :class => 'checkbox_label', :input_options => { class: "dp_box" } )  %>
+          <% else %>
+            <%# for not yet blacklisted/whitelisted, italic header %>
+            <%# javascript to set checkbox to indeterminate state %>
+            <% t.boolean_edit_cell("meta[#{meta_key}]", default_value, "copy", "disable", :header => "<em>#{dp.name}</em>".html_safe, :class => 'checkbox_label', :input_options => { class: "dp_box indeterminate" } )  %>
+          <% end %>
         <% end%>
 
       <% end%>
@@ -255,7 +266,14 @@
         <% t.row(:class => 'subheader') { "<strong>User or Site Storage</strong>".html_safe } %>
         <% dps_by_category[:user].sort_by(&:name).each do |dp| %>
           <% meta_key = "dp_no_copy_#{dp.id}" %>
-          <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "disabled", :header => "#{dp.name}", :class => 'checkbox_label', :input_options => { class: "dp_box" }) %>
+          <% meta_value = @provider.meta[meta_key] %>
+          <% if meta_value.present? %>
+            <% t.boolean_edit_cell("meta[#{meta_key}]", meta_value, "copy", "disabled", :header => "#{dp.name}", :class => 'checkbox_label', :input_options => { class: "dp_box" } )  %>
+          <% else %>
+            <%# for not yet blacklisted/whitelisted, italic header %>
+            <%# javascript will set checkbox to indeterminate state %>
+            <% t.boolean_edit_cell("meta[#{meta_key}]", default_value, "copy", "disable", :header => "<em>#{dp.name}</em>".html_safe, :class => 'checkbox_label', :input_options => { class: "dp_box indeterminate" } )  %>
+          <% end %>
         <% end%>
       <% end%>
     <% end%>
@@ -307,5 +325,9 @@
   <p>
 
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @provider.getlog, :title => "Data Provider Log" } %>
+<% end %>
+
+<% content_for :scripts do %>
+  <%= javascript_include_tag 'cbrain/data_providers/tribox' %>
 <% end %>
 

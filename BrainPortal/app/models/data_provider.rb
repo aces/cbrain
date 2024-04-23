@@ -817,7 +817,7 @@ class DataProvider < ApplicationRecord
     # Define the conditions to select records
     conditions = {
       ar_table_name: 'data_providers',
-      meta_key:      'dp_no_copy_new',
+      meta_key:      'dp_no_copy_default',
       meta_value:    'disabled'
     }
 
@@ -1407,11 +1407,20 @@ class DataProvider < ApplicationRecord
 
   # Returns true if the DataProvider is allowed to copy or move files to the
   # other DataProvider +other_dp+ .
-  # The information for this restriction is maintained
-  # as a blacklist in the meta data store.
+  # The information for this restriction is maintained by default value
+  # along with a white- and blacklist, whitelist in the meta data store.
   def dp_allows_copy?(other_dp)
-    meta_key_disabled = "dp_no_copy_#{other_dp.id}"
-    self.meta[meta_key_disabled].blank?
+    meta_key = "dp_no_copy_#{other_dp.id}"
+    # if there is no explicit flag for particular provider
+    # fall back on the default policy
+    default  = self.meta["dp_no_copy_default"]
+    return ( self.meta[meta_key].presence || default ) != "disabled"
+    # hacky equivalent of
+    # return true if self.meta[meta_key] == 'copy'  # yes if whitelisted
+    # self.meta[meta_key].blank? && default != "disabled"  # otherwise by dafault
+
+
+
   end
 
   # Works like dp_allows_copy? but raises an exception if the
