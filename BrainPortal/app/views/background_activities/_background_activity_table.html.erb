@@ -116,7 +116,7 @@
             label: 'users.login',
             association: [User, 'id', 'user_id']
           )
-        ) { |bac| bac.user.try(:login) }
+        ) { |bac| link_to_user_if_accessible(bac.user) }
 
         t.column("Server", :remote_resource,
           :sortable => true,

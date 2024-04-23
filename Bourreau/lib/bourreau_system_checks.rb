@@ -213,44 +213,10 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     return unless Dir.exists?(gridshare_dir)
 
     #-----------------------------------------------------------------------------
-    puts "C> Making sure work directories for local tasks exist..."
+    puts "C> Making sure work directories for local tasks exist (in background)"
     #-----------------------------------------------------------------------------
 
-    local_tasks_with_workdirs = CbrainTask.real_tasks.wd_present.not_shared_wd.where(
-      :bourreau_id  => myself.id,
-      #[ "updated_at < ?", 3.hours.ago ], # just to be safe...
-    )
-
-    num_to_check = local_tasks_with_workdirs.count
-    return if num_to_check == 0
-    puts "C> \t- #{num_to_check} tasks to check (in background)..."
-
-    CBRAIN.spawn_with_active_records(User.admin, "TaskWorkdirCheck") do
-      bad_tasks = []
-      local_tasks_with_workdirs.all.each do |task|
-        full = task.full_cluster_workdir({}, { :cms_shared_dir => gridshare_dir })
-        next if Dir.exists?(full)
-        bad_tasks << task.tname_tid
-        task.cluster_workdir      = nil
-        task.cluster_workdir_size = nil
-        task.workdir_archived     = false if task.workdir_archive_userfile_id.blank?
-        task.save
-      end
-
-      if bad_tasks.size > 0
-        Rails.logger.info "Adjusted #{bad_tasks.size} tasks with missing work directories."
-        Message.send_message(User.admin,
-          :type          => :system,
-          :header        => "Report of task workdir disappearances on '#{myself.name}'",
-          :description   => "Some work directories of tasks have disappeared.",
-          :variable_text => "Number of tasks: #{bad_tasks.size}\n" +
-                            "List of tasks:\n" + bad_tasks.sort
-                            .each_slice(8).map { |tids| tids.join(" ") }.join("\n"),
-          :critical      => true,
-          :send_email    => false
-        ) rescue true
-      end
-    end
+    BackgroundActivity::CheckMissingWorkdir.setup!
 
   end
 
@@ -378,28 +344,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     end
 
     puts "C> \t- Refreshing sizes for #{how_many} tasks (in background)..."
-
-    CBRAIN.spawn_with_active_records(User.admin, "TaskSizes") do
-      totsize = 0
-      totnils = 0
-      local_tasks_not_sized.all.each do |task|
-        size     = task.send(:update_size_of_cluster_workdir) rescue nil # it's a protected method
-        totsize += size if size
-        totnils += 1    if size.nil?
-      end
-      Rails.logger.info "Adjusted #{local_tasks_not_sized.size} tasks, #{totsize} bytes, #{totnils} skipped."
-      Message.send_message(User.admin,
-        :type          => :system,
-        :header        => "Report of task sizes refresh on '#{myself.name}'",
-        :description   => "The disk space used by some tasks needed to be recomputed.",
-        :variable_text => "Report:\n" +
-                          "Number of tasks: #{local_tasks_not_sized.size}\n" +
-                          "Total size     : #{totsize} bytes\n" +
-                          "Tasks skipped  : #{totnils} tasks",
-        :critical      => true,
-        :send_email    => false
-      ) rescue true
-    end
+    BackgroundActivity::UpdateTaskWorkdirSize.setup!( local_tasks_not_sized.pluck(:id) )
 
   end
 
