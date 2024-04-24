@@ -448,10 +448,18 @@ class UserfilesController < ApplicationController
 
     # Sync files to the portal's cache
     CBRAIN.spawn_with_active_records(current_user, "Synchronization of #{@userfiles.size} files.") do
+      reset_dpids = {} # to track reset_connection() to DPs
       @userfiles.shuffle.each do |userfile|
         state = userfile.local_sync_status
         sync_status = 'ProvNewer'
         sync_status = state.status if state
+
+        # Issue one reset_connection() per DP ID seen
+        # Needed mostly for S3 DPs
+        if ! reset_dpids[userfile.data_provider_id]
+          userfile.data_provider.reset_connection if userfile.data_provider.respond_to?(:reset_connection)
+          reset_dpids[userfile.data_provider_id] = true
+        end
 
         if sync_status !~ /^To|InSync|Corrupted/
           if (userfile.sync_to_cache rescue nil)
