@@ -1,28 +1,26 @@
 //
-// <%-
-// #
-// # CBRAIN Project
-// #
-// # Copyright (C) 2008-2012
-// # The Royal Institution for the Advancement of Learning
-// # McGill University
-// #
-// # This program is free software: you can redistribute it and/or modify
-// # it under the terms of the GNU General Public License as published by
-// # the Free Software Foundation, either version 3 of the License, or
-// # (at your option) any later version.
-// #
-// # This program is distributed in the hope that it will be useful,
-// # but WITHOUT ANY WARRANTY; without even the implied warranty of
-// # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// # GNU General Public License for more details.
-// #
-// # You should have received a copy of the GNU General Public License
-// # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-// #
-// -%>
+//  CBRAIN Project
+//
+//  Copyright (C) 2008-2012
+//  The Royal Institution for the Advancement of Learning
+//  McGill University
+//
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//
 
-// JS to add indetermitate state to certanain checkboxes
+// JS to add indetermitate state to checkboxes with indeterninate style
 
 // indeterminate state on can be set with JS
 // all elements with empty value are set as indeterminate
@@ -31,9 +29,10 @@ jQuery(".show_table_edit_link").on("click",
         $(".dp_box.indeterminate").each(
             function () {
                 $(this).prop("indeterminate", true);
+                $(this).val("");
                 let prev = $(this).prev();
                 let val = prev.val();
-                if ( val != '' ) {
+                if ( val != "" ) {
                     prev.val("");
                 }
             }

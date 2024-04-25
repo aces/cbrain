@@ -22,7 +22,6 @@
 #
 -%>
 
-<script src="show.js"></script>
 
 <% title 'Data Provider Info' %>
 
@@ -230,7 +229,7 @@
         <% t.row(:class => 'subheader') do %>
           <strong>Mass controls </strong>
         <% end %>
-        <% t.boolean_edit_cell("Unsaved toggle", "", "", "", :header => "Toggle all", :class => 'checkbox_label') do %>
+        <% t.boolean_edit_cell("Unsaved toggle", "", "", "", :header => "Reset old to", :class => 'checkbox_label') do %>
           <%#= select_all_checkbox("dp_box", :persistant_name => meta_key, :id => :dp_select_all) %>
           <%= select_all_checkbox("dp_box", :id => :dp_select_all) %>
         <% end %>
@@ -238,8 +237,8 @@
         <!-- copy to new dataproviders allowed by default   -->
         <% default_value = @provider.meta[default_key] || "copy" %>
         <% t.boolean_edit_cell("meta[#{default_key}]", default_value, "copy", "disabled",  :header => "Default to", :class => 'checkbox_label')  %>
-        <% t.cell("on all future providers",  :no_header => "explanations")do %>
-          &nbsp on all new (in italic) and the future providers
+        <% t.cell("on all future providers",  :no_header => "explanations", :class => "indefinite_checkbox_label") do %>
+          &nbsp on all new (in <em> italic </em>) and the future providers
         <% end %>
         <% t.blank_row %>
         <% t.row(:class => 'subheader') do %>
@@ -253,8 +252,8 @@
             <% t.boolean_edit_cell("meta[#{meta_key}]", meta_value, "copy", "disabled", :header => "#{dp.name}", :class => 'checkbox_label', :input_options => { class: "dp_box" } )  %>
           <% else %>
             <%# for not yet blacklisted/whitelisted, italic header %>
-            <%# javascript to set checkbox to indeterminate state %>
-            <% t.boolean_edit_cell("meta[#{meta_key}]", default_value, "copy", "disable", :header => "<em>#{dp.name}</em>".html_safe, :class => 'checkbox_label', :input_options => { class: "dp_box indeterminate" } )  %>
+            <%# javascript will set checkbox's indeterminate state attribute %>
+            <% t.boolean_edit_cell("meta[#{meta_key}]", default_value, "copy", "disable", :header => "<em>#{dp.name}</em>".html_safe, :class => 'checkbox_label  indefinite_checkbox_label', :input_options => { class: "dp_box indeterminate" } )  %>
           <% end %>
         <% end%>
 
@@ -272,7 +271,7 @@
           <% else %>
             <%# for not yet blacklisted/whitelisted, italic header %>
             <%# javascript will set checkbox to indeterminate state %>
-            <% t.boolean_edit_cell("meta[#{meta_key}]", default_value, "copy", "disable", :header => "<em>#{dp.name}</em>".html_safe, :class => 'checkbox_label', :input_options => { class: "dp_box indeterminate" } )  %>
+            <% t.boolean_edit_cell("meta[#{meta_key}]", default_value, "copy", "disable", :header => "<em>#{dp.name}</em>".html_safe, :class => 'checkbox_label indefinite_checkbox_label', :input_options => { class: "dp_box indeterminate" } )  %>
           <% end %>
         <% end%>
       <% end%>
