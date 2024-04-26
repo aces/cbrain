@@ -253,7 +253,7 @@
           <% else %>
             <%# for not yet blacklisted/whitelisted, italic header %>
             <%# javascript will set checkbox's indeterminate state attribute %>
-            <% t.boolean_edit_cell("meta[#{meta_key}]", default_value, "copy", "disable", :header => "<em>#{dp.name}</em>".html_safe, :class => 'checkbox_label  indefinite_checkbox_label', :input_options => { class: "dp_box indeterminate" } )  %>
+            <% t.boolean_edit_cell("meta[#{meta_key}]", default_value, "copy", "disabled", :header => "<em>#{dp.name}</em>".html_safe, :class => 'checkbox_label  indefinite_checkbox_label', :input_options => { class: "dp_box indeterminate" } )  %>
           <% end %>
         <% end%>
 
@@ -271,7 +271,7 @@
           <% else %>
             <%# for not yet blacklisted/whitelisted, italic header %>
             <%# javascript will set checkbox to indeterminate state %>
-            <% t.boolean_edit_cell("meta[#{meta_key}]", default_value, "copy", "disable", :header => "<em>#{dp.name}</em>".html_safe, :class => 'checkbox_label indefinite_checkbox_label', :input_options => { class: "dp_box indeterminate" } )  %>
+            <% t.boolean_edit_cell("meta[#{meta_key}]", default_value, "copy", "disabled", :header => "<em>#{dp.name}</em>".html_safe, :class => 'checkbox_label indefinite_checkbox_label', :input_options => { class: "dp_box indeterminate" } )  %>
           <% end %>
         <% end%>
       <% end%>

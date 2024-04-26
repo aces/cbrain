@@ -24,35 +24,35 @@
 
 // indeterminate state on can be set with JS
 // all elements with empty value are set as indeterminate
-jQuery(".show_table_edit_link").on("click",
-    function() {
+$(".show_table_edit_link").click(
+    function () {
         $(".dp_box.indeterminate").each(
             function () {
                 $(this).prop("indeterminate", true);
                 $(this).val("");
                 let prev = $(this).prev();
                 let val = prev.val();
-                if ( val != "" ) {
+                if (val == "disabled") {
                     prev.val("");
                 }
             }
-        );
+        )
+    }
+    );
+
+
         $(".dp_box.indeterminate").click(
             function () {
                 $(this).val('copy');
                 let prev = $(this).prev();
-                prev.val("disable");                            }
+                prev.val("disable");
+            }
         )
 
 
-
-
-    }
-);
-
 // make indeterminate elements determinate again
-jQuery(".show_table").on("click code-change", ".dp_box.indeterminate", function() {
-    $(this).each(function() {
+jQuery(".show_table").on("click code-change", ".dp_box.indeterminate", function () {
+    $(this).each(function () {
         // $(this).prop("indeterminate", false); // usually happens automatically
         $(this).val('copy')
         // change value of hidden element back to disabled
