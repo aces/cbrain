@@ -139,7 +139,9 @@ class S3FlatDataProvider < DataProvider
   def impl_provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
 
     prefix = Pathname.new(provider_full_path(userfile))
-    if directory == :all
+    if userfile.is_a?(SingleFile)
+      s3method = :list_single_object
+    elsif directory == :all
       s3method = :list_objects_recursive
     else
       s3method = :list_objects_one_level

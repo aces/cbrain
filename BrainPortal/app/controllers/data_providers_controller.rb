@@ -496,6 +496,7 @@ class DataProvidersController < ApplicationController
       current_user,
       "Register files DP=#{@provider.id}"
     ) do
+      @provider.reset_connection if @provider.respond_to?(:reset_connection)
       userfiles.keys.shuffle.each_with_index_and_size do |basename,idx,size|
         Process.setproctitle "Register DP=#{@provider.id} NAME=#{basename} #{idx+1}/#{size}"
         begin
