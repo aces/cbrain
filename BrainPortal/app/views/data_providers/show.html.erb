@@ -248,7 +248,7 @@
         <% default_value = @provider.meta[default_key] || "allowed" %>
         <% t.boolean_edit_cell("meta[#{default_key}]", default_value, "allowed", "disabled",  :header => "Default to", :class => 'checkbox_label')  %>
         <% t.cell("on all future providers",  :no_header => "explanations", :class => "indeterminate_box_label") do %>
-          &nbsp on all new (in <em> italic </em>) and the future providers
+          &nbsp on new and future providers
         <% end %>
         <% t.blank_row %>
         <% t.row(:class => 'subheader') do %>
@@ -291,12 +291,12 @@
         <%#= select_all_checkbox("rr_box", :persistant_name => meta_key, :id => :rr_select_all) %>
         <%= select_all_checkbox("rr_box", :id => :rr_select_all) %>
       <% end %>
-      <% default_key = "rr_no_copy_default" %>
+      <% default_key = "rr_no_sync_default" %>
       <!-- sycn to new Remote Resources allowed by default   -->
       <% default_value = @provider.meta[default_key] || "allowed" %>
       <% t.boolean_edit_cell("meta[#{default_key}]", default_value, "allowed", "disabled",  :header => "Default to", :class => 'checkbox_label')  %>
       <% t.cell("on all future servers",  :no_header => "explanations", :class => "indeterminate_box_label") do %>
-        &nbsp on all new (in <em> italic </em>) and the future servers
+        &nbsp on new and future servers
       <% end %>
       <% t.blank_row %>
 
