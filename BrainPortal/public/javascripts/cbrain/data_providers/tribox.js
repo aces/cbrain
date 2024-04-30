@@ -26,7 +26,7 @@
 // all elements with empty value are set as indeterminate
 $(".show_table_edit_link").click(
     function () {
-        $(".dp_box.indeterminate").each(
+        $(".indeterminate").each(
             function () {
                 $(this).prop("indeterminate", true);
                 $(this).val("");
