@@ -642,6 +642,24 @@ class Userfile < ApplicationRecord
     self.data_provider.online?
   end
 
+  # This method is basically a destroy() with all the
+  # consequences, except that the file's content on
+  # the data provider side is NOT removed.
+  #
+  # That content is kept by setting a special flag
+  # that disables the provider_erase() callback.
+  #
+  # This behavior will only happen on browsable data
+  # providers; on other providers this method will
+  # raise an exception.
+  def unregister
+    dp = self.data_provider
+    cb_error "DataProvider '#{dp.name}' is not browsable, cannot unregister file ##{self.id}" unless
+      dp.is_browsable?
+    self.keep_dp_content_on_destroy = true
+    self.destroy
+  end
+
 
 
   ##############################################

@@ -24,6 +24,10 @@ class BackgroundActivityWorker < Worker
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # How much time to process a BAC before switching to another BAC.
+  # Currently hardcoded, maybe one day it will be configurable.
+  BAC_SLICE_TIME=5.seconds
+
   def setup
     @myself    = RemoteResource.current_resource
     @myself_id = @myself.id
@@ -35,6 +39,21 @@ class BackgroundActivityWorker < Worker
     worker_log.info "#{@myself.name} process has exited, so I'm quitting too. So long!"
     self.stop_me
     false
+  end
+
+  # Adds a log entry for the worker with information about
+  # the BackgroundActivity object +bac+ , like this:
+  #
+  #   "Completed BACType by username: 3 x OK, 0 x Fail"
+  #
+  # This method is mostly called when a BAC changes from
+  # "InProgress" to anything else.
+  def log_bac(bac)
+    status = bac.status
+    login  = bac.user.login
+    type   = bac.class.to_s.demodulize
+    counts = "#{bac.num_successes} x OK, #{bac.num_failures} x Fail"
+    worker_log.info "#{status} #{type} by #{login}: #{counts}"
   end
 
   # Calls process_task() regularly on any task that is ready.
@@ -70,7 +89,7 @@ class BackgroundActivityWorker < Worker
         #worker_log.debug "SINGLE LOCK CODE"
         begin
           while theba.status == 'InProgress'
-            theba.process_next_items_for_duration(5.seconds)
+            theba.process_next_items_for_duration(BAC_SLICE_TIME)
             break if todo.reload.count != 1
             break if stop_signal_received?
             # break unless main_process_is_alive?  # too costly?
@@ -78,6 +97,7 @@ class BackgroundActivityWorker < Worker
         ensure
           theba.remove_lock
         end
+        log_bac(theba) if theba.status != 'InProgress'
         next
       end
 
@@ -89,8 +109,9 @@ class BackgroundActivityWorker < Worker
       todo.reload.to_a.each do |ba| # a BackgroundActivity object
         #worker_log.debug "MULTI LOCK CODE #{todo.count}"
         ba.lock_yield_unlock do |theba|
-          theba.process_next_items_for_duration(5.seconds)
+          theba.process_next_items_for_duration(BAC_SLICE_TIME)
         end
+        log_bac(ba) if ba.status != 'InProgress'
         break if stop_signal_received?
         break if todo.reload.count == 1 # this will bring us back to the optimized loop above
         #break unless main_process_is_alive?  # too costly?

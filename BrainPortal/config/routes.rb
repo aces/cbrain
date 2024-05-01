@@ -37,7 +37,7 @@ Rails.application.routes.draw do
   resources :resource_usage,  :only => [ :index ]
 
   # BackgroundActivity
-  resources :background_activities,  :only => [ :index, :new, :create ] do
+  resources :background_activities,  :only => [ :index, :new, :create, :show ] do
     collection do
       post 'operation'
     end

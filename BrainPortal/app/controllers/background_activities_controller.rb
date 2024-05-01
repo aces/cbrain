@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2024
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -24,6 +24,8 @@ class BackgroundActivitiesController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  api_available :only => [ :show ]
+
   before_action :login_required
   before_action :admin_role_required,  :only => [:new, :create, :destroy]
 
@@ -32,6 +34,15 @@ class BackgroundActivitiesController < ApplicationController
     @bac                    = BackgroundActivity.new
     @bac.user_id            = current_user.id
     @bac.remote_resource_id = CBRAIN::SelfRemoteResourceId
+  end
+
+  # Available to any user, JSON only
+  def show #:nodoc:
+    bac_id = params[:id]
+    @bac   = BackgroundActivity.all
+    @bac   = @bac.where(:user_id => current_user.id) if ! current_user.has_role?(:admin_user)
+    @bac   = @bac.find(bac_id)
+    render :json => @bac.for_api
   end
 
   # Admin only, HTML only
