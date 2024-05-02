@@ -33,7 +33,7 @@ class BourreauxController < ApplicationController
   api_available :except  => :row_data
 
   before_action :login_required
-  before_action :manager_role_required, :except  => [:index, :show, :row_data, :load_info, :rr_disk_usage, :cleanup_caches, :rr_access, :rr_access_dp, :update, :start, :stop, :file_copy]
+  before_action :manager_role_required, :except  => [:index, :show, :row_data, :load_info, :rr_disk_usage, :cleanup_caches, :rr_access, :rr_access_dp]
 
   def index #:nodoc:
     @scope = scope_from_session
@@ -628,9 +628,54 @@ class BourreauxController < ApplicationController
     # Filter out userfile_ids that are not readable by the user
     userfile_ids = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read)
                         .where(:id => userfile_ids).pluck(:id)
-    
+
     bourreau.send_command_copy_files(userfile_ids, data_provider_id, current_user.id)
     render :json => { :status => "ok", :file_copied_count => userfile_ids.size }
+  end
+
+  # API method to copuf files from one DP to another via a bourreau;
+  # unlike the file_copy method, this method will select which bourreau
+  # to use dynamically, based on the ones that have the less activity already
+  # scheduled. The set of bourreaux to consider can be given by providing a
+  # set of bourreau_ids or a set of bourreau_group_ids in parameter (the
+  # default is to consider all currently online bourreaux)
+  def dispatcher_file_copy #:nodoc:
+    userfile_ids       = params[:userfile_ids]
+    data_provider_id   = params[:data_provider_id]
+    bourreau_ids       = Array(params[:bourreau_ids])  # optional
+    bourreau_group_ids = Array(params[:bourreau_group_ids]) # optional
+
+    # Find files and destination DP
+    data_provider      = DataProvider.find(data_provider_id)
+    userfile_ids       = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read)
+                          .where(:id => userfile_ids).pluck(:id)
+
+    # Validate things
+    cb_error "DataProvider not available" if data_provider.read_only || !data_provider.can_be_accessed_by?(current_user)
+    cb_error "No files selected"          if userfile_ids.empty?
+
+    # Select potential bourreaux
+    bourreaux = Bourreau.where(:online => true)
+    bourreaux = bourreaux.where(:id => bourreau_ids)             if bourreau_ids.present?
+    bourreaux = bourreaux.where(:group_id => bourreau_group_ids) if bourreau_group_ids.present?
+    bourreaux = bourreaux.to_a.select { |b| b.can_be_accessed_by?(current_user) }
+    cb_error "No bourreaux available" if bourreaux.empty?
+
+    # Select one best bourreau
+    bids = bourreaux.map(&:id)
+    active_counts = BackgroundActivity
+      .where(:remote_resource_id => bids, :status => 'InProgress')
+      .group(:remote_resource_id)
+      .count
+    bids.each { |bid| active_counts[bid] ||= 0 } # adds 0 to all missing counts
+    min_count = active_counts.map { |bid,count| count }.min
+    selected_bids = active_counts.map { |bid,count| bid if count == min_count }.compact
+    selected_bid  = selected_bids.shuffle.first
+
+    # Create the copy request as a BackgroundActivity object
+    bac = BackgroundActivity::CopyFile.setup!(current_user.id, userfile_ids, selected_bid, data_provider_id)
+
+    render :json => { :status => "ok", :userfile_ids => userfile_ids, :background_activity_id => bac.id }
   end
 
   private
