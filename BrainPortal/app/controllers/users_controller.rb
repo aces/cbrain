@@ -419,9 +419,7 @@ class UsersController < ApplicationController
 
     # If method is not called from html only admin can call it
     if request.format != 'html' && ! current_user.has_role?(:admin_user)
-      respond_to do |format|
-        format.json { render :json => { :error => "Access denied" }, :status => :unauthorized }
-      end
+      cb_error "Access denied.", :status => :unauthorized
       return
     end
 
