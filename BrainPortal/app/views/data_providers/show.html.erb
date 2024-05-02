@@ -29,7 +29,10 @@
 <% is_userkey_dp    = @provider.is_a?(UserkeyFlatDirSshDataProvider) %>
 <% needs_ssh_config = @provider.is_a?(SshDataProvider) || @provider.is_a?(SmartDataProviderInterface) %>
 
-<% def tribox(t, model, meta_key, meta_value, default_value, cls) # creates tristate checkbox for table
+<%
+    # tribox method creates tristate checkbox for table, to be used with meta data store
+    # meta_value can have values allowed, disabled and empty (=indetermiate state)
+    def tribox(t, model, meta_key, meta_value, default_value, cls)
      if meta_value.present?
        t.boolean_edit_cell("meta[#{meta_key}]", meta_value, "allowed", "disabled", :header => "#{model.name}", :class => 'checkbox_label', :input_options => { class: cls } )
      else
@@ -315,10 +318,9 @@
         <% rrs_by_category[:bourreau].sort_by(&:name).each do |rr| %>
           <% meta_key = "rr_no_sync_#{rr.id}" %>
           <% meta_value = @provider.meta[meta_key] %>
-          <% meta_value = "disabled" unless meta_value # transitional, to avoid migration%>
+          <% meta_value = "disabled" if @provider.meta[meta_key]&.length&.> 7 # to avoid migration%>
           <% tribox(t, rr, meta_key, meta_value, default_value, "rr_box" ) %>
-
-<% end%>
+        <% end%>
       <% end%>
     <% end%>
   <% end%>
