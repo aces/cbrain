@@ -29,7 +29,7 @@ $(".show_table_edit_link").click(
         $(".indeterminate").each(
             function () {
                 $(this).prop("indeterminate", true);
-                $(this).val("");
+                $(this).val(""); // checked indeterminate can still passes value
                 let prev = $(this).prev();
                 let val = prev.val();
                 if (val == "disabled") {
@@ -38,37 +38,17 @@ $(".show_table_edit_link").click(
             }
         )
     }
-    );
+);
 
 
-        $(".dp_box.indeterminate").click(
-            function () {
-                $(this).val('copy');
-                let prev = $(this).prev();
-                prev.val("disable");
-            }
-        )
+$(".indeterminate").click(
+    function () {
+        $(this).val('allowed');
+        let prev = $(this).prev();
+        prev.val("disabled");
+    }
+)
 
-
-// make indeterminate elements determinate again
-jQuery(".show_table").on("click code-change", ".dp_box.indeterminate", function () {
-    $(this).each(function () {
-        // $(this).prop("indeterminate", false); // usually happens automatically
-        $(this).val('copy')
-        // change value of hidden element back to disabled
-        $(this).prev().val("disabled")
-    });
-});
-
-
-// makes indetermintate checkbox determinate
-// function determinize(el)  {
-//     el.prop("indeterminate", false);
-//     // change value of hidden element
-//     el.prev().val('copy');
-// }
-
-// all elements with empty value are set as indeterminate
 
 
 

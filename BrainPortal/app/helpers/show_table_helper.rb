@@ -197,7 +197,7 @@ module ShowTableHelper
     # As +boolean_edit_cell+ is a specialization of +edit_cell+, +field+,
     # +&block+ and +options+ are handled the same way (save for the defaults
     # outlined above).
-    # +input_options+ apply only to the checkbox itself (works only in edit mode and in absence of block)
+    # +input_options+ are options just for the checkbox itself (at the moment apply only to the edit mode and block-free use)
     def boolean_edit_cell(field, cur_value, checked_value = "1", unchecked_value = "0", options = {}, &block)
       options[:content] ||= @template.disabled_checkbox(cur_value == checked_value)
       input_options       = options.delete(:input_options) || {}

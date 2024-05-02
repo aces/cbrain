@@ -809,7 +809,6 @@ class DataProvider < ApplicationRecord
     true
   end
 
-
   # Copy a +userfile+ from the current provider to +otherprovider+.
   # Returns the new userfile if data was actually copied, true if
   # no copy was necessary, and false if anything was amiss.
@@ -1362,7 +1361,7 @@ class DataProvider < ApplicationRecord
 
   # Returns true if RemoteResource +rr+ is allowed to access DataProvider +check_dp+
   # (which defaults to self). The information for this restriction is maintained
-  # as a blacklist in the meta data store.
+  # according to whitelist, blacklist and default value in the meta data store.
   def rr_allowed_syncing?(rr = RemoteResource.current_resource, check_dp = self)
     rr ||= RemoteResource.current_resource
     meta_key = "rr_no_sync_#{rr.id}"
@@ -1383,7 +1382,7 @@ class DataProvider < ApplicationRecord
   # Returns true if the DataProvider is allowed to copy or move files to the
   # other DataProvider +other_dp+ .
   # The information for this restriction is maintained by default value
-  # along with a white- and blacklist, whitelist in the meta data store.
+  # along with a white- and blacklist, all stored in the meta data store.
   def dp_allows_copy?(other_dp)
     meta_key = "dp_no_copy_#{other_dp.id}"
     # if there is no explicit flag for particular provider
@@ -1393,9 +1392,6 @@ class DataProvider < ApplicationRecord
     # hacky equivalent of
     # return true if self.meta[meta_key] == 'copy'  # yes if whitelisted
     # self.meta[meta_key].blank? && default != "disabled"  # otherwise by dafault
-
-
-
   end
 
   # Works like dp_allows_copy? but raises an exception if the

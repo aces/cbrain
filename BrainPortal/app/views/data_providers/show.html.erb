@@ -288,7 +288,6 @@
         <strong>Mass controls </strong>
       <% end %>
       <% t.boolean_edit_cell("Unsaved toggle", "", "", "", :header => "Reset old to", :class => 'checkbox_label') do %>
-        <%#= select_all_checkbox("rr_box", :persistant_name => meta_key, :id => :rr_select_all) %>
         <%= select_all_checkbox("rr_box", :id => :rr_select_all) %>
       <% end %>
       <% default_key = "rr_no_sync_default" %>
@@ -304,7 +303,7 @@
         <% t.row(:class => 'subheader') { "<strong>Portals<strong>".html_safe } %>
         <% rrs_by_category[:portal].sort_by(&:name).each do |rr| %>
           <% meta_key = "rr_no_sync_#{rr.id}" %>
-          <% meta_value = "disabled" if @provider.meta[meta_key]&.length&.> 7 # to avoid migration, works old and new value %>
+          <% meta_value = "disabled" if @provider.meta[meta_key]&.length&.> 7 # to avoid migration, works with old and new value %>
           <% tribox(t, rr, meta_key, meta_value, default_value, "rr_box" ) %>
         <% end%>
       <% end%>
@@ -316,7 +315,7 @@
         <% rrs_by_category[:bourreau].sort_by(&:name).each do |rr| %>
           <% meta_key = "rr_no_sync_#{rr.id}" %>
           <% meta_value = @provider.meta[meta_key] %>
-          <% meta_value = "disable" if meta_value == "#{rr.name} cannot sync #{@provider.name}" # transitional, to avoid migration%>
+          <% meta_value = "disabled" unless meta_value # transitional, to avoid migration%>
           <% tribox(t, rr, meta_key, meta_value, default_value, "rr_box" ) %>
 
 <% end%>
