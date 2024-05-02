@@ -456,11 +456,9 @@ class UsersController < ApplicationController
     respond_to do |format|
       format.html { redirect_to :action => :show }
 
-      if flash[:error].blank?
-        format.json { render :json => { :status => "OK", :message => "#{flash[:notice]}" } }
-      else
-        format.json { render :json => { :status => 403, :message => "#{flash[:error]}" } }
-      end
+      flash[:error].blank? ?
+        format.json { render :json => "#{flash[:notice]}", :status => :ok } :
+        format.json { render :json => "#{flash[:error]}",  :status => :unprocessable_entity }
     end
   end
 
