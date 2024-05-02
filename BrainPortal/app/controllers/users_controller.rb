@@ -415,25 +415,23 @@ class UsersController < ApplicationController
   end
 
   def push_keys #:nodoc:
-    @user = User.where(:id => params[:id]).first
+    @user = User.find(params[:id])
+    cb_error "You don't have permission to update this user.", :redirect => user_path(@user) unless edit_permission?(@user)
 
-    # If method is not called from html only admin can call it
-    if request.format != 'html' && ! current_user.has_role?(:admin_user)
-      cb_error "Access denied.", :status => :unauthorized
-      return
-    end
+    push_bids        = params[:push_keys_to].presence
+    bourreau_to_push = Bourreau.find_all_accessible_by_user(@user).where(:id => push_bids).to_a
+    ssh_key          = @user.ssh_key rescue nil
 
-    push_bids = params[:push_keys_to].presence
-    cb_notice "No servers selected.", :redirect => user_path(@user) if push_bids.blank?
-    ssh_key   = @user.ssh_key rescue nil
-    cb_notice "No user SSH key exists yet.", :redirect => :show if ! ssh_key
+    cb_error "No servers selected (or accessible by user).", :redirect => user_path(@user) if bourreau_to_push.empty?
+    cb_error "No user SSH key exists yet.", :redirect => :show     if ! ssh_key
 
+    # Get ssh key pair
     pub_key  = ssh_key.public_key
     priv_key = ssh_key.send(:private_key, "I Know What I Am Doing")
 
-    flash[:notice] = ""
-    flash[:error]  = ""
-    bourreau_to_push = Bourreau.find_all_accessible_by_user(@user).where(:id => push_bids).to_a
+    ok_list    = []
+    error_list = []
+
     bourreau_to_push.each do |bourreau|
       command          = RemoteCommand.new(:command           => 'push_ssh_keys',
                                            :requester_user_id => @user.id,
@@ -444,21 +442,27 @@ class UsersController < ApplicationController
       begin
         answer = bourreau.send_command(command)
         if answer.command_execution_status == 'OK'
-          flash[:notice] += "Pushed user SSH key to #{bourreau.name}.\n"
+          ok_list << bourreau.name
         else
-          flash[:error]  += "Could not push SSH key to #{bourreau.name}.\n"
+          error_list << bourreau.name
         end
       rescue => ex
-        flash[:error] += "Could not push SSH key to #{bourreau.name}: #{ex.message}\n"
+        error_list << bourreau.name
       end
     end
 
     respond_to do |format|
-      format.html { redirect_to :action => :show }
+      format.html do
+        flash[:notice] = "Pushed user SSH keys to: #{ok_list.join(', ')}"            if ok_list.present?
+        flash[:error]  = "Failed to push user SSH keys to: #{error_list.join(', ')}" if error_list.present?
+        redirect_to user_path(@user)
+      end
 
-      flash[:error].blank? ?
-        format.json { render :json => "#{flash[:notice]}", :status => :ok } :
-        format.json { render :json => "#{flash[:error]}",  :status => :unprocessable_entity }
+      format.json do
+        status = :ok
+        status = :unprocessable_entity if error_list.present?
+        render :json => { :pushed => ok_list, :failed => error_list }, :status => status
+      end
     end
   end
 
