@@ -29,7 +29,7 @@ class UsersController < ApplicationController
 
   include GlobusHelpers
 
-  api_available :only => [ :index, :create, :show, :destroy, :update, :create_user_session]
+  api_available :only => [ :index, :create, :show, :destroy, :update, :create_user_session, :push_keys]
 
   before_action :login_required,        :except => [:request_password, :send_password]
   before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password, :push_keys, :new_token]
@@ -416,7 +416,14 @@ class UsersController < ApplicationController
 
   def push_keys #:nodoc:
     @user = User.where(:id => params[:id]).first
-    cb_error "You don't have permission to update this user.", :redirect => start_page_path unless edit_permission?(@user)
+
+    # If method is not called from html only admin can call it
+    if request.format != 'html' && ! current_user.has_role?(:admin_user)
+      respond_to do |format|
+        format.json { render :json => { :error => "Access denied" }, :status => :unauthorized }
+      end
+      return
+    end
 
     push_bids = params[:push_keys_to].presence
     cb_notice "No servers selected.", :redirect => user_path(@user) if push_bids.blank?
@@ -435,15 +442,28 @@ class UsersController < ApplicationController
                                            :ssh_key_pub       => pub_key,
                                            :ssh_key_priv      => priv_key,
                                           )
-      answer = bourreau.send_command(command)
-      if answer.command_execution_status == 'OK'
-        flash[:notice] += "Pushed user SSH key to #{bourreau.name}.\n"
-      else
-        flash[:error]  += "Could not push SSH key to #{bourreau.name}.\n"
+
+      begin
+        answer = bourreau.send_command(command)
+        if answer.command_execution_status == 'OK'
+          flash[:notice] += "Pushed user SSH key to #{bourreau.name}.\n"
+        else
+          flash[:error]  += "Could not push SSH key to #{bourreau.name}.\n"
+        end
+      rescue => ex
+        flash[:error] += "Could not push SSH key to #{bourreau.name}: #{ex.message}\n"
       end
     end
 
-    redirect_to :action => :show
+    respond_to do |format|
+      format.html { redirect_to :action => :show }
+
+      if flash[:error].blank?
+        format.json { render :json => { :status => "OK", :message => "#{flash[:notice]}" } }
+      else
+        format.json { render :json => { :status => 403, :message => "#{flash[:error]}" } }
+      end
+    end
   end
 
   # POST /users/new_token
@@ -487,3 +507,4 @@ class UsersController < ApplicationController
   end
 
 end
+
