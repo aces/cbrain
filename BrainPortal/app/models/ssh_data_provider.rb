@@ -67,10 +67,6 @@ class SshDataProvider < DataProvider
     true # this class stores all in a flat directory; some subclasses reset this to false
   end
 
-  def can_upload_directly_from_path? #:nodoc:
-    true # see impl_sync_to_provider() which has two arguments
-  end
-
   def impl_sync_to_cache(userfile) #:nodoc:
     localfull   = cache_full_path(userfile)
     remotefull  = provider_full_path(userfile)

@@ -220,18 +220,19 @@ class S3FlatDataProvider < DataProvider
   end
 
   # Use our own internal rsync-like algorithm.
-  def impl_sync_to_provider(userfile) #:nodoc:
+  def impl_sync_to_provider(userfile, alternate_source_path=nil) #:nodoc:
 
     # Intermediate browse_path on S3 side
     provider_browse_path = Pathname.new(userfile.browse_path.presence || "")
 
     # Cache area info
-    localfull   = cache_full_path(userfile)
+    localfull   = alternate_source_path.present? ?
+       Pathname.new(alternate_source_path) : cache_full_path(userfile)
     localparent = localfull.parent
 
     # Figure out what to do
     to_add, to_remove = rsync_emulation(
-      cache_recursive_fileinfos(    userfile ),
+      cache_recursive_fileinfos(    userfile, localfull ),
       provider_recursive_fileinfos( userfile ),
     )
 
@@ -306,12 +307,13 @@ class S3FlatDataProvider < DataProvider
 
   # Scan the local cache and returns a list of FileInfo objects
   # descriving all the files and directories.
-  def cache_recursive_fileinfos(userfile) #:nodoc:
-    cache_fullpath = userfile.cache_full_path
+  def cache_recursive_fileinfos(userfile, alternate_source_path=nil) #:nodoc:
+    cache_fullpath = alternate_source_path.present? ?
+      Pathname.new(alternate_source_path) : userfile.cache_full_path
     cache_parent   = cache_fullpath.parent
     parent_length  = "#{cache_parent}/".length # used in substr below
     glob_pattern   = userfile.is_a?(FileCollection) ? "/**/*" : ""
-    Dir.glob("#{userfile.cache_full_path}#{glob_pattern}", File::FNM_DOTMATCH).map do |fullpath|   # /path/to/userfilebase/d1/d2/f1.txt
+    Dir.glob("#{cache_fullpath}#{glob_pattern}", File::FNM_DOTMATCH).map do |fullpath|   # /path/to/userfilebase/d1/d2/f1.txt
       next if fullpath.ends_with? "/."         # skip spurious entries for self-referencing sub directories
       next if fullpath.ends_with? "/.."        # skip spurious entries for referencing parent directories (never happens?)
       stats   = File.lstat(fullpath)           # not stat() !
