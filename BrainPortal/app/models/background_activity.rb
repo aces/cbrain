@@ -113,6 +113,11 @@ class BackgroundActivity < ApplicationRecord
   belongs_to :user
   belongs_to :remote_resource
 
+  api_attr_visible :user_id, :remote_resource_id, :type,
+                   :status, :items, :messages,
+                   :current_item, :num_successes, :num_failures,
+                   :handler_lock, :options, :updated_at
+
   ALL_STATUS = %w(
     InProgress Completed PartiallyCompleted Failed InternalError
               Cancelled          Suspended
