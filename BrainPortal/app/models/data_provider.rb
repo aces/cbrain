@@ -1365,9 +1365,9 @@ class DataProvider < ApplicationRecord
   def rr_allowed_syncing?(rr = RemoteResource.current_resource, check_dp = self)
     rr ||= RemoteResource.current_resource
     meta_key = "rr_no_sync_#{rr.id}"
-    default  = check_dp.meta["rr_no_sync_default"] || 'allowed'
+    default  = check_dp.meta["rr_no_sync_default"] || 'allowed'  # default for default is allow sync
     policy   = ( self.meta[meta_key].presence || default )
-    return policy.length > 7  # it is faster check length
+    return policy.length != 8  # shorter or longer than 'disabled' (either 'allowed' or long legacy sentence)
   end
 
   # Works like rr_allowed_syncing? but raise an exception when the
