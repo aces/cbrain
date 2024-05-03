@@ -109,6 +109,7 @@ Rails.application.routes.draw do
       get  'rr_disk_usage'
       get  'rr_access'
       post 'cleanup_caches'
+      post 'dispatcher_file_copy'
       get  'rr_access_dp'
     end
   end
