@@ -123,6 +123,8 @@ require 'file_info'
 # * is_fast_syncing?
 # * allow_file_owner_change?
 # * content_storage_shared_between_users?
+# * has_browse_path_capabilities?
+# * can_upload_directly_from_path?
 #
 # == Access restriction methods:
 #
@@ -133,6 +135,7 @@ require 'file_info'
 #
 # * sync_to_cache(userfile)
 # * sync_to_provider(userfile)
+# * sync_to_provider(userfile, alternate_source_path=nil) # when direct uploads is implemented
 #
 # Note that both of these are also present in the Userfile model.
 #
@@ -159,9 +162,11 @@ require 'file_info'
 # * provider_readhandle(userfile, rel_path)
 # * provider_full_path(userfile)
 # * provider_list_all(user=nil,browse_path=nil)
+# * provider_upload_from_local_file(userfile, localpath)
 #
-# Note that all of these except for provider_list_all() are
-# also present in the Userfile model.
+# Note that all of these except for provider_list_all() and
+# provider_upload_from_local_file are also present in
+# the Userfile model.
 #
 # = Aditional notes
 #
@@ -183,6 +188,7 @@ require 'file_info'
 # * impl_is_alive?
 # * impl_sync_to_cache(userfile)
 # * impl_sync_to_provider(userfile)
+# * impl_sync_to_provider(userfile, alternate_source_path) # when supporting direct uploads
 # * impl_provider_erase(userfile)
 # * impl_provider_rename(userfile,newname)
 # * impl_provider_list_all(user=nil,browse_path=nil)
@@ -349,6 +355,17 @@ class DataProvider < ApplicationRecord
     false
   end
 
+  # Returns true if the implementation of the Data Provider
+  # supports uploading to the data provider side directly
+  # from an arbitrary path (a special implementation)
+  # instead of the standard way (only from the cache).
+  #
+  # The default value is to autodetect if the implementation
+  # of the provider has a impl_sync_to_provider method with
+  # two arguments.
+  def can_upload_directly_from_path?
+    self.method(:impl_sync_to_provider).arity == -2
+  end
 
 
   #################################################################
@@ -369,14 +386,21 @@ class DataProvider < ApplicationRecord
 
   # Synchronizes the content of +userfile+ from the
   # local cache back to the provider.
-  def sync_to_provider(userfile)
+  def sync_to_provider(userfile, alternate_source_path=nil)
     cb_error "Error: provider #{self.name} is offline."        unless self.online?
     cb_error "Error: provider #{self.name} is read_only."      if     self.read_only?
     cb_error "Error: provider #{self.name} is not syncable."   if     self.not_syncable?
     cb_error "Error: file #{userfile.name} is immutable."      if     userfile.immutable?
     rr_allowed_syncing!("synchronize content to")
-    SyncStatus.ready_to_copy_to_dp(userfile) do
-      impl_sync_to_provider(userfile)
+    if alternate_source_path.present? && ! self.can_upload_directly_from_path?
+      cb_error "Provider #{self.name} does not support direct uploads."
+    end
+    final_status = 'InSync'
+    final_status = 'ProvNewer' if alternate_source_path.present? && self.can_upload_directly_from_path?
+    SyncStatus.ready_to_copy_to_dp(userfile, final_status) do
+      final_status == 'ProvNewer' ? # same test as the 'if' two lines above
+        impl_sync_to_provider(userfile, alternate_source_path) :
+        impl_sync_to_provider(userfile)
     end
   end
 
@@ -812,10 +836,20 @@ class DataProvider < ApplicationRecord
   # Copy a +userfile+ from the current provider to +otherprovider+.
   # Returns the new userfile if data was actually copied, true if
   # no copy was necessary, and false if anything was amiss.
-  # Options supported are :name, :user_id, :group_id which are
-  # going to be used for the new file, and :crush_destination
-  # that needs to be true if the destination file already exists
-  # and you want to proceed with the copy anyway.
+  #
+  # Options supported are:
+  #
+  #   :name, :user_id, :group_id
+  #      which are going to be used for the new file
+  #
+  #   :crush_destination
+  #      that needs to be true if the destination file already
+  #      exists and you want to proceed with the copy anyway.
+  #
+  #   :bypass_cache
+  #      can be set to true if (and only if) the destination
+  #      +otherprovider+ supports directly uploads; the flag will
+  #      be silently ignored and caching will be used otherwise.
   def provider_copy_to_otherprovider(userfile, otherprovider, options = {})
     cb_error "Error: provider #{self.name} is offline."            unless self.online?
     cb_error "Error: provider #{otherprovider.name} is offline."   unless otherprovider.online?
@@ -828,6 +862,8 @@ class DataProvider < ApplicationRecord
     new_user_id  = options[:user_id]  || userfile.user_id
     new_group_id = options[:group_id] || userfile.group_id
     crush        = options[:crush_destination]
+    bypass_cache = options[:bypass_cache].present?
+    bypass_cache = false if ! otherprovider.can_upload_directly_from_path?
 
     return true  if     self.id == otherprovider.id
     return false unless Userfile.is_legal_filename?(new_name)
@@ -873,7 +909,11 @@ class DataProvider < ApplicationRecord
 
     # Copy content to other provider
     begin
-      otherprovider.cache_copy_from_local_file(newfile,currentcache)
+      if ! bypass_cache # the most common, standard process
+        otherprovider.cache_copy_from_local_file(newfile,currentcache)
+      else # special optimization: bypass the local copy to cache
+        otherprovider.provider_upload_from_local_file(newfile,currentcache)
+      end
     rescue => ex
       #todo add log information?
       raise ex
@@ -892,6 +932,26 @@ class DataProvider < ApplicationRecord
     end
 
     return newfile
+  end
+
+  # This method allows the client of the provider to
+  # upload the content of an arbitrary local file or directory.
+  # This mechanism only works if the data provider class
+  # supports the two-argument version of sync_to_provider().
+  # This capability can be checked with can_upload_directly_from_path?
+  def provider_upload_from_local_file(userfile, localpath)
+    localpath = localpath.to_s # in case we get a Pathname
+    cb_error "Error: provider #{self.name} is offline."                                   unless self.online?
+    cb_error "Error: provider #{self.name} is read_only."                                 if     self.read_only?
+    cb_error "Error: file does not exist: '#{localpath}'."                                unless File.exists?(localpath)
+    cb_error "Error: file #{userfile.name} is immutable."                                 if     userfile.immutable?
+    cb_error "Error: incompatible directory '#{localpath}' given for a SingleFile."       if
+        userfile.is_a?(SingleFile)     && File.directory?(localpath)
+    cb_error "Error: incompatible normal file '#{localpath}' given for a FileCollection." if
+        userfile.is_a?(FileCollection) && File.file?(localpath)
+    # Special two arguments version of sync_to_provdier. This will also
+    # validate that the provider can_upload_directly_to_path?
+    sync_to_provider(userfile, localpath)
   end
 
   # This method provides a way for a client of the provider

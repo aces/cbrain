@@ -220,7 +220,7 @@ class SyncStatus < ApplicationRecord
   # Once ready, the block will be executed
   # and the status of the local cache will be
   # marked as 'InSync'.
-  def self.ready_to_copy_to_dp(userfile)
+  def self.ready_to_copy_to_dp(userfile, final_status = 'InSync')
 
     # For brand new files, the userfile_id is nil,
     # so we simply skip the sync mechanism altogether.
@@ -299,7 +299,7 @@ class SyncStatus < ApplicationRecord
 
       # AFTER successful provider-modifying operation
       lambda do |implstatus|
-        state.status_transition("ToProvider", "InSync") # checked OK
+        state.status_transition("ToProvider", final_status) # checked OK
         state.update_attributes( :accessed_at => Time.now, :synced_at => Time.now )
         puts "SYNC: ToProv: #{state.pretty} Finish" if DebugMessages
         implstatus

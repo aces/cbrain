@@ -111,6 +111,14 @@ module SmartDataProviderInterface
     @real_provider.content_storage_shared_between_users?
   end
 
+  def has_browse_path_capabilities?
+    @real_provider.has_browse_path_capabilities?
+  end
+
+  def can_upload_directly_from_path?
+    @real_provider.can_upload_directly_from_path?
+  end
+
   def sync_to_cache(userfile) #:nodoc:
     @real_provider.sync_to_cache(userfile)
   end
@@ -185,6 +193,10 @@ module SmartDataProviderInterface
 
   def provider_repair(issue) #:nodoc:
     @real_provider.provider_repair(issue)
+  end
+
+  def provider_upload_from_local_file(userfile, localpath)
+    @real_provider.provider_upload_from_local_file(userfile, localpath)
   end
 
   # This method is specific to SSH data providers subclasses and not part of the official API
