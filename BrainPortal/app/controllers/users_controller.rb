@@ -423,7 +423,7 @@ class UsersController < ApplicationController
     ssh_key          = @user.ssh_key rescue nil
 
     cb_error "No servers selected (or accessible by user).", :redirect => user_path(@user) if bourreau_to_push.empty?
-    cb_error "No user SSH key exists yet.", :redirect => :show     if ! ssh_key
+    cb_error "No user SSH key exists yet.",                  :redirect => user_path(@user) if ! ssh_key
 
     # Get ssh key pair
     pub_key  = ssh_key.public_key
