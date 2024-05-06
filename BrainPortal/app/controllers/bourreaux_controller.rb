@@ -633,7 +633,7 @@ class BourreauxController < ApplicationController
     render :json => { :status => "ok", :file_copied_count => userfile_ids.size }
   end
 
-  # API method to copuf files from one DP to another via a bourreau;
+  # API method to copy files from one DP to another via a bourreau;
   # unlike the file_copy method, this method will select which bourreau
   # to use dynamically, based on the ones that have the less activity already
   # scheduled. The set of bourreaux to consider can be given by providing a
@@ -644,6 +644,7 @@ class BourreauxController < ApplicationController
     data_provider_id   = params[:data_provider_id]
     bourreau_ids       = Array(params[:bourreau_ids])  # optional
     bourreau_group_ids = Array(params[:bourreau_group_ids]) # optional
+    bypass_cache       = params[:bypass_cache].present?
 
     # Find files and destination DP
     data_provider      = DataProvider.find(data_provider_id)
@@ -673,7 +674,10 @@ class BourreauxController < ApplicationController
     selected_bid  = selected_bids.shuffle.first
 
     # Create the copy request as a BackgroundActivity object
-    bac = BackgroundActivity::CopyFile.setup!(current_user.id, userfile_ids, selected_bid, data_provider_id)
+    bac = BackgroundActivity::CopyFile.setup!(
+      current_user.id, userfile_ids, selected_bid, data_provider_id,
+      :bypass_cache => bypass_cache,
+    )
 
     render :json => { :status => "ok", :userfile_ids => userfile_ids, :background_activity_id => bac.id }
   end
