@@ -439,7 +439,7 @@ class UsersController < ApplicationController
                                            :ssh_key_priv      => priv_key,
                                           )
 
-      answer = bourreau.send_command(command)
+      answer = bourreau.send_command(command) rescue nil
       if answer&.command_execution_status == 'OK'
         ok_list << bourreau.name
       else
