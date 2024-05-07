@@ -372,7 +372,7 @@ class ToolConfig < ApplicationRecord
     specs.map do |knd, id_or_name|
 
       # Old style file spec (legacy, to be removed)
-      next knd if knd =~ /^\//  # FIXME delete it after successful migration
+      next ["Local File", knd, knd] if knd =~ /^\//  # FIXME delete it after successful migration
 
       case knd
       when 'dp'
@@ -380,22 +380,22 @@ class ToolConfig < ApplicationRecord
         cb_error "Can't find DataProvider #{id_or_name} for fetching overlays" if ! dp
         dp_ovs = dp.singularity_overlays_full_paths rescue nil
         cb_error "DataProvider #{id_or_name} does not have any overlays configured." if dp_ovs.blank?
-        dp_ovs
+        ["Data Provider", "#{id_or_name}", dp_ovs]
       when 'file'
         cb_error "Provide absolute path for overlay file '#{id_or_name}'." if (Pathname.new id_or_name).relative?
-        id_or_name  # for local file, it is full file name (no ids)
+        ["local file", "#{id_or_name}", ["#{id_or_name}"]]  # for local file, it is full file name (no ids)
       when 'userfile'
         # db registered file, note admin can access all files
         userfile = SingleFile.where(:id => id_or_name).last
         cb_error "Userfile with id '#{id_or_name}' for overlay fetching not found." if ! userfile
         userfile.sync_to_cache() rescue cb_error "Userfile with id '#{id_or_name}' for fetching overlay failed to synchronize."
-        userfile.cache_full_path()
+        ["registered file with id", "{id_or_name}", [userfile.cache_full_path()]
       when 'ext3capture'
-        [] # flatten will remove all that
+        nil  # handled separately
       else
         cb_error "Invalid '#{knd}:#{id_or_name}' overlay."
       end
-    end.flatten.uniq
+    end.uniq.compact
   end
 
   # Returns an array of the data providers that are

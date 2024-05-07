@@ -2383,10 +2383,15 @@ docker_image_name=#{full_image_name.bash_escape}
     # Some of them might be patterns (e.g. /a/b/data*.squashfs) that need to
     # be resolved locally.
     # This will be a string "--overlay=path:ro --overlay=path:ro" etc.
-    overlay_paths = self.tool_config.singularity_overlays_full_paths.map do |path|
-      paths = Dir.glob(path) # checks on the local file system
-      cb_error "Can't find any overlays matching '#{path}'" if paths.blank?
-      paths
+    overlay_paths = self.tool_config.singularity_overlays_full_paths.map do |knd, id_or_name, paths|
+      self.addlog("Processing container overlay spec #{knd} #{id_or_name}:")
+      paths.map do |path|
+        self.addlog(" - checking #{path} ... ")
+        local_paths = Dir.glob(path)
+        cb_error "Can't find any local file matching '#{path}'" if local_paths.blank?
+        self.addlog ("   found local files #{local_paths.join', '}")
+        local_paths
+      end
     end.flatten
     overlay_mounts = overlay_paths.inject("") do |sing_opts,path|
       "#{sing_opts} --overlay=#{path.bash_escape}:ro"
