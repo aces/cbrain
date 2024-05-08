@@ -357,7 +357,8 @@ class ToolConfig < ApplicationRecord
   end
 
   # Returns an array of full paths to the Singularity overlay files that
-  # need to be mounted, as configured by the admin. Some of them might
+  # need to be mounted, along with explanation of their origin.
+  # Some of paths might
   # be patterns and will need to be resolved at run time. The dsl is
   #      # A file located on the cluster
   #        file:/path/to/file.squashfs
@@ -389,7 +390,7 @@ class ToolConfig < ApplicationRecord
         userfile = SingleFile.where(:id => id_or_name).last
         cb_error "Userfile with id '#{id_or_name}' for overlay fetching not found." if ! userfile
         userfile.sync_to_cache() rescue cb_error "Userfile with id '#{id_or_name}' for fetching overlay failed to synchronize."
-        ["registered file with id", "{id_or_name}", [userfile.cache_full_path()]
+        ["registered file with id", "{id_or_name}", userfile.cache_full_path()]
       when 'ext3capture'
         nil  # handled separately
       else

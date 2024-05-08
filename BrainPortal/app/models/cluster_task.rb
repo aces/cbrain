@@ -2562,7 +2562,9 @@ bash -c "exit $_cbrain_status_"
 
   # Just invokes the same method on the task's ToolConfig.
   def ext3capture_basenames
-    self.tool_config.ext3capture_basenames
+    names = self.tool_config.ext3capture_basenames
+    self.addlog("Overlaying ext3 capturing basenames #{names}")
+    names
   end
 
   # This method creates an empty +filename+ with +size+ bytes
