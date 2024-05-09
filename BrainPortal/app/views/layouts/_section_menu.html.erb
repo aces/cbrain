@@ -71,6 +71,11 @@
   <% if current_user %>
     <div id="main-menu" class="main_menu_left">
        <ul>
+         <% if cbrain_session[:active_group_id].blank? && !(params[:controller] == "groups" && params[:action] == "index") %>
+           <li class="unselected">
+             <%= link_to '(Click here to select a Project and access Files and Tasks)', groups_path, :class => 'active_bac' %>
+           </li>
+         <% end %>
          <% if !current_user.has_role?(:normal_user) || (cbrain_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
            <li <%= set_selected(params[:controller], :userfiles) %>>
              <%= link_to 'Files', userfiles_path %>
