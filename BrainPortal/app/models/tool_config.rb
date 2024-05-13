@@ -373,7 +373,7 @@ class ToolConfig < ApplicationRecord
     specs.map do |knd, id_or_name|
 
       # Old style file spec (legacy, to be removed)
-      next ["Local File", knd, knd] if knd =~ /^\//  # FIXME delete it after successful migration
+      next ["Local File", knd, [knd]] if knd =~ /^\//  # FIXME delete it after successful migration
 
       case knd
       when 'dp'
@@ -390,7 +390,7 @@ class ToolConfig < ApplicationRecord
         userfile = SingleFile.where(:id => id_or_name).last
         cb_error "Userfile with id '#{id_or_name}' for overlay fetching not found." if ! userfile
         userfile.sync_to_cache() rescue cb_error "Userfile with id '#{id_or_name}' for fetching overlay failed to synchronize."
-        ["registered file with id", "{id_or_name}", userfile.cache_full_path()]
+        ["registered file with id", "{id_or_name}", [userfile.cache_full_path()]]
       when 'ext3capture'
         nil  # handled separately
       else
