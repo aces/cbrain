@@ -2383,10 +2383,15 @@ docker_image_name=#{full_image_name.bash_escape}
     # Some of them might be patterns (e.g. /a/b/data*.squashfs) that need to
     # be resolved locally.
     # This will be a string "--overlay=path:ro --overlay=path:ro" etc.
-    overlay_paths = self.tool_config.singularity_overlays_full_paths.map do |path|
-      paths = Dir.glob(path) # checks on the local file system
-      cb_error "Can't find any overlays matching '#{path}'" if paths.blank?
-      paths
+    overlay_paths = self.tool_config.singularity_overlays_full_paths.map do |knd, id_or_name, paths|
+      self.addlog("Processing container overlay spec #{knd} #{id_or_name}:")
+      paths.map do |path|
+        self.addlog(" - checking #{path} ... ")
+        local_paths = Dir.glob(path) # assume no glob expression in overlay files
+        cb_error "Can't find any local file matching '#{path}'" if local_paths.blank?
+        self.addlog("   found local file(s) #{local_paths.join', '}")
+        local_paths
+      end
     end.flatten
     overlay_mounts = overlay_paths.inject("") do |sing_opts,path|
       "#{sing_opts} --overlay=#{path.bash_escape}:ro"
@@ -2557,7 +2562,9 @@ bash -c "exit $_cbrain_status_"
 
   # Just invokes the same method on the task's ToolConfig.
   def ext3capture_basenames
-    self.tool_config.ext3capture_basenames
+    names = self.tool_config.ext3capture_basenames
+    self.addlog("Overlaying ext3 capturing basenames #{names}")
+    names
   end
 
   # This method creates an empty +filename+ with +size+ bytes
