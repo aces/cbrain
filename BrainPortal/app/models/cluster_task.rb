@@ -2387,9 +2387,9 @@ docker_image_name=#{full_image_name.bash_escape}
       self.addlog("Processing container overlay spec #{knd} #{id_or_name}:")
       paths.map do |path|
         self.addlog(" - checking #{path} ... ")
-        local_paths = Dir.glob(path)
+        local_paths = Dir.glob(path) # assume no glob expression in overlay files
         cb_error "Can't find any local file matching '#{path}'" if local_paths.blank?
-        self.addlog ("   found local files #{local_paths.join', '}")
+        self.addlog("   found local file(s) #{local_paths.join', '}")
         local_paths
       end
     end.flatten
