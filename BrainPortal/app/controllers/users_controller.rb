@@ -384,8 +384,8 @@ class UsersController < ApplicationController
 
   def send_password #:nodoc:
     @user = User.where( :login  => params[:login], :email  => params[:email] ).first
-    if @user
 
+    if @user
       if user_must_link_to_globus?(@user)
         contact = RemoteResource.current_resource.support_email.presence || User.admin.email.presence || "the support staff"
         wipe_user_password_after_globus_link(@user)  # for legacy or erroneously set users
