@@ -384,8 +384,15 @@ class UsersController < ApplicationController
 
   def send_password #:nodoc:
     @user = User.where( :login  => params[:login], :email  => params[:email] ).first
-
     if @user
+      if user_must_link_to_globus?(@user)
+        cb_error "Your account can only authenticate with Globus identities.", :redirect => user_path(current_user)
+        respond_to do |format|
+          format.html { redirect_to :controller => :sessions, :action  => :mandatory_globus }
+          format.any { head :unauthorized }
+        end
+        return
+      end
       if @user.account_locked?
         contact = RemoteResource.current_resource.support_email.presence || User.admin.email.presence || "the support staff"
         flash[:error] = "This account is locked, please write to #{contact} to get this account unlocked."
