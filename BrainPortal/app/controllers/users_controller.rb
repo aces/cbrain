@@ -385,10 +385,11 @@ class UsersController < ApplicationController
   def send_password #:nodoc:
     @user = User.where( :login  => params[:login], :email  => params[:email] ).first
     if @user
+
       if user_must_link_to_globus?(@user)
         contact = RemoteResource.current_resource.support_email.presence || User.admin.email.presence || "the support staff"
         wipe_user_password_after_globus_link(@user)  # for legacy or erroneously set users
-        flash[:error] = "You cannot access the portal with password. Thus you cannot reset password.Your account can only authenticate with Globus identities. please write to #{contact} for help"
+        flash[:error] = "Your account can only authenticate with Globus identities. Thus you are not allowed to use or reset password. Please contact #{contact} for help."
         respond_to do |format|
           format.html { redirect_to login_path }
           format.any { head :unauthorized }
