@@ -228,7 +228,7 @@ RSpec.describe UsersController, :type => :controller do
           expect(assigns[:user].password).not_to eq(user.password)
         end
 
-        context "when the account must use Globus identification only only" do
+        context "when the account must use Globus identification only" do
 
           it "should display a message" do
             allow(mock_user).to receive(:account_locked?).and_return(true)
