@@ -65,7 +65,7 @@ class LocalDataProvider < DataProvider
   end
 
   # The remote dir is actually a local directory here.
-  def browse_remote_dir(user=nil) #:nodoc:
+  def browse_remote_dir(user=nil,browse_path=nil) #:nodoc:
     self.remote_dir
   end
 
@@ -109,13 +109,13 @@ class LocalDataProvider < DataProvider
 
     uid_to_owner = {}
     gid_to_group = {}
-    Dir.foreach(self.browse_remote_dir(user)) do |name|
+    Dir.foreach(self.browse_remote_dir(user,browse_path)) do |name|
       next if name == "." || name == ".."
       next if is_excluded?(name) # in DataProvider
 
       # Extract information about the entry
-      full_path = "#{self.browse_remote_dir(user)}/#{name}"
-      stat = File.stat(full_path) rescue nil
+      full_path = "#{self.browse_remote_dir(user,browse_path)}/#{name}"
+      stat = File.lstat(full_path) rescue nil
       next unless stat # In case the file has been deleted
 
       # Adjust type
