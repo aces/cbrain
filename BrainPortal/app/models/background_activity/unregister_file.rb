@@ -40,8 +40,7 @@ class BackgroundActivity::UnregisterFile < BackgroundActivity
       userfile.sync_status.to_a.any? { |ss| ss.status =~ /^To/ }
     return [ false, "File is not on a browsable DataProvider" ] if
       ! userfile.data_provider.is_browsable?
-    userfile.keep_dp_content_on_destroy = true
-    ok = userfile.destroy # only remove entries from DB, does not affect file content
+    ok = userfile.unregister # only remove entries from DB, does not affect file content
     [ ok, "Unregistered" ]
   end
 

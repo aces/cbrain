@@ -396,6 +396,28 @@ class BackgroundActivity < ApplicationRecord
     end
   end
 
+  # Scans the database, finds all BACs that are
+  #
+  # 1. on +remote_resource_id+
+  # 2. currently locked
+  # 3. last updated at least +older_than+ ago (default: 12 hours)
+  #
+  # and mark them as 'InternalError'. The
+  # BAC was being processed, but somehow
+  # the processing client seems to have died.
+  def self.cancel_crashed(remote_resource_id,older_than=12.hours)
+    self.where(
+      :remote_resource_id => remote_resource_id,
+    ).where.not(
+      :handler_lock       => nil,
+    ).where(
+      "updated_at < ?", older_than.ago
+    ).each do |bac|
+      bac.update_column(:status,       'InternalError')
+      bac.update_column(:handler_lock, nil)
+    end
+  end
+
   # If the current object is a scheduled one,
   # will lock it and invoke schedule_dup().
   def activate!

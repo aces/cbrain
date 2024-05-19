@@ -32,13 +32,16 @@ class BackgroundActivity::RegisterFile < BackgroundActivity
   end
 
   # Helper for scheduling a registration of the files immediately.
-  def self.setup!(user_id, type_dash_names, remote_resource_id, src_data_provider_id, browse_path, group_id, as_user_id)
+  # Note that the argument +dest_data_provider_id+ is always ignored
+  # but it is declared to make this method's signature identical to
+  # the setup!() method defined in subclasses.
+  def self.setup!(user_id, type_dash_names, remote_resource_id, src_data_provider_id, browse_path, group_id, as_user_id, dest_data_provider_id=nil)
     ba         = self.local_new(user_id, type_dash_names, remote_resource_id)
     ba.options = {
       :src_data_provider_id => src_data_provider_id,
-      :browse_path             => browse_path,
-      :as_user_id              => (as_user_id || user_id),
-      :group_id                => group_id,
+      :browse_path          => browse_path,
+      :as_user_id           => (as_user_id || user_id),
+      :group_id             => group_id,
     }
     ba.save!
     ba

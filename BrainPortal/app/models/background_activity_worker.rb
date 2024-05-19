@@ -28,6 +28,10 @@ class BackgroundActivityWorker < Worker
   # Currently hardcoded, maybe one day it will be configurable.
   BAC_SLICE_TIME=5.seconds
 
+  # Any BAC that had a lock on it and has not been updated in
+  # this amount of time is considered 'dead' (process died?)
+  BAC_IS_DEAD_TIME=12.hours
+
   def setup
     @myself    = RemoteResource.current_resource
     @myself_id = @myself.id
@@ -62,6 +66,7 @@ class BackgroundActivityWorker < Worker
     return unless main_process_is_alive?
 
     BackgroundActivity.activate_scheduled(@myself_id)
+    BackgroundActivity.cancel_crashed(@myself_id, BAC_IS_DEAD_TIME)
 
     # All the activity ready on this CBRAIN component
     todo = BackgroundActivity.where(

@@ -27,6 +27,13 @@ class BackgroundActivity::DestroyFile < BackgroundActivity
 
   validates_dynamic_bac_presence_of_option :userfile_custom_filter_id
 
+  # Helper for scheduling a destroy of files immediately.
+  def self.setup!(user_id, userfile_ids, remote_resource_id=nil)
+    ba         = self.local_new(user_id, userfile_ids, remote_resource_id)
+    ba.save!
+    ba
+  end
+
   def process(item)
     userfile     = Userfile.find(item)
     ok           = userfile.destroy

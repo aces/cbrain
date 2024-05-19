@@ -129,8 +129,7 @@
            </li>
          <% end %>
 
-         <% # if !current_user.has_role?(:normal_user) || (cbrain_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
-         <% if current_user.has_role?(:admin_user) %>
+         <% if !current_user.has_role?(:normal_user) || (cbrain_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
            <li <%= set_selected(params[:controller], :background_activities) %>>
              <%=
                label = 'Ongoing'; label_class = ""

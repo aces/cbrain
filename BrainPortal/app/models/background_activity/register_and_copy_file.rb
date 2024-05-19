@@ -51,8 +51,7 @@ class BackgroundActivity::RegisterAndCopyFile < BackgroundActivity::RegisterFile
     userfile    = Userfile.find(userfile_id)
     dest_dp     = DataProvider.find(dest_dp_id)
     newfile     = userfile.provider_copy_to_otherprovider(dest_dp)
-    userfile.keep_dp_content_on_destroy = true
-    userfile.destroy
+    userfile.unregister # we leave the original content on the DP, but not registered.
     [ true, newfile.id ]
   end
 
