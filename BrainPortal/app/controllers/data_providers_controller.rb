@@ -615,7 +615,7 @@ class DataProvidersController < ApplicationController
     # Generate a complete response matching the old API
     flash[:notice]  = ""
     flash[:notice] += "Deleting #{exist_files.count} userfile(s) in background.\n"              if exist_files.present?
-    flash[:notice] += "Deleting #{unreg_basenames.count} unregistered files in background.\n" if unreg_basenames.present?
+    flash[:notice] += "Deleting #{unreg_basenames.count} unregistered file(s) in background.\n" if unreg_basenames.present?
     flash[:error]   = "No files selected, or that can be deleted." if exist_files.empty? && unreg_basenames.empty?
     api_response = generate_register_response.merge(
       :num_erased       => exist_files.size,

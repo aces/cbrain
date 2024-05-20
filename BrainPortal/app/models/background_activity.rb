@@ -109,6 +109,7 @@ class BackgroundActivity < ApplicationRecord
   validate              :repeat_is_correct
 
   before_save           :add_empty_options
+  after_destroy         :record_in_rails_log
 
   belongs_to :user
   belongs_to :remote_resource
@@ -554,6 +555,22 @@ class BackgroundActivity < ApplicationRecord
   # before_save callback, adds options={} if options is nil
   def add_empty_options #:nodoc:
     self.options = {} if self.options.nil?
+    true
+  end
+
+  # For user activity statistics, record the BAC in the Rails logs.
+  # Usually invoked from after_destroy callback.
+  def record_in_rails_log #:nodoc:
+    status = self.status
+    return unless status =~ /^(?:
+       Completed | PartiallyCompleted | Failed | InProgress |
+       Cancelled | Suspended | InternalError
+    )/x # we don't want Scheduled etc that never did anything
+
+    json_text = self.attributes.to_json
+    Rails.logger.info "Destroyed BackgroundActivity: #{json_text}"
+  rescue
+    Rails.logger.error("Cannot log #{self.type} #{self.id}") rescue nil
   end
 
   def status_is_correct #:nodoc:

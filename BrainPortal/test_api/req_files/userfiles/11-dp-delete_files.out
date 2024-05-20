@@ -1,2 +1,2 @@
 200 application/json we_will_delete_all_after_first_comma ,.*
-{"notice":"Deleting 2 userfile(s) in background.\n","error":null,"newly_registered_userfiles":[],"previously_registered_userfiles":[],"userfiles_in_transit":[],"num_unregistered":0,"num_erased":2}
+{"notice":"Deleting 2 unregistered file(s) in background.\n","error":null,"newly_registered_userfiles":[],"previously_registered_userfiles":[],"userfiles_in_transit":[],"num_unregistered":0,"num_erased":2}

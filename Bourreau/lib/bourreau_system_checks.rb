@@ -470,6 +470,11 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     puts "C> Starting Background Activity Workers..."
     #----------------------------------------------------------------------------
 
+    if ENV['CBRAIN_NO_BACKGROUND_ACTIVITY_WORKER'].present?
+      puts "C> \t- NOT started as env variable CBRAIN_NO_BACKGROUND_ACTIVITY_WORKER is set."
+      return
+    end
+
     worker_name = 'BourreauActivity'
     num_workers = 1 # hardcoded, usually that's enough for a Bourreau
 
