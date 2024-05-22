@@ -41,6 +41,7 @@ class ApplicationController < ActionController::Base
   include ExceptionHelpers
   include MessageHelpers
   include GlobusHelpers
+  include KeycloakHelpers
 
   helper_method :start_page_path
 

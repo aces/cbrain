@@ -44,7 +44,8 @@ class SessionsController < ApplicationController
     @browser_name    = ua.browser_name    || "(unknown browser name)"
     @browser_version = ua.browser_version || "(unknown browser version)"
 
-    @globus_uri      = globus_login_uri(globus_url) # can be nil
+    @globus_uri      = globus_login_uri(globus_url)     # can be nil
+    @keycloak_uri    = keycloak_login_uri(keycloak_url) # can be nil
 
     respond_to do |format|
       format.html
@@ -205,6 +206,79 @@ class SessionsController < ApplicationController
     redirect_to user_path(current_user)
   end
 
+  # This action receives a JSON authentication
+  # request from keycloak and uses it to record or verify
+  # a user's identity.
+  def keycloak
+    code  = params[:code].presence.try(:strip)
+    state = params[:state].presence || 'wrong'
+
+    # Some initial simple validations
+    if !code || state != keycloak_current_state()
+      cb_error "Keycloak session is out of sync with CBRAIN"
+    end
+
+    # Query Keycloak; this returns all the info we need at the same time.
+    identity_struct = keycloak_fetch_token(code, keycloak_url) # keycloak_url is generated from routes
+    if !identity_struct
+      cb_error "Could not fetch your identity information from Keycloak"
+    end
+    Rails.logger.info "Keycloak identity struct:\n#{identity_struct.pretty_inspect.strip}"
+
+    # Either record the identity...
+    if current_user
+      if ! user_can_link_to_keycloak_identity?(current_user, identity_struct)
+        Rails.logger.error("User #{current_user.login} attempted authentication " +
+                           "with unallowed Keycloak identity provider " +
+                           identity_struct['identity_provider_display_name'].to_s)
+        flash[:error] = "Error: your account can only authenticate with the following Keycloak providers: " +
+                        "#{allowed_keycloak_provider_names(current_user).join(", ")}"
+        redirect_to user_path(current_user)
+        return
+      end
+      record_keycloak_identity(current_user, identity_struct)
+      flash[:notice] = "Your CBRAIN account is now linked to your Keycloak identity."
+      if user_must_link_to_keycloak?(current_user)
+        wipe_user_password_after_keycloak_link(current_user)
+        flash[:notice] += "\nImportant note: from now on you can no longer connect to CBRAIN using a password."
+        redirect_to start_page_path
+        return
+      end
+      redirect_to user_path(current_user)
+      return
+    end
+
+    # ...or attempt login with it
+    user = find_user_with_keycloak_identity(identity_struct)
+    if user.is_a?(String) # an error occurred
+      flash[:error] = user # the message
+      redirect_to new_session_path
+      return
+    end
+
+    login_from_keycloak_user(user, identity_struct['azp'])
+
+  rescue CbrainException => ex
+    flash[:error] = "#{ex.message}"
+    redirect_to new_session_path
+  rescue => ex
+    clean_bt = Rails.backtrace_cleaner.clean(ex.backtrace || [])
+    Rails.logger.error "Keycloak auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
+    flash[:error] = 'The Keycloak authentication failed'
+    redirect_to new_session_path
+  end
+
+  # POST /unlink_keycloak
+  # Removes a user's linked keycloak identity.
+  def unlink_keycloak #:nodoc:
+    redirect_to start_page_path unless current_user
+
+    unlink_keycloak_identity(current_user)
+
+    flash[:notice] = "Your account is no longer linked to any Keycloak identity"
+    redirect_to user_path(current_user)
+  end
+
   ###############################################
   #
   # Private methods
@@ -343,6 +417,22 @@ class SessionsController < ApplicationController
   def login_from_globus_user(user, provider_name)
     # Login the user
     all_ok = create_from_user(user, "CBRAIN/Globus/#{provider_name}")
+
+    if ! all_ok
+      redirect_to new_session_path
+      return
+    end
+
+    # Record that the user connected using the CBRAIN login page
+    cbrain_session[:login_page] = 'CBRAIN'
+
+    # All's good
+    redirect_to start_page_path
+  end
+
+  def login_from_keycloak_user(user, provider_name)
+    # Login the user
+    all_ok = create_from_user(user, "CBRAIN/Keycloak/#{provider_name}")
 
     if ! all_ok
       redirect_to new_session_path

@@ -165,17 +165,20 @@
 
   <%= show_table(@user, :as => :user, :header => 'Linked Identities') do |t| %>
     <%
-      prov_id   = @user.meta[:globus_provider_id]
-      prov_name = @user.meta[:globus_provider_name]
-      prov_user = @user.meta[:globus_preferred_username]
+      globus_prov_id   = @user.meta[:globus_provider_id]
+      globus_prov_name = @user.meta[:globus_provider_name]
+      globus_prov_user = @user.meta[:globus_preferred_username]
+      keycloak_prov_id = @user.meta[:keycloak_provider_id]
+      keycloak_prov_name = @user.meta[:keycloak_provider_name]
+      keycloak_prov_user = @user.meta[:keycloak_preferred_username]
       orcid_id  = @user.meta[:orcid]
     %>
 
     <% if @globus_uri %>
     <% t.cell "Globus Provider", :show_width => 2 do %>
-       <% if prov_id %>
-         <strong>Provider name:</strong> <%= prov_name %><br>
-         <strong>Provider user:</strong> <%= prov_user %><br>
+       <% if globus_prov_id %>
+         <strong>Provider name:</strong> <%= globus_prov_name %><br>
+         <strong>Provider user:</strong> <%= globus_prov_user %><br>
          <% if @user.id == current_user.id  # show button on user own page, hide on other users pages %>
            <%= link_to('Unlink this Globus identity', unlink_globus_path,
                  :class  => "button",
@@ -192,6 +195,28 @@
        <% end %>
     <% end %>
     <% end %>
+
+    <% if @keycloak_uri %>
+    <% t.cell "Keycloak Provider", :show_width => 2 do %>
+       <% if keycloak_prov_id %>
+         <strong>Provider name:</strong> <%= keycloak_prov_name %><br>
+         <strong>Provider user:</strong> <%= keycloak_prov_user %><br>
+         <% if @user.id == current_user.id  # show button on user own page, hide on other users pages %>
+           <%= link_to('Unlink this Keycloak identity', unlink_keycloak_path,
+                 :class  => "button",
+                 :method => :post,
+                 :data   => { :confirm => "Are you sure you want to unlink your account with this Keycloak identity?" }
+               )
+           %>
+         <% end %>
+       <% else %>
+         (No Keycloak identity linked to your account)<br>
+         <% if @user.id == current_user.id  # Keycloak button works only on user own account %>
+           <%= link_to 'Link a Keycloak identity', @keycloak_uri, :class => 'button keycloak_button' %>
+         <% end %>
+       <% end %>
+    <% end %>
+
 
     <%
       # Note: should be in a if/end block testing for the configuration of orcid_uri, like in NeuroHub

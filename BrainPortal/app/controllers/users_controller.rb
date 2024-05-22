@@ -28,6 +28,7 @@ class UsersController < ApplicationController
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include GlobusHelpers
+  include KeycloakHelpers
 
   api_available :only => [ :index, :create, :show, :destroy, :update, :create_user_session, :push_keys]
 
@@ -91,7 +92,8 @@ class UsersController < ApplicationController
       .where( "updated_at > ?", SessionHelpers::SESSION_API_TOKEN_VALIDITY.ago )
       .order(:updated_at)
 
-    @globus_uri = globus_login_uri(globus_url)
+    @globus_uri   = globus_login_uri(globus_url)
+    @keycloak_uri = keycloak_login_uri(keycloak_url)
 
     respond_to do |format|
       format.html # show.html.erb
