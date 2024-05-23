@@ -40,6 +40,15 @@ class BackgroundActivity::CopyFile < BackgroundActivity
     userfile     = Userfile.find(item)
     dest_dp_id   = self.options[:dest_data_provider_id]
     dest_dp      = DataProvider.find(dest_dp_id)
+
+    # This option is rarely used. The CBRAIN main interface
+    # doesn't provide any means of setting this. It is used
+    # by special external API calls that require copying of only a
+    # subset of a FileCollection. Also, only some specific
+    # types of destination DPs support the option.
+    userfile.sync_select_patterns = self.options[:sync_select_patterns] # can be nil
+
+    # Main operation and return status
     new_userfile = userfile.provider_copy_to_otherprovider(dest_dp, self.options || {})
     return [ true, new_userfile.id ] if new_userfile.is_a?(Userfile)
     return [ true, "Skipped"      ]  if new_userfile == true

@@ -133,5 +133,72 @@ module SshDataProviderBase
     text
   end
 
+  # This methods generates a set of --include options
+  # for the rsync command to select for transfer only
+  # pathnames that match the patterns in the array +patterns+
+  # Patterns must match each levels of files to transfer
+  # because of the way rsync works. To transfer *json files
+  # at the top folder and those within "abc", you'd supply
+  #
+  #   [ "*.json", "abc/*.json" ]
+  #
+  # which would generate the following rsync options:
+  #
+  #   --include='/*.json'
+  #   --include=/abc/
+  #   --include='/abc/*.json'
+  #   --exclude='*'"
+  #
+  # For the moment only a limited set of characters are
+  # supported in the patterns.
+  def rsync_select_pattern_options(patterns)
+    return "" if patterns.blank?
+
+    patarray = Array(patterns).sort.uniq
+    badpat   = patarray.detect do |pat|
+      # only letters, digits, _, ., *, /, , and -
+      pat !~ /
+        \A
+        [
+          \w    # letters, digits, underscore
+          \/
+          \.
+          \,
+          \-
+          \:
+          \*    # used in patterns
+          \?    # used in patterns
+        ]+
+        \z
+      /x
+    end
+    cb_error "Bad sync filtering pattern for SshDataProvider: '#{badpat}'" if badpat
+
+    # The reason for this check is because implementing filtering rules
+    # with --include and --exclude using '**' is very very complicated
+    cb_error "Bad sync filtering pattern for SshDataProvider: '**' are only supported at the end of the path: '#{badpat}'" if
+      patarray.detect { |pat| pat.sub(/\*\*\z/,"").include? "**" }
+
+    # Make sure they all start with /
+    patarray = patarray.map { |x| x.to_s.sub(/\A\/*/,"/") }
+
+    # Build all possible unique prefixes for all patterns
+    patcomponents = patarray.map do |pattern|  "/abc/def/*file*" # (any number of levels, but must be UNDER the name of the file collection
+      prefixes = Pathname.new(pattern).descend.to_a   # /, /abc, /abc/def, /abc/def/*file*
+      prefixes.shift
+      final = prefixes.pop
+      (prefixes.map { |prefix| prefix.to_s + '/' }) + [ final.to_s ]
+    end
+      .flatten
+      .uniq
+      .sort
+      .reject { |x| x == '/' }
+
+    # Return the rsync options to include+exclude what files we really want.
+    patcomponents
+      .map { |pat| "--include=#{pat.bash_escape}" }
+      .join(" ") + " --exclude='*'"
+  end
+
 end
 
