@@ -85,8 +85,12 @@ class SshDataProvider < DataProvider
     # As of rsync 3.1.2, rsync does the escaping of the remote path properly itself
     source_escaped = remotefull.to_s.bash_escape if self.class.local_rsync_protects_args?
 
+    # Adds special --include and --exclude to select files by pattern.
+    # Danger, lots of caveats here! Not a standard procedure within CBRAIN apps.
+    in_ex_clude_opt = rsync_select_pattern_options(userfile.sync_select_patterns) if userfile.is_a?(FileCollection)
+
     # It's IMPORTANT that the source be specified with a bare ':' in front.
-    text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} :#{source_escaped}#{sourceslash} #{shell_escape(localfull)} 2>&1")
+    text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{in_ex_clude_opt} :#{source_escaped}#{sourceslash} #{shell_escape(localfull)} 2>&1")
     cb_error "Error syncing userfile ##{userfile.id} to local cache, rsync returned:\n#{text}" unless text.blank?
     unless File.exist?(localfull)
       cb_error "Error syncing userfile ##{userfile.id} to local cache: no destination file found after rsync?\n" +
@@ -96,7 +100,7 @@ class SshDataProvider < DataProvider
   end
 
   def impl_sync_to_provider(userfile, alternate_source_path=nil) #:nodoc:
-    localfull   = alternate_source_path.presence || cache_full_path(userfile)
+    localfull   = alternate_source_path.to_s.presence || cache_full_path(userfile)
     remotefull  = provider_full_path(userfile)
     cb_error "Error: file #{localfull} does not exist in local cache!" unless File.exist?(localfull)
 
@@ -108,8 +112,12 @@ class SshDataProvider < DataProvider
     # As of rsync 3.1.2, rsync does the escaping of the remote path properly itself
     dest_escaped = remotefull.to_s.bash_escape if self.class.local_rsync_protects_args?
 
+    # Adds special --include and --exclude to select files by pattern.
+    # Danger, lots of caveats here! Not a standard procedure within CBRAIN apps.
+    in_ex_clude_opt = rsync_select_pattern_options(userfile.sync_select_patterns) if userfile.is_a?(FileCollection)
+
     # It's IMPORTANT that the destination be specified with a bare ':' in front.
-    text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{dest_escaped} 2>&1")
+    text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{in_ex_clude_opt} #{shell_escape(localfull)}#{sourceslash} :#{dest_escaped} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
     cb_error "Error syncing userfile ##{userfile.id} to data provider, rsync returned:\n#{text}" unless text.blank?
     unless self.provider_file_exists?(userfile).to_s =~ /file|dir/
@@ -202,6 +210,7 @@ class SshDataProvider < DataProvider
       if userfile.is_a? FileCollection
         if directory == :all
           entries = sftp.dir.glob(provider_full_path(userfile).to_s, "**/*")
+          #entries = sftp.dir.glob(provider_full_path(userfile).to_s, "**/*", File::FNM_DOTMATCH)
         else
           directory = "." if directory == :top
           base_dir = "/" + directory + "/"

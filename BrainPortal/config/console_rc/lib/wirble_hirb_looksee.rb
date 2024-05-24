@@ -110,6 +110,13 @@ def htable(thingie, options={})
   table thingie, options.merge(:unicode => true, :headers => false)
 end
 
+def sql(command)
+  res = ApplicationRecord.connection.execute command
+  f   = res.fields
+  tab = res.to_a.unshift f
+  htable tab
+end
+
 (CbrainConsoleFeatures ||= []) << <<FEATURES
 ========================================================
 Feature: Hirb pretty model tables, and table helpers

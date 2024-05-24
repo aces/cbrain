@@ -71,6 +71,7 @@ describe SshDataProvider do
       allow(Dir).to receive(:mkdir)
       allow(File).to receive(:directory?).and_return(true)
       allow(File).to receive(:exist?).and_return(true)
+      allow(provider).to receive(:rsync_select_pattern_options).and_return(nil)
     end
     context "for a FileCollection" do
       it "should check if the cache directory already exists" do

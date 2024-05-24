@@ -392,11 +392,11 @@ class DataProvider < ApplicationRecord
     cb_error "Error: provider #{self.name} is not syncable."   if     self.not_syncable?
     cb_error "Error: file #{userfile.name} is immutable."      if     userfile.immutable?
     rr_allowed_syncing!("synchronize content to")
-    if alternate_source_path.present? && ! self.can_upload_directly_from_path?
+    if alternate_source_path.to_s.present? && ! self.can_upload_directly_from_path?
       cb_error "Provider #{self.name} does not support direct uploads."
     end
     final_status = 'InSync'
-    final_status = 'ProvNewer' if alternate_source_path.present? && self.can_upload_directly_from_path?
+    final_status = 'ProvNewer' if alternate_source_path.to_s.present? && self.can_upload_directly_from_path?
     SyncStatus.ready_to_copy_to_dp(userfile, final_status) do
       final_status == 'ProvNewer' ? # same test as the 'if' two lines above
         impl_sync_to_provider(userfile, alternate_source_path) :
@@ -635,6 +635,7 @@ class DataProvider < ApplicationRecord
       if userfile.is_a? FileCollection
         if directory == :all
           entries = Dir.glob(userfile.name + "/**/*")
+          #entries = Dir.glob(userfile.name + "/**/*", File::FNM_DOTMATCH).reject { |p| p.ends_with?("/.") || p.ends_with?("/..")}
         else
           directory = "." if directory == :top
           base_dir = Pathname.new(userfile.name) + directory
