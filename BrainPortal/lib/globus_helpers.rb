@@ -25,25 +25,36 @@ module GlobusHelpers
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # GLOBUS authentication URL constants
+  # OIDC authentication URL constants
   # Maybe should be made configurable.
-  GLOBUS_AUTHORIZE_URI = "https://auth.globus.org/v2/oauth2/authorize" # will be issued a GET with params
-  GLOBUS_TOKEN_URI     = "https://auth.globus.org/v2/oauth2/token"     # will be issued a POST with a single code
-  GLOBUS_LOGOUT_URI    = "https://auth.globus.org/v2/web/logout"       # for pages that provide this link
 
-  # Returns the URI to send users to the GLOBUS authentication page.
+  # will be issued a GET with params
+  GLOBUS_AUTHORIZE_URI = RemoteResource.current_resource.meta[:oidc_authorize_uri] || "https://auth.globus.org/v2/oauth2/authorize"
+  # will be issued a POST with a single code
+  GLOBUS_TOKEN_URI     = RemoteResource.current_resource.meta[:oidc_token_uri]     || "https://auth.globus.org/v2/oauth2/token"
+  # for pages that provide this link
+  GLOBUS_LOGOUT_URI    = RemoteResource.current_resource.meta[:oidc_logout_uri]    || "https://auth.globus.org/v2/web/logout"
+ 
+ 
+  # Define OIDC scope
+  $scope,$oidc_name = !RemoteResource.current_resource.meta[:oidc_client].casecmp?("keycloak") ? 
+                        ["urn:globus:auth:scope:auth.globus.org:view_identities openid email profile", "Globus"] : 
+                        ["openid email profile", "Keycloak"]
+
+
+  # Returns the URI to send users to the OIDC authentication page.
   # The parameter globus_action_url should be the URL to the controller
   # action here in CBRAIN that will received the POST response.
   def globus_login_uri(globus_action_url)
     return nil if     api_request?
     return nil unless globus_auth_configured?
 
-    # Create the URI to authenticate with GLOBUS
+    # Create the URI to authenticate with OIDC
     globus_params = {
       :client_id     => globus_client_id,
       :response_type => 'code',
-      :scope         => "urn:globus:auth:scope:auth.globus.org:view_identities openid email profile",
-      :redirect_uri  => globus_action_url, # generated from Rails routes
+      :scope         => $scope,
+      :redirect_uri  => globus_action_url,    # generated from Rails routes
       :state         => globus_current_state, # method is below
     }
     GLOBUS_AUTHORIZE_URI + '?' + globus_params.to_query
@@ -54,9 +65,9 @@ module GlobusHelpers
   end
 
   def globus_fetch_token(code, globus_action_url)
-    # Query Globus; this returns all the info we need at the same time.
+    # Query OIDC; this returns all the info we need at the same time.
     auth_header = globus_basic_auth_header # method is below
-    response = Typhoeus.post(GLOBUS_TOKEN_URI,
+    response    = Typhoeus.post(GLOBUS_TOKEN_URI,
       :body   => {
                    :code          => code,
                    :redirect_uri  => globus_action_url,
@@ -75,7 +86,7 @@ module GlobusHelpers
 
     return identity_struct
   rescue => ex
-    Rails.logger.error "GLOBUS token request failed: #{ex.class} #{ex.message}"
+    Rails.logger.error "#{$oidc_name} token request failed: #{ex.class} #{ex.message}"
     return nil
   end
 
@@ -90,14 +101,14 @@ module GlobusHelpers
   end
 
   # Returns a string that should stay constants during the entire
-  # globus negotiations. The current Rails session_id, encoded, will do
+  # OIDC negotiations. The current Rails session_id, encoded, will do
   # the trick. The Rails session is maintained by a cookie already
   # created and maintained, at this point.
   def globus_current_state
     Digest::MD5.hexdigest( request.session_options[:id] )
   end
 
-  # Return the registered globus endpoint client ID.
+  # Return the registered OIDC endpoint client ID.
   # This value must be configured by the CBRAIN admin
   # in the meta data of the portal. Returns nil if unset.
   def globus_client_id
@@ -105,7 +116,7 @@ module GlobusHelpers
     myself.meta[:globus_client_id].presence.try(:strip)
   end
 
-  # Return the registered globus endpoint client secret.
+  # Return the registered OIDC endpoint client secret.
   # This value must be configured by the CBRAIN admin
   # in the meta data of the portal. Returns nil if unset.
   def globus_client_secret
@@ -114,7 +125,7 @@ module GlobusHelpers
   end
 
   # Returns true if the CBRAIN system is configured for
-  # globus auth.
+  # OIDC auth.
   def globus_auth_configured?
     myself   = RemoteResource.current_resource
     site_uri = myself.site_url_prefix.presence
@@ -125,43 +136,43 @@ module GlobusHelpers
     true
   end
 
-  # Record the globus identity for the current user.
+  # Record the OIDC identity for the current user.
   # (This maybe should be made into a User model method)
   def record_globus_identity(user, globus_identity)
 
     # In the case where a user must auth with a specific set of
-    # globus providers, we find the first identity that
+    # OIDC providers, we find the first identity that
     # matches a name of that set.
     identity = set_of_identities(globus_identity).detect do |idstruct|
        user_can_link_to_globus_identity?(user, idstruct)
     end
 
-    provider_id   = identity['identity_provider']              || cb_error("Globus: No identity provider")
-    provider_name = identity['identity_provider_display_name'] || cb_error("Globus: No identity provider name")
+    provider_id   = identity['identity_provider']              || identity['aud'] || cb_error("#{$oidc_name}: No identity provider")
+    provider_name = identity['identity_provider_display_name'] || identity['azp'] || cb_error("#{$oidc_name}: No identity provider name")
     pref_username = identity['preferred_username'] ||
-                    identity['username']                       || cb_error("Globus: No preferred username")
+                    identity['username']                       || cb_error("#{$oidc_name}: No preferred username")
 
     # Special case for ORCID, because we already have fields for that provider
-    # We do NOT do this in the case where the user is forced to auth with globus.
+    # We do NOT do this in the case where the user is forced to auth with OIDC.
     if provider_name == 'ORCID' && ! user_must_link_to_globus?(user)
       orcid = pref_username.sub(/@.*/, "")
       user.meta['orcid'] = orcid
-      user.addlog("Linked to ORCID identity: '#{orcid}' through Globus")
+      user.addlog("Linked to ORCID identity: '#{orcid}' through #{$oidc_name}")
       return
     end
 
     user.meta[:globus_provider_id]        = provider_id
     user.meta[:globus_provider_name]      = provider_name # used in show page
     user.meta[:globus_preferred_username] = pref_username
-    user.addlog("Linked to Globus identity: '#{pref_username}' on provider '#{provider_name}'")
+    user.addlog("Linked to #{$oidc_name} identity: '#{pref_username}' on provider '#{provider_name}'")
   end
 
-  # Removes the recorded globus identity for +user+
+  # Removes the recorded OIDC identity for +user+
   def unlink_globus_identity(user)
     user.meta[:globus_provider_id]        = nil
     user.meta[:globus_provider_name]      = nil
     user.meta[:globus_preferred_username] = nil
-    user.addlog("Unlinked Globus identity")
+    user.addlog("Unlinked #{$oidc_name} identity")
   end
 
   def set_of_identities(globus_identity)
@@ -201,19 +212,19 @@ module GlobusHelpers
   end
 
   def wipe_user_password_after_globus_link(user)
-    user.update_attribute(:crypted_password, 'Wiped-By-Globus-Link-' + User.random_string)
-    user.update_attribute(:salt            , 'Wiped-By-Globus-Link-' + User.random_string)
+    user.update_attribute(:crypted_password, "Wiped-By-#{$oidc_name}-Link-" + User.random_string)
+    user.update_attribute(:salt            , "Wiped-By-#{$oidc_name}-Link-" + User.random_string)
     user.update_attribute(:password_reset  , false)
   end
 
-  # Given a globus identity structure, find the user that matches it.
+  # Given a OIDC identity structure, find the user that matches it.
   # Returns the user object if found; returns a string error message otherwise.
   def find_user_with_globus_identity(globus_identity)
 
     provider_name = globus_identity['identity_provider_display_name']
     pref_username = globus_identity['preferred_username'] || globus_identity['username']
 
-    id_set = set_of_identities(globus_identity) # a globus record can contain several identities
+    id_set = set_of_identities(globus_identity) # an OIDC record can contain several identities
 
     # For each present identity, find all users that have it.
     # We only allow ONE cbrain user to link to any of the identities.
@@ -222,14 +233,14 @@ module GlobusHelpers
     end
 
     if users.size == 0
-      Rails.logger.error "GLOBUS warning: no CBRAIN accounts found for identity '#{pref_username}' on provider '#{provider_name}'"
-      return "No CBRAIN user matches your Globus identity. Create a CBRAIN account or link your existing CBRAIN account to your Globus provider."
+      Rails.logger.error "#{$oidc_name.upcase} warning: no CBRAIN accounts found for identity '#{pref_username}' on provider '#{provider_name}'"
+      return "No CBRAIN user matches your #{$oidc_name} identity. Create a CBRAIN account or link your existing CBRAIN account to your #{$oidc_name} provider."
     end
 
     if users.size > 1
       loginnames = users.map(&:login).join(", ")
-      Rails.logger.error "GLOBUS error: multiple CBRAIN accounts (#{loginnames}) found for identity '#{pref_username}' on provider '#{provider_name}'"
-      return "Several CBRAIN user accounts match your Globus identity. Please contact the CBRAIN admins."
+      Rails.logger.error "#{$oidc_name.upcase} error: multiple CBRAIN accounts (#{loginnames}) found for identity '#{pref_username}' on provider '#{provider_name}'"
+      return "Several CBRAIN user accounts match your #{$oidc_name} identity. Please contact the CBRAIN admins."
     end
 
     # The one lucky user
@@ -241,17 +252,17 @@ module GlobusHelpers
   # be empty (no such users) or contain more than one
   # user (an account management error).
   def find_users_with_specific_identity(identity)
-    provider_id   = identity['identity_provider']              || cb_error("Globus: No identity provider")
-    provider_name = identity['identity_provider_display_name'] || cb_error("Globus: No identity provider name")
+    provider_id   = identity['identity_provider']              || identity['aud'] || cb_error("#{$oidc_name}: No identity provider")
+    provider_name = identity['identity_provider_display_name'] || identity['azp'] || cb_error("#{$oidc_name}: No identity provider name")
     pref_username = identity['preferred_username'] ||
-                    identity['username']                       || cb_error("Globus: No preferred username")
+                    identity['username']                       || cb_error("#{$oidc_name}: No preferred username")
 
     # Special case for ORCID, because we already have fields for that provider
     if provider_name == 'ORCID'
       orcid = pref_username.sub(/@.*/, "")
       users = User.find_all_by_meta_data(:orcid, orcid).to_a
       return users if users.present?
-      # otherwise we fall through to detect users who linked with ORCID through Globus
+      # otherwise we fall through to detect users who linked with ORCID through OIDC
     end
 
     # All other globus providers

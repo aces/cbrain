@@ -23,110 +23,110 @@
 # Helper for logging in using Keycloak identity stuff
 module KeycloakHelpers
 
-    Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-    # KEYCLOAK authentication URL constants
-    # Maybe should be made configurable.
-    KEYCLOAK_AUTHORIZE_URI = "http://localhost:8080/realms/lasso-realm/protocol/openid-connect/auth" # will be issued a GET with params
-    KEYCLOAK_TOKEN_URI     = "keycloak:8080/realms/lasso-realm/protocol/openid-connect/token"     # will be issued a POST with a single code
-    KEYCLOAK_LOGOUT_URI    = "http://localhost:8080/realms/lasso-realm/protocol/openid-connect/logout"       # for pages that provide this link
+  # KEYCLOAK authentication URL constants
+  # Maybe should be made configurable.
+  KEYCLOAK_AUTHORIZE_URI = "http://localhost:8080/realms/lasso-realm/protocol/openid-connect/auth" # will be issued a GET with params
+  KEYCLOAK_TOKEN_URI     = "keycloak:8080/realms/lasso-realm/protocol/openid-connect/token"     # will be issued a POST with a single code
+  KEYCLOAK_LOGOUT_URI    = "http://localhost:8080/realms/lasso-realm/protocol/openid-connect/logout"       # for pages that provide this link
 
-    # Returns the URI to send users to the KEYCLOAK authentication page.
-    # The parameter keycloak_action_url should be the URL to the controller
-    # action here in CBRAIN that will received the POST response.
-    def keycloak_login_uri(keycloak_action_url)
-      return nil if     api_request?
-      return nil unless keycloak_auth_configured?
+  # Returns the URI to send users to the KEYCLOAK authentication page.
+  # The parameter keycloak_action_url should be the URL to the controller
+  # action here in CBRAIN that will received the POST response.
+  def keycloak_login_uri(keycloak_action_url)
+    return nil if     api_request?
+    return nil unless keycloak_auth_configured?
 
-      # Create the URI to authenticate with KEYCLOAK
-      keycloak_params = {
-        :client_id     => keycloak_client_id,
-        :response_type => 'code',
-        :scope         => "openid email profile",
-        :redirect_uri  => keycloak_action_url, # generated from Rails routes
-        :state         => keycloak_current_state, # method is below
-      }
-      KEYCLOAK_AUTHORIZE_URI + '?' + keycloak_params.to_query
-    end
+    # Create the URI to authenticate with KEYCLOAK
+    keycloak_params = {
+      :client_id     => keycloak_client_id,
+      :response_type => 'code',
+      :scope         => "openid email profile",
+      :redirect_uri  => keycloak_action_url, # generated from Rails routes
+      :state         => keycloak_current_state, # method is below
+    }
+    KEYCLOAK_AUTHORIZE_URI + '?' + keycloak_params.to_query
+  end
 
-    def keycloak_logout_uri
-      KEYCLOAK_LOGOUT_URI
-    end
+  def keycloak_logout_uri
+    KEYCLOAK_LOGOUT_URI
+  end
 
-    def keycloak_fetch_token(code, keycloak_action_url)
-        # Query Keycloak; this returns all the info we need at the same time.
-        auth_header = keycloak_basic_auth_header # method is below
+  def keycloak_fetch_token(code, keycloak_action_url)
+    # Query Keycloak; this returns all the info we need at the same time.
+    auth_header = keycloak_basic_auth_header # method is below
 
-        response = Typhoeus.post(KEYCLOAK_TOKEN_URI,
-          :body   => {
-                       :code          => code,
-                       :redirect_uri  => keycloak_action_url,
-                       :grant_type    => 'authorization_code',
-                     },
-          :headers => { :Accept       => 'application/json',
-                        :Authorization => auth_header,
-                      }
-        )
+    response = Typhoeus.post(KEYCLOAK_TOKEN_URI,
+      :body   => {
+                   :code          => code,
+                   :redirect_uri  => keycloak_action_url,
+                   :grant_type    => 'authorization_code',
+                 },
+      :headers => { :Accept       => 'application/json',
+                    :Authorization => auth_header,
+                  }
+    )
 
-        # Parse the response
-        body         = response.response_body
-        json         = JSON.parse(body)
-        jwt_id_token = json["id_token"]
-        identity_struct, _ = JWT.decode(jwt_id_token, nil, false)
+    # Parse the response
+    body         = response.response_body
+    json         = JSON.parse(body)
+    jwt_id_token = json["id_token"]
+    identity_struct, _ = JWT.decode(jwt_id_token, nil, false)
 
-        return identity_struct
-      rescue => ex
-        Rails.logger.error "KEYCLOAK token request failed: #{ex.class} #{ex.message}"
-        return nil
-      end
+    return identity_struct
+  rescue => ex
+    Rails.logger.error "KEYCLOAK token request failed: #{ex.class} #{ex.message}"
+    return nil
+  end
 
-      # Returns the value for the Authorization header
-      # when doing the client authentication.
-      #
-      #  "Basic 1745djfuebwifh37236djdf74.etc.etc"
-      def keycloak_basic_auth_header
-        client_id     = keycloak_client_id
-        client_secret = keycloak_client_secret
-        "Basic " + Base64.strict_encode64("#{client_id}:#{client_secret}")
-      end
+  # Returns the value for the Authorization header
+  # when doing the client authentication.
+  #
+  #  "Basic 1745djfuebwifh37236djdf74.etc.etc"
+  def keycloak_basic_auth_header
+    client_id     = keycloak_client_id
+    client_secret = keycloak_client_secret
+    "Basic " + Base64.strict_encode64("#{client_id}:#{client_secret}")
+  end
 
-      # Returns a string that should stay constants during the entire
-      # keycloak negotiations. The current Rails session_id, encoded, will do
-      # the trick. The Rails session is maintained by a cookie already
-      # created and maintained, at this point.
-      def keycloak_current_state
-        Digest::MD5.hexdigest( request.session_options[:id] )
-      end
+  # Returns a string that should stay constants during the entire
+  # keycloak negotiations. The current Rails session_id, encoded, will do
+  # the trick. The Rails session is maintained by a cookie already
+  # created and maintained, at this point.
+  def keycloak_current_state
+    Digest::MD5.hexdigest( request.session_options[:id] )
+  end
 
-      # Return the registered keycloak endpoint client ID.
-      # This value must be configured by the CBRAIN admin
-      # in the meta data of the portal. Returns nil if unset.
-      def keycloak_client_id
-        myself = RemoteResource.current_resource
-        myself.meta[:keycloak_client_id].presence.try(:strip)
-      end
+  # Return the registered keycloak endpoint client ID.
+  # This value must be configured by the CBRAIN admin
+  # in the meta data of the portal. Returns nil if unset.
+  def keycloak_client_id
+    myself = RemoteResource.current_resource
+    myself.meta[:keycloak_client_id].presence.try(:strip)
+  end
 
-      # Return the registered keycloak endpoint client secret.
-      # This value must be configured by the CBRAIN admin
-      # in the meta data of the portal. Returns nil if unset.
-      def keycloak_client_secret
-        myself = RemoteResource.current_resource
-        myself.meta[:keycloak_client_secret].presence.try(:strip)
-      end
+  # Return the registered keycloak endpoint client secret.
+  # This value must be configured by the CBRAIN admin
+  # in the meta data of the portal. Returns nil if unset.
+  def keycloak_client_secret
+    myself = RemoteResource.current_resource
+    myself.meta[:keycloak_client_secret].presence.try(:strip)
+  end
 
-      # Returns true if the CBRAIN system is configured for
-      # keycloak auth.
-      def keycloak_auth_configured?
-        myself   = RemoteResource.current_resource
-        site_uri = myself.site_url_prefix.presence
-        # Three conditions: site uri, client ID, client secret.
-        return false if ! site_uri
-        return false if ! keycloak_client_id
-        return false if ! keycloak_client_secret
-        true
-      end
+  # Returns true if the CBRAIN system is configured for
+  # keycloak auth.
+  def keycloak_auth_configured?
+    myself   = RemoteResource.current_resource
+    site_uri = myself.site_url_prefix.presence
+    # Three conditions: site uri, client ID, client secret.
+    return false if ! site_uri
+    return false if ! keycloak_client_id
+    return false if ! keycloak_client_secret
+    true
+  end
 
-        # Record the keycloak identity for the current user.
+  # Record the keycloak identity for the current user.
   # (This maybe should be made into a User model method)
   def record_keycloak_identity(user, keycloak_identity)
 
@@ -201,7 +201,6 @@ module KeycloakHelpers
     user.meta[:allowed_keycloak_provider_names].present?
   end
 
-
   def wipe_user_password_after_keycloak_link(user)
     user.update_attribute(:crypted_password, 'Wiped-By-Keycloak-Link-' + User.random_string)
     user.update_attribute(:salt            , 'Wiped-By-Keycloak-Link-' + User.random_string)
@@ -264,3 +263,4 @@ module KeycloakHelpers
   end
 
 end
+

@@ -79,10 +79,10 @@
           <strong>OR</strong>
       </td>
       <td class="field">
-        <%= link_to 'Sign In With Globus', @globus_uri, :class => 'button globus_button' %>
+        <%= link_to "Sign In With #{@oidc_client}", @globus_uri, :class => 'button globus_button' %>
         <div class="field_explanation">
           (Only available if you have already linked your<br>
-          CBRAIN account to a Globus identity)
+          CBRAIN account to a <%= @oidc_client %> identity)
         </div>
       </td>
     </tr>

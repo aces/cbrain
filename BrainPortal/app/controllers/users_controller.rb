@@ -28,7 +28,6 @@ class UsersController < ApplicationController
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include GlobusHelpers
-  include KeycloakHelpers
 
   api_available :only => [ :index, :create, :show, :destroy, :update, :create_user_session, :push_keys]
 
@@ -76,7 +75,8 @@ class UsersController < ApplicationController
   # GET /user/1.xml
   # GET /user/1.json
   def show #:nodoc:
-    @user = User.find(params[:id])
+    @user        = User.find(params[:id])
+    @oidc_client = (RemoteResource.current_resource.meta[:oidc_client] || "Globus").capitalize
 
     cb_error "You don't have permission to view this user.", :redirect  => start_page_path unless edit_permission?(@user)
 
@@ -92,8 +92,7 @@ class UsersController < ApplicationController
       .where( "updated_at > ?", SessionHelpers::SESSION_API_TOKEN_VALIDITY.ago )
       .order(:updated_at)
 
-    @globus_uri   = globus_login_uri(globus_url)
-    @keycloak_uri = keycloak_login_uri(keycloak_url)
+    @globus_uri = globus_login_uri(globus_url)
 
     respond_to do |format|
       format.html # show.html.erb
