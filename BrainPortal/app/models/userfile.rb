@@ -99,6 +99,12 @@ class Userfile < ApplicationRecord
   # this flag is checked by a callback before_destroy()
   attr_accessor           :keep_dp_content_on_destroy
 
+  # Special array of file patterns when performing syncing of
+  # only a subset of the files in a FileCollection. Not a
+  # commonly used feature of the model, and this is used only
+  # by certain DataProvider types which understand these patterns.
+  attr_accessor           :sync_select_patterns
+
   # Utility named scopes
   scope :name_like,     -> (n) { where("userfiles.name LIKE ?", "%#{n.strip}%") }
 

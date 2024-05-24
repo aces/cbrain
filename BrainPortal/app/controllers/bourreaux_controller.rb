@@ -645,6 +645,8 @@ class BourreauxController < ApplicationController
     bourreau_ids       = Array(params[:bourreau_ids])  # optional
     bourreau_group_ids = Array(params[:bourreau_group_ids]) # optional
     bypass_cache       = params[:bypass_cache].present?
+    patterns           = params[:sync_select_patterns].presence # optional
+    unregister         = params[:unregister_after_copy].present?
 
     # Find files and destination DP
     data_provider      = DataProvider.find(data_provider_id)
@@ -674,9 +676,11 @@ class BourreauxController < ApplicationController
     selected_bid  = selected_bids.shuffle.first
 
     # Create the copy request as a BackgroundActivity object
-    bac = BackgroundActivity::CopyFile.setup!(
+    bac_klass = unregister ? BackgroundActivity::CopyFileAndUnregister : BackgroundActivity::CopyFile
+    bac = bac_klass.setup!(
       current_user.id, userfile_ids, selected_bid, data_provider_id,
-      :bypass_cache => bypass_cache,
+      :bypass_cache         => bypass_cache,
+      :sync_select_patterns => Array(patterns).presence,
     )
 
     render :json => { :status => "ok", :userfile_ids => userfile_ids, :background_activity_id => bac.id }
