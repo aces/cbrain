@@ -37,9 +37,9 @@ module GlobusHelpers
  
  
   # Define OIDC scope
-  $scope,$oidc_name = !RemoteResource.current_resource.meta[:oidc_client].casecmp?("keycloak") ? 
-                        ["urn:globus:auth:scope:auth.globus.org:view_identities openid email profile", "Globus"] : 
-                        ["openid email profile", "Keycloak"]
+  $scope,$oidc_name = (RemoteResource.current_resource.meta[:oidc_client] || "").casecmp?("keycloak") ?
+                        ["openid email profile", "Keycloak"] : 
+                        ["urn:globus:auth:scope:auth.globus.org:view_identities openid email profile", "Globus"] 
 
 
   # Returns the URI to send users to the OIDC authentication page.
