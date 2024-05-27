@@ -41,10 +41,22 @@ class BackgroundActivity::UncompressFile < BackgroundActivity
   end
 
   def process_single_file(userfile)
+
     return [ false, "File is under transfer" ] if
       userfile.sync_status.to_a.any? { |ss| ss.status =~ /^To/ }
+
     return [ false, "File is not compressed" ] if
       userfile.name !~ /\.gz\z/i
+
+    collision = userfile.class.where(
+        :name             => userfile.name.sub(/\.gz\z/i,""),
+        :data_provider_id => userfile.data_provider_id,
+        :browse_path      => userfile.browse_path,
+      )
+    collision = collision.where(:user_id => userfile.user_id) if                                                                    ! userfile.data_provider.content_storage_shared_between_users?
+    return [ false, "Another GZ file already exists" ] if
+      collision.exists?
+
     userfile.gzip_content(:uncompress)
     [ true, "Uncompressed" ]
   end

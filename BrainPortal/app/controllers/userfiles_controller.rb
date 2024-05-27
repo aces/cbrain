@@ -446,28 +446,7 @@ class UserfilesController < ApplicationController
       return
     end
 
-    # Sync files to the portal's cache
-    CBRAIN.spawn_with_active_records(current_user, "Synchronization of #{@userfiles.size} files.") do
-      reset_dpids = {} # to track reset_connection() to DPs
-      @userfiles.shuffle.each do |userfile|
-        state = userfile.local_sync_status
-        sync_status = 'ProvNewer'
-        sync_status = state.status if state
-
-        # Issue one reset_connection() per DP ID seen
-        # Needed mostly for S3 DPs
-        if ! reset_dpids[userfile.data_provider_id]
-          userfile.data_provider.reset_connection if userfile.data_provider.respond_to?(:reset_connection)
-          reset_dpids[userfile.data_provider_id] = true
-        end
-
-        if sync_status !~ /^To|InSync|Corrupted/
-          if (userfile.sync_to_cache rescue nil)
-            userfile.set_size
-          end
-        end
-      end
-    end # spawn
+    bac = BackgroundActivity::SyncFile.setup!(current_user.id, @userfiles.map(&:id))
 
     flash[:notice] = "Synchronization started in background. Files that cannot be synchronized will be skipped."
 
@@ -480,7 +459,7 @@ class UserfilesController < ApplicationController
         end
       end
       format.xml  { head :ok }
-      format.json { head :ok }
+      format.json { render :json => { :message => flash[:notice], :background_activity_id => bac.id } }
     end
   end
 
@@ -1066,11 +1045,9 @@ class UserfilesController < ApplicationController
 
     # Destination provider
     data_provider_id = params[:data_provider_id_for_mv_cp]
-    if data_provider_id.blank?
-      flash[:error] = "No data provider selected.\n"
-      redirect_to :action => :index
-      return
-    end
+    cb_error "No data provider selected." if data_provider_id.blank?
+    new_provider     = DataProvider.find_all_accessible_by_user(current_user).where( :id => data_provider_id, :online => true, :read_only => false ).first
+    cb_error "Data provider #{data_provider_id} not accessible." unless new_provider
 
     # Option for move or copy.
     crush_destination = (params[:crush_destination].to_s =~ /crush/i) ? true : false
@@ -1080,68 +1057,32 @@ class UserfilesController < ApplicationController
 
     # Operaton to perform
     task       = extract_params_key([ :move, :copy ], "")
-    word_move  = task == :move ? 'move'  : 'copy'
     word_moved = task == :move ? 'moved' : 'copied'
 
-    new_provider    = DataProvider.find_all_accessible_by_user(current_user).where( :id => data_provider_id, :online => true, :read_only => false ).first
-    unless new_provider
-      flash[:error] = "Data provider #{data_provider_id} not accessible.\n"
-      respond_to do |format|
-        format.html { redirect_to :action => :index }
-        format.json { render :json => { :error => flash[:error]}, :status => :forbidden }
-        format.xml  { render :xml  => { :error => flash[:error]}, :status => :forbidden }
-      end
-      return
+    access_needed = (task == :copy) ? :read : :write
+    selected_ids  = filelist.map do |id|
+       Userfile.find_accessible_by_user(id, current_user, :access_requested => access_needed).id rescue nil
+    end.compact
+
+    cb_error "No appropriate files selected to #{task}" if selected_ids.size == 0
+
+    if task == :copy
+      my_group_id  = current_assignable_group.id
+      bac = BackgroundActivity::CopyFile.setup!(current_user.id, selected_ids, nil, new_provider.id,
+        { :crush_destination => crush_destination, :group_id => my_group_id }
+      )
+    else # :move
+      selected_ids  = selected_ids.select { |id| Userfile.find(id).has_owner_access?(current_user) }
+      bac = BackgroundActivity::MoveFile.setup!(current_user.id, selected_ids, nil, new_provider.id,
+        { :crush_destination => crush_destination }
+      )
     end
-
-    # Spawn subprocess to perform the move or copy operations
-    success_list  = [] # [ id, id, id ]
-    failed_list   = {} # { message1 => [id, id], message2 => [id, id] }
-    CBRAIN.spawn_with_active_records_if(! api_request?, current_user, "#{word_move.capitalize} To Other Data Provider") do
-      filelist.shuffle.each_with_index do |id,count|
-        Process.setproctitle "#{word_move.capitalize} ID=#{id} #{count+1}/#{filelist.size} To #{new_provider.name}"
-        begin
-          u = Userfile.find_accessible_by_user(id, current_user, :access_requested => (task == :copy ? :read : :write) )
-          next unless u
-          orig_provider = u.data_provider
-          next if orig_provider.id == data_provider_id # no support for copy to same provider in the interface, yet.
-          res = nil
-          if task == :move
-            raise RuntimeError.new("Not owner") unless u.has_owner_access?(current_user)
-            res = u.provider_move_to_otherprovider(new_provider, :crush_destination => crush_destination)
-          else # task is :copy
-            my_group_id  = current_assignable_group.id
-            res = u.provider_copy_to_otherprovider(new_provider,
-                     :user_id           => current_user.id,
-                     :group_id          => my_group_id,
-                     :crush_destination => crush_destination
-                  )
-            DataUsage.increase_copies(current_user, u)
-          end
-          raise "file collision: there is already such a file on the other provider" unless res
-          success_list << u
-        rescue => e
-          if u.is_a?(Userfile)
-            (failed_list[e.message] ||= []) << u
-          else
-            raise e
-          end
-        end
-      end
-
-      if success_list.present?
-        notice_message_sender("Files #{word_moved} to #{new_provider.name}",success_list)
-      end
-      if failed_list.present?
-        error_message_sender("Some files could not be #{word_moved} to #{new_provider.name}",failed_list)
-      end
-    end # spawn
 
     flash[:notice] = "Your files are being #{word_moved} in the background.\n"
 
     respond_to do |format|
-        format.html { redirect_to :action => :index }
-        format.json { render :json => { :success_list => success_list.map(&:id), :failed_list => failed_list.values.flatten.map(&:id) } }
+      format.html { redirect_to :action => :index }
+      format.json { render :json => { :message => flash[:notice], :background_activity_id => bac.id } }
     end
   end
 
@@ -1150,68 +1091,19 @@ class UserfilesController < ApplicationController
     filelist    = params[:file_ids] || []
 
     # Select all accessible files with write acces by the user.
-    to_delete = Userfile.accessible_for_user(current_user, :access_requested => :write).where(:id => filelist)
-    not_accessible_count = filelist.size - to_delete.count
+    to_delete_ids = Userfile.accessible_for_user(current_user, :access_requested => :write).where(:id => filelist).pluck(:id)
+    not_accessible_count = filelist.size - to_delete_ids.size
 
     flash[:error] = "You do not have access to #{not_accessible_count} of #{filelist.size} file(s)." if not_accessible_count > 0
 
-    # Delete in background
-    deleted_success_list      = []
-    unregistered_success_list = []
-    failed_list               = {}
-    CBRAIN.spawn_with_active_records_if(! api_request?, current_user, "Delete files") do
-      idlist = to_delete.raw_first_column(:id).shuffle
-      reset_dpids = {}
-      idlist.each_with_index do |userfile_id,count|
-        userfile = Userfile.find(userfile_id) rescue nil # that way we instantiate one record at a time
-        next unless userfile # in case it was destroyed externally
-        Process.setproctitle "Delete ID=#{userfile.id} #{count+1}/#{idlist.size}"
-        if ! reset_dpids[userfile.data_provider_id]
-          userfile.data_provider.reset_connection if userfile.data_provider.respond_to?(:reset_connection)
-          reset_dpids[userfile.data_provider_id] = true
-        end
-        begin
-          userfile.destroy
-          deleted_success_list << userfile
-        rescue => e
-          (failed_list[e.message] ||= []) << userfile
-        end
-      end
-
-      if deleted_success_list.present?
-        notice_message_sender("Finished deleting file(s)",deleted_success_list)
-      end
-      if unregistered_success_list.present?
-        notice_message_sender("Finished unregistering file(s)",unregistered_success_list)
-      end
-      if failed_list.present?
-        error_message_sender("Error when deleting/unregistering file(s)",failed_list)
-      end
-    end # spawn
+    cb_error "No appropriate files selected to delete" if to_delete_ids.size == 0
+    bac = BackgroundActivity::DestroyFile.setup!(current_user.id, to_delete_ids)
 
     flash[:notice] = "Your files are being deleted in background."
 
-    if api_request?
-      json_failed_list = {}
-      failed_list.each do |error_message, userfiles|
-        json_failed_list[error_message] = userfiles.map(&:id).sort
-      end
-    end
-
     respond_to do |format|
       format.html { redirect_to :action => :index }
-      format.json { render :json => { :unregistered_list => unregistered_success_list.map(&:id).sort,
-                                      :deleted_list      => deleted_success_list.map(&:id).sort,
-                                      :failed_list       => json_failed_list,
-                                      :error             => flash[:error]
-                                    }
-                  }
-      format.xml  { render :xml  => { :unregistered_list => unregistered_success_list.map(&:id).sort,
-                                      :deleted_list      => deleted_success_list.map(&:id).sort,
-                                      :failed_list       => json_failed_list,
-                                      :error             => flash[:error]
-                                    }
-                  }
+      format.json { render :json => { :message => flash[:notice], :background_activity_id => bac.id }}
     end
   end
 
@@ -1387,10 +1279,14 @@ class UserfilesController < ApplicationController
   # Compress/archive a set of userfiles. Wrapper action for
   # +manage_compression+ with operation :compress.
   def compress #:nodoc:
-    manage_compression(params[:file_ids] || [], :compress)
+    bac = manage_compression(params[:file_ids] || [], :compress)
     respond_to do |format|
       format.html { redirect_to(:action => :index) }
-      format.json { head :ok }
+      format.json { render :json => {
+           :message => flash[:notice],
+           :backgroud_activity_id => bac&.id,
+         }
+      }
       format.xml  { head :ok }
     end
   end
@@ -1398,10 +1294,14 @@ class UserfilesController < ApplicationController
   # Uncompress/unarchive a set of userfiles. Wrapper action for
   # +manage_compression+ with operation :uncompress.
   def uncompress #:nodoc:
-    manage_compression(params[:file_ids] || [], :uncompress)
+    bac = manage_compression(params[:file_ids] || [], :uncompress)
     respond_to do |format|
       format.html { redirect_to(:action => :index) }
-      format.json { head :ok }
+      format.json { render :json => {
+           :message => flash[:notice],
+           :backgroud_activity_id => bac&.id,
+         }
+      }
       format.xml  { head :ok }
     end
   end
@@ -1487,7 +1387,6 @@ class UserfilesController < ApplicationController
     userfiles = userfiles
       .where(:data_provider_id => writable_dps)
 
-    # Check for SingleFile filename collisions
     # FIXME assuming the RDBMS supports CONCAT, LEFT & LENGTH...
     if compressing
       collide = "CONCAT(userfiles.name, '.gz')"
@@ -1526,55 +1425,13 @@ class UserfilesController < ApplicationController
       return
     end
 
-    # Start compressing/uncompressing
-    CBRAIN.spawn_with_active_records(current_user, operation.to_s.humanize) do
-      succeeded, failed = [], {}
-
-      userfiles_list = userfiles.all.shuffle # real array of all records
-      count_todo     = userfiles_list.size
-      userfiles_list.each_with_index do |userfile,idx|
-
-        if userfile.immutable?
-          ( failed['File is immutable.'] ||= [] ) << userfile
-          next
-        end
-
-        # This begin block process each file and captures exceptions
-        # to provide a report of failures.
-        begin
-
-          # SingleFiles
-          if userfile.is_a?(SingleFile)
-            Process.setproctitle "GzipFile ID=#{userfile.id} #{idx+1}/#{count_todo}"
-            userfile.gzip_content(operation) # :compress or :uncompress
-            next
-          end
-
-          # FileCollections
-          if compressing && ! userfile.archived?
-            Process.setproctitle "ArchiveFile ID=#{userfile.id} #{idx+1}/#{count_todo}"
-            failure = userfile.provider_archive
-          elsif ! compressing && userfile.archived?
-            Process.setproctitle "UnarchiveFile ID=#{userfile.id} #{idx+1}/#{count_todo}"
-            failure = userfile.provider_unarchive
-          end
-          raise failure unless failure.blank?
-          succeeded << userfile
-
-        rescue => e
-          (failed[e.message] ||= []) << userfile
-        end
-      end
-
-      # Async notification
-      notice_message_sender("Finished #{operation.to_s}ing file(s)", succeeded) if
-        succeeded.present?
-
-      error_message_sender("Error when #{operation.to_s}ing file(s)", failed) if
-        failed.present?
-    end
+    # Schedule the BackgroundActivity
+    userfile_ids = userfiles.pluck(:id)
+    klass = compressing ? BackgroundActivity::CompressFile : BackgroundActivity::UncompressFile
+    bac=klass.setup!(current_user.id, userfile_ids)
 
     flash[:notice] = "#{view_pluralize(userfiles.count, "file")} being #{operation.to_s}ed in background.\n"
+    return bac
   end
 
   # Guess the type of a file from a given filename. Thin XML/JSON API wrapper
