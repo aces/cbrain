@@ -89,27 +89,6 @@
 
     <% end %>
 
-    <% if @keycloak_uri %>
-
-    <tr>
-      <td colspan="2">&nbsp;</td>
-    </tr>
-
-    <tr>
-      <td>
-          <strong>OR</strong>
-      </td>
-      <td class="field">
-        <%= link_to 'Sign In With Keycloak', @keycloak_uri, :class => 'button globus_button' %>
-        <div class="field_explanation">
-          (Only available if you have already linked your<br>
-          CBRAIN account to a Keycloak identity)
-        </d
-      </td>
-    </tr>
-
-    <% end %>
-
   </table>
 
 <% end -%>

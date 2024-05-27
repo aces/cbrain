@@ -222,9 +222,6 @@ Rails.application.routes.draw do
   get   '/globus'                 => 'sessions#globus'
   post  '/unlink_globus'          => 'sessions#unlink_globus'
   get   '/mandatory_globus'       => 'sessions#mandatory_globus'
-  # Keycloak authentication
-  get   '/keycloak'               => 'sessions#keycloak'
-  post  '/unlink_keycloak'        => 'sessions#unlink_keycloak'
 
   # Report Maker
   get   "/report",                :controller => :portal, :action => :report
