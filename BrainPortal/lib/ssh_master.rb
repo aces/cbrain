@@ -684,7 +684,13 @@ class SshMaster
       sock_dir  = "#{CONFIG[:CONTROL_SOCKET_DIR_2]}"
       sock_path = "#{sock_dir}/#{base}" # alternative, hopefully shorter than 80 chars long!
     end
-    if @category
+    if sock_path.size >= CONFIG[:CONTROL_SOCKET_MAX_LENGTH] # still too long?!?
+      base      = Digest::MD5.hexdigest(base) # the "@category/" goes into the hash too
+      sock_dir  = "/tmp"
+      sock_path = "#{sock_dir}/#{base}" # flat, no longer a category subdir
+      ultra_short_workaround = true
+    end
+    if @category && ! ultra_short_workaround # this method is turning into a type of pasta
       cat_dir = "#{sock_dir}/#{@category}"
       unless File.directory?(cat_dir)
         begin
