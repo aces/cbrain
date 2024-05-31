@@ -74,7 +74,9 @@ class BoutiquesClusterTask < ClusterTask
 
   def setup #:nodoc:
     descriptor = self.descriptor_for_setup
-    self.addlog(descriptor.file_revision_info.format("%f rev. %s %a %d"))
+
+    self.addlog(Revision_info.format("%f rev. %s %a %d"))
+    self.addlog(self.boutiques_descriptor.file_revision_info.format("%f rev. %s %a %d"))
 
     descriptor.file_inputs.each do |input|
       userfile_id = invoke_params[input.id]
@@ -188,6 +190,9 @@ class BoutiquesClusterTask < ClusterTask
 
   def save_results #:nodoc:
     descriptor = self.descriptor_for_save_results
+
+    self.addlog(Revision_info.format("%f rev. %s %a %d"))
+
     custom     = descriptor.custom || {} # 'custom' is not packaged as an object, just a hash
 
     # Verifications of proper exit status

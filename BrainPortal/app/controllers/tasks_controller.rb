@@ -710,7 +710,8 @@ class TasksController < ApplicationController
 
     # Decide in which conditions we spawn a background job to send
     # the operation to the tasks...
-    do_in_spawn  = tasklist.size > 5
+    # TODO cleanup no longer necessary
+    do_in_spawn  = false #  tasklist.size > 5
 
     # This does the actual work and returns info about the
     # successes and failures.
@@ -762,9 +763,15 @@ class TasksController < ApplicationController
     success_list = []
     failed_list  = {}
 
-    # This block will either run in background or not depending
-    # on do_in_spawn
-    CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending #{operation} to tasks") do
+    operation_to_bac = {
+      "terminate"    => BackgroundActivity::TerminateTask,
+      "archive"      => BackgroundActivity::ArchiveTaskWorkdir,
+      "archive_file" => BackgroundActivity::ArchiveTaskWorkdir,
+      "unarchive"    => BackgroundActivity::UnarchiveTaskWorkdir,
+      "zap_wd"       => BackgroundActivity::RemoveTaskWorkdir,
+    }
+
+    # The weird new indentation starting here is because a wrapping block was removed.
 
       tasks = CbrainTask.where(:id => taskids).to_a
 
@@ -789,7 +796,9 @@ class TasksController < ApplicationController
                 failed_list[e.message] << t
               end
             end
-            bourreau.send_command_alter_tasks(must_remote_delete,'Destroy') if must_remote_delete.present? # TODO parse returned command object?
+            bac=BackgroundActivity::DestroyTask.local_new(current_user.id, must_remote_delete.map(&:id),bid)
+            # The .save below will just be ignored if the items list is empty
+            bac.save
             success_list += must_remote_delete
             next
           end
@@ -801,12 +810,19 @@ class TasksController < ApplicationController
             new_status && allowed_new.include?(new_status)
           end
           if oktasks.size > 0
-            bourreau.send_command_alter_tasks(oktasks, new_status,
+            bac_klass = operation_to_bac[operation]
+            if bac_klass
+              bac = bac_klass.local_new(current_user.id, oktasks.map(&:id), bid, {})
+              bac.options[:archive_data_provider_id] = archive_dp_id if operation == 'archive_file'
+              bac.save
+            else # old mechanism for all other operations, performed by a message to the Bourreau
+              bourreau.send_command_alter_tasks(oktasks, new_status,
                                                { :requester_user_id        => current_user.id,
                                                  :new_bourreau_id          => new_bourreau_id,
                                                  :archive_data_provider_id => archive_dp_id
                                                }
                                               ) # TODO parse returned command object?
+            end
             success_list += oktasks
           end
           skippedtasks = btasklist - oktasks
@@ -826,7 +842,7 @@ class TasksController < ApplicationController
         end
       end
 
-    end # SPAWN
+    # End of weird indentation
 
     # This may contain nothing at all if all work was done in background...
     results =  {

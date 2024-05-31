@@ -264,8 +264,9 @@ class BoutiquesPortalTask < PortalTask
   # Final set of tasks to be launched based on this task's parameters.
   def final_task_list #:nodoc:
     descriptor = self.descriptor_for_final_task_list
-    self.addlog(descriptor.file_revision_info.format("%f rev. %s %a %d"))
-    valid_input_keys = descriptor.inputs.map(&:id)
+
+    self.addlog(Revision_info.format("%f rev. %s %a %d"))
+    self.addlog(self.boutiques_descriptor.file_revision_info.format("%f rev. %s %a %d"))
 
     # Add author(s) information
     authors = Array(descriptor.custom['cbrain:author'])
@@ -277,6 +278,8 @@ class BoutiquesPortalTask < PortalTask
     boutiques_module_information().each do |log_info|
        self.addlog(log_info)
     end
+
+    valid_input_keys = descriptor.inputs.map(&:id)
 
     # --------------------------------------
     # Special case where there is a single file input
