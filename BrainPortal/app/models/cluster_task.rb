@@ -2059,7 +2059,7 @@ exit $status
 
   # Save the directory created to run the job.
   # The directory will be saved as a FileCollection
-  # only if the task have a results Data Provider.
+  # only if the task has a results Data Provider.
   def save_cluster_workdir(user_id)
     full_cluster_workdir = self.full_cluster_workdir
     user                 = User.find(user_id)

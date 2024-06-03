@@ -442,6 +442,14 @@ class Bourreau < RemoteResource
     cb_error "Got control command #{command.command} but I'm not a Bourreau!" unless
       myself.is_a?(Bourreau)
 
+Message.send_message(:admin,
+   :message_type => :system,
+   :header => "Bourreau #{myself.name} got AlterTask",
+   :description => "This is to track a deprecated piece of code, we should not get this.",
+   :critical => true,
+   :variable_text => command.inspect,
+)
+
     # 'taskids' is an array of tasks to process.
     # 'newstatus', as received in the command object, is not
     # necessarily an official legal task status name, it can be a

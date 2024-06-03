@@ -703,20 +703,15 @@ class TasksController < ApplicationController
     end
 
     # Some security validations
-    new_bourreau_id = params[:dup_bourreau_id].presence # for 'duplicate' operation
+    dup_bourreau_id = params[:dup_bourreau_id].presence # for 'duplicate' operation
     archive_dp_id   = params[:archive_dp_id].presence   # for 'archive as file' operation
-    new_bourreau_id = nil unless new_bourreau_id && Bourreau.find_all_accessible_by_user(current_user).where(:id => new_bourreau_id).exists?
+    dup_bourreau_id = nil unless dup_bourreau_id && Bourreau.find_all_accessible_by_user(current_user).where(:id => dup_bourreau_id).exists?
     archive_dp_id   = nil unless archive_dp_id   && DataProvider.find_all_accessible_by_user(current_user).where(:id => archive_dp_id).exists?
-
-    # Decide in which conditions we spawn a background job to send
-    # the operation to the tasks...
-    # TODO cleanup no longer necessary
-    do_in_spawn  = false #  tasklist.size > 5
 
     # This does the actual work and returns info about the
     # successes and failures.
-    results = apply_operation(operation, tasklist, do_in_spawn,
-      :dup_bourreau_id => new_bourreau_id,
+    results = apply_operation(operation, tasklist,
+      :dup_bourreau_id => dup_bourreau_id,
       :archive_dp_id   => archive_dp_id,
     )
 
@@ -725,15 +720,11 @@ class TasksController < ApplicationController
     success_list = results[:success_list]
     failed_list  = results[:failed_list]
 
-    if do_in_spawn
-      flash[:notice] += "The tasks are being notified in background."
-    else
-      failure_size  = 0
-      failed_list.each_value  { |v| failure_size += v.size }
-      skipped_size  = 0
-      skipped_list.each_value { |v| skipped_size += v.size }
-      flash[:notice] += "Number of tasks notified: #{success_list.size} OK, #{skipped_size} skipped, #{failure_size} failed.\n"
-    end
+    failure_size  = 0
+    failed_list.each_value  { |v| failure_size += v.size }
+    skipped_size  = 0
+    skipped_list.each_value { |v| skipped_size += v.size }
+    flash[:notice] += "Number of tasks notified: #{success_list.size} OK, #{skipped_size} skipped, #{failure_size} failed.\n"
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
@@ -751,11 +742,11 @@ class TasksController < ApplicationController
   # or duplicated.
   #
   # Returns a simple hash with some list for successes, failures and
-  # skipped operations (only meaningful when do_in_spawn is false).
-  def apply_operation(operation, taskids, do_in_spawn = false, options = {})
+  # skipped operations
+  def apply_operation(operation, taskids, options = {})
 
     # Some other parameters
-    new_bourreau_id = options[:dup_bourreau_id] # for 'duplicate' operation
+    dup_bourreau_id = options[:dup_bourreau_id] # for 'duplicate' operation
     archive_dp_id   = options[:archive_dp_id]   # for 'archive as file' operation
 
     # Prepare counters for how many tasks affected.
@@ -763,15 +754,26 @@ class TasksController < ApplicationController
     success_list = []
     failed_list  = {}
 
+    # Background Activity lookup table
     operation_to_bac = {
       "terminate"    => BackgroundActivity::TerminateTask,
       "archive"      => BackgroundActivity::ArchiveTaskWorkdir,
       "archive_file" => BackgroundActivity::ArchiveTaskWorkdir,
       "unarchive"    => BackgroundActivity::UnarchiveTaskWorkdir,
       "zap_wd"       => BackgroundActivity::RemoveTaskWorkdir,
+      "save_wd"      => BackgroundActivity::SaveTaskWorkdir,
+      "hold"         => BackgroundActivity::HoldTask,
+      "release"      => BackgroundActivity::ReleaseTask,
+      "suspend"      => BackgroundActivity::SuspendTask,
+      "resume"       => BackgroundActivity::ResumeTask,
+      "duplicate"    => BackgroundActivity::DuplicateTask,
+      "recover"      => BackgroundActivity::RecoverTask,
+      "restart_setup"       => BackgroundActivity::RestartTask,
+      "restart_cluster"     => BackgroundActivity::RestartTask,
+      "restart_postprocess" => BackgroundActivity::RestartTask,
     }
 
-    # The weird new indentation starting here is because a wrapping block was removed.
+    # The weird new indentation starting here is because a 'spawn' wrapping block was removed.
 
       tasks = CbrainTask.where(:id => taskids).to_a
 
@@ -782,6 +784,7 @@ class TasksController < ApplicationController
         btasklist = pair_bid_tasklist[1]
         bourreau  = Bourreau.find(bid)
         begin
+
           # MASS DELETE
           if operation == 'delete'
             # Two sublists, to optimize the delete
@@ -802,6 +805,7 @@ class TasksController < ApplicationController
             success_list += must_remote_delete
             next
           end
+
           # MASS NEW STATUS
           new_status  = PortalTask::OperationToNewStatus[operation] # from HTML form keyword to Task object keyword
           oktasks = btasklist.select do |t|
@@ -813,12 +817,17 @@ class TasksController < ApplicationController
             bac_klass = operation_to_bac[operation]
             if bac_klass
               bac = bac_klass.local_new(current_user.id, oktasks.map(&:id), bid, {})
-              bac.options[:archive_data_provider_id] = archive_dp_id if operation == 'archive_file'
+              bac.options[:archive_data_provider_id] = archive_dp_id   if operation == 'archive_file'
+              bac.options[:dup_bourreau_id]          = dup_bourreau_id if operation == 'duplicate'
+              bac.options[:atwhat]                   = 'Setup'         if operation == 'restart_setup'
+              bac.options[:atwhat]                   = 'Cluster'       if operation == 'restart_cluster'
+              bac.options[:atwhat]                   = 'PostProcess'   if operation == 'restart_postprocess'
               bac.save
             else # old mechanism for all other operations, performed by a message to the Bourreau
+              # Note: after refactoring in June 2024, at this point this should never be reached?!?
               bourreau.send_command_alter_tasks(oktasks, new_status,
                                                { :requester_user_id        => current_user.id,
-                                                 :new_bourreau_id          => new_bourreau_id,
+                                                 :new_bourreau_id          => dup_bourreau_id,
                                                  :archive_data_provider_id => archive_dp_id
                                                }
                                               ) # TODO parse returned command object?
@@ -832,15 +841,6 @@ class TasksController < ApplicationController
           failed_list[e.message]  += btasklist
         end
       end # foreach bourreaux' tasklist
-
-      if do_in_spawn
-        if skipped_list.present?
-          error_message_sender("Task skipped when sending '#{operation}' to your tasks.",skipped_list)
-        end
-        if failed_list.present?
-          error_message_sender("Error when sending '#{operation}' to your tasks.",failed_list)
-        end
-      end
 
     # End of weird indentation
 

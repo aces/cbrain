@@ -41,7 +41,7 @@
   <%= link_to "Refresh This List", background_activities_path, :class => "button" %>
 </div>
 
-<fieldset class="bac_explanations" style="display: none">
+<fieldset class="bac_explanations" style="display: <%= @bacs.count == 0 ? 'block' : 'none' %>">
   <legend>About Background Activities</legend>
   <p class="long_paragraphs">
   This page shows "background activities" as progress bars. Each
