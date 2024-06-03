@@ -110,29 +110,6 @@ class BoutiquesClusterTask < ClusterTask
 
   end
 
-  def local_dp_storage_paths_ro
-    file_pd_ids =  descriptor_for_setup.file_inputs.map do |input|
-      userfile_id = invoke_params[input.id]
-      next if userfile_id.blank? # that happens when it's an optional file
-      Userfile.find(userfile_id)
-    end.pluck(data_provider_id).uniq
-
-    return super.local_dp_storage_paths.select { |x| file_pd_ids.include? x.id }
-  end
-
-
-  def local_ro_dp_storage_paths
-    ro_pd = local_dp_storage_paths
-
-
-    local_dp_storage_paths.select
-
-  end
-
-
-
-
-
   def cluster_commands #:nodoc:
     # Our two main JSON structures for 'bosh'
     descriptor    = self.descriptor_for_cluster_commands

@@ -2385,6 +2385,7 @@ docker_image_name=#{full_image_name.bash_escape}
 
     # (4) More -B (bind mounts) for all the local data providers.
     # This will be a string "-B path1 -B path2 -B path3" etc.
+    # In the case of read-only input files, ro option is added
 
     scheme  = "#{sing_opts} -B #{path}"
     scheme += ":#{path}:ro" if file_access_symbol == :read   # if tool should not modify, bind as read-only
