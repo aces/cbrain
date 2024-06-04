@@ -41,7 +41,7 @@ class IncomingVaultLocalDataProvider < VaultLocalDataProvider
   end
 
   # We browse ONLY the user's specific subdir.
-  def browse_remote_dir(user=nil) #:nodoc:
+  def browse_remote_dir(user=nil, browse_path=nil) #:nodoc:
     if user
       self.remote_dir + "/#{user.login}"
     else
