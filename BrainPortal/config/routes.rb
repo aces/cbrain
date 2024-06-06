@@ -220,7 +220,7 @@ Rails.application.routes.draw do
   post  '/session_data'           => 'session_data#update'
   # Globus authentication
   get   '/globus'                 => 'sessions#globus'
-  post  '/unlink_globus'          => 'sessions#unlink_globus'
+  post  '/unlink_globus/:oidc'    => 'sessions#unlink_globus', as: 'unlink_globus' # :oidc correspond to the oidc_name
   get   '/mandatory_globus'       => 'sessions#mandatory_globus'
 
   # Report Maker

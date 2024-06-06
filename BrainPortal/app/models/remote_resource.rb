@@ -141,6 +141,17 @@ class RemoteResource < ApplicationRecord
     myconfig
   end
 
+  # Returns information about available OpenID providers
+  # by reading the oidc.yml file.
+  def self.openid_providers(config_file="./config/oidc.yml")
+    begin
+      File.exists?(config_file) ? YAML.load(ERB.new(File.read(Rails.root.join(config_file))).result) : {}
+    rescue
+      {}
+    end
+  end
+
+
   ############################################################################
   # ActiveRecord callbacks
   ############################################################################
@@ -978,3 +989,4 @@ class RemoteResource < ApplicationRecord
   end
 
 end
+

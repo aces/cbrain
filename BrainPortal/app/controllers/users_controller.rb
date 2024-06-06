@@ -34,6 +34,7 @@ class UsersController < ApplicationController
   before_action :login_required,        :except => [:request_password, :send_password]
   before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password, :push_keys, :new_token]
   before_action :admin_role_required,   :only =>   [:create_user_session]
+  before_action :set_oidc_info,    :only => [ :show]
 
   def index #:nodoc:
     @scope = scope_from_session
@@ -76,7 +77,7 @@ class UsersController < ApplicationController
   # GET /user/1.json
   def show #:nodoc:
     @user        = User.find(params[:id])
-    @oidc_client = (RemoteResource.current_resource.meta[:oidc_client] || "Globus").capitalize
+# @oidc_client = (RemoteResource.current_resource.meta[:oidc_client] || "Globus").capitalize
 
     cb_error "You don't have permission to view this user.", :redirect  => start_page_path unless edit_permission?(@user)
 
@@ -92,7 +93,7 @@ class UsersController < ApplicationController
       .where( "updated_at > ?", SessionHelpers::SESSION_API_TOKEN_VALIDITY.ago )
       .order(:updated_at)
 
-    @globus_uri = globus_login_uri(globus_url)
+# @globus_uri = globus_login_uri(globus_url)
 
     respond_to do |format|
       format.html # show.html.erb
