@@ -24,7 +24,7 @@ class BackgroundActivitiesController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available :only => [ :show ]
+  api_available :only => [ :show, :index ]
 
   before_action :login_required
   before_action :admin_role_required,  :only => [:new, :create, :destroy]

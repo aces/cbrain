@@ -217,20 +217,23 @@ class BackgroundActivity < ApplicationRecord
 
     return false if self.status != 'InProgress'
 
-    # Find current item
+    # Find current index
     idx  = self.current_item
-    item = self.items[idx]
-    return false if item.nil?
 
     # Callback where a subclass can do some special stuff
     # before the first item.
     begin
-      self.before_first_item if idx == 0
-    rescue => ex
-      self.status = 'InternalError'
+      self.prepare_dynamic_items if idx == 0 && self.is_configured_for_dynamic_items?
+      self.before_first_item     if idx == 0
       self.save
+    rescue => ex
+      self.internal_error!
       return false
     end
+
+    # Find current item
+    item = self.items[idx]
+    return false if item.nil?
 
     # Main processing handler
     ok,message = nil,nil
@@ -264,9 +267,9 @@ class BackgroundActivity < ApplicationRecord
     # after the last item.
     begin
       self.after_last_item if self.current_item >= items.size
-    rescue => ex
-      self.status = 'InternalError'
       self.save
+    rescue => ex
+      self.internal_error!
       return false
     end
 
@@ -315,6 +318,12 @@ class BackgroundActivity < ApplicationRecord
     self.update_column(:status, 'InProgress')         if self.status == 'Suspended'
     self.update_column(:status, 'Scheduled')          if self.status == 'SuspendedScheduled'
     self.status.match(/InProgress|Scheduled/)
+  end
+
+  def internal_error!
+    self.update_column(:status, "InternalError")
+    self.update_column(:handler_lock, nil)
+    self.save
   end
 
   ###########################################
@@ -415,8 +424,7 @@ class BackgroundActivity < ApplicationRecord
     ).where(
       "updated_at < ?", older_than.ago
     ).each do |bac|
-      bac.update_column(:status,       'InternalError')
-      bac.update_column(:handler_lock, nil)
+      bac.internal_error!
     end
   end
 
@@ -484,7 +492,7 @@ class BackgroundActivity < ApplicationRecord
     end
 
     # The repeat attribute has a value we don't understand
-    self.update_column(:status, 'InternalError')
+    self.internal_error!
 
   end
 
