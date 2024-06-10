@@ -197,7 +197,7 @@ class SessionsController < ApplicationController
       return
     end
 
-    login_from_globus_user(user, identity_struct['identity_provider_display_name'])
+    login_from_globus_user(user, identity_struct[oidc_config['identity_provider_display_name']])
 
   rescue CbrainException => ex
     flash[:error] = "#{ex.message}"

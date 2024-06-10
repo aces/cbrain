@@ -26,13 +26,15 @@ class NhSessionsController < NeurohubApplicationController
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include OrcidHelpers
+  include GlobusHelpers
 
   before_action :login_required,    :except => [ :new, :create, :request_password, :send_password, :orcid, :nh_globus ]
   before_action :already_logged_in, :except => [ :orcid, :destroy, :nh_globus, :nh_unlink_globus, :nh_mandatory_globus ]
+  before_action :set_oidc_info,     :only   => [ :new ]
 
   def new #:nodoc:
     @orcid_uri  = orcid_login_uri()
-    @globus_uri = globus_login_uri(nh_globus_url) # nh_globus_url is from the routes
+    @globus_uri = globus_login_uri(nh_globus_url, @oidc_info["orcid"]) # nh_globus_url is from the routes
   end
 
   # POST /nhsessions
@@ -95,8 +97,10 @@ class NhSessionsController < NeurohubApplicationController
       return
     end
 
+    orcid_token_uri = oidc_info[:orcid]["token_uri"]
+
     # Query ORCID, get a JSON record with an ORCID iD.
-    response = Typhoeus.post(ORCID_TOKEN_URI,
+    response = Typhoeus.post(orcid_token_uri,
       :body   => {
                    :code          => code,
                    :client_id     => orcid_client_id,
@@ -138,31 +142,44 @@ class NhSessionsController < NeurohubApplicationController
     code  = params[:code].presence.try(:strip)
     state = params[:state].presence || 'wrong'
 
-    # Some initial simple validations
-    if !code || state != globus_current_state()
-      cb_error "Globus session is out of sync with CBRAIN"
+    # Verifify state structure 33 + "_" + oidc_client_id
+    # and extract client_id
+    client_id = nil
+    if state.length >= 34 && state[32] == '_'
+      client_id = state[33..-1]
     end
 
+    oidc_config = @oidc_info[client_id]
+    oidc_name   = oidc_config["client_name"] || "Unknown"
+
+    # Some initial simple validations
+    if !client_id || !code || state != globus_current_state(client_id)
+      cb_error "#{oidc_name} session is out of sync with CBRAIN"
+    end
+
+    token_uri = oidc_config['token_uri']
+
     # Query Globus; this returns all the info we need at the same time.
-    identity_struct = globus_fetch_token(code, nh_globus_url) # nh_globus_url is from the routes
+    identity_struct = globus_fetch_token(code, globus_url, token_uri, oidc_name) # globus_url is generated from routes
+
     if !identity_struct
-      cb_error "Could not fetch your identity information from Globus"
+      cb_error "Could not fetch your identity information from #{oidc_name}"
     end
     Rails.logger.info "Globus identity struct:\n#{identity_struct.pretty_inspect.strip}"
 
     # Either record the identity...
     if current_user
-      if ! user_can_link_to_globus_identity?(current_user, identity_struct)
+      if ! user_can_link_to_globus_identity?(current_user, oidc_config, identity_struct)
         Rails.logger.error("User #{current_user.login} attempted authentication " +
-                           "with unallowed Globus identity provider " +
+                           "with unallowed #{oidc_name} identity provider " +
                            identity_struct['identity_provider_display_name'].to_s)
-        flash[:error] = "Error: your account can only authenticate with the following Globus providers: " +
+        flash[:error] = "Error: your account can only authenticate with the following #{oidc_name} providers: " +
                         "#{allowed_globus_provider_names(current_user).join(", ")}"
         redirect_to myaccount_path
         return
       end
-      record_globus_identity(current_user, identity_struct)
-      flash[:notice] = "Your NeuroHub account is now linked to your Globus identity."
+      record_globus_identity(current_user, identity_struct, oidc_config)
+      flash[:notice] = "Your NeuroHub account is now linked to your #{oidc_name} identity."
       if user_must_link_to_globus?(current_user)
         wipe_user_password_after_globus_link(current_user)
         flash[:notice] += "\nImportant note: from now on you can no longer connect to NeuroHub using a password."
@@ -174,22 +191,22 @@ class NhSessionsController < NeurohubApplicationController
     end
 
     # ...or attempt login with it
-    user = find_user_with_globus_identity(identity_struct)
+    user = find_user_with_globus_identity(identity_struct,oidc_config)
     if user.is_a?(String) # an error occurred
       flash[:error] = user # the message
       redirect_to signin_path
       return
     end
 
-    login_from_globus_user(user, identity_struct['identity_provider_display_name'])
+    login_from_globus_user(user, identity_struct[oidc_config['identity_provider_display_name']])
 
   rescue CbrainException => ex
     flash[:error] = "#{ex.message}"
     redirect_to signin_path
   rescue => ex
     clean_bt = Rails.backtrace_cleaner.clean(ex.backtrace || [])
-    Rails.logger.error "Globus auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
-    flash[:error] = 'The Globus authentication failed'
+    Rails.logger.error "#{oidc_name} auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
+    flash[:error] = 'The #{oidc_name} authentication failed'
     redirect_to signin_path
   end
 
@@ -198,7 +215,7 @@ class NhSessionsController < NeurohubApplicationController
   def nh_unlink_globus #:nodoc:
     redirect_to start_page_path unless current_user
 
-    unlink_globus_identity(current_user)
+    unlink_globus_identity(current_user, "orcid")
 
     flash[:notice] = "Your account is no longer linked to any Globus identity"
     redirect_to myaccount_path
@@ -207,9 +224,10 @@ class NhSessionsController < NeurohubApplicationController
   # GET /nh_mandatory_globus
   # Shows the page that informs the user they MUST link to a Globus ID.
   def nh_mandatory_globus #:nodoc:
-    @globus_uri    = globus_login_uri(nh_globus_url)
-    @globus_logout = globus_logout_uri
     @allowed_provs = allowed_globus_provider_names(current_user)
+    # restrict @oidc_info to allowed providers
+    @oidc_info = @oidc_info.select { |k,v| @allowed_provs.include?(k) }
+    
     respond_to do |format|
       format.html
       format.any  { head :unauthorized }
@@ -300,3 +318,4 @@ class NhSessionsController < NeurohubApplicationController
   end
 
 end
+
