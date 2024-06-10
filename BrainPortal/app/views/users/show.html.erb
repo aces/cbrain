@@ -167,7 +167,6 @@
 
     <% orcid_id = @user.meta["orcid_id"] %>
 
-    # Iterate over @oidc_info to show all linked identities
     <% if @oidc_info %>
       <% @oidc_info.each do |oidc_client_id, oidc_config| %>
         <%

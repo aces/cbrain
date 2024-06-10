@@ -1,5 +1,5 @@
 
-#
+
 # CBRAIN Project
 #
 # Copyright (C) 2008-2012
@@ -37,7 +37,7 @@ class SessionsController < ApplicationController
   api_available :only => [ :new, :show, :create, :destroy ]
 
   before_action      :user_already_logged_in,    :only => [ :new, :create ]
-  before_action      :set_oidc_info,             :only => [ :new, :create, :globus]
+  before_action      :set_oidc_info,             :only => [ :new, :create, :globus, :mandatory_globus ]
   skip_before_action :verify_authenticity_token, :only => [ :create ] # we invoke it ourselves in create()
 
   def new #:nodoc:
@@ -56,9 +56,11 @@ class SessionsController < ApplicationController
   # GET /mandatory_globus
   # Shows the page that informs the user they MUST link to a Globus ID.
   def mandatory_globus #:nodoc:
-    @globus_uri    = globus_login_uri(globus_url)
-    @globus_logout = globus_logout_uri
     @allowed_provs = allowed_globus_provider_names(current_user)
+
+    # restrict @oidc_info to allowed providers
+    @oidc_info = @oidc_info.select { |k,v| @allowed_provs.include?(k) }
+
     respond_to do |format|
       format.html
       format.any { head :unauthorized }
@@ -166,7 +168,7 @@ class SessionsController < ApplicationController
 
     # Either record the identity...
     if current_user
-      if ! user_can_link_to_globus_identity?(current_user, identity_struct)
+      if ! user_can_link_to_globus_identity?(current_user, oidc_config, identity_struct)
         Rails.logger.error("User #{current_user.login} attempted authenticatio " +
                            "with unallowed #{oidc_name} identity provider " +
                            identity_struct['identity_provider_display_name'].to_s)
@@ -222,8 +224,6 @@ class SessionsController < ApplicationController
       cb_error "#{oidc_name} session is out of sync with CBRAIN"
     end
 
-    binding.pry
-
     # Query Globus; this returns all the info we need at the same time.
     identity_struct  = globus_fetch_token(code, globus_url, oidc_client_id) # globus_url is generated from routes
     if !identity_struct
@@ -255,7 +255,6 @@ class SessionsController < ApplicationController
     end
 
     # ...or attempt login with it
-    binding.pry
     user = find_user_with_globus_identity(identity_struct,@oidc_info[oidc_client_id])
     if user.is_a?(String) # an error occurred
       flash[:error] = user # the message

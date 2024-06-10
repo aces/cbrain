@@ -34,7 +34,7 @@ class UsersController < ApplicationController
   before_action :login_required,        :except => [:request_password, :send_password]
   before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password, :push_keys, :new_token]
   before_action :admin_role_required,   :only =>   [:create_user_session]
-  before_action :set_oidc_info,    :only => [ :show]
+  before_action :set_oidc_info,    :only => [ :show ]
 
   def index #:nodoc:
     @scope = scope_from_session
@@ -77,7 +77,6 @@ class UsersController < ApplicationController
   # GET /user/1.json
   def show #:nodoc:
     @user        = User.find(params[:id])
-# @oidc_client = (RemoteResource.current_resource.meta[:oidc_client] || "Globus").capitalize
 
     cb_error "You don't have permission to view this user.", :redirect  => start_page_path unless edit_permission?(@user)
 
@@ -92,8 +91,6 @@ class UsersController < ApplicationController
       .where(:user_id => @user.id, :active => true)
       .where( "updated_at > ?", SessionHelpers::SESSION_API_TOKEN_VALIDITY.ago )
       .order(:updated_at)
-
-# @globus_uri = globus_login_uri(globus_url)
 
     respond_to do |format|
       format.html # show.html.erb
@@ -197,7 +194,12 @@ class UsersController < ApplicationController
        cb_error "You don't have permission to view this page.", :redirect => start_page_path
     end
     if user_must_link_to_globus?(@user)
-       cb_error "Your account can only authenticate with Globus identities.", :redirect => user_path(current_user)
+      allowed_globus_login = @user[:allowed_globus_provider_names].present?
+      if allowed_globus_login
+        cb_error "Your account can only authenticate with #{allowed_globus_login} identities.", :redirect => user_path(current_user)
+      else
+        cb_error "Your account can only authenticate with Globus identities. Please contact your admin.", :redirect => user_path(current_user)
+      end
     end
   end
 

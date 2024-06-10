@@ -53,6 +53,8 @@ class ApplicationController < ActionController::Base
   before_action :adjust_remote_ip_and_host
   before_action :disable_cookies_for_api   # prevent sending back the session cookie for API requests
 
+
+
   # This wraps the main action
   around_action :activate_user_time_zone
 
@@ -135,7 +137,8 @@ class ApplicationController < ActionController::Base
   # buttons and explanations.
   def check_mandatory_globus_id_linkage #:nodoc:
     return true if ! user_must_link_to_globus?(current_user)
-    return true if   user_has_link_to_globus?(current_user)
+    oidc_info = set_oidc_info
+    return true if user_has_link_to_globus?(current_user,oidc_info)
     respond_to do |format|
       format.html { redirect_to :controller => :sessions, :action => :mandatory_globus }
       format.json { render :status => 403, :json => { "error" => "This account must first be linked to a Globus identity" } }

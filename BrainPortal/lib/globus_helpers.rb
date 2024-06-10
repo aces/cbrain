@@ -44,10 +44,6 @@ module GlobusHelpers
     oidc_info['authorize_uri'] + '?' + globus_params.to_query
   end
 
-  def globus_logout_uri
-    GLOBUS_LOGOUT_URI
-  end
-
   def globus_fetch_token(code, globus_action_url,token_uri, oidc_name)
     # Query OIDC; this returns all the info we need at the same time.
     auth_header = globus_basic_auth_header # method is below
@@ -133,7 +129,7 @@ module GlobusHelpers
     # OIDC providers, we find the first identity that
     # matches a name of that set.
     identity = set_of_identities(globus_identity).detect do |idstruct|
-       user_can_link_to_globus_identity?(user, idstruct)
+       user_can_link_to_globus_identity?(user, oidc_config, idstruct)
     end
 
     provider_id   = identity[oidc_config['identity_provider_id']]           || cb_error("#{$oidc_name}: No identity provider")
@@ -160,8 +156,8 @@ module GlobusHelpers
   def unlink_globus_identity(user, oidc_name)
     oidc_provider_id_key(oidc_name)
 
-    user.meta[oidc_provider_id_key(oidc_name)] = nil
-    user.meta[oidc_provider_name_key(oidc_name)] = nil
+    user.meta[oidc_provider_id_key(oidc_name)]        = nil
+    user.meta[oidc_provider_name_key(oidc_name)]      = nil
     user.meta[oidc_preferred_username_key(oidc_name)] = nil
     user.addlog("Unlinked #{$oidc_name} identity")
   end
@@ -170,8 +166,9 @@ module GlobusHelpers
     globus_identity['identity_set'] || [ globus_identity ]
   end
 
-  def set_of_identity_provider_names(globus_identity)
-    set_of_identities(globus_identity).map { |s| s['identity_provider_display_name'] }
+  def set_of_identity_provider_names(oidc_config, globus_identity)
+    identity_provider_display_name_key = oidc_config['identity_provider_display_name']
+    set_of_identities(globus_identity).map { |s| s[identity_provider_display_name_key] }
   end
 
   # Returns an array of allowed identity provider names.
@@ -183,19 +180,31 @@ module GlobusHelpers
       &.map(&:strip)
   end
 
-  def user_can_link_to_globus_identity?(user, identity)
+  def user_can_link_to_globus_identity?(user, oidc_config, identity)
     allowed = allowed_globus_provider_names(user)
     return true if allowed.nil?
     return true if allowed.size == 1 && allowed[0] == '*'
-    prov_names = set_of_identity_provider_names(identity)
+    prov_names = set_of_identity_provider_names(oidc_config, identity)
     return true if (allowed & prov_names).present? # if the intersection is not empty
     false
   end
 
-  def user_has_link_to_globus?(user)
-    user.meta[:globus_provider_id].present?       &&
-    user.meta[:globus_provider_name].present?     &&
-    user.meta[:globus_preferred_username].present?
+  def user_has_link_to_globus?(user,oidc_info)
+    allowed = allowed_globus_provider_names(user)
+
+    # Filter out the identities that are not allowed
+    allowed_oidc_info = oidc_info.select { |oidc_client, oidc_config| allowed.include?(oidc_client) }
+
+    # Iterate over the allowed_oidc_info
+    has_link_to_oidc = false
+    allowed_oidc_info.each do |oidc_client, oidc_config|
+      next if has_link_to_oidc
+      user.meta[oidc_config['provider_id']].present? &&
+      user.meta[oidc_config['provider_name']].present? &&
+      user.meta[oidc_config['preferred_username']].present?
+      has_link_to_oidc = true
+    end
+    has_link_to_oidc
   end
 
   def user_must_link_to_globus?(user)
