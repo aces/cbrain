@@ -28,6 +28,8 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
   include RestartableTask
   include RecoverableTask
 
+  SYNC_LIMIT_PER_DP=50.gigabytes # max allowed syncing size per distinct DP
+
   def setup #:nodoc:
     params       = self.params
     ids          = params[:interface_userfile_ids]
@@ -49,7 +51,8 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
     dps = DataProvider.where(:id => dp_counts.keys).to_a
     dps.each do |dp|
       next if dp.is_fast_syncing?
-      self.addlog("Error: DataProvider '#{dp.name}' is not a local storage.")
+      next if dp_sizes[dp.id] < SYNC_LIMIT_PER_DP
+      self.addlog("Error: DataProvider '#{dp.name}' is not a local storage and more than the limit #{SYNC_LIMIT_PER_DP} bytes would be cached.")
       ok = false
     end
     return false if ! ok
