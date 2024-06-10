@@ -33,7 +33,7 @@ class NhSessionsController < NeurohubApplicationController
   before_action :set_oidc_info,     :only   => [ :new ]
 
   def new #:nodoc:
-    @orcid_uri  = orcid_login_uri()
+    @orcid_uri  = orcid_login_uri("orcid", @oidc_info["orcid"])
     @globus_uri = globus_login_uri(nh_globus_url, @oidc_info["orcid"]) # nh_globus_url is from the routes
   end
 
