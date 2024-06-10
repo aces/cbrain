@@ -76,7 +76,7 @@ class UsersController < ApplicationController
   # GET /user/1.xml
   # GET /user/1.json
   def show #:nodoc:
-    @user        = User.find(params[:id])
+    @user = User.find(params[:id])
 
     cb_error "You don't have permission to view this user.", :redirect  => start_page_path unless edit_permission?(@user)
 

@@ -53,8 +53,6 @@ class ApplicationController < ActionController::Base
   before_action :adjust_remote_ip_and_host
   before_action :disable_cookies_for_api   # prevent sending back the session cookie for API requests
 
-
-
   # This wraps the main action
   around_action :activate_user_time_zone
 

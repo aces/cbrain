@@ -1,5 +1,5 @@
 
-
+#
 # CBRAIN Project
 #
 # Copyright (C) 2008-2012
@@ -206,71 +206,6 @@ class SessionsController < ApplicationController
     clean_bt = Rails.backtrace_cleaner.clean(ex.backtrace || [])
     Rails.logger.error "#{oidc_name} auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
     flash[:error] = "The #{oidc_name} authentication failed"
-    redirect_to new_session_path
-  end
-
-
-  # This action receives a JSON authentication
-  # request from globus and uses it to record or verify
-  # a user's identity.
-  def globus_bk
-    code  = params[:code].presence.try(:strip)
-    state = params[:state].presence || 'wrong'
-
-    # Some initial simple validations
-    oidc_client_id = state.split('_').last
-    oidc_name      = @oidc_info[oidc_client_id]["client_name"]
-    if !code || state != globus_current_state(oidc_client_id)
-      cb_error "#{oidc_name} session is out of sync with CBRAIN"
-    end
-
-    # Query Globus; this returns all the info we need at the same time.
-    identity_struct  = globus_fetch_token(code, globus_url, oidc_client_id) # globus_url is generated from routes
-    if !identity_struct
-      cb_error "Could not fetch your identity information from #{oidc_name}"
-    end
-    Rails.logger.info "#{oidc_name} identity struct:\n#{identity_struct.pretty_inspect.strip}"
-
-    # Either record the identity...
-    if current_user
-      if ! user_can_link_to_globus_identity?(current_user, identity_struct)
-        Rails.logger.error("User #{current_user.login} attempted authentication " +
-                           "with unallowed #{oidc_name} identity provider " +
-                           identity_struct['identity_provider_display_name'].to_s)
-        flash[:error] = "Error: your account can only authenticate with the following #{oidc_name} providers: " +
-                        "#{allowed_globus_provider_names(current_user).join(", ")}"
-        redirect_to user_path(current_user)
-        return
-      end
-      record_globus_identity(current_user, identity_struct)
-      flash[:notice] = "Your CBRAIN account is now linked to your #{oidc_name} identity."
-      if user_must_link_to_globus?(current_user)
-        wipe_user_password_after_globus_link(current_user)
-        flash[:notice] += "\nImportant note: from now on you can no longer connect to CBRAIN using a password."
-        redirect_to start_page_path
-        return
-      end
-      redirect_to user_path(current_user)
-      return
-    end
-
-    # ...or attempt login with it
-    user = find_user_with_globus_identity(identity_struct,@oidc_info[oidc_client_id])
-    if user.is_a?(String) # an error occurred
-      flash[:error] = user # the message
-      redirect_to new_session_path
-      return
-    end
-
-    login_from_globus_user(user, identity_struct['identity_provider_display_name'])
-
-  rescue CbrainException => ex
-    flash[:error] = "#{ex.message}"
-    redirect_to new_session_path
-  rescue => ex
-    clean_bt = Rails.backtrace_cleaner.clean(ex.backtrace || [])
-    Rails.logger.error "Globus auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
-    flash[:error] = 'The Globus authentication failed'
     redirect_to new_session_path
   end
 
