@@ -199,13 +199,14 @@ class BackgroundActivity < ApplicationRecord
 
   # Utility builder: returns an object with user_ids and items pre-filled,
   # status set to 'InProgress', and remote_resource set to current resource.
-  def self.local_new(user_id, items, remote_resource_id=CBRAIN::SelfRemoteResourceId)
+  def self.local_new(user_id, items, remote_resource_id=CBRAIN::SelfRemoteResourceId, options={})
     remote_resource_id ||= CBRAIN::SelfRemoteResourceId
     self.new(
       :status             => 'InProgress',
       :user_id            => user_id,
       :items              => Array(items),
       :remote_resource_id => remote_resource_id,
+      :options            => options,
     )
   end
 
