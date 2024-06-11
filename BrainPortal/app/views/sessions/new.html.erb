@@ -68,10 +68,9 @@
       <td class="field"><%= link_to "Forgot your password?", request_password_users_path, :class  => "action_link" %></td>
     </tr>
 
-    <% if @oidc_info %>
-      <% @oidc_info.each_key do |oidc_client_id| %>
-        <% oidc_name = @oidc_info[oidc_client_id]["client_name"] %>
-        <% uri       = @oidc_info[oidc_client_id]["login_uri"] %>
+    <% if @oidc_providers %>
+      <% @oidc_providers.each do |oidc_name,_| %>
+        <% uri       = @oidc_providers[oidc_name][:login_uri] %>
         <tr>
           <td>
               <strong>OR</strong>
@@ -104,4 +103,5 @@
 <div class="centered">
   <%= link_to "Full list of all tools and datasets", available_path, :class => :action_link %>
 </div>
+
 

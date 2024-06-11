@@ -167,11 +167,10 @@
 
     <% orcid_id = @user.meta["orcid_id"] %>
 
-    <% if @oidc_info %>
-      <% @oidc_info.each do |oidc_client_id, oidc_config| %>
+    <% if @oidc_providers %>
+      <% @oidc_providers.each do |oidc_name, oidc_config| %>
         <%
-          oidc_name                   = oidc_config["client_name"]
-          oidc_login_uri              = oidc_config["login_uri"]
+          oidc_login_uri              = oidc_config[:login_uri]
 
           oidc_provider_id_key        = "#{oidc_name.downcase}_provider_id".to_sym
           prov_id                     = @user.meta[oidc_provider_id_key]
@@ -181,7 +180,6 @@
 
           oidc_preferred_username_key = "#{oidc_name.downcase}_preferred_username".to_sym
           prov_user                   = @user.meta[oidc_preferred_username_key]
-          
         %>
 
 
@@ -401,5 +399,6 @@
   <p>
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>
 </div>
+
 
 

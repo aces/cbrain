@@ -37,7 +37,6 @@ class SessionsController < ApplicationController
   api_available :only => [ :new, :show, :create, :destroy ]
 
   before_action      :user_already_logged_in,    :only => [ :new, :create ]
-  before_action      :set_oidc_info,             :only => [ :new, :create, :globus, :mandatory_globus ]
   skip_before_action :verify_authenticity_token, :only => [ :create ] # we invoke it ourselves in create()
 
   def new #:nodoc:
@@ -46,6 +45,7 @@ class SessionsController < ApplicationController
     ua               = HttpUserAgent.new(rawua)
     @browser_name    = ua.browser_name    || "(unknown browser name)"
     @browser_version = ua.browser_version || "(unknown browser version)"
+    @oidc_providers  = RemoteResource.current_resource.oidc_providers || {}
 
     respond_to do |format|
       format.html
@@ -144,20 +144,21 @@ class SessionsController < ApplicationController
 
     # Verifify state structure 33 + "_" + oidc_client_id
     # and extract client_id
-    client_id = nil
+    oidc_name = ""
     if state.length >= 34 && state[32] == '_'
-      client_id = state[33..-1]
+      oidc_name = state[33..-1]
     end
 
-    oidc_config = @oidc_info[client_id]
-    oidc_name   = oidc_config["client_name"] || "Unknown"
+    @oidc_providers = RemoteResource.current_resource.oidc_providers
+    oidc_config     = @oidc_providers[oidc_name]
+    client_id       = oidc_config[:client_id]
 
     # Some initial simple validations
-    if !client_id || !code || state != globus_current_state(client_id)
+    if !client_id || !code || state != globus_current_state(oidc_name)
       cb_error "#{oidc_name} session is out of sync with CBRAIN"
     end
 
-    token_uri = oidc_config['token_uri']
+    token_uri = oidc_config[:token_uri]
 
     # Query Globus; this returns all the info we need at the same time.
     identity_struct = globus_fetch_token(code, globus_url, token_uri, oidc_name) # globus_url is generated from routes
@@ -177,10 +178,10 @@ class SessionsController < ApplicationController
         redirect_to user_path(current_user)
         return
       end
-      record_globus_identity(current_user, identity_struct, oidc_config)
+      record_globus_identity(current_user, identity_struct, oidc_name, oidc_config)
       flash[:notice] = "Your CBRAIN account is now linked to your #{oidc_name} identity."
       if user_must_link_to_globus?(current_user)
-        wipe_user_password_after_globus_link(current_user)
+        wipe_user_password_after_globus_link(current_user, oidc_name)
         flash[:notice] += "\nImportant note: from now on you can no longer connect to CBRAIN using a password."
         redirect_to start_page_path
         return
@@ -190,7 +191,7 @@ class SessionsController < ApplicationController
     end
 
     # ...or attempt login with it
-    user = find_user_with_globus_identity(identity_struct,oidc_config)
+    user = find_user_with_globus_identity(identity_struct, oidc_name, oidc_config)
     if user.is_a?(String) # an error occurred
       flash[:error] = user # the message
       redirect_to new_session_path

@@ -34,7 +34,6 @@ class UsersController < ApplicationController
   before_action :login_required,        :except => [:request_password, :send_password]
   before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password, :push_keys, :new_token]
   before_action :admin_role_required,   :only =>   [:create_user_session]
-  before_action :set_oidc_info,    :only => [ :show ]
 
   def index #:nodoc:
     @scope = scope_from_session
@@ -91,6 +90,8 @@ class UsersController < ApplicationController
       .where(:user_id => @user.id, :active => true)
       .where( "updated_at > ?", SessionHelpers::SESSION_API_TOKEN_VALIDITY.ago )
       .order(:updated_at)
+
+    @oidc_providers = RemoteResource.current_resource.oidc_providers
 
     respond_to do |format|
       format.html # show.html.erb
