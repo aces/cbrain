@@ -172,7 +172,7 @@ class SessionsController < ApplicationController
       if ! user_can_link_to_globus_identity?(current_user, oidc_config, identity_struct)
         Rails.logger.error("User #{current_user.login} attempted authenticatio " +
                            "with unallowed #{oidc_name} identity provider " +
-                           identity_struct['identity_provider_display_name'].to_s)
+                           identity_struct[oidc_config[:identity_provider_display_name]].to_s)
         flash[:error] = "Error: your account can only authenticate with the following #{oidc_name} providers: " +
                         "#{allowed_globus_provider_names(current_user).join(", ")}"
         redirect_to user_path(current_user)

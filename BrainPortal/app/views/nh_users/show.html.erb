@@ -158,20 +158,33 @@
     </div>
 
     <div class="card-row">
-      <div class="card-item">
-        <div>
-          <p class="card-label">Globus ID</p>
-          <p class="card-text btn-text globus">
-          <% glob_user = @user.meta[:globus_preferred_username] %>
-          <% glob_prov = @user.meta[:globus_provider_name] %>
-          <% if glob_user.present? %>
-             Identity Name: <%= glob_user %><br>
-             Identity Provider: <%= glob_prov %>
-          <% else %>
-            Your account is not linked to a Globus identity provider
-          <% end %>
+      <% @oidc_providers.each do |oidc_name, oidc_config| %>
+        <%
+          oidc_login_uri              = oidc_config[:login_uri]
+
+          oidc_provider_id_key        = "#{oidc_name.downcase}_provider_id".to_sym
+          prov_id                     = @user.meta[oidc_provider_id_key]
+
+          oidc_provider_name_key      = "#{oidc_name.downcase}_provider_name".to_sym
+          prov_name                   = @user.meta[oidc_provider_name_key]
+
+          oidc_preferred_username_key = "#{oidc_name.downcase}_preferred_username".to_sym
+          prov_user                   = @user.meta[oidc_preferred_username_key]
+        %>
+        <div class="card-item">
+          <div>
+            <p class="card-label"><%= oidc_name %> ID</p>
+            <p class="card-text btn-text globus">
+              <% if prov_user.present? %>
+                Identity Name: <%= prov_user %><br>
+                Identity Provider: <%= prov_name %>
+              <% else %>
+                Your account is not linked to a <%= oidc_name %> identity
+              <% end %>
+            </p>
+          </div>
         </div>
-      </div>
+      <% end %>
     </div>
 
     <div class="card-row">

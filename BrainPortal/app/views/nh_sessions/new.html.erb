@@ -51,13 +51,17 @@
         <p class="field_note">You can learn more about ORCID at <%= link_to 'ORCID.org', "https://orcid.org/", :class => 'orcid_home_link' %></p>
       <% end %>
 
-      <% if @globus_uri %>
-        <p class="text-center heading-sm grey-400 pb-4">OR</p>
-        <%= link_to @globus_uri, :class => "btn-solid globus" do %>
-          Sign in with Globus
+      <% if @oidc_providers %>
+        <% @oidc_providers.each do |oidc_name, oidc_config| %>
+          <p class="text-center heading-sm grey-400 pb-4">OR</p>
+          <%= link_to oidc_config[:nh_login_uri], :class => "btn-solid globus" do %>
+            Sign in with <%= oidc_name %>
+          <% end %>
+          <p class="field_note">This will work if you have already linked your NeuroHub account to a <%= oidc_name %> provider.</p>
+          <% if oidc_config[:link_to] && oidc_config[:link_to_uri] %>
+            <p class="field_note">You can learn more about <%= oidc_name %> at <%= link_to oidc_config[:link_to], oidc_config[:link_to_uri], :class => 'globus_home_link' %></p>
+          <% end %>
         <% end %>
-        <p class="field_note">This will work if you have already linked your NeuroHub account to a Globus provider.</p>
-        <p class="field_note">You can learn more about Globus at <%= link_to 'www.globus.org', "https://www.globus.org/", :class => 'globus_home_link' %></p>
       <% end %>
 
     <% end %>

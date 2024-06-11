@@ -28,7 +28,7 @@ module GlobusHelpers
   # Returns the URI to send users to the OIDC authentication page.
   # The parameter globus_action_url should be the URL to the controller
   # action here in CBRAIN that will received the POST response.
-  def globus_login_uri(oidc_name, oidc_provider)
+  def globus_login_uri(redirect_url, oidc_name, oidc_provider)
     return nil unless globus_auth_configured?(oidc_provider)
 
     client_id = oidc_provider[:client_id]
@@ -39,7 +39,7 @@ module GlobusHelpers
       :client_id     => client_id,
       :response_type => 'code',
       :scope         => scope,
-      :redirect_uri  => "http://localhost:3002/globus",  # generated from Rails routes
+      :redirect_uri  => redirect_url,  # generated from Rails routes
       :state         => globus_current_state(oidc_name), # method is below
     }
 
