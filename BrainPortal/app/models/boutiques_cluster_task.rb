@@ -100,14 +100,12 @@ class BoutiquesClusterTask < ClusterTask
 
   # narrows down local dp paths only to the most relevant
   def local_dp_storage_paths
-    file_dp_ids =  descriptor.file_inputs.map do |input|
-      userfile_id = invoke_params[input.id]
-      next if userfile_id.blank? # that happens when it's an optional file
-      userfile = Userfile.find(userfile_id)
-      dp_path = data_provider.path
-    end.pluck(:data_provider_id).uniq
-    return super.local_dp_storage_paths.select { |x| file_dp_ids.include? x.id }
+    file_ids = descriptor.file_inputs.map do |input|
+      invoke_params[input.id]
+    end
 
+    relevant_dp_ids = Userfile.where(id: file_ids).compact.uniq
+    return super & DataProviders.where(id: relevant_dp_ids).pluck(:remote_dir)
   end
 
   def cluster_commands #:nodoc:
