@@ -135,7 +135,7 @@ class ApplicationController < ActionController::Base
   # buttons and explanations.
   def check_mandatory_globus_id_linkage #:nodoc:
     return true if ! user_must_link_to_globus?(current_user)
-    return true if user_has_link_to_globus?(current_user)
+    return true if   user_has_link_to_globus?(current_user)
     respond_to do |format|
       format.html { redirect_to :controller => :sessions, :action => :mandatory_globus }
       format.json { render :status => 403, :json => { "error" => "This account must first be linked to a Globus identity" } }
