@@ -290,7 +290,7 @@ Rails.application.routes.draw do
 
     # Globus authentication
     get   '/nh_globus'              => 'nh_sessions#nh_globus'
-    post  '/nh_unlink_globus'       => 'nh_sessions#nh_unlink_globus'
+    post  '/nh_unlink_globus/:oidc' => 'nh_sessions#nh_unlink_globus', as: 'nh_unlink_globus' # :oidc correspond to the oidc_name
     get   '/nh_mandatory_globus'    => 'nh_sessions#nh_mandatory_globus'
 
     # ORCID authentication

@@ -40,6 +40,7 @@ class NhUsersController < NeurohubApplicationController
 
   def myaccount #:nodoc:
     @user=current_user
+    @oidc_providers = RemoteResource.current_resource.oidc_providers
     @orcid_canonical = orcid_canonize(@user.meta[:orcid])
     render :show
   end
@@ -54,7 +55,7 @@ class NhUsersController < NeurohubApplicationController
 
     @orcid_canonical = orcid_canonize(@user.meta[:orcid])
     @orcid_uri       = orcid_login_uri() # set to nil if orcid not configured by admin
-    @globus_uri      = globus_login_uri(nh_globus_url) # set to nil if globus not configured by admin
+    @oidc_providers  = RemoteResource.current_resource.oidc_providers
   end
 
   def change_password #:nodoc:

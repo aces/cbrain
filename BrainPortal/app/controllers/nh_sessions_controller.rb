@@ -31,8 +31,8 @@ class NhSessionsController < NeurohubApplicationController
   before_action :already_logged_in, :except => [ :orcid, :destroy, :nh_globus, :nh_unlink_globus, :nh_mandatory_globus ]
 
   def new #:nodoc:
-    @orcid_uri  = orcid_login_uri()
-    @globus_uri = globus_login_uri(nh_globus_url) # nh_globus_url is from the routes
+    @orcid_uri      = orcid_login_uri()
+    @oidc_providers = RemoteResource.current_resource.oidc_providers
   end
 
   # POST /nhsessions
@@ -138,33 +138,46 @@ class NhSessionsController < NeurohubApplicationController
     code  = params[:code].presence.try(:strip)
     state = params[:state].presence || 'wrong'
 
-    # Some initial simple validations
-    if !code || state != globus_current_state()
-      cb_error "Globus session is out of sync with CBRAIN"
+    # Verifify state structure 33 + "_" + oidc_client_id
+    # and extract client_id
+    oidc_name = ""
+    if state.length >= 34 && state[32] == '_'
+      oidc_name = state[33..-1]
     end
 
-    # Query Globus; this returns all the info we need at the same time.
-    identity_struct = globus_fetch_token(code, nh_globus_url) # nh_globus_url is from the routes
-    if !identity_struct
-      cb_error "Could not fetch your identity information from Globus"
+    @oidc_providers = RemoteResource.current_resource.oidc_providers
+    oidc_config     = @oidc_providers[oidc_name]
+    client_id       = oidc_config[:client_id]
+
+    # Some initial simple validations
+    if !client_id || !code || state != globus_current_state(oidc_name)
+      cb_error "#{oidc_name} session is out of sync with CBRAIN"
     end
-    Rails.logger.info "Globus identity struct:\n#{identity_struct.pretty_inspect.strip}"
+
+    token_uri = oidc_config[:token_uri]
+
+    # Query Globus; this returns all the info we need at the same time.
+    identity_struct = globus_fetch_token(code, nh_globus_url, token_uri, oidc_name) # globus_url is generated from routes
+    if !identity_struct
+      cb_error "Could not fetch your identity information from #{oidc_name}"
+    end
+    Rails.logger.info "#{oidc_name} identity struct:\n#{identity_struct.pretty_inspect.strip}"
 
     # Either record the identity...
     if current_user
-      if ! user_can_link_to_globus_identity?(current_user, identity_struct)
+      if ! user_can_link_to_globus_identity?(current_user, oidc_config, identity_struct)
         Rails.logger.error("User #{current_user.login} attempted authentication " +
-                           "with unallowed Globus identity provider " +
-                           identity_struct['identity_provider_display_name'].to_s)
-        flash[:error] = "Error: your account can only authenticate with the following Globus providers: " +
+                           "with unallowed #{oidc_name} identity provider " +
+                           identity_struct[oidc_config[:identity_provider_display_name]].to_s)
+        flash[:error] = "Error: your account can only authenticate with the following #{oidc_name} providers: " +
                         "#{allowed_globus_provider_names(current_user).join(", ")}"
         redirect_to myaccount_path
         return
       end
-      record_globus_identity(current_user, identity_struct)
-      flash[:notice] = "Your NeuroHub account is now linked to your Globus identity."
+      record_globus_identity(current_user, identity_struct, oidc_name, oidc_config)
+      flash[:notice] = "Your NeuroHub account is now linked to your #{oidc_name} identity."
       if user_must_link_to_globus?(current_user)
-        wipe_user_password_after_globus_link(current_user)
+        wipe_user_password_after_globus_link(current_user, oidc_name)
         flash[:notice] += "\nImportant note: from now on you can no longer connect to NeuroHub using a password."
         redirect_to neurohub_path
         return
@@ -174,22 +187,22 @@ class NhSessionsController < NeurohubApplicationController
     end
 
     # ...or attempt login with it
-    user = find_user_with_globus_identity(identity_struct)
+    user = find_user_with_globus_identity(identity_struct, oidc_name, oidc_config)
     if user.is_a?(String) # an error occurred
       flash[:error] = user # the message
       redirect_to signin_path
       return
     end
 
-    login_from_globus_user(user, identity_struct['identity_provider_display_name'])
+    login_from_globus_user(user, identity_struct[oidc_config[:identity_provider_display_name]])
 
   rescue CbrainException => ex
     flash[:error] = "#{ex.message}"
     redirect_to signin_path
   rescue => ex
     clean_bt = Rails.backtrace_cleaner.clean(ex.backtrace || [])
-    Rails.logger.error "Globus auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
-    flash[:error] = 'The Globus authentication failed'
+    Rails.logger.error "#{oidc_name} auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
+    flash[:error] = 'The #{oidc_name} authentication failed'
     redirect_to signin_path
   end
 
@@ -197,10 +210,11 @@ class NhSessionsController < NeurohubApplicationController
   # Removes a user's linked globus identity.
   def nh_unlink_globus #:nodoc:
     redirect_to start_page_path unless current_user
+    oidc_name = params[:oidc]
+ 
+    unlink_globus_identity(current_user,oidc_name)
 
-    unlink_globus_identity(current_user)
-
-    flash[:notice] = "Your account is no longer linked to any Globus identity"
+    flash[:notice] = "Your account is no longer linked to any #{oidc_name} identity"
     redirect_to myaccount_path
   end
 
