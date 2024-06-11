@@ -25,7 +25,12 @@ module OrcidHelpers
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  def orcid_login_uri(oidc_client, oidc_info)
+  # ORCID authentication URL constants
+  # Maybe should be made configurable.
+  ORCID_AUTHORIZE_URI = "https://orcid.org/oauth/authorize" # will be issued a GET with params
+  ORCID_TOKEN_URI     = "https://orcid.org/oauth/token"     # will be issued a POST with a single code
+
+  def orcid_login_uri
     myself              = RemoteResource.current_resource
 
     # The following three values must be configured by the sysadmin
@@ -43,10 +48,9 @@ module OrcidHelpers
              :scope         => '/authenticate',
              :redirect_uri  => orcid_url, # generated from Rails routes
     }
-
-    oidc_info['authorize_uri'] + '?' + orcid_params.to_query
+    ORCID_AUTHORIZE_URI + '?' + orcid_params.to_query
   end
-  
+
   # shortens ORCID iD by dropping url (possibly distorted)
   def orcid_digits(orcid)
     orcid.to_s[/\d\d\d\d-\d\d\d\d-\d\d\d\d-\d\d\d[\dX]/i]
