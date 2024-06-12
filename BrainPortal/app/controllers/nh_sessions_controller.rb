@@ -157,7 +157,7 @@ class NhSessionsController < NeurohubApplicationController
     token_uri = oidc_config[:token_uri]
 
     # Query Globus; this returns all the info we need at the same time.
-    identity_struct = globus_fetch_token(code, nh_globus_url, token_uri, oidc_name) # globus_url is generated from routes
+    identity_struct = globus_fetch_token(code, nh_globus_url, token_uri, oidc_name) # nh_globus_url is generated from routes
     if !identity_struct
       cb_error "Could not fetch your identity information from #{oidc_name}"
     end
@@ -221,9 +221,12 @@ class NhSessionsController < NeurohubApplicationController
   # GET /nh_mandatory_globus
   # Shows the page that informs the user they MUST link to a Globus ID.
   def nh_mandatory_globus #:nodoc:
-    @globus_uri    = globus_login_uri(nh_globus_url)
-    @globus_logout = globus_logout_uri
     @allowed_provs = allowed_globus_provider_names(current_user)
+
+    # restrict @oidc_providers to allowed providers
+    @oidc_providers = RemoteResource.current_resource.oidc_providers
+    @oidc_providers = @oidc_providers.select { |k,v| @allowed_provs.include?(k) }  
+    
     respond_to do |format|
       format.html
       format.any  { head :unauthorized }
