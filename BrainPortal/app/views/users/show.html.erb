@@ -118,10 +118,10 @@
         </div>
       <% end %>
 
-      <% t.edit_cell('meta[allowed_globus_provider_names]', :header => "Forced #{@oidc_client} Identity Providers", :content => @user.meta['allowed_globus_provider_names'] || '') do %>
+      <% t.edit_cell('meta[allowed_globus_provider_names]', :header => "Forced Identity Providers", :content => @user.meta['allowed_globus_provider_names'] || '') do %>
         <%= text_field_tag "meta[allowed_globus_provider_names]", @user.meta['allowed_globus_provider_names'], :size => 40 %><br />
         <div class="field_explanation">
-          If set, must be a list of <%= @oidc_client %> identity provider names separated by commas. A single '*' is
+          If set, must be a list of identity provider names separated by commas. A single '*' is
           also allowed to mean any provider name.
         </div>
       <% end %>
