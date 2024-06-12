@@ -165,7 +165,18 @@ class RemoteResource < ApplicationRecord
         oidc_providers[oidc_name]['nh_login_uri'] = globus_login_uri(nh_globus_url, oidc_name, oidc_config)
       end
 
-      return oidc_providers.with_indifferent_access
+      oidc_providers = oidc_providers.with_indifferent_access
+
+      # Extract list of duplicate client_id accross providers
+      client_ids = oidc_providers.map { |oidc_name, oidc_config| oidc_config['client_id'] }
+      duplicate_client_ids = client_ids.select { |e| client_ids.count(e) > 1 }.uniq
+
+      # Delete oidc_providers[oidc_name] if it has a duplicate client_id
+      oidc_providers.each do |oidc_name, oidc_config|
+          oidc_providers.delete(oidc_name) if duplicate_client_ids.include?(oidc_config[:client_id])
+      end
+
+      oidc_providers
     rescue
       {}
     end
