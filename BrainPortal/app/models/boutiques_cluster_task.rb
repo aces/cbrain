@@ -98,14 +98,14 @@ class BoutiquesClusterTask < ClusterTask
     true
   end
 
-  # narrows down local dp paths only to the most relevant
+  # narrows down local dp paths only to the most relevant, to be used at setup
   def local_dp_storage_paths
-    file_ids = descriptor.file_inputs.map do |input|
+    file_ids = descriptor_for_setup.file_inputs.map do |input|
       invoke_params[input.id]
     end
 
     relevant_dp_ids = Userfile.where(id: file_ids).compact.uniq
-    return super & DataProviders.where(id: relevant_dp_ids).pluck(:remote_dir)
+    return super & DataProvider.where(id: relevant_dp_ids).pluck(:remote_dir)
   end
 
   def cluster_commands #:nodoc:

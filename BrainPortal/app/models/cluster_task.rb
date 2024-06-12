@@ -2387,11 +2387,8 @@ docker_image_name=#{full_image_name.bash_escape}
     # This will be a string "-B path1 -B path2 -B path3" etc.
     # In the case of read-only input files, ro option is added
 
-    scheme  = "#{sing_opts} -B #{path}"
-    scheme += ":#{path}:ro" if file_access_symbol == :read   # if tool should not modify, bind as read-only
-
     esc_local_dp_mountpoints = local_dp_storage_paths.inject("") do |sing_opts,path|
-      scheme % { path: path.bash_escape, sing_opts: sing_opts }
+      "#{sing_opts} -B #{path}#{":#{path}:ro" if file_access_symbol == :read}"
     end
 
     # (5) Overlays defined in the ToolConfig
