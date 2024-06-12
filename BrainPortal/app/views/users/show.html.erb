@@ -194,12 +194,13 @@
                               :data   => { :confirm => "Are you sure you want to unlink your account with this #{oidc_name} identity?" }
                             )
                 %>
-              <% end %>
+              <% else %>
+                (No <%= oidc_name %> identity linked to your account)<br>   
+              <% end %>  
             <% else %>
-              (No <%= oidc_name %> identity linked to your account)   
-            <% end %>  
-            <% if @user.id == current_user.id  # Globus button works only on user own account %>
-              <%= link_to "Link a #{oidc_name} identity", oidc_config["login_uri"], :class => 'button globus_button' %>
+              <% if @user.id == current_user.id  # Globus button works only on user own account %>
+                <%= link_to "Link a #{oidc_name} identity", oidc_config["login_uri"], :class => 'button globus_button' %>
+              <% end %>
             <% end %>
           <% end %>
         <% end %>

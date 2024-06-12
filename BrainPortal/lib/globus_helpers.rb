@@ -179,28 +179,35 @@ module GlobusHelpers
   end
 
   def user_can_link_to_globus_identity?(user, oidc_config, identity)
-    allowed = allowed_globus_provider_names(user)
+    allowed         = allowed_globus_provider_names(user)
     return true if allowed.nil?
     return true if allowed.size == 1 && allowed[0] == '*'
+
+    oidc_providers  = RemoteResource.current_resource.oidc_providers
+    allowed_clients = []
+    # Iterate over the allowed values in oidc_providers
+    allowed.each do |allowed_name|
+      allowed_clients << oidc_providers[allowed_name][:client_id]
+    end
     prov_names = set_of_identity_provider_names(oidc_config, identity)
-    return true if (allowed & prov_names).present? # if the intersection is not empty
+    return true if (allowed_clients & prov_names).present? # if the intersection is not empty
     false
   end
 
-  def user_has_link_to_globus?(user,oidc_info)
+  def user_has_link_to_globus?(user)
     allowed = allowed_globus_provider_names(user)
 
     # Filter out the identities that are not allowed
-    allowed_oidc_info = oidc_info.select { |oidc_client, oidc_config| allowed.include?(oidc_client) }
+    oidc_providers         = RemoteResource.current_resource.oidc_providers
+    allowed_oidc_providers = oidc_providers.select { |oidc_name, _| allowed.include?(oidc_name) }
 
-    # Iterate over the allowed_oidc_info
+    # Iterate over the allowed_oidc_providers
     has_link_to_oidc = false
-    allowed_oidc_info.each do |oidc_name, oidc_config|
+    allowed_oidc_providers.each do |oidc_name, _|
       next if has_link_to_oidc
-      user.meta[oidc_provider_id_key(oidc_name)].present? &&
+      has_link_to_oidc = user.meta[oidc_provider_id_key(oidc_name)].present? &&
       user.meta[oidc_provider_name_key(oidc_name)].present? &&
       user.meta[oidc_preferred_username_key(oidc_name)].present?
-      has_link_to_oidc = true
     end
     has_link_to_oidc
   end

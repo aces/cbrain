@@ -138,8 +138,8 @@ class ApplicationController < ActionController::Base
     return true if   user_has_link_to_globus?(current_user)
     respond_to do |format|
       format.html { redirect_to :controller => :sessions, :action => :mandatory_globus }
-      format.json { render :status => 403, :json => { "error" => "This account must first be linked to a Globus identity" } }
-      format.xml  { render :status => 403, :xml  => { "error" => "This account must first be linked to a Globus identity" } }
+      format.json { render :status => 403, :json => { "error" => "This account must first be linked to an identity provider" } }
+      format.xml  { render :status => 403, :xml  => { "error" => "This account must first be linked to an identity provider" } }
     end
     return false
   end

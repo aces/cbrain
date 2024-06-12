@@ -67,10 +67,9 @@
       <td></td>
       <td class="field"><%= link_to "Forgot your password?", request_password_users_path, :class  => "action_link" %></td>
     </tr>
-
     <% if @oidc_providers %>
-      <% @oidc_providers.each do |oidc_name,_| %>
-        <% uri       = @oidc_providers[oidc_name][:login_uri] %>
+      <% @oidc_providers.each do |oidc_name,oidc_provider| %>
+        <% uri       = oidc_provider[:login_uri] %>
         <tr>
           <td>
               <strong>OR</strong>

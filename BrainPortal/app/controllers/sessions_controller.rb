@@ -32,8 +32,6 @@ class SessionsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  include GlobusHelpers
-
   api_available :only => [ :new, :show, :create, :destroy ]
 
   before_action      :user_already_logged_in,    :only => [ :new, :create ]
@@ -58,8 +56,9 @@ class SessionsController < ApplicationController
   def mandatory_globus #:nodoc:
     @allowed_provs = allowed_globus_provider_names(current_user)
 
-    # restrict @oidc_info to allowed providers
-    @oidc_info = @oidc_info.select { |k,v| @allowed_provs.include?(k) }
+    # restrict @oidc_providers to allowed providers
+    @oidc_providers = RemoteResource.current_resource.oidc_providers
+    @oidc_providers = @oidc_providers.select { |k,v| @allowed_provs.include?(k) }
 
     respond_to do |format|
       format.html
@@ -73,7 +72,8 @@ class SessionsController < ApplicationController
     end
     user = User.authenticate(params[:login], params[:password]) # can be nil if it fails
     all_ok = create_from_user(user, 'CBRAIN')
-
+ 
+    @oidc_providers  = RemoteResource.current_resource.oidc_providers || {}
     if ! all_ok
       auth_failed()
       return
@@ -218,7 +218,7 @@ class SessionsController < ApplicationController
 
     unlink_globus_identity(current_user, oidc_name)
 
-    flash[:notice] = "Your account is no longer linked to any Globus identity"
+    flash[:notice] = "Your account is no longer linked to #{oidc_name} provider"
     redirect_to user_path(current_user)
   end
 

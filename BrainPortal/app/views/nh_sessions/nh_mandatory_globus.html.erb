@@ -22,7 +22,8 @@
 #
 -%>
 
-<% title 'Mandatory Globus Link', "" %>
+<% title 'Mandatory Identity provider Link' %>
+
 
 <div class="nh_content">
 
@@ -30,8 +31,8 @@
 
     <div class="card-item heading">
       <div class="card-heading">
-        <p class="text-lg">Mandatory Globus Link</p>
-        <p class="text-md">Before continuing, your account must be linked to a Globus identity provider.</p>
+        <p class="text-lg">Mandatory Identity provider Link</p>
+        <p class="text-md">Before continuing, your account must be linked to an identity provider.</p>
       </div>
     </div>
 
@@ -41,8 +42,8 @@
           <p class="card-label">Explanations</p>
           <p class="card-text">
             When you click on the button below, your browser will be redirected
-            to a Globus login page; from there you can choose one of the
-            globus-supported identity providers. This will in turn redirect you
+            to an identity provider login page; from there you can choose one of the
+            supported identity providers. This will in turn redirect you
             to the provider's own login page. Once you've successfully authenticated
             there, your browser will be redirected back here to finalize
             the link with your NeuroHub account.
@@ -55,13 +56,16 @@
       <div class="card-item">
         <div>
           <p class="card-label">The identity providers that are allowed for your NeuroHub account are:</p>
+          
+          
           <% @allowed_provs.each do |provname| %>
             <% provname = '(Any Globus identity provider)' if provname == '*' %>
             <p class="card-text">&bull; <%= provname %></p>
           <% end %>
-          <p class="btn-solid globus bg-warning-bg">
-            <%= link_to 'Link your NeuroHub account to Globus', @globus_uri, :class => '' %>
-          </p>
+
+          <% @oidc_providers.each do |oidc_name, oidc_provider| %>
+              <%= link_to "Login with #{oidc_name}", oidc_provider[:login_uri], :class => 'btn-solid globus bg-warning-bg' %>
+          <% end %>
         </div>
       </div>
     </div>
@@ -73,9 +77,11 @@
             If you already are logged in on Globus using a different identity provider, your
             might want to log out first. This can be accomplished by the button below:
           </p>
-          <p class="btn-solid globus bg-warning-bg">
-            <%= link_to 'Logout from all Globus identities', @globus_logout, :class => '' %>
-          </p>
+          <% @oidc_providers.each do |oidc_name, oidc_provider| %>
+            <p class="btn-solid globus bg-warning-bg">
+              <%= link_to "Logout from all #{oidc_name} identities", oidc_provider[:logout_uri], :class => '' %>
+            </p>
+          <% end %>
         </div>
       </div>
     </div>
@@ -83,4 +89,5 @@
   </div> <!-- card -->
 
 </div> <!-- nh_content -->
+
 
