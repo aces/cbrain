@@ -69,5 +69,11 @@ class BackgroundActivity::RandomActivity < BackgroundActivity
     raise "Oh darn #{item} exception"
   end
 
+  def indices_of_failures
+    self.messages.each_with_index.map do |message,idx|
+      idx if ! message.to_s.starts_with?("Yeah")
+    end.compact
+  end
+
 end
 

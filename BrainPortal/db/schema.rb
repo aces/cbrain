@@ -10,9 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240315173856) do
+ActiveRecord::Schema.define(version: 20240613133122) do
 
-  create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name",        null: false
     t.string   "description"
     t.string   "color"
@@ -20,17 +20,17 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.datetime "updated_at",  null: false
   end
 
-  create_table "access_profiles_groups", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "access_profiles_groups", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.integer "access_profile_id"
     t.integer "group_id"
   end
 
-  create_table "access_profiles_users", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "access_profiles_users", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.integer "access_profile_id"
     t.integer "user_id"
   end
 
-  create_table "active_record_logs", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "active_record_logs", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.integer  "ar_id"
     t.string   "ar_table_name"
     t.text     "log",           limit: 65535
@@ -55,9 +55,11 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.datetime "updated_at",                                   null: false
     t.datetime "start_at"
     t.string   "repeat"
+    t.integer  "retry_count"
+    t.integer  "retry_delay"
   end
 
-  create_table "cbrain_tasks", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "cbrain_tasks", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "type"
     t.integer  "batch_id"
     t.string   "cluster_jobid"
@@ -97,7 +99,7 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.index ["workdir_archived"], name: "index_cbrain_tasks_on_workdir_archived", using: :btree
   end
 
-  create_table "custom_filters", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "custom_filters", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -108,7 +110,7 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.index ["user_id"], name: "index_custom_filters_on_user_id", using: :btree
   end
 
-  create_table "data_providers", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "data_providers", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name"
     t.string   "type"
     t.integer  "user_id"
@@ -139,7 +141,7 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.index ["user_id"], name: "index_data_providers_on_user_id", using: :btree
   end
 
-  create_table "data_usage", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "data_usage", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.integer  "user_id",                          null: false
     t.integer  "group_id",                         null: false
     t.string   "yearmonth",                        null: false
@@ -155,7 +157,7 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.datetime "updated_at",                       null: false
   end
 
-  create_table "disk_quotas", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "disk_quotas", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.integer  "user_id"
     t.integer  "data_provider_id"
     t.decimal  "max_bytes",        precision: 24
@@ -164,7 +166,7 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.datetime "updated_at",                      null: false
   end
 
-  create_table "exception_logs", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "exception_logs", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "exception_class"
     t.string   "request_controller"
     t.string   "request_action"
@@ -182,7 +184,7 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.datetime "updated_at"
   end
 
-  create_table "groups", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "groups", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -201,20 +203,20 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.index ["type"], name: "index_groups_on_type", using: :btree
   end
 
-  create_table "groups_editors", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "groups_editors", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.integer "group_id"
     t.integer "user_id"
     t.index ["group_id", "user_id"], name: "index_groups_editors_on_group_id_and_user_id", unique: true, using: :btree
   end
 
-  create_table "groups_users", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "groups_users", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.integer "group_id"
     t.integer "user_id"
     t.index ["group_id"], name: "index_groups_users_on_group_id", using: :btree
     t.index ["user_id"], name: "index_groups_users_on_user_id", using: :btree
   end
 
-  create_table "help_documents", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "help_documents", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "key",        null: false
     t.string   "path",       null: false
     t.datetime "created_at", null: false
@@ -222,7 +224,7 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.index ["key"], name: "index_help_documents_on_key", unique: true, using: :btree
   end
 
-  create_table "large_session_infos", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "large_session_infos", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "session_id",                               null: false
     t.text     "data",       limit: 65535
     t.datetime "created_at"
@@ -233,7 +235,7 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.index ["updated_at"], name: "index_sessions_on_updated_at", using: :btree
   end
 
-  create_table "messages", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "messages", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "header"
     t.text     "description",   limit: 65535
     t.text     "variable_text", limit: 65535
@@ -253,7 +255,7 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.index ["user_id"], name: "index_messages_on_user_id", using: :btree
   end
 
-  create_table "meta_data_store", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "meta_data_store", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.integer  "ar_id"
     t.string   "ar_table_name"
     t.string   "meta_key"
@@ -266,7 +268,7 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.index ["meta_key"], name: "index_meta_data_store_on_meta_key", using: :btree
   end
 
-  create_table "remote_resources", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "remote_resources", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name"
     t.string   "type"
     t.integer  "user_id"
@@ -313,7 +315,7 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.index ["type"], name: "index_remote_resources_on_type", using: :btree
   end
 
-  create_table "resource_usage", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "resource_usage", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "type"
     t.decimal  "value",                    precision: 24
     t.integer  "user_id"
@@ -362,13 +364,13 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.index ["type"], name: "index_resource_usage_on_type", using: :btree
   end
 
-  create_table "sanity_checks", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "sanity_checks", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "revision_info"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  create_table "signups", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "signups", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "title"
     t.string   "first",                                            null: false
     t.string   "middle"
@@ -403,20 +405,20 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.string   "form_page"
   end
 
-  create_table "sites", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "sites", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.text     "description", limit: 65535
   end
 
-  create_table "ssh_agent_unlocking_events", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "ssh_agent_unlocking_events", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "message"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "sync_status", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "sync_status", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.integer  "userfile_id"
     t.integer  "remote_resource_id"
     t.string   "status"
@@ -429,7 +431,7 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.index ["userfile_id"], name: "index_sync_status_on_userfile_id", using: :btree
   end
 
-  create_table "tags", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "tags", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name"
     t.integer  "user_id"
     t.datetime "created_at"
@@ -439,21 +441,21 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.index ["user_id"], name: "index_tags_on_user_id", using: :btree
   end
 
-  create_table "tags_userfiles", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "tags_userfiles", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.integer "tag_id"
     t.integer "userfile_id"
     t.index ["tag_id"], name: "index_tags_userfiles_on_tag_id", using: :btree
     t.index ["userfile_id"], name: "index_tags_userfiles_on_userfile_id", using: :btree
   end
 
-  create_table "task_vm_allocations", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "task_vm_allocations", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.integer  "vm_id"
     t.integer  "task_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "tool_configs", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "tool_configs", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "version_name"
     t.text     "description",                   limit: 65535
     t.integer  "tool_id"
@@ -486,7 +488,7 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.index ["tool_id"], name: "index_tool_configs_on_tool_id", using: :btree
   end
 
-  create_table "tools", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "tools", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name"
     t.integer  "user_id"
     t.integer  "group_id"
@@ -506,7 +508,7 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.index ["user_id"], name: "index_tools_on_user_id", using: :btree
   end
 
-  create_table "userfiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "userfiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name"
     t.decimal  "size",                            precision: 24
     t.integer  "user_id"
@@ -537,7 +539,7 @@ ActiveRecord::Schema.define(version: 20240315173856) do
     t.index ["user_id"], name: "index_userfiles_on_user_id", using: :btree
   end
 
-  create_table "users", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "users", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "full_name"
     t.string   "position"
     t.string   "affiliation"

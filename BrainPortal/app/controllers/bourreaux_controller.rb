@@ -682,6 +682,7 @@ class BourreauxController < ApplicationController
       :bypass_cache         => bypass_cache,
       :sync_select_patterns => Array(patterns).presence,
     )
+    bac.update_column(:retry_count, 3) if bac.id # hardcoded for the moment
 
     render :json => { :status => "ok", :userfile_ids => userfile_ids, :background_activity_id => bac.id }
   end

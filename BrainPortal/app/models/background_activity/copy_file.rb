@@ -28,6 +28,13 @@ class BackgroundActivity::CopyFile < BackgroundActivity
   validates_bac_presence_of_option         :dest_data_provider_id
   validates_dynamic_bac_presence_of_option :userfile_custom_filter_id
 
+  def pretty_name
+    dp_id = self.options[:dest_data_provider_id]
+    dp    = DataProvider.find(dp_id) rescue nil
+    dp_name = dp&.name || "##{dp_id}"
+    self.class.to_s.demodulize.underscore.humanize + " on #{dp_name}"
+  end
+
   # Helper for scheduling a copy of files immediately.
   def self.setup!(user_id, userfile_ids, remote_resource_id, dest_data_provider_id, options={})
     ba         = self.local_new(user_id, userfile_ids, remote_resource_id)
