@@ -176,7 +176,7 @@ class BackgroundActivity < ApplicationRecord
     true
   end
 
-  # Abtract method. This method is invoked
+  # Abstract method. This method is invoked
   # automatically when a BackgroundActivity object
   # is created out of a 'Scheduled' object.
   # This is the place a subclass can prepare the
