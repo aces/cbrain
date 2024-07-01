@@ -43,15 +43,6 @@ module GlobusHelpers
       &.map(&:strip)
   end
 
-  def user_can_link_to_globus_identity?(user, oidc_config, identity)
-    allowed = allowed_globus_provider_names(user)
-    return true if allowed.nil?
-    return true if allowed.size == 1 && allowed[0] == '*'
-    prov_names = set_of_identity_provider_names(oidc_config, identity)
-    return true if (allowed & prov_names).present? # if the intersection is not empty
-    false
-  end
-
   def user_has_link_to_globus?(user,oidc_info)
     allowed = allowed_globus_provider_names(user)
 
