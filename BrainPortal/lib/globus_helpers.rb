@@ -25,45 +25,6 @@ module GlobusHelpers
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # Returns a string that should stay constants during the entire
-  # OIDC negotiations. The current Rails session_id, encoded, will do
-  # the trick. The Rails session is maintained by a cookie already
-  # created and maintained, at this point.
-  def globus_current_state(oidc_name)
-    md5 = Digest::MD5.hexdigest( RemoteResource.current_resource.name )
-    !oidc_name ? md5  :
-                 md5 + "_" + oidc_name
-  end
-
-  # Return the registered OIDC endpoint client ID.
-  # This value must be configured by the CBRAIN admin
-  # in the meta data of the portal. Returns nil if unset.
-  def globus_client_id
-    myself = RemoteResource.current_resource
-    myself.meta[:globus_client_id].presence.try(:strip)
-  end
-
-  # Return the registered OIDC endpoint client secret.
-  # This value must be configured by the CBRAIN admin
-  # in the meta data of the portal. Returns nil if unset.
-  def globus_client_secret
-    myself = RemoteResource.current_resource
-    myself.meta[:globus_client_secret].presence.try(:strip)
-  end
-
-  # Returns true if the CBRAIN system is configured for
-  # OIDC auth.
-  def globus_auth_configured?(oidc_provider=nil)
-    myself   = RemoteResource.current_resource
-    site_uri = myself.site_url_prefix.presence
-    # Four conditions: client_id, client_secret, authorize_uri, scope
-    return false if ! oidc_provider[:client_id]
-    return false if ! oidc_provider[:client_secret]
-    return false if ! oidc_provider[:authorize_uri]
-    return false if ! oidc_provider[:scope]
-    true
-  end
-
   def set_of_identities(globus_identity)
     globus_identity['identity_set'] || [ globus_identity ]
   end
