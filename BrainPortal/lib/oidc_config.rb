@@ -29,7 +29,7 @@ class OidcConfig
 
     def self.load_from_file(path=Rails.root + "config/oidc.yml")
         @oidc_config = []
-
+ 
         loaded_yaml = YAML.load(ERB.new(File.read(path)).result).with_indifferent_access
 
         needed_keys = %w[authorize_uri token_uri logout_uri scope client_secret client_id
@@ -176,7 +176,7 @@ class OidcConfig
     # In the case where a user must auth with a specific set of
     # OIDC providers, we find the first identity that
     # matches a name of that set.
-  
+ 
     identity = set_of_identities(oidc_identity).detect do |idstruct|
         self.user_can_link_to_identity?(user, idstruct)
     end
@@ -312,9 +312,9 @@ class OidcConfig
 
   # Removes the recorded OIDC identity for +user+
   def unlink_identity(user)
-    user.meta[provider_id_key]        = nil
-    user.meta[provider_name_key]      = nil
-    user.meta[preferred_username_key] = nil
+    user.meta[self.provider_id_key]        = nil
+    user.meta[self.provider_name_key]      = nil
+    user.meta[self.preferred_username_key] = nil
     user.addlog("Unlinked #{self.name} identity")
   end 
 end

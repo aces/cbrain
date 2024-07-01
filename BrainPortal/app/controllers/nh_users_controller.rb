@@ -20,6 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+require 'oidc_config'
+
 #Controller for the User resource.
 class NhUsersController < NeurohubApplicationController
 
@@ -40,7 +42,7 @@ class NhUsersController < NeurohubApplicationController
 
   def myaccount #:nodoc:
     @user=current_user
-    @oidc_providers = RemoteResource.current_resource.oidc_providers
+    @oidc_providers = OidcConfig.enabled
     @orcid_canonical = orcid_canonize(@user.meta[:orcid])
     render :show
   end
@@ -55,7 +57,7 @@ class NhUsersController < NeurohubApplicationController
 
     @orcid_canonical = orcid_canonize(@user.meta[:orcid])
     @orcid_uri       = orcid_login_uri() # set to nil if orcid not configured by admin
-    @oidc_providers  = RemoteResource.current_resource.oidc_providers
+    @oidc_providers  = OidcConfig.enabled
   end
 
   def change_password #:nodoc:

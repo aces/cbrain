@@ -109,7 +109,6 @@
   <% end %>
 
   <% @oidc_providers.each do |oidc| %>
-    <% binding %>
     <fieldset>
       <%= f.label(oidc.name.to_sym, "#{oidc.name} Identity") %>
       <%
@@ -120,7 +119,6 @@
       <% if prov_user.blank? %>
         <% if @user.id == current_user.id  # show button only on user own page, hide on other users pages %>
           <p class="btn-solid globus">
-            <% binding.pry %>
             <%= link_to oidc.nh_login_uri, :class => "" do %>
               Connect your NeuroHub account to a <%= oidc.name %> identity provider
             <% end %>

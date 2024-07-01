@@ -30,7 +30,7 @@ class NhSessionsController < NeurohubApplicationController
   include OrcidHelpers
 
   before_action :login_required,    :except => [ :new, :create, :request_password, :send_password, :orcid, :nh_globus ]
-  before_action :already_logged_in, :except => [ :orcid, :destroy, :nh_globus, :nh_unlink_globus, :nh_mandatory_globus ]
+  before_action :already_logged_in, :except => [ :orcid, :destroy, :nh_globus, :nh_unlink_oidc, :nh_mandatory_globus ]
 
   def new #:nodoc:
     @orcid_uri      = orcid_login_uri()
@@ -165,7 +165,7 @@ class NhSessionsController < NeurohubApplicationController
 
     # Either record the identity...
     if current_user
-      if ! oidc.user_can_link_to_oidc_identity?(current_user, identity_struct)
+      if ! oidc.user_can_link_to_identity?(current_user, identity_struct)
         Rails.logger.error("User #{current_user.login} attempted authentication " +
                            "with unallowed #{oidc.name} identity provider " +
                            identity_struct[oidc.identity_provider_display_name])
@@ -174,7 +174,7 @@ class NhSessionsController < NeurohubApplicationController
         redirect_to myaccount_path
         return
       end
-      record_globus_identity(current_user, identity_struct, oidc.name, oidc)
+      oidc.record_identity(current_user, identity_struct)
       flash[:notice] = "Your NeuroHub account is now linked to your #{oidc.name} identity."
       if user_must_link_to_globus?(current_user)
         wipe_user_password_after_globus_link(current_user, oidc.name)
@@ -206,13 +206,12 @@ class NhSessionsController < NeurohubApplicationController
     redirect_to signin_path
   end
 
-  # POST /nh_unlink_globus
-  # Removes a user's linked globus identity.
-  def nh_unlink_globus #:nodoc:
+  # POST /nh_unlink_oidc
+  # Removes a user's linked OIDC identity.
+  def nh_unlink_oidc #:nodoc:
     redirect_to start_page_path unless current_user
-    oidc_name = params[:oidc]
+    oidc = OidcConfig.find_by_name(params[:oidc_name])
 
-    oidc =  OidcConfig.find_by_name(oidc_name)
     oidc.unlink_identity(current_user)
 
     flash[:notice] = "Your account is no longer linked to any #{oidc.name} identity"

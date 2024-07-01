@@ -240,5 +240,19 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
   end
 
+  def self.z030_ensure_to_load_oidc_config
+
+      #----------------------------------------------------------------------------
+      puts "C> Loading OIDC configuration..."
+      #----------------------------------------------------------------------------
+
+      begin
+        OidcConfig.load_from_file
+      rescue => ex
+        puts "C> \t- ERROR: Cannot load OIDC configuration."
+        puts "C> \t  #{ex.message}"
+      end
+  end
+
 end
 
