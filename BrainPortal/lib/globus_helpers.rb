@@ -29,11 +29,6 @@ module GlobusHelpers
     globus_identity['identity_set'] || [ globus_identity ]
   end
 
-  def set_of_identity_provider_names(oidc_config, globus_identity)
-    identity_provider_display_name_key = oidc_config[:identity_provider_display_name]
-    set_of_identities(globus_identity).map { |s| s[identity_provider_display_name_key] }
-  end
-
   # Returns an array of allowed identity provider names.
   # Returns nil if they are all allowed
   def allowed_globus_provider_names(user)

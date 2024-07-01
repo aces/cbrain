@@ -208,10 +208,6 @@ class OidcConfig
    &.map(&:strip)
   end
 
-  def set_of_identity_provider_names(oidc_identity) #:nodoc:
-    set_of_identities(oidc_identity).map { |s| self.identity_provider_display_name }
-  end
-
   def set_of_identities(oidc_identity) #:nodoc:
     oidc_identity['identity_set'] || [ oidc_identity ]
   end
