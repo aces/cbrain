@@ -129,36 +129,6 @@ module GlobusHelpers
     user.update_attribute(:password_reset  , false)
   end
 
-  # Given a OIDC identity structure, find the user that matches it.
-  # Returns the user object if found; returns a string error message otherwise.
-  def find_user_with_globus_identity(oidc_identity, oidc_name, oidc_config)
-
-    provider_name = oidc_identity[oidc_config[:identity_provider_display_name]]
-    pref_username = oidc_identity[oidc_config[:preferred_username]]
-
-    id_set = set_of_identities(oidc_identity) # an OIDC record can contain several identities
-
-    # For each present identity, find all users that have it.
-    # We only allow ONE cbrain user to link to any of the identities.
-    users = id_set.inject([]) do |ulist, subident|
-      ulist |= find_users_with_specific_identity(subident, oidc_config, oidc_name)
-    end
-
-    if users.size == 0
-      Rails.logger.error "#{oidc_name} warning: no CBRAIN accounts found for identity '#{pref_username}' on provider '#{provider_name}'"
-      return "No CBRAIN user matches your #{oidc_name} identity. Create a CBRAIN account or link your existing CBRAIN account to your #{oidc_name} provider."
-    end
-
-    if users.size > 1
-      loginnames = users.map(&:login).join(", ")
-      Rails.logger.error "#{oidc_name.upcase} error: multiple CBRAIN accounts (#{loginnames}) found for identity '#{pref_username}' on provider '#{provider_name}'"
-      return "Several CBRAIN user accounts match your #{oidc_name} identity. Please contact the CBRAIN admins."
-    end
-
-    # The one lucky user
-    return users.first
-  end
-
   # Returns an array of all users that have linked their
   # account to the +identity+ provider. The array can
   # be empty (no such users) or contain more than one
