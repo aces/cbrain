@@ -81,7 +81,7 @@ class OidcConfig
     end
 
     def self.enabled
-        @oidc_config.select { |oidc| oidc.enabled }
+        (@oidc_config || []).select { |oidc| oidc.enabled }
     end
 
     def self.enabled_names
