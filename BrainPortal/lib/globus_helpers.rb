@@ -129,29 +129,5 @@ module GlobusHelpers
     user.update_attribute(:password_reset  , false)
   end
 
-  # Returns an array of all users that have linked their
-  # account to the +identity+ provider. The array can
-  # be empty (no such users) or contain more than one
-  # user (an account management error).
-  def find_users_with_specific_identity(identity, oidc_config, oidc_name)
-    provider_id   = identity[oidc_config[:identity_provider]]              || cb_error("#{oidc_name}: No identity provider")
-    provider_name = identity[oidc_config[:identity_provider_display_name]] || cb_error("#{oidc_name}: No identity provider name")
-    pref_username = identity[oidc_config[:preferred_username]]             || cb_error("#{oidc_name}: No preferred username")
-  
-    # Special case for ORCID, because we already have fields for that provider
-    if provider_name == 'ORCID'
-      orcid = pref_username.sub(/@.*/, "")
-      users = User.find_all_by_meta_data(:orcid, orcid).to_a
-      return users if users.present?
-      # otherwise we fall through to detect users who linked with ORCID through OIDC
-    end
-
-    # All other globus providers
-    # We need a user which match both the preferred username and provider_id
-    users = User.find_all_by_meta_data(oidc_preferred_username_key(oidc_name), pref_username)
-      .to_a
-      .select { |user| user.meta[oidc_provider_id_key(oidc_name)] == provider_id }
-  end
-
 end
 
