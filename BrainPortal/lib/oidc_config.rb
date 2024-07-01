@@ -197,7 +197,7 @@ class OidcConfig
     user.meta[self.provider_id_key]        = provider_id
     user.meta[self.provider_name_key]      = provider_name
     user.meta[self.preferred_username_key] = pref_username
-    user.addlog("Linked to #{sefl.name} identity: '#{pref_username}' on provider '#{provider_name}'")
+    user.addlog("Linked to #{self.name} identity: '#{pref_username}' on provider '#{provider_name}'")
   end
 
   def user_must_link_to_oidc?(user)

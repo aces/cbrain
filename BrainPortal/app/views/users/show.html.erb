@@ -166,44 +166,34 @@
   <%= show_table(@user, :as => :user, :header => 'Linked Identities') do |t| %>
 
     <% orcid_id = @user.meta["orcid_id"] %>
-    <% if @oidc_providers %>
-      <% @oidc_providers.each do |oidc_name, oidc_config| %>
-        <%
-          oidc_login_uri              = oidc_config[:login_uri]
+    <% @oidc_providers.each do |oidc| %>
+      <%
+        oidc_login_uri              = oidc.cb_login_uri
+        prov_id                     = @user.meta[oidc.provider_id_key]
+        prov_name                   = @user.meta[oidc.provider_name_key]
+        prov_user                   = @user.meta[oidc.preferred_username_key]
+      %>
 
-          oidc_provider_id_key        = "#{oidc_name.downcase}_provider_id".to_sym
-          prov_id                     = @user.meta[oidc_provider_id_key]
-
-          oidc_provider_name_key      = "#{oidc_name.downcase}_provider_name".to_sym
-          prov_name                   = @user.meta[oidc_provider_name_key]
-
-          oidc_preferred_username_key = "#{oidc_name.downcase}_preferred_username".to_sym
-          prov_user                   = @user.meta[oidc_preferred_username_key]
-        %>
-
-
-        <% t.cell "#{oidc_name} Provider", :show_width => 2 do %>
-          <% if oidc_login_uri %>
-            <% if prov_id %>
-              <strong>Provider name:</strong> <%= prov_name %><br>
-              <strong>Provider user:</strong> <%= prov_user %><br>
-              <% if @user.id == current_user.id %>
-                <%= link_to("Unlink this #{oidc_name} identity", unlink_globus_path(oidc: oidc_name),
-                              :class  => "button",
-                              :method => :post,
-                              :data   => { :confirm => "Are you sure you want to unlink your account with this #{oidc_name} identity?" }
-                            )
-                %>
-              <% end %>
-            <% else %>
-              (No <%= oidc_name %> identity linked to your account)   
-            <% end %>  
-            <% if @user.id == current_user.id  # Globus button works only on user own account %>
-              <%= link_to "Link a #{oidc_name} identity", oidc_config["login_uri"], :class => 'button globus_button' %>
+      <% t.cell "#{oidc.name} Provider", :show_width => 2 do %>
+        <% if oidc_login_uri %>
+          <% if prov_id %>
+            <strong>Provider name:</strong> <%= prov_name %><br>
+            <strong>Provider user:</strong> <%= prov_user %><br>
+            <% if @user.id == current_user.id %>
+              <%= link_to("Unlink this #{oidc.name} identity", unlink_oidc_path(oidc.name, :from => "cb"),
+                            :class  => "button",
+                            :method => :post,
+                            :data   => { :confirm => "Are you sure you want to unlink your account with this #{oidc.name} identity?" }
+                          )
+              %>
+             <% end %>
+          <% else %>
+            (No <%= oidc.name %> identity linked to your account)<br>
+            <% if @user.id == current_user.id  # OIDC button works only on user own account %>
+              <%= link_to "Link a #{oidc.name} identity", oidc_login_uri, :class => 'button globus_button' %>
             <% end %>
           <% end %>
         <% end %>
-
       <% end %>
     <% end %>
 
@@ -397,6 +387,5 @@
   <p>
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>
 </div>
-
 
 

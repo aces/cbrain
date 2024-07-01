@@ -22,6 +22,7 @@
 
 require 'ipaddr'
 require 'http_user_agent'
+require 'oidc_config'
 
 # Sesssions controller for the BrainPortal interface
 # This controller handles the login/logout function of the site.
@@ -45,7 +46,7 @@ class SessionsController < ApplicationController
     ua               = HttpUserAgent.new(rawua)
     @browser_name    = ua.browser_name    || "(unknown browser name)"
     @browser_version = ua.browser_version || "(unknown browser version)"
-    @oidc_providers  = RemoteResource.current_resource.oidc_providers || {}
+    @oidc_providers  = OidcConfig.enabled
 
     respond_to do |format|
       format.html
@@ -149,39 +150,38 @@ class SessionsController < ApplicationController
       oidc_name = state[33..-1]
     end
 
-    @oidc_providers = RemoteResource.current_resource.oidc_providers
-    oidc_config     = @oidc_providers[oidc_name]
-    client_id       = oidc_config[:client_id]
-
+    oidc = OidcConfig.find_by_name(oidc_name)
+ 
     # Some initial simple validations
-    if !client_id || !code || state != globus_current_state(oidc_name)
-      cb_error "#{oidc_name} session is out of sync with CBRAIN"
+    if !oidc.client_id  || !code || state != oidc.current_state
+      cb_error "#{oidc.name} session is out of sync with CBRAIN"
     end
 
-    token_uri = oidc_config[:token_uri]
+    token_uri = oidc.token_uri
 
     # Query Globus; this returns all the info we need at the same time.
-    identity_struct = globus_fetch_token(code, globus_url, token_uri, oidc_name) # globus_url is generated from routes
+    globus_url = RemoteResource.current_resource.site_url_prefix + "/globus"
+    identity_struct = oidc.fetch_token(code, globus_url) # globus_url is generated from routes
     if !identity_struct
-      cb_error "Could not fetch your identity information from #{oidc_name}"
+      cb_error "Could not fetch your identity information from #{oidc.name}"
     end
-    Rails.logger.info "#{oidc_name} identity struct:\n#{identity_struct.pretty_inspect.strip}"
+    Rails.logger.info "#{oidc.name} identity struct:\n#{identity_struct.pretty_inspect.strip}"
 
     # Either record the identity...
     if current_user
-      if ! user_can_link_to_globus_identity?(current_user, oidc_config, identity_struct)
-        Rails.logger.error("User #{current_user.login} attempted authenticatio " +
-                           "with unallowed #{oidc_name} identity provider " +
-                           identity_struct[oidc_config[:identity_provider_display_name]].to_s)
-        flash[:error] = "Error: your account can only authenticate with the following #{oidc_name} providers: " +
+      if ! oidc.user_can_link_to_identity?(current_user, identity_struct)
+        Rails.logger.error("User #{current_user.login} attempted authentication " +
+                           "with unallowed #{oidc.name} identity provider " +
+                           identity_struct[oidc.identity_provider_display_name].to_s)
+        flash[:error] = "Error: your account can only authenticate with the following #{oidc.name} providers: " +
                         "#{allowed_globus_provider_names(current_user).join(", ")}"
         redirect_to user_path(current_user)
         return
       end
-      record_globus_identity(current_user, identity_struct, oidc_name, oidc_config)
-      flash[:notice] = "Your CBRAIN account is now linked to your #{oidc_name} identity."
+      oidc.record_identity(current_user, identity_struct)
+      flash[:notice] = "Your CBRAIN account is now linked to your #{oidc.name} identity."
       if user_must_link_to_globus?(current_user)
-        wipe_user_password_after_globus_link(current_user, oidc_name)
+        wipe_user_password_after_globus_link(current_user, oidc.name)
         flash[:notice] += "\nImportant note: from now on you can no longer connect to CBRAIN using a password."
         redirect_to start_page_path
         return
@@ -191,35 +191,37 @@ class SessionsController < ApplicationController
     end
 
     # ...or attempt login with it
-    user = find_user_with_globus_identity(identity_struct, oidc_name, oidc_config)
+    user = oidc.find_user_with_oidc_identity(identity_struct)
     if user.is_a?(String) # an error occurred
       flash[:error] = user # the message
       redirect_to new_session_path
       return
     end
 
-    login_from_globus_user(user, identity_struct[oidc_config['identity_provider_display_name']])
+    login_from_globus_user(user, identity_struct[oidc.identity_provider_display_name])
 
   rescue CbrainException => ex
     flash[:error] = "#{ex.message}"
     redirect_to new_session_path
   rescue => ex
     clean_bt = Rails.backtrace_cleaner.clean(ex.backtrace || [])
-    Rails.logger.error "#{oidc_name} auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
-    flash[:error] = "The #{oidc_name} authentication failed"
+    Rails.logger.error "#{oidc.name} auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
+    flash[:error] = "The #{oidc.name} authentication failed"
     redirect_to new_session_path
   end
 
-  # POST /unlink_globus
-  # Removes a user's linked globus identity.
-  def unlink_globus #:nodoc:
-    oidc_name = params[:oidc]
+  # POST /unlink_oidc
+  # Removes a user's linked OIDC identity.
+  def unlink_oidc #:nodoc:
     redirect_to start_page_path unless current_user
+ 
+    oidc = OidcConfig.find_by_name(params[:oidc_name])
+    from = params[:from] || ""
 
-    unlink_globus_identity(current_user, oidc_name)
+    oidc.unlink_identity(current_user)
 
-    flash[:notice] = "Your account is no longer linked to any Globus identity"
-    redirect_to user_path(current_user)
+    flash[:notice] = "Your account is no longer linked to any #{oidc.name} identity"
+    redirect_to from == "cb" ? start_page_path : myaccount_path
   end
 
   ###############################################
@@ -390,16 +392,6 @@ class SessionsController < ApplicationController
 
   def json_session_info #:nodoc:
     session_info
-  end
-
-  def generate_globus_uris #:nodoc:
-    @globus_uris = {}
-    # Get the list of OpenID Connect providers from ./config/oidc.yml
-    openid_providers = RemoteResource.openid_providers
-    openid_providers.each do |oidc_client_id, oidc_provider_config|
-      @globus_uris[oidc_client_id] = globus_login_uri(oidc_client_id, oidc_provider_config)
-    end
-    return @globus_uris
   end
 
 end

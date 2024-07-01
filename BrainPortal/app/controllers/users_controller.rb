@@ -21,6 +21,7 @@
 #
 
 require 'ipaddr'
+require 'oidc_config'
 
 #RESTful controller for the User resource.
 class UsersController < ApplicationController
@@ -91,7 +92,7 @@ class UsersController < ApplicationController
       .where( "updated_at > ?", SessionHelpers::SESSION_API_TOKEN_VALIDITY.ago )
       .order(:updated_at)
 
-    @oidc_providers = RemoteResource.current_resource.oidc_providers
+    @oidc_providers = OidcConfig.enabled
 
     respond_to do |format|
       format.html # show.html.erb

@@ -30,7 +30,7 @@ class NhSessionsController < NeurohubApplicationController
   include OrcidHelpers
 
   before_action :login_required,    :except => [ :new, :create, :request_password, :send_password, :orcid, :nh_globus ]
-  before_action :already_logged_in, :except => [ :orcid, :destroy, :nh_globus, :nh_unlink_oidc, :nh_mandatory_globus ]
+  before_action :already_logged_in, :except => [ :orcid, :destroy, :nh_globus, :nh_mandatory_globus ]
 
   def new #:nodoc:
     @orcid_uri      = orcid_login_uri()
@@ -204,18 +204,6 @@ class NhSessionsController < NeurohubApplicationController
     Rails.logger.error "#{oidc.name} auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
     flash[:error] = 'The #{oidc.name} authentication failed'
     redirect_to signin_path
-  end
-
-  # POST /nh_unlink_oidc
-  # Removes a user's linked OIDC identity.
-  def nh_unlink_oidc #:nodoc:
-    redirect_to start_page_path unless current_user
-    oidc = OidcConfig.find_by_name(params[:oidc_name])
-
-    oidc.unlink_identity(current_user)
-
-    flash[:notice] = "Your account is no longer linked to any #{oidc.name} identity"
-    redirect_to myaccount_path
   end
 
   # GET /nh_mandatory_globus
