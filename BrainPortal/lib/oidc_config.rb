@@ -29,7 +29,7 @@ class OidcConfig
 
     def self.load_from_file(path=Rails.root + "config/oidc.yml")
         @oidc_config = []
- 
+
         loaded_yaml = YAML.load(ERB.new(File.read(path)).result).with_indifferent_access
 
         needed_keys = %w[authorize_uri token_uri logout_uri scope client_secret client_id
@@ -87,21 +87,6 @@ class OidcConfig
     def self.enabled_names
         self.enabled.map { |oidc| oidc.name }
     end
-
-    def set_user_prefered_name(user, oidc_identity)
-        key = generate_meta_key(self.name, "preferred_username")
-        user.meta[key] = oidc_identity[self.preferred_username]
-    end
-
-    def get_user_prefered_name(user)
-        key = generate_meta_key(self.name, "preferred_username")
-        user.meta[key]
-    end
-
-    def generate_meta_key(oidc_name, key)
-        "#{oidc_name}_#{key}".to_sym
-    end
-
 
     def oidc_login_uri(redirect_url)
         return nil unless oidc_auth_configured?
@@ -176,24 +161,24 @@ class OidcConfig
     # In the case where a user must auth with a specific set of
     # OIDC providers, we find the first identity that
     # matches a name of that set.
- 
+
     identity = set_of_identities(oidc_identity).detect do |idstruct|
         self.user_can_link_to_identity?(user, idstruct)
     end
- 
+
     provider_id   = identity[self.identity_provider]              || cb_error("#{self.name}: No identity provider")
     provider_name = identity[self.identity_provider_display_name] || cb_error("#{self.name}: No identity provider name")
     pref_username = identity[self.preferred_username]             || cb_error("#{self.name}: No preferred username")
- 
+
     # Special case for ORCID, because we already have fields for that provider
     # We do NOT do this in the case where the user is forced to auth with OIDC.
-    if provider_name == 'ORCID' && ! user_must_link_to_globus?(user)
+    if provider_name == 'ORCID' && ! user_must_link_to_oidc?(user)
       orcid = pref_username.sub(/@.*/, "")
       user.meta['orcid'] = orcid
-      user.addlog("Linked to ORCID identity: '#{orcid}' through #{oidc_name}")
+      user.addlog("Linked to ORCID identity: '#{orcid}' through #{oidc.name}")
       return
     end
- 
+
     user.meta[self.provider_id_key]        = provider_id
     user.meta[self.provider_name_key]      = provider_name
     user.meta[self.preferred_username_key] = pref_username
@@ -206,7 +191,7 @@ class OidcConfig
 
   def user_can_link_to_identity?(user, identity) #:nodoc:
     allowed = allowed_oidc_provider_names(user)
-  
+
     return true if allowed.nil?
     return true if allowed.size == 1 && allowed[0] == '*'
     return true if allowed.include?(self.identity_provider_display_name)
@@ -268,7 +253,7 @@ class OidcConfig
     provider_id   = identity[self.identity_provider]              || cb_error("#{self.name}: No identity provider")
     provider_name = identity[self.identity_provider_display_name] || cb_error("#{self.name}: No identity provider name")
     pref_username = identity[self.preferred_username]             || cb_error("#{self.name}: No preferred username")
-  
+
     # Special case for ORCID, because we already have fields for that provider
     if provider_name == 'ORCID'
       orcid = pref_username.sub(/@.*/, "")
@@ -291,24 +276,10 @@ class OidcConfig
   def provider_name_key #:nodoc:
    (self.name.downcase + "_provider_name").to_sym
   end
-  
+
   def preferred_username_key #:nodoc:
     (self.name.downcase + "_preferred_username").to_sym
   end
-
-  def user_can_link_to_oidc_identity?(user, oidc, oidc_identity) #:nodoc:
-    allowed         = allowed_oidc_provider_names(user)
-    return true if allowed.nil?
-    return true if allowed.size == 1 && allowed[0] == '*'
-
-    oidc_providers  = OidcConfig.enabled
-    allowed_clients = allowed.map { |name| oidc_providers[name][:client_id] }
-
-    prov_names = set_of_identity_provider_names(oidc_config, identity)
-    return true if (allowed_clients & prov_names).present? # if the intersection is not empty
-    false
-  end
-
 
   # Removes the recorded OIDC identity for +user+
   def unlink_identity(user)
@@ -316,5 +287,6 @@ class OidcConfig
     user.meta[self.provider_name_key]      = nil
     user.meta[self.preferred_username_key] = nil
     user.addlog("Unlinked #{self.name} identity")
-  end 
+  end
 end
+

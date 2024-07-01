@@ -47,10 +47,8 @@ class RemoteResource < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  include Rails.application.routes.url_helpers
   include ResourceAccess
   include LicenseAgreements
-  include GlobusHelpers
 
   cbrain_abstract_model! # objects of this class are not to be instanciated
 
@@ -141,34 +139,6 @@ class RemoteResource < ApplicationRecord
     myconfigs  = ApplicationRecord.configurations
     myconfig   = myconfigs[railsenv].dup
     myconfig
-  end
-
-  # Returns information about available OpenID providers
-  # by reading the oidc.yml file.
-  def oidc_providers(config_file="./config/oidc.yml")
-    begin
-      return {} if self.type != "BrainPortal"
-      return {} if ! File.exists?(config_file)
-
-      oidc_providers = YAML.load(ERB.new(File.read(Rails.root.join(config_file))).result).with_indifferent_access
- 
-      # Verify list of values for each provider
-      needed_keys = %w[authorize_uri token_uri logout_uri scope client_secret client_id
-                       identity_provider identity_provider_display_name preferred_username]
-      oidc_providers.each do |oidc_name, oidc_config|
-        # Delete oidc_providers[oidc_name] if it does not have all the needed keys
-        if (needed_keys - oidc_config.keys).any?
-          oidc_providers.delete(oidc_name)
-          next
-        end
-        oidc_providers[oidc_name]['login_uri']    = globus_login_uri(globus_url,    oidc_name, oidc_config)
-        oidc_providers[oidc_name]['nh_login_uri'] = globus_login_uri(nh_globus_url, oidc_name, oidc_config)
-      end
-
-      return oidc_providers.with_indifferent_access
-    rescue
-      {}
-    end
   end
 
   ############################################################################

@@ -25,53 +25,6 @@ module GlobusHelpers
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # Returns the URI to send users to the OIDC authentication page.
-  # The parameter globus_action_url should be the URL to the controller
-  # action here in CBRAIN that will received the POST response.
-  def globus_login_uri(redirect_url, oidc_name, oidc_provider)
-    return nil unless globus_auth_configured?(oidc_provider)
-
-    client_id = oidc_provider[:client_id]
-    scope     = oidc_provider[:scope]
-
-    # Create the URI to authenticate with OIDC
-    globus_params = {
-      :client_id     => client_id,
-      :response_type => 'code',
-      :scope         => scope,
-      :redirect_uri  => redirect_url,  # generated from Rails routes
-      :state         => globus_current_state(oidc_name), # method is below
-    }
-
-    oidc_provider[:authorize_uri] + '?' + globus_params.to_query
-  end
-
-  def globus_fetch_token(code, globus_action_url,token_uri, oidc_name)
-    # Query OIDC; this returns all the info we need at the same time.
-    auth_header = globus_basic_auth_header # method is below
-    response    = Typhoeus.post(token_uri,
-      :body   => {
-                   :code          => code,
-                   :redirect_uri  => globus_action_url,
-                   :grant_type    => 'authorization_code',
-                 },
-      :headers => { :Accept       => 'application/json',
-                    :Authorization => auth_header,
-                  }
-    )
-
-    # Parse the response
-    body         = response.response_body
-    json         = JSON.parse(body)
-    jwt_id_token = json["id_token"]
-    identity_struct, _ = JWT.decode(jwt_id_token, nil, false)
-
-    return identity_struct
-  rescue => ex
-    Rails.logger.error "#{oidc_name} token request failed: #{ex.class} #{ex.message}"
-    return nil
-  end
-
   # Returns the value for the Authorization header
   # when doing the client authentication.
   #
@@ -119,45 +72,6 @@ module GlobusHelpers
     return false if ! oidc_provider[:authorize_uri]
     return false if ! oidc_provider[:scope]
     true
-  end
-
-  # Record the OIDC identity for the current user.
-  # (This maybe should be made into a User model method)
-  def record_globus_identity(user, globus_identity, oidc_name, oidc_config)
-    # In the case where a user must auth with a specific set of
-    # OIDC providers, we find the first identity that
-    # matches a name of that set.
-    identity = set_of_identities(globus_identity).detect do |idstruct|
-       user_can_link_to_globus_identity?(user, oidc_config, idstruct)
-    end
-
-    provider_id   = identity[oidc_config[:identity_provider]]              || cb_error("#{oidc_name}: No identity provider")
-    provider_name = identity[oidc_config[:identity_provider_display_name]] || cb_error("#{oidc_name}: No identity provider name")
-    pref_username = identity[oidc_config[:preferred_username]]             || cb_error("#{oidc_name}: No preferred username")
-
-    # Special case for ORCID, because we already have fields for that provider
-    # We do NOT do this in the case where the user is forced to auth with OIDC.
-    if provider_name == 'ORCID' && ! user_must_link_to_globus?(user)
-      orcid = pref_username.sub(/@.*/, "")
-      user.meta['orcid'] = orcid
-      user.addlog("Linked to ORCID identity: '#{orcid}' through #{oidc_name}")
-      return
-    end
-
-    user.meta[oidc_provider_id_key(oidc_name)]        = provider_id
-    user.meta[oidc_provider_name_key(oidc_name)]      = provider_name
-    user.meta[oidc_preferred_username_key(oidc_name)] = pref_username
-    user.addlog("Linked to #{oidc_name} identity: '#{pref_username}' on provider '#{provider_name}'")
-  end
-
-  # Removes the recorded OIDC identity for +user+
-  def unlink_globus_identity(user, oidc_name)
-    oidc_provider_id_key(oidc_name)
-
-    user.meta[oidc_provider_id_key(oidc_name)]        = nil
-    user.meta[oidc_provider_name_key(oidc_name)]      = nil
-    user.meta[oidc_preferred_username_key(oidc_name)] = nil
-    user.addlog("Unlinked #{oidc_name} identity")
   end
 
   def set_of_identities(globus_identity)
@@ -268,21 +182,6 @@ module GlobusHelpers
       .to_a
       .select { |user| user.meta[oidc_provider_id_key(oidc_name)] == provider_id }
   end
-
-  private
-
-  def oidc_provider_id_key(oidc_name)
-    "#{oidc_name.downcase}_provider_id".to_sym
-  end
-
-  def oidc_provider_name_key(oidc_name)
-    "#{oidc_name.downcase}_provider_name".to_sym
-  end
-
-  def oidc_preferred_username_key(oidc_name)
-    "#{oidc_name.downcase}_preferred_username".to_sym
-  end
-
 
 end
 
