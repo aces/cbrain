@@ -25,16 +25,6 @@ module GlobusHelpers
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # Returns the value for the Authorization header
-  # when doing the client authentication.
-  #
-  #  "Basic 1745djfuebwifh37236djdf74.etc.etc"
-  def globus_basic_auth_header
-    client_id     = globus_client_id
-    client_secret = globus_client_secret
-    "Basic " + Base64.strict_encode64("#{client_id}:#{client_secret}")
-  end
-
   # Returns a string that should stay constants during the entire
   # OIDC negotiations. The current Rails session_id, encoded, will do
   # the trick. The Rails session is maintained by a cookie already
