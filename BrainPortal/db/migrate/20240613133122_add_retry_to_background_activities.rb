@@ -20,24 +20,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Copy a file, but the new copy is not left registered in the DB
-class BackgroundActivity::CopyFileAndUnregister < BackgroundActivity::CopyFile
-
-  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-
-  def process(item)
-    ok, userfile_id = super # CopyFile can return the ID or a string message
-    return [ ok, userfile_id ] if userfile_id.is_a?(String) # a message
-    userfile = Userfile.find(userfile_id)
-    userfile.unregister
-    [ true, "Copied" ]
+class AddRetryToBackgroundActivities < ActiveRecord::Migration[5.0]
+  def change
+    add_column :background_activities, :retry_count, :int
+    add_column :background_activities, :retry_delay, :int
   end
-
-  def indices_of_failures
-    self.messages.each_with_index.map do |message,idx|
-      idx if message.to_s != 'Copied'
-    end.compact
-  end
-
 end
-

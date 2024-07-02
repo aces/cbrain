@@ -109,6 +109,7 @@ class BackgroundActivity < ApplicationRecord
   validate              :repeat_is_correct
 
   before_save           :add_empty_options
+  after_destroy         :record_in_rails_log
 
   belongs_to :user
   belongs_to :remote_resource
@@ -175,7 +176,7 @@ class BackgroundActivity < ApplicationRecord
     true
   end
 
-  # Abtract method. This method is invoked
+  # Abstract method. This method is invoked
   # automatically when a BackgroundActivity object
   # is created out of a 'Scheduled' object.
   # This is the place a subclass can prepare the
@@ -199,13 +200,14 @@ class BackgroundActivity < ApplicationRecord
 
   # Utility builder: returns an object with user_ids and items pre-filled,
   # status set to 'InProgress', and remote_resource set to current resource.
-  def self.local_new(user_id, items, remote_resource_id=CBRAIN::SelfRemoteResourceId)
+  def self.local_new(user_id, items, remote_resource_id=CBRAIN::SelfRemoteResourceId, options={})
     remote_resource_id ||= CBRAIN::SelfRemoteResourceId
     self.new(
       :status             => 'InProgress',
       :user_id            => user_id,
       :items              => Array(items),
       :remote_resource_id => remote_resource_id,
+      :options            => options,
     )
   end
 
@@ -214,21 +216,25 @@ class BackgroundActivity < ApplicationRecord
   def process_next_item
 
     return false if self.status != 'InProgress'
+    self.start_at = nil
 
-    # Find current item
+    # Find current index
     idx  = self.current_item
-    item = self.items[idx]
-    return false if item.nil?
 
     # Callback where a subclass can do some special stuff
     # before the first item.
     begin
-      self.before_first_item if idx == 0
-    rescue => ex
-      self.status = 'InternalError'
+      self.prepare_dynamic_items if idx == 0 && self.is_configured_for_dynamic_items?
+      self.before_first_item     if idx == 0
       self.save
+    rescue => ex
+      self.internal_error!("prepare_dynamic_items: #{ex.class} #{ex.message}")
       return false
     end
+
+    # Find current item
+    item = self.items[idx]
+    return false if item.nil?
 
     # Main processing handler
     ok,message = nil,nil
@@ -258,13 +264,17 @@ class BackgroundActivity < ApplicationRecord
 
     self.save!
 
+    # Initiate the retry mechanism if possible.
+    retrying_bac = self.setup_retry! if self.status =~ /Failed|PartiallyCompleted/
+    return false if retrying_bac
+
     # Callback where a subclass can do some special stuff
     # after the last item.
     begin
       self.after_last_item if self.current_item >= items.size
-    rescue => ex
-      self.status = 'InternalError'
       self.save
+    rescue => ex
+      self.internal_error!("after_last_item: #{ex.class} #{ex.message}")
       return false
     end
 
@@ -313,6 +323,16 @@ class BackgroundActivity < ApplicationRecord
     self.update_column(:status, 'InProgress')         if self.status == 'Suspended'
     self.update_column(:status, 'Scheduled')          if self.status == 'SuspendedScheduled'
     self.status.match(/InProgress|Scheduled/)
+  end
+
+  def internal_error!(message=nil)
+    self.update_column(:status, "InternalError")
+    self.update_column(:handler_lock, nil)
+    if message
+      self.options ||= {}
+      self.options[:internal_error_message] = message
+    end
+    self.save
   end
 
   ###########################################
@@ -396,6 +416,27 @@ class BackgroundActivity < ApplicationRecord
     end
   end
 
+  # Scans the database, finds all BACs that are
+  #
+  # 1. on +remote_resource_id+
+  # 2. currently locked
+  # 3. last updated at least +older_than+ ago (default: 12 hours)
+  #
+  # and mark them as 'InternalError'. The
+  # BAC was being processed, but somehow
+  # the processing client seems to have died.
+  def self.cancel_crashed(remote_resource_id,older_than=12.hours)
+    self.where(
+      :remote_resource_id => remote_resource_id,
+    ).where.not(
+      :handler_lock       => nil,
+    ).where(
+      "updated_at < ?", older_than.ago
+    ).each do |bac|
+      bac.internal_error!('Cancelled crashed')
+    end
+  end
+
   # If the current object is a scheduled one,
   # will lock it and invoke schedule_dup().
   def activate!
@@ -460,19 +501,137 @@ class BackgroundActivity < ApplicationRecord
     end
 
     # The repeat attribute has a value we don't understand
-    self.update_column(:status, 'InternalError')
+    self.internal_error!('Bad repeat attribute')
 
   end
 
-  # DEBUG ONLY. Not a method that is part of the standard usage.
-  # Available to developers using the console.
+  # Resets a BAC to its initial state,
+  # with all the counters set to 0 and all
+  # messages zapped.
   def reset!(status = 'InProgress')
     self.status        = status
     self.current_item  = 0
     self.num_successes = 0
     self.num_failures  = 0
-    self.messages      = nil
-    self.save
+    self.messages      = []
+  end
+
+  #########################################################
+  # Retry Mechanism Support Methods
+  #########################################################
+
+  # Sets to NIL the two attributes used for
+  # tracking/triggering retries. This method is
+  # used when cancelling the retry mechanism for any reason.
+  def zap_retry_attributes
+    self.retry_count = nil
+    self.retry_delay = nil
+  end
+
+  # When invoked on an object that is in status Failed or PartiallyCompleted,
+  # the method will implement a 'retry' step for the object. For this to
+  # work, the attribute +retry_count+ must be greater than 0, and (optionally)
+  # the attribute retry_delay need to be set to a number of seconds.
+  #
+  # A successful retry does all these things:
+  #
+  # 1- make a backup of the current object (with its own retry attributes zapped)
+  # 2- reset all item counters to zero
+  # 3- (in case of PartiallyCompleted) reset the item list to just
+  # the list of items that failed
+  # 4- reschedule the BAC to the current time + retry_delay
+  # 5- internally double retry_delay (so that at the next retry, the
+  # rescheduling happens even later)
+  #
+  # For step 3 to work, a BAC's class must implement the method indices_of_failures();
+  # if this method doesn't exist, retrying will fail.
+  #
+  # If everything is ok, this method returns the backup object created
+  # in step 1, otherwise it returns nil.
+  def setup_retry!
+
+    # First, a few consistency checks and cleanup at the same time.
+    if (self.status !~ /Failed|PartiallyCompleted/) ||
+       (self.retry_count.blank?)                    ||
+       (self.retry_count < 1)                       ||
+       (self.status == "PartiallyCompleted" && ! self.respond_to?(:indices_of_failures))
+      self.zap_retry_attributes
+      self.save
+      return nil
+    end
+
+    # Create the backup BAC, just for tracking the history of the failure.
+    # That BAC cannot do anything but stay in the DB. It cannot be retried.
+    # (Note: We will save this at the end, when everything's found to be ready)
+    backup_bac = self.dup
+    backup_bac.zap_retry_attributes
+    backup_bac.handler_lock = nil
+
+    # Prepare the new list of items. If the
+    # bac is in Failed state, we just reprocess
+    # everything so we don't need to adjust the list.
+    # If the bac is in PartiallyCompleted state,
+    # we extract just the elements to try again.
+    if self.status = "PartiallyCompleted"
+      fail_idx = self.indices_of_failures rescue nil
+      if fail_idx.blank? || (!fail_idx.is_a?(Array)) # that's an error
+        self.internal_error!('Bad value for indices_of_failures()')
+        return nil
+      end
+      orig_items = self.items
+      new_items  = fail_idx.sort.map { |i| orig_items[i] }.compact
+      if new_items.blank?
+        self.internal_error!('No items list after retry')
+        return nil
+      end
+      self.items = new_items
+    end
+
+    # Adjust the retry count and retry delay
+    self.retry_count = self.retry_count - 1
+    delay = self.retry_delay || 60 # seconds
+    delay = 60 if delay < 60 # just to be safe
+    self.retry_delay = delay * 2
+    self.zap_retry_attributes if self.retry_count < 1 # we are doing the final retry
+
+    # Configure the delay
+    self.start_at = Time.now + delay.seconds
+
+    # Reset the counters, ready to retry!
+    self.reset!('InProgress')
+
+    # Save the two objects:
+    # (1) The backup object
+    backup_bac.retry_main_bac_id = self.id
+    backup_bac.save
+    # (2) Ourselves, with the ID of the backup
+    self.retry_backup_bac_ids << backup_bac.id # push on a list
+    self.save!
+
+    return backup_bac
+  rescue => ex
+    self.internal_error!("setup_retry: #{ex.class} #{ex.message} #{ex.backtrace.first}")
+    return nil
+  end
+
+  # On a retry backup object, returns the ID of the main target
+  # of the retry mechanism.
+  def retry_main_bac_id
+    self.options[:_retry_main_bac_id]
+  end
+
+  # On a retry backup object, sets the ID of the main target
+  # of the retry mechanism.
+  def retry_main_bac_id=(bac_id)
+    self.options ||= {}
+    self.options[:_retry_main_bac_id] = bac_id
+  end
+
+  # On the main target of a retry, returns the array
+  # of the backup objects.
+  def retry_backup_bac_ids
+    self.options ||= {}
+    self.options[:_retry_backup_bac_ids] ||= []
   end
 
   ###########################################
@@ -532,6 +691,22 @@ class BackgroundActivity < ApplicationRecord
   # before_save callback, adds options={} if options is nil
   def add_empty_options #:nodoc:
     self.options = {} if self.options.nil?
+    true
+  end
+
+  # For user activity statistics, record the BAC in the Rails logs.
+  # Usually invoked from after_destroy callback.
+  def record_in_rails_log #:nodoc:
+    status = self.status
+    return unless status =~ /^(?:
+       Completed | PartiallyCompleted | Failed | InProgress |
+       Cancelled | Suspended | InternalError
+    )/x # we don't want Scheduled etc that never did anything
+
+    json_text = self.attributes.to_json
+    Rails.logger.info "Destroyed BackgroundActivity: #{json_text}"
+  rescue
+    Rails.logger.error("Cannot log #{self.type} #{self.id}") rescue nil
   end
 
   def status_is_correct #:nodoc:

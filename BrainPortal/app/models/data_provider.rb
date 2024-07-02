@@ -916,9 +916,10 @@ class DataProvider < ApplicationRecord
         otherprovider.provider_upload_from_local_file(newfile,currentcache)
       end
     rescue => ex
+      # Clean up spurious DB entry
+      (newfile.unregister rescue nil) if ! target_exists
       #todo add log information?
       raise ex
-      #return false
     end
 
     # Copy log

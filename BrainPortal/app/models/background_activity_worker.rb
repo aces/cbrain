@@ -64,10 +64,13 @@ class BackgroundActivityWorker < Worker
     BackgroundActivity.activate_scheduled(@myself_id)
 
     # All the activity ready on this CBRAIN component
-    todo = BackgroundActivity.where(
+    todo_base = BackgroundActivity.where(
       :remote_resource_id => @myself_id,
       :status             => 'InProgress'
     )
+    todo = todo_base  # this is a complex relation, stupid start_at !
+            .where(:start_at => nil)
+            .or(todo_base.where("start_at < ?",Time.now))
 
     worker_log.debug "Found #{todo.count} activities"
 

@@ -323,12 +323,21 @@ Operations Mode : #{@mode == "each_command" ?
           uptime   &&= ConsoleCtx.send(:pretty_elapsed, uptime, :num_components => 2)
           uptime   &&= "up for #{uptime}"
           uptime   ||= "DOWN"
+          acttasks   = bou.cbrain_tasks.active.count
+          acttasks   = nil if acttasks == 0
+          acttasks &&= " \e[36m(#{acttasks} active tasks)\e[0m" # CYAN
+          rubtasks   = bou.cbrain_tasks.status(:ruby).count
+          rubtasks   = nil if rubtasks == 0
+          rubtasks &&= " \e[35m(#{rubtasks} in Ruby stages)\e[0m" # MAGENTA
+          bactasks   = bou.background_activities.where(:status => 'InProgress').count
+          bactasks   = nil if bactasks == 0
+          bactasks &&= " \e[34m(#{bactasks} active BACs)\e[0m" # BLUE
           color_on   = color_off = nil
           color_on   = "\e[31m" if uptime == 'DOWN'          # RED    for down bourreaux
           color_on ||= "\e[33m" if numworkers != expworkers  # YELLOW for missing workers
           color_on ||= "\e[32m"                              # GREEN  when everything ok
           color_off  = "\e[0m"  if color_on
-          printf "#{color_on}%#{max_size}s rev %-9.9s %s, %d/%d workers#{color_off}\n", bou.name, gitrev, uptime, numworkers, expworkers
+          printf "#{color_on}%#{max_size}s rev %-9.9s %s, %d/%d workers#{color_off}#{acttasks}#{rubtasks}#{bactasks}\n", bou.name, gitrev, uptime, numworkers, expworkers
         end
       end
       return true
