@@ -175,6 +175,13 @@
         <%= bac.repeat %>
       <% end %>
 
+      <% t.column("Retries", :retry_count, :sortable => false) do |bac| %>
+        <% if bac.retry_count.present? %>
+          <%= pluralize(bac.retry_count, "retry") %> allowed<br>
+          (next with <%= pluralize(bac.retry_delay || 60, "seconds delay") %>)
+        <% end %>
+      <% end %>
+
     <% end %>
 
     <% t.column("Last Updated", :updated_at, :sortable => true) do |bac| %>

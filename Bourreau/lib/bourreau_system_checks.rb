@@ -464,6 +464,34 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
 
 
+  def self.z010_ensure_custom_bash_scripts_succeed #:nodoc:
+
+    checker_dir = Rails.root + "boot_checks"
+    return if ! File.directory? checker_dir.to_s
+
+    #----------------------------------------------------------------------------
+    puts "C> Running custom checker bash scripts..."
+    #----------------------------------------------------------------------------
+
+    scripts  = Dir.glob("#{checker_dir}/*.sh")
+    if scripts.empty?
+      puts "C> \t- Skipping, no scripts configured."
+      return
+    end
+
+    scripts.sort.each do |fullpath|
+      basename = Pathname.new(fullpath).basename
+      puts "C> \t- Executing '#{basename}'..."
+      system("bash",fullpath)
+      status  = $? # a Process::Status object
+      next if status.exitstatus == 0
+      puts "C> \t- STOPPING BOOT SEQUENCE: script returned with status #{status.exitstatus}"
+      raise "Script '#{basename}' exited with #{status.exitstatus}"
+    end
+  end
+
+
+
   def self.z020_start_background_activity_workers #:nodoc:
 
     #----------------------------------------------------------------------------

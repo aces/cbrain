@@ -189,6 +189,10 @@ class NocController < ApplicationController
     doroll           = params[:roll].presence
     @refresh_every   = params[:r].presence.try(:to_i)
     fake             = params[:fake].presence.try(:to_i) # fake statuses / offline / disk space etc
+    since_minutes    = params[:since_minutes].presence.try(:to_i)
+    if since_minutes
+      since_when = [2,since_minutes,527040].sort[1].minutes.ago
+    end
 
     # Auto refresh: default every two minutes.
     @refresh_every   = nil if @refresh_every.present? && @refresh_every < 10

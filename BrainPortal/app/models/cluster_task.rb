@@ -1370,6 +1370,7 @@ class ClusterTask < CbrainTask
       # Serialize a copy of the ActiveRecord for this task, for reference.
       File.open(".cbrain_task.json","w") do |fh|
         fh.write JSON.pretty_generate(JSON[self.to_json])
+        fh.write "\n"
       end
 
       # Remove core files. Core file names can be customized by a sysadmin, so

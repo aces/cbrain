@@ -95,6 +95,8 @@ class CbrainTask < ApplicationRecord
                            value = CbrainTask::PROCESSING_STATUS # code-running states in standard path
                          when :failed
                            value = CbrainTask::FAILED_STATUS
+                         when :ruby
+                           value = CbrainTask::RUBY_STATUS
                          else
                            value = s
                          end

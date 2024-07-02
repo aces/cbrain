@@ -108,7 +108,7 @@ module BoutiquesTaskLogsCopier
 
     # Create then copy the cbrain params file, if needed
     if destpaths[:cbrain_params].present?
-      File.open(".cbrain_params.json","w") { |fh| fh.write JSON.pretty_generate(self.params) }
+      File.open(".cbrain_params.json","w") { |fh| fh.write JSON.pretty_generate(self.params);fh.write "\n" }
       install_std_log_file(".cbrain_params.json", destpaths[:cbrain_params], "cbrain parameters")
     end
 

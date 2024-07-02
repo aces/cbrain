@@ -188,7 +188,7 @@ class SshDataProvider < DataProvider
   end
 
   # Allows us to browse a remote directory that changes based on the user.
-  def browse_remote_dir(user=nil) #:nodoc:
+  def browse_remote_dir(user=nil, browse_path=nil) #:nodoc:
     self.remote_dir
   end
 

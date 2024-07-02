@@ -53,6 +53,7 @@ class BackgroundActivity::RegisterFile < BackgroundActivity
     browse_path = self.options[:browse_path].presence
     group_id    = self.options[:group_id]
     as_user_id  = self.options[:as_user_id] || self.user_id
+    immutable   = self.options[:immutable].present?
     user        = User.find(self.user_id)
     as_user     = User.find(as_user_id)
     dp          = DataProvider.find(src_dp_id)
@@ -63,6 +64,7 @@ class BackgroundActivity::RegisterFile < BackgroundActivity
       :group_id         => group_id,
       :data_provider_id => src_dp_id,
       :browse_path      => browse_path,
+      :immutable        => immutable,
     )
     if ! userfile.save
       return [ false, userfile.errors.full_messages.sort.join(", ") ]

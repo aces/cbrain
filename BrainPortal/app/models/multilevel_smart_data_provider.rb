@@ -42,7 +42,7 @@ class MultilevelSmartDataProvider < DataProvider
 
   # This returns the category of the data provider
   def self.pretty_category_name #:nodoc:
-    "Multilevel Level"
+    "Multi Level"
   end
 
 end
