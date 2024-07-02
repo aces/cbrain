@@ -140,6 +140,24 @@ class BackgroundActivity < ApplicationRecord
   DYNAMIC_TOKEN = '(DYNAMICALLY FETCHED)' #:nodoc:
 
   ###########################################
+  # Utility scopes
+  ###########################################
+
+  scope :status,        ->(statuses) { where(:status => statuses) }
+  scope :active,        -> { status %w( InProgress                              ) }
+  scope :completed,     -> { status %w( Completed                               ) }
+  scope :failed,        -> { status %w( PartiallyCompleted Failed InternalError ) }
+  scope :suspended,     -> { status %w( Suspended SuspendedScheduled            ) }
+  scope :scheduled,     -> { status %w( Scheduled SuspendedScheduled            ) }
+  scope :cancelled,     -> { status %w( Cancelled CancelledScheduled            ) }
+  scope :errored,       -> { status %w( InternalError                           ) }
+  scope :finished,      -> { status %w( Completed PartiallyCompleted Failed InternalError Cancelled CancelledScheduled ) }
+  scope :retryable,     -> { where     "retry_count   > 0"  }
+  scope :unlocked,      -> { where     :handler_lock => nil }
+  scope :locked,        -> { where.not :handler_lock => nil }
+  scope :future,        -> { where     "start_at      > ?", DateTime.now }
+
+  ###########################################
   # Main Implementable Methods For Subclasses
   ###########################################
 
@@ -374,7 +392,7 @@ class BackgroundActivity < ApplicationRecord
   def self.uniq_thread_id
     @shostname        ||= Socket.gethostname.to_s.sub(/\..*/,"") # short hostname
     #@unique_thread_id ||= "#{CBRAIN::CBRAIN_RAILS_APP_NAME}-#{Process.pid}-#{Thread.current.object_id}"
-    @unique_thread_id ||= "#{@shostname}-#{Process.pid}-#{Thread.current.object_id}"
+    @unique_thread_id ||= "#{@shostname}-PID#{Process.pid}-TH#{Thread.current.object_id}"
   end
 
   ############################################
