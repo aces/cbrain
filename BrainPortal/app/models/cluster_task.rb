@@ -112,6 +112,16 @@ class ClusterTask < CbrainTask
     self.addlog("#{subrev.basename} rev. #{subrev.short_commit}",   :caller_level => caller_level + 1)
   end
 
+  # This determines if the task expects to only read its input files,
+  # or modify them, and return respectively :read or :write (the default).
+  # The symbol can be passed to methods such as Userfile.find_accessible_by_user().
+  # Depending on the value, more or less files are allowed to be processed.
+  # When the value is :read, it means we only need file for input and not
+  # for output.
+  def file_access_symbol
+    @_file_access ||= (self.class.properties[:readonly_input_files].present? || self.tool_config.try(:inputs_readonly) ? :read : :write)
+  end
+
 
 
   ##################################################################
@@ -2373,10 +2383,12 @@ docker_image_name=#{full_image_name.bash_escape}
     # must be on a device different from the one for the work directory.
     capture_basenames = ext3capture_basenames.map { |basename,_| basename }
 
-    # (4) More -B (bind mounts) for all the local data providers.
+    # (4) More -B (bind mounts) for all the relevant local data providers.
     # This will be a string "-B path1 -B path2 -B path3" etc.
+    # In the case of read-only input files, ro option is added
+
     esc_local_dp_mountpoints = local_dp_storage_paths.inject("") do |sing_opts,path|
-      "#{sing_opts} -B #{path.bash_escape}"
+      "#{sing_opts} -B #{path.bash_escape}#{":#{path.bash_escape}:ro" if file_access_symbol == :read}"
     end
 
     # (5) Overlays defined in the ToolConfig
