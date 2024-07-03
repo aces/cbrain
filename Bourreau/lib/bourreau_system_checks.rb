@@ -264,7 +264,12 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     puts "C> \t- Processing #{case2_count} CbrainTasks that seem to be archived as a file but are not marked as archived." if case2_count > 0
     case2_tasks.all.each do |t|
       userfile_id = t.workdir_archive_userfile_id
-      if TaskWorkdirArchive.where(:id => userfile_id).exists? # turn CASE D
+      tarch       = TaskWorkdirArchive.where(:id => userfile_id).first
+      if tarch && (tarch.size.nil? || tarch.size == 0) # bad upload of archive
+        tarch.destroy rescue nil
+        tarch = nil
+      end
+      if tarch # turn CASE D
         t.addlog("INCONSISTENCY REPAIR: This task was marked as not archived but it was linked to a file archive")
         t.workdir_archived = true
       else # turn CASE A
@@ -280,7 +285,12 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     puts "C> \t- Processing #{case3_and_case4_count} CbrainTasks that seem to be archived both as a file and on cluster." if case3_and_case4_count > 0
     case3_and_case4_tasks.all.each do |t|
       userfile_id = t.workdir_archive_userfile_id
-      if TaskWorkdirArchive.where(:id => userfile_id).exists? # turn to case D
+      tarch       = TaskWorkdirArchive.where(:id => userfile_id).first
+      if tarch && (tarch.size.nil? || tarch.size == 0) # bad upload of archive
+        tarch.destroy rescue nil
+        tarch = nil
+      end
+      if tarch # turn to case D
         t.addlog("INCONSISTENCY REPAIR: This task was marked archived both as a file and on cluster (cluster archive was invalid)")
         t.workdir_archived     = true
         t.cluster_workdir_size = nil
