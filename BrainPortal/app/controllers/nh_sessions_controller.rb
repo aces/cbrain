@@ -205,6 +205,18 @@ class NhSessionsController < NeurohubApplicationController
     redirect_to signin_path
   end
 
+  # POST /nh_unlink_oidc
+  # Removes a user's linked OIDC identity.
+  def nh_unlink_oidc #:nodoc:
+    redirect_to start_page_path unless current_user
+
+    oidc = OidcConfig.find_by_name(params[:oidc_name])
+    oidc.unlink_identity(current_user)
+
+    flash[:notice] = "Your account is no longer linked to any #{oidc.name} identity"
+    redirect_to myaccount_path
+  end
+
   # GET /nh_mandatory_globus
   # Shows the page that informs the user they MUST link to a Globus ID.
   def nh_mandatory_globus #:nodoc:

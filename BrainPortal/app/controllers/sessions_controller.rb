@@ -212,12 +212,10 @@ class SessionsController < ApplicationController
     redirect_to start_page_path unless current_user
 
     oidc = OidcConfig.find_by_name(params[:oidc_name])
-    from = params[:from] || ""
-
     oidc.unlink_identity(current_user)
 
     flash[:notice] = "Your account is no longer linked to any #{oidc.name} identity"
-    redirect_to from == "cb" ? start_page_path : myaccount_path
+    redirect_to start_page_path
   end
 
   ###############################################
