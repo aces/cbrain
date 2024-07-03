@@ -30,7 +30,7 @@ class NhSessionsController < NeurohubApplicationController
   include OrcidHelpers
 
   before_action :login_required,    :except => [ :new, :create, :request_password, :send_password, :orcid, :nh_globus ]
-  before_action :already_logged_in, :except => [ :orcid, :destroy, :nh_globus, :nh_mandatory_globus ]
+  before_action :already_logged_in, :except => [ :orcid, :destroy, :nh_globus, :nh_unlink_globus, :nh_mandatory_globus ]
 
   def new #:nodoc:
     @orcid_uri      = orcid_login_uri()
@@ -149,14 +149,13 @@ class NhSessionsController < NeurohubApplicationController
 
     oidc      = OidcConfig.find_by_name(oidc_name)
     # Some initial simple validations
-    if !oidc.client_id || !code || state != oidc.current_state
+    if !code || state != oidc.current_state
       cb_error "#{oidc.name} session is out of sync with CBRAIN"
     end
 
     token_uri = oidc.token_uri
 
     # Query Globus; this returns all the info we need at the same time.
-    nh_globus_url = RemoteResource.current_resource.site_url_prefix + "/nh_globus"
     identity_struct = oidc.fetch_token(code, nh_globus_url) # nh_globus_url is generated from routes
     if !identity_struct
       cb_error "Could not fetch your identity information from #{oidc.name}"
@@ -209,11 +208,9 @@ class NhSessionsController < NeurohubApplicationController
   # GET /nh_mandatory_globus
   # Shows the page that informs the user they MUST link to a Globus ID.
   def nh_mandatory_globus #:nodoc:
+    # Restrict @oidc_info to allowed providers
     @allowed_provs = allowed_globus_provider_names(current_user)
-
-    # restrict @oidc_providers to allowed providers
-    @oidc_providers = RemoteResource.current_resource.oidc_providers
-    @oidc_providers = @oidc_providers.select { |k,v| @allowed_provs.include?(k) }
+    @oidc_info = @oidc_info.select { |k,v| @allowed_provs.include?(k) }
 
     respond_to do |format|
       format.html

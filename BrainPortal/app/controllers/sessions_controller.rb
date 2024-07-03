@@ -33,8 +33,6 @@ class SessionsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  include GlobusHelpers
-
   api_available :only => [ :new, :show, :create, :destroy ]
 
   before_action      :user_already_logged_in,    :only => [ :new, :create ]
@@ -57,9 +55,8 @@ class SessionsController < ApplicationController
   # GET /mandatory_globus
   # Shows the page that informs the user they MUST link to a Globus ID.
   def mandatory_globus #:nodoc:
+    # Restrict @oidc_info to allowed providers
     @allowed_provs = allowed_globus_provider_names(current_user)
-
-    # restrict @oidc_info to allowed providers
     @oidc_info = @oidc_info.select { |k,v| @allowed_provs.include?(k) }
 
     respond_to do |format|
@@ -151,16 +148,15 @@ class SessionsController < ApplicationController
     end
 
     oidc = OidcConfig.find_by_name(oidc_name)
- 
+
     # Some initial simple validations
-    if !oidc.client_id  || !code || state != oidc.current_state
+    if !code || state != oidc.current_state
       cb_error "#{oidc.name} session is out of sync with CBRAIN"
     end
 
     token_uri = oidc.token_uri
 
     # Query Globus; this returns all the info we need at the same time.
-    globus_url = RemoteResource.current_resource.site_url_prefix + "/globus"
     identity_struct = oidc.fetch_token(code, globus_url) # globus_url is generated from routes
     if !identity_struct
       cb_error "Could not fetch your identity information from #{oidc.name}"
@@ -214,7 +210,7 @@ class SessionsController < ApplicationController
   # Removes a user's linked OIDC identity.
   def unlink_oidc #:nodoc:
     redirect_to start_page_path unless current_user
- 
+
     oidc = OidcConfig.find_by_name(params[:oidc_name])
     from = params[:from] || ""
 

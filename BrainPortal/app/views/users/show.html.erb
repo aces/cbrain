@@ -118,10 +118,10 @@
         </div>
       <% end %>
 
-      <% t.edit_cell('meta[allowed_globus_provider_names]', :header => "Forced #{@oidc_client} Identity Providers", :content => @user.meta['allowed_globus_provider_names'] || '') do %>
+      <% t.edit_cell('meta[allowed_globus_provider_names]', :header => "Forced OpenID Connect Providers", :content => @user.meta['allowed_globus_provider_names'] || '') do %>
         <%= text_field_tag "meta[allowed_globus_provider_names]", @user.meta['allowed_globus_provider_names'], :size => 40 %><br />
         <div class="field_explanation">
-          If set, must be a list of <%= @oidc_client %> identity provider names separated by commas. A single '*' is
+          If set, must be a list of OpenID Connect identity provider names separated by commas. A single '*' is
           also allowed to mean any provider name.
         </div>
       <% end %>
@@ -200,7 +200,7 @@
       # Note: should be in a if/end block testing for the configuration of orcid_uri, like in NeuroHub
     %>
     <% t.cell "ORCID Identity", :show_width => 2 do %>
-      <% orcid_id = @user.meta["orcid"] %> 
+      <% orcid_id = @user.meta["orcid"] %>
       <% if orcid_id %>
          <strong>ORCID ID:</strong> <%= orcid_id %>
        <% else %>
@@ -387,5 +387,4 @@
   <p>
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>
 </div>
-
 

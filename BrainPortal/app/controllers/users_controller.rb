@@ -197,10 +197,10 @@ class UsersController < ApplicationController
     end
     if user_must_link_to_globus?(@user)
       allowed_globus_login = @user[:allowed_globus_provider_names].present?
-      if allowed_globus_login
-        cb_error "Your account can only authenticate with #{allowed_globus_login} identities.", :redirect => user_path(current_user)
+      if !allowed_globus_login || allowed_globus_login == '*'
+        cb_error "Your account can authenticate with any OIDC identities. Please contact your admin.", :redirect => user_path(current_user)
       else
-        cb_error "Your account can only authenticate with Globus identities. Please contact your admin.", :redirect => user_path(current_user)
+        cb_error "Your account can only authenticate with #{allowed_globus_login} OIDC identities providers.", :redirect => user_path(current_user)
       end
     end
   end
