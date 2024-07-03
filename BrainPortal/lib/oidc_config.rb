@@ -96,7 +96,7 @@ class OidcConfig
             :client_id     => self.client_id,
             :response_type => 'code',
             :scope         => self.scope,
-            :redirect_uri  => redirect_url,  # generated from Rails routes
+            :redirect_uri  => "http://localhost:3000/globus",  # generated from Rails routes
             :state         => current_state, # method is below
         }
 
@@ -127,7 +127,7 @@ class OidcConfig
         response    = Typhoeus.post(self.token_uri,
           :body   => {
                        :code           => code,
-                       :redirect_uri   => action_url,
+                       :redirect_uri   => "http://localhost:3000/globus",
                        :grant_type     => 'authorization_code',
                      },
           :headers => { :Accept        => 'application/json',
@@ -175,7 +175,7 @@ class OidcConfig
     if provider_name == 'ORCID' && ! user_must_link_to_oidc?(user)
       orcid = pref_username.sub(/@.*/, "")
       user.meta['orcid'] = orcid
-      user.addlog("Linked to ORCID identity: '#{orcid}' through #{oidc.name}")
+      user.addlog("Linked to ORCID identity: '#{orcid}' through #{self.name}")
       return
     end
 

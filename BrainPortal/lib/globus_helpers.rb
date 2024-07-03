@@ -38,19 +38,19 @@ module GlobusHelpers
       &.map(&:strip)
   end
 
-  def user_has_link_to_globus?(user,oidc_info)
-    allowed = allowed_globus_provider_names(user)
-
+  def user_has_link_to_globus?(user)
     # Filter out the identities that are not allowed
-    allowed_oidc_info = oidc_info.select { |oidc_client, oidc_config| allowed.include?(oidc_client) }
+    allowed        = allowed_globus_provider_names(user)
+    oidc_providers = OidcConfig.enabled
+    allowed_oidc   = oidc_providers.select { |oidc| allowed.include?(oidc.name) }
 
     # Iterate over the allowed_oidc_info
     has_link_to_oidc = false
-    allowed_oidc_info.each do |oidc_name, oidc_config|
+    allowed_oidc.each do |oidc|
       next if has_link_to_oidc
-      user.meta[oidc_provider_id_key(oidc_name)].present? &&
-      user.meta[oidc_provider_name_key(oidc_name)].present? &&
-      user.meta[oidc_preferred_username_key(oidc_name)].present?
+      user.meta[oidc.provider_id_key].present? &&
+      user.meta[oidc.provider_name_key].present? &&
+      user.meta[oidc.preferred_username_key].present?
       has_link_to_oidc = true
     end
     has_link_to_oidc

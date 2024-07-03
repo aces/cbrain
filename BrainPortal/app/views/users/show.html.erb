@@ -165,7 +165,6 @@
 
   <%= show_table(@user, :as => :user, :header => 'Linked Identities') do |t| %>
 
-    <% orcid_id = @user.meta["orcid_id"] %>
     <% @oidc_providers.each do |oidc| %>
       <%
         oidc_login_uri              = oidc.cb_login_uri
@@ -201,7 +200,8 @@
       # Note: should be in a if/end block testing for the configuration of orcid_uri, like in NeuroHub
     %>
     <% t.cell "ORCID Identity", :show_width => 2 do %>
-       <% if orcid_id %>
+      <% orcid_id = @user.meta["orcid"] %> 
+      <% if orcid_id %>
          <strong>ORCID ID:</strong> <%= orcid_id %>
        <% else %>
          (No ORCID identity linked to your account)

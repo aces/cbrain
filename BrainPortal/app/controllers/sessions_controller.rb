@@ -285,6 +285,7 @@ class SessionsController < ApplicationController
   # Send a proper HTTP error code
   # when a user has not properly authenticated
   def auth_failed
+    @oidc_providers = OidcConfig.enabled
     respond_to do |format|
       format.html { render :action => 'new', :status => :ok } # should it be :unauthorized ?
       format.json { head   :unauthorized }
