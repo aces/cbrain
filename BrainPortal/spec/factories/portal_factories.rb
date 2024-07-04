@@ -131,6 +131,9 @@ FactoryBot.define do
 
   factory :vault_smart_data_provider, parent: :data_provider, class: VaultSmartDataProvider do
     sequence(:name) { |n| "vault_smart_dataprovider_#{n}" }
+    remote_host { "dummy.host.name" }
+    remote_user { "dummy" }
+    remote_dir  { "/dummy/path" }
   end
 
   factory :vault_ssh_data_provider, parent: :data_provider, class: VaultSshDataProvider do
@@ -147,6 +150,9 @@ FactoryBot.define do
 
   factory :en_cbrain_smart_data_provider, parent: :data_provider, class: EnCbrainSmartDataProvider do
     sequence(:name) { |n| "en_cb_smart_dataprovider_#{n}" }
+    remote_host { "dummy.host.name" }
+    remote_user { "dummy" }
+    remote_dir  { "/dummy/path" }
   end
 
   factory :en_cbrain_ssh_data_provider, parent: :data_provider, class: EnCbrainSshDataProvider do
