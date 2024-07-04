@@ -35,6 +35,7 @@ class FlatDirSmartDataProvider < DataProvider
   include SmartDataProviderInterface
 
   after_initialize :after_initialize_select_provider
+  validates_presence_of :remote_host, :remote_user, :remote_dir
 
   def after_initialize_select_provider #:nodoc:
     self.select_local_or_network_provider(FlatDirLocalDataProvider,FlatDirSshDataProvider)
