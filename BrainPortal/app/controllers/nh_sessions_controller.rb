@@ -167,14 +167,14 @@ class NhSessionsController < NeurohubApplicationController
                            "with unallowed #{oidc.name} identity provider " +
                            identity_struct[oidc.identity_provider_display_name])
         flash[:error] = "Error: your account can only authenticate with the following #{oidc.name} providers: " +
-                        "#{allowed_globus_provider_names(current_user).join(", ")}"
+                        "#{allowed_oidc_provider_names(current_user).join(", ")}"
         redirect_to myaccount_path
         return
       end
       oidc.record_identity(current_user, identity_struct)
       flash[:notice] = "Your NeuroHub account is now linked to your #{oidc.name} identity."
       if user_must_link_to_oidc?(current_user)
-        wipe_user_password_after_globus_link(current_user, oidc.name)
+        wipe_user_password_after_oidc_link(current_user, oidc.name)
         flash[:notice] += "\nImportant note: from now on you can no longer connect to NeuroHub using a password."
         redirect_to neurohub_path
         return
@@ -215,12 +215,12 @@ class NhSessionsController < NeurohubApplicationController
     redirect_to myaccount_path
   end
 
-  # GET /nh_mandatory_globus
+  # GET /nh_mandatory_oidc
   # Shows the page that informs the user they MUST link to a Globus ID.
-  def nh_mandatory_globus #:nodoc:
-    # Restrict @oidc_info to allowed providers
-    @allowed_provs = allowed_globus_provider_names(current_user)
-    @oidc_info = @oidc_info.select { |k,v| @allowed_provs.include?(k) }
+  def nh_mandatory_oidc #:nodoc:
+    # Restrict @allowed_oidc_providers to allowed providers
+    @allowed_provs          = allowed_oidc_provider_names(current_user)
+    @allowed_oidc_providers = OidcConfig.enabled.select { |oidc| @allowed_provs.include?(oidc.name) } 
 
     respond_to do |format|
       format.html

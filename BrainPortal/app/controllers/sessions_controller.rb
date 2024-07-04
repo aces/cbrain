@@ -52,12 +52,12 @@ class SessionsController < ApplicationController
     end
   end
 
-  # GET /mandatory_globus
-  # Shows the page that informs the user they MUST link to a Globus ID.
-  def mandatory_globus #:nodoc:
-    # Restrict @oidc_info to allowed providers
-    @allowed_provs = allowed_globus_provider_names(current_user)
-    @oidc_info = @oidc_info.select { |k,v| @allowed_provs.include?(k) }
+  # GET /mandatory_oidc
+  # Shows the page that informs the user they MUST link to a openID provider.
+  def mandatory_oidc #:nodoc:
+    # Restrict @allowed_oidc_providers to allowed providers
+    @allowed_provs          = allowed_oidc_provider_names(current_user)
+    @allowed_oidc_providers = OidcConfig.enabled.select { |oidc| @allowed_provs.include?(oidc.name) }
 
     respond_to do |format|
       format.html
@@ -134,9 +134,9 @@ class SessionsController < ApplicationController
 
 
   # This action receives a JSON authentication
-  # request from globus and uses it to record or verify
+  # request from OpenID and uses it to record or verify
   # a user's identity.
-  def globus
+  def oidc
     code      = params[:code].presence.try(:strip)
     state     = params[:state].presence || 'wrong'
 
@@ -154,10 +154,8 @@ class SessionsController < ApplicationController
       cb_error "#{oidc.name} session is out of sync with CBRAIN"
     end
 
-    token_uri = oidc.token_uri
-
-    # Query Globus; this returns all the info we need at the same time.
-    identity_struct = oidc.fetch_token(code, globus_url) # globus_url is generated from routes
+    # Query OpenID provider; this returns all the info we need at the same time.
+    identity_struct = oidc.fetch_token(code, oidc_url) # oidc_url is generated from routes
     if !identity_struct
       cb_error "Could not fetch your identity information from #{oidc.name}"
     end
@@ -170,14 +168,14 @@ class SessionsController < ApplicationController
                            "with unallowed #{oidc.name} identity provider " +
                            identity_struct[oidc.identity_provider_display_name].to_s)
         flash[:error] = "Error: your account can only authenticate with the following #{oidc.name} providers: " +
-                        "#{allowed_globus_provider_names(current_user).join(", ")}"
+                        "#{allowed_oidc_provider_names(current_user).join(", ")}"
         redirect_to user_path(current_user)
         return
       end
       oidc.record_identity(current_user, identity_struct)
       flash[:notice] = "Your CBRAIN account is now linked to your #{oidc.name} identity."
       if user_must_link_to_oidc?(current_user)
-        wipe_user_password_after_globus_link(current_user, oidc.name)
+        wipe_user_password_after_oidc_link(current_user, oidc.name)
         flash[:notice] += "\nImportant note: from now on you can no longer connect to CBRAIN using a password."
         redirect_to start_page_path
         return
@@ -194,7 +192,7 @@ class SessionsController < ApplicationController
       return
     end
 
-    login_from_globus_user(user, identity_struct[oidc.identity_provider_display_name])
+    login_from_oidc_user(user, identity_struct[oidc.identity_provider_display_name])
 
   rescue CbrainException => ex
     flash[:error] = "#{ex.message}"
@@ -354,7 +352,7 @@ class SessionsController < ApplicationController
   end
 
 
-  def login_from_globus_user(user, provider_name)
+  def login_from_oidc_user(user, provider_name)
     # Login the user
     all_ok = create_from_user(user, "CBRAIN/Globus/#{provider_name}")
 

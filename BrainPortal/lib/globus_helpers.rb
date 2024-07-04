@@ -31,7 +31,7 @@ module GlobusHelpers
 
   # Returns an array of allowed identity provider names.
   # Returns nil if they are all allowed
-  def allowed_globus_provider_names(user)
+  def allowed_oidc_provider_names(user)
     user.meta[:allowed_globus_provider_names]
        .presence
       &.split(/\s*,\s*/)
@@ -40,7 +40,7 @@ module GlobusHelpers
 
   def user_has_link_to_oidc?(user) #:nodoc:
     # Filter out the identities that are not allowed
-    allowed        = allowed_globus_provider_names(user)
+    allowed        = allowed_oidc_provider_names(user)
     oidc_providers = OidcConfig.enabled
     allowed_oidc   = oidc_providers.select { |oidc| allowed.include?(oidc.name) }
 
@@ -48,10 +48,10 @@ module GlobusHelpers
     has_link_to_oidc = false
     allowed_oidc.each do |oidc|
       next if has_link_to_oidc
-      user.meta[oidc.provider_id_key].present? &&
-      user.meta[oidc.provider_name_key].present? &&
-      user.meta[oidc.preferred_username_key].present?
-      has_link_to_oidc = true
+      has_link_to_oidc =
+        user.meta[oidc.provider_id_key].present? &&
+        user.meta[oidc.provider_name_key].present? &&
+        user.meta[oidc.preferred_username_key].present?
     end
     has_link_to_oidc
   end
@@ -60,7 +60,7 @@ module GlobusHelpers
     user.meta[:allowed_globus_provider_names].present?
   end
 
-  def wipe_user_password_after_globus_link(user, oidc_name)
+  def wipe_user_password_after_oidc_link(user, oidc_name)
     user.update_attribute(:crypted_password, "Wiped-By-#{oidc_name}-Link-" + User.random_string)
     user.update_attribute(:salt            , "Wiped-By-#{oidc_name}-Link-" + User.random_string)
     user.update_attribute(:password_reset  , false)
