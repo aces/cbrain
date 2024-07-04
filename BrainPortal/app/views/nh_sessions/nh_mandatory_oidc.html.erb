@@ -1,0 +1,97 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2022
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% binding.pry %>
+
+<% title 'Mandatory OpenID provider Link', "" %>
+
+<div class="nh_content">
+
+  <div class="card">
+
+    <div class="card-item heading">
+      <div class="card-heading">
+        <p class="text-lg">Mandatory OpenID provider Link</p>
+        <p class="text-md">Before continuing, your account must be linked to a OpenID identity provider.</p>
+      </div>
+    </div>
+
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Explanations</p>
+          <p class="card-text">
+            When you click on the button below, your browser will be redirected
+            to a OpenID login page; from there you can choose one of the
+            OpenID-supported identity providers. This will in turn redirect you
+            to the provider's own login page. Once you've successfully authenticated
+            there, your browser will be redirected back here to finalize
+            the link with your NeuroHub account.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+
+          <p class="card-label">The identity providers that are allowed for your NeuroHub account are:</p>
+          <% @allowed_provs.each do |provname| %>
+            <% provname = '(Any OpenID identity provider)' if provname == '*' %>
+            <p class="card-text">&bull; <%= provname %></p>
+          <% end %>
+
+          <% @allowed_oidc_providers.each do |oidc| %>
+            <p class="card-text">
+              <%= link_to "Login with #{oidc.name} (#{oidc.client_id})", oidc.nh_login_uri, :class => 'btn-solid globus bg-warning-bg' %>
+            </p>
+          <% end %>
+        
+          </div>
+      </div>
+    </div>
+
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-text">
+            If you already are logged in on OpenID provider using a different identity provider, your
+            might want to log out first. This can be accomplished by the button below:
+          </p>
+
+          <% @allowed_oidc_providers.each do |oidc| %>
+            <p class="btn-solid globus bg-warning-bg">
+              <%= link_to "Logout from #{oidc.name}", oidc.logout_uri, :class => '' %>
+            </p>
+          <% end %>
+
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- card -->
+
+</div> <!-- nh_content -->
+
