@@ -195,12 +195,12 @@ class UsersController < ApplicationController
     if ! edit_permission?(@user)
        cb_error "You don't have permission to view this page.", :redirect => start_page_path
     end
-    if user_must_link_to_globus?(@user)
-      allowed_globus_login = @user[:allowed_globus_provider_names].present?
-      if !allowed_globus_login || allowed_globus_login == '*'
-        cb_error "Your account can authenticate with any OIDC identities. Please contact your admin.", :redirect => user_path(current_user)
+    if user_must_link_to_oidc?(@user)
+      allowed_oidc_login = @user[:allowed_globus_provider_names].present?
+      if !allowed_oidc_login || allowed_oidc_login == '*'
+        cb_error "Your account can authenticate with any OpenID identities. Please contact your admin.", :redirect => user_path(current_user)
       else
-        cb_error "Your account can only authenticate with #{allowed_globus_login} OIDC identities providers.", :redirect => user_path(current_user)
+        cb_error "Your account can only authenticate with #{allowed_oidc_login} OpenID identities providers.", :redirect => user_path(current_user)
       end
     end
   end
@@ -223,7 +223,7 @@ class UsersController < ApplicationController
     end
 
     if new_user_attr[:password].present?
-      if user_must_link_to_globus?(@user)
+      if user_must_link_to_oidc?(@user)
         new_user_attr.delete(:password)
         new_user_attr.delete(:password_confirmation)
       end

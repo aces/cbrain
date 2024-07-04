@@ -62,7 +62,7 @@ class NhUsersController < NeurohubApplicationController
 
   def change_password #:nodoc:
     @user = current_user
-    if user_must_link_to_globus?(@user)
+    if user_must_link_to_oidc?(@user)
        cb_error "Your account can only authenticate with Globus identities.", :redirect => { :action => :myaccount }
     end
   end
@@ -84,7 +84,7 @@ class NhUsersController < NeurohubApplicationController
     attr_to_update.delete(:zenodo_main_token)    if attr_to_update[:zenodo_main_token].blank?
 
     # Do not update password if user must use globus
-    if user_must_link_to_globus?(@user)
+    if user_must_link_to_oidc?(@user)
       flash[:error] = "You cannot change the password for your account." if attr_to_update[:password].present?
       attr_to_update.delete(:password)
       attr_to_update.delete(:password_confirmation)

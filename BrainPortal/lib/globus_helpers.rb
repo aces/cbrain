@@ -38,7 +38,7 @@ module GlobusHelpers
       &.map(&:strip)
   end
 
-  def user_has_link_to_globus?(user)
+  def user_has_link_to_oidc?(user) #:nodoc:
     # Filter out the identities that are not allowed
     allowed        = allowed_globus_provider_names(user)
     oidc_providers = OidcConfig.enabled
@@ -56,7 +56,7 @@ module GlobusHelpers
     has_link_to_oidc
   end
 
-  def user_must_link_to_globus?(user)
+  def user_must_link_to_oidc?(user)
     user.meta[:allowed_globus_provider_names].present?
   end
 

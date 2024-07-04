@@ -62,8 +62,8 @@ class OidcConfig
                 @login_button_label             = config[:login_button_label]
                 @link_button_label              = config[:link_button_label]
                 @link_to                        = config[:link_to]
-                @cb_login_uri                   = oidc_login_uri(RemoteResource.current_resource.site_url_prefix + "/globus")
-                @nh_login_uri                   = oidc_login_uri(RemoteResource.current_resource.site_url_prefix + "/nh_globus")
+                @cb_login_uri                   = oidc_login_uri(RemoteResource.current_resource.site_url_prefix + "oidc")
+                @nh_login_uri                   = oidc_login_uri(RemoteResource.current_resource.site_url_prefix + "nh_oidc")
             end
             @oidc_config << oidc
         end
@@ -96,7 +96,7 @@ class OidcConfig
             :client_id     => self.client_id,
             :response_type => 'code',
             :scope         => self.scope,
-            :redirect_uri  => "http://localhost:3000/globus",  # generated from Rails routes
+            :redirect_uri  => redirect_url,  # generated from Rails routes
             :state         => current_state, # method is below
         }
 
@@ -127,7 +127,7 @@ class OidcConfig
         response    = Typhoeus.post(self.token_uri,
           :body   => {
                        :code           => code,
-                       :redirect_uri   => "http://localhost:3000/globus",
+                       :redirect_uri   => action_url,
                        :grant_type     => 'authorization_code',
                      },
           :headers => { :Accept        => 'application/json',

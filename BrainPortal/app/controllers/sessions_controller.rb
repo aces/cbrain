@@ -176,7 +176,7 @@ class SessionsController < ApplicationController
       end
       oidc.record_identity(current_user, identity_struct)
       flash[:notice] = "Your CBRAIN account is now linked to your #{oidc.name} identity."
-      if user_must_link_to_globus?(current_user)
+      if user_must_link_to_oidc?(current_user)
         wipe_user_password_after_globus_link(current_user, oidc.name)
         flash[:notice] += "\nImportant note: from now on you can no longer connect to CBRAIN using a password."
         redirect_to start_page_path

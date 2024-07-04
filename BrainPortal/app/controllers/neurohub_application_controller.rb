@@ -119,20 +119,20 @@ class NeurohubApplicationController < ApplicationController
   end
 
   # Check to see if the user HAS to link their account to
-  # a globus identity. If that's the case and not yet done,
+  # a OpenID identity provider. If that's the case and not yet done,
   # redirects to the page that provides the user with the
   # buttons and explanations.
   # This method is similar to (and overrides) the one in
   # ApplicationController excepts it uses the NeuroHub information form.
-  def check_mandatory_globus_id_linkage #:nodoc:
-    return true if   params[:action].to_s == "nh_mandatory_globus"
-    return true if   params[:action].to_s == "nh_globus"
-    return true if ! user_must_link_to_globus?(current_user)
-    return true if   user_has_link_to_globus?(current_user)
+  def check_mandatory_oidc_id_linkage #:nodoc:
+    return true if   params[:action].to_s == "nh_mandatory_oidc"
+    return true if   params[:action].to_s == "nh_oidc"
+    return true if ! user_must_link_to_oidc?(current_user)
+    return true if   user_has_link_to_oidc?(current_user)
     respond_to do |format|
-      format.html { redirect_to :controller => :nh_sessions, :action => :nh_mandatory_globus }
-      format.json { render :status => 403, :json => { "error" => "This account must first be linked to a Globus identity" } }
-      format.xml  { render :status => 403, :xml  => { "error" => "This account must first be linked to a Globus identity" } }
+      format.html { redirect_to :controller => :nh_sessions, :action => :nh_mandatory_oidc }
+      format.json { render :status => 403, :json => { "error" => "This account must first be linked to a OpenID identity provider" } }
+      format.xml  { render :status => 403, :xml  => { "error" => "This account must first be linked to a OpenID identity provider" } }
     end
     return false
   end

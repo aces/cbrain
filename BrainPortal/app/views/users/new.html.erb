@@ -91,11 +91,11 @@
     <span class="field_explanation">If set, make sure it is a Data Provider that will be accessible to the user</span>
 
     <p>
-    <%= label_tag 'meta_allowed_globus_provider_names', "Forced Globus Identity Providers" %>
+    <%= label_tag 'meta_allowed_globus_provider_names', "Forced OpenID Identity Providers" %>
     <%= text_field_tag("meta[allowed_globus_provider_names]", (params[:meta] || {})[:allowed_globus_provider_names], :size => 30) %>
     <br>
     <span class="field_explanation">
-      If set, must be exact Globus identity provider names separated by commas
+      If set, must be exact OpenID identity provider names separated by commas
       A single '*' is also allowed to mean any provider name.
     </span>
 

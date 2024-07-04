@@ -138,7 +138,7 @@
         <% if prov_user.present? %>
           <% if @user.id == current_user.id  # show button only on user own page %>
             <p class="btn-solid globus bg-warning-bg">
-              <%= link_to unlink_oidc_path(oidc.name),
+              <%= link_to nh_unlink_oidc_path(oidc.name),
                   :class => "",
                   :method  => :post,
                   :data    => { :confirm => "Are you sure you want to unlink your account from this #{oidc.name} identity?" } do %>

@@ -29,8 +29,8 @@ class NhSessionsController < NeurohubApplicationController
 
   include OrcidHelpers
 
-  before_action :login_required,    :except => [ :new, :create, :request_password, :send_password, :orcid, :nh_globus ]
-  before_action :already_logged_in, :except => [ :orcid, :destroy, :nh_globus, :nh_unlink_globus, :nh_mandatory_globus ]
+  before_action :login_required,    :except => [ :new, :create, :request_password, :send_password, :orcid, :nh_oidc ]
+  before_action :already_logged_in, :except => [ :orcid, :destroy, :nh_oidc, :nh_unlink_oidc, :nh_mandatory_oidc ]
 
   def new #:nodoc:
     @orcid_uri      = orcid_login_uri()
@@ -134,9 +134,9 @@ class NhSessionsController < NeurohubApplicationController
   end
 
   # This action receives a JSON authentication
-  # request from globus and uses it to record or verify
+  # request from OpenID provider and uses it to record or verify
   # a user's identity.
-  def nh_globus
+  def nh_oidc
     code  = params[:code].presence.try(:strip)
     state = params[:state].presence || 'wrong'
 
@@ -153,10 +153,8 @@ class NhSessionsController < NeurohubApplicationController
       cb_error "#{oidc.name} session is out of sync with CBRAIN"
     end
 
-    token_uri = oidc.token_uri
-
     # Query Globus; this returns all the info we need at the same time.
-    identity_struct = oidc.fetch_token(code, nh_globus_url) # nh_globus_url is generated from routes
+    identity_struct = oidc.fetch_token(code, nh_oidc_url) # nh_globus_url is generated from routes
     if !identity_struct
       cb_error "Could not fetch your identity information from #{oidc.name}"
     end
@@ -175,7 +173,7 @@ class NhSessionsController < NeurohubApplicationController
       end
       oidc.record_identity(current_user, identity_struct)
       flash[:notice] = "Your NeuroHub account is now linked to your #{oidc.name} identity."
-      if user_must_link_to_globus?(current_user)
+      if user_must_link_to_oidc?(current_user)
         wipe_user_password_after_globus_link(current_user, oidc.name)
         flash[:notice] += "\nImportant note: from now on you can no longer connect to NeuroHub using a password."
         redirect_to neurohub_path
