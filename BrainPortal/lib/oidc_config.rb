@@ -24,7 +24,7 @@ class OidcConfig
 
   attr_reader :name, :authorize_uri, :token_uri, :logout_uri, :scope, :client_secret, :client_id,
               :identity_provider, :identity_provider_display_name, :preferred_username,
-              :enabled, :login_button_label, :link_button_label, :link_to, :link_to_uri, 
+              :enabled, :login_button_label, :link_button_label, :link_to, :link_to_uri,
               :cb_login_uri, :nh_login_uri
 
   def self.load_from_file(path=Rails.root + "config/oidc.yml")
@@ -71,7 +71,7 @@ class OidcConfig
   end
 
   def self.all
-    @oidc_config
+    @oidc_config || []
   end
 
   def self.enabled
@@ -94,9 +94,9 @@ class OidcConfig
       oidc_name = state[33..-1]
     end
 
-    self.find_by_name(oidc_name)        
+    self.find_by_name(oidc_name)
   end
-  
+
   def provider_id_key #:nodoc:
     (self.name.downcase + "_provider_id").to_sym
   end
