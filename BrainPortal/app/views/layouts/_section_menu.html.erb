@@ -125,7 +125,15 @@
              <%= link_to 'Exceptions', exception_logs_path %>
            </li>
            <li <%= set_selected(params[:controller], :signups) %>>
-             <%= link_to 'Signups', signups_path %>
+             <%=
+               label = 'Signups'; label_class = ""
+               signup_waiting = Signup.where(:hidden => false, :approved_at => nil, :confirmed => true).count
+               if signup_waiting > 0
+                 label += " (#{signup_waiting})"
+                 label_class = "active_bac"
+               end
+               link_to label, signups_path, :class => label_class
+             %>
            </li>
          <% end %>
 
