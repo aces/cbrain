@@ -46,8 +46,8 @@ class SessionsController < ApplicationController
     ua               = HttpUserAgent.new(rawua)
     @browser_name    = ua.browser_name    || "(unknown browser name)"
     @browser_version = ua.browser_version || "(unknown browser version)"
-    @oidc_providers  = OidcConfig.enabled || []
-    add_cb_login_uri(@oidc_providers)
+    # @oidc_providers  = OidcConfig.enabled || []
+    # add_cb_login_uri(@oidc_providers)
 
     respond_to do |format|
       format.html
