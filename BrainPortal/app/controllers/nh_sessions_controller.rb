@@ -35,6 +35,7 @@ class NhSessionsController < NeurohubApplicationController
   def new #:nodoc:
     @orcid_uri      = orcid_login_uri()
     @oidc_providers = OidcConfig.enabled
+    add_nh_login_uri(@oidc_providers) 
   end
 
   # POST /nhsessions
@@ -140,15 +141,8 @@ class NhSessionsController < NeurohubApplicationController
     code  = params[:code].presence.try(:strip)
     state = params[:state].presence || 'wrong'
 
-    # Verifify state structure 33 + "_" + oidc_client_id
-    # and extract client_id
-    oidc_name = ""
-    if state.length >= 34 && state[32] == '_'
-      oidc_name = state[33..-1]
-    end
-
-    oidc      = OidcConfig.find_by_name(oidc_name)
     # Some initial simple validations
+    oidc      = OidcConfig.find_by_state(state)
     if !code || state != oidc.current_state
       cb_error "#{oidc.name} session is out of sync with CBRAIN"
     end
@@ -162,7 +156,7 @@ class NhSessionsController < NeurohubApplicationController
 
     # Either record the identity...
     if current_user
-      if ! oidc.user_can_link_to_identity?(current_user, identity_struct)
+      if ! user_can_link_to_identity?(oidc, current_user, identity_struct)
         Rails.logger.error("User #{current_user.login} attempted authentication " +
                            "with unallowed #{oidc.name} identity provider " +
                            identity_struct[oidc.identity_provider_display_name])
@@ -171,7 +165,7 @@ class NhSessionsController < NeurohubApplicationController
         redirect_to myaccount_path
         return
       end
-      oidc.record_identity(current_user, identity_struct)
+      record_identity(oidc, current_user, identity_struct)
       flash[:notice] = "Your NeuroHub account is now linked to your #{oidc.name} identity."
       if user_must_link_to_oidc?(current_user)
         wipe_user_password_after_oidc_link(current_user, oidc.name)
@@ -184,14 +178,14 @@ class NhSessionsController < NeurohubApplicationController
     end
 
     # ...or attempt login with it
-    user = oidc.find_user_with_oidc_identity(identity_struct)
+    user = find_user_with_oidc_identity(oidc, identity_struct)
     if user.is_a?(String) # an error occurred
       flash[:error] = user # the message
       redirect_to signin_path
       return
     end
 
-    login_from_globus_user(user, identity_struct[oidc.identity_provider_display_name])
+    login_from_oidc_user(user, identity_struct[oidc.identity_provider_display_name])
 
   rescue CbrainException => ex
     flash[:error] = "#{ex.message}"
@@ -209,7 +203,7 @@ class NhSessionsController < NeurohubApplicationController
     redirect_to start_page_path unless current_user
 
     oidc = OidcConfig.find_by_name(params[:oidc_name])
-    oidc.unlink_identity(current_user)
+    unlink_identity(oidc, current_user)
 
     flash[:notice] = "Your account is no longer linked to any #{oidc.name} identity"
     redirect_to myaccount_path
@@ -281,7 +275,7 @@ class NhSessionsController < NeurohubApplicationController
     redirect_to neurohub_path
   end
 
-  def login_from_globus_user(user, provider_name)
+  def login_from_oidc_user(user, provider_name)
     # Login the user
     all_ok, new_cb_session = eval_in_controller(::SessionsController) do
       ok  = create_from_user(user, "NeuroHub/Globus/#{provider_name}")

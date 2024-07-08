@@ -119,7 +119,7 @@ class NeurohubApplicationController < ApplicationController
   end
 
   # Check to see if the user HAS to link their account to
-  # a OpenID identity provider. If that's the case and not yet done,
+  # an OpenID identity provider. If that's the case and not yet done,
   # redirects to the page that provides the user with the
   # buttons and explanations.
   # This method is similar to (and overrides) the one in

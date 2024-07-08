@@ -130,7 +130,7 @@ class ApplicationController < ActionController::Base
   end
 
   # Check to see if the user HAS to link their account to
-  # a OpenID identity provider. If that's the case and not yet done,
+  # an OpenID identity provider. If that's the case and not yet done,
   # redirects to the page that provides the user with the
   # buttons and explanations.
   def check_mandatory_oidc_id_linkage #:nodoc:

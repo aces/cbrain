@@ -160,7 +160,6 @@
     <div class="card-row">
       <% @oidc_providers.each do |oidc| %>
         <%
-          oidc_login_uri              = oidc.nh_login_uri
           prov_id                     = @user.meta[oidc.provider_id_key]
           prov_name                   = @user.meta[oidc.provider_name_key]
           prov_user                   = @user.meta[oidc.preferred_username_key]
