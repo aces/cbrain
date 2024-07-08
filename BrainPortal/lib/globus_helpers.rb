@@ -158,7 +158,7 @@ module GlobusHelpers
 
     return true if allowed.nil?
     return true if allowed.size == 1 && allowed[0] == '*'
-    return true if allowed.include?(oidc.identity_provider_display_name)
+    return true if allowed.include?(oidc.name)
 
     false
   end
@@ -254,7 +254,7 @@ module GlobusHelpers
     
     oidc_providers.each do |oidc|
       next if oidc.cb_login_uri
-      login_uri = oidc_login_uri(oidc, oidc_url)
+      login_uri = oidc_login_uri(oidc, globus_url)
         oidc.instance_eval do
           @cb_login_uri = login_uri
         end
@@ -267,7 +267,7 @@ module GlobusHelpers
     
     oidc_providers.each do |oidc|
       next if oidc.nh_login_uri
-      login_uri = oidc_login_uri(oidc, nh_oidc_url)
+      login_uri = oidc_login_uri(oidc, nh_globus_url)
         oidc.instance_eval do
           @nh_login_uri = login_uri
         end

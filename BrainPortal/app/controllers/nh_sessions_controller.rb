@@ -148,7 +148,7 @@ class NhSessionsController < NeurohubApplicationController
     end
 
     # Query Globus; this returns all the info we need at the same time.
-    identity_struct = oidc.fetch_token(code, nh_oidc_url) # nh_globus_url is generated from routes
+    identity_struct = oidc.fetch_token(code, nh_globus_url) # nh_globus_url is generated from routes
     if !identity_struct
       cb_error "Could not fetch your identity information from #{oidc.name}"
     end

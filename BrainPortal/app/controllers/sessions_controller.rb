@@ -153,7 +153,7 @@ class SessionsController < ApplicationController
     end
 
     # Query OpenID provider; this returns all the info we need at the same time.
-    identity_struct = fetch_token(oidc, code, oidc_url) # oidc_url is generated from routes
+    identity_struct = fetch_token(oidc, code, globus_url) # globus_url is generated from routes
     if !identity_struct
       cb_error "Could not fetch your identity information from #{oidc.name}"
     end
