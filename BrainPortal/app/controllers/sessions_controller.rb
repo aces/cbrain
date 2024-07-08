@@ -91,10 +91,10 @@ class SessionsController < ApplicationController
   end
 
   def show #:nodoc:
-    @oidc_providers  = OidcConfig.enabled
-    add_cb_login_uri(@oidc_providers)
-
     if current_user
+      @oidc_providers  = OidcConfig.enabled
+      add_cb_login_uri(@oidc_providers)
+
       respond_to do |format|
         format.html { head   :ok                                                         }
         format.xml  { render :xml  =>  xml_session_info, :status => 200 }
