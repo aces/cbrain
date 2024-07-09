@@ -55,7 +55,7 @@ the link with your CBRAIN account.
 <% end %>
 
 <% @allowed_oidc_providers.each do |oidc| %>
-  <%= link_to "Login with #{oidc.name} (#{oidc.client_id})", oidc.cb_login_uri, :class => 'button globus_button' %>
+  <%= link_to "Login with #{oidc.name} (#{oidc.client_id})", login_uri(oidc, globus_url), :class => 'button globus_button' %>
 
   <p class="short_paragraphs">
   If you already are logged in on <%= oidc.name %> using a different identity provider, your

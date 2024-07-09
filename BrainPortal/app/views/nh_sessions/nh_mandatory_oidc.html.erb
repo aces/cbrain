@@ -3,7 +3,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2022
+# Copyright (C) 2008-2024
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -63,10 +63,10 @@
 
           <% @allowed_oidc_providers.each do |oidc| %>
             <p class="card-text">
-              <%= link_to "Login with #{oidc.name} (#{oidc.client_id})", oidc.nh_login_uri, :class => 'btn-solid globus bg-warning-bg' %>
+              <%= link_to "Login with #{oidc.name} (#{oidc.client_id})", login_uri(oidc, nh_globus_url), :class => 'btn-solid globus bg-warning-bg' %>
             </p>
           <% end %>
-        
+
           </div>
       </div>
     </div>

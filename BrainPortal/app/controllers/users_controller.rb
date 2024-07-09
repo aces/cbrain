@@ -93,7 +93,6 @@ class UsersController < ApplicationController
       .order(:updated_at)
 
     @oidc_providers = OidcConfig.enabled
-    add_nh_login_uri(@oidc_providers)
 
     respond_to do |format|
       format.html # show.html.erb

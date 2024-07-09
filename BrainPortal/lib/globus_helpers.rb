@@ -26,8 +26,6 @@ module GlobusHelpers
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def oidc_login_uri(oidc, redirect_url)
-    puts_magenta oidc.inspect
-    puts_red redirect_url
     return nil unless oidc_auth_configured?(oidc)
 
     # Create the URI to authenticate with OIDC
@@ -74,7 +72,6 @@ module GlobusHelpers
   # created and maintained, at this point.
   def current_state(oidc_name)
     md5 = Digest::MD5.hexdigest( request.session_options[:id] )
-    md5 = Digest::MD5.hexdigest( RemoteResource.current_resource.name )
     !oidc_name ? md5  :
                  md5 + "_" + oidc_name
   end
@@ -226,7 +223,7 @@ module GlobusHelpers
     provider_id   = identity[oidc.identity_provider]              || cb_error("#{oidc.name}: No identity provider")
     provider_name = identity[oidc.identity_provider_display_name] || cb_error("#{oidc.name}: No identity provider name")
     pref_username = identity[oidc.preferred_username]             || cb_error("#{oidc.name}: No preferred username")
-  
+
     # Special case for ORCID, because we already have fields for that provider
     if provider_name == 'ORCID'
       orcid = pref_username.sub(/@.*/, "")
@@ -250,37 +247,14 @@ module GlobusHelpers
     user.addlog("Unlinked #{oidc.name} identity")
   end
 
-  def add_cb_login_uri(oidc_providers) #:nodoc:
-    
-    oidc_providers.each do |oidc|
-      next if oidc.cb_login_uri
-      login_uri = oidc_login_uri(oidc, globus_url)
-        oidc.instance_eval do
-          @cb_login_uri = login_uri
-        end
-      end
-
-  end 
-
-
-  def add_nh_login_uri(oidc_providers) #:nodoc:
-    
-    oidc_providers.each do |oidc|
-      next if oidc.nh_login_uri
-      login_uri = oidc_login_uri(oidc, nh_globus_url)
-        oidc.instance_eval do
-          @nh_login_uri = login_uri
-        end
-      end
-  
+  def login_uri(oidc, redirect_url) #:nodoc:
+    oidc_login_uri(oidc, redirect_url)
   end
 
   def update_state(oidc_providers) #:nodoc:
-    
     oidc_providers.each do |oidc|
       @current_state = current_state(oidc.name)
     end
-  
   end
 
 end

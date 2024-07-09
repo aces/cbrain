@@ -35,7 +35,6 @@ class NhSessionsController < NeurohubApplicationController
   def new #:nodoc:
     @orcid_uri      = orcid_login_uri()
     @oidc_providers = OidcConfig.enabled
-    add_nh_login_uri(@oidc_providers) 
   end
 
   # POST /nhsessions
@@ -214,7 +213,7 @@ class NhSessionsController < NeurohubApplicationController
   def nh_mandatory_oidc #:nodoc:
     # Restrict @allowed_oidc_providers to allowed providers
     @allowed_provs          = allowed_oidc_provider_names(current_user)
-    @allowed_oidc_providers = OidcConfig.enabled.select { |oidc| @allowed_provs.include?(oidc.name) } 
+    @allowed_oidc_providers = OidcConfig.enabled.select { |oidc| @allowed_provs.include?(oidc.name) }
 
     respond_to do |format|
       format.html

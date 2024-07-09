@@ -47,7 +47,6 @@ class SessionsController < ApplicationController
     @browser_name    = ua.browser_name    || "(unknown browser name)"
     @browser_version = ua.browser_version || "(unknown browser version)"
     @oidc_providers  = OidcConfig.enabled
-    add_cb_login_uri(@oidc_providers)
 
     respond_to do |format|
       format.html
@@ -93,7 +92,6 @@ class SessionsController < ApplicationController
   def show #:nodoc:
     if current_user
       @oidc_providers  = OidcConfig.enabled || []
-      add_cb_login_uri(@oidc_providers)
 
       respond_to do |format|
         format.html { head   :ok                                                         }
