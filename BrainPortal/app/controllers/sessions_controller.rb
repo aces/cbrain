@@ -211,7 +211,7 @@ class SessionsController < ApplicationController
     unlink_identity(oidc, current_user)
 
     flash[:notice] = "Your account is no longer linked to any #{oidc.name} identity"
-    redirect_to start_page_path
+    redirect_to user_path(current_user)
   end
 
   ###############################################
