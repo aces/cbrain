@@ -1,3 +1,5 @@
+
+
 # NeuroHub Project
 #
 # Copyright (C) 2021
@@ -34,13 +36,13 @@ module GlobusHelpers
             :response_type => 'code',
             :scope         => oidc.scope,
             :redirect_uri  => redirect_url,  # generated from Rails routes
-            :state         => current_state(oidc.name), # method is below
+            :state         => oidc_current_state(oidc), # method is below
     }
 
     oidc.authorize_uri + '?' + oidc_params.to_query
   end
 
-  def fetch_token(oidc, code, action_url)
+  def oidc_fetch_token(oidc, code, action_url)
     # Query OIDC; this returns all the info we need at the same time.
     auth_header = oidc_basic_auth_header(oidc) # method is below
     response    = Typhoeus.post(oidc.token_uri,
@@ -64,16 +66,6 @@ module GlobusHelpers
   rescue => ex
     Rails.logger.error "#{oidc.name} token request failed: #{ex.class} #{ex.message}"
     return nil
-  end
-
-  # Returns a string that should stay constants during the entire
-  # OIDC negotiations. The current Rails session_id, encoded, will do
-  # the trick. The Rails session is maintained by a cookie already
-  # created and maintained, at this point.
-  def current_state(oidc_name)
-    md5 = Digest::MD5.hexdigest( request.session_options[:id] )
-    !oidc_name ? md5  :
-                 md5 + "_" + oidc_name
   end
 
   # Returns the value for the Authorization header
@@ -108,13 +100,13 @@ module GlobusHelpers
 
   # Record the OIDC identity for the current user.
   # (This maybe should be made into a User model method)
-  def record_identity(oidc, user, oidc_identity) #:nodoc:
+  def record_oidc_identity(oidc, user, oidc_identity) #:nodoc:
     # In the case where a user must auth with a specific set of
     # OIDC providers, we find the first identity that
     # matches a name of that set.
 
     identity = set_of_identities(oidc_identity).detect do |idstruct|
-        user_can_link_to_identity?(oidc, user, idstruct)
+        user_can_link_to_oidc_identity?(oidc, user, idstruct)
     end
 
     provider_id   = identity[oidc.identity_provider]              || cb_error("#{oidc.name}: No identity provider")
@@ -150,7 +142,7 @@ module GlobusHelpers
       &.map(&:strip)
   end
 
-  def user_can_link_to_identity?(oidc, user, identity) #:nodoc:
+  def user_can_link_to_oidc_identity?(oidc, user, identity) #:nodoc:
     allowed = allowed_oidc_provider_names(user)
 
     return true if allowed.nil?
@@ -240,20 +232,30 @@ module GlobusHelpers
   end
 
   # Removes the recorded OIDC identity for +user+
-  def unlink_identity(oidc, user)
+  def unlink_oidc_identity(oidc, user)
     user.meta[oidc.provider_id_key]        = nil
     user.meta[oidc.provider_name_key]      = nil
     user.meta[oidc.preferred_username_key] = nil
     user.addlog("Unlinked #{oidc.name} identity")
   end
 
-  def login_uri(oidc, redirect_url) #:nodoc:
-    oidc_login_uri(oidc, redirect_url)
+  def add_cb_login_uri(oidc_providers)
+    redirect_url     = globus_url
+    oidc_providers.each do |oidc|
+       login_uri = oidc_login_uri(oidc, redirect_url)
+       oidc.instance_eval do
+          @cb_login_uri = login_uri
+       end
+    end
   end
 
-  def update_state(oidc_providers) #:nodoc:
+  def add_nh_login_uri(oidc_providers)
+    redirect_url     = nh_globus_url
     oidc_providers.each do |oidc|
-      @current_state = current_state(oidc.name)
+       login_uri = oidc_login_uri(oidc, redirect_url)
+       oidc.instance_eval do
+          @nh_login_uri = login_uri
+       end
     end
   end
 

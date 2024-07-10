@@ -47,6 +47,7 @@ class SessionsController < ApplicationController
     @browser_name    = ua.browser_name    || "(unknown browser name)"
     @browser_version = ua.browser_version || "(unknown browser version)"
     @oidc_providers  = OidcConfig.enabled
+    add_cb_login_uri(@oidc_providers)
 
     respond_to do |format|
       format.html
@@ -60,6 +61,7 @@ class SessionsController < ApplicationController
     # Restrict @allowed_oidc_providers to allowed providers
     @allowed_provs          = allowed_oidc_provider_names(current_user)
     @allowed_oidc_providers = OidcConfig.enabled.select { |oidc| @allowed_provs.include?(oidc.name) }
+    add_cb_login_uri(@allowed_oidc_providers)
 
     respond_to do |format|
       format.html
@@ -75,6 +77,8 @@ class SessionsController < ApplicationController
     all_ok = create_from_user(user, 'CBRAIN')
 
     if ! all_ok
+      @oidc_providers = OidcConfig.enabled
+      add_cb_login_uri(@oidc_providers)
       auth_failed()
       return
     end
@@ -92,6 +96,7 @@ class SessionsController < ApplicationController
   def show #:nodoc:
     if current_user
       @oidc_providers  = OidcConfig.enabled || []
+      add_cb_login_uri(@oidc_providers)
 
       respond_to do |format|
         format.html { head   :ok                                                         }
@@ -143,15 +148,15 @@ class SessionsController < ApplicationController
   def oidc
     code      = params[:code].presence.try(:strip)
     state     = params[:state].presence || 'wrong'
-
+  
     # Some initial simple validations
     oidc      = OidcConfig.find_by_state(state)
-    if !code || state != current_state(oidc.name)
+    if !code || state != oidc_current_state(oidc)
       cb_error "#{oidc.name} session is out of sync with CBRAIN"
     end
 
     # Query OpenID provider; this returns all the info we need at the same time.
-    identity_struct = fetch_token(oidc, code, globus_url) # globus_url is generated from routes
+    identity_struct = oidc_fetch_token(oidc, code, globus_url) # globus_url is generated from routes
     if !identity_struct
       cb_error "Could not fetch your identity information from #{oidc.name}"
     end
@@ -159,7 +164,7 @@ class SessionsController < ApplicationController
 
     # Either record the identity...
     if current_user
-      if ! user_can_link_to_identity?(oidc, current_user, identity_struct)
+      if ! user_can_link_to_oidc_identity?(oidc, current_user, identity_struct)
         Rails.logger.error("User #{current_user.login} attempted authentication " +
                            "with unallowed #{oidc.name} identity provider " +
                            identity_struct[oidc.identity_provider_display_name].to_s)
@@ -168,7 +173,7 @@ class SessionsController < ApplicationController
         redirect_to user_path(current_user)
         return
       end
-      record_identity(oidc, current_user, identity_struct)
+      record_oidc_identity(oidc, current_user, identity_struct)
       flash[:notice] = "Your CBRAIN account is now linked to your #{oidc.name} identity."
       if user_must_link_to_oidc?(current_user)
         wipe_user_password_after_oidc_link(oidc, current_user)
@@ -206,7 +211,7 @@ class SessionsController < ApplicationController
     redirect_to start_page_path unless current_user
 
     oidc = OidcConfig.find_by_name(params[:oidc_name])
-    unlink_identity(oidc, current_user)
+    unlink_oidc_identity(oidc, current_user)
 
     flash[:notice] = "Your account is no longer linked to any #{oidc.name} identity"
     redirect_to user_path(current_user)

@@ -167,27 +167,30 @@
 
     <% @oidc_providers.each do |oidc| %>
       <%
+        oidc_login_uri              = oidc.cb_login_uri
         prov_id                     = @user.meta[oidc.provider_id_key]
         prov_name                   = @user.meta[oidc.provider_name_key]
         prov_user                   = @user.meta[oidc.preferred_username_key]
       %>
 
       <% t.cell "#{oidc.name} Provider", :show_width => 2 do %>
-        <% if prov_id %>
-          <strong>Provider name:</strong> <%= prov_name %><br>
-          <strong>Provider user:</strong> <%= prov_user %><br>
-          <% if @user.id == current_user.id %>
-            <%= link_to("Unlink this #{oidc.name} identity", unlink_oidc_path(oidc.name, :from => "cb"),
-                          :class  => "button",
-                          :method => :post,
-                          :data   => { :confirm => "Are you sure you want to unlink your account with this #{oidc.name} identity?" }
-                        )
-            %>
+        <% if oidc_login_uri %>
+          <% if prov_id %>
+            <strong>Provider name:</strong> <%= prov_name %><br>
+            <strong>Provider user:</strong> <%= prov_user %><br>
+            <% if @user.id == current_user.id %>
+              <%= link_to("Unlink this #{oidc.name} identity", unlink_oidc_path(oidc.name, :from => "cb"),
+                            :class  => "button",
+                            :method => :post,
+                            :data   => { :confirm => "Are you sure you want to unlink your account with this #{oidc.name} identity?" }
+                          )
+              %>
+             <% end %>
+          <% else %>
+            (No <%= oidc.name %> identity linked to your account)<br>
+            <% if @user.id == current_user.id  # OIDC button works only on user own account %>
+              <%= link_to "Link a #{oidc.name} identity", oidc.cb_login_uri, :class => 'button globus_button' %>
             <% end %>
-        <% else %>
-          (No <%= oidc.name %> identity linked to your account)<br>
-          <% if @user.id == current_user.id  # OIDC button works only on user own account %>
-            <%= link_to "Link a #{oidc.name} identity", login_uri(oidc, globus_url), :class => 'button globus_button' %>
           <% end %>
         <% end %>
       <% end %>

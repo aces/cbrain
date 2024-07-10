@@ -1,5 +1,3 @@
-
-#
 # NeuroHub Project
 #
 # Copyright (C) 2020
@@ -35,6 +33,7 @@ class NhSessionsController < NeurohubApplicationController
   def new #:nodoc:
     @orcid_uri      = orcid_login_uri()
     @oidc_providers = OidcConfig.enabled
+    add_nh_login_uri(@oidc_providers)
   end
 
   # POST /nhsessions
@@ -139,15 +138,15 @@ class NhSessionsController < NeurohubApplicationController
   def nh_oidc
     code  = params[:code].presence.try(:strip)
     state = params[:state].presence || 'wrong'
-
+  
     # Some initial simple validations
     oidc      = OidcConfig.find_by_state(state)
-    if !code || state != current_state(oidc.name)
+    if !code || state != oidc_current_state(oidc)
       cb_error "#{oidc.name} session is out of sync with CBRAIN"
     end
 
     # Query OpenID provider; this returns all the info we need at the same time.
-    identity_struct = fetch_token(oidc, code, nh_globus_url) # nh_globus_url is generated from routes
+    identity_struct = oidc_fetch_token(oidc, code, nh_globus_url) # nh_globus_url is generated from routes
     if !identity_struct
       cb_error "Could not fetch your identity information from #{oidc.name}"
     end
@@ -155,7 +154,7 @@ class NhSessionsController < NeurohubApplicationController
 
     # Either record the identity...
     if current_user
-      if ! user_can_link_to_identity?(oidc, current_user, identity_struct)
+      if ! user_can_link_to_oidc_identity?(oidc, current_user, identity_struct)
         Rails.logger.error("User #{current_user.login} attempted authentication " +
                            "with unallowed #{oidc.name} identity provider " +
                            identity_struct[oidc.identity_provider_display_name])
@@ -164,7 +163,7 @@ class NhSessionsController < NeurohubApplicationController
         redirect_to myaccount_path
         return
       end
-      record_identity(oidc, current_user, identity_struct)
+      record_oidc_identity(oidc, current_user, identity_struct)
       flash[:notice] = "Your NeuroHub account is now linked to your #{oidc.name} identity."
       if user_must_link_to_oidc?(current_user)
         wipe_user_password_after_oidc_link(oidc, current_user)
@@ -202,7 +201,7 @@ class NhSessionsController < NeurohubApplicationController
     redirect_to start_page_path unless current_user
 
     oidc = OidcConfig.find_by_name(params[:oidc_name])
-    unlink_identity(oidc, current_user)
+    unlink_oidc_identity(oidc, current_user)
 
     flash[:notice] = "Your account is no longer linked to any #{oidc.name} identity"
     redirect_to myaccount_path
@@ -214,6 +213,7 @@ class NhSessionsController < NeurohubApplicationController
     # Restrict @allowed_oidc_providers to allowed providers
     @allowed_provs          = allowed_oidc_provider_names(current_user)
     @allowed_oidc_providers = OidcConfig.enabled.select { |oidc| @allowed_provs.include?(oidc.name) }
+    add_nh_login_uri(@allowed_oidc_providers, nh_globus_url)
 
     respond_to do |format|
       format.html

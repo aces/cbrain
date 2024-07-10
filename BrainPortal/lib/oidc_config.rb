@@ -24,7 +24,8 @@ class OidcConfig
 
   attr_reader :name, :authorize_uri, :token_uri, :logout_uri, :scope, :client_secret, :client_id,
               :identity_provider, :identity_provider_display_name, :preferred_username,
-              :enabled, :login_button_label, :link_button_label, :link_to, :link_to_uri
+              :enabled, :login_button_label, :link_button_label, :link_to, :link_to_uri,
+              :cb_login_uri, :nh_login_uri
 
   def self.load_from_file(path=Rails.root + "config/oidc.yml")
     @oidc_config = []
@@ -41,10 +42,12 @@ class OidcConfig
       # Check for invalid characters in name (letters case insensitive numbers and underscores only)
       errors << "Invalid OIDC name: #{name}" if name !~ /^[a-zA-Z0-9_]+$/
       # Check for missing keys
-      errors << "Missing keys #{(needed_keys - config.keys).join(", ")} in OIDC config: #{name}" if (needed_keys - config.keys).any?
+      config_keys  = config.keys.select {|k| config[k] }
+      missing_keys = (needed_keys - config_keys)
+      errors << "Missing keys #{missing_keys.join(", ")} in OIDC config: #{name}" if missing_keys.any?
       # Check if name is already used
       errors << "OIDC name #{name} is already used (ignore entry)" if @oidc_config.map(&:name).include?(name)
-
+ 
       oidc = self.new
       oidc.instance_eval do
         @name                           = name
@@ -62,7 +65,7 @@ class OidcConfig
         @link_button_label              = config[:link_button_label]
         @link_to                        = config[:link_to]
       end
-      @oidc_config << oidc
+      @oidc_config << oidc if !errors.any?
     end
 
     raise errors.join("\n") if errors.any?

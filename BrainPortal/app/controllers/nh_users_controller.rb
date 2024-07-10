@@ -43,6 +43,7 @@ class NhUsersController < NeurohubApplicationController
   def myaccount #:nodoc:
     @user=current_user
     @oidc_providers = OidcConfig.enabled
+    add_nh_login_uri(@oidc_providers)
     @orcid_canonical = orcid_canonize(@user.meta[:orcid])
     render :show
   end
@@ -58,6 +59,7 @@ class NhUsersController < NeurohubApplicationController
     @orcid_canonical = orcid_canonize(@user.meta[:orcid])
     @orcid_uri       = orcid_login_uri() # set to nil if orcid not configured by admin
     @oidc_providers  = OidcConfig.enabled
+    add_nh_login_uri(@oidc_providers)
   end
 
   def change_password #:nodoc:
