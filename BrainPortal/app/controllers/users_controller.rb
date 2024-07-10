@@ -197,12 +197,7 @@ class UsersController < ApplicationController
        cb_error "You don't have permission to view this page.", :redirect => start_page_path
     end
     if user_must_link_to_oidc?(@user)
-      allowed_oidc_login = @user[:allowed_globus_provider_names].present?
-      if !allowed_oidc_login || allowed_oidc_login == '*'
-        cb_error "Your account can authenticate with any OpenID identities. Please contact your admin.", :redirect => user_path(current_user)
-      else
-        cb_error "Your account can only authenticate with #{allowed_oidc_login} OpenID identities providers.", :redirect => user_path(current_user)
-      end
+      cb_error "Your account can only authenticate with an OpenID identities providers.", :redirect => user_path(current_user)
     end
   end
 
