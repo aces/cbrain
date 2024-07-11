@@ -115,10 +115,10 @@ module GlobusHelpers
 
     # Special case for ORCID, because we already have fields for that provider
     # We do NOT do this in the case where the user is forced to auth with OIDC.
-    if provider_name == 'ORCID' && ! user_must_link_to_oidc?(user, oidc)
+    if provider_name == 'ORCID' && ! user_must_link_to_oidc?(user)
       orcid = pref_username.sub(/@.*/, "")
       user.meta['orcid'] = orcid
-      user.addlog("Linked to ORCID identity: '#{orcid}' through #{self.name}")
+      user.addlog("Linked to ORCID identity: '#{orcid}' through #{oidc.name}")
       return
     end
 
