@@ -242,7 +242,7 @@ module GlobusHelpers
 
   def generate_oidc_login_uri(oidc_providers, redirect_url) #:nodoc:
     @oidc_uris = {}
-    @oidc_providers.each { |oidc| @oidc_uris[oidc.name] = oidc_login_uri(oidc, redirect_url)}
+    oidc_providers.each { |oidc| @oidc_uris[oidc.name] = oidc_login_uri(oidc, redirect_url)}
     return @oidc_uris
   end
 
