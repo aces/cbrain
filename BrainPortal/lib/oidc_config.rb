@@ -24,8 +24,7 @@ class OidcConfig
 
   attr_reader :name, :authorize_uri, :token_uri, :logout_uri, :scope, :client_secret, :client_id,
               :identity_provider, :identity_provider_display_name, :preferred_username,
-              :enabled, :login_button_label, :link_button_label, :link_to, :link_to_uri,
-              :cb_login_uri, :nh_login_uri
+              :enabled, :login_button_label, :link_button_label, :link_to, :link_to_uri
 
   def self.load_from_file(path=Rails.root + "config/oidc.yml")
     @oidc_config = []
