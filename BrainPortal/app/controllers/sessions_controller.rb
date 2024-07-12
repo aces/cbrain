@@ -47,7 +47,7 @@ class SessionsController < ApplicationController
     @browser_name    = ua.browser_name    || "(unknown browser name)"
     @browser_version = ua.browser_version || "(unknown browser version)"
     @oidc_providers  = OidcConfig.enabled
-    add_cb_login_uri(@oidc_providers)
+    @oidc_uris       = generate_oidc_login_uri(@oidc_providers, globus_url)
 
     respond_to do |format|
       format.html
@@ -61,7 +61,7 @@ class SessionsController < ApplicationController
     # Restrict @allowed_oidc_providers to allowed providers
     @allowed_provs          = allowed_oidc_provider_names(current_user)
     @allowed_oidc_providers = OidcConfig.enabled.select { |oidc| @allowed_provs.include?(oidc.name) }
-    add_cb_login_uri(@allowed_oidc_providers)
+    @oidc_uris       = generate_oidc_login_uri(@allowed_oidc_providers, globus_url)
 
     respond_to do |format|
       format.html
@@ -78,7 +78,8 @@ class SessionsController < ApplicationController
 
     if ! all_ok
       @oidc_providers = OidcConfig.enabled
-      add_cb_login_uri(@oidc_providers)
+      @oidc_uris      = generate_oidc_login_uri(@oidc_providers, globus_url)
+      
       auth_failed()
       return
     end
@@ -96,7 +97,7 @@ class SessionsController < ApplicationController
   def show #:nodoc:
     if current_user
       @oidc_providers  = OidcConfig.enabled || []
-      add_cb_login_uri(@oidc_providers)
+      @oidc_uris       = generate_oidc_login_uri(@oidc_providers, globus_url)
 
       respond_to do |format|
         format.html { head   :ok                                                         }

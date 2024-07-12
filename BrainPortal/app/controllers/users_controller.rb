@@ -93,7 +93,7 @@ class UsersController < ApplicationController
       .order(:updated_at)
 
     @oidc_providers = OidcConfig.enabled
-    add_cb_login_uri(@oidc_providers)
+    @oidc_uris      = generate_oidc_login_uri(@oidc_providers, globus_url)
 
     respond_to do |format|
       format.html # show.html.erb

@@ -239,24 +239,11 @@ module GlobusHelpers
     user.addlog("Unlinked #{oidc.name} identity")
   end
 
-  def add_cb_login_uri(oidc_providers)
-    redirect_url     = globus_url
-    oidc_providers.each do |oidc|
-       login_uri = oidc_login_uri(oidc, redirect_url)
-       oidc.instance_eval do
-          @cb_login_uri = login_uri
-       end
-    end
-  end
 
-  def add_nh_login_uri(oidc_providers)
-    redirect_url     = nh_globus_url
-    oidc_providers.each do |oidc|
-       login_uri = oidc_login_uri(oidc, redirect_url)
-       oidc.instance_eval do
-          @nh_login_uri = login_uri
-       end
-    end
+  def generate_oidc_login_uri(oidc_providers, redirect_url) #:nodoc:
+    @oidc_uris = {}
+    @oidc_providers.each { |oidc| @oidc_uris[oidc.name] = oidc_login_uri(oidc, redirect_url)}
+    return @oidc_uris
   end
 
 end

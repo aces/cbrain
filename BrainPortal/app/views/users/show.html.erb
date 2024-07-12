@@ -167,7 +167,7 @@
 
     <% @oidc_providers.each do |oidc| %>
       <%
-        oidc_login_uri              = oidc.cb_login_uri
+        oidc_login_uri              = @oidc_uris[oidc.name]
         prov_id                     = @user.meta[oidc.provider_id_key]
         prov_name                   = @user.meta[oidc.provider_name_key]
         prov_user                   = @user.meta[oidc.preferred_username_key]
@@ -189,7 +189,7 @@
           <% else %>
             (No <%= oidc.name %> identity linked to your account)<br>
             <% if @user.id == current_user.id  # OIDC button works only on user own account %>
-              <%= link_to "Link a #{oidc.name} identity", oidc.cb_login_uri, :class => 'button globus_button' %>
+              <%= link_to "Link a #{oidc.name} identity", oidc_login_uri, :class => 'button globus_button' %>
             <% end %>
           <% end %>
         <% end %>
