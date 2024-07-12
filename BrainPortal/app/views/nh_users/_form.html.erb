@@ -119,7 +119,7 @@
       <% if prov_user.blank? %>
         <% if @user.id == current_user.id  # show button only on user own page, hide on other users pages %>
           <p class="btn-solid globus">
-            <%= link_to login_uri(oidc, nh_globus_url), :class => "" do %>
+            <%= link_to @oidc_uris[oidc.name], :class => "" do %>
               Connect your NeuroHub account to a <%= oidc.name %> identity provider
             <% end %>
           </p>

@@ -60,7 +60,7 @@ class SessionsController < ApplicationController
   def mandatory_oidc #:nodoc:
     # Restrict @allowed_oidc_providers to allowed providers
     @allowed_provs          = allowed_oidc_provider_names(current_user)
-    @allowed_oidc_providers = OidcConfig.enabled.select { |oidc| @allowed_provs.include?(oidc.name) }
+    @allowed_oidc_providers = OidcConfig.enabled.select { |oidc| @allowed_provs.include?(oidc.client_id) }
     @oidc_uris       = generate_oidc_login_uri(@allowed_oidc_providers, globus_url)
 
     respond_to do |format|
@@ -158,6 +158,7 @@ class SessionsController < ApplicationController
 
     # Query OpenID provider; this returns all the info we need at the same time.
     identity_struct = oidc_fetch_token(oidc, code, globus_url) # globus_url is generated from routes
+    
     if !identity_struct
       cb_error "Could not fetch your identity information from #{oidc.name}"
     end

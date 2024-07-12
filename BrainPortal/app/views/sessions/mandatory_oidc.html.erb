@@ -55,11 +55,17 @@ the link with your CBRAIN account.
 <% end %>
 
 <% @allowed_oidc_providers.each do |oidc| %>
-  <%= link_to "Login with #{oidc.name} (#{oidc.client_id})", login_uri(oidc, globus_url), :class => 'button globus_button' %>
-
-  <p class="short_paragraphs">
-  If you already are logged in on <%= oidc.name %> using a different identity provider, your
-  might want to log out first. This can be accomplished by the button below:
-  <p>
-  <%= link_to "Logout from #{oidc.name} (#{oidc.client_id})", oidc.logout_uri, :class => 'button globus_button' %>
+  <%= link_to "Login with #{oidc.name} (#{oidc.client_id})", @oidc_uris[oidc.name], :class => 'button globus_button' %></br></br>
 <% end %>
+
+<% if !@allowed_oidc_providers.empty? %>
+<p class="short_paragraphs">
+  If you already are logged in using a different identity provider, you
+  might want to log out first. This can be accomplished by the button below:
+<p>
+<% end %>
+
+<% @allowed_oidc_providers.each do |oidc| %>
+  <%= link_to "Logout from #{oidc.name} (#{oidc.client_id})", oidc.logout_uri, :class => 'button globus_button' %></br></br>
+<% end %>
+

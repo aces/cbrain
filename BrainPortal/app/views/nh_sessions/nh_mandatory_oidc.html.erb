@@ -63,7 +63,7 @@
 
           <% @allowed_oidc_providers.each do |oidc| %>
             <p class="card-text">
-              <%= link_to "Login with #{oidc.name} (#{oidc.client_id})", login_uri(oidc, nh_globus_url), :class => 'btn-solid globus bg-warning-bg' %>
+              <%= link_to "Login with #{oidc.name} (#{oidc.client_id})", @oidc_uris[oidc.name], :class => 'btn-solid globus bg-warning-bg' %></br>
             </p>
           <% end %>
 
@@ -83,6 +83,7 @@
             <p class="btn-solid globus bg-warning-bg">
               <%= link_to "Logout from #{oidc.name}", oidc.logout_uri, :class => '' %>
             </p>
+            </br>
           <% end %>
 
         </div>

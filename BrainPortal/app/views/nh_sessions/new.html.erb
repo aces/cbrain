@@ -53,7 +53,7 @@
 
       <% @oidc_providers.each do |oidc| %>
         <p class="text-center heading-sm grey-400 pb-4">OR</p>
-        <%= link_to login_uri(oidc,nh_globus_url), :class => "btn-solid globus" do %>
+        <%= link_to @oidc_uris[oidc.name], :class => "btn-solid globus" do %>
           Sign in with <%= oidc.name %>
         <% end %>
         <p class="field_note">This will work if you have already linked your NeuroHub account to a <%= oidc.name %> provider.</p>

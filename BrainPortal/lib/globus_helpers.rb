@@ -135,11 +135,14 @@ module GlobusHelpers
   # Returns an array of allowed identity provider names.
   # Returns nil if they are all allowed
   # Keep reference to globus for backward compability
-  def allowed_oidc_provider_names(user)
-    user.meta[:allowed_globus_provider_names]
+  def allowed_oidc_provider_names(user) 
+    allowed_oidc = user.meta[:allowed_globus_provider_names]
        .presence
       &.split(/\s*,\s*/)
-      &.map(&:strip)
+      &.map(&:strip) || []
+
+    # Special case all OidcConfig are allowed
+    allowed_oidc = OidcConfig.enabled.map {|oidc| oidc.client_id } if allowed_oidc.include?('*')
   end
 
   def user_can_link_to_oidc_identity?(oidc, user, identity) #:nodoc:
@@ -156,12 +159,11 @@ module GlobusHelpers
     # Filter out the identities that are not allowed
     allowed        = allowed_oidc_provider_names(user)
     oidc_providers = OidcConfig.enabled
-    allowed_oidc   = oidc_providers.select { |oidc| allowed.include?(oidc.name) }
+    allowed_oidc   = oidc_providers.select { |oidc| allowed.include?(oidc.client_id) }
 
     # Iterate over the allowed_oidc_info
     has_link_to_oidc = false
     allowed_oidc.each do |oidc|
-      next if has_link_to_oidc
       has_link_to_oidc =
         user.meta[oidc.provider_id_key].present? &&
         user.meta[oidc.provider_name_key].present? &&
