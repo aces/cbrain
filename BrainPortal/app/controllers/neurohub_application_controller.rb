@@ -131,8 +131,8 @@ class NeurohubApplicationController < ApplicationController
     return true if   user_has_link_to_oidc?(current_user)
     respond_to do |format|
       format.html { redirect_to :controller => :nh_sessions, :action => :nh_mandatory_oidc }
-      format.json { render :status => 403, :json => { "error" => "This account must first be linked to a OpenID identity provider" } }
-      format.xml  { render :status => 403, :xml  => { "error" => "This account must first be linked to a OpenID identity provider" } }
+      format.json { render :status => 403, :json => { "error" => "This account must first be linked to an OpenID identity provider" } }
+      format.xml  { render :status => 403, :xml  => { "error" => "This account must first be linked to an OpenID identity provider" } }
     end
     return false
   end

@@ -61,7 +61,7 @@
             <p class="card-text">&bull; <%= provname %></p>
           <% end %>
 
-          <% @allowed_oidc_providers.each do |oidc| %>
+          <% @oidc_providers.each do |oidc| %>
             <p class="card-text">
               <%= link_to "Login with #{oidc.name}", @oidc_uris[oidc.name], :class => 'btn-solid globus bg-warning-bg' %></br>
             </p>
@@ -79,7 +79,7 @@
             might want to log out first. This can be accomplished by the button below:
           </p>
 
-          <% @allowed_oidc_providers.each do |oidc| %>
+          <% @oidc_providers.each do |oidc| %>
             <p class="btn-solid globus bg-warning-bg">
               <%= link_to "Logout from #{oidc.name}", oidc.logout_uri, :class => '' %>
             </p>

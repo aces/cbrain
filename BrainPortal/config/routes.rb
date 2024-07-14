@@ -220,8 +220,8 @@ Rails.application.routes.draw do
   post  '/session_data'           => 'session_data#update'
   # Globus authentication
   get   '/globus'                 => 'sessions#oidc'
-  get   '/mandatory_oidc'         => 'sessions#mandatory_oidc'
   post  '/unlink_oidc/:oidc_name' => 'sessions#unlink_oidc', as: 'unlink_oidc'
+  get   '/mandatory_oidc'         => 'sessions#mandatory_oidc'
 
   # Report Maker
   get   "/report",                :controller => :portal, :action => :report
@@ -289,8 +289,9 @@ Rails.application.routes.draw do
     get   '/myaccount'              => 'nh_users#myaccount'
 
     # Globus authentication
-    get   '/nh_globus'              => 'nh_sessions#nh_oidc'
-    get   '/nh_mandatory_oidc'      => 'nh_sessions#nh_mandatory_oidc'
+    get   '/nh_globus'                 => 'nh_sessions#nh_oidc'
+    post  '/nh_unlink_oidc/:oidc_name' => 'nh_sessions#nh_unlink_oidc', as: 'nh_unlink_oidc'
+    get   '/nh_mandatory_oidc'         => 'nh_sessions#nh_mandatory_oidc'
  
     # ORCID authentication
     get   '/orcid'                  => 'nh_sessions#orcid'

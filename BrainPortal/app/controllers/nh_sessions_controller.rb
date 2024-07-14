@@ -1,3 +1,5 @@
+
+#
 # NeuroHub Project
 #
 # Copyright (C) 2020
@@ -211,9 +213,8 @@ class NhSessionsController < NeurohubApplicationController
   # Shows the page that informs the user they MUST link to a Globus ID.
   def nh_mandatory_oidc #:nodoc:
     # Restrict @allowed_oidc_providers to allowed providers
-    @allowed_provs          = allowed_oidc_provider_names(current_user)
-    @allowed_oidc_providers = OidcConfig.enabled.select { |oidc| @allowed_provs.include?(oidc.client_id) }
-    @oidc_uris              = generate_oidc_login_uri(@allowed_oidc_providers, nh_globus_url)
+    @oidc_providers = OidcConfig.enabled
+    @oidc_uris      = generate_oidc_login_uri(@oidc_providers, nh_globus_url)
 
     respond_to do |format|
       format.html
