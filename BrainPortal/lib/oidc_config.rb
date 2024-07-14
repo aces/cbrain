@@ -22,18 +22,19 @@
 
 class OidcConfig
 
-  attr_reader :name, :authorize_uri, :token_uri, :logout_uri, :scope, :client_secret, :client_id,
-              :identity_provider, :identity_provider_display_name, :preferred_username,
-              :enabled, :login_button_label, :link_button_label, :link_to, :link_to_uri
+  attr_reader :name, :enabled, :authorize_uri, :token_uri, :logout_uri, :scope, :client_secret, :client_id,
+              :identity_provider_key, :identity_provider_display_name_key, :preferred_username_key,
+              :help_label, :help_uri
 
   def self.load_from_file(path=Rails.root + "config/oidc.yml")
     @oidc_config = []
 
+    return @oidc_config if !File.exist?(path)
+
     loaded_yaml = YAML.load(ERB.new(File.read(path)).result).with_indifferent_access
 
-    needed_keys = %w[authorize_uri token_uri logout_uri scope client_secret client_id
-                      identity_provider identity_provider_display_name preferred_username
-                      enabled login_button_label link_button_label link_to]
+    needed_keys = %w[name enabled authorize_uri token_uri logout_uri scope client_secret client_id
+                     identity_provider_key identity_provider_display_name_key preferred_username_key]
 
     errors = []
     loaded_yaml.each do |name, config|
@@ -49,20 +50,19 @@ class OidcConfig
  
       oidc = self.new
       oidc.instance_eval do
-        @name                           = name
-        @authorize_uri                  = config[:authorize_uri]
-        @token_uri                      = config[:token_uri]
-        @logout_uri                     = config[:logout_uri]
-        @scope                          = config[:scope]
-        @client_secret                  = config[:client_secret]
-        @client_id                      = config[:client_id]
-        @identity_provider              = config[:identity_provider]
-        @identity_provider_display_name = config[:identity_provider_display_name]
-        @preferred_username             = config[:preferred_username]
-        @enabled                        = config[:enabled]
-        @login_button_label             = config[:login_button_label]
-        @link_button_label              = config[:link_button_label]
-        @link_to                        = config[:link_to]
+        @name                               = name
+        @enabled                            = config[:enabled]
+        @authorize_uri                      = config[:authorize_uri]
+        @token_uri                          = config[:token_uri]
+        @logout_uri                         = config[:logout_uri]
+        @scope                              = config[:scope]
+        @client_secret                      = config[:client_secret]
+        @client_id                          = config[:client_id]
+        @identity_provider_key              = config[:identity_provider_key]
+        @identity_provider_display_name_key = config[:identity_provider_display_name_key]
+        @preferred_username_key             = config[:preferred_username_key]
+        @help_label                         = config[:help_label]
+        @help_uri                           = config[:help_uri]
       end
       @oidc_config << oidc if !errors.any?
     end

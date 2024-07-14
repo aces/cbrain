@@ -124,9 +124,9 @@
             <% end %>
           </p>
         <% end %>
-        <% if oidc.link_to && oidc.link_to_uri %>
+        <% if oidc.help_label && oidc.help_uri %>
           <p class="field_note">
-            Learn more at <%= link_to oidc.link_to, oidc.link_to_uri, :class => "globus_home_link" %>
+            Learn more at <%= link_to oidc.help_label, oidc.help_uri, :class => "globus_home_link" %>
           </p>
         <% end %>
         <% else %>
