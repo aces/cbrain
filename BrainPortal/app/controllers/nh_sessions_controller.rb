@@ -156,9 +156,9 @@ class NhSessionsController < NeurohubApplicationController
     if current_user
       if ! user_can_link_to_oidc_identity?(oidc, current_user, identity_struct)
         Rails.logger.error("User #{current_user.login} attempted authentication " +
-                           "with unallowed #{oidc.name} identity provider " +
+                           "with unallowed identity provider" +
                            identity_struct[oidc.identity_provider_display_name])
-        flash[:error] = "Error: your account can only authenticate with the following #{oidc.name} providers: " +
+        flash[:error] = "Error: your account can only authenticate with the following providers: " +
                         "#{allowed_oidc_provider_names(current_user).join(", ")}"
         redirect_to myaccount_path
         return

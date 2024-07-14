@@ -24,8 +24,7 @@ class OidcConfig
 
   attr_reader :name, :authorize_uri, :token_uri, :logout_uri, :scope, :client_secret, :client_id,
               :identity_provider, :identity_provider_display_name, :preferred_username,
-              :enabled, :login_button_label, :link_button_label, :link_to, :link_to_uri,
-              :cb_login_uri, :nh_login_uri
+              :enabled, :login_button_label, :link_button_label, :link_to, :link_to_uri
 
   def self.load_from_file(path=Rails.root + "config/oidc.yml")
     @oidc_config = []
@@ -85,7 +84,7 @@ class OidcConfig
   end
 
   def self.find_by_name(name)
-    @oidc_config.detect { |oidc| oidc.name == name }
+    self.all.detect { |oidc| oidc.name == name }
   end
 
   def self.find_by_state(state)
@@ -103,13 +102,38 @@ class OidcConfig
     (self.name.downcase + "_provider_id").to_sym
   end
 
+  def linked_provider_id(user) #:nodoc:
+    user.meta[self.provider_id_key()]
+  end
+
+  def set_linked_provider_id(user, provider_id) #:nodoc:
+    user.meta[self.provider_id_key()] = provider_id
+  end
+
   def provider_name_key #:nodoc:
    (self.name.downcase + "_provider_name").to_sym
+  end
+
+  def linked_provider_name(user) #:nodoc:
+    user.meta[self.provider_name_key()]
+  end
+
+  def set_linked_provider_name(user, provider_name) #:nodoc:
+    user.meta[self.provider_name_key()] = provider_name
   end
 
   def preferred_username_key #:nodoc:
     (self.name.downcase + "_preferred_username").to_sym
   end
 
+  def linked_preferred_username(user) #:nodoc:
+    user.meta[self.preferred_username_key()]
+  end
+
+  def set_linked_preferred_username(user, preferred_username) #:nodoc:
+    user.meta[self.preferred_username_key()] = preferred_username
+  end 
+
 end
+
 

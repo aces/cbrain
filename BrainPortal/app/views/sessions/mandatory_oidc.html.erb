@@ -55,7 +55,7 @@ the link with your CBRAIN account.
 <% end %>
 
 <% @allowed_oidc_providers.each do |oidc| %>
-  <%= link_to "Login with #{oidc.name} (#{oidc.client_id})", @oidc_uris[oidc.name], :class => 'button globus_button' %></br></br>
+  <%= link_to "Login with #{oidc.name}", @oidc_uris[oidc.name], :class => 'button globus_button' %></br></br>
 <% end %>
 
 <% if !@allowed_oidc_providers.empty? %>
@@ -66,6 +66,6 @@ the link with your CBRAIN account.
 <% end %>
 
 <% @allowed_oidc_providers.each do |oidc| %>
-  <%= link_to "Logout from #{oidc.name} (#{oidc.client_id})", oidc.logout_uri, :class => 'button globus_button' %></br></br>
+  <%= link_to "Logout from #{oidc.name}", oidc.logout_uri, :class => 'button globus_button' %></br></br>
 <% end %>
 

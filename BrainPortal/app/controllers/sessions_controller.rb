@@ -59,9 +59,8 @@ class SessionsController < ApplicationController
   # Shows the page that informs the user they MUST link to a openID provider.
   def mandatory_oidc #:nodoc:
     # Restrict @allowed_oidc_providers to allowed providers
-    @allowed_provs          = allowed_oidc_provider_names(current_user)
-    @allowed_oidc_providers = OidcConfig.enabled.select { |oidc| @allowed_provs.include?(oidc.client_id) }
-    @oidc_uris       = generate_oidc_login_uri(@allowed_oidc_providers, globus_url)
+    @oidc_providers = OidcConfig.enabled
+    @oidc_uris      = generate_oidc_login_uri(@oidc_providers, globus_url)
 
     respond_to do |format|
       format.html
@@ -79,7 +78,7 @@ class SessionsController < ApplicationController
     if ! all_ok
       @oidc_providers = OidcConfig.enabled
       @oidc_uris      = generate_oidc_login_uri(@oidc_providers, globus_url)
-      
+
       auth_failed()
       return
     end
@@ -149,7 +148,7 @@ class SessionsController < ApplicationController
   def oidc
     code      = params[:code].presence.try(:strip)
     state     = params[:state].presence || 'wrong'
-  
+
     # Some initial simple validations
     oidc      = OidcConfig.find_by_state(state)
     if !code || state != oidc_current_state(oidc)
@@ -158,7 +157,6 @@ class SessionsController < ApplicationController
 
     # Query OpenID provider; this returns all the info we need at the same time.
     identity_struct = oidc_fetch_token(oidc, code, globus_url) # globus_url is generated from routes
-    
     if !identity_struct
       cb_error "Could not fetch your identity information from #{oidc.name}"
     end
@@ -168,9 +166,9 @@ class SessionsController < ApplicationController
     if current_user
       if ! user_can_link_to_oidc_identity?(oidc, current_user, identity_struct)
         Rails.logger.error("User #{current_user.login} attempted authentication " +
-                           "with unallowed #{oidc.name} identity provider " +
+                           "with unallowed identity provider " +
                            identity_struct[oidc.identity_provider_display_name].to_s)
-        flash[:error] = "Error: your account can only authenticate with the following #{oidc.name} providers: " +
+        flash[:error] = "Error: your account can only authenticate with the following providers: " +
                         "#{allowed_oidc_provider_names(current_user).join(", ")}"
         redirect_to user_path(current_user)
         return
