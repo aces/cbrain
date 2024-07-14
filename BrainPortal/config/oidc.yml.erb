@@ -2,9 +2,9 @@ Keycloak:
   # A OpenID provider can be enabled
   enabled:                            true
   # Configuration of the OpenID provider
-  authorize_uri:                      "http://localhost:8080/realms/lasso-realm/protocol/openid-connect/auth"
-  token_uri:                          "keycloak:8080/realms/lasso-realm/protocol/openid-connect/token"
-  logout_uri:                         "http://localhost:8080/realms/lasso-realm/protocol/openid-connect/logout"
+  authorize_uri:                      "http://localhost:8080/realms/.../protocol/openid-connect/auth"
+  token_uri:                          "keycloak:8080/realms/.../protocol/openid-connect/token"
+  logout_uri:                         "http://localhost:8080/realms/.../protocol/openid-connect/logout"
   # Scope used when called the OpenID provider when autheticate
   scope:                              "openid email profile"
   # OpenID provider id and secret need to be passed via environment variables
