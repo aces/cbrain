@@ -165,7 +165,7 @@
 
   <%= show_table(@user, :as => :user, :header => 'Linked Identities') do |t| %>
 
-    <% @oidc_providers.each do |oidc| %>
+    <% @oidc_configs.each do |oidc| %>
       <%
         oidc_login_uri              = @oidc_uris[oidc.name]
         prov_id                     = oidc.linked_provider_id(@user)

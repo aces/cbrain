@@ -92,8 +92,10 @@ class UsersController < ApplicationController
       .where( "updated_at > ?", SessionHelpers::SESSION_API_TOKEN_VALIDITY.ago )
       .order(:updated_at)
 
-    @oidc_providers = OidcConfig.enabled
-    @oidc_uris      = generate_oidc_login_uri(@oidc_providers, globus_url)
+    # Array of enabled OIDC providers configurations
+    @oidc_configss = OidcConfig.enabled
+    # Hash of OIDC uris with the OIDC name as key
+    @oidc_uris      = generate_oidc_login_uri(@oidc_configs, globus_url)
 
     respond_to do |format|
       format.html # show.html.erb
