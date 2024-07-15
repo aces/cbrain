@@ -134,10 +134,10 @@ class OidcConfig
     user.meta[self.preferred_username_key()] = preferred_username
   end
 
-  def identity_info(oidc, identity_struct)
-    [identity_struct[oidc.identity_provider_display_name_key],
-     identity_struct[oidc.identity_provider_key],
-     identity_struct[oidc.identity_preferred_username_key]]
+  def identity_info(identity_struct)
+    [identity_struct[self.identity_provider_display_name_key],
+     identity_struct[self.identity_provider_key],
+     identity_struct[self.identity_preferred_username_key]]
   end
 
 
