@@ -109,9 +109,9 @@ module GlobusHelpers
         user_can_link_to_oidc_identity?(oidc, user, idstruct)
     end
 
-    provider_id   = identity[oidc.identity_provider]              || cb_error("#{oidc.name}: No identity provider")
-    provider_name = identity[oidc.identity_provider_display_name] || cb_error("#{oidc.name}: No identity provider name")
-    pref_username = identity[oidc.preferred_username]             || cb_error("#{oidc.name}: No preferred username")
+    provider_id   = identity[oidc.identity_provider_key]              || cb_error("#{oidc.name}: No identity provider")
+    provider_name = identity[oidc.identity_provider_display_name_key] || cb_error("#{oidc.name}: No identity provider name")
+    pref_username = identity[oidc.identity_preferred_username_key]             || cb_error("#{oidc.name}: No preferred username")
 
     # Special case for ORCID, because we already have fields for that provider
     # We do NOT do this in the case where the user is forced to auth with OIDC.
@@ -122,9 +122,11 @@ module GlobusHelpers
       return
     end
 
-    user.meta[oidc.provider_id_key]        = provider_id
-    user.meta[oidc.provider_name_key]      = provider_name
-    user.meta[oidc.preferred_username_key] = pref_username
+
+
+    oidc.set_linked_provider_id(user, provider_id)
+    oidc.set_linked_provider_name(user, provider_name)
+    oidc.set_linked_preferred_username(user, pref_username)
     user.addlog("Linked to #{oidc.name} identity: '#{pref_username}' on provider '#{provider_name}'")
   end
 
@@ -136,13 +138,10 @@ module GlobusHelpers
   # Returns nil if they are all allowed
   # Keep reference to globus for backward compability
   def allowed_oidc_provider_names(user)
-    allowed_oidc = user.meta[:allowed_globus_provider_names]
-       .presence
-      &.split(/\s*,\s*/)
-      &.map(&:strip) || []
-
-    # Special case all OidcConfig are allowed
-    allowed_oidc = OidcConfig.enabled.map {|oidc| oidc.client_id } if allowed_oidc.include?('*')
+    user.meta[:allowed_globus_provider_names]
+      .presence
+     &.split(/\s*,\s*/)
+     &.map(&:strip)
   end
 
   def user_can_link_to_oidc_identity?(oidc, user, identity) #:nodoc:
@@ -150,7 +149,7 @@ module GlobusHelpers
 
     return true if allowed.nil?
     return true if allowed.size == 1 && allowed[0] == '*'
-    return true if allowed.include?(oidc.name)
+    return true if allowed.include?(identity[oidc.identity_provider_display_name_key])
 
     false
   end
@@ -164,7 +163,10 @@ module GlobusHelpers
     oidc_providers.any? do |oidc|
       oidc.linked_provider_id(user).present? &&
       oidc.linked_provider_name(user).present? &&
-      oidc.linked_preferred_username(user).present? && allowed_oidc_names.include?(oidc.linked_preferred_username(user))
+      oidc.linked_preferred_username(user).present? && 
+      ( allowed_oidc_names.include?('*') ||  
+        allowed_oidc_names.include?(oidc.linked_provider_name(user))
+      )
     end
   end
 
@@ -231,9 +233,9 @@ module GlobusHelpers
 
   # Removes the recorded OIDC identity for +user+
   def unlink_oidc_identity(oidc, user)
-    user.meta[oidc.provider_id_key]        = nil
-    user.meta[oidc.provider_name_key]      = nil
-    user.meta[oidc.preferred_username_key] = nil
+    oidc.set_linked_provider_id(user, nil)
+    oidc.set_linked_provider_name(user, nil)
+    oidc.set_linked_preferred_username(user, nil)    
     user.addlog("Unlinked #{oidc.name} identity")
   end
 

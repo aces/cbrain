@@ -23,20 +23,20 @@
 class OidcConfig
 
   attr_reader :name, :enabled, :authorize_uri, :token_uri, :logout_uri, :scope, :client_secret, :client_id,
-              :identity_provider_key, :identity_provider_display_name_key, :preferred_username_key,
+              :identity_provider_key, :identity_provider_display_name_key, :identity_preferred_username_key,
               :help_label, :help_uri
 
-  def self.load_from_file(path=Rails.root + "config/oidc.yml")
+  def self.load_from_file(path=Rails.root + "config/oidc.yml.erb")
     @oidc_config = []
 
     return @oidc_config if !File.exist?(path)
 
     loaded_yaml = YAML.load(ERB.new(File.read(path)).result).with_indifferent_access
 
-    needed_keys = %w[name enabled authorize_uri token_uri logout_uri scope client_secret client_id
-                     identity_provider_key identity_provider_display_name_key preferred_username_key]
+    needed_keys = %w[enabled authorize_uri token_uri logout_uri scope client_secret client_id
+                     identity_provider_key identity_provider_display_name_key identity_preferred_username_key]
 
-    errors = []
+    errors = [] 
     loaded_yaml.each do |name, config|
 
       # Check for invalid characters in name (letters case insensitive numbers and underscores only)
@@ -60,7 +60,7 @@ class OidcConfig
         @client_id                          = config[:client_id]
         @identity_provider_key              = config[:identity_provider_key]
         @identity_provider_display_name_key = config[:identity_provider_display_name_key]
-        @preferred_username_key             = config[:preferred_username_key]
+        @identity_preferred_username_key    = config[:identity_preferred_username_key]
         @help_label                         = config[:help_label]
         @help_uri                           = config[:help_uri]
       end

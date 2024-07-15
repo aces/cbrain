@@ -59,6 +59,7 @@ class SessionsController < ApplicationController
   # Shows the page that informs the user they MUST link to a openID provider.
   def mandatory_oidc #:nodoc:
     # Restrict @allowed_oidc_providers to allowed providers
+    @allowed_provs  = allowed_oidc_provider_names(current_user)
     @oidc_providers = OidcConfig.enabled
     @oidc_uris      = generate_oidc_login_uri(@oidc_providers, globus_url)
 
@@ -167,7 +168,7 @@ class SessionsController < ApplicationController
       if ! user_can_link_to_oidc_identity?(oidc, current_user, identity_struct)
         Rails.logger.error("User #{current_user.login} attempted authentication " +
                            "with unallowed identity provider " +
-                           identity_struct[oidc.identity_provider_display_name].to_s)
+                           identity_struct[oidc.identity_provider_display_name_key].to_s)
         flash[:error] = "Error: your account can only authenticate with the following providers: " +
                         "#{allowed_oidc_provider_names(current_user).join(", ")}"
         redirect_to user_path(current_user)
