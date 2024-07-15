@@ -297,9 +297,6 @@ Rails.application.routes.draw do
     get   '/orcid'                  => 'nh_sessions#orcid'
     post  '/unlink_orcid'           => 'nh_users#unlink_orcid'
 
-    # OIDC authentication
-    post '/nh_unlink_oidc/:oidc_name'  => 'nh_sessions#nh_unlink_oidc', as: 'nh_unlink_oidc'
- 
     # Sessions
     resource  :nh_session,   :only => [ :new, :create, :destroy ] do
       collection do
