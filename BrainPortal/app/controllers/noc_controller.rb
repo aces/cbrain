@@ -200,7 +200,9 @@ class NocController < ApplicationController
 
     # RemoteResources, including the portal itself
     @myself        = RemoteResource.current_resource
-    @bourreaux     = Bourreau.where([ "updated_at > ?", offline_resource_limit.ago ]).order(:name).all # must have been toggled within a month
+    acttasks_bids  = CbrainTask.active.group(:bourreau_id).pluck(:bourreau_id)
+    updated_bids   = Bourreau.where([ "updated_at > ?", offline_resource_limit.ago ]).pluck(:id) # must have been toggled within a month.
+    @bourreaux     = Bourreau.where(:id => (acttasks_bids | updated_bids)).order(:name).all
 
     # Some numbers: active users, active tasks, sum of files sizes being transferred, sum of CPU time
     @active_users  = CbrainSession.session_model
