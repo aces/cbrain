@@ -47,25 +47,25 @@ the link with your CBRAIN account.
 </ul>
 
 
-<% if @oidc_providers.empty? %>
+<% if @oidc_configs.empty? %>
   <p class="short_paragraphs">
   No identity provider is currently available for your account.
   Please contact the CBRAIN administrator for more information.
   </p>
 <% end %>
 
-<% @oidc_providers.each do |oidc| %>
+<% @oidc_configs.each do |oidc| %>
   <%= link_to "Login with #{oidc.name}", @oidc_uris[oidc.name], :class => 'button globus_button' %></br></br>
 <% end %>
 
-<% if !@oidc_providers.empty? %>
+<% if !@oidc_configs.empty? %>
 <p class="short_paragraphs">
   If you already are logged in using a different identity provider, you
   might want to log out first. This can be accomplished by the button below:
 <p>
 <% end %>
 
-<% @oidc_providers.each do |oidc| %>
+<% @oidc_configs.each do |oidc| %>
   <%= link_to "Logout from #{oidc.name}", oidc.logout_uri, :class => 'button globus_button' %></br></br>
 <% end %>
 

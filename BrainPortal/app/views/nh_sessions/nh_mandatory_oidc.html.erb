@@ -79,7 +79,7 @@
             might want to log out first. This can be accomplished by the button below:
           </p>
 
-          <% @oidc_config.each do |oidc| %>
+          <% @oidc_configs.each do |oidc| %>
             <p class="btn-solid globus bg-warning-bg">
               <%= link_to "Logout from #{oidc.name}", oidc.logout_uri, :class => '' %>
             </p>

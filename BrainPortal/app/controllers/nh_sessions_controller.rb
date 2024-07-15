@@ -154,7 +154,7 @@ class NhSessionsController < NeurohubApplicationController
     end
     Rails.logger.info "#{oidc.name} identity struct:\n#{identity_struct.pretty_inspect.strip}"
 
-    [identity_provider_display_name, _, _ ] = identity_info(oidc, identity_struct)
+    identity_provider_display_name, _, _ = oidc.identity_info(identity_struct)
     # Either record the identity...
     if current_user
       if ! user_can_link_to_oidc_identity?(oidc, current_user, identity_struct)
