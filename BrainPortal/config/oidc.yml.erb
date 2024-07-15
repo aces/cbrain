@@ -1,0 +1,19 @@
+Keycloak:
+  # A OpenID provider can be enabled
+  enabled:                            true
+  # Configuration of the OpenID provider
+  authorize_uri:                      "http://localhost:8080/realms/.../protocol/openid-connect/auth"
+  token_uri:                          "keycloak:8080/realms/.../protocol/openid-connect/token"
+  logout_uri:                         "http://localhost:8080/realms/.../protocol/openid-connect/logout"
+  # Scope used when called the OpenID provider when autheticate
+  scope:                              "openid email profile"
+  # OpenID provider id and secret need to be passed via environment variables
+  client_id:                          <%= ENV["keycloak_client_id"] %>
+  client_secret:                      <%= ENV["keycloak_secret_key"] %>
+  # Need to map the get back the value from the returned identity
+  identity_provider_key:              'aud'
+  identity_provider_display_name_key: 'azp'
+  identity_preferred_username_key:    'preferred_username'
+  # For documentation
+  help_label:                        'Keycloak'
+  help_uri:                          'https://www.keycloak.org/'

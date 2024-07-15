@@ -68,25 +68,19 @@
       <td class="field"><%= link_to "Forgot your password?", request_password_users_path, :class  => "action_link" %></td>
     </tr>
 
-    <% if @globus_uri %>
-
-    <tr>
-      <td colspan="2">&nbsp;</td>
-    </tr>
-
-    <tr>
-      <td>
-          <strong>OR</strong>
-      </td>
-      <td class="field">
-        <%= link_to "Sign In With #{@oidc_client}", @globus_uri, :class => 'button globus_button' %>
-        <div class="field_explanation">
-          (Only available if you have already linked your<br>
-          CBRAIN account to a <%= @oidc_client %> identity)
-        </div>
-      </td>
-    </tr>
-
+    <% @oidc_providers.each do |oidc| %>
+      <tr>
+        <td>
+            <strong>OR</strong>
+        </td>
+        <td class="field">
+          <%= link_to "Sign In With #{oidc.name}", @oidc_uris[oidc.name], :class => 'button globus_button' %>
+          <div class="field_explanation">
+            (Only available if you have already linked your<br>
+            CBRAIN account to a <%= oidc.name %> identity)
+          </div>
+        </td>
+      </tr>
     <% end %>
 
   </table>

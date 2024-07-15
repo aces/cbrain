@@ -20,6 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+require 'oidc_config'
+
 #Controller for the User resource.
 class NhUsersController < NeurohubApplicationController
 
@@ -40,6 +42,8 @@ class NhUsersController < NeurohubApplicationController
 
   def myaccount #:nodoc:
     @user=current_user
+    @oidc_providers = OidcConfig.enabled
+    @oidc_uris      = generate_oidc_login_uri(@oidc_providers, nh_globus_url)
     @orcid_canonical = orcid_canonize(@user.meta[:orcid])
     render :show
   end
@@ -54,12 +58,13 @@ class NhUsersController < NeurohubApplicationController
 
     @orcid_canonical = orcid_canonize(@user.meta[:orcid])
     @orcid_uri       = orcid_login_uri() # set to nil if orcid not configured by admin
-    @globus_uri      = globus_login_uri(nh_globus_url) # set to nil if globus not configured by admin
+    @oidc_providers  = OidcConfig.enabled
+    @oidc_uris       = generate_oidc_login_uri(@oidc_providers, nh_globus_url)
   end
 
   def change_password #:nodoc:
     @user = current_user
-    if user_must_link_to_globus?(@user)
+    if user_must_link_to_oidc?(@user)
        cb_error "Your account can only authenticate with Globus identities.", :redirect => { :action => :myaccount }
     end
   end
@@ -81,7 +86,7 @@ class NhUsersController < NeurohubApplicationController
     attr_to_update.delete(:zenodo_main_token)    if attr_to_update[:zenodo_main_token].blank?
 
     # Do not update password if user must use globus
-    if user_must_link_to_globus?(@user)
+    if user_must_link_to_oidc?(@user)
       flash[:error] = "You cannot change the password for your account." if attr_to_update[:password].present?
       attr_to_update.delete(:password)
       attr_to_update.delete(:password_confirmation)

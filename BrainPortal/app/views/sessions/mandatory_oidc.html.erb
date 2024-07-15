@@ -22,16 +22,16 @@
 #
 -%>
 
-<% title 'Mandatory Globus Link' %>
+<% title 'Mandatory Identity provider Link' %>
 
-<h2>Before you can continue, your CBRAIN account <em>must</em> be linked to a Globus identity provider.</h2>
+<h2>Before you can continue, your CBRAIN account <em>must</em> be linked to an identity provider.</h2>
 
 <h5>Explanations</h5>
 
 <p class="short_paragraphs">
 When you click on the button below, your browser will be redirected
-to a Globus login page; from there you can choose one of the
-globus-support identity providers. This will in turn redirect you
+to an identity provider login page; from there you can choose one of the
+supported identity providers. This will in turn redirect you
 to the provider's own login page. Once you've successfully authenticated
 there, your browser will be redirected back here to finalize
 the link with your CBRAIN account.
@@ -41,15 +41,31 @@ the link with your CBRAIN account.
 
 <ul>
   <% @allowed_provs.each do |provname| %>
-    <% provname = '(Any Globus identity provider)' if provname == '*' %>
+    <% provname = '(Any identity provider)' if provname == '*' %>
     <li><%= provname %></li>
   <% end %>
 </ul>
 
-<%= link_to 'Link your CBRAIN account to Globus', @globus_uri, :class => 'button globus_button' %>
 
+<% if @oidc_providers.empty? %>
+  <p class="short_paragraphs">
+  No identity provider is currently available for your account.
+  Please contact the CBRAIN administrator for more information.
+  </p>
+<% end %>
+
+<% @oidc_providers.each do |oidc| %>
+  <%= link_to "Login with #{oidc.name}", @oidc_uris[oidc.name], :class => 'button globus_button' %></br></br>
+<% end %>
+
+<% if !@oidc_providers.empty? %>
 <p class="short_paragraphs">
-If you already are logged in on Globus using a different identity provider, your
-might want to log out first. This can be accomplished by the button below:
+  If you already are logged in using a different identity provider, you
+  might want to log out first. This can be accomplished by the button below:
 <p>
-<%= link_to 'Logout from all Globus identities', @globus_logout, :class => 'button globus_button' %>
+<% end %>
+
+<% @oidc_providers.each do |oidc| %>
+  <%= link_to "Logout from #{oidc.name}", oidc.logout_uri, :class => 'button globus_button' %></br></br>
+<% end %>
+
