@@ -22,7 +22,6 @@
 
 require 'ipaddr'
 require 'http_user_agent'
-require 'oidc_config'
 
 # Sesssions controller for the BrainPortal interface
 # This controller handles the login/logout function of the site.
@@ -32,8 +31,6 @@ require 'oidc_config'
 class SessionsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-
-  include GlobusHelpers
 
   api_available :only => [ :new, :show, :create, :destroy ]
 
@@ -46,8 +43,10 @@ class SessionsController < ApplicationController
     ua               = HttpUserAgent.new(rawua)
     @browser_name    = ua.browser_name    || "(unknown browser name)"
     @browser_version = ua.browser_version || "(unknown browser version)"
-    @oidc_providers  = OidcConfig.enabled
-    @oidc_uris       = generate_oidc_login_uri(@oidc_providers, globus_url)
+    # Array of enabled OIDC providers configurations
+    @oidc_configs    = OidcConfig.enabled
+    # Hash of OIDC uris with the OIDC name as key
+    @oidc_uris       = generate_oidc_login_uri(@oidc_configs, globus_url)
 
     respond_to do |format|
       format.html
@@ -59,9 +58,11 @@ class SessionsController < ApplicationController
   # Shows the page that informs the user they MUST link to a openID provider.
   def mandatory_oidc #:nodoc:
     # Restrict @allowed_oidc_providers to allowed providers
-    @allowed_provs  = allowed_oidc_provider_names(current_user)
-    @oidc_providers = OidcConfig.enabled
-    @oidc_uris      = generate_oidc_login_uri(@oidc_providers, globus_url)
+    @allowed_prov_names = allowed_oidc_provider_names(current_user)
+    # Array of enabled OIDC providers configurations
+    @oidc_configs       = OidcConfig.enabled
+    # Array of URIs to redirect to OIDC providers
+    @oidc_uris          = generate_oidc_login_uri(@oidc_configs, globus_url)
 
     respond_to do |format|
       format.html
@@ -77,8 +78,10 @@ class SessionsController < ApplicationController
     all_ok = create_from_user(user, 'CBRAIN')
 
     if ! all_ok
-      @oidc_providers = OidcConfig.enabled
-      @oidc_uris      = generate_oidc_login_uri(@oidc_providers, globus_url)
+      # Array of enabled OIDC providers configurations
+      @oidc_configs   = OidcConfig.enabled
+      # Hash of OIDC uris with the OIDC name as key
+      @oidc_uris      = generate_oidc_login_uri(@oidc_configs, globus_url)
 
       auth_failed()
       return
@@ -96,8 +99,10 @@ class SessionsController < ApplicationController
 
   def show #:nodoc:
     if current_user
-      @oidc_providers  = OidcConfig.enabled || []
-      @oidc_uris       = generate_oidc_login_uri(@oidc_providers, globus_url)
+      # Array of enabled OIDC providers configurations
+      @oidc_configs = OidcConfig.enabled
+      # Hash of OIDC uris with the OIDC name as key
+      @oidc_uris    = generate_oidc_login_uri(@oidc_configs, globus_url)
 
       respond_to do |format|
         format.html { head   :ok                                                         }
@@ -144,7 +149,7 @@ class SessionsController < ApplicationController
 
 
   # This action receives a JSON authentication
-  # request from OpenID and uses it to record or verify
+  # request from an OpenID and uses it to record or verify
   # a user's identity.
   def oidc
     code      = params[:code].presence.try(:strip)
@@ -152,7 +157,7 @@ class SessionsController < ApplicationController
 
     # Some initial simple validations
     oidc      = OidcConfig.find_by_state(state)
-    if !code || state != oidc_current_state(oidc)
+    if !code || !state || state != oidc_current_state(oidc)
       cb_error "#{oidc.name} session is out of sync with CBRAIN"
     end
 
@@ -163,12 +168,13 @@ class SessionsController < ApplicationController
     end
     Rails.logger.info "#{oidc.name} identity struct:\n#{identity_struct.pretty_inspect.strip}"
 
+    [identity_provider_display_name, _, _ ] = identity_info(oidc, identity_struct)
     # Either record the identity...
     if current_user
       if ! user_can_link_to_oidc_identity?(oidc, current_user, identity_struct)
         Rails.logger.error("User #{current_user.login} attempted authentication " +
-                           "with unallowed identity provider " +
-                           identity_struct[oidc.identity_provider_display_name_key].to_s)
+                           "with unallowed identity provider " + identity_provider_display_name
+                          )
         flash[:error] = "Error: your account can only authenticate with the following providers: " +
                         "#{allowed_oidc_provider_names(current_user).join(", ")}"
         redirect_to user_path(current_user)
@@ -194,7 +200,7 @@ class SessionsController < ApplicationController
       return
     end
 
-    login_from_oidc_user(user, identity_struct[oidc.identity_provider_display_name])
+    login_from_oidc_user(user, identity_provider_display_name)
 
   rescue CbrainException => ex
     flash[:error] = "#{ex.message}"
@@ -211,8 +217,9 @@ class SessionsController < ApplicationController
   def unlink_oidc #:nodoc:
     redirect_to start_page_path unless current_user
 
-    oidc = OidcConfig.find_by_name(params[:oidc_name])
-    unlink_oidc_identity(oidc, current_user)
+    oidc_name = params[:oidc_name]
+    oidc      = OidcConfig.find_by_name(oidc_name)
+    unlink_oidc_identity(oidc, current_user) if oidc
 
     flash[:notice] = "Your account is no longer linked to any #{oidc.name} identity"
     redirect_to user_path(current_user)
@@ -279,7 +286,8 @@ class SessionsController < ApplicationController
   # Send a proper HTTP error code
   # when a user has not properly authenticated
   def auth_failed
-    @oidc_providers = OidcConfig.enabled
+    # Array of enabled OIDC providers configurations
+    @oidc_configs = OidcConfig.enabled
     respond_to do |format|
       format.html { render :action => 'new', :status => :ok } # should it be :unauthorized ?
       format.json { head   :unauthorized }

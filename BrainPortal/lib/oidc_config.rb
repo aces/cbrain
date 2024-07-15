@@ -36,7 +36,7 @@ class OidcConfig
     needed_keys = %w[enabled authorize_uri token_uri logout_uri scope client_secret client_id
                      identity_provider_key identity_provider_display_name_key identity_preferred_username_key]
 
-    errors = [] 
+    errors = []
     loaded_yaml.each do |name, config|
 
       # Check for invalid characters in name (letters case insensitive numbers and underscores only)
@@ -47,7 +47,7 @@ class OidcConfig
       errors << "Missing keys #{missing_keys.join(", ")} in OIDC config: #{name}" if missing_keys.any?
       # Check if name is already used
       errors << "OIDC name #{name} is already used (ignore entry)" if @oidc_config.map(&:name).include?(name)
- 
+
       oidc = self.new
       oidc.instance_eval do
         @name                               = name
@@ -132,7 +132,16 @@ class OidcConfig
 
   def set_linked_preferred_username(user, preferred_username) #:nodoc:
     user.meta[self.preferred_username_key()] = preferred_username
-  end 
+  end
+
+  def identity_info(oidc, identity_struct)
+    [identity_struct[oidc.identity_provider_display_name_key],
+     identity_struct[oidc.identity_provider_key],
+     identity_struct[oidc.identity_preferred_username_key]]
+  end
+
+
+
 
 end
 

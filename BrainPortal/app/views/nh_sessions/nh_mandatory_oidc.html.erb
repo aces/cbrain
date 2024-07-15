@@ -56,12 +56,12 @@
         <div>
 
           <p class="card-label">The identity providers that are allowed for your NeuroHub account are:</p>
-          <% @allowed_provs.each do |provname| %>
+          <% @allowed_prov_names.each do |provname| %>
             <% provname = '(Any OpenID identity provider)' if provname == '*' %>
             <p class="card-text">&bull; <%= provname %></p>
           <% end %>
 
-          <% @oidc_providers.each do |oidc| %>
+          <% @oidc_configs.each do |oidc| %>
             <p class="card-text">
               <%= link_to "Login with #{oidc.name}", @oidc_uris[oidc.name], :class => 'btn-solid globus bg-warning-bg' %></br>
             </p>
@@ -79,7 +79,7 @@
             might want to log out first. This can be accomplished by the button below:
           </p>
 
-          <% @oidc_providers.each do |oidc| %>
+          <% @oidc_config.each do |oidc| %>
             <p class="btn-solid globus bg-warning-bg">
               <%= link_to "Logout from #{oidc.name}", oidc.logout_uri, :class => '' %>
             </p>

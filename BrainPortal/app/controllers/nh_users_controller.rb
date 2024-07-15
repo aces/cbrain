@@ -20,9 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'oidc_config'
-
-#Controller for the User resource.
+# Controller for the User resource.
 class NhUsersController < NeurohubApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -41,9 +39,11 @@ class NhUsersController < NeurohubApplicationController
   end
 
   def myaccount #:nodoc:
-    @user=current_user
-    @oidc_providers = OidcConfig.enabled
-    @oidc_uris      = generate_oidc_login_uri(@oidc_providers, nh_globus_url)
+    @user            = current_user
+    # Array of enabled OIDC providers configurations
+    @oidc_configs    = OidcConfig.enabled
+    # Hash of OIDC uris with the OIDC name as key
+    @oidc_uris       = generate_oidc_login_uri(@oidc_configs, nh_globus_url)
     @orcid_canonical = orcid_canonize(@user.meta[:orcid])
     render :show
   end
@@ -58,8 +58,10 @@ class NhUsersController < NeurohubApplicationController
 
     @orcid_canonical = orcid_canonize(@user.meta[:orcid])
     @orcid_uri       = orcid_login_uri() # set to nil if orcid not configured by admin
-    @oidc_providers  = OidcConfig.enabled
-    @oidc_uris       = generate_oidc_login_uri(@oidc_providers, nh_globus_url)
+    # Array of enabled OIDC providers configurations
+    @oidc_configs    = OidcConfig.enabled
+    # Hash of OIDC uris with the OIDC name as key
+    @oidc_uris       = generate_oidc_login_uri(@oidc_configs, nh_globus_url)
   end
 
   def change_password #:nodoc:

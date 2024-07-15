@@ -108,7 +108,7 @@
     </fieldset>
   <% end %>
 
-  <% @oidc_providers.each do |oidc| %>
+  <% @oidc_configs.each do |oidc| %>
     <fieldset>
       <%= f.label(oidc.name.to_sym, "#{oidc.name} Identity") %>
       <%

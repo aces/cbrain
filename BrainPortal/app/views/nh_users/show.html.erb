@@ -158,7 +158,7 @@
     </div>
 
     <div class="card-row">
-      <% @oidc_providers.each do |oidc| %>
+      <% @oidc_configs.each do |oidc| %>
         <%
           prov_id                     = oidc.linked_provider_id(@user)
           prov_name                   = oidc.linked_provider_name(@user)

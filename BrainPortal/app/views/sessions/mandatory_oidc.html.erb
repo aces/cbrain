@@ -40,7 +40,7 @@ the link with your CBRAIN account.
 <h5>The identity providers that are allowed for your account are:</h5>
 
 <ul>
-  <% @allowed_provs.each do |provname| %>
+  <% @allowed_prov_names.each do |provname| %>
     <% provname = '(Any identity provider)' if provname == '*' %>
     <li><%= provname %></li>
   <% end %>
