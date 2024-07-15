@@ -228,7 +228,7 @@ module GlobusHelpers
     # We need a user which match both the preferred username and provider_id
     users = User.find_all_by_meta_data(oidc.preferred_username_key, pref_username)
       .to_a
-      .select { |user| user.meta[oidc.provider_id_key] == provider_id }
+      .select { |user|  oidc.linked_provider_id(@user) == provider_id }
   end
 
   # Removes the recorded OIDC identity for +user+
