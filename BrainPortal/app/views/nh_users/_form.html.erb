@@ -112,9 +112,9 @@
     <fieldset>
       <%= f.label(oidc.name.to_sym, "#{oidc.name} Identity") %>
       <%
-        prov_id                     = @user.meta[oidc.provider_id_key]
-        prov_name                   = @user.meta[oidc.provider_name_key]
-        prov_user                   = @user.meta[oidc.preferred_username_key]
+        prov_id                     = oidc.linked_provider_id(@user)
+        prov_name                   = oidc.linked_provider_name(@user)
+        prov_user                   = oidc.linked_preferred_username(@user)
       %>
       <% if prov_user.blank? %>
         <% if @user.id == current_user.id  # show button only on user own page, hide on other users pages %>
