@@ -168,9 +168,9 @@
     <% @oidc_providers.each do |oidc| %>
       <%
         oidc_login_uri              = @oidc_uris[oidc.name]
-        prov_id                     = @user.meta[oidc.provider_id_key]
-        prov_name                   = @user.meta[oidc.provider_name_key]
-        prov_user                   = @user.meta[oidc.preferred_username_key]
+        prov_id                     = oidc.linked_provider_id(@user)
+        prov_name                   = oidc.linked_provider_name(@user)
+        prov_user                   = oidc.linked_preferred_username(@user)
       %>
 
       <% t.cell "#{oidc.name} Provider", :show_width => 2 do %>
