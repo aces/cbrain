@@ -18,8 +18,8 @@ Keycloak:
   # Scope used when called the OpenID provider for authetication
   scope:                              "openid email profile"
   # OpenID provider id and secret need to be passed via environment variables
-  client_id:                          <%= ENV.delete["keycloak_client_id"] %>
-  client_secret:                      <%= ENV.delete["keycloak_secret_key"] %>
+  client_id:                          <%= ENV.delete("keycloak_client_id") %>
+  client_secret:                      <%= ENV.delete("keycloak_secret_key") %>
   # Will be used to extract information from the returned identity
   identity_provider_key:              'aud'
   identity_provider_display_name_key: 'azp'
@@ -39,8 +39,8 @@ Globus:
   # Scope used when called the OpenID provider for authetication
   scope:                              "urn:globus:auth:scope:auth.globus.org:view_identities openid email profile"
   # OpenID provider id and secret need to be passed via environment variables
-  client_id:                          <%= ENV.delete["globus_client_id"] %>
-  client_secret:                      <%= ENV.delete["globus_secret_key"] %>
+  client_id:                          <%= ENV.delete("globus_client_id") %>
+  client_secret:                      <%= ENV.delete("globus_secret_key") %>
   # Will be used to extract information from the returned identity
   identity_provider_key:              'identity_provider'
   identity_provider_display_name_key: 'identity_provider_display_name'
