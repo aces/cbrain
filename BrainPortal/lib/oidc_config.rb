@@ -20,6 +20,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+#
+# Used to load and store OIDC configuration from a YAML file
+# Look at config/oidc.yml.erb for an example of the file format
+#
+# The file is loaded when the BrainPortal application starts and information are stored in memory.
+#
+# It include utility methods to acces/set specific OIDC information, to access/set user meta data
+# information related to OIDC, and to extract identity information from the OIDC response.
+#
 class OidcConfig
 
   attr_reader :name, :enabled, :authorize_uri, :token_uri, :logout_uri, :scope, :client_secret, :client_id,
@@ -44,9 +53,9 @@ class OidcConfig
       # Check for missing keys
       config_keys  = config.keys.select {|k| config[k] }
       missing_keys = (needed_keys - config_keys)
-      errors << "Missing keys #{missing_keys.join(", ")} in OIDC config: #{name}" if missing_keys.any?
+      errors << "Missing keys #{missing_keys.join(", ")} in OIDC config: #{name}" if missing_keys.any? && config[:enabled]
       # Check if name is already used
-      errors << "OIDC name #{name} is already used (ignore entry)" if @oidc_config.map(&:name).include?(name)
+      errors << "OIDC name #{name} is already used (ignore entry)" if @oidc_config.map(&:name).include?(name) && config[:enabled]
 
       oidc = self.new
       oidc.instance_eval do
@@ -139,9 +148,6 @@ class OidcConfig
      identity_struct[self.identity_provider_key],
      identity_struct[self.identity_preferred_username_key]]
   end
-
-
-
 
 end
 

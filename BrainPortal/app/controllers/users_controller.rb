@@ -93,9 +93,9 @@ class UsersController < ApplicationController
       .order(:updated_at)
 
     # Array of enabled OIDC providers configurations
-    @oidc_configss = OidcConfig.enabled
+    @oidc_configs = OidcConfig.enabled
     # Hash of OIDC uris with the OIDC name as key
-    @oidc_uris      = generate_oidc_login_uri(@oidc_configs, globus_url)
+    @oidc_uris    = generate_oidc_login_uri(@oidc_configs, globus_url)
 
     respond_to do |format|
       format.html # show.html.erb

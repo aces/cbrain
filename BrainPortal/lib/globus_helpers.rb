@@ -109,9 +109,10 @@ module GlobusHelpers
         user_can_link_to_oidc_identity?(oidc, user, idstruct)
     end
 
-    provider_id   = identity[oidc.identity_provider_key]              || cb_error("#{oidc.name}: No identity provider")
-    provider_name = identity[oidc.identity_provider_display_name_key] || cb_error("#{oidc.name}: No identity provider name")
-    pref_username = identity[oidc.identity_preferred_username_key]             || cb_error("#{oidc.name}: No preferred username")
+    identity_provider_id, identity_provider_name, identity_provider_username = oidc.identity_info(identity)
+    provider_name = identity_provider_name     || cb_error("#{oidc.name}: No identity provider name")
+    provider_id   = identity_provider_id       || cb_error("#{oidc.name}: No identity provider")
+    pref_username = identity_provider_username || cb_error("#{oidc.name}: No preferred username")
 
     # Special case for ORCID, because we already have fields for that provider
     # We do NOT do this in the case where the user is forced to auth with OIDC.
@@ -163,8 +164,8 @@ module GlobusHelpers
     oidc_providers.any? do |oidc|
       oidc.linked_provider_id(user).present? &&
       oidc.linked_provider_name(user).present? &&
-      oidc.linked_preferred_username(user).present? && 
-      ( allowed_oidc_names.include?('*') ||  
+      oidc.linked_preferred_username(user).present? &&
+      ( allowed_oidc_names.include?('*') ||
         allowed_oidc_names.include?(oidc.linked_provider_name(user))
       )
     end
@@ -181,8 +182,10 @@ module GlobusHelpers
   end
 
   def find_user_with_oidc_identity(oidc, identity)
-    provider_name = identity[oidc.identity_provider_display_name]
-    pref_username = identity[oidc.preferred_username]
+    _, identity_provider_name, identity_provider_username = oidc.identity_info(identity)
+
+    provider_name = identity_provider_name
+    pref_username = identity_provider_username
 
     id_set = set_of_identities(identity) # an OIDC record can contain several identities
 
@@ -232,10 +235,10 @@ module GlobusHelpers
   end
 
   # Removes the recorded OIDC identity for +user+
-  def unlink_oidc_identity(oidc, user)
+  def unlink_oidc_identity(oidc, user) #:nodoc:
     oidc.set_linked_provider_id(user, nil)
     oidc.set_linked_provider_name(user, nil)
-    oidc.set_linked_preferred_username(user, nil)    
+    oidc.set_linked_preferred_username(user, nil)
     user.addlog("Unlinked #{oidc.name} identity")
   end
 
