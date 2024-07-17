@@ -179,7 +179,7 @@
             <strong>Provider name:</strong> <%= prov_name %><br>
             <strong>Provider user:</strong> <%= prov_user %><br>
             <% if @user.id == current_user.id %>
-              <%= link_to("Unlink this #{oidc.name} identity", unlink_oidc_path(oidc.name, :from => "cb"),
+              <%= link_to("Unlink this #{oidc.name} identity", unlink_oidc_path(oidc.name),
                             :class  => "button",
                             :method => :post,
                             :data   => { :confirm => "Are you sure you want to unlink your account with this #{oidc.name} identity?" }
