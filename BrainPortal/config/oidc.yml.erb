@@ -9,7 +9,7 @@
 
 Keycloak:
   # A OpenID provider can be enabled
-  enabled:                            true
+  enabled:                            false
   # Configuration of the OpenID provider (local Keycloak on the following example)
   # <realm-name> should be replaced by the realm name you want to use
   authorize_uri:                      "http://localhost:8080/realms/<realm-name>/protocol/openid-connect/auth"
@@ -31,7 +31,7 @@ Keycloak:
 
 Globus:
   # A OpenID provider can be enabled
-  enabled:                            true
+  enabled:                            false
   # Configuration of the OpenID provider pointing to Globus
   authorize_uri:                      "https://auth.globus.org/v2/oauth2/authorize"
   token_uri:                          "https://auth.globus.org/v2/oauth2/token"
