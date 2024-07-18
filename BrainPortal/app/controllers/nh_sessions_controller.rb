@@ -33,7 +33,7 @@ class NhSessionsController < NeurohubApplicationController
   def new #:nodoc:
     @orcid_uri      = orcid_login_uri()
     # Array of enabled OIDC providers configurations
-    @oidc_configs   = OidcConfig.enabled
+    @oidc_configs   = OidcConfig.all
     # Hash of OIDC uris with the OIDC name as key
     @oidc_uris      = generate_oidc_login_uri(@oidc_configs, nh_globus_url)
   end
@@ -153,13 +153,15 @@ class NhSessionsController < NeurohubApplicationController
       cb_error "Could not fetch your identity information from #{oidc.name}"
     end
     Rails.logger.info "#{oidc.name} identity struct:\n#{identity_struct.pretty_inspect.strip}"
+    identity_provider_id, identity_provider_name, username = oidc.identity_info(identity_struct)
+    cb_error "Identity structure is missing some information. Contact the admins" if
+      identity_provider_id.blank? || identity_provider_name.blank? || username.blank?
 
-    identity_provider_display_name, _, _ = oidc.identity_info(identity_struct)
     # Either record the identity...
     if current_user
       if ! user_can_link_to_oidc_identity?(oidc, current_user, identity_struct)
         Rails.logger.error("User #{current_user.login} attempted authentication " +
-                           "with unallowed identity provider" + identity_provider_display_name
+                           "with unallowed identity provider" + identity_provider_name
                           )
         flash[:error] = "Error: your account can only authenticate with the following providers: " +
                         "#{allowed_oidc_provider_names(current_user).join(", ")}"
@@ -186,7 +188,7 @@ class NhSessionsController < NeurohubApplicationController
       return
     end
 
-    login_from_oidc_user(user, identity_provider_display_name)
+    login_from_oidc_user(user, "#{oidc.name}/#{identity_provider_name}")
 
   rescue CbrainException => ex
     flash[:error] = "#{ex.message}"
@@ -212,14 +214,14 @@ class NhSessionsController < NeurohubApplicationController
   end
 
   # GET /nh_mandatory_oidc
-  # Shows the page that informs the user they MUST link to a Globus ID.
+  # Shows the page that informs the user they MUST link to a provider ID.
   def nh_mandatory_oidc #:nodoc:
     # Restrict @allowed_oidc_providers to allowed providers
     @allowed_prov_names = allowed_oidc_provider_names(current_user)
     # Array of enabled OIDC providers configurations
-    @oidc_configs       = OidcConfig.enabled
+    @oidc_configs       = OidcConfig.all
     # Hash of OIDC uris with the OIDC name as key
-    @oidc_uris           = generate_oidc_login_uri(@oidc_configs, nh_globus_url)
+    @oidc_uris          = generate_oidc_login_uri(@oidc_configs, nh_globus_url)
 
     respond_to do |format|
       format.html
@@ -283,7 +285,7 @@ class NhSessionsController < NeurohubApplicationController
   def login_from_oidc_user(user, provider_name)
     # Login the user
     all_ok, new_cb_session = eval_in_controller(::SessionsController) do
-      ok  = create_from_user(user, "NeuroHub/Globus/#{provider_name}")
+      ok  = create_from_user(user, "NeuroHub/#{provider_name}")
       [ok, cbrain_session]
     end
     @cbrain_session = new_cb_session # crush the session object that was created for the NhSessionsController

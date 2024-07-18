@@ -41,7 +41,7 @@ class NhUsersController < NeurohubApplicationController
   def myaccount #:nodoc:
     @user            = current_user
     # Array of enabled OIDC providers configurations
-    @oidc_configs    = OidcConfig.enabled
+    @oidc_configs    = OidcConfig.all
     # Hash of OIDC uris with the OIDC name as key
     @oidc_uris       = generate_oidc_login_uri(@oidc_configs, nh_globus_url)
     @orcid_canonical = orcid_canonize(@user.meta[:orcid])
@@ -59,7 +59,7 @@ class NhUsersController < NeurohubApplicationController
     @orcid_canonical = orcid_canonize(@user.meta[:orcid])
     @orcid_uri       = orcid_login_uri() # set to nil if orcid not configured by admin
     # Array of enabled OIDC providers configurations
-    @oidc_configs    = OidcConfig.enabled
+    @oidc_configs    = OidcConfig.all
     # Hash of OIDC uris with the OIDC name as key
     @oidc_uris       = generate_oidc_login_uri(@oidc_configs, nh_globus_url)
   end

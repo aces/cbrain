@@ -1,50 +1,73 @@
-#
-# This yml.erb file is used to configure the OpenID Connect (OIDC).
-# The configuration file will be load when the CBRAIN portal is started.
-#
-# You can easily unable or disable the OpenID provider with the enabled key.
-#
-# The client id and secret key for the OpenID provider need to be passed via environment variables.
-#
 
+#
+# CBRAIN Identity Provider Configuration File "oidc.yml.erb"
+#
+# This YAML file can be configured by the CBRAIN administrator to provide
+# the ability to authenticate with OpenID-compatible external providers.
+#
+# Each entry is a structure that should have a simple name (no spaces or special
+# characters) and all the values properly filled-in.
+#
+# This functionality was tested with Globus and a Keycloak server. The sample
+# configurations below would work by setting 'enabled' to true and providing both
+# the client_id and the client_secret, and leaving everything else as-is.
+# (In the case of Keycloak, you will also need to set the REALM_NAME in the three URLs)
+#
+# Admins can allow some users to link their account to specific providers only,
+# or even force them to do so. See the user's 'my account page', as admin.
+# Note that when selecting a provider to link to, the value is NOT the name of
+# the configuration here, but rather the name of the actual identity provider
+# that authenticated the user. E.g. for Globus, it could be something
+# like "McGill University", while for Keycloak it would be the name of the
+# client ID configured on the Keycloak server.
+#
+# This file undergoes ERB processing, so you can substitute content at run time
+# with the ERB tokens < % = ruby_code % > as shown for the 'client_secret' below.
+#
+# Programmer notes: this file is loaded by the class OidcConfig from the ruby file
+# "lib/oidc_config.rb" when the BrainPortal boots. Any error in here will stop the
+# boot process.
+
+# Name of the ID provider; this will show up in the interface as
+# a "Login with NAME" button. Note: changing the name later on will invalidate
+# all existing user links in the CBRAIN database, so choose wisely!
 Keycloak:
-  # A OpenID provider can be enabled
-  enabled:                            false
-  # Configuration of the OpenID provider (local Keycloak on the following example)
-  # <realm-name> should be replaced by the realm name you want to use
-  authorize_uri:                      "http://localhost:8080/realms/<realm-name>/protocol/openid-connect/auth"
-  token_uri:                          "keycloak:8080/realms/<realm-name>/protocol/openid-connect/token"
-  logout_uri:                         "http://localhost:8080/realms/<realm-name>/protocol/openid-connect/logout"
-  # Scope used when called the OpenID provider for authetication
+  enabled:                            false # until set to true, this entire record is ignored
+  # OpenID provider id and secret can be entered as strings, or passed via environment variables
+  client_id:                          "put_the_client_id_here"
+  client_secret:                      <%= ENV.delete("KEYCLOAK_CLIENT_SECRET") %>
+  # URLs to connect to the ID provider. The authorize URL provided the login button (and will be provided by
+  # special query params at run time). The token URL is internal during negotiation. The logout
+  # URL is fixed and just logs the user out of the provider's session.
+  # For Keycloak and other OpenID providers, you must adjust REALM_NAME !
+  authorize_uri:                      "http://localhost:16381/realms/REALM_NAME/protocol/openid-connect/auth"
+  token_uri:                          "http://localhost:16381/realms/REALM_NAME/protocol/openid-connect/token"
+  logout_uri:                         "http://localhost:16381/realms/REALM_NAME/protocol/openid-connect/logout"
+  # Scope used when called the OpenID provider when autheticate
   scope:                              "openid email profile"
-  # OpenID provider id and secret need to be passed via environment variables
-  client_id:                          <%= ENV.delete("keycloak_client_id") %>
-  client_secret:                      <%= ENV.delete("keycloak_secret_key") %>
-  # Will be used to extract information from the returned identity
-  identity_provider_key:              'aud'
-  identity_provider_display_name_key: 'azp'
-  identity_preferred_username_key:    'preferred_username'
-  # help_label and help_uri are used for documentation and it's optional
-  help_label:                        'Keycloak'
-  help_uri:                          'https://www.keycloak.org/'
+  # Key names to get back the values from the returned identity; these are chosen
+  # based on what Keycloak returns when fetching from the TOKEN URL. Do not change.
+  identity_provider_key:              "sub"
+  identity_provider_display_name_key: "aud"
+  identity_preferred_username_key:    "preferred_username"
+  # These two are optional. Adjust to provide users a link to your actual ID provider!
+  help_label:                         "" # "Keycloak"
+  help_uri:                           "" # "https://www.keycloak.org/"
 
-
+# See the comments in the Keycloak example above.
 Globus:
-  # A OpenID provider can be enabled
-  enabled:                            false
-  # Configuration of the OpenID provider pointing to Globus
+  enabled:                            false # until set to true, this entire record is ignored
+  client_id:                          "00000000-0000-0000-00000000000000000"
+  client_secret:                      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  # These three URLs and the rest of this section do not need any editing at all.
   authorize_uri:                      "https://auth.globus.org/v2/oauth2/authorize"
   token_uri:                          "https://auth.globus.org/v2/oauth2/token"
   logout_uri:                         "https://auth.globus.org/v2/web/logout"
-  # Scope used when called the OpenID provider for authetication
-  scope:                              "urn:globus:auth:scope:auth.globus.org:view_identities openid email profile"
-  # OpenID provider id and secret need to be passed via environment variables
-  client_id:                          <%= ENV.delete("globus_client_id") %>
-  client_secret:                      <%= ENV.delete("globus_secret_key") %>
-  # Will be used to extract information from the returned identity
-  identity_provider_key:              'identity_provider'
-  identity_provider_display_name_key: 'identity_provider_display_name'
-  identity_preferred_username_key:    'preferred_username'
-  # help_label and help_uri are used for documentation and it's optional
-  help_label:                        'Globus'
-  help_uri:                          'https://support.globus.org/hc/en-us'
+  scope:                              "openid email profile"
+  identity_provider_key:              "identity_provider"
+  identity_provider_display_name_key: "identity_provider_display_name"
+  identity_preferred_username_key:    "username"
+  # Optional
+  help_label:                         "" # "Globus"
+  help_uri:                           "" # "https://testglobus.example.com/"
+
