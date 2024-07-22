@@ -213,7 +213,7 @@ module GlobusHelpers
   # Returns a hash table with keys being the names of the OidcConfigs
   # and values being the login URL that includes the redirect callback URL.
   # This is used by the interface to generate login buttons.
-  def generate_oidc_login_uri(oidc_providers, redirect_url) #:nodoc:
+  def generate_oidc_login_uri(oidc_providers, redirect_url)
     oidc_providers.map do |oidc|
       [ oidc.name, oidc_login_uri(oidc, redirect_url) ]
     end.to_h

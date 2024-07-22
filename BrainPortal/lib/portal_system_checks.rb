@@ -101,9 +101,9 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
       begin
         OidcConfig.load_from_file
-        puts "C> \t- Found ODIC Config(s): #{OidcConfig.all_names.join(", ")}"
+        puts "C> \t- Found OIDC configurations: #{OidcConfig.all_names.join(", ")}"
       rescue => ex
-        puts "C> \t- ERROR: Cannot load OIDC configuration."
+        puts "C> \t- ERROR: Cannot load OIDC configuration file. Check 'oidc.yml.erb'."
         puts "C> \t  #{ex.message}"
         Kernel.exit(10)
       end

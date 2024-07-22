@@ -25,7 +25,7 @@
 # such providers. The providers and their attributes are
 # normally loaded at boot time from the file:
 #
-#   RAILS_ROOT/config/oidc.yaml.erb
+#   RAILS_ROOT/config/oidc.yml.erb
 #
 # Secrets are also kept in the class, and not within the
 # OidcConfig objects, so that if these objects are serialized
@@ -47,7 +47,7 @@ class OidcConfig
   )
 
   # This populate a static array of configurations in the class, as loaded
-  # from a YAML.erb file. See RAILS_ROOT/config/oidc.yaml.erb for an example.
+  # from a YAML.erb file. See RAILS_ROOT/config/oidc.yml.erb for an example.
   #
   # Configuration not 'enabled' will be entirely skipped.
   #
@@ -62,7 +62,7 @@ class OidcConfig
 
     loaded_yaml.each do |name, config|
 
-      next if ! config[:enabled] # skip entirely enything not enabled.
+      next if ! config[:enabled] # skip entirely anything not enabled.
 
       errors = []
       # Check for invalid characters in name (letters case insensitive numbers and underscores only)
@@ -105,7 +105,7 @@ class OidcConfig
 
   # Returns all the enabled configurations, or an empty array of none exist.
   def self.all
-    @oidc_configs
+    @oidc_configs || []
   end
 
   # Returns the names for all the configs
