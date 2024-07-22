@@ -21,6 +21,7 @@
 #
 
 require 'ipaddr'
+require 'oidc_config'
 
 #RESTful controller for the User resource.
 class UsersController < ApplicationController
@@ -91,7 +92,10 @@ class UsersController < ApplicationController
       .where( "updated_at > ?", SessionHelpers::SESSION_API_TOKEN_VALIDITY.ago )
       .order(:updated_at)
 
-    @globus_uri = globus_login_uri(globus_url)
+    # Array of enabled OIDC providers configurations
+    @oidc_configs = OidcConfig.enabled
+    # Hash of OIDC uris with the OIDC name as key
+    @oidc_uris    = generate_oidc_login_uri(@oidc_configs, globus_url)
 
     respond_to do |format|
       format.html # show.html.erb
@@ -194,8 +198,8 @@ class UsersController < ApplicationController
     if ! edit_permission?(@user)
        cb_error "You don't have permission to view this page.", :redirect => start_page_path
     end
-    if user_must_link_to_globus?(@user)
-       cb_error "Your account can only authenticate with Globus identities.", :redirect => user_path(current_user)
+    if user_must_link_to_oidc?(@user)
+      cb_error "Your account can only authenticate with an OpenID identities providers.", :redirect => user_path(current_user)
     end
   end
 
@@ -217,7 +221,7 @@ class UsersController < ApplicationController
     end
 
     if new_user_attr[:password].present?
-      if user_must_link_to_globus?(@user)
+      if user_must_link_to_oidc?(@user)
         new_user_attr.delete(:password)
         new_user_attr.delete(:password_confirmation)
       end

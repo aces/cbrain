@@ -108,41 +108,44 @@
     </fieldset>
   <% end %>
 
-  <% if @globus_uri %>
+  <% @oidc_configs.each do |oidc| %>
     <fieldset>
-      <%= f.label(:globus, "Globus Identity") %>
-      <% glob_user = @user.meta[:globus_preferred_username] %>
-      <% glob_prov = @user.meta[:globus_provider_name] %>
-      <% if glob_user.blank? %>
+      <%= f.label(oidc.name.to_sym, "#{oidc.name} Identity") %>
+      <%
+        prov_id                     = oidc.linked_provider_id(@user)
+        prov_name                   = oidc.linked_provider_name(@user)
+        prov_user                   = oidc.linked_preferred_username(@user)
+      %>
+      <% if prov_user.blank? %>
         <% if @user.id == current_user.id  # show button only on user own page, hide on other users pages %>
           <p class="btn-solid globus">
-            <%= link_to @globus_uri, :class => "" do %>
-              Connect your NeuroHub account to a Globus identity provider
+            <%= link_to @oidc_uris[oidc.name], :class => "" do %>
+              Connect your NeuroHub account to a <%= oidc.name %> identity provider
             <% end %>
           </p>
         <% end %>
-        <p class="field_note">
-          Globus is a non-profit service for secure, reliable research data management.
-          <br>
-          Learn more at <%= link_to "www.globus.org", "https://www.globus.org/", :class => "globus_home_link" %>
-        </p>
-      <% else %>
-        <p class="card-text">
-             Identity Name: <%= glob_user %><br>
-             Identity Provider: <%= glob_prov %>
-        </p>
-      <% end %>
-      <% if glob_user.present? %>
-        <% if @user.id == current_user.id  # show button only on user own page %>
-          <p class="btn-solid globus bg-warning-bg">
-            <%= link_to nh_unlink_globus_path,
-                :class => "",
-                :method  => :post,
-                :data    => { :confirm => "Are you sure you want to unlink your account from this Globus identity?" } do %>
-                Remove this Globus identity from your NeuroHub account
-            <% end %>
+        <% if oidc.help_label && oidc.help_uri %>
+          <p class="field_note">
+            Learn more at <%= link_to oidc.help_label, oidc.help_uri, :class => "globus_home_link" %>
           </p>
         <% end %>
+        <% else %>
+          <p class="card-text">
+            Identity Name: <%= prov_user %><br>
+            Identity Provider: <%= prov_name %>
+          </p>
+        <% end %>
+        <% if prov_user.present? %>
+          <% if @user.id == current_user.id  # show button only on user own page %>
+            <p class="btn-solid globus bg-warning-bg">
+              <%= link_to nh_unlink_oidc_path(oidc.name),
+                  :class => "",
+                  :method  => :post,
+                  :data    => { :confirm => "Are you sure you want to unlink your account from this #{oidc.name} identity?" } do %>
+                  Remove this <%= oidc.name %> identity from your NeuroHub account
+              <% end %>
+            </p>
+          <% end %>
       <% end %>
     </fieldset>
   <% end %>

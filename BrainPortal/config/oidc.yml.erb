@@ -1,0 +1,50 @@
+#
+# This yml.erb file is used to configure the OpenID Connect (OIDC).
+# The configuration file will be load when the CBRAIN portal is started.
+#
+# You can easily unable or disable the OpenID provider with the enabled key.
+#
+# The client id and secret key for the OpenID provider need to be passed via environment variables.
+#
+
+Keycloak:
+  # A OpenID provider can be enabled
+  enabled:                            false
+  # Configuration of the OpenID provider (local Keycloak on the following example)
+  # <realm-name> should be replaced by the realm name you want to use
+  authorize_uri:                      "http://localhost:8080/realms/<realm-name>/protocol/openid-connect/auth"
+  token_uri:                          "keycloak:8080/realms/<realm-name>/protocol/openid-connect/token"
+  logout_uri:                         "http://localhost:8080/realms/<realm-name>/protocol/openid-connect/logout"
+  # Scope used when called the OpenID provider for authetication
+  scope:                              "openid email profile"
+  # OpenID provider id and secret need to be passed via environment variables
+  client_id:                          <%= ENV.delete("keycloak_client_id") %>
+  client_secret:                      <%= ENV.delete("keycloak_secret_key") %>
+  # Will be used to extract information from the returned identity
+  identity_provider_key:              'aud'
+  identity_provider_display_name_key: 'azp'
+  identity_preferred_username_key:    'preferred_username'
+  # help_label and help_uri are used for documentation and it's optional
+  help_label:                        'Keycloak'
+  help_uri:                          'https://www.keycloak.org/'
+
+
+Globus:
+  # A OpenID provider can be enabled
+  enabled:                            false
+  # Configuration of the OpenID provider pointing to Globus
+  authorize_uri:                      "https://auth.globus.org/v2/oauth2/authorize"
+  token_uri:                          "https://auth.globus.org/v2/oauth2/token"
+  logout_uri:                         "https://auth.globus.org/v2/web/logout"
+  # Scope used when called the OpenID provider for authetication
+  scope:                              "urn:globus:auth:scope:auth.globus.org:view_identities openid email profile"
+  # OpenID provider id and secret need to be passed via environment variables
+  client_id:                          <%= ENV.delete("globus_client_id") %>
+  client_secret:                      <%= ENV.delete("globus_secret_key") %>
+  # Will be used to extract information from the returned identity
+  identity_provider_key:              'identity_provider'
+  identity_provider_display_name_key: 'identity_provider_display_name'
+  identity_preferred_username_key:    'preferred_username'
+  # help_label and help_uri are used for documentation and it's optional
+  help_label:                        'Globus'
+  help_uri:                          'https://support.globus.org/hc/en-us'

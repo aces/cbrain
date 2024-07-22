@@ -266,5 +266,20 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
   end
 
+  def self.z030_ensure_to_load_oidc_config
+
+      #----------------------------------------------------------------------------
+      puts "C> Loading OIDC configuration..."
+      #----------------------------------------------------------------------------
+
+      begin
+        OidcConfig.load_from_file
+      rescue => ex
+        puts "C> \t- ERROR: Cannot load OIDC configuration. Seems to be a problem with the file config/oidc.yml.erb."
+        puts "C> \t  #{ex.message}"
+        Kernel.exit(10)
+      end
+  end
+
 end
 

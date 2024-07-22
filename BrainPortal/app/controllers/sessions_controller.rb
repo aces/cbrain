@@ -43,8 +43,10 @@ class SessionsController < ApplicationController
     ua               = HttpUserAgent.new(rawua)
     @browser_name    = ua.browser_name    || "(unknown browser name)"
     @browser_version = ua.browser_version || "(unknown browser version)"
-
-    @globus_uri      = globus_login_uri(globus_url) # can be nil
+    # Array of enabled OIDC providers configurations
+    @oidc_configs    = OidcConfig.enabled
+    # Hash of OIDC uris with the OIDC name as key
+    @oidc_uris       = generate_oidc_login_uri(@oidc_configs, globus_url)
 
     respond_to do |format|
       format.html
@@ -52,12 +54,16 @@ class SessionsController < ApplicationController
     end
   end
 
-  # GET /mandatory_globus
-  # Shows the page that informs the user they MUST link to a Globus ID.
-  def mandatory_globus #:nodoc:
-    @globus_uri    = globus_login_uri(globus_url)
-    @globus_logout = globus_logout_uri
-    @allowed_provs = allowed_globus_provider_names(current_user)
+  # GET /mandatory_oidc
+  # Shows the page that informs the user they MUST link to a openID provider.
+  def mandatory_oidc #:nodoc:
+    # Restrict @allowed_oidc_providers to allowed providers
+    @allowed_prov_names = allowed_oidc_provider_names(current_user)
+    # Array of enabled OIDC providers configurations
+    @oidc_configs       = OidcConfig.enabled
+    # Array of URIs to redirect to OIDC providers
+    @oidc_uris          = generate_oidc_login_uri(@oidc_configs, globus_url)
+
     respond_to do |format|
       format.html
       format.any { head :unauthorized }
@@ -72,7 +78,11 @@ class SessionsController < ApplicationController
     all_ok = create_from_user(user, 'CBRAIN')
 
     if ! all_ok
-      @globus_uri      = globus_login_uri(globus_url) # can be nil
+      # Array of enabled OIDC providers configurations
+      @oidc_configs   = OidcConfig.enabled
+      # Hash of OIDC uris with the OIDC name as key
+      @oidc_uris      = generate_oidc_login_uri(@oidc_configs, globus_url)
+
       auth_failed()
       return
     end
@@ -89,6 +99,11 @@ class SessionsController < ApplicationController
 
   def show #:nodoc:
     if current_user
+      # Array of enabled OIDC providers configurations
+      @oidc_configs = OidcConfig.enabled
+      # Hash of OIDC uris with the OIDC name as key
+      @oidc_uris    = generate_oidc_login_uri(@oidc_configs, globus_url)
+
       respond_to do |format|
         format.html { head   :ok                                                         }
         format.xml  { render :xml  =>  xml_session_info, :status => 200 }
@@ -132,40 +147,43 @@ class SessionsController < ApplicationController
     end
   end
 
+
   # This action receives a JSON authentication
-  # request from globus and uses it to record or verify
+  # request from an OpenID and uses it to record or verify
   # a user's identity.
-  def globus
-    code  = params[:code].presence.try(:strip)
-    state = params[:state].presence || 'wrong'
+  def oidc
+    code      = params[:code].presence.try(:strip)
+    state     = params[:state].presence || 'wrong'
 
     # Some initial simple validations
-    if !code || state != globus_current_state()
-      cb_error "Globus session is out of sync with CBRAIN"
+    oidc      = OidcConfig.find_by_state(state)
+    if !code || !state || state != oidc_current_state(oidc)
+      cb_error "#{oidc.name} session is out of sync with CBRAIN"
     end
 
-    # Query Globus; this returns all the info we need at the same time.
-    identity_struct = globus_fetch_token(code, globus_url) # globus_url is generated from routes
+    # Query OpenID provider; this returns all the info we need at the same time.
+    identity_struct = oidc_fetch_token(oidc, code, globus_url) # globus_url is generated from routes
     if !identity_struct
-      cb_error "Could not fetch your identity information from Globus"
+      cb_error "Could not fetch your identity information from #{oidc.name}"
     end
-    Rails.logger.info "Globus identity struct:\n#{identity_struct.pretty_inspect.strip}"
+    Rails.logger.info "#{oidc.name} identity struct:\n#{identity_struct.pretty_inspect.strip}"
 
+    identity_provider_display_name, _, _ = oidc.identity_info(identity_struct)
     # Either record the identity...
     if current_user
-      if ! user_can_link_to_globus_identity?(current_user, identity_struct)
+      if ! user_can_link_to_oidc_identity?(oidc, current_user, identity_struct)
         Rails.logger.error("User #{current_user.login} attempted authentication " +
-                           "with unallowed Globus identity provider " +
-                           identity_struct['identity_provider_display_name'].to_s)
-        flash[:error] = "Error: your account can only authenticate with the following Globus providers: " +
-                        "#{allowed_globus_provider_names(current_user).join(", ")}"
+                           "with unallowed identity provider " + identity_provider_display_name
+                          )
+        flash[:error] = "Error: your account can only authenticate with the following providers: " +
+                        "#{allowed_oidc_provider_names(current_user).join(", ")}"
         redirect_to user_path(current_user)
         return
       end
-      record_globus_identity(current_user, identity_struct)
-      flash[:notice] = "Your CBRAIN account is now linked to your Globus identity."
-      if user_must_link_to_globus?(current_user)
-        wipe_user_password_after_globus_link(current_user)
+      record_oidc_identity(oidc, current_user, identity_struct)
+      flash[:notice] = "Your CBRAIN account is now linked to your #{oidc.name} identity."
+      if user_must_link_to_oidc?(current_user)
+        wipe_user_password_after_oidc_link(oidc, current_user)
         flash[:notice] += "\nImportant note: from now on you can no longer connect to CBRAIN using a password."
         redirect_to start_page_path
         return
@@ -175,33 +193,35 @@ class SessionsController < ApplicationController
     end
 
     # ...or attempt login with it
-    user = find_user_with_globus_identity(identity_struct)
+    user = find_user_with_oidc_identity(oidc, identity_struct)
     if user.is_a?(String) # an error occurred
       flash[:error] = user # the message
       redirect_to new_session_path
       return
     end
 
-    login_from_globus_user(user, identity_struct['identity_provider_display_name'])
+    login_from_oidc_user(user, identity_provider_display_name)
 
   rescue CbrainException => ex
     flash[:error] = "#{ex.message}"
     redirect_to new_session_path
   rescue => ex
     clean_bt = Rails.backtrace_cleaner.clean(ex.backtrace || [])
-    Rails.logger.error "Globus auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
-    flash[:error] = 'The Globus authentication failed'
+    Rails.logger.error "#{oidc.name} auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
+    flash[:error] = "The #{oidc.name} authentication failed"
     redirect_to new_session_path
   end
 
-  # POST /unlink_globus
-  # Removes a user's linked globus identity.
-  def unlink_globus #:nodoc:
+  # POST /unlink_oidc
+  # Removes a user's linked OIDC identity.
+  def unlink_oidc #:nodoc:
     redirect_to start_page_path unless current_user
 
-    unlink_globus_identity(current_user)
+    oidc_name = params[:oidc_name]
+    oidc      = OidcConfig.find_by_name(oidc_name)
+    unlink_oidc_identity(oidc, current_user) if oidc
 
-    flash[:notice] = "Your account is no longer linked to any Globus identity"
+    flash[:notice] = "Your account is no longer linked to any #{oidc.name} identity"
     redirect_to user_path(current_user)
   end
 
@@ -266,6 +286,8 @@ class SessionsController < ApplicationController
   # Send a proper HTTP error code
   # when a user has not properly authenticated
   def auth_failed
+    # Array of enabled OIDC providers configurations
+    @oidc_configs = OidcConfig.enabled
     respond_to do |format|
       format.html { render :action => 'new', :status => :ok } # should it be :unauthorized ?
       format.json { head   :unauthorized }
@@ -340,7 +362,7 @@ class SessionsController < ApplicationController
   end
 
 
-  def login_from_globus_user(user, provider_name)
+  def login_from_oidc_user(user, provider_name)
     # Login the user
     all_ok = create_from_user(user, "CBRAIN/Globus/#{provider_name}")
 
@@ -376,3 +398,4 @@ class SessionsController < ApplicationController
   end
 
 end
+
