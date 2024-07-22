@@ -160,15 +160,13 @@
     <div class="card-row">
       <% @oidc_configs.each do |oidc| %>
         <%
-          prov_id                     = oidc.linked_provider_id(@user)
-          prov_name                   = oidc.linked_provider_name(@user)
-          prov_user                   = oidc.linked_preferred_username(@user)
+          prov_id, prov_name, prov_user = oidc.linked_oidc_info(@user)
         %>
         <div class="card-item">
           <div>
             <p class="card-label"><%= oidc.name %> ID</p>
             <p class="card-text btn-text globus">
-              <% if prov_user.present? %>
+              <% if prov_id.present? %>
                 Identity Name: <%= prov_user %><br>
                 Identity Provider: <%= prov_name %>
               <% else %>

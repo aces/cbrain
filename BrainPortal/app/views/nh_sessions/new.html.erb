@@ -57,7 +57,7 @@
           Sign in with <%= oidc.name %>
         <% end %>
         <p class="field_note">This will work if you have already linked your NeuroHub account to a <%= oidc.name %> provider.</p>
-        <% if oidc.help_label && oidc.help_uri %>
+        <% if oidc.help_label.present? && oidc.help_uri.present? %>
           <p class="field_note">You can learn more about <%= oidc.name %> at <%= link_to oidc.help_label, oidc.help_uri, :class => 'globus_home_link' %></p>
         <% end %>
       <% end %>

@@ -20,16 +20,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'oidc_config'
-
-# Helper for logging in using Globus identity stuff
+# Helpers for logging in using OpenID identity stuff
+# Originally, this file only implemented Globus support,
+# but refactoring in July 2024 added support for
+# more generic OpenID providers. The module kept its name.
 module GlobusHelpers
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # Create a URL for a login button, with the redirect URL
+  # to call back to.
   def oidc_login_uri(oidc, redirect_url)
-    return nil unless oidc_auth_configured?(oidc)
-
     # Create the URI to authenticate with OIDC
     oidc_params = {
             :client_id     => oidc.client_id,
@@ -62,6 +63,10 @@ module GlobusHelpers
     jwt_id_token = json["id_token"]
     identity_struct, _ = JWT.decode(jwt_id_token, nil, false)
 
+    # Globus hack: the identity struct we need is the first entry in the "identity_set", if
+    # it exists.
+    identity_struct = identity_struct['identity_set'][0] if identity_struct['identity_set'].present?
+
     return identity_struct
   rescue => ex
     Rails.logger.error "#{oidc.name} token request failed: #{ex.class} #{ex.message}"
@@ -81,38 +86,14 @@ module GlobusHelpers
   # the trick. The Rails session is maintained by a cookie already
   # created and maintained, at this point.
   def oidc_current_state(oidc)
-    Digest::MD5.hexdigest( request.session_options[:id] ) + "_" + oidc.name
-  end
-
-  # Returns true if the CBRAIN system is configured for
-  # OIDC auth.
-  def oidc_auth_configured?(oidc)
-    myself   = RemoteResource.current_resource
-    site_uri = myself.site_url_prefix.presence
-
-    return false if ! site_uri
-    return false if ! oidc.client_id
-    return false if ! oidc.client_secret
-    return false if ! oidc.authorize_uri
-    return false if ! oidc.scope
-    true
+    oidc.create_state( request.session_options[:id] )
   end
 
   # Record the OIDC identity for the current user.
   # (This maybe should be made into a User model method)
-  def record_oidc_identity(oidc, user, oidc_identity) #:nodoc:
-    # In the case where a user must auth with a specific set of
-    # OIDC providers, we find the first identity that
-    # matches a name of that set.
+  def record_oidc_identity(oidc, user, identity) #:nodoc:
 
-    identity = set_of_identities(oidc_identity).detect do |idstruct|
-        user_can_link_to_oidc_identity?(oidc, user, idstruct)
-    end
-
-    identity_provider_id, identity_provider_name, identity_provider_username = oidc.identity_info(identity)
-    provider_name = identity_provider_name     || cb_error("#{oidc.name}: No identity provider name")
-    provider_id   = identity_provider_id       || cb_error("#{oidc.name}: No identity provider")
-    pref_username = identity_provider_username || cb_error("#{oidc.name}: No preferred username")
+    provider_id, provider_name, pref_username = oidc.identity_info(identity)
 
     # Special case for ORCID, because we already have fields for that provider
     # We do NOT do this in the case where the user is forced to auth with OIDC.
@@ -123,16 +104,9 @@ module GlobusHelpers
       return
     end
 
-
-
-    oidc.set_linked_provider_id(user, provider_id)
-    oidc.set_linked_provider_name(user, provider_name)
-    oidc.set_linked_preferred_username(user, pref_username)
+    # Record the three values in the user's account
+    oidc.set_linked_oidc_info(user, provider_id, provider_name, pref_username)
     user.addlog("Linked to #{oidc.name} identity: '#{pref_username}' on provider '#{provider_name}'")
-  end
-
-  def set_of_identities(globus_identity)
-    globus_identity['identity_set'] || [ globus_identity ]
   end
 
   # Returns an array of allowed identity provider names.
@@ -156,17 +130,15 @@ module GlobusHelpers
   end
 
   def user_has_link_to_oidc?(user) #:nodoc:
-    # Filter out the identities that are not allowed
     allowed_oidc_names = allowed_oidc_provider_names(user)
-    oidc_providers     = OidcConfig.enabled
 
     # Iterate over the allowed_oidc_info
-    oidc_providers.any? do |oidc|
-      oidc.linked_provider_id(user).present? &&
-      oidc.linked_provider_name(user).present? &&
-      oidc.linked_preferred_username(user).present? &&
-      ( allowed_oidc_names.include?('*') ||
-        allowed_oidc_names.include?(oidc.linked_provider_name(user))
+    OidcConfig.all.any? do |oidc|
+      prov_id, prov_name, prov_user = oidc.linked_oidc_info(user)
+      prov_id.present? && prov_name.present? && prov_user.present? &&
+      ( allowed_oidc_names.nil?          ||
+        allowed_oidc_names.include?('*') ||
+        allowed_oidc_names.include?(prov_name)
       )
     end
   end
@@ -181,19 +153,14 @@ module GlobusHelpers
     user.update_attribute(:password_reset  , false)
   end
 
+  # Verify that only one user has a link to the identity. Returns
+  # the user, or logs the problem and returns a string error message.
   def find_user_with_oidc_identity(oidc, identity)
-    _, identity_provider_name, identity_provider_username = oidc.identity_info(identity)
 
-    provider_name = identity_provider_name
-    pref_username = identity_provider_username
+    _, provider_name, pref_username = oidc.identity_info(identity)
 
-    id_set = set_of_identities(identity) # an OIDC record can contain several identities
-
-    # For each present identity, find all users that have it.
-    # We only allow ONE cbrain user to link to any of the identities.
-    users = id_set.inject([]) do |ulist, subident|
-      ulist |= find_users_with_specific_identity(subident, oidc)
-    end
+    # We only allow ONE cbrain user to link to the identity.
+    users = find_all_users_with_specific_identity(oidc, identity)
 
     if users.size == 0
       Rails.logger.error "#{oidc.name} warning: no CBRAIN accounts found for identity '#{pref_username}' on provider '#{provider_name}'"
@@ -203,7 +170,7 @@ module GlobusHelpers
     if users.size > 1
       loginnames = users.map(&:login).join(", ")
       Rails.logger.error "#{oidc.name.upcase} error: multiple CBRAIN accounts (#{loginnames}) found for identity '#{pref_username}' on provider '#{provider_name}'"
-      return "Several CBRAIN user accounts match your #{oidc.name} identity. Please contact the CBRAIN admins."
+      return "Several CBRAIN user accounts match your #{oidc.name} identity. Please contact the CBRAIN admins, as this should never happen."
     end
 
     # The one lucky user
@@ -214,10 +181,8 @@ module GlobusHelpers
   # account to the +identity+ provider. The array can
   # be empty (no such users) or contain more than one
   # user (an account management error).
-  def find_users_with_specific_identity(identity, oidc)
-    provider_id   = identity[oidc.identity_provider]              || cb_error("#{oidc.name}: No identity provider")
-    provider_name = identity[oidc.identity_provider_display_name] || cb_error("#{oidc.name}: No identity provider name")
-    pref_username = identity[oidc.preferred_username]             || cb_error("#{oidc.name}: No preferred username")
+  def find_all_users_with_specific_identity(oidc, identity)
+    provider_id, provider_name, pref_username = oidc.identity_info(identity)
 
     # Special case for ORCID, because we already have fields for that provider
     if provider_name == 'ORCID'
@@ -229,24 +194,29 @@ module GlobusHelpers
 
     # All other globus providers
     # We need a user which match both the preferred username and provider_id
+    #
+    # Implementation note.
+    # This code assumes/knows that OidcConfig stores the linked info into
+    # the metadata store; if this changes in the future the OidcConfig should
+    # really become the finder for the users.
     users = User.find_all_by_meta_data(oidc.preferred_username_key, pref_username)
       .to_a
-      .select { |user|  oidc.linked_provider_id(@user) == provider_id }
+      .select { |user| oidc.linked_provider_id(user) == provider_id }
   end
 
   # Removes the recorded OIDC identity for +user+
-  def unlink_oidc_identity(oidc, user) #:nodoc:
-    oidc.set_linked_provider_id(user, nil)
-    oidc.set_linked_provider_name(user, nil)
-    oidc.set_linked_preferred_username(user, nil)
+  def unlink_oidc_identity(oidc, user)
+    oidc.zap_linked_oidc_info(user) # prov_id, prov_name, username set to NIL
     user.addlog("Unlinked #{oidc.name} identity")
   end
 
-
-  def generate_oidc_login_uri(oidc_providers, redirect_url) #:nodoc:
-    @oidc_uris = {}
-    oidc_providers.each { |oidc| @oidc_uris[oidc.name] = oidc_login_uri(oidc, redirect_url)}
-    return @oidc_uris
+  # Returns a hash table with keys being the names of the OidcConfigs
+  # and values being the login URL that includes the redirect callback URL.
+  # This is used by the interface to generate login buttons.
+  def generate_oidc_login_uri(oidc_providers, redirect_url)
+    oidc_providers.map do |oidc|
+      [ oidc.name, oidc_login_uri(oidc, redirect_url) ]
+    end.to_h
   end
 
 end
