@@ -494,7 +494,7 @@ class DataProvidersController < ApplicationController
     bac_klass = BackgroundActivity::RegisterAndCopyFile if post_action == :copy
     bac = bac_klass.setup!( # all three classes have this helper
       current_user.id, items.shuffle, RemoteResource.current_resource.id,
-      @provider.id, @browse_path, group_id, @as_user.id, target_dp # target_dp is ignored and is always nil for plain register
+      @provider.id, @browse_path, group_id, @as_user.id, target_dp&.id # for plain register, target_dp is ignored and is always nil
     ) if items.size > 0
 
     # Generate a complete response matching the old API
