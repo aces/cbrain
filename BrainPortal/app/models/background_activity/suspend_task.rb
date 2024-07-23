@@ -20,29 +20,29 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Copy a file
-class BackgroundActivity::DestroyFile < BackgroundActivity
+# Suspend a CBRAIN task. This is the cluster operation of
+# suspending a job currently On CPU.
+#
+# This is part of a set of four cluster operations
+# that, within CBRAIN, have no supporting interface elements
+# or API calls:
+#
+#   suspend, resume, hold, release
+#
+# This is implemented for the sake of completing the official
+# CBRAIN low-level job control features.
+class BackgroundActivity::SuspendTask < BackgroundActivity
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  validates_dynamic_bac_presence_of_option :userfile_custom_filter_id
-
-  # Helper for scheduling a destroy of files immediately.
-  def self.setup!(user_id, userfile_ids, remote_resource_id=nil)
-    ba         = self.local_new(user_id, userfile_ids, remote_resource_id)
-    ba.save!
-    ba
-  end
+  before_save :must_be_on_bourreau!
 
   def process(item)
-    userfile     = Userfile.find(item)
-    ok           = userfile.destroy
-    return [ true,  "Destroyed" ] if   ok
+    task  = CbrainTask.where(:bourreau_id => CBRAIN::SelfRemoteResourceId).find(item)
+    ok    = task.suspend
+    task.addlog("New status: #{task.status}") if ok
+    return [ true,  "Suspended" ] if   ok
     return [ false, "Skipped"   ] if ! ok
-  end
-
-  def prepare_dynamic_items
-    populate_items_from_userfile_custom_filter
   end
 
 end

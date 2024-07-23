@@ -303,20 +303,17 @@ RSpec.describe DataProvidersController, :type => :controller do
           expect(response).to render_template("browse")
         end
       end
+
       describe "register" do
-        let(:registered_file) {mock_model(SingleFile, :save => true).as_null_object.as_new_record}
 
         before(:each) do
           allow(DataProvider).to receive(:find_accessible_by_user).and_return(data_provider)
           allow(data_provider).to receive(:is_browsable?).and_return(true)
-          allow(CBRAIN).to receive(:spawn_with_active_records)
-          allow(SingleFile).to receive(:new).and_return(registered_file)
-          allow(registered_file).to receive(:save).and_return(true)
         end
 
         it "should check if the data_provider is browsable" do
           expect(data_provider).to receive(:is_browsable?)
-          post :register, params: {id: 1, basenames: ["a_file"]}
+          post :register, params: {id: 1, basenames: ["a_file"], filetypes: ["TextFile-a_file"]}
         end
 
         context "provider is not browsable" do
@@ -324,55 +321,56 @@ RSpec.describe DataProvidersController, :type => :controller do
             allow(data_provider).to receive(:is_browsable?).and_return(false)
           end
           it "should display an error message" do
-            post :register, params: {id: 1, basenames: ["a_file"]}
+            post :register, params: {id: 1, basenames: ["a_file"], filetypes: ["TextFile-a_file"]}
             expect(flash[:error]).not_to be_blank
           end
           it "should redirect to index" do
-            post :register, params: {id: 1, basenames: ["a_file"]}
+            post :register, params: {id: 1, basenames: ["a_file"], filetypes: ["TextFile-a_file"]}
             expect(response).to redirect_to(:action => :index)
           end
         end
 
         context "register only" do
-          it "should set the sizes in a separate process" do
-            expect(CBRAIN).to receive(:spawn_with_active_records)
-            post :register, params: {id: 1, basenames: ["a_file"]}
+          it "should check for collisions" do
+            allow(controller).to receive(:userfiles_from_basenames).and_return({"a_file" => TextFile.new})
+            expect(BackgroundActivity::RegisterFile).not_to receive(:setup!)
+            post :register, params: {id: 1, basenames: ["a_file"], filetypes: ["TextFile-a_file"], auto_do: ""}
           end
           it "should display that registration was a success" do
-            post :register, params: {id: 1, basenames: ["a_file"]}
+            allow(controller).to receive(:userfiles_from_basenames).and_return({"a_file" => nil})
+            expect(BackgroundActivity::RegisterFile).to receive(:setup!)
+            post :register, params: {id: 1, basenames: ["a_file"], filetypes: ["TextFile-a_file"]}
             expect(flash[:notice]).to match(/\bRegistering\b/i)
           end
           it "should redirect to browse" do
-            post :register, params: {id: 1, basenames: ["a_file"]}
+            allow(controller).to receive(:userfiles_from_basenames).and_return({"a_file" => nil})
+            expect(BackgroundActivity::RegisterFile).to receive(:setup!)
+            post :register, params: {id: 1, basenames: ["a_file"], filetypes: ["TextFile-a_file"]}
             expect(response).to redirect_to(:action => :browse)
+          end
+          it "should setup a background activity for registering" do
+            allow(controller).to receive(:userfiles_from_basenames).and_return({"a_file" => nil})
+            expect(BackgroundActivity::RegisterFile).to receive(:setup!)
+            post :register, params: {id: 1, basenames: ["a_file"], filetypes: ["TextFile-a_file"], auto_do: ""}
           end
         end
-        context "doing move or copy" do
-          before(:each) do
-            allow(CBRAIN).to receive(:spawn_with_active_records).and_yield
-          end
 
-          it "should check for collisions" do
-            expect(Userfile).to receive(:where).and_return(double("registered files").as_null_object)
-            post :register, params: {id: 1, basenames: ["a_file"],auto_do: "MOVE"}
+        context "doing move or copy" do
+          it "should setup a background activity for moving" do
+            allow(controller).to receive(:userfiles_from_basenames).and_return({"a_file" => nil})
+            expect(BackgroundActivity::RegisterAndMoveFile).to receive(:setup!)
+            post :register, params: {id: 1, basenames: ["a_file"], filetypes: ["TextFile-a_file"], auto_do: "MOVE"}
           end
-          it "should spawn a background process for moving" do
-            expect(CBRAIN).to receive(:spawn_with_active_records)
-            post :register, params: {id: 1, basenames: ["a_file"],auto_do: "MOVE"}
+          it "should setup a background activity for moving" do
+            allow(controller).to receive(:userfiles_from_basenames).and_return({"a_file" => nil})
+            expect(BackgroundActivity::RegisterAndCopyFile).to receive(:setup!)
+            post :register, params: {id: 1, basenames: ["a_file"], filetypes: ["TextFile-a_file"], auto_do: "COPY"}
           end
           it "should redirect to browse" do
-            post :register, params: {id: 1, basenames: ["a_file"],auto_do: "MOVE"}
+            allow(controller).to receive(:userfiles_from_basenames).and_return({"a_file" => nil})
+            expect(BackgroundActivity::RegisterAndMoveFile).to receive(:setup!)
+            post :register, params: {id: 1, basenames: ["a_file"], filetypes: ["TextFile-a_file"], auto_do: "MOVE"}
             expect(response).to redirect_to(:action => :browse)
-          end
-          it "should move the file if a move is requested" do
-            allow(controller).to receive(:userfiles_from_basenames).and_return({"b_file" => nil})
-            expect(registered_file).to receive(:provider_move_to_otherprovider)
-            post :register, params: {id: 1, basenames: ["b_file"], auto_do: "MOVE"}
-          end
-          it "should copy the file if a copy is requested" do
-            allow(controller).to receive(:userfiles_from_basenames).and_return({"b_file" => nil})
-            expect(registered_file).to receive(:provider_copy_to_otherprovider)
-            post :register, params: {id: 1, basenames: ["b_file"], auto_do: "COPY"}
           end
         end
 

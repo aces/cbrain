@@ -24,7 +24,6 @@
 
 <div class="menu_bar">
   <%= show_hide_toggle "About", ".bac_explanations", :class => 'button', :slide_effect => true, :slide_duration => 'fast'  %>
-  <%= link_to "Refresh This List", background_activities_path, :class => "button" %>
   <%= external_submit_button "Cancel Activities", "bac_form", :class  => "button", :confirm  => "Are you sure you want to cancel the selected background activities?" %>
   <% if current_user.has_role? :admin_user %>
     <%= external_submit_button "Suspend Activities", "bac_form", :class  => "button", :confirm  => "Are you sure you want to suspend the selected background activities?" %>
@@ -39,9 +38,10 @@
         )
     %>
   <% end %>
+  <%= link_to "Refresh This List", background_activities_path, :class => "button" %>
 </div>
 
-<fieldset class="bac_explanations" style="display: none">
+<fieldset class="bac_explanations" style="display: <%= @bacs.count == 0 ? 'block' : 'none' %>">
   <legend>About Background Activities</legend>
   <p class="long_paragraphs">
   This page shows "background activities" as progress bars. Each

@@ -102,6 +102,31 @@ class ToolConfig < ApplicationRecord
     end
   end
 
+  # Returns a AR relation for all ToolConfigs
+  # that are on +bourreau+ and have the
+  # same tool, version_name and group as the receiver.
+  def all_other_compatible_on_bourreau(bourreau=self.bourreau)
+    other_tcs = self.class.where(
+      :bourreau_id  => bourreau.id,
+      :tool_id      => self.tool_id,
+      :version_name => self.version_name,
+      :group_id     => self.group_id,
+    )
+    other_tcs
+  end
+
+  # Returns the latest compatible TC on +bourreau+ (from the list returned
+  # by all_other_compatible_on_bourreau) that +user+ has access to.
+  def find_latest_compatible_for_user_on_bourreau!(user,bourreau)
+    all_accessible_ids = self.class.find_all_accessible_by_user(user).pluck(:id)
+    found = self.all_other_compatible_on_bourreau(bourreau)
+      .where(:id => all_accessible_ids)
+      .order("updated_at desc")
+      .first
+    cb_error "Cannot find compatible ToolConfig on '#{bourreau.name}'" if ! found
+    found
+  end
+
   # Returns true if both the bourreau and the tool associated
   # with the tool_config are defined and can be accessed by the user.
   def bourreau_and_tool_can_be_accessed_by?(user)
@@ -228,7 +253,6 @@ class ToolConfig < ApplicationRecord
 
     prologue = self.script_prologue || ""
     script  += <<-SCRIPT_HEADER
-        
 
 #---------------------------------------------------
 # Script Prologue:#{prologue.blank? ? " (NONE SUPPLIED)" : ""}
@@ -445,7 +469,7 @@ class ToolConfig < ApplicationRecord
       errors[:container_engine] = "a container hub image name or a container image userfile ID should be set when the container engine is set"
     end
 
-    if self.container_engine.present? && self.container_engine == "Singularity" 
+    if self.container_engine.present? && self.container_engine == "Singularity"
       if self.container_index_location.present? && self.container_index_location !~ /\A[a-z0-9]+\:\/\/\z/i
         errors[:container_index_location] = "is invalid for container engine Singularity. Should end in '://'."
       end

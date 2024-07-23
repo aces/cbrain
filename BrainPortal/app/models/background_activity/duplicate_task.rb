@@ -20,29 +20,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Copy a file
-class BackgroundActivity::DestroyFile < BackgroundActivity
+# Duplicate a CBRAIN task.
+# The options hash should contain dup_bourreau_id,
+# otherwise duplication will occur on the same Bourreau
+# as the tasks.
+class BackgroundActivity::DuplicateTask < BackgroundActivity
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  validates_dynamic_bac_presence_of_option :userfile_custom_filter_id
-
-  # Helper for scheduling a destroy of files immediately.
-  def self.setup!(user_id, userfile_ids, remote_resource_id=nil)
-    ba         = self.local_new(user_id, userfile_ids, remote_resource_id)
-    ba.save!
-    ba
-  end
-
   def process(item)
-    userfile     = Userfile.find(item)
-    ok           = userfile.destroy
-    return [ true,  "Destroyed" ] if   ok
-    return [ false, "Skipped"   ] if ! ok
-  end
-
-  def prepare_dynamic_items
-    populate_items_from_userfile_custom_filter
+    task         = CbrainTask.real_tasks.find(item)
+    new_bid      = options[:dup_bourreau_id].presence || task.bourreau_id
+    new_bourreau = Bourreau.find(new_bid)
+    ok           = task.duplicate!(new_bourreau)
+    return [ true,  "Duplicated" ] if   ok
+    return [ false, "Skipped"    ] if ! ok
   end
 
 end

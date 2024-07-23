@@ -57,6 +57,9 @@ class BackgroundActivity::CopyFile < BackgroundActivity
 
     # Main operation and return status
     new_userfile = userfile.provider_copy_to_otherprovider(dest_dp, self.options || {})
+
+    DataUsage.increase_copies(self.user, userfile) if new_userfile.is_a?(Userfile)
+
     return [ true, new_userfile.id ] if new_userfile.is_a?(Userfile)
     return [ true, "Skipped"      ]  if new_userfile == true
     return [ false, "Failed to copy '#{userfile.name}'" ]
