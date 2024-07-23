@@ -118,10 +118,10 @@
         </div>
       <% end %>
 
-      <% t.edit_cell('meta[allowed_globus_provider_names]', :header => 'Forced Globus Identity Providers', :content => @user.meta['allowed_globus_provider_names'] || '') do %>
+      <% t.edit_cell('meta[allowed_globus_provider_names]', :header => "Forced OpenID Providers", :content => @user.meta['allowed_globus_provider_names'] || '') do %>
         <%= text_field_tag "meta[allowed_globus_provider_names]", @user.meta['allowed_globus_provider_names'], :size => 40 %><br />
         <div class="field_explanation">
-          If set, must be a list of Globus identity provider names separated by commas. A single '*' is
+          If set, must be a list of OpenID identity provider names separated by commas. A single '*' is
           also allowed to mean any provider name.
         </div>
       <% end %>
@@ -164,45 +164,47 @@
   <% end %>
 
   <%= show_table(@user, :as => :user, :header => 'Linked Identities') do |t| %>
-    <%
-      prov_id   = @user.meta[:globus_provider_id]
-      prov_name = @user.meta[:globus_provider_name]
-      prov_user = @user.meta[:globus_preferred_username]
-      orcid_id  = @user.meta[:orcid]
-    %>
 
-    <% if @globus_uri %>
-    <% t.cell "Globus Provider", :show_width => 2 do %>
-       <% if prov_id %>
-         <strong>Provider name:</strong> <%= prov_name %><br>
-         <strong>Provider user:</strong> <%= prov_user %><br>
-         <% if @user.id == current_user.id  # show button on user own page, hide on other users pages %>
-           <%= link_to('Unlink this Globus identity', unlink_globus_path,
-                 :class  => "button",
-                 :method => :post,
-                 :data   => { :confirm => "Are you sure you want to unlink your account with this Globus identity?" }
-               )
-           %>
-         <% end %>
-       <% else %>
-         (No Globus identity linked to your account)<br>
-         <% if @user.id == current_user.id  # Globus button works only on user own account %>
-           <%= link_to 'Link a Globus identity', @globus_uri, :class => 'button globus_button' %>
-         <% end %>
-       <% end %>
-    <% end %>
+    <% @oidc_configs.each do |oidc| %>
+      <%
+        oidc_login_uri                = @oidc_uris[oidc.name]
+        prov_id, prov_name, prov_user = oidc.linked_oidc_info(@user)
+      %>
+
+      <% t.cell "#{oidc.name} Provider", :show_width => 2 do %>
+        <% if oidc_login_uri %>
+          <% if prov_id %>
+            <strong>Provider name:</strong> <%= prov_name %><br>
+            <strong>Provider user:</strong> <%= prov_user %><br>
+            <% if @user.id == current_user.id %>
+              <%= link_to("Unlink this #{oidc.name} identity", unlink_oidc_path(:oidc_name => oidc.name),
+                            :class  => "button",
+                            :method => :post,
+                            :data   => { :confirm => "Are you sure you want to unlink your account with this #{oidc.name} identity?" }
+                          )
+              %>
+             <% end %>
+          <% else %>
+            (No <%= oidc.name %> identity linked to your account)<br>
+            <% if @user.id == current_user.id  # OIDC button works only on user own account %>
+              <%= link_to "Link a #{oidc.name} identity", oidc_login_uri, :class => 'button globus_button' %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
     <% end %>
 
     <%
       # Note: should be in a if/end block testing for the configuration of orcid_uri, like in NeuroHub
     %>
     <% t.cell "ORCID Identity", :show_width => 2 do %>
-       <% if orcid_id %>
+      <% orcid_id = @user.meta["orcid"] %>
+      <% if orcid_id %>
          <strong>ORCID ID:</strong> <%= orcid_id %>
        <% else %>
          (No ORCID identity linked to your account)
        <% end %>
-       <p><small><strong>Note:</strong> Use the <%= link_to "NeuroHub interface", myaccount_path %> to manage the ORCID identity link</small>
+       <br><small><strong>Note:</strong> Use the <%= link_to "NeuroHub interface", myaccount_path %> to manage the ORCID identity link</small>
     <% end %>
 
   <% end %>

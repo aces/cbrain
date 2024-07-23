@@ -93,6 +93,24 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
 
 
+  def self.a030_ensure_we_can_load_oidc_config
+
+      #----------------------------------------------------------------------------
+      puts "C> Loading OIDC configuration, if any..."
+      #----------------------------------------------------------------------------
+
+      begin
+        OidcConfig.load_from_file
+        puts "C> \t- Found OIDC configurations: #{OidcConfig.all_names.join(", ")}"
+      rescue => ex
+        puts "C> \t- ERROR: Cannot load OIDC configuration file. Check 'oidc.yml.erb'."
+        puts "C> \t  #{ex.message}"
+        Kernel.exit(10)
+      end
+  end
+
+
+
   def self.z000_ensure_we_have_a_local_ssh_agent #:nodoc:
 
     #----------------------------------------------------------------------------
@@ -203,6 +221,8 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
     )
   end
 
+
+
   def self.z010_ensure_custom_bash_scripts_succeed #:nodoc:
 
     checker_dir = Rails.root + "boot_checks"
@@ -228,6 +248,8 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
       raise "Script '#{basename}' exited with #{status.exitstatus}"
     end
   end
+
+
 
   # Note: this check is SKIPPED when starting the console.
   # See BrainPortal/config/initializers/validation_portal.rb

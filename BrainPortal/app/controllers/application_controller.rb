@@ -123,23 +123,23 @@ class ApplicationController < ActionController::Base
   def check_account_validity #:nodoc:
     return false unless current_user
     return true  if     params[:controller] == "sessions"
-    return false unless check_mandatory_globus_id_linkage()
+    return false unless check_mandatory_oidc_id_linkage()
     return false unless check_password_reset()
     return false unless check_license_agreements()
     return true
   end
 
   # Check to see if the user HAS to link their account to
-  # a globus identity. If that's the case and not yet done,
+  # an OpenID identity provider. If that's the case and not yet done,
   # redirects to the page that provides the user with the
   # buttons and explanations.
-  def check_mandatory_globus_id_linkage #:nodoc:
-    return true if ! user_must_link_to_globus?(current_user)
-    return true if   user_has_link_to_globus?(current_user)
+  def check_mandatory_oidc_id_linkage #:nodoc:
+    return true if ! user_must_link_to_oidc?(current_user)
+    return true if   user_has_link_to_oidc?(current_user)
     respond_to do |format|
-      format.html { redirect_to :controller => :sessions, :action => :mandatory_globus }
-      format.json { render :status => 403, :json => { "error" => "This account must first be linked to a Globus identity" } }
-      format.xml  { render :status => 403, :xml  => { "error" => "This account must first be linked to a Globus identity" } }
+      format.html { redirect_to :controller => :sessions, :action => :mandatory_oidc }
+      format.json { render :status => 403, :json => { "error" => "This account must first be linked to an OpenID identity provider" } }
+      format.xml  { render :status => 403, :xml  => { "error" => "This account must first be linked to an OpenID identity provider" } }
     end
     return false
   end
