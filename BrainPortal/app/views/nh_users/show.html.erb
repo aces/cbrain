@@ -157,8 +157,8 @@
       </div>
     </div>
 
-    <div class="card-row">
-      <% @oidc_configs.each do |oidc| %>
+    <% @oidc_configs.each do |oidc| %>
+      <div class="card-row">
         <%
           prov_id, prov_name, prov_user = oidc.linked_oidc_info(@user)
         %>
@@ -175,8 +175,8 @@
             </p>
           </div>
         </div>
-      <% end %>
-    </div>
+      </div>
+    <% end %>
 
     <div class="card-row">
       <div class="card-item">

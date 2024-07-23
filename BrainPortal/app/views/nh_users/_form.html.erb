@@ -127,23 +127,21 @@
             Learn more at <%= link_to oidc.help_label, oidc.help_uri, :class => "globus_home_link" %>
           </p>
         <% end %>
-        <% else %>
-          <p class="card-text">
-            Identity Name: <%= prov_user %><br>
-            Identity Provider: <%= prov_name %>
+      <% else %>
+        <p class="card-text">
+          Identity Name: <%= prov_user %><br>
+          Identity Provider: <%= prov_name %>
+        </p>
+        <% if @user.id == current_user.id  # show button only on user own page %>
+          <p class="btn-solid globus bg-warning-bg">
+            <%= link_to nh_unlink_oidc_path(:oidc_name => oidc.name),
+                :class => "",
+                :method  => :post,
+                :data    => { :confirm => "Are you sure you want to unlink your account from this #{oidc.name} identity?" } do %>
+                Remove this <%= oidc.name %> identity from your NeuroHub account
+            <% end %>
           </p>
         <% end %>
-        <% if prov_user.present? %>
-          <% if @user.id == current_user.id  # show button only on user own page %>
-            <p class="btn-solid globus bg-warning-bg">
-              <%= link_to nh_unlink_oidc_path(:oidc_name => oidc.name),
-                  :class => "",
-                  :method  => :post,
-                  :data    => { :confirm => "Are you sure you want to unlink your account from this #{oidc.name} identity?" } do %>
-                  Remove this <%= oidc.name %> identity from your NeuroHub account
-              <% end %>
-            </p>
-          <% end %>
       <% end %>
     </fieldset>
   <% end %>

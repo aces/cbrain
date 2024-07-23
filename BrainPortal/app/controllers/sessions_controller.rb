@@ -99,11 +99,6 @@ class SessionsController < ApplicationController
 
   def show #:nodoc:
     if current_user
-      # Array of enabled OIDC providers configurations
-      @oidc_configs = OidcConfig.all
-      # Hash of OIDC uris with the OIDC name as key
-      @oidc_uris    = generate_oidc_login_uri(@oidc_configs, globus_url)
-
       respond_to do |format|
         format.html { head   :ok                                                         }
         format.xml  { render :xml  =>  xml_session_info, :status => 200 }
@@ -288,8 +283,6 @@ class SessionsController < ApplicationController
   # Send a proper HTTP error code
   # when a user has not properly authenticated
   def auth_failed
-    # Array of enabled OIDC providers configurations
-    @oidc_configs = OidcConfig.all
     respond_to do |format|
       format.html { render :action => 'new', :status => :ok } # should it be :unauthorized ?
       format.json { head   :unauthorized }

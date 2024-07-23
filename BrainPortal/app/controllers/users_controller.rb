@@ -21,7 +21,6 @@
 #
 
 require 'ipaddr'
-require 'oidc_config'
 
 #RESTful controller for the User resource.
 class UsersController < ApplicationController
