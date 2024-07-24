@@ -713,16 +713,35 @@ class BackgroundActivity < ApplicationRecord
   end
 
   # For user activity statistics, record the BAC in the Rails logs.
+  # A copy is also appended to
+  #
+  #   RAILS_ROOT/data_dumps/bacs/username.json.cat
+  #
   # Usually invoked from after_destroy callback.
   def record_in_rails_log #:nodoc:
+    return unless self.id
     status = self.status
     return unless status =~ /^(?:
        Completed | PartiallyCompleted | Failed | InProgress |
        Cancelled | Suspended | InternalError
     )/x # we don't want Scheduled etc that never did anything
 
+    # What to save. All in a single line, no newline.
     json_text = self.attributes.to_json
+
+    # Log in JSON archive file
+    if File.directory?(Rails.root + "data_dumps/bacs")
+      username  = self.user.login
+      File.open(Rails.root + "data_dumps/bacs/#{username}.json.cat","a") do |fh|
+       fh.write(json_text + "\n")
+      end
+    end
+
+    # Log in Rails; this might raise an exception if
+    # the destory happens in a BackgroundActivityWorker because
+    # they don't have a Rails.logger
     Rails.logger.info "Destroyed BackgroundActivity: #{json_text}"
+
   rescue
     Rails.logger.error("Cannot log #{self.type} #{self.id}") rescue nil
   end

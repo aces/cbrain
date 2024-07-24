@@ -79,6 +79,7 @@ class BackgroundActivitiesController < ApplicationController
     add_options_for_archive_task_wd    if @bac.is_a?(BackgroundActivity::ArchiveTaskWorkdir)
     add_options_for_remove_task_wd     if @bac.is_a?(BackgroundActivity::RemoveTaskWorkdir)
     add_options_for_clean_cache        if @bac.is_a?(BackgroundActivity::CleanCache)
+    add_options_for_erase_bacs         if @bac.is_a?(BackgroundActivity::EraseBackgroundActivities)
 
     if (@bac.errors.present?) || (! @bac.valid?) || (! @bac.save)
       render :action => :new
@@ -203,6 +204,14 @@ class BackgroundActivitiesController < ApplicationController
            :days_older,   # a string
            :with_user_ids => [], :without_user_ids => [],
            :with_types => [], :without_types => [] )
+    @bac.options.merge! opt.to_h.with_indifferent_access # use to_h, not to_hash !!!
+    if @bac.options[:days_older].to_s !~ /\A\d\z|\A[1-9]\d{1,2}\z/
+      @bac.errors.add(:options,'does not specify a number of days between 0 and 999')
+    end
+  end
+
+  def add_options_for_erase_bacs #:nodoc:
+    opt = params_options.permit( :days_older )
     @bac.options.merge! opt.to_h.with_indifferent_access # use to_h, not to_hash !!!
     if @bac.options[:days_older].to_s !~ /\A\d\z|\A[1-9]\d{1,2}\z/
       @bac.errors.add(:options,'does not specify a number of days between 0 and 999')

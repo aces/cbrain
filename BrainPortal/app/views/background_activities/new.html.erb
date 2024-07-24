@@ -36,13 +36,31 @@
 
   <div class="generalbox">
 
+    <%-
+      ##############################
+      # USER
+      ##############################
+    %>
+
     <p><%= f.label :user_id, "User" %><br>
     <%= user_select("background_activity[user_id]", :selector => @bac.user_id.to_s) %>
+
+    <%-
+      ##############################
+      # SERVER
+      ##############################
+    %>
 
     <p><%= f.label :remote_resource_id, "Portal or Execution Server" %><br>
     <%= bourreau_select("background_activity[remote_resource_id]", {
        :bourreaux => RemoteResource.all.order(:name).to_a,
        :selector => @bac.remote_resource_id.to_s } ) %>
+
+    <%-
+      ##############################
+      # START DATE AND TIME
+      ##############################
+    %>
 
     <p><%= f.label :start_date, "Initial Start Date" %><br>
     <%= text_field_tag :start_date, @start_date, :class => "datepicker" %>
@@ -63,6 +81,12 @@
         ),
         { 'style' => 'width: 5em' }
     %>M
+
+    <%-
+      ##############################
+      # REPEAT
+      ##############################
+    %>
 
     <p><%= label_tag :repeat, "Repeat Frequency" %><br>
     <%= select_tag :repeat,
@@ -103,6 +127,12 @@
     %>M)
     <p>
 
+    <%-
+      ##############################
+      # BAC: MOVE FILES
+      ##############################
+    %>
+
     <fieldset>
       <legend>
         <%= f.radio_button :type, 'BackgroundActivity::MoveFile' %>
@@ -119,6 +149,12 @@
       Crush files at destination if they exist: <%= check_box_tag :move_crush, '1', @move_crush %>
     </fieldset>
 
+    <%-
+      ##############################
+      # BAC: REMOVE TASK WORKDIR
+      ##############################
+    %>
+
     <fieldset>
       <legend>
         <%= f.radio_button :type, 'BackgroundActivity::RemoveTaskWorkdir' %>
@@ -126,6 +162,12 @@
       </legend>
       Remember to select a <strong>task</strong> custom filter in the Dynamic Items section below.
     </fieldset>
+
+    <%-
+      ##############################
+      # BAC: ARCHIVE TASK WORKDIR
+      ##############################
+    %>
 
     <fieldset>
       <legend>
@@ -138,6 +180,12 @@
       <small>(Leave blank to archive directly in the work directories)</small>
     </fieldset>
 
+    <%-
+      ##############################
+      # BAC: COMPRESS FILES
+      ##############################
+    %>
+
     <fieldset>
       <legend>
         <%= f.radio_button :type, 'BackgroundActivity::CompressFile' %>
@@ -149,6 +197,12 @@
       </legend>
       Remember to select a <strong>file</strong> custom filter in the Dynamic Items section below.
     </fieldset>
+
+    <%-
+      ##############################
+      # BAC: FILTER SELECTIONS
+      ##############################
+    %>
 
     <fieldset>
       <legend>Dynamic Items Selection: Files or Tasks</legend>
@@ -175,6 +229,12 @@
           )
       %>
     </fieldset>
+
+    <%-
+      ##############################
+      # BAC: CLEAN CACHE
+      ##############################
+    %>
 
     <fieldset>
       <legend>
@@ -232,6 +292,38 @@
       </table>
     </fieldset>
 
+    <%-
+      ##############################
+      # BAC: ERASE OLD BACS
+      ##############################
+    %>
+
+    <fieldset>
+      <legend>
+        <%= f.radio_button :type, 'BackgroundActivity::EraseBackgroundActivities' %>
+        <%= f.label        :type, 'Erase Background Activities', :value => 'BackgroundActivity::EraseBackgroundActivities' %>
+      </legend>
+
+      <table class="simple">
+
+        <tr>
+          <td>
+            <%= label_tag      'background_activity[options][days_older]', "Finished activities older than:" %>
+          </td>
+          <td>
+            <%= text_field_tag 'background_activity[options][days_older]', @bac.options[:days_older], :size => 3 %> days ago
+          </td>
+        </tr>
+
+      </table>
+    </fieldset>
+
+    <%-
+      ##############################
+      # BAC: TEST/DEBUG ACTIVITY
+      ##############################
+    %>
+
     <fieldset>
       <legend>
         <%= f.radio_button :type, 'BackgroundActivity::RandomActivity' %>
@@ -252,7 +344,9 @@
 
   </div>
 
-  <p><%= submit_tag 'Schedule new activity' %>
+  <p>
+
+  <%= submit_tag 'Schedule new activity' %>
 
 <% end %>
 
