@@ -364,7 +364,7 @@ class BackgroundActivity < ApplicationRecord
     self.class.transaction do
       self.lock!(true) # reloads the record
       return nil if self.handler_lock.present?
-      self.update_column(:handler_lock, lock_key)
+      self.update(:handler_lock => lock_key, :updated_at => Time.now)
     end
     return true
   rescue # couldn't obtain lock
