@@ -571,6 +571,7 @@ class ToolConfig < ApplicationRecord
   # also the content of the files on disk. Ideally,
   # the JSON file should be linked by the IDs instead...
   def prevent_version_name_change_for_boutiques_tool #:nodoc:
+    return if     self.new_record?
     return unless self.version_name_change
     return unless self.tool&.cbrain_task_class_name&.to_s&.match(/^BoutiquesTask::/)
     self.errors.add(:version_name, 'cannot be changed because this is a Boutiques tool')

@@ -132,6 +132,7 @@ class Tool < ApplicationRecord
   # the JSON file should be linked by the tool ID
   # instead...
   def prevent_name_change_for_boutiques_tool #:nodoc:
+    return if     self.new_record?
     return unless self.name_change
     return unless self.cbrain_task_class_name.to_s.match(/^BoutiquesTask::/)
     self.errors.add(:name, 'cannot be changed because this is a Boutiques tool')
