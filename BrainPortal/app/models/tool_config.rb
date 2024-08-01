@@ -60,6 +60,7 @@ class ToolConfig < ApplicationRecord
 
   validate        :validate_container_rules
   validate        :validate_overlays_specs
+  validate        :prevent_version_name_change_for_boutiques_tool
 
   scope           :global_for_tools     , -> { where( { :bourreau_id => nil } ) }
   scope           :global_for_bourreaux , -> { where( { :tool_id => nil } ) }
@@ -561,6 +562,18 @@ class ToolConfig < ApplicationRecord
     end
 
     errors.empty?
+  end
+
+  # Since the version_name of the tool config is used as
+  # a lookup in the ToolConfig class to find the associated
+  # Boutiques descriptor, we can't change it. We'd
+  # need a way to adjust the lookup table too, and
+  # also the content of the files on disk. Ideally,
+  # the JSON file should be linked by the IDs instead...
+  def prevent_version_name_change_for_boutiques_tool #:nodoc:
+    return unless self.version_name_change
+    return unless self.tool.cbrain_task_class_name.to_s.match(/^BoutiquesTask::/)
+    self.errors.add(:version_name, 'cannot be changed because this is a Boutiques tool')
   end
 
   ##################################################################
