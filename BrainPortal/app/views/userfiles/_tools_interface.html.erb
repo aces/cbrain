@@ -22,9 +22,9 @@
 -%>
 
 <%
-  types    = @my_tools.map { |t| t.application_type         :array  }.flatten.uniq
-  packages = @my_tools.map { |t| t.application_package_name :array  }.flatten.uniq
-  tags     = @my_tools.map { |t| t.application_tags         :array  }.flatten.sort_by{ |tag| tag.downcase }.uniq
+  types    = @my_tools.map { |t| t.application_type         :array  }.flatten.sort_by { |tag| tag.downcase }.uniq
+  packages = @my_tools.map { |t| t.application_package_name :array  }.flatten.sort_by { |tag| tag.downcase }.uniq
+  tags     = @my_tools.map { |t| t.application_tags         :array  }.flatten.sort_by { |tag| tag.downcase }.uniq
 %>
 
 <div id="toolsDialog" title="Select Tool" >
