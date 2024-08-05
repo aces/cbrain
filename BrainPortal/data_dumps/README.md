@@ -6,7 +6,7 @@ maintenance and statistics tasks dump their files.
 
 ### BackgroundActivity Dumps (under "bacs/")
 
-These are files named like 'loginname.json.cat'. They are
+These are files named like 'loginname.jsonl'. They are
 concatenations of BackgroundActivity objects in JSON format,
 grouped by user, one JSON record per line. They are created
 whenever a user destroy a BackgroundActivity, either

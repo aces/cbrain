@@ -715,7 +715,7 @@ class BackgroundActivity < ApplicationRecord
   # For user activity statistics, record the BAC in the Rails logs.
   # A copy is also appended to
   #
-  #   RAILS_ROOT/data_dumps/bacs/username.json.cat
+  #   RAILS_ROOT/data_dumps/bacs/username.jsonl
   #
   # Usually invoked from after_destroy callback.
   def record_in_rails_log #:nodoc:
@@ -732,7 +732,7 @@ class BackgroundActivity < ApplicationRecord
     # Log in JSON archive file
     if File.directory?(Rails.root + "data_dumps/bacs")
       username  = self.user.login
-      File.open(Rails.root + "data_dumps/bacs/#{username}.json.cat","a") do |fh|
+      File.open(Rails.root + "data_dumps/bacs/#{username}.jsonl","a") do |fh|
        fh.write(json_text + "\n")
       end
     end

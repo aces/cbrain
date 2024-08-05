@@ -32,7 +32,7 @@ class BackgroundActivity::EraseBackgroundActivities < BackgroundActivity
 
   def process(item)
     bac = BackgroundActivity.find(item)
-    bac.destroy # a model callback will archive it in JSON in RAILS_ROOT/data_dumps/bacs/username.json.cat
+    bac.destroy # a model callback will archive it in JSON in RAILS_ROOT/data_dumps/bacs/username.jsonl
   end
 
   def prepare_dynamic_items
