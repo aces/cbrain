@@ -729,8 +729,9 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
           next value
         end
 
-        unless (file = Userfile.find_accessible_by_user(value, self.user, :access_requested => file_access) rescue nil ||
-                 CbrainFileList.find_accessible_by_user(value, self.user, :access_requested => :read) rescue nil )
+        file   = Userfile.find_accessible_by_user(value, self.user, :access_requested => file_access) rescue nil
+        file ||= CbrainFileList.find_accessible_by_user(value, self.user, :access_requested => :read) rescue nil
+        unless file
           params_errors.add(name, ": cannot find userfile (ID #{value})")
           next value
         end
