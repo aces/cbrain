@@ -151,8 +151,8 @@ class SessionsController < ApplicationController
     state     = params[:state].presence || 'wrong'
 
     # Some initial simple validations
-    oidc      = OidcConfig.find_by_state(state)
-    if !code || !state || state != oidc_current_state(oidc)
+    oidc      = OidcConfig.find_by_state(state) if state
+    if !code || !oidc || state != oidc_current_state(oidc)
       cb_error "#{oidc.name} session is out of sync with CBRAIN"
     end
 
@@ -204,6 +204,7 @@ class SessionsController < ApplicationController
     redirect_to new_session_path
   rescue => ex
     clean_bt = Rails.backtrace_cleaner.clean(ex.backtrace || [])
+    oidc   ||= OidcConfig.new.tap { |oidc| oidc.name = 'OIDC' }
     Rails.logger.error "#{oidc.name} auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
     flash[:error] = "The #{oidc.name} authentication failed"
     redirect_to new_session_path
