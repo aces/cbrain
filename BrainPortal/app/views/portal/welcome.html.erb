@@ -167,7 +167,7 @@
       <strong>Your current time:</strong> <%= to_localtime(Time.now, :datetime) %><BR>
     </p>
     <p>
-      <strong>Tools available to you ( out of <%= link_to @tools.count , available_path %> ) :</strong><br/>
+      <strong>Tools available to you ( out of <%= link_to @tool_count , available_path %> ) :</strong><br/>
       <%= array_to_table(current_user.available_tools.where( "category <> 'background'" ).to_a.map(&:name).sort, :table_class => 'simple', :cols => 4) %>
     </p>
     <p>

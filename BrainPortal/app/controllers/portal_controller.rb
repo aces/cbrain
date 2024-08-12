@@ -46,19 +46,14 @@ class PortalController < ApplicationController
     @default_data_provider  = DataProvider.find_by_id(current_user.meta["pref_data_provider_id"])
     @default_bourreau       = Bourreau.find_by_id(current_user.meta["pref_bourreau_id"])
 
-    @tools = Tool
-               .all
-               .order(:name)
-               .to_a
-               .reject { |t| t.category == 'background' }
-               .select { |t| t.tool_configs.to_a.any? { |tc|
-                 tc.bourreau_id.present?  &&
-                   tc.bourreau_id > 0       &&
-                   tc.version_name.present?
-               }
-               }
-
-    @avaiable_tools = @tools
+    @tool_count =  Tool
+      .joins(:tool_configs)
+      .where.not(category: 'background')
+      .where('tool_configs.bourreau_id IS NOT NULL')
+      .where('tool_configs.bourreau_id > 0')
+      .where('tool_configs.version_name IS NOT NULL')
+      .distinct
+      .count
 
     @dashboard_messages = Message
       .where(:message_type => 'cbrain_dashboard')
