@@ -148,12 +148,12 @@ class SessionsController < ApplicationController
   # a user's identity.
   def oidc
     code      = params[:code].presence.try(:strip)
-    state     = params[:state].presence || 'wrong'
+    state     = params[:state].presence
 
     # Some initial simple validations
     oidc      = OidcConfig.find_by_state(state) if state
     if !code || !oidc || state != oidc_current_state(oidc)
-      cb_error "#{oidc.name} session is out of sync with CBRAIN"
+      cb_error "#{oidc&.name || 'OIDC'} session is out of sync with CBRAIN"
     end
 
     # Query OpenID provider; this returns all the info we need at the same time.
@@ -204,9 +204,8 @@ class SessionsController < ApplicationController
     redirect_to new_session_path
   rescue => ex
     clean_bt = Rails.backtrace_cleaner.clean(ex.backtrace || [])
-    oidc   ||= OidcConfig.new.tap { |oidc| oidc.name = 'OIDC' }
-    Rails.logger.error "#{oidc.name} auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
-    flash[:error] = "The #{oidc.name} authentication failed"
+    Rails.logger.error "#{oidc&.name || 'OIDC'} auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
+    flash[:error] = "The #{oidc&.name || 'OIDC'} authentication failed"
     redirect_to new_session_path
   end
 
