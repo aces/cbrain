@@ -733,7 +733,7 @@ class BackgroundActivity < ApplicationRecord
     if File.directory?(Rails.root + "data_dumps/bacs")
       username  = self.user.login
       File.open(Rails.root + "data_dumps/bacs/#{username}.jsonl","a") do |fh|
-       fh.write(json_text + "\n")
+        fh.write(json_text + "\n")
       end
     end
 

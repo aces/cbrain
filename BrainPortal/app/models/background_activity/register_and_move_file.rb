@@ -50,8 +50,9 @@ class BackgroundActivity::RegisterAndMoveFile < BackgroundActivity::RegisterFile
     dest_dp_id  = self.options[:dest_data_provider_id]
     userfile    = Userfile.find(userfile_id)
     dest_dp     = DataProvider.find(dest_dp_id)
-    userfile.provider_move_to_otherprovider(dest_dp)
-    [ true, userfile.id ]
+    move_ok     = userfile.provider_move_to_otherprovider(dest_dp)
+    return [ true,  userfile.id ] if move_ok
+    return [ false, "Registered but cannot be moved" ]
   end
 
 end
