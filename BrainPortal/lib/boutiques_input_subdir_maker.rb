@@ -168,8 +168,9 @@ module BoutiquesInputSubdirMaker
       install_tmp = ".subdirmaker/#{userfile.id}-#{filename}"
       make_available(userfile, install_tmp)
       Dir.mkdir(dirname) unless File.directory?(dirname)
-      add_slash = userfile.is_a?(FileCollection) ? '/' : ''
-      rsyncout = bash_this("rsync -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{install_tmp.bash_escape}#{add_slash} #{dirname.bash_escape}/#{filename.bash_escape}")
+      add_slash = userfile.is_a?(FileCollection) ? '/'  : ''
+      add_dashL = userfile.is_a?(SingleFile)     ? '-L' : ''
+      rsyncout = bash_this("rsync -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{add_dashL} #{install_tmp.bash_escape}#{add_slash} #{dirname.bash_escape}/#{filename.bash_escape}")
       cb_error "Failed to install '#{dirname}/#{filename}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
     end
 
