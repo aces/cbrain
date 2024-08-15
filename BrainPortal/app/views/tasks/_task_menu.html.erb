@@ -192,7 +192,13 @@
       <br/>
       Optional: when archiving <em>As File</em>, choose a destination Data Provider:<br/>
       <%= data_provider_select :archive_dp_id, { :selector => "" }, :include_blank => "" %>
+
+      <% if current_user.has_role?(:admin_user) %>
+        <br/>
+        Do not compress while archiving <%= check_box_tag :nozip, "yes", false %>
+      <% end %>
     <p/>
+
   <% end %>
 
   <%= button_with_dropdown_menu("Filters", :content_id => 'tasks_filters') do %>
