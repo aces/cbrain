@@ -80,6 +80,7 @@ class BackgroundActivitiesController < ApplicationController
     add_options_for_remove_task_wd     if @bac.is_a?(BackgroundActivity::RemoveTaskWorkdir)
     add_options_for_clean_cache        if @bac.is_a?(BackgroundActivity::CleanCache)
     add_options_for_erase_bacs         if @bac.is_a?(BackgroundActivity::EraseBackgroundActivities)
+    add_options_for_verify_dps         if @bac.is_a?(BackgroundActivity::VerifyDataProvider)
 
     if (@bac.errors.present?) || (! @bac.valid?) || (! @bac.save)
       render :action => :new
@@ -216,6 +217,13 @@ class BackgroundActivitiesController < ApplicationController
     if @bac.options[:days_older].to_s !~ /\A\d\z|\A[1-9]\d{1,2}\z/
       @bac.errors.add(:options,'does not specify a number of days between 0 and 999')
     end
+  end
+
+  def add_options_for_verify_dps #:nodoc:
+    # Actually we have no options, only a list of DP ids to put in items
+    opt    = params.permit( :verify_dp_ids => [] )
+    dp_ids = Array(opt[:verify_dp_ids])
+    @bac.items = dp_ids.map(&:to_i)
   end
 
 end
