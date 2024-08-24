@@ -65,7 +65,10 @@ class BackgroundActivityWorker < Worker
 
     return unless main_process_is_alive?
 
+    # Initial handling of BACs as we wake up:
+    # 1) those that were scheduled and are now ready
     BackgroundActivity.activate_scheduled(@myself_id)
+    # 2) those that are crashed
     BackgroundActivity.cancel_crashed(@myself_id, BAC_IS_DEAD_TIME)
 
     # All the activity ready on this CBRAIN component
@@ -79,57 +82,27 @@ class BackgroundActivityWorker < Worker
 
     worker_log.debug "Found #{todo.count} activities"
 
-    # This is the 'dumb' first implementation of the
-    # the processing loop.
-    # A better implementation would avoid
-    # locking and unlocking the same BA object
-    # over and over when nothing else needs to be
-    # done anyway.
-    while todo.reload.count > 0
-      break if stop_signal_received?
+    # Timestamp we use to check for BAC activation every 5 minutes at most
+    last_activation = Time.now # matches the activate_scheduled() just above
 
-      # Optimization: while only 1 BA needs processing
-      # we lock the record only once and keep processing
-      # as long as no other BA shows up in the DB.
-      if todo.count == 1
-        theba = todo.first || break # disappeared?
-        theba.get_lock     || break # someone else got it
-        #worker_log.debug "SINGLE LOCK CODE"
-        begin
-          while theba.status == 'InProgress'
-            theba.process_next_items_for_duration(BAC_SLICE_TIME)
-            break if todo.reload.count != 1
-            break if stop_signal_received?
-            # break unless main_process_is_alive?  # too costly?
-          end
-        ensure
-          theba.remove_lock
+    # Loop for round robin of all active BACs.
+    while todo.count > 0
+      todo.reload.each do |bac| # a BackgroundActivity object
+        bac.lock_yield_unlock do |thebac|
+          thebac.process_next_items_for_duration(BAC_SLICE_TIME) # at least 5 seconds
         end
-        log_bac(theba) if theba.status != 'InProgress'
-        next
-      end
+        log_bac(bac) if bac.status != 'InProgress'
 
-      break if stop_signal_received?
+        return if     stop_signal_received?  # will just end the do_regular_work()
+        return unless main_process_is_alive? # a bit costly?
 
-      # Round robin of multiple BAs. This requires more
-      # locking and unlocking within the DB as we switch
-      # from BA to BA.
-      todo.reload.to_a.each do |ba| # a BackgroundActivity object
-        #worker_log.debug "MULTI LOCK CODE #{todo.count}"
-        ba.lock_yield_unlock do |theba|
-          theba.process_next_items_for_duration(BAC_SLICE_TIME)
+        # Every minute, check if new BACs happen to be ready
+        if last_activation < 1.minute.ago
+          BackgroundActivity.activate_scheduled(@myself_id)
+          last_activation = Time.now
         end
-        log_bac(ba) if ba.status != 'InProgress'
-        break if stop_signal_received?
-        break if todo.reload.count == 1 # this will bring us back to the optimized loop above
-        #break unless main_process_is_alive?  # too costly?
-      end
-
-    end
-
-    # Handle the case the worker process received a TERM
-    # For the moment we just return with no other action
-    return if stop_signal_received?
+      end # loop on each BAC currently active
+    end # while there is anything to do at all
   end
 
 end
