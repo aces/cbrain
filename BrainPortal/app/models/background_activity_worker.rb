@@ -74,7 +74,8 @@ class BackgroundActivityWorker < Worker
     # All the activity ready on this CBRAIN component
     todo_base = BackgroundActivity.where(
       :remote_resource_id => @myself_id,
-      :status             => 'InProgress'
+      :status             => 'InProgress',
+      :handler_lock       => nil,
     )
     todo = todo_base  # this is a complex relation, stupid start_at !
             .where(:start_at => nil)

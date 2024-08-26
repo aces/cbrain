@@ -147,13 +147,13 @@ class BackgroundActivitiesController < ApplicationController
 
   def add_options_for_random_activity
     opt = params_options.permit( :mintime, :maxtime, :count_ok, :count_fail, :count_exc )
-    max_0_20 = ->(str,min=0) { val=str.to_i; val < min ? min : val > 20 ? 20 : val }
+    max_0_100 = ->(str,min=0) { val=str.to_i; val < min ? min : val > 100 ? 100 : val }
     @bac.setup(
-      max_0_20.(opt[:mintime],0),
-      max_0_20.(opt[:maxtime],1),
-      max_0_20.(opt[:count_ok]),
-      max_0_20.(opt[:count_fail]),
-      max_0_20.(opt[:count_exc]),
+      max_0_100.(opt[:mintime],0),
+      max_0_100.(opt[:maxtime],1),
+      max_0_100.(opt[:count_ok]),
+      max_0_100.(opt[:count_fail]),
+      max_0_100.(opt[:count_exc]),
     )
     @bac.errors.add(:base, "Test activity doesn't have any items?") if @bac.items.size == 0
     @bac.options = opt.to_h # just for form persistency; these values aren't used in the BAC
