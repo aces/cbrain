@@ -56,12 +56,17 @@ class BackgroundActivitiesController < ApplicationController
 
     # Parse starts time
     spar = schedule_params
-    @start_date, @start_hour, @start_min = spar[:start_date], spar[:start_hour], spar[:start_min]
+    @start_date, @start_hour, @start_min, @start_now = spar[:start_date], spar[:start_hour], spar[:start_min], spar[:start_now]
+    if @start_now == '1'
+      @start_date = DateTime.now.strftime("%Y-%m-%d")
+      @start_hour = DateTime.now.strftime("%H")
+      @start_min  = DateTime.now.strftime("%M")
+    end
     datestring = "#{@start_date} #{@start_hour}:#{@start_min}"
     @bac.start_at = nil
     if datestring =~ /\A(20[23]\d?-\d\d-\d\d|\d\d\/\d\d\/20[23]\d) \d\d:\d\d\z/
       start = DateTime.parse(datestring + " " + DateTime.now.zone) rescue nil
-      start = nil if start < Time.now || start > 6.months.from_now
+      start = nil if @start_now != '1' && (start < Time.now || start > 6.months.from_now)
       @bac.start_at = start
     end
     @bac.errors.add(:base, "Start date or time is invalid (no past date and max six months ahead)") if @bac.start_at.blank?
@@ -138,7 +143,7 @@ class BackgroundActivitiesController < ApplicationController
 
   def schedule_params
     params.permit %w( start_date start_hour  start_min
-                      repeat     repeat_hour repeat_min )
+                      repeat     repeat_hour repeat_min start_now )
   end
 
   def params_options

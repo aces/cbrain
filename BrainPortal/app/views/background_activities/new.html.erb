@@ -82,6 +82,10 @@
         { 'style' => 'width: 5em' }
     %>M
 
+    <%= label_tag :start_now do %>
+      ( Or <%= check_box_tag :start_now, "1", @start_now == "1" %> right away )
+    <% end %>
+
     <%-
       ##############################
       # REPEAT
