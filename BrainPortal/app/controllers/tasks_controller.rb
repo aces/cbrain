@@ -675,6 +675,7 @@ class TasksController < ApplicationController
   # [*Resume*] Release task from <tt>Suspended</tt> status (i.e. continue processing).
   # [*Terminate*] Kill the task, while maintaining its temporary files and its entry in the database.
   # [*Delete*] Kill the task, delete the temporary files and remove its entry in the database.
+  # [*Archive*] Archive the content of task work folder
   def operation
     @scope = scope_from_session('tasks#index')
 
@@ -722,7 +723,7 @@ class TasksController < ApplicationController
     results = apply_operation(operation.downcase, tasklist,
       :dup_bourreau_id => dup_bourreau_id,
       :archive_dp_id   => archive_dp_id,
-      :nozip => nozip
+      :nozip           => nozip
     )
 
     # Prepare counters for how many tasks affected.
