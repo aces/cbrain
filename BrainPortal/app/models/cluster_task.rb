@@ -1631,8 +1631,6 @@ class ClusterTask < CbrainTask
       return false
     end
 
-    taskarch_userfile.cache_full_path
-
     self.make_cluster_workdir
     Dir.chdir(self.full_cluster_workdir) do
       safe_symlink(taskarch_userfile.cache_full_path, tar_file)
