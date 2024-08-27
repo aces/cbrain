@@ -692,23 +692,6 @@ class RemoteResource < ApplicationRecord
     send_command(command)
   end
 
-  # Utility method to send a +copy_files+ command to a
-  # RemoteResource, whether local or not. +userfile_ids+
-  # should be  an array of Userfiles to copy.
-  # +dest_data_provider_id+ is the ID of the DP to copy the
-  # the files to.
-  # The command does not return any useful information, it simply
-  # launches a background job on the RemoteResource.
-  def send_command_copy_files(userfile_ids, dest_data_provider_id, requester_user_id)
-    command = RemoteCommand.new(
-      :command               => 'copy_files',
-      :userfile_ids          => userfile_ids.join(","),
-      :dest_data_provider_id => dest_data_provider_id,
-      :requester_user_id     => requester_user_id,
-    )
-    send_command(command)
-  end
-
   # Utility method to send a +start_workers+ command to a
   # RemoteResource, whether local or not.
   # Maybe this should be more specific to Bourreaux.
@@ -922,48 +905,6 @@ class RemoteResource < ApplicationRecord
     user.addlog("User SSH key installed on #{myself.name}")
     myself.addlog("User SSH key for #{user.login} installed")
     user.meta["ssh_key_install_date_#{myself.id}"] = Time.now
-
-    true
-  end
-
-  # This remote command copies a set of files to
-  # a destination DataProvider. At the end, a
-  # Message is created with a summary of the
-  # successes or failures.
-  def self.process_command_copy_files(command)
-    # Command params
-    userfile_ids           = command.userfile_ids.split(",")
-    dest_data_provider_id  = command.dest_data_provider_id
-    user_id                = command.requester_user_id.presence || User.admin.id
-    user                   = User.find(user_id)
-
-    dest_dp = DataProvider.find(dest_data_provider_id)
-
-    # Loop though the files and copy them
-    CBRAIN.spawn_with_active_records(:admin, "Userfile Copy") do
-      status = {} # message => count
-      userfile_ids.each_with_index do |userfile_id,idx|
-        userfile = Userfile.where(:id => userfile_id).first
-        next unless userfile # doesn't exist? ignore
-        Process.setproctitle "CopyFiles ID=#{userfile_id} #{idx+1}/#{userfile_ids.size}"
-        message = "" # scope declaration
-        begin
-          copied = userfile.provider_copy_to_otherprovider(dest_dp)
-          message = copied ? 'Copied' : 'Not copied (already exists?)'
-        rescue => ex
-          message = "Error copying: #{ex.message}"
-        end
-        status[message] ||= 0
-        status[message]  += 1
-      end
-      message_type = (status.keys.size == 1 && status.keys.first == 'Copied') ? :notice : :error
-      Message.send_message(user,
-        { :message_type  => message_type,
-          :header        => "File copying operation finished.",
-          :variable_text => (status.map { |m,c| "#{c} x #{m}" }.join("\n")),
-        }
-      )
-    end
 
     true
   end
