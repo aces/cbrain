@@ -194,7 +194,7 @@
       <%= data_provider_select :archive_dp_id, { :selector => "" }, :include_blank => "" %>
 
       <% if current_user.has_role?(:admin_user) %>
-        <br/>
+        <br/><br/>
         Do not compress while archiving <%= check_box_tag :nozip, "yes", false %>
       <% end %>
     <p/>
