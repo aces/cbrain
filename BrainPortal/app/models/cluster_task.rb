@@ -1330,7 +1330,7 @@ class ClusterTask < CbrainTask
   # state of the workdir can be performed with
   # unarchive_work_directory().
   def archive_work_directory(nozip = false)
-    self.addlog("archiving, compression  #{nozip}")
+
     # Keep updated_at value in order to reset it at the end of method
     updated_at_value = self.updated_at
 
@@ -1543,10 +1543,9 @@ class ClusterTask < CbrainTask
   # Restoring the state of the workdir can be performed
   # with unarchive_work_directory_from_userfile().
   def archive_work_directory_to_userfile(dp_id = nil, nozip = nil)
-    return false unless self.archive_work_directory
+    return false unless self.archive_work_directory(nozip)
     file_id  = self.workdir_archive_userfile_id
     return true if file_id
-
     full=self.full_cluster_workdir
     if ! Dir.exists?(full)
       self.addlog("Cannot archive: work directory '#{full}' does not exist.")
