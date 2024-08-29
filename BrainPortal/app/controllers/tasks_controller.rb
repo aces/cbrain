@@ -674,6 +674,7 @@ class TasksController < ApplicationController
   # [*Resume*] Release task from <tt>Suspended</tt> status (i.e. continue processing).
   # [*Terminate*] Kill the task, while maintaining its temporary files and its entry in the database.
   # [*Delete*] Kill the task, delete the temporary files and remove its entry in the database.
+  # [*Archive*] Archive the content of task work folder
   def operation
     @scope = scope_from_session('tasks#index')
 
@@ -707,12 +708,14 @@ class TasksController < ApplicationController
     archive_dp_id   = params[:archive_dp_id].presence   # for 'archive as file' operation
     dup_bourreau_id = nil unless dup_bourreau_id && Bourreau.find_all_accessible_by_user(current_user).where(:id => dup_bourreau_id).exists?
     archive_dp_id   = nil unless archive_dp_id   && DataProvider.find_all_accessible_by_user(current_user).where(:id => archive_dp_id).exists?
+    nozip           = params[:nozip].presence  && current_user.has_role?(:admin_user) # for archiving without compression, admin only
 
     # This does the actual work and returns info about the
     # successes and failures.
     results = apply_operation(operation, tasklist,
       :dup_bourreau_id => dup_bourreau_id,
       :archive_dp_id   => archive_dp_id,
+      :nozip           => nozip
     )
 
     # Prepare counters for how many tasks affected.
@@ -748,6 +751,7 @@ class TasksController < ApplicationController
     # Some other parameters
     dup_bourreau_id = options[:dup_bourreau_id] # for 'duplicate' operation
     archive_dp_id   = options[:archive_dp_id]   # for 'archive as file' operation
+    nozip           = options[:nozip]           # for 'archive as file' and 'archive' operation
 
     # Prepare counters for how many tasks affected.
     skipped_list = {}
@@ -817,6 +821,9 @@ class TasksController < ApplicationController
             bac_klass = operation_to_bac[operation]
             if bac_klass
               bac = bac_klass.local_new(current_user.id, oktasks.map(&:id), bid, {})
+              # an non-copress option for archive or archive to file operations
+              bac.options[:nozip]                    = nozip           if nozip && operation =~ /^archive(_file)?$/
+              # other options and operations
               bac.options[:archive_data_provider_id] = archive_dp_id   if operation == 'archive_file'
               bac.options[:dup_bourreau_id]          = dup_bourreau_id if operation == 'duplicate'
               bac.options[:atwhat]                   = 'Setup'         if operation == 'restart_setup'

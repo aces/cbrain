@@ -33,8 +33,9 @@ class BackgroundActivity::ArchiveTaskWorkdir < BackgroundActivity::TerminateTask
     super(item) # invokes the terminate code; will skip tasks that don't need to be terminated
     cbrain_task  = CbrainTask.where(:bourreau_id => CBRAIN::SelfRemoteResourceId).find(item)
     dest_dp_id   = self.options[:archive_data_provider_id] # can be nil
-    ok           = cbrain_task.archive_work_directory                              if dest_dp_id.blank?
-    ok           = cbrain_task.archive_work_directory_to_userfile(dest_dp_id.to_i) if dest_dp_id.present?
+    nozip        = self.options[:nozip]
+    ok           = cbrain_task.archive_work_directory(nozip)                              if dest_dp_id.blank?
+    ok           = cbrain_task.archive_work_directory_to_userfile(dest_dp_id.to_i, nozip) if dest_dp_id.present?
     return [ true,  "Archived" ] if   ok
     return [ false, "Skipped"  ] if ! ok
   end
