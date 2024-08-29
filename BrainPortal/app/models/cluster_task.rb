@@ -1637,7 +1637,7 @@ class ClusterTask < CbrainTask
     end
     taskarch_userfile.addlog("Restored TaskWorkdirArchive as symlink in work directory.")
 
-    return false unless self.unarchive_work_directory(nozip)
+    return false unless self.unarchive_work_directory
 
     self.workdir_archive_userfile_id=nil
     self.save
