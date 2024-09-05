@@ -56,7 +56,7 @@
     <span title="Type of data provider.">
 
       <p><%= f.label :type, "Type" %><br/>
-      <%= f.select :type, grouped_options_for_select(@typelist), { :prompt => "Select Provider Type" }, { :disabled => (params[:action].to_sym == :edit) } %><br/>
+      <%= f.select :type, grouped_options_for_select(@typelist), { :prompt => "Select Provider Type" } %><br/>
       <div class="field_explanation"><%= show_hide_toggle "(Data Provider Type Information)", "#data_provider_classes", :class  => 'action_link' %></div>
       </p>
 
