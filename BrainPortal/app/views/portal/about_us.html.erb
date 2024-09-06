@@ -37,9 +37,12 @@
   <br>
   <strong>Portal Up Since:</strong> <%= to_localtime(CBRAIN::Startup_LocalTime,:datetime) %> (for: <%= pretty_elapsed((Time.now.localtime - CBRAIN::Startup_LocalTime).to_i) %>)
 
-  <% plugins_basenames = Dir.glob(Pathname.new(CBRAIN::Plugins_Dir) + "cbrain-plugins-*")
-                         .map { |x| Pathname.new(x).basename.to_s }
-                         .reject { |x| x =~ /^cbrain-plugins-base$/ } %>
+  <% plugins_basenames = Pathname(CBRAIN::Plugins_Dir)
+                         .children
+                         .select(&:directory?)
+                         .map(&:basename)
+                         .map(&:to_s)
+                         .reject { |x| x =~ /^cbrain-plugins-base$|^installed-plugins$/ }  %>
 
   <% if plugins_basenames.present? %>
     <h3>CBRAIN Plugins Revision Information
@@ -49,7 +52,7 @@
     <% plugins_basenames.sort.each do |plugin| %>
       <% revtag  = CbrainFileRevision.cbrain_head_tag(plugin)                 rescue CbrainFileRevision::DEFAULT_TAG %>
       <% revinfo = CbrainFileRevision.cbrain_head_revinfo(plugin).self_update rescue nil %>
-      <h5>Plugins Package: <%= plugin.sub("cbrain-plugins-","").capitalize %></h5>
+      <h5>Plugins Package: <%= plugin.titleize.gsub(/Cbrain|Plugins/, "") %></h5>
       <strong>Version:</strong> <%= revtag %>
       <br>
       <strong>Last Changed Author:</strong> <%= revinfo.try(:author) || "?" %>
