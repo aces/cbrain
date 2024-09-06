@@ -48,7 +48,7 @@
 
 
       <%- # account -%>
-      <% if page_is?("nh_users#", "#myaccount") %>
+      <% if page_is?("nh_users#") %>
           <%= link_to 'My Account', myaccount_path, { :class => "nh_breadcrumbs_item", "data-active" => page_is?("nh_users#myaccount") } %>
           <% if page_is_not?("#myaccount") %>
             <div class="nh_breadcrumbs_icon"><%= nh_icon_caret_right %></div>
@@ -58,12 +58,12 @@
 
       <%- # invites -%>
       <% if page_is?("nh_invitations#index") %>
-        <%= link_to 'Invitations', nh_invitations_path, { :class => "nh_breadcrumbs_item", "data-active" => page_is?("nh_invitations#index") } %>
+        <%= link_to 'Invitations', nh_invitations_path, { :class => "nh_breadcrumbs_item", "data-active" => "true" } %>
       <% end %>
 
       <%- # messages -%>
       <% if page_is?("nh_messages#index") %>
-        <%= link_to 'Messages', nh_messages_path, { :class => "nh_breadcrumbs_item", "data-active" => page_is?("nh_messages#index") } %>
+        <%= link_to 'Messages', nh_messages_path, { :class => "nh_breadcrumbs_item", "data-active" => "true" } %>
       <% end %>
       
       <%- # projects -%>
@@ -96,8 +96,7 @@
 
       <%- # styleguide -%>
       <% if page_is?("neurohub_portal#styleguide") %>
-
-        <%= link_to 'Styleguide', styleguide_path, { :class => "nh_breadcrumbs_item", "data-active" => page_is?("neurohub_portal#styleguide") } %>
+        <%= link_to 'Styleguide', styleguide_path, { :class => "nh_breadcrumbs_item", "data-active" => "true" } %>
       <% end %>
 
     </div>
