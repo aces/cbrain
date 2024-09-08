@@ -1069,7 +1069,7 @@ class UserfilesController < ApplicationController
     if task == :copy
       my_group_id  = current_assignable_group.id
       bac = BackgroundActivity::CopyFile.setup!(current_user.id, selected_ids, nil, new_provider.id,
-        { :crush_destination => crush_destination, :group_id => my_group_id }
+        { :crush_destination => crush_destination, :user_id => current_user.id, :group_id => my_group_id }
       )
     else # :move
       selected_ids  = selected_ids.select { |id| Userfile.find(id).has_owner_access?(current_user) }
