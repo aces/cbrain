@@ -48,6 +48,11 @@ class MultilevelLocalDataProvider < FlatDirLocalDataProvider
     true
   end
 
+  # Returns true: forces this DP type to be read-only.
+  def read_only? #:nodoc:
+    true
+  end
+
   # Returns the real path on the DP, since there is no caching here.
   # Note that in the superclass, provider_full_path() will
   # call cache_full_path().
