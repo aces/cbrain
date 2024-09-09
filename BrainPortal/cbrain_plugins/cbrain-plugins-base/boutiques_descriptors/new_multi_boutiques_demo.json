@@ -5,7 +5,7 @@
     "author":         "Pierre Rioux",
     "description":    "A demo CBRAIN task using a Boutiques descriptor. This program runs the UNIX 'du' command on some files or directories.",
     "descriptor-url": "https://github.com/aces/cbrain/blob/master/BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task_descriptors/multi_boutiques_demo.json",
-    "command-line": "du [ALL] [HUMAN] [FOLLOW_LINKS] [SINPUT1] [MINPUT1] [SINPUT2] [MINPUT2] | tee [DU_OUTPUT_NAME]",
+    "command-line": "echo String1 [STRING1] ; echo String2 [STRING2] ; du [ALL] [HUMAN] [FOLLOW_LINKS] [SINPUT1] [MINPUT1] [SINPUT2] [MINPUT2] | tee [DU_OUTPUT_NAME]",
     "inputs": [
         {
             "name":              "Required single input 1",
@@ -51,6 +51,24 @@
             "optional":          false,
             "list":              false,
             "value-key":         "[DU_OUTPUT_NAME]"
+        },
+        {
+            "name":              "Mandatory string",
+            "id":                "string1",
+            "description":       "a mandatory string validated by a regex, like abc123",
+            "type":              "String",
+            "optional":          false,
+            "list":              false,
+            "value-key":         "[STRING1]"
+        },
+        {
+            "name":              "Optional string",
+            "id":                "string2",
+            "description":       "a optional string validated by a regex, like defXy5",
+            "type":              "String",
+            "optional":          true,
+            "list":              false,
+            "value-key":         "[STRING2]"
         },
         {
             "name":              "All files",
@@ -129,6 +147,10 @@
     "custom": {
         "cbrain:readonly-input-files": true,
         "cbrain:integrator_modules": {
+            "BoutiquesInputRegexChecker": {
+              "string1": [ "abc\\d+", "mandatory string bad" ],
+              "string2": [ "def\\w*", "optional string bad" ]
+            },
             "BoutiquesOutputFileTypeSetter": {
               "du_report_out": "TextFile"
             },
