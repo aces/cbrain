@@ -27,8 +27,8 @@
 #   "custom": {
 #       "cbrain:integrator_modules": {
 #           "BoutiquesInputRegexChecker": {
-#               "mem":   [ "[1-9]\\d?[mMgG]", "Memory must be specified as 1m or 4g etc" ],
-#               "label": [ "\\w+",            "The label must be an alphanums string" ]
+#               "mem":   [ "[1-9]\\d?[mMgG]", "must be specified as 1m or 4g etc" ],
+#               "label": [ "\\w+",            "must be an alphanums string" ]
 #           }
 #       }
 #   }
