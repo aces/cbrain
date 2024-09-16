@@ -1,0 +1,36 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+  # This partial can be invoked directly as a viewer from the display action,
+  # or rendered as part of another piece of view code. As such it will
+  # accept a "base_directory" either as a params[] or as a local variable
+  base_dir = base_directory rescue params[:base_directory]
+%>
+
+<%= render :file   => VirtualFileCollection.view_path(:file_collection_form),
+           :locals => { :base_directory => base_dir } %>
+
+<div id="sub_viewer_filecollection_cbrain"></div>
+

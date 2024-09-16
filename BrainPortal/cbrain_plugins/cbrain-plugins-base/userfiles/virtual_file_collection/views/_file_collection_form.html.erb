@@ -1,0 +1,58 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+  # This partial requires one local variable:
+  #
+  #    base_directory : the subdirectory inside the userfile where we start to render the directory content
+%>
+Debug Virtual File Collection Form 1
+<% if true # @userfile.num_files && @userfile.num_files > 0 %>
+
+  <%= form_for @userfile, :as   => :userfile,
+                          :url  => { :controller => :userfiles,
+                                     :action => :extract_from_collection
+                                   },
+                          :html => { :method => :post,
+                                     :id     => "userfile_edit_#{@userfile.id}_#{base_directory}"
+                                   } do |f| %>
+    <%= ajax_element(display_userfile_path(@userfile,
+            :viewer                => :file_collection_top_table,
+            :viewer_userfile_class => :VirtualFileCollection,
+            :base_directory        => base_directory,
+        ), :class => "loading_message") do %>
+      <br>
+      Loading...
+      <br>
+    <% end %>
+
+    <% if @userfile.is_locally_synced? %>
+      <P>
+      <%= submit_tag "Extract Files from Virtual Collection" %>
+    <% end %>
+
+  <% end %>
+
+<% end %>
+
