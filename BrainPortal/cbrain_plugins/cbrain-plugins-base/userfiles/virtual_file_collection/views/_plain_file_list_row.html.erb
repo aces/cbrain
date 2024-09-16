@@ -47,7 +47,7 @@
       &nbsp;
 
       <% if file.size > 0 %>
-        <%= data_link file.name, @userfile %>
+        <%= data_link file.name, @userfile # file.userfile? %>
       <% else %>
         <%= Pathname.new(file.name).basename.to_s %>
       <% end %>
