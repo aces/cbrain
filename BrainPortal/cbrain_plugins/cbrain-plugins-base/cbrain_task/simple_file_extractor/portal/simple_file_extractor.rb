@@ -54,7 +54,7 @@ class CbrainTask::SimpleFileExtractor < PortalTask
 
     # Clean up pattern list
     patterns = patterns_as_array(params[:patterns].presence || {})
-    patterns = patterns.map(&:presence).compact
+    patterns = patterns.map(&:presence).compact.map(&:strip).map(&:presence).compact # ignore blanks at each end
     patterns = patterns.map { |pat| Pathname.new(pat).cleanpath }
     params[:patterns] = patterns_as_hash(patterns.map(&:to_s)) # write back cleaned list
 

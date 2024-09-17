@@ -266,7 +266,7 @@ class BourreauWorker < Worker
   # *On* *CPU* and *On* *CPU* to *Data* *Ready* based on
   # the activity on the cluster, but no code is run for
   # these transitions.
-  def process_task(task) # when entering this methods task is a partial object, with only a few attributes
+  def process_task(task) # when entering this method, +task+ is a partial object, with only a few attributes
 
     notification_needed = true # set to false later, in the case of restarts and recovers
 

@@ -2313,21 +2313,32 @@ img {
 /* % Background Activity Index */
 /* % ######################################################### */
 
+/* reset progress bar defaults */
 #bac_form progress {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
 }
 
+/* progress bar styles */
 .background_activity_progress {
-  height: 3em;
-  width: 40em;
-  background-color: #eee;
-  border: 0.5em solid black;
+  height: 1.3em;
+  width: 100%;
+  min-width: 20em;
+  background-color: #dbdbdb;
+  border: 0.3em solid black;
+  border-radius: 1em;
 }
 
+/* chrome only */
 .background_activity_progress::-webkit-progress-bar {
-  background-color: #eee;
+  background-color: #dbdbdb;
+  border-radius: 1em;
+}
+
+/* chrome only */
+.background_activity_progress::-webkit-progress-value {
+  border-radius: 1em;
 }
 
 /* COLORS FOR STATIC (FINAL) states */
@@ -2383,11 +2394,11 @@ img {
 }
 
 @keyframes progress-grey-glowing {
-    0% { border-color: #ddd; }
+    0% { border-color: #eee; }
    25% { border-color: #999; }
-   50% { border-color: #555; }
+   50% { border-color: #444; }
    75% { border-color: #999; }
-  100% { border-color: #ddd; }
+  100% { border-color: #eee; }
 }
 
 .bac_InProgress[value] {

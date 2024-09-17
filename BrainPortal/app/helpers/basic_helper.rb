@@ -87,5 +87,28 @@ module BasicHelper
     s.reverse.gsub(/(\d\d\d)(?=\d)/, '\1,').reverse
   end
 
+  # Checks if the current page is rendered with a specific
+  # controller and action; arguments are one or many strings
+  # in the format "controller#action" (e.g. "users#show"); the
+  # method will return true if the page matches any of the
+  # strings. Either controller or action can be left blank to
+  # match any controller or action (e.g. "users#" and "#show"),
+  # although filtering by action only doesn't seem very useful.
+  #
+  # This method is mostly to be used in templating code, as like in
+  #
+  #    <% if page_is?("tasks#index") %>
+  def page_is?(*contr_actions)
+    Array(contr_actions).any? do |contr_action|
+      contr,action = contr_action.split('#')
+      (contr.blank? || params[:controller] == contr) && (action.blank? || params[:action] == action)
+    end
+  end
+
+  # Returns the opposite true/false value of page_is?()
+  def page_is_not?(*contr_actions)
+    ! page_is?(*contr_actions)
+  end
+
 end
 

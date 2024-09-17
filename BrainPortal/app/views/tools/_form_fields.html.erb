@@ -75,7 +75,7 @@
     <%= f.text_field :application_tags, :size => 60 %>
   <% end %>
 
-  <% t.edit_cell :url, :show_width => 2, :header => "Tool URL" do |f| %>
+  <% t.edit_cell :url, :show_width => 2, :header => "Tool URL", :content => (@tool.url.present? ? link_to(@tool.url,@tool.url) : "") do |f| %>
     <%= f.text_field :url, :size => 60 %>
   <% end %>
 
