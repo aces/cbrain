@@ -86,7 +86,10 @@ module GlobusHelpers
   # the trick. The Rails session is maintained by a cookie already
   # created and maintained, at this point.
   def oidc_current_state(oidc)
-    oidc.create_state( request.session_options[:id] )
+    # Some dubious clients post to /sessions with no prior cookies set, so rails end up
+    # with no ID for the session in the request. We generate a dummy one that will make auth fail.
+    rails_session_id = request.session_options[:id] || (rand(10000000000).to_s + rand(22222222222).to_s)
+    oidc.create_state( rails_session_id )
   end
 
   # Record the OIDC identity for the current user.
