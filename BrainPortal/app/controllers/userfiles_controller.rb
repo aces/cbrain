@@ -356,31 +356,40 @@ class UserfilesController < ApplicationController
       @viewer.apply_conditions(@userfile) if @viewer
     end
 
-    begin
-      if @viewer
-        if @viewer.errors.present?
-          render :partial => "viewer_errors"
-        elsif params[:apply_div] == "false"
-          render :file   => @viewer.partial_path.to_s, :layout => params[:apply_layout].present?
-        else
-          render :action => :display,                  :layout => params[:apply_layout].present?
-        end
-      else
-        render :html => "<div class=\"warning\">Could not find viewer #{viewer_name}.</div>".html_safe, :status  => "404"
-      end
-    rescue ActionView::Template::Error => e
-      exception = e.original_exception
-
-      raise exception unless Rails.env == 'production'
-      ExceptionLog.log_exception(exception, current_user, request)
-      Message.send_message(current_user,
-        :message_type => 'error',
-        :header => "Could not view #{@userfile.name}",
-        :description => "An internal error occurred when trying to display the contents of #{@userfile.name}."
-      )
-
-      render :html => "<div class=\"warning\">Error generating view code for viewer #{params[:viewer]}.</div>".html_safe, :status => "500"
+    # No viewer
+    if ! @viewer
+      render :html => "<div class=\"warning\">Could not find viewer #{viewer_name}.</div>".html_safe, :status  => "404"
+      return
     end
+
+    # Viewer reports errors
+    if @viewer.errors.present?
+      render :partial => "viewer_errors"
+      return
+    end
+
+    # Render partial
+    if params[:apply_div] == "false"
+      render :file   => @viewer.partial_path.to_s, :layout => params[:apply_layout].present?
+      return
+    end
+
+    # Render standard display action
+    render :action => :display, :layout => params[:apply_layout].present?
+
+  # Handle all errors
+  rescue => e
+    exception = e.respond_to?(:original_exception) ? e.original_exception : e
+
+    raise exception unless Rails.env == 'production'
+    ExceptionLog.log_exception(exception, current_user, request)
+    Message.send_message(current_user,
+      :message_type => 'error',
+      :header => "Could not view #{@userfile.name}",
+      :description => "An internal error occurred when trying to display the contents of #{@userfile.name}."
+    )
+
+    render :html => "<div class=\"warning\">Error generating view code for viewer '#{params[:viewer]}'. Admins have been notified and will look into the problem. In the meantime, there's not much you can do about this.</div>".html_safe
   end
 
   def show #:nodoc:
