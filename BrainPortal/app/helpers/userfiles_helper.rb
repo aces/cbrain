@@ -110,11 +110,11 @@ module UserfilesHelper
       end
     elsif display_name =~ /\.html$/i # TODO: this will never happen if we ever create a HtmlFile model with at least one viewer
       link_to "#{display_name}",
-        stream_userfile_path(@userfile, :file_path => file_name, :disposition => 'inline'),
+        stream_userfile_path(userfile, :file_path => file_name, :disposition => 'inline'),
         :target => '_BLANK'
     else
       link_to h(display_name),
-              url_for(:action  => :content, :content_loader => :collection_file, :arguments => file_name)
+              url_for(:action  => :content, :id => userfile.id, :content_loader => :collection_file, :arguments => file_name)
     end
   end
 
