@@ -32,11 +32,30 @@ class VirtualFileCollection < FileCollection
 
   CBRAIN_ARCHIVE_CONTENT_BASENAME = nil
 
-  #reset_viewers # we don't need any of the superclass viewers
+  before_validation :set_size
+
+  reset_viewers # we don't need any of the superclass viewers
   has_viewer :name => 'Virtual File Collection', :partial => :file_collection , :if => :is_locally_synced?
 
   def self.pretty_type #:nodoc:
     "Virtual File Collection"
+  end
+
+  def num_files
+    Rails.cache.fetch("VirtualFileCollection#num_files", expires_in: 5.minutes) do
+      self.get_userfiles.sum(&:num_files)
+    end
+  end
+
+  def size
+    Rails.cache.fetch("VirtualFileCollection#size", expires_in: 5.minutes) do
+      self.get_userfiles.sum(&:size)
+    end
+  end
+
+
+  def set_size #:nodoc:
+    user.assign_attributes(size: self.size , num_files: num_files)
   end
 
   # Sync the VirtualFileCollection, with the files too
@@ -98,10 +117,9 @@ class VirtualFileCollection < FileCollection
     self.update_cache_symlinks
     self.cache_is_newer
   end
-  require 'pry'
+
   # List linked files or directories, as if present directly
   def list_linked_files(dir=:all, allowed_types = :regular)
-    #binding.pry
     if allowed_types.is_a? Array
       types = allowed_types.dup
     else
@@ -110,9 +128,10 @@ class VirtualFileCollection < FileCollection
     types.map!(&:to_sym)
     types << :file if types.delete(:regular)
 
-    # for :top
-    # the and :directory file type data are maid up, to avoid running os command which should not affect file browsing
-    # alternatively, new option(s) can be added to list_files/cache_collection_index
+    # for combination of :top and :directory file type data are maid up,
+    # to avoid running file stats command which should not affect file browsing
+    # alternatively, new option(s) can be added to list_files/cache_collection_index,
+    # or new dir_info method
     if (dir == :top || dir == '.')
       cloned_files = self.list_files(:top, :link).cb_deep_clone   # no altering the cache of list_files methods
       userfiles_by_name = self.get_userfiles.index_by(&:name)
@@ -121,12 +140,14 @@ class VirtualFileCollection < FileCollection
         userfile   = userfiles_by_name[fname]
         if types.include?(:directory) &&  userfile.is_a?(FileCollection)
           file.symbolic_type = :directory
+          file.userfile = userfile
           # binding.pry
           file
         elsif   types.include?(:file) && userfile.is_a?(SingleFile)
           file = userfile.list_files.first.clone
           file&.name  = self.name + '/' + fname
           file&.symbolic_type = :regular
+          file.userfile = userfile
           # binding.pry
           file
         end
@@ -145,6 +166,7 @@ class VirtualFileCollection < FileCollection
       userfile.list_files(dir, allowed_types).each do |f|
         f.name = self.name + '/' + f.name
       end
+      f.userfile = userfile
     end.flatten
   end
 
@@ -193,7 +215,7 @@ class VirtualFileCollection < FileCollection
 
   # Synchronize each file
   def sync_files #:nodoc:
-    self.get_userfiles.each { |co| co.sync_to_cache }
+    self.get_userfiles.each { |uf| uf.sync_to_cache }
   end
 
   # Clean up ALL symbolic links
@@ -214,11 +236,11 @@ class VirtualFileCollection < FileCollection
     self.make_cache_symlinks
   end
 
-  # Create symbolic links in cache
+  # Create symbolic links in cache for each element of the virtual collection
   # Note that this does not sync the files themselves.
   def make_cache_symlinks #:nodoc:
-    self.get_userfiles.each do |co|
-      link_value = co.cache_full_path
+    self.get_userfiles.each do |uf|
+      link_value = uf.cache_full_path
       link_path  = self.cache_full_path + link_value.basename
       File.unlink(link_path) if File.symlink?(link_path) && File.readlink(link_path) != link_value
       File.symlink(link_value, link_path) unless File.exist?(link_path)

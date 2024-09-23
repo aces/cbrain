@@ -35,7 +35,7 @@
 </td>
 
 <td class="left">
-    <%= ("&nbsp;" * 6 * file.depth).html_safe %>
+     &nbsp;
 
     <div style="display: inline-flex">
       <% if file.symbolic_type == :directory %>
@@ -45,11 +45,16 @@
       <% end %>
 
       &nbsp;
+      <% bname = Pathname.new(file.name).basename.to_s %>
+
+      <% fname = file.name %>
+      <% fname = fname.delete_prefix(@userfile.name + '/') if @userfile != file.userfile %>
 
       <% if file.size > 0 %>
-        <%= data_link file.name, @userfile # file.userfile? %>
+        fname=<%=  fname %>
+        <%=   data_link fname, file.userfile      %>
       <% else %>
-        <%= Pathname.new(file.name).basename.to_s %>
+        <%= bname %>
       <% end %>
 
       <% if file.symbolic_type == :directory %>
@@ -62,9 +67,17 @@
 
 <td>
   <% if file.symbolic_type == :regular && file.size > 0 && file.size <  UserfilesController::MAX_DOWNLOAD_MEGABYTES.megabytes %>
-    <%= link_to  url_for(:action  => :content, :content_loader => :collection_file, :arguments => file.name) do %>
-      <span title="Download file" id="span" class="ui-button-icon ui-icon ui-icon-arrowthickstop-1-s"></span>
+
+    <% if @userfile.id != file.userfile.id %>
+      <% download_url =  url_for(:action  => :content, :content_loader => :collection_file, :id => file.userfile.id, :arguments => fname) %>
+    <%  else %>
+      <% download_url =  url_for(:action  => :download, :id => file.userfile.id) %>
     <% end %>
+
+    <%= link_to  download_url do %>
+        <span title="Download file" id="span" class="ui-button-icon ui-icon ui-icon-arrowthickstop-1-s"></span>
+    <% end %>
+
   <% end %>
 </td>
 

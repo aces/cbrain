@@ -27,8 +27,9 @@
   #
   #    base_directory : the subdirectory inside the userfile where we start to render the directory content
 %>
-Debug Virtual File Collection Form 1
-<% if true # @userfile.num_files && @userfile.num_files > 0 %>
+
+<% if @userfile.num_files && @userfile.num_files > 0 %>
+
 
   <%= form_for @userfile, :as   => :userfile,
                           :url  => { :controller => :userfiles,
@@ -37,6 +38,7 @@ Debug Virtual File Collection Form 1
                           :html => { :method => :post,
                                      :id     => "userfile_edit_#{@userfile.id}_#{base_directory}"
                                    } do |f| %>
+    DEBUG file collection form
     <%= ajax_element(display_userfile_path(@userfile,
             :viewer                => :file_collection_top_table,
             :viewer_userfile_class => :VirtualFileCollection,
@@ -47,10 +49,11 @@ Debug Virtual File Collection Form 1
       <br>
     <% end %>
 
-    <% if @userfile.is_locally_synced? %>
-      <P>
-      <%= submit_tag "Extract Files from Virtual Collection" %>
-    <% end %>
+    <%# todo delete %>
+    <%# if @userfile.is_locally_synced? %>
+<!--      <P>-->
+      <%#= submit_tag "Extract Files from Virtual Collection" %>
+    <%# end %>
 
   <% end %>
 
