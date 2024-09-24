@@ -38,7 +38,7 @@
                           :html => { :method => :post,
                                      :id     => "userfile_edit_#{@userfile.id}_#{base_directory}"
                                    } do |f| %>
-    DEBUG file collection form
+
     <%= ajax_element(display_userfile_path(@userfile,
             :viewer                => :file_collection_top_table,
             :viewer_userfile_class => :VirtualFileCollection,
@@ -49,11 +49,7 @@
       <br>
     <% end %>
 
-    <%# todo delete %>
-    <%# if @userfile.is_locally_synced? %>
-<!--      <P>-->
-      <%#= submit_tag "Extract Files from Virtual Collection" %>
-    <%# end %>
+
 
   <% end %>
 

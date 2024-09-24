@@ -27,7 +27,7 @@
 <% base_dir = base_dir.presence || "." %>
 
 <% file_list ||= ( @userfile.list_linked_files(base_dir, [:regular, :directory, :link]) rescue [] ) %>
-base <%= base_dir %>
+
 <% if file_list.blank? %>
 
  <tr class="<%= cycle("list-odd", "list-even") %>">
@@ -42,17 +42,6 @@ base <%= base_dir %>
      <% fname = file.name %>
      <% fname = fname.delete_prefix(@userfile.name + '/') unless @userfile.id == file.userfile.id %>
      <% if file.symbolic_type == :directory %>
-     <%=    h =                                   {:id                    => file.userfile.id,
-                                                        :action                => :display,
-                                                        :viewer                => "directory_contents",
-                                                        :viewer_userfile_class => "FileCollection",
-                                                        :base_directory        => ".",
-                                                       :apply_div             => "false"}
-%>
- <%=              link_to h.to_s, url_for(h)
-
-
-       %>
        <%= on_click_ajax_replace( { :element  => "tr",
                                     :url      => url_for(
                                                          :id                    => file.userfile.id,
@@ -62,14 +51,7 @@ base <%= base_dir %>
                                                          :base_directory        => ".",
                                                          :apply_div             => "false"
                                                         ),
-                                    # :url      => url_for(
-                                    #                      :action                => :display,
-                                    #                      :viewer                => "virtual_file_collection",
-                                    #                      :viewer_userfile_class => "VirtualFileCollection",
-                                    #                      :base_directory        => file.name.sub(/\A[^\/]+\//, ""),
-                                    #                      :apply_div             => "false"
-                                    #                     ),
-                                    :position => "after",
+                                         :position => "after",
                                     :before   => "<td colspan='4' class='loading_message'>Loading...</td>"
                                   },
                                   { :class  => "#{cycle("list-odd", "list-even")}",
