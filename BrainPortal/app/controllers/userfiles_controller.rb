@@ -54,6 +54,7 @@ class UserfilesController < ApplicationController
     # Manually handle the 'name_like' input, as it cant be pre-computed
     # server-side (and going the JS route would be overkill).
     params[:name_like].strip! if params[:name_like]
+    params[:name_like] += ' ' if params[:name_like] && params[:name_like].to_s =~ /\A\d+_\z/ # bug workaround
     scope_filter_from_params(@scope, :name_like, {
       :attribute => 'name',
       :operator  => 'match'
