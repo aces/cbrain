@@ -34,8 +34,7 @@ A) for both Bourreau and BrainPortal:
   1 - git pull of the main CBRAIN repo
   2 - git pull of each installed plugins
   3 - bundle install
-  4 - rake cbrain:plugins:clean:all
-    - rake cbrain:plugins:install:all
+  4 - rake cbrain:plugins:install:all
 
 B) for BrainPortal only:
 
@@ -192,9 +191,7 @@ fi
 step=4
 if test $step -ge $skipto -a $step -le $stopat ; then
 
-Step $step: Re-install All Plugins
-test "$base" == "BrainPortal" && runcapture "rake cbrain:plugins:clean:all"
-test "$base" == "Bourreau"    && runcapture "rake cbrain:plugins:clean:plugins"
+Step $step: Update All Plugins Symlinks
 test "$base" == "BrainPortal" && runcapture "rake cbrain:plugins:install:all"
 test "$base" == "Bourreau"    && runcapture "rake cbrain:plugins:install:plugins"
 
