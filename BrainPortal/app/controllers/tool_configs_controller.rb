@@ -27,7 +27,7 @@ class ToolConfigsController < ApplicationController
 
   api_available :only => [ :index, :show, :boutiques_descriptor ]
 
-  before_action :login_required
+  before_action :login_required,      :except => [ :boutiques_descriptor ]
   before_action :admin_role_required, :except => [ :index, :boutiques_descriptor ]
 
   def index #:nodoc:
@@ -288,12 +288,26 @@ class ToolConfigsController < ApplicationController
   # GET /tool_configs/:id/boutiques_descriptor[.json]
   def boutiques_descriptor
     id           = params[:id]
-    @tool_config = base_scope.find(id)
-    @descriptor  = @tool_config.boutiques_descriptor
+    @prettify    = params[:pretty].presence
+    @prettify  &&= false if @prettify.to_s =~ /\A(0|false|nil)\z/i
+
+    # Old fetch code restricted to user's permissions
+    #@tool_config = base_scope.find(id)
+
+    # New fetch code doesn't do any restriction
+    @tool_config = ToolConfig.find(id)
+
+    # Find the descriptor, if any
+    @descriptor   = @tool_config.boutiques_descriptor # can be nil if not integrated with new BTQ
+    @descriptor ||= BoutiquesSupport::BoutiquesDescriptor.new # empty otherwise
+    @descriptor   = @descriptor.pretty_ordered if @prettify
 
     respond_to do |format|
       format.html
-      format.json { render :json => JSON.pretty_generate(@descriptor || {}) }
+      format.json do
+         render :json => JSON.pretty_generate(@descriptor) if ! @prettify
+         render :json => @descriptor.super_pretty_json     if   @prettify
+      end
     end
   end
 
