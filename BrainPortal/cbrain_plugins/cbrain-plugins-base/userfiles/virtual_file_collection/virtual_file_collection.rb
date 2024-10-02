@@ -32,30 +32,22 @@ class VirtualFileCollection < FileCollection
 
   CBRAIN_ARCHIVE_CONTENT_BASENAME = nil
 
-  before_validation :set_size
 
-  reset_viewers # we don't need any of the superclass viewers
+  reset_viewers # we opted to ignore superclass viewers rather than adjust them
   has_viewer :name => 'Virtual File Collection', :partial => :file_collection , :if => :is_locally_synced?
 
   def self.pretty_type #:nodoc:
     "Virtual File Collection"
   end
 
-  def num_files
-    Rails.cache.fetch("VirtualFileCollection#num_files", expires_in: 5.minutes) do
-      self.get_userfiles.sum(&:num_files)
+
+  def set_size!
+    self.size, self.num_files = Rails.cache.fetch("VirtualFileCollection_#{self.id || "#{current_user.id}_#{self.data_provider_id}_#{self.name}"}#size", expires_in: 3.minutes) do
+      userfiles = self.get_userfiles
+      [userfiles.sum(&:size), userfiles.sum(&:num_files)]
     end
-  end
-
-  def size
-    Rails.cache.fetch("VirtualFileCollection#size", expires_in: 5.minutes) do
-      self.get_userfiles.sum(&:size)
-    end
-  end
-
-
-  def set_size #:nodoc:
-    user.assign_attributes(size: self.size , num_files: num_files)
+    self.assign_attributes(size: self.size , num_files: self.num_files) if self.id
+    true
   end
 
   # Sync the VirtualFileCollection, with the files too
@@ -72,7 +64,7 @@ class VirtualFileCollection < FileCollection
   end
 
   # Invokes the local sync_to_cache with deep=false; this means the
-  # CivetOutputs are not synchronized and symlinks not created.
+  # constitute FileCollection are not synchronized and symlinks not created.
   # This method is used by FileCollection when archiving or unarchiving.
   def sync_to_cache_for_archiving
     result = sync_to_cache(false)
@@ -95,18 +87,18 @@ class VirtualFileCollection < FileCollection
     true
   end
 
-  # Sets the set of CivetOutputs belonging to this study.
+  # Sets the set of FileCollections that constitute VirtualFileCollection.
   # The CSV file inside the study will be created/updated,
-  # as well as all the symbolic links. The content of the
-  # study is NOT synced to the provider side.
-  def create_virtual_file_collection(files)
-    cb_error "Imbedded collections are not supported." if files.any? { |f| ! f.is_a?(VirtualFileCollection) }
+  # as well as all the symbolic links. The content
+  # is NOT synced to the provider side.
+  def set_virtual_file_collection(userfiles)
+    cb_error "Multi layer collections are not supported." if userfiles.any? { |f| f.is_a?(VirtualFileCollection) || f.is_a?(CivetVirtualStudy) }
 
     # Prepare CSV content
-    content     = CbrainFileList.create_csv_file_from_userfiles(civetoutputs)
+    content     = CbrainFileList.create_csv_file_from_userfiles(userfiles)
 
     # This optimize so we don't reload the content for making the symlinks
-    @cbfl       = CbrainFileList.new
+    @cbfl = CbrainFileList.new
     @cbfl.load_from_content(content)
     @files = nil
 

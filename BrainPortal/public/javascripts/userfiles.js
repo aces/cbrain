@@ -124,7 +124,8 @@ $(function() {
     rename:  '/userfiles/:id',
     update:  $('#prop-dialog > form').attr('action'),
     tags:    '/tags/:id',
-    create_collection: $('#collection-dialog > form').attr('action')
+    create_collection: $('#collection-dialog > form').attr('action'),
+    create_virtual_collection: $('#virtual-collection-dialog > form').attr('action')
   };
 
   /* Userfiles actions/operations */
@@ -381,6 +382,20 @@ $(function() {
       var uform = userfiles.children('form');
 
       setup_form(uform, urls.create_collection, 'POST', form);
+      clear_selection(true);
+
+      return defer(function () { uform.submit(); }).promise();
+    },
+
+    /*
+ * Create a new VirtualFileCollection containing the currently selected files.
+ * The new collection's name and target data provider are to be specified
+ * in the HTML form argument +form.
+ */
+    create_virtual_collection: function (form) {
+      var uform = userfiles.children('form');
+
+      setup_form(uform, urls.create_virtual_collection, 'POST', form);
       clear_selection(true);
 
       return defer(function () { uform.submit(); }).promise();
@@ -1096,6 +1111,40 @@ $(function() {
           .prop('disabled', !valid)
           .toggleClass('ui-state-disabled', !valid);
       });
+
+    /* New virtual collection dialog */
+    $('#virtual-collection-dialog')
+        .dialog('option', 'buttons', {
+          'Cancel': function (event) {
+            $(this).trigger('close.uf');
+          },
+          'Create': function (event) {
+            var dialog = $(this);
+
+            dialog.trigger('close.uf');
+            userfiles.create_virtual_collection(dialog.children('form')[0]);
+          }
+        })
+        .unbind('open.uf.col-open')
+        .bind(  'open.uf.col-open', function () {
+          $(this).dialog('option', 'title',
+              'New virtual collection - ' + formatted_selection()
+          );
+        })
+        .undelegate('#co-name', 'input.uf.co-name-check')
+        .delegate(  '#co-name', 'input.uf.co-name-check', function () {
+          var valid = /^\w[\w~!@#%^&*()-+=:[\]{}|<>,.?]*$/.test($(this).val());
+
+          $('#co-invalid-name').css({
+            visibility: valid ? 'hidden' : 'visible'
+          });
+
+          $('#virtual-collection-dialog')
+              .parent()
+              .find(':button:contains("Create")')
+              .prop('disabled', !valid)
+              .toggleClass('ui-state-disabled', !valid);
+        });
 
     /* Delete files confirmation dialog */
     $('#delete-confirm')

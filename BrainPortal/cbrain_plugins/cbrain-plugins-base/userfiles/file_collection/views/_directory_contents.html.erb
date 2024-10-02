@@ -58,7 +58,6 @@
        <% end %>
      <% else %>
        <tr class="<%= cycle("list-odd", "list-even") %>">
-         debug 1
          <%= render :file => @viewer.partial_path(:plain_file_list_row), :locals  => {:file  => file} %>
        </tr>
      <% end %>

@@ -39,7 +39,7 @@ class UserfilesController < ApplicationController
 
   around_action :permission_check, :only => [
       :download, :update_multiple, :delete_files,
-      :create_collection, :change_provider, :quality_control,
+      :create_collection, :create_virtual_collection, :change_provider, :quality_control,
       :export_file_list
   ]
 
@@ -1036,6 +1036,84 @@ class UserfilesController < ApplicationController
     end # spawn
 
     flash[:notice] = "Collection #{collection.name} is being created in background."
+    redirect_to :action => :index
+
+  end
+
+  #Create a collection from the selected files.
+  def create_virtual_collection #:nodoc:
+    filelist         = params[:file_ids].uniq || []
+    data_provider_id = params[:data_provider_id_for_collection]
+    collection_name  = params[:collection_name]
+    file_group       = current_assignable_group.id
+
+    if data_provider_id.blank?
+      flash[:error] = "No data provider selected.\n"
+      redirect_to :action => :index
+      return
+    end
+
+    # Handle collection name
+    if collection_name.blank?
+      suffix = Time.now.to_i
+      while Userfile.where(:user_id => current_user.id, :name => "VirtualCollection-#{suffix}").first.present?
+        suffix += 1
+      end
+      collection_name = "VirtualCollection-#{suffix}"
+    end
+
+    if ! Userfile.is_legal_filename?(collection_name)
+      flash[:error] = "Error: collection name '#{collection_name}' is not acceptable (illegal characters?)."
+      redirect_to :action => :index, :format =>  request.format.to_sym
+      return
+    end
+
+    # Check if the collection name chosen by the user already exists for this user on the data_provider
+    if current_user.userfiles.exists?(:name => collection_name, :data_provider_id => data_provider_id)
+      flash[:error] = "Error: collection with name '#{collection_name}' already exists."
+      redirect_to :action => :index, :format =>  request.format.to_sym
+      return
+    end
+
+    userfiles = Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read)
+
+    # todo double check how 0 is possible, bad files should cause exception
+    if userfiles.count == 0
+      flash[:error] = "Error: Inaccessible files selected."
+      redirect_to :action => :index, :format =>  request.format.to_sym
+      return
+    end
+
+    collection = VirtualFileCollection.new(
+      :user_id          => current_user.id,
+      :group_id         => file_group,
+      :data_provider_id => data_provider_id,
+      :name             => collection_name
+    )
+
+    collection.save!
+    collection.cache_prepare
+    coldir = collection.cache_full_path
+    Dir.mkdir(coldir)
+
+    collection.set_virtual_file_collection(userfiles)
+
+    # Save the content and DB model
+
+    collection.sync_to_provider
+    collection.save
+    collection.set_size
+
+    # Find the files
+    userfiles = Userfile
+                  .find_all_accessible_by_user(current_user, :access_requested => :read)
+                  .where(:id => filelist).all.to_a
+
+    if userfiles.empty?
+      flash[:error] = "You need to select some files first."
+      redirect_to(:action => :index)
+      return
+    end
     redirect_to :action => :index
 
   end
