@@ -51,7 +51,6 @@
       <% fname = fname.delete_prefix(@userfile.name + '/') if @userfile != file.userfile %>
 
       <% if file.size > 0 %>
-        fname=<%=  fname %>
         <%=   data_link fname, file.userfile      %>
       <% else %>
         <%= bname %>
