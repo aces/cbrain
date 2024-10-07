@@ -679,3 +679,13 @@ t4.id = 4
 t4.description = 'CarminDelTest'
 t4.save!
 
+# This one has a fake workdir, so deleting requires creating a BAC
+t5=t2.dup
+t5.id = 5
+t5.description = 'DelTestWithWorkdir'
+t5.cluster_workdir = "00/00/05/fake"
+t5.save!
+
+# Some cleanup
+BackgroundActivity.finished.delete_all
+BackgroundActivity.where("updated_at < ?",6.minutes.ago).delete_all

@@ -386,11 +386,11 @@ class TasksController < ApplicationController
     # because of the large history of old tasks that don't have
     # the attribute set.
     if @task.results_data_provider_id.blank? || @task.results_data_provider.blank?
-      @task.errors[:results_data_provider_id] = 'must be provided'
+      @task.errors.add(:results_data_provider_id, 'must be provided')
     end
 
     if @tool_config && @tool_config.bourreau.present? && ! @tool_config.bourreau.online?
-      @task.errors[:tool_config_id] = 'is on an Execution Server that is currently offline'
+      @task.errors.add(:tool_config_id, 'is on an Execution Server that is currently offline')
     end
 
     unless @task.errors.empty? && @task.valid?
@@ -677,28 +677,35 @@ class TasksController < ApplicationController
   def operation
     @scope = scope_from_session('tasks#index')
 
+    # Validate the presence of operation
     operation  = params[:operation]
-    tasklist   = params[:tasklist]  || []
-    tasklist   = [ tasklist ]  unless tasklist.is_a?(Array)
-    batch_ids  = params[:batch_ids] || []
-    batch_ids  = [ batch_ids ] unless batch_ids.is_a?(Array)
-    batch_ids << nil if batch_ids.delete('nil')
-    tasklist  += filtered_scope(CbrainTask.where(:batch_id => batch_ids)).raw_first_column("cbrain_tasks.id")
-    tasklist   = tasklist.map(&:to_i).uniq
-    tasklist   = current_user.available_tasks.where(:id => tasklist).pluck(:id)
-
-    flash[:error]  ||= ""
-    flash[:notice] ||= ""
-
-    if operation.nil? || operation.empty?
-      flash[:notice] += "Task list has been refreshed.\n"
-      redirect_to :action => :index
+    if operation.nil? || operation.empty? || (! operation.is_a?(String))
+      flash[:notice] = "Task list has been refreshed."
+      respond_to do |format|
+        format.html { redirect_to :action => :index }
+        format.json { render :json => { :message => 'No operation selected' } }
+      end
       return
     end
 
+    # Create/filter/parse/validate the list of tasks
+    tasklist   = Array(params[:tasklist]).compact
+    batch_ids  = Array(params[:batch_ids]).compact
+    tasklist  += filtered_scope(CbrainTask.where(:batch_id => batch_ids)).pluck("cbrain_tasks.id") if batch_ids.present?
+    tasklist   = tasklist.map(&:to_i).uniq
+    tasklist   = current_user.available_tasks.where(:id => tasklist).pluck(:id)
+    tasklist   = CbrainTask
+      .where(:id => tasklist)
+      .to_a
+      .map { |task| task.id if task.has_owner_access?(current_user) }
+      .compact
+
     if tasklist.empty?
-      flash[:error] += "No task selected?.\n"
-      redirect_to :action => :index
+      flash[:error] = "No tasks selected?"
+      respond_to do |format|
+        format.html { redirect_to :action => :index }
+        format.json { render :json => { :message => 'No tasks selected' } }
+      end
       return
     end
 
@@ -710,7 +717,7 @@ class TasksController < ApplicationController
 
     # This does the actual work and returns info about the
     # successes and failures.
-    results = apply_operation(operation, tasklist,
+    results = apply_operation(operation.downcase, tasklist,
       :dup_bourreau_id => dup_bourreau_id,
       :archive_dp_id   => archive_dp_id,
     )
@@ -724,13 +731,14 @@ class TasksController < ApplicationController
     failed_list.each_value  { |v| failure_size += v.size }
     skipped_size  = 0
     skipped_list.each_value { |v| skipped_size += v.size }
-    flash[:notice] += "Number of tasks notified: #{success_list.size} OK, #{skipped_size} skipped, #{failure_size} failed.\n"
+    flash[:notice]  = "Number of tasks notified: #{success_list.size} OK, #{skipped_size} skipped, #{failure_size} failed.\n"
+    flash[:notice] += "See also the Ongoing tab for tracking the progress of these changes.\n" if results[:bac_ids].present?
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
       format.js   { redirect_to :action => :index }
-      format.json { head :ok }
-      format.xml  { head :ok }
+      format.json { render :json => results }
+      format.xml  { render :xml  => results }
     end
   end # method 'operation'
 
@@ -776,6 +784,7 @@ class TasksController < ApplicationController
     # The weird new indentation starting here is because a 'spawn' wrapping block was removed.
 
       tasks = CbrainTask.where(:id => taskids).to_a
+      bacs  = [] # for reporting back through API
 
       # Go through tasks, grouped by bourreau
       grouped_tasks = tasks.group_by(&:bourreau_id)
@@ -793,16 +802,17 @@ class TasksController < ApplicationController
             can_be_just_deleted.each do |t|
               begin
                 t.destroy
-                success_list << t
+                success_list << t.id
               rescue => e
                 failed_list[e.message] ||= []
-                failed_list[e.message] << t
+                failed_list[e.message] << t.id
               end
             end
             bac=BackgroundActivity::DestroyTask.local_new(current_user.id, must_remote_delete.map(&:id),bid)
             # The .save below will just be ignored if the items list is empty
             bac.save
-            success_list += must_remote_delete
+            bacs << bac if bac.id
+            success_list += must_remote_delete.map(&:id)
             next
           end
 
@@ -823,8 +833,10 @@ class TasksController < ApplicationController
               bac.options[:atwhat]                   = 'Cluster'       if operation == 'restart_cluster'
               bac.options[:atwhat]                   = 'PostProcess'   if operation == 'restart_postprocess'
               bac.save
+              bacs << bac if bac.id
             else # old mechanism for all other operations, performed by a message to the Bourreau
               # Note: after refactoring in June 2024, at this point this should never be reached?!?
+              Rails.logger.warning "Old code invoked: AlterTasks for #{new_status}"
               bourreau.send_command_alter_tasks(oktasks, new_status,
                                                { :requester_user_id        => current_user.id,
                                                  :new_bourreau_id          => dup_bourreau_id,
@@ -832,13 +844,13 @@ class TasksController < ApplicationController
                                                }
                                               ) # TODO parse returned command object?
             end
-            success_list += oktasks
+            success_list += oktasks.map(&:id)
           end
           skippedtasks = btasklist - oktasks
-          skipped_list["Tasks have incompatible states"] = skippedtasks if skippedtasks.present?
+          skipped_list["Tasks have incompatible states"] = skippedtasks.map(&:id) if skippedtasks.present?
         rescue => e
           failed_list[e.message] ||= []
-          failed_list[e.message]  += btasklist
+          failed_list[e.message]  += btasklist.map(&:id)
         end
       end # foreach bourreaux' tasklist
 
@@ -849,6 +861,7 @@ class TasksController < ApplicationController
       :skipped_list => skipped_list,
       :success_list => success_list,
       :failed_list  => failed_list,
+      :bac_ids      => bacs.map(&:id),
     }
 
     return results
