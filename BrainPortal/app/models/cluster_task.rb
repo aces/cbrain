@@ -159,6 +159,15 @@ class ClusterTask < CbrainTask
     24.hours
   end
 
+  # This method can be redefined in a subclass;
+  # it will be called to provide the framework
+  # with an amount of memory needed by the cluster job.
+  # The value should be a number, in units of megabytes.
+  # The value returned by default here is nil.
+  def job_memory_estimate
+    nil
+  end
+
 
 
   ##################################################################
@@ -1912,6 +1921,7 @@ exit $status
     job.wd       = workdir
     job.name     = self.tname_tid  # "#{self.name}-#{self.id}" # some clusters want all names to be different!
     job.walltime = self.job_walltime_estimate
+    job.memory   = self.job_memory_estimate
     job.task_id  = self.id
 
     # Note: all extra_qsub_args defined in the tool_configs (bourreau, tool and bourreau/tool)
