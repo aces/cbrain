@@ -35,7 +35,7 @@ class BackgroundActivity::ArchiveTaskWorkdir < BackgroundActivity::TerminateTask
     dest_dp_id   = self.options[:archive_data_provider_id] # can be nil
     ok           = cbrain_task.archive_work_directory                              if dest_dp_id.blank?
     ok           = cbrain_task.archive_work_directory_to_userfile(dest_dp_id.to_i) if dest_dp_id.present?
-    return [ true,  "Archived" ] if   ok
+    return [ true,  nil        ] if   ok
     return [ false, "Skipped"  ] if ! ok
   end
 

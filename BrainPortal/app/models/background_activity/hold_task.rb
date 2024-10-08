@@ -41,7 +41,7 @@ class BackgroundActivity::HoldTask < BackgroundActivity
     task  = CbrainTask.where(:bourreau_id => CBRAIN::SelfRemoteResourceId).find(item)
     ok    = task.hold
     task.addlog("New status: #{task.status}") if ok
-    return [ true,  "Resumed" ] if   ok
+    return [ true,  nil       ] if   ok
     return [ false, "Skipped" ] if ! ok
   end
 

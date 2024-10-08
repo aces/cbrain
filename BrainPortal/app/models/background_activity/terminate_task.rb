@@ -35,7 +35,7 @@ class BackgroundActivity::TerminateTask < BackgroundActivity
   def process(item)
     cbrain_task  = CbrainTask.where(:bourreau_id => CBRAIN::SelfRemoteResourceId).find(item)
     ok           = cbrain_task.terminate
-    return [ true, "Terminated" ] if   ok
+    return [ true, nil          ] if   ok
     return [ true, "Skipped"    ] if ! ok # yes, we return true anyway
   end
 

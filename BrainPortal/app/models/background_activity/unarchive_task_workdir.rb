@@ -38,7 +38,7 @@ class BackgroundActivity::UnarchiveTaskWorkdir < BackgroundActivity
     else
       ok = cbrain_task.unarchive_work_directory
     end
-    return [ true,  "Unarchived" ] if   ok
+    return [ true,  nil          ] if   ok
     return [ false, "Skipped"    ] if ! ok
   end
 

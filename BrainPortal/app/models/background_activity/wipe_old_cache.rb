@@ -57,7 +57,7 @@ class BackgroundActivity::WipeOldCache < BackgroundActivity
     parent1 = full.parent      # "root/101/22"
     parent2 = parent1.parent   # "root/101"
     (Dir.rmdir(parent1.to_s) rescue nil) && (Dir.rmdir(parent2.to_s) rescue nil)
-    [ true, "" ]
+    return [ true, nil ]
   end
 
   # Scans the filesystem and compares

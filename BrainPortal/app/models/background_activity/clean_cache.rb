@@ -52,7 +52,7 @@ class BackgroundActivity::CleanCache < BackgroundActivity
     return [ false, "File is under transfer" ] if
       userfile.local_sync_status&.status.to_s =~ /^To/
     userfile.cache_erase
-    [ true, userfile.id ]
+    [ true, nil ]
   end
 
   def prepare_dynamic_items

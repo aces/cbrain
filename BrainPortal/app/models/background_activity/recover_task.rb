@@ -34,7 +34,7 @@ class BackgroundActivity::RecoverTask < BackgroundActivity
     old_status = task.status
     ok         = task.recover
     task.addlog("New status: #{task.status}") if ok && (old_status != task.status)
-    return [ true,  "Retrying" ] if   ok
+    return [ true,  nil        ] if   ok
     return [ false, "Skipped"  ] if ! ok
   end
 

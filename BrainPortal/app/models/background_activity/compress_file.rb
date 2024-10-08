@@ -59,7 +59,7 @@ class BackgroundActivity::CompressFile < BackgroundActivity
       collision.exists?
 
     userfile.gzip_content(:compress)
-    [ true, "Compressed" ]
+    [ true, nil ]
   end
 
   def process_collection(userfile)
@@ -67,8 +67,7 @@ class BackgroundActivity::CompressFile < BackgroundActivity
       userfile.sync_status.to_a.any? { |ss| ss.status =~ /^To/ }
     message = userfile.provider_archive
     ok      = message.blank?
-    message = ok ? "Archived" : message
-    [ ok, message ]
+    [ ok, message.presence ]
   end
 
   def prepare_dynamic_items

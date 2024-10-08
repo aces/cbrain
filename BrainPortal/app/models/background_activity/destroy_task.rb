@@ -31,7 +31,7 @@ class BackgroundActivity::DestroyTask < BackgroundActivity::TerminateTask
     super(item) # invokes the terminate code; will skip tasks that don't need to be terminated
     cbrain_task  = CbrainTask.where(:bourreau_id => CBRAIN::SelfRemoteResourceId).find(item)
     ok           = cbrain_task.destroy
-    return [ true,  "Destroyed" ] if   ok
+    return [ true,  nil         ] if   ok
     return [ false, "Skipped"   ] if ! ok
   end
 
