@@ -1,1 +1,1 @@
-POST /tasks/operation?ATOK&operation=delete application/json NoRubyClient
+POST /tasks/operation?NTOK
