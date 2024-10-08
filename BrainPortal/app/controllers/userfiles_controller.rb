@@ -1114,7 +1114,7 @@ class UserfilesController < ApplicationController
       redirect_to(:action => :index)
       return
     end
-    redirect_to :action => :index
+    redirect_to(:controller => :userfiles, :action => :show, :id => collection.id)
 
   end
 
