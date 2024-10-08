@@ -77,3 +77,37 @@
 
 <% end %>
 
+
+<script>
+$(document).ready(function() {
+    // removes first column (checkboxes)
+    // there is no point to extract constituents userfiles of they already exist as separate entity
+    // and if user need sub-files of constituents, he or she can go below
+
+    // Function to delete the first column with checkbox
+    function deleteFirstColumn() {
+        $('.plain_file_list tr').each(function() {
+            firstCell = $(this).find('td:first, th:first'); // Select the first cell
+            cellContent = firstCell.text().trim(); // Get trimmed content of the first cell
+
+            // Check if the first cell contains a checkbox or is empty/whitespace
+            if (firstCell.find('input[type="checkbox"]').length || cellContent === '') {
+                firstCell.remove(); // Remove the cell
+            }
+        });
+        alarm('done');
+    }
+
+    // Create a mutation observer to address newly added rows
+    const observer = new MutationObserver(deleteFirstColumn);
+
+    // Start observing the table body for changes
+    observer.observe(document.getElementsByClassName('plain_file_list')[0].querySelector('tbody'), {
+        childList: true,
+        subtree: true
+    });
+
+    // Initial call to remove the first column
+    deleteFirstColumn();
+});
+</script>
