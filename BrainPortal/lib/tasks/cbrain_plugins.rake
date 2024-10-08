@@ -125,8 +125,8 @@ namespace :cbrain do
                  .select { |subpath| subpath.symlink? }
                  .select { |subpath| ! subpath.exist? } # checks that the symlink points to something valid
                  .each  do |subpath|
-                    puts "-> Erasing symlink for #{name} '#{subpath}'." if verbose
-                    logger.('DeadSymlink', 'None', name, subpath)
+                    puts "-> Erasing symlink for #{name} '#{entry}'." if verbose
+                    logger.('DeadSymlink', 'None', name, entry)
                     File.unlink(subpath) # remove symlink
                  end
             end
