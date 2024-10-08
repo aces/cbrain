@@ -261,8 +261,8 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
     puts "C> Starting Background Activity Worker..."
     #----------------------------------------------------------------------------
 
-    if ENV['CBRAIN_NO_BACKGROUND_ACTIVITY_WORKER'].present?
-      puts "C> \t- NOT started as env variable CBRAIN_NO_BACKGROUND_ACTIVITY_WORKER is set."
+    if ENV['CBRAIN_NO_BACKGROUND_ACTIVITY_WORKER'].present? || Rails.env == 'test'
+      puts "C> \t- NOT started as we are in test mode, or env variable CBRAIN_NO_BACKGROUND_ACTIVITY_WORKER is set."
       return
     end
 
