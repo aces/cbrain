@@ -35,7 +35,7 @@ class VirtualFileCollection < FileCollection
 
   reset_viewers # we opted to ignore superclass viewers rather than adjust them
   has_viewer :name => 'Virtual File Collection', :partial => :file_collection , :if => :is_locally_synced?
-
+  has_viewer :name => 'List File Collection', :partial => :cbrain_file_list , :if => :is_locally_synced?
   def self.pretty_type #:nodoc:
     "Virtual File Collection"
   end
@@ -185,6 +185,7 @@ class VirtualFileCollection < FileCollection
     end
 
     @files ||= @cbfl.userfiles_accessible_by_user!(self.user).compact
+
     file_names = @files.map(&:name)
     dup_names = file_names.select { |name| file_names.count(name) >1 }.uniq
     cb_error "Virtual file collection contains duplicate filenames #{dup_names.join(',')}" if dup_names.present?
@@ -197,9 +198,28 @@ class VirtualFileCollection < FileCollection
     end
   end
 
+  # list errors, to be shown to user and issues in the virtual collection
+  # despite exception above with some luck and effort user can render file view, so
+  # we show that error messages instead of the directory tree
+  def list_errors
+    if @cbfl.blank?
+      @cbfl = CbrainFileList.new
+      file_content = File.read(csv_cache_full_path.to_s)
+      @cbfl.load_from_content(file_content)
+    end
+    @files ||= @cbfl.userfiles_accessible_by_user!(self.user).compact.compact
+    file_names = @files.map(&:name)
+    dup_names = file_names.select { |name| file_names.count(name) >1 }.uniq
+    errors = []
+    errors = ["Virtual file collection contains duplicate filenames #{dup_names.join(',')}"] if dup_names.present?
+    virtual_files_names = @files.select do |f|
+        f.is_a?(VirtualFileCollection) || f.is_a?(CivetVirtualStudy) || f.type.downcase.include?('virtual')
+    end.map(&:name)
+    errors << "Nested virtual file collections are not supported, remove files  #{virtual_files_names.join ", "}" if virtual_files_names.present?
+    errors
+  end
 
-
-  #====================================================================
+    #====================================================================
   # Support methods, not part of this model's API.
   #====================================================================
 
