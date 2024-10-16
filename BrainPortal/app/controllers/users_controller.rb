@@ -386,10 +386,10 @@ class UsersController < ApplicationController
     @user = User.where( :login  => params[:login], :email  => params[:email] ).first
 
     if @user
-      if user_must_link_to_globus?(@user)
+      if user_must_link_to_oidc?(@user)
         contact = RemoteResource.current_resource.support_email.presence || User.admin.email.presence || "the support staff"
-        wipe_user_password_after_globus_link(@user)  # for legacy or erroneously set users
-        flash[:error] = "Your account can only authenticate with Globus identities. Thus you are not allowed to use or reset password. Please contact #{contact} for help."
+        wipe_user_password_after_oidc_link("password-rest", @user)  # for legacy or erroneously set users
+        flash[:error] = "Your account can only authenticate with OpenID identities. Thus you are not allowed to use or reset password. Please contact #{contact} for help."
         respond_to do |format|
           format.html { redirect_to login_path }
           format.any { head :unauthorized }

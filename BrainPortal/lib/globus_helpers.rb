@@ -148,8 +148,9 @@ module GlobusHelpers
   end
 
   def wipe_user_password_after_oidc_link(oidc, user)
-    user.update_attribute(:crypted_password, "Wiped-By-#{oidc.name}-Link-" + User.random_string)
-    user.update_attribute(:salt            , "Wiped-By-#{oidc.name}-Link-" + User.random_string)
+    wipe_by = oidc.is_a?(String) ? "Wiped-By-#{oidc}-Link-" : "Wiped-By-#{oidc.name}-Link-"
+    user.update_attribute(:crypted_password, wipe_by + User.random_string)
+    user.update_attribute(:salt            , wipe_by + User.random_string)
     user.update_attribute(:password_reset  , false)
   end
 

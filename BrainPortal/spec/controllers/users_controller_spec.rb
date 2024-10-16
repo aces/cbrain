@@ -228,13 +228,13 @@ RSpec.describe UsersController, :type => :controller do
           expect(assigns[:user].password).not_to eq(user.password)
         end
 
-        context "when the account must use Globus identification only" do
+        context "when the account must use OIDC identification only" do
 
           it "should display a message" do
             allow(mock_user).to receive(:account_locked?).and_return(true)
             allow(User).to receive_message_chain(:where, :first).and_return(mock_user)
             post :send_password, params: {:login => user.login, :email => user.email}
-            expect(flash[:error]).to match(/Globus/i)
+            expect(flash[:error]).to match(/OpenID/i)
           end
 
         end
