@@ -1,0 +1,107 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% if @userfile.is_locally_synced? %>
+
+    <% @cbfl = @userfile.get_inmemory_cbrain_file_list %>
+
+    <p class="medium_paragraphs">
+    This Virtual File Collection consists of other CBRAIN files and collections
+    listed below. This simple view does allow you to explore sub-directories or
+     subfiles, for that you still can use Virtual File Collection view.
+     Note you only see files that you have assess too.
+    <p class="medium_paragraphs">
+    The files and collection could change name or content over time. In the
+    table below, the names of the files are repeated: the first one is the name as
+    known within CBRAIN, and the second one is the original name of file when collection
+    was created.
+    </p>
+
+    <%
+      csv_array     = @cbfl.cached_csv_array
+      per_page      = 500
+      nb_row        = csv_array.size
+      page          = (params[:page] || 1).to_i
+      page          = 1 if page < 1
+      csv_array     = WillPaginate::Collection.create(page, per_page) do |pager|
+        pager.replace(csv_array[(page-1)*per_page, per_page] || [])
+        pager.total_entries = csv_array.size
+        pager
+      end
+    %>
+
+    <div class="no_ajax_pagination">
+      <span>
+        <%= will_paginate csv_array,
+          :params => { :controller => :userfiles, :action => :show, :sort_index => @sort_index },
+          :container => false
+        %>
+        (<%= pluralize nb_row, "file" %> in this list)
+      </span>
+    </div>
+
+    <table id="report_table">
+
+      <%
+        ################################
+        # Top headers of table
+        ################################
+      %>
+
+      <tr>
+        <% attlist = @cbfl.class.const_get('ATTRIBUTES_LIST') %>
+        <% attlist.each do |att| %>
+          <% att = :project if att == :group_id %>
+          <th><%= att.to_s.sub(/_id\z/,"").classify.gsub(/(.+)([A-Z])/, '\1 \2') %></th>
+        <% end %>
+      </tr>
+
+      <%
+        ################################
+        # Main body of table
+        ################################
+      %>
+
+      <% csv_array.each do |cvs_row| %>
+        <tr>
+          <% cur_file = nil %>
+          <% attlist.each_with_index do |att,idx|%>
+            <% val = cvs_row[idx] %>
+            <td class="left_align">
+              <% if att == :id %>
+                <% cur_file = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read).where(:id => val).first %>
+                <%= val %> : <%= link_to_userfile_if_accessible(cur_file) %>
+              <% else %>
+                <%= val.nil? ? "-" : val %>
+              <% end %>
+            </td>
+          <% end %>
+        </tr>
+      <% end %>
+
+    </table>
+
+  <%= link_to 'Extract a file list', { :action => 'export_file_list', :file_ids => @userfile.get_userfiles.pluck(:id) }, :class  => "button", :method => :post  %>
+
+<% end %>
