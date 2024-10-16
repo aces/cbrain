@@ -34,8 +34,10 @@ class VirtualFileCollection < FileCollection
 
 
   reset_viewers # we opted to ignore superclass viewers rather than adjust them
+  # this viewer closely resembles one for regular File Collection
   has_viewer :name => 'Virtual File Collection', :partial => :file_collection , :if => :is_locally_synced?
-  has_viewer :name => 'List File Collection', :partial => :cbrain_file_list , :if => :is_locally_synced?
+  # an alternative viewer more stable for large collections
+  has_viewer :name => 'Simple List', :partial => :cbrain_file_list, :if => :is_locally_synced?
   def self.pretty_type #:nodoc:
     "Virtual File Collection"
   end
@@ -95,11 +97,7 @@ class VirtualFileCollection < FileCollection
     cb_error "Multi layer collections are not supported." if userfiles.any? { |f| f.is_a?(VirtualFileCollection) || f.is_a?(CivetVirtualStudy) }
 
     # Prepare CSV content
-    content     = CbrainFileList.create_csv_file_from_userfiles(userfiles)
-
-    # This optimize so we don't reload the content for making the symlinks
-    @cbfl = CbrainFileList.new
-    @cbfl.load_from_content(content)
+    @cbfl  = self.get_inmemory_cbrain_file_list
     @files = nil
 
     # Write CSV content to the interal CSV file
@@ -202,16 +200,12 @@ class VirtualFileCollection < FileCollection
   # despite exception above with some luck and effort user can render file view, so
   # we show that error messages instead of the directory tree
   def list_errors
-    if @cbfl.blank?
-      @cbfl = CbrainFileList.new
-      file_content = File.read(csv_cache_full_path.to_s)
-      @cbfl.load_from_content(file_content)
-    end
-    @files ||= @cbfl.userfiles_accessible_by_user!(self.user).compact.compact
+    @cbfl      = self.get_inmemory_cbrain_file_list
+    @files   ||= @cbfl.userfiles_accessible_by_user!(self.user).compact.compact
     file_names = @files.map(&:name)
-    dup_names = file_names.select { |name| file_names.count(name) >1 }.uniq
-    errors = []
-    errors = ["Virtual file collection contains duplicate filenames #{dup_names.join(',')}"] if dup_names.present?
+    dup_names  = file_names.select { |name| file_names.count(name) >1 }.uniq
+    errors     = []
+    errors << "Virtual file collection contains duplicate filenames #{dup_names.join(',')}" if dup_names.present?
     virtual_files_names = @files.select do |f|
         f.is_a?(VirtualFileCollection) || f.is_a?(CivetVirtualStudy) || f.type.downcase.include?('virtual')
     end.map(&:name)
@@ -219,7 +213,17 @@ class VirtualFileCollection < FileCollection
     errors
   end
 
-    #====================================================================
+  # updates in memory cbrain file list cache
+  def get_inmemory_cbrain_file_list
+    if @cbfl.blank?
+      @cbfl = CbrainFileList.new
+      file_content = File.read(csv_cache_full_path.to_s)
+      @cbfl.load_from_content(file_content)
+    end
+    @cbfl
+  end
+
+  #====================================================================
   # Support methods, not part of this model's API.
   #====================================================================
 
