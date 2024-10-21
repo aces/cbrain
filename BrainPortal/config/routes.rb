@@ -141,6 +141,7 @@ Rails.application.routes.draw do
       get  'stream/*file_path' => 'userfiles#stream'
       get  'display'
       post 'extract_from_collection'
+      post 'extract_from_virtual_collection'
     end
     collection do
       post   'download'

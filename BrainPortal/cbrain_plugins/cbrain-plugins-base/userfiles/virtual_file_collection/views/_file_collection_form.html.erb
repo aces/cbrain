@@ -33,7 +33,7 @@
 
   <%= form_for @userfile, :as   => :userfile,
                           :url  => { :controller => :userfiles,
-                                     :action => :extract_from_collection
+                                     :action => :extract_from_virtual_collection
                                    },
                           :html => { :method => :post,
                                      :id     => "userfile_edit_#{@userfile.id}_#{base_directory}"

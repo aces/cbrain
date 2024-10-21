@@ -27,7 +27,7 @@
 <% base_dir = base_dir.presence || "." %>
 
 <% file_list ||= ( @userfile.list_linked_files(base_dir, [:regular, :directory, :link]) rescue [] ) %>
-<%  @userfile.list_errors&.each do |error_message| %>
+<%  @userfile&.list_errors&.each do |error_message| %>
   <tr class="<%= cycle("list-odd", "list-even") %>">
     <td></td>
             <td colspan="2"> <span class="warning"> Error. <%=  error_message %> </span> </td>
@@ -53,7 +53,7 @@
                                                          :id                    => file.userfile.id,
                                                          :action                => :display,
                                                          :viewer                => "directory_contents",
-                                                         :viewer_userfile_class => "FileCollection",
+                                                         :viewer_userfile_class => "VirtualFileCollection",
                                                          :base_directory        => ".",
                                                          :apply_div             => "false"
                                                         ),
