@@ -40,7 +40,7 @@ class UserfilesController < ApplicationController
   around_action :permission_check, :only => [
       :download, :update_multiple, :delete_files,
       :create_collection, :create_virtual_collection, :change_provider, :quality_control,
-      :export_file_list, :extract_from_virtual_collection
+      :export_file_list
   ]
 
   MAX_DOWNLOAD_MEGABYTES = 400
@@ -1284,86 +1284,77 @@ class UserfilesController < ApplicationController
     end
   end
 
-  #Extract a file from a collection and register it separately
-  #in the database.
+  # Extract files from a virtual collection and register them separately
+  # in the database.
   def extract_from_virtual_collection #:nodoc:
     success = failure = 0
 
-    unless params[:file_names] && params[:file_names].size > 0
+    unless params[:collection_files] && params[:collection_files].size > 0
       flash[:notice] = "No files selected for extraction"
       redirect_to :action  => :show
       return
     end
 
-    collection_ids_file_names = params[:file_names].map {|x| x.split('#', 1)}
+    collection_ids_file_pairs = params[:collection_files].map {|x| x.split('#', 2)}
+    collections_file_names    = collection_ids_file_pairs.group_by { |first, _| first }
+    # add the object to hash and validate provider access, while keeping primitive keys
 
-    collections_file_names = collection_ids_file_names.map do  |collection_id, file|
-      unless collection_id == old_id
-        collection       = FileCollection.find_accessible_by_user(params[:collection_id], current_user, :access_requested  => :read)
-        data_provider    = collection.data_provider
-        old_id           = collection_id
-        if data_provider.read_only?
-          flash[:error] = "Unfortunately this file is located on a DataProvider that is not writable, so we can't extract its internal files."
-          redirect_to :action => :show
-          return
-        end
-      end
-    end
-
-    results = collections_file_names.each do |collection, file_name|
-
-      # Extract each file
-
-      collection_path  = collection.cache_full_path
-
-      data_provider    = collection.data_provider
-      if   data_provider.read_only?
-        flash[:error] = "Unfortunately this file is located on a DataProvider that is not writable, so we can't extract its internal files."
+    # todo - add option to specify target data_provider
+    collections_file_names.each do |collection_id, obj_file_list|
+      collection = FileCollection.find_accessible_by_user(collection_id, current_user, :access_requested  => :read)
+      obj_file_list.each { |pair| pair[0] = collection }
+      data_provider      = collection.data_provider
+      if data_provider.read_only?
+        flash[:error] = "Unfortunately file #{obj_filelist.second.first} of collection #{collection.name} is located on a not writable DataProvider #{data_provider.name}, so we can't extract its internal files."
         redirect_to :action => :show
         return
       end
+    end
 
-      # Validations; make sure "file" is a path inside the collection
-      rel_path = Pathname.new(file)
-      next :not_relative unless rel_path.relative?
-      full_path = collection_path.parent + rel_path
-      full_path = File.realpath(full_path.to_s) rescue nil
-      next :not_resolve unless full_path
-      next :is_symlink  if     File.symlink?(full_path.to_s)
-      next :not_file    unless File.file?(full_path.to_s)
-      next :outside_col unless full_path.start_with? collection_path.to_s
-
-      basename = rel_path.basename.to_s
-      file_type = Userfile.suggested_file_type(basename) || SingleFile
-      userfile = file_type.new(
+    results = collections_file_names.map do |collection_id, collection_file_pairs|
+      collection      = collection_file_pairs.first.first
+      data_provider   = collection.data_provider
+      collection_path = collection.cache_full_path
+      collection_file_pairs.map do |_, file|       # Extract each file
+        # Validations; make sure "file" is a path inside the collection
+        rel_path = Pathname.new(file)
+        next :not_relative unless rel_path.relative?
+        full_path = collection_path.parent + rel_path
+        full_path = File.realpath(full_path.to_s) rescue nil
+        next :not_resolve unless full_path
+        next :is_symlink  if     File.symlink?(full_path.to_s)
+        next :not_file    unless File.file?(full_path.to_s)
+        next :outside_col unless full_path.start_with? collection_path.to_s
+        basename  = rel_path.basename.to_s
+        file_type = Userfile.suggested_file_type(basename) || SingleFile
+        userfile = file_type.new(
           :name             => basename,
           :user_id          => current_user.id,
           :group_id         => collection.group_id,
           :data_provider_id => data_provider.id
-      )
-      Dir.chdir(collection_path.parent) do
-        next :cannot_save_userfile unless userfile.save
-        userfile.addlog("Extracted from collection '#{collection.name}'.")
-        begin
-          userfile.cache_copy_from_local_file(full_path.to_s)
-          next :ok
-        rescue
-          userfile.data_provider_id = nil # nullifying will skip the provider_erase() in the destroy()
-          userfile.destroy
-          next :exception_copy
+        )
+        Dir.chdir(collection_path.parent) do
+          next :cannot_save_userfile unless userfile.save
+          userfile.addlog("Extracted from collection '#{collection.name}'.")
+          begin
+            userfile.cache_copy_from_local_file(full_path.to_s)
+            next :ok
+          rescue
+            userfile.data_provider_id = nil # nullifying will skip the provider_erase() in the destroy()
+            userfile.destroy
+            next :exception_copy
+          end
         end
       end
     end
-
-    success = results.count { |x| x == :ok }
-    failure = results.size - success
+    success = results.flatten.count { |x| x == :ok }
+    failure = results.flatten.size - success
     if success > 0
       flash[:notice] = "#{success} files were successfully extracted."
     end
     if failure > 0
       flash[:error] =  "#{failure} files could not be extracted."
     end
-
     redirect_to :action  => :index
   end
 

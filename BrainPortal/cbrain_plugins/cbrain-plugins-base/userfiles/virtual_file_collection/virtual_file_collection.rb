@@ -89,7 +89,7 @@ class VirtualFileCollection < FileCollection
     true
   end
 
-  # Sets the set of FileCollections that constitute VirtualFileCollection.
+  # Sets the set of SingleFiles and FileCollections that constitute VirtualFileCollection.
   # The CSV file inside the study will be created/updated,
   # as well as all the symbolic links. The content
   # is NOT synced to the provider side.

@@ -49,6 +49,11 @@
       <br>
     <% end %>
 
+    <% if @userfile.is_locally_synced? %>
+      <P>
+        <%= submit_tag "Extract Files from Sub-Collections" %>
+    <% end %>
+
 
 
   <% end %>

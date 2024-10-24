@@ -30,7 +30,7 @@
 
 <td>
   <% if @userfile.is_locally_synced? && file.symbolic_type == :regular %>
-    <%= check_box_tag("file_names[]", "#{@userfile.id}##{file.name}", false, :class  => "collection_checkbox", :id => nil) %>
+    <%= check_box_tag("collection_files[]", "#{@userfile.id}##{file.name}", false, :class  => "collection_checkbox", :id => nil) %>
   <% end %>
 </td>
 
