@@ -30,9 +30,6 @@ class VirtualFileCollection < FileCollection
   CSV_BASENAME = "_virtual_file_collection.cbcsv"
   # todo. add .bidsignore file, otherwise bids validation. Or we can allow CBRAIN filenames starting with dot
 
-  CBRAIN_ARCHIVE_CONTENT_BASENAME = nil
-
-
   reset_viewers # we opted to ignore superclass viewers rather than adjust them
   # this viewer closely resembles one for regular File Collection
   has_viewer :name => 'Virtual File Collection', :partial => :file_collection , :if => :is_locally_synced?
