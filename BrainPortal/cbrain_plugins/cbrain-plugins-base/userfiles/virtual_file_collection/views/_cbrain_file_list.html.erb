@@ -31,8 +31,9 @@
     listed below. This simple view does allow you to explore sub-directories or
      subfiles, for that you still can use Virtual File Collection view.
      Note you only see files that you have assess too.
-    <p class="medium_paragraphs">
-    The files and collection could change name or content over time. In the
+    <p class="medium_paragraphs"> This is an experimental feature.
+    The files and collection could change name or content over time, potentially making collection unusable.
+    In the
     table below, the names of the files are repeated: the first one is the name as
     known within CBRAIN, and the second one is the original name of file when collection
     was created.
@@ -101,7 +102,7 @@
       <% end %>
 
     </table>
-
+  <p></p>
   <%= link_to 'Extract a file list', { :action => 'export_file_list', :file_ids => @userfile.get_userfiles.pluck(:id) }, :class  => "button", :method => :post  %>
 
 <% end %>
