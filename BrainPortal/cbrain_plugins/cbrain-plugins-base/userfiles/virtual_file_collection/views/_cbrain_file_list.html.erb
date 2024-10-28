@@ -24,7 +24,7 @@
 
 <% if @userfile.is_locally_synced? %>
 
-    <% @cbfl = @userfile.get_inmemory_cbrain_file_list %>
+    <% @cbfl = @userfile.cached_cbrain_file_list %>
 
     <p class="medium_paragraphs">
     This Virtual File Collection consists of other CBRAIN files and collections

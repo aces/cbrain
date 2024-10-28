@@ -96,8 +96,12 @@ class VirtualFileCollection < FileCollection
   def set_virtual_file_collection(userfiles)
     cb_error "Multi layer collections are not supported." if userfiles.any? { |f| f.is_a?(VirtualFileCollection) || f.is_a?(CivetVirtualStudy) }
 
+    content     = CbrainFileList.create_csv_file_from_userfiles(userfiles)
+    # This optimize so we don't reload the content for making the symlinks
+    @cbfl = CbrainFileList.new
+    @cbfl.load_from_content(content)
     # Prepare CSV content
-    @cbfl  = self.get_inmemory_cbrain_file_list
+
     @files = nil
 
     # Write CSV content to the interal CSV file
@@ -130,15 +134,13 @@ class VirtualFileCollection < FileCollection
         userfile   = userfiles_by_name[fname]
         if types.include?(:directory) &&  userfile.is_a?(FileCollection)
           file.symbolic_type = :directory
-          file.userfile = userfile
-          # binding.pry
+          file.userfile      = userfile
           file
         elsif   types.include?(:file) && userfile.is_a?(SingleFile)
-          file = userfile.list_files.first.clone
-          file&.name  = self.name + '/' + fname
-          file&.symbolic_type = :regular
-          file.userfile = userfile
-          # binding.pry
+          file               = userfile.list_files.first.clone
+          file.name          = self.name + '/' + fname
+          file.symbolic_type = :regular
+          file.userfile      = userfile
           file
         end
       end
@@ -148,7 +150,7 @@ class VirtualFileCollection < FileCollection
 
     if dir.is_a? String
       name, dir = dir.split '/'
-      dir |= '.'
+      dir      |= '.'
       userfiles = userfiles.select { |x| x.name == name }
     end
 
@@ -159,12 +161,6 @@ class VirtualFileCollection < FileCollection
       f.userfile = userfile
     end.flatten
   end
-
-  # todo - remove unless needed for creation?
-  # def validate_componets
-  #   ufiles = self.get_userfiles
-  #   error "Nested Virtual Collection" if ufile.is_a?(VirtualFileCollection) || ufile.is_a?(CivetVirtualStudy) || ufile.type.lower.include?('virtual')
-  # end
 
   # Returns the files IDs
   def get_ids
@@ -200,8 +196,8 @@ class VirtualFileCollection < FileCollection
   # despite exception above with some luck and effort user can render file view, so
   # we show that error messages instead of the directory tree
   def list_errors
-    @cbfl      = self.get_inmemory_cbrain_file_list
-    @files   ||= @cbfl.userfiles_accessible_by_user!(self.user).compact.compact
+    @cbfl      = self.cached_cbrain_file_list
+    @files   ||= @cbfl.userfiles_accessible_by_user!(self.user).compact
     file_names = @files.map(&:name)
     dup_names  = file_names.select { |name| file_names.count(name) >1 }.uniq
     errors     = []
@@ -213,8 +209,8 @@ class VirtualFileCollection < FileCollection
     errors
   end
 
-  # updates in memory cbrain file list cache
-  def get_inmemory_cbrain_file_list
+  # caches cbrain file in memory
+  def cached_cbrain_file_list
     if @cbfl.blank?
       @cbfl = CbrainFileList.new
       file_content = File.read(csv_cache_full_path.to_s)

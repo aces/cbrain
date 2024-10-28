@@ -39,8 +39,8 @@ class UserfilesController < ApplicationController
 
   around_action :permission_check, :only => [
       :download, :update_multiple, :delete_files,
-      :create_collection, :create_virtual_collection, :change_provider, :quality_control,
-      :export_file_list
+      :create_collection, :change_provider, :quality_control,
+      :export_file_list, :create_virtual_collection
   ]
 
   MAX_DOWNLOAD_MEGABYTES = 400
