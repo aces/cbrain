@@ -35,7 +35,7 @@ class BackgroundActivity::CopyFileAndUnregister < BackgroundActivity::CopyFile
 
   def indices_of_failures
     self.messages.each_with_index.map do |message,idx|
-      idx if message.to_s != 'Copied'
+      idx if message.to_s.starts_with?('Failed')
     end.compact
   end
 
