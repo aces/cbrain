@@ -1396,10 +1396,10 @@ class UserfilesController < ApplicationController
       basename = rel_path.basename.to_s
       file_type = Userfile.suggested_file_type(basename) || SingleFile
       userfile = file_type.new(
-        :name             => basename,
-        :user_id          => current_user.id,
-        :group_id         => collection.group_id,
-        :data_provider_id => data_provider.id
+          :name             => basename,
+          :user_id          => current_user.id,
+          :group_id         => collection.group_id,
+          :data_provider_id => data_provider.id
       )
       Dir.chdir(collection_path.parent) do
         next :cannot_save_userfile unless userfile.save
@@ -1428,7 +1428,6 @@ class UserfilesController < ApplicationController
 
     redirect_to :action  => :index
   end
-
 
   # Compress/archive a set of userfiles. Wrapper action for
   # +manage_compression+ with operation :compress.
