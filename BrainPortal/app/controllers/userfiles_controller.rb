@@ -1040,7 +1040,7 @@ class UserfilesController < ApplicationController
 
   end
 
-  #Create a collection from the selected files.
+  # Create a virtual collection from the selected files.
   def create_virtual_collection #:nodoc:
     filelist         = params[:file_ids].uniq || []
     data_provider_id = params[:data_provider_id_for_collection]
