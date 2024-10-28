@@ -172,16 +172,10 @@ class VirtualFileCollection < FileCollection
   # based on the owner of the VirtualFileCollection.
   def get_userfiles #:nodoc:
 
-    if @cbfl.blank?
-      @cbfl = CbrainFileList.new
-      file_content = File.read(csv_cache_full_path.to_s)
-      @cbfl.load_from_content(file_content)
-    end
-
-    @files ||= @cbfl.userfiles_accessible_by_user!(self.user).compact
-
+    @cbfl      = self.cached_cbrain_file_list  # loads cbrain file list content
+    @files   ||= @cbfl.userfiles_accessible_by_user!(self.user).compact
     file_names = @files.map(&:name)
-    dup_names = file_names.select { |name| file_names.count(name) >1 }.uniq
+    dup_names  = file_names.select { |name| file_names.count(name) >1 }.uniq
     cb_error "Virtual file collection contains duplicate filenames #{dup_names.join(',')}" if dup_names.present?
     @files.each do |f|
       cb_error "Nested virtual file collections are not supported, remove file with id #{f.id}" if   (
@@ -209,7 +203,7 @@ class VirtualFileCollection < FileCollection
     errors
   end
 
-  # caches cbrain file in memory
+  # caches cbrain file list file in memory
   def cached_cbrain_file_list
     if @cbfl.blank?
       @cbfl = CbrainFileList.new
