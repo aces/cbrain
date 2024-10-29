@@ -1001,6 +1001,15 @@ class UserfilesController < ApplicationController
       return
     end
 
+    virtual_files = VirtualFileCollection.where(id: filelist).to_a | CivetVirtualStudy.where(id: filelist).to_a
+
+    if virtual_files.present?
+      virtual_files  = Userfile.find_accessible_by_user(virtual_files.pluck(:id), current_user, :access_requested  => :read)
+      flash[:error] = "Collections of Virtual Collection are not allowed. Exclude #{virtual_files.map(&:name).to_sentence} " if virtual_files
+      redirect_to :action => :index, :format =>  request.format.to_sym
+      return
+    end
+
     collection = FileCollection.new(
       :user_id          => current_user.id,
       :group_id         => file_group,
