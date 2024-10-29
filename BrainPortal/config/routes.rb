@@ -141,6 +141,7 @@ Rails.application.routes.draw do
       get  'stream/*file_path' => 'userfiles#stream'
       get  'display'
       post 'extract_from_collection'
+      post 'extract_from_virtual_collection'
     end
     collection do
       post   'download'
@@ -149,6 +150,7 @@ Rails.application.routes.draw do
       post   'create_parent_child'
       delete 'delete_files'
       post   'create_collection'
+      post   'create_virtual_collection'
       put    'update_multiple'
       post   'change_provider'
       post   'compress'

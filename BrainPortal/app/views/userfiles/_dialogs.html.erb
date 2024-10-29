@@ -349,6 +349,36 @@
   </form>
 </div>
 
+<div id="virtual-collection-dialog" class="dlg-dialog" title="New virtual collection">
+  <form action="<%= create_virtual_collection_userfiles_path %>" method="post">
+    <label for="co-name" class="dlg-fld-lbl">Name</label>
+    <input id="co-name"
+           class="dlg-fld"
+           type="text"
+           name="collection_name"
+           value="NewVirtualCollection"
+      />
+    <span id="co-invalid-name" class="dlg-msg-err">
+      &#9888; Invalid!
+    </span>
+    <br />
+
+    <label for="co-dp" class="dlg-fld-lbl">Provider</label>
+    <%=
+      data_provider_select('data_provider_id_for_collection',
+                           { :data_providers => writable_dps },
+                           {
+                             :id    => 'co-dp',
+                             :class => 'dlg-fld',
+                             :'data-placeholder' => "A data provider..."
+                           }
+      )
+    %>
+    <br /><br />
+  </form>
+</div>
+
+
 <div id="delete-confirm"
   class="dlg-dialog dlg-cfrm"
   title="Delete"
