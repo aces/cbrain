@@ -1001,7 +1001,7 @@ class UserfilesController < ApplicationController
       return
     end
 
-    virtual_files = VirtualFileCollection.where(id: filelist).to_a | CivetVirtualStudy.where(id: filelist).to_a
+    virtual_files = FileCollection.where(id: filelist, type: ['CivetVirtualStudy', 'VirtualFileCollection']).to_a
 
     if virtual_files.present?
       virtual_files  = Userfile.find_accessible_by_user(virtual_files.pluck(:id), current_user, :access_requested  => :read)

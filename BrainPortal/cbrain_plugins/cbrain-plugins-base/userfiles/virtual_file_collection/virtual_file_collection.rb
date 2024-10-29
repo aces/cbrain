@@ -177,8 +177,7 @@ class VirtualFileCollection < FileCollection
     @files.each do |f|
       cb_error "Nested virtual file collections are not supported, remove file with id #{f.id}" if   (
         f.is_a?(VirtualFileCollection)     ||
-        f.is_a?(CivetVirtualStudy)         ||
-        f.type.downcase.include?('virtual')
+        f.type == CivetVirtualStudy
       )
     end
   end
@@ -194,7 +193,7 @@ class VirtualFileCollection < FileCollection
     errors     = []
     errors << "Virtual file collection contains duplicate filenames #{dup_names.join(',')}" if dup_names.present?
     virtual_files_names = @files.select do |f|
-        f.is_a?(VirtualFileCollection) || f.is_a?(CivetVirtualStudy) || f.type.downcase.include?('virtual')
+        f.is_a?(VirtualFileCollection) || f.type == "CivetVirtualStudy"
     end.map(&:name)
     errors << "Nested virtual file collections are not supported, remove files  #{virtual_files_names.join ", "}" if virtual_files_names.present?
     errors
