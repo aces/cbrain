@@ -83,9 +83,12 @@ class BoutiquesClusterTask < ClusterTask
       next if userfile_id.blank? # that happens when it's an optional file
       userfile    = Userfile.find(userfile_id)
 
+      # this flag indicates should one copy any input files rather than link (e.g. to fight side effects/races)
+      copy_file = descriptor.custom.dig('cbrain:full-copy-input-files')&.include?(input.id)
+
       # Most common situation
       if ! input.list || ! userfile.is_a?(CbrainFileList)
-        make_available(userfile, userfile.name)
+        make_available(userfile, userfile.name, nil, nil, copy_file)
         next
       end
 
@@ -93,7 +96,7 @@ class BoutiquesClusterTask < ClusterTask
       userfile.sync_to_cache
       userfile_list = userfile.userfiles_accessible_by_user!(user, nil, nil, file_access_symbol)
       userfile_list.compact.each do |subfile|
-        make_available(subfile, subfile.name)
+        make_available(userfile, userfile.name, nil, nil, copy_file)
       end
     end
 
