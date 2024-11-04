@@ -307,7 +307,11 @@ class BoutiquesPortalTask < PortalTask
       original_userfiles_ids = self.params[:interface_userfile_ids].dup
       self.params[:interface_userfile_ids] = [] # zap it; we'll re-introduce each userfile.id as needed
       tasklist = original_userfiles_ids.map do |userfile_id|
-        f = Userfile.find_accessible_by_user( userfile_id, self.user, :access_requested => file_access_symbol() )
+        if CbrainFileList.find_by(:id => userfile_id)
+          f = CbrainFileList.find_accessible_by_user( userfile_id, self.user, :access_requested => :read )
+        else
+          f = Userfile.find_accessible_by_user( userfile_id, self.user, :access_requested => :read )
+        end
 
         # One task for that file
         if (! f.is_a?( CbrainFileList ) || input.list) # in case of a list input, we *do* assign it the CbFileList
@@ -406,7 +410,7 @@ class BoutiquesPortalTask < PortalTask
         next if isInactive(input)
         userfile_id = invoke_params[input.id]
         next if userfile_id.blank?
-        userfile = Userfile.find_accessible_by_user(userfile_id, self.user, :access_requested => file_access_symbol())
+        userfile = Userfile.find_accessible_by_user(userfile_id, self.user, :access_requested => :read)
         next unless ( userfile.is_a?(CbrainFileList) || (userfile.suggested_file_type || Object) <= CbrainFileList )
         [ input, userfile ]
     end.compact
@@ -481,7 +485,6 @@ class BoutiquesPortalTask < PortalTask
   # Raises an exception for the input parameter name if the parameter's value
   # is not adequate.
   def sanitize_param(input)
-
     name = input.id
     type = input.type.downcase.to_sym # old code convention from previous integrator
 
@@ -542,7 +545,7 @@ class BoutiquesPortalTask < PortalTask
           next nil # remove bad value
         end
 
-        file = Userfile.find_accessible_by_user(value, self.user, :access_requested => file_access_symbol()) rescue nil
+        file = Userfile.find_accessible_by_user(value, self.user, :access_requested => :read) rescue nil
         unless file
           params_errors.add(invokename, ": cannot find userfile (ID #{value})")
           next nil # remove bad value
