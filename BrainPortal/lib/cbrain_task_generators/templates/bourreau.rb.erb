@@ -440,7 +440,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
         exit_status = status_file_content.to_i
         # provide explanations for exit statuses (if any):
         <% descriptor['error-codes']&.each do |err| %>
-          self.addlog '<%=err["description"].gsub("'", '"').gsub(/\R|\\/, ' ')%>'  if <%= err['code'].to_i %> == exit_status
+          self.addlog(<%=err["description"].inspect %>)  if <%= err['code'].to_i %> == exit_status  # with escaping
         <% end %>
 
         unless SystemExit.new(exit_status).success?
