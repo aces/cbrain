@@ -676,7 +676,7 @@ module ViewScopes
 
         # match is more-or-less LIKE
         when 'match'
-          pattern = "%#{@value.gsub(/([%_!])/, '!\1')}%"
+          pattern = "%#{@value.strip.gsub(/([%_!])/, '!\1')}%"
           return model.where("#{attribute} LIKE ? ESCAPE '!'", pattern)
 
         # range is exactly BETWEEN

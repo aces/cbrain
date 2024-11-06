@@ -119,10 +119,23 @@ namespace :cbrain do
               end
             end
 
+            erase_dead_symlinks = lambda do |name, directory|
+              Dir.entries(directory)
+                 .map    { |entry|   Pathname.new(directory) + entry }
+                 .select { |subpath| subpath.symlink? }
+                 .select { |subpath| ! subpath.exist? } # checks that the symlink points to something valid
+                 .each  do |subpath|
+                    puts "-> Erasing symlink for #{name} '#{entry}'." if verbose
+                    logger.('DeadSymlink', 'None', name, entry)
+                    File.unlink(subpath) # remove symlink
+                 end
+            end
+
             # Setup each userfile plugin
             setup.('userfiles/*', 'userfile', userfiles_plugins_dir,
               condition: lambda { |f| File.directory?(f) }
             )
+            erase_dead_symlinks.('userfile', userfiles_plugins_dir)
 
             # Setup each cbrain_task plugin
             setup.('cbrain_task/*', 'task', tasks_plugins_dir,
@@ -131,6 +144,7 @@ namespace :cbrain do
                 File.symlink "cbrain_task_class_loader.rb", "#{symlink_location}.rb"
               end
             )
+            erase_dead_symlinks.('task', tasks_plugins_dir)
 
             # Setup each cbrain_task descriptor plugin
             setup.('cbrain_task_descriptors/*', 'descriptor', descriptors_plugins_dir,
@@ -139,16 +153,19 @@ namespace :cbrain do
                 File.symlink "cbrain_task_descriptor_loader.rb", "#{symlink_location.sub(/.json$/, '.rb')}"
               end
             )
+            erase_dead_symlinks.('descriptor', descriptors_plugins_dir)
 
             # Setup each boutiques descriptor plugin (new integrator)
             setup.('boutiques_descriptors/*', 'boutiques', boutiques_plugins_dir,
               condition: lambda { |f| File.extname(f) == '.json' },
             )
+            erase_dead_symlinks.('boutiques', boutiques_plugins_dir)
 
             # Setup each ruby lib file
             setup.('lib/*', 'lib', lib_plugins_dir,
               condition: lambda { |f| File.extname(f) == '.rb' },
             )
+            erase_dead_symlinks.('lib', lib_plugins_dir)
 
           end # chdir package
         end # each package

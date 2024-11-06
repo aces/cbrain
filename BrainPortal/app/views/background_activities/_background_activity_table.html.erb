@@ -129,7 +129,7 @@
         t.column("Status", :status,
           :sortable => true,
           :filters  => default_filters_for(@base_scope, :status)
-        ) { |bac| bac.status.underscore.humanize }
+        ) { |bac| colored_bac_status(bac.status) }
 
       end
     %>
@@ -204,7 +204,7 @@
       <% if ! is_scheduled %>
         <progress class="background_activity_progress bac_<%=bac.status%> <%= ok_fail_class %>" id="bac_<%= bac.id %>" value="<%= bac.current_item %>" max="<%= bac.items.size %>"><%= bac.current_item %>/<%= bac.items.size %></progress><br>
       <% end %>
-      <strong><%= bac.status.underscore.humanize %></strong>
+      <strong><%= colored_bac_status(bac.status) %></strong>
       on <%= bac.remote_resource.name %> |
       <% if bac.is_configured_for_dynamic_items? %>
         (Dynamic items list)

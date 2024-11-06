@@ -250,6 +250,8 @@ class DataProvider < ApplicationRecord
   belongs_to              :group
   has_many                :userfiles, :dependent => :restrict_with_exception
 
+  after_save              :adjust_read_only
+
   # Resource usage is kept forever even if data provider is destroyed.
   has_many                :resource_usage
 
@@ -1087,27 +1089,14 @@ class DataProvider < ApplicationRecord
 
   # Checks whether DP is alive, but hits the cache first if it's good
   def is_alive_with_caching?
-    if self.alive_cached_valid?
-      return self.meta[:alive_cached]
-    else
-      # real check, cache result
-      alive = self.is_alive?
-      self.meta[:alive_cached] = alive
-      self.meta[:alive_cached_time] = Time.now.to_i
-      return alive
+    Rails.cache.fetch("dp_is_alive_#{self.id}", expires_in: 60.seconds) do
+      self.is_alive? rescue false
     end
   end
 
   # This method checks whether cache is still good, lasts 1 minute
   def alive_cached_valid?
-    valid = (Time.now.to_i - self.meta[:alive_cached_time] <= 60)
-    # Check that the alive cache is actually a boolean
-    if !(self.meta[:alive_cached] == true || self.meta[:alive_cached] == false)
-      valid = false
-    end
-    valid
-  rescue
-    false
+    ! Rails.cache.read("dp_is_alive_#{self.id}").nil?
   end
 
   # Override the default for_api() method so that the resulting
@@ -1144,6 +1133,21 @@ class DataProvider < ApplicationRecord
     return true if User.where(:id => self.user_id).first.is_a?(AdminUser)
     self.errors.add(:user_id, 'must be an administrator')
     return false
+  end
+
+  # An after_save callback. If the class redefines read_only? in
+  # a way that is different from the value in the column in the
+  # database, then we adjust the database entry accordingly. This
+  # is so queries in the DB will match the intended value of the attribute.
+  # Note that we don't do the same check for 'read_only' and there is
+  # still a possibility a programmer will create a subclass
+  # where the two values are inconsistent.
+  def adjust_read_only #:nodoc:
+    ro = self.read_only || self.read_only? # better be safe
+    if ! self.class.where(:id => self.id, :read_only => ro).exists?
+      self.update_column(:read_only, ro)
+    end
+    true
   end
 
   #################################################################

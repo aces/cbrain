@@ -321,6 +321,68 @@ class BackgroundActivity < ApplicationRecord
     counts[0..4].map { |m,c| "#{c}x #{m.strip}" }
   end
 
+  # Utility method that returns an ordered subset of
+  # the items list, but only for items where
+  # the associated message (in the +messages+ list)
+  # match the regular expression +regex+ . If
+  # +regex+ is nil, will return the subset of items where
+  # the associated messages is nil.
+  #
+  # By convention, a succesfully processed item is
+  # generally recorded as a nil in the message array,
+  # and a failed or skipped item is recorded with
+  # a short message. So this method can be used to:
+  #
+  # 1. retrieve a list of successful items
+  #
+  #   selected_items_from_messages_matching(nil)
+  #
+  # 2. retrieve a list of failed items (any reason)
+  #
+  #   selected_items_from_messages_matching(/./)
+  #
+  # 3. retrieve a list of specific failures (e.g. Skipped keyword)
+  #
+  #   selected_items_from_messages_matching(/skip/i)
+  #
+  # This method scans the messages array, so if the current
+  # BAC is in progress and the messages array is shorter
+  # then the items array, it will not report any items
+  # that have not yet been attempted (that is, with index
+  # greater than the size of the messages array).
+  #
+  # This method cannot work on items that have a nil
+  # value.
+  def selected_items_from_messages_matching(regex)
+    myitems = self.items
+    messages.each_with_index.map do |mess,idx|
+      next myitems[idx] if regex.nil? && mess.nil?
+      next nil          if regex.nil?
+      next myitems[idx] if mess.to_s.match?(regex)
+      next nil
+    end.compact
+  end
+
+  # This is a utility method that runs
+  #
+  #   selected_items_from_messages_matching(nil)
+  #
+  # thus returning the subset of items that were
+  # successfully processed.
+  def selected_items_from_nil_messages
+    selected_items_from_messages_matching(nil)
+  end
+
+  # This is a utility method that runs
+  #
+  #   selected_items_from_messages_matching(/./)
+  #
+  # thus returning the subset of items that
+  # failed for any reason.
+  def selected_items_from_present_messages
+    selected_items_from_messages_matching(/./)
+  end
+
   ###########################################
   # Worker/Customer: State Transition Actions
   ###########################################

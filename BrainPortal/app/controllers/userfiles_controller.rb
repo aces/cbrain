@@ -54,6 +54,7 @@ class UserfilesController < ApplicationController
     # Manually handle the 'name_like' input, as it cant be pre-computed
     # server-side (and going the JS route would be overkill).
     params[:name_like].strip! if params[:name_like]
+    params[:name_like] += ' ' if params[:name_like] && params[:name_like].to_s =~ /\A\d+_\z/ # bug workaround
     scope_filter_from_params(@scope, :name_like, {
       :attribute => 'name',
       :operator  => 'match'
@@ -356,31 +357,40 @@ class UserfilesController < ApplicationController
       @viewer.apply_conditions(@userfile) if @viewer
     end
 
-    begin
-      if @viewer
-        if @viewer.errors.present?
-          render :partial => "viewer_errors"
-        elsif params[:apply_div] == "false"
-          render :file   => @viewer.partial_path.to_s, :layout => params[:apply_layout].present?
-        else
-          render :action => :display,                  :layout => params[:apply_layout].present?
-        end
-      else
-        render :html => "<div class=\"warning\">Could not find viewer #{viewer_name}.</div>".html_safe, :status  => "404"
-      end
-    rescue ActionView::Template::Error => e
-      exception = e.original_exception
-
-      raise exception unless Rails.env == 'production'
-      ExceptionLog.log_exception(exception, current_user, request)
-      Message.send_message(current_user,
-        :message_type => 'error',
-        :header => "Could not view #{@userfile.name}",
-        :description => "An internal error occurred when trying to display the contents of #{@userfile.name}."
-      )
-
-      render :html => "<div class=\"warning\">Error generating view code for viewer #{params[:viewer]}.</div>".html_safe, :status => "500"
+    # No viewer
+    if ! @viewer
+      render :html => "<div class=\"warning\">Could not find viewer #{viewer_name}.</div>".html_safe, :status  => "404"
+      return
     end
+
+    # Viewer reports errors
+    if @viewer.errors.present?
+      render :partial => "viewer_errors"
+      return
+    end
+
+    # Render partial
+    if params[:apply_div] == "false"
+      render :file   => @viewer.partial_path.to_s, :layout => params[:apply_layout].present?
+      return
+    end
+
+    # Render standard display action
+    render :action => :display, :layout => params[:apply_layout].present?
+
+  # Handle all errors
+  rescue => e
+    exception = e.respond_to?(:original_exception) ? e.original_exception : e
+
+    raise exception unless Rails.env == 'production'
+    ExceptionLog.log_exception(exception, current_user, request)
+    Message.send_message(current_user,
+      :message_type => 'error',
+      :header => "Could not view #{@userfile.name}",
+      :description => "An internal error occurred when trying to display the contents of #{@userfile.name}."
+    )
+
+    render :html => "<div class=\"warning\">Error generating view code for viewer '#{params[:viewer]}'. Admins have been notified and will look into the problem. In the meantime, there's not much you can do about this.</div>".html_safe
   end
 
   def show #:nodoc:
@@ -1069,7 +1079,7 @@ class UserfilesController < ApplicationController
     if task == :copy
       my_group_id  = current_assignable_group.id
       bac = BackgroundActivity::CopyFile.setup!(current_user.id, selected_ids, nil, new_provider.id,
-        { :crush_destination => crush_destination, :group_id => my_group_id }
+        { :crush_destination => crush_destination, :user_id => current_user.id, :group_id => my_group_id }
       )
     else # :move
       selected_ids  = selected_ids.select { |id| Userfile.find(id).has_owner_access?(current_user) }

@@ -36,7 +36,7 @@ class BackgroundActivity::SyncFile < BackgroundActivity
 
   def process(item)
     Userfile.find(item).sync_to_cache
-    [ true,  "Ok" ]
+    return [ true,  nil  ]
   end
 
   def prepare_dynamic_items

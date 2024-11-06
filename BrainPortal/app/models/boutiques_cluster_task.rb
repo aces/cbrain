@@ -371,9 +371,28 @@ class BoutiquesClusterTask < ClusterTask
     if custom['cbrain:walltime-estimate'].present?
       return custom['cbrain:walltime-estimate'].seconds
     end
-    if descriptor.suggested_resources.present? &&
-       descriptor.suggested_resources['walltime-estimate'].present?
-       return descriptor.suggested_resources['walltime-estimate'].seconds
+    if descriptor.suggested_resources.present? && descriptor.suggested_resources['walltime-estimate'].present?
+      return descriptor.suggested_resources['walltime-estimate'].seconds
+    end
+    nil
+  end
+
+  # Conservative maximal memory estimate for the job.
+  # This value should be somewhat larger than the largest
+  # expected memory use without being overly excessive; it
+  # will be submitted along with the job to the cluster
+  # management system for scheduling purposes. The units
+  # are megabytes.
+  def job_memory_estimate
+    descriptor = self.descriptor_for_cluster_commands
+    custom     = descriptor.custom || {} # 'custom' is not packaged as an object, just a hash
+    if custom['cbrain:memory-estimate'].present?
+      return custom['cbrain:memory-estimate'].to_i # in megabytes
+    end
+    if descriptor.suggested_resources.present? && descriptor.suggested_resources['ram'].present?
+      gigs = descriptor.suggested_resources['ram'].to_f
+      megs = gigs * 1024
+      return megs.truncate
     end
     nil
   end

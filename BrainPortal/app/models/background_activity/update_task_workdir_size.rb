@@ -40,7 +40,7 @@ class BackgroundActivity::UpdateTaskWorkdirSize < BackgroundActivity
     self.options[:totsize]  += size if size
     self.options[:skipped] ||= 0
     self.options[:skipped]  += 1 if ! size
-    return [ true,  'OK' ] if size
+    return [ true, nil ] if size
     return [ false, 'Error' ]
   end
 

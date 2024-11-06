@@ -30,12 +30,12 @@ class BackgroundActivity::CopyFileAndUnregister < BackgroundActivity::CopyFile
     return [ ok, userfile_id ] if userfile_id.is_a?(String) # a message
     userfile = Userfile.find(userfile_id)
     userfile.unregister
-    [ true, "Copied" ]
+    [ true, nil ]
   end
 
   def indices_of_failures
     self.messages.each_with_index.map do |message,idx|
-      idx if message.to_s != 'Copied'
+      idx if message.to_s.starts_with?('Failed')
     end.compact
   end
 

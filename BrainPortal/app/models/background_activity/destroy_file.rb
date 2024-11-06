@@ -37,7 +37,7 @@ class BackgroundActivity::DestroyFile < BackgroundActivity
   def process(item)
     userfile     = Userfile.find(item)
     ok           = userfile.destroy
-    return [ true,  "Destroyed" ] if   ok
+    return [ true,  nil         ] if   ok
     return [ false, "Skipped"   ] if ! ok
   end
 

@@ -48,6 +48,11 @@ class MultilevelSshDataProvider < FlatDirSshDataProvider
     true
   end
 
+  # Returns true: forces this DP type to be read-only.
+  def read_only? #:nodoc:
+    true
+  end
+
   def provider_full_path(userfile) #:nodoc:
     basename    = userfile.name
     browse_path = userfile.browse_path.presence || '.'

@@ -100,6 +100,7 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
     # Error and warning helpers
     error_examples = {}
     error_counts   = {}
+    total_extracted = 0
 
     log_it = ->(message,pat,userfile,extpath) {
       extpath &&= extpath.sub((userfile.cache_full_path.parent.to_s+"/"),"")
@@ -183,11 +184,14 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
             return false
           end
 
+          total_extracted += 1
+
         end # each globbed file
       end # each pattern
     end # each FileCollection
 
     self.addlog "Finished extracting from #{file_cols.count} inputs"
+    self.addlog "Number of files extracted: #{total_extracted}"
 
     # Log warnings and errors
     if error_examples.present?
@@ -197,6 +201,12 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
       count   = error_counts[message]
       example = error_examples[message]
       self.addlog "#{count}x : #{message}; Example: #{example}"
+    end
+
+    # Check we have at least one thing to save
+    if total_extracted == 0
+      self.addlog "No files were extracted. This is probably an error."
+      return false # failed on cluster
     end
 
     # Save final output

@@ -58,7 +58,7 @@ class BackgroundActivity::UncompressFile < BackgroundActivity
       collision.exists?
 
     userfile.gzip_content(:uncompress)
-    [ true, "Uncompressed" ]
+    return [ true, nil ]
   end
 
   def process_collection(userfile)
@@ -66,8 +66,7 @@ class BackgroundActivity::UncompressFile < BackgroundActivity
       userfile.sync_status.to_a.any? { |ss| ss.status =~ /^To/ }
     message = userfile.provider_unarchive
     ok      = message.blank?
-    message = ok ? "Unarchived" : message
-    [ ok, message ]
+    [ ok, message.presence ]
   end
 
   def prepare_dynamic_items

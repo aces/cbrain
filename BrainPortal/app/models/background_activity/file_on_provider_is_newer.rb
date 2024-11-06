@@ -38,7 +38,7 @@ class BackgroundActivity::FileOnProviderIsNewer < BackgroundActivity
 
   def process(item)
     Userfile.find(item).provider_is_newer
-    [ true,  "Ok" ]
+    [ true,  nil  ]
   end
 
   def prepare_dynamic_items

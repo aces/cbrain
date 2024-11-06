@@ -28,7 +28,7 @@ class BackgroundActivity::SaveTaskWorkdir < BackgroundActivity
   def process(item)
     task  = CbrainTask.where(:bourreau_id => CBRAIN::SelfRemoteResourceId).find(item)
     ok    = task.send(:save_cluster_workdir, self.user_id) # it's a protected method
-    return [ true,  "Saved"   ] if   ok
+    return [ true,  nil       ] if   ok
     return [ false, "Skipped" ] if ! ok
   end
 

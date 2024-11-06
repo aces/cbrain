@@ -56,12 +56,17 @@ class BackgroundActivitiesController < ApplicationController
 
     # Parse starts time
     spar = schedule_params
-    @start_date, @start_hour, @start_min = spar[:start_date], spar[:start_hour], spar[:start_min]
+    @start_date, @start_hour, @start_min, @start_now = spar[:start_date], spar[:start_hour], spar[:start_min], spar[:start_now]
+    if @start_now == '1'
+      @start_date = DateTime.now.strftime("%Y-%m-%d")
+      @start_hour = DateTime.now.strftime("%H")
+      @start_min  = DateTime.now.strftime("%M")
+    end
     datestring = "#{@start_date} #{@start_hour}:#{@start_min}"
     @bac.start_at = nil
     if datestring =~ /\A(20[23]\d?-\d\d-\d\d|\d\d\/\d\d\/20[23]\d) \d\d:\d\d\z/
       start = DateTime.parse(datestring + " " + DateTime.now.zone) rescue nil
-      start = nil if start < Time.now || start > 6.months.from_now
+      start = nil if @start_now != '1' && (start < Time.now || start > 6.months.from_now)
       @bac.start_at = start
     end
     @bac.errors.add(:base, "Start date or time is invalid (no past date and max six months ahead)") if @bac.start_at.blank?
@@ -80,6 +85,7 @@ class BackgroundActivitiesController < ApplicationController
     add_options_for_remove_task_wd     if @bac.is_a?(BackgroundActivity::RemoveTaskWorkdir)
     add_options_for_clean_cache        if @bac.is_a?(BackgroundActivity::CleanCache)
     add_options_for_erase_bacs         if @bac.is_a?(BackgroundActivity::EraseBackgroundActivities)
+    add_options_for_verify_dps         if @bac.is_a?(BackgroundActivity::VerifyDataProvider)
 
     if (@bac.errors.present?) || (! @bac.valid?) || (! @bac.save)
       render :action => :new
@@ -137,7 +143,7 @@ class BackgroundActivitiesController < ApplicationController
 
   def schedule_params
     params.permit %w( start_date start_hour  start_min
-                      repeat     repeat_hour repeat_min )
+                      repeat     repeat_hour repeat_min start_now )
   end
 
   def params_options
@@ -146,13 +152,13 @@ class BackgroundActivitiesController < ApplicationController
 
   def add_options_for_random_activity
     opt = params_options.permit( :mintime, :maxtime, :count_ok, :count_fail, :count_exc )
-    max_0_20 = ->(str,min=0) { val=str.to_i; val < min ? min : val > 20 ? 20 : val }
+    max_0_100 = ->(str,min=0) { val=str.to_i; val < min ? min : val > 100 ? 100 : val }
     @bac.setup(
-      max_0_20.(opt[:mintime],0),
-      max_0_20.(opt[:maxtime],1),
-      max_0_20.(opt[:count_ok]),
-      max_0_20.(opt[:count_fail]),
-      max_0_20.(opt[:count_exc]),
+      max_0_100.(opt[:mintime],0),
+      max_0_100.(opt[:maxtime],1),
+      max_0_100.(opt[:count_ok]),
+      max_0_100.(opt[:count_fail]),
+      max_0_100.(opt[:count_exc]),
     )
     @bac.errors.add(:base, "Test activity doesn't have any items?") if @bac.items.size == 0
     @bac.options = opt.to_h # just for form persistency; these values aren't used in the BAC
@@ -216,6 +222,13 @@ class BackgroundActivitiesController < ApplicationController
     if @bac.options[:days_older].to_s !~ /\A\d\z|\A[1-9]\d{1,2}\z/
       @bac.errors.add(:options,'does not specify a number of days between 0 and 999')
     end
+  end
+
+  def add_options_for_verify_dps #:nodoc:
+    # Actually we have no options, only a list of DP ids to put in items
+    opt    = params.permit( :verify_dp_ids => [] )
+    dp_ids = Array(opt[:verify_dp_ids])
+    @bac.items = dp_ids.map(&:to_i)
   end
 
 end

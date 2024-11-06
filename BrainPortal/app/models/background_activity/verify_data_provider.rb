@@ -20,29 +20,28 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Holds a CBRAIN task. This is the cluster operation of
-# holding a job currently Queued
-#
-# This is part of a set of four cluster operations
-# that, within CBRAIN, have no supporting interface elements
-# or API calls:
-#
-#   suspend, resume, hold, release
-#
-# This is implemented for the sake of completing the official
-# CBRAIN low-level job control features.
-class BackgroundActivity::HoldTask < BackgroundActivity
+# Verify that a Data Provider is reachable
+class BackgroundActivity::VerifyDataProvider < BackgroundActivity
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  before_save :must_be_on_bourreau!
+  # Helper for scheduling a check immediately.
+  def self.setup!(user_id, data_provider_ids, remote_resource_id=nil)
+    ba         = self.local_new(user_id, data_provider_ids, remote_resource_id)
+    ba.save!
+    ba
+  end
 
   def process(item)
-    task  = CbrainTask.where(:bourreau_id => CBRAIN::SelfRemoteResourceId).find(item)
-    ok    = task.hold
-    task.addlog("New status: #{task.status}") if ok
-    return [ true,  nil       ] if   ok
-    return [ false, "Skipped" ] if ! ok
+    data_provider = DataProvider.find(item)
+    if data_provider.is_a?(UserkeyFlatDirSshDataProvider)
+      dp_user = data_provider.user
+      key_ok  = dp_user.ssh_key rescue nil
+      return [ false, "Missing SSH key for #{dp_user.login}" ] unless key_ok
+    end
+    is_alive = data_provider.is_alive_with_caching?
+    return [ true, nil ] if is_alive
+    return [ false, "Not alive: #{data_provider.name}" ]
   end
 
 end

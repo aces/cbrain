@@ -112,7 +112,7 @@ module BoutiquesInputSubdirMaker
       filename           = subdir_config["filename"]
       input.description  = input.description.to_s +
                            "\nThis input will be copied in a parent folder: #{dirname}.\n The parent folder will be used in the command line."
-      input.description  = input.description.to_s + "\nThe file will be registered with name #{filename}." if filename.present?
+      input.description  = input.description.to_s + "\nThe file will be installed with name #{filename}." if filename.present?
       end
 
     descriptor
@@ -156,7 +156,22 @@ module BoutiquesInputSubdirMaker
       dirname     = subdir_config["dirname"]
       filename    = subdir_config["filename"] || userfile.name
 
-      make_available(userfile, "#{dirname}/#{filename}")
+      # Sync and create symlink; default mode when physical_copy not requested
+      if ! subdir_config["physical_copy"]
+        make_available(userfile, "#{dirname}/#{filename}")
+        next
+      end
+
+      # In the case of a physical copy, call make_available() in
+      # a local temp dir to do everything including syncing and
+      # creating the symlink, then make the physical copy using that symlink
+      install_tmp = ".subdirmaker/#{userfile.id}-#{filename}"
+      make_available(userfile, install_tmp)
+      Dir.mkdir(dirname) unless File.directory?(dirname)
+      add_slash = userfile.is_a?(FileCollection) ? '/'  : ''
+      add_dashL = userfile.is_a?(SingleFile)     ? '-L' : ''
+      rsyncout = bash_this("rsync -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{add_dashL} #{install_tmp.bash_escape}#{add_slash} #{dirname.bash_escape}/#{filename.bash_escape}")
+      cb_error "Failed to install '#{dirname}/#{filename}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
     end
 
     true

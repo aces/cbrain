@@ -82,6 +82,10 @@
         { 'style' => 'width: 5em' }
     %>M
 
+    <%= label_tag :start_now do %>
+      ( Or <%= check_box_tag :start_now, "1", @start_now == "1" %> right away )
+    <% end %>
+
     <%-
       ##############################
       # REPEAT
@@ -144,7 +148,7 @@
       </legend>
       Remember to select a <strong>file</strong> custom filter in the Dynamic Items section below.
       <p>
-      To: <%= data_provider_select 'move_file_dp_id', { :selected => @move_file_dp_id.to_s }, :include_blank => '(Select a Data Provider)' %>
+      To: <%= data_provider_select 'move_file_dp_id', { :selector => @move_file_dp_id.to_s }, :include_blank => '(Select a Data Provider)' %>
       <p>
       Crush files at destination if they exist: <%= check_box_tag :move_crush, '1', @move_crush %>
     </fieldset>
@@ -176,7 +180,7 @@
       </legend>
       Remember to select a <strong>task</strong> custom filter in the Dynamic Items section below.
       <p>
-      To: <%= data_provider_select 'archive_task_dp_id', { :selected => @archive_task_dp_id.to_s }, :include_blank => '(Select a Data Provider)' %><br>
+      To: <%= data_provider_select 'archive_task_dp_id', { :selector => @archive_task_dp_id.to_s }, :include_blank => '(Select a Data Provider)' %><br>
       <small>(Leave blank to archive directly in the work directories)</small>
     </fieldset>
 
@@ -316,6 +320,44 @@
         </tr>
 
       </table>
+    </fieldset>
+
+    <%-
+      ##############################
+      # BAC: TEST DP CONNECTIVITY
+      ##############################
+    %>
+
+    <fieldset>
+      <legend>
+        <%= f.radio_button :type, 'BackgroundActivity::VerifyDataProvider' %>
+        <%= f.label        :type, 'Verify DataProvider Connectivity', :value => 'BackgroundActivity::VerifyDataProvider' %>
+      </legend>
+      <% sys_dps  = DataProvider.where.not(
+           :type => [ 'UserkeyFlatDirSshDataProvider', 'S3FlatDataProvider','ScratchDataProvider' ])
+         user_dps = DataProvider.where(
+           :type => [ 'UserkeyFlatDirSshDataProvider', 'S3FlatDataProvider' ])
+      %>
+      System Data Providers:
+      <%= data_provider_select 'verify_dp_ids[]',
+          { :data_providers => sys_dps, :selector => @bac.items&.map(&:to_s) },
+          :include_blank => '(Select Data Providers)', :multiple => true
+      %>
+      <p>
+      User Data Providers:
+      <%  #=  Old select box, doesn't provide info about owners
+          # data_provider_select 'verify_dp_ids[]',
+          # { :data_providers => user_dps, :selector => @bac.items&.map(&:to_s) },
+          # :include_blank => '(Select Data Providers)', :multiple => true
+      %>
+      <%= select_tag 'verify_dp_ids[]',
+          options_for_select(
+            [["(Select Data Providers)",""]] +
+            user_dps.map { |dp| [ "#{dp.name} (#{dp.user.login})", dp.id ] },
+            :selected => @bac.items&.map(&:to_s),
+          ),
+          :multiple => true
+      %>
     </fieldset>
 
     <%-
