@@ -179,7 +179,17 @@
     // Tab Bar, div's of type tabs become tab_bars
     // See TabBar class
     loaded_element.find(".tabs").each( function() {
-      $(this).tabs();
+      $(this).tabs(
+        {
+          activate: function(event, ui) {
+            // Serch all 'html_tool_tip' and hide them when switching tabs
+            var html_tool_tip = document.getElementsByClassName('html_tool_tip');
+            for (var i = 0; i < html_tool_tip.length; i++) {
+              $(html_tool_tip[i]).hide();
+            }
+          }
+        }
+      );
     });
 
     loaded_element.find(".inline_text_field").each(function() {
