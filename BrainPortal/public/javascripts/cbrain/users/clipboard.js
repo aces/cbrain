@@ -3,7 +3,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2024
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -23,6 +23,5 @@
 */
 
 function copy_text_to_clipboard() {
-
-    navigator.clipboard.writeText($(".copiable:first").text());
+    navigator.clipboard.writeText($("#api_token").text().trim());
 }

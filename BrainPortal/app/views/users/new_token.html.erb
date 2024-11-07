@@ -3,7 +3,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2020
+# Copyright (C) 2008-2024
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -34,8 +34,14 @@
 We have just generated a new API token for you.
 <p>
 <div>
-  <pre class="copiable"><%= @new_token %></pre>
-  <button onclick="copy_text_to_clipboard()">Click to Copy</button>
+  <code id="api_token" ><%= @new_token %></code>
+  <button class="button" title="Click this button to copy the API token to the clipboard" onclick="copy_text_to_clipboard()">
+  <!-- SVG copy icon (akin to unicode's copy symbol but clean) -->
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" >
+      <rect x="4" y="4" width="14" height="14" rx="2" ry="2" fill="#d1d5da" stroke="#6a737d" stroke-width="1.25" />
+      <rect x="7" y="7" width="14" height="14" rx="2" ry="2" fill="#d1d5da" stroke="#6a737d" stroke-width="1.25" />
+    </svg> copy to clipboard
+  </button>
 </div>
 <p>
 
