@@ -228,22 +228,10 @@ RSpec.describe UsersController, :type => :controller do
           expect(assigns[:user].password).not_to eq(user.password)
         end
 
-        context "when the account must use OIDC identification only" do
-
-          it "should display a message" do
-            allow(mock_user).to receive(:account_locked?).and_return(true)
-            allow(User).to receive_message_chain(:where, :first).and_return(mock_user)
-            post :send_password, params: {:login => user.login, :email => user.email}
-            expect(flash[:error]).to match(/OpenID/i)
-          end
-
-        end
-
         context "when the account is locked" do
 
           it "should display a message" do
             allow(mock_user).to receive(:account_locked?).and_return(true)
-            allow(mock_user).to receive(:meta).and_return({ "allowed_globus_provider_names" => "" })
             allow(User).to receive_message_chain(:where, :first).and_return(mock_user)
             post :send_password, params: {:login => user.login, :email => user.email}
             expect(flash[:error]).to match(/locked/i)
@@ -263,11 +251,7 @@ RSpec.describe UsersController, :type => :controller do
         context "when reset fails" do
 
           it "should display flash message about problem" do
-            mock_user = mock_model(User,
-                                   :save => false,
-                                   :account_locked? => false,
-                                   :meta => { "allowed_globus_provider_names" => "" }
-            ).as_null_object
+            mock_user = mock_model(User, :save => false, :account_locked? => false).as_null_object
             allow(User).to receive_message_chain(:where, :first).and_return(mock_user)
             post :send_password
             expect(flash[:error]).to match(/^Unable to reset password/)
