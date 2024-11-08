@@ -215,7 +215,8 @@ module RichUiHelper
        @content_sig_cache[content_signature] = html_tool_tip_id
        content_div = "<div id=\"html_tool_tip_#{html_tool_tip_id}\" class=\"#{content_class}\">" +
                      h(content) +
-                    "</div>"
+                     "<a class=\"close_html_tool_tip\" id=\"close_html_tool_tip_#{html_tool_tip_id}\" data-tool-tip-id=\"html_tool_tip_#{html_tool_tip_id}\" href=\"#\">Close</a>" +
+                     "</div>"
     end
 
     # Create tooltip trigger

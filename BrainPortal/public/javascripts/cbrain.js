@@ -179,7 +179,17 @@
     // Tab Bar, div's of type tabs become tab_bars
     // See TabBar class
     loaded_element.find(".tabs").each( function() {
-      $(this).tabs();
+      $(this).tabs(
+        {
+          activate: function(event, ui) {
+            // Serch all 'html_tool_tip' and hide them when switching tabs
+            var html_tool_tip = document.getElementsByClassName('html_tool_tip');
+            for (var i = 0; i < html_tool_tip.length; i++) {
+              $(html_tool_tip[i]).hide();
+            }
+          }
+        }
+      );
     });
 
     loaded_element.find(".inline_text_field").each(function() {
@@ -744,7 +754,7 @@
 
     //html_tool_tip_code based on xstooltip provided by
     //http://www.texsoft.it/index.php?%20m=sw.js.htmltooltip&c=software&l=it
-    $(document).delegate(".html_tool_tip_trigger", "mouseenter", function(event) {
+    $(document).on("mouseenter click", ".html_tool_tip_trigger", function(event) {
       var trigger = $(this);
       var tool_tip_id = trigger.data("tool-tip-id");
       var tool_tip = $("#" + tool_tip_id);
@@ -763,13 +773,28 @@
       tool_tip.css('top',  y + 'px');
       tool_tip.css('left', x + 'px');
 
-      tool_tip.show();
-    }).delegate(".html_tool_tip_trigger", "mouseleave", function(event) {
+      // If click event, show the tooltip even if other tooltips are visible
+      if (event.type === "click") {
+        tool_tip.show();
+        event.preventDefault();
+      }
+      // If mouseenter event, show the tooltip only if no other tooltips are visible
+      if (event.type === "mouseenter") {
+        // Only show the tooltip if other tooltips are not visible
+        if ($('.html_tool_tip:visible').length == 0) {
+          tool_tip.show();
+        }
+      }
+    })
+
+    // Close the tooltip when clicking on the close button
+    $(document).delegate(".close_html_tool_tip", "click", function(event) {
       var trigger = $(this);
       var tool_tip_id = trigger.data("tool-tip-id");
       var tool_tip = $("#" + tool_tip_id);
-
       tool_tip.hide();
+      // To prevent jump to the top of the page
+      event.preventDefault();
     });
 
     /////////////////////////////////////////////////////////////////////
