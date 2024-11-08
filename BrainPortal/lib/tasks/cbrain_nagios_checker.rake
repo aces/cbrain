@@ -25,7 +25,6 @@
 namespace :cbrain do
   namespace :nagios do
     namespace :checkers do
-      desc "Invokes CBRAIN DataProviders 'is_alive?'"
 
       # Silence STDOUT and STDERR while the environment loads.
       # We do this if we guess that the rake task being
@@ -40,6 +39,7 @@ namespace :cbrain do
       #####################################################
       # NAGIOS CHECKER: DATA PROVIDERS
       #####################################################
+      desc "Invokes CBRAIN DataProviders 'is_alive?'"
       task :dps => :environment do
 
         CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
@@ -111,8 +111,69 @@ namespace :cbrain do
       end # task dps
 
       #####################################################
+      # NAGIOS CHECKER: CLUSTER WORKDIR USAGE
+      #####################################################
+      desc "Checks total size of work directories on clusters"
+
+      task :workdirs => :environment do
+
+        CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
+        PortalSystemChecks.check([:z000_ensure_we_have_a_local_ssh_agent])
+
+        # Restores STDOUT and STDERR so that nagios
+        # can capture our pretty message at the end.
+        STDOUT.reopen(nagios_out) if nagios_out
+        STDERR.reopen(nagios_err) if nagios_err
+
+        retcode  = 0
+        messages = []
+
+        # There is no good way to provide standard command line
+        # args to a rake task, so I have to butcher ARGV myself.
+        args = ARGV.size > 1 ? ARGV[1..ARGV.size-1] : [] # remove 'rake'
+        while args.size > 0 && args[0] =~ /^cbrain:nagios:checkers|^-/ # remove options and task name
+          args.shift
+        end
+
+        # Loop through the Bourreau names and limits
+        #  e.g. "Cedar:10:15" where 10 and 15 are in GB
+        args.each do |bourreau_warn_crit| # can be name too
+          bid, warn, crit = bourreau_warn_crit.split(':')
+          bourreau = Bourreau.where_id_or_name(bid).first
+
+          if bourreau.nil? || warn.to_s !~ /\A\d+\z/ || crit.to_s !~ /\A\d+\z/
+            messages << "UNKNOWN: Specification '#{bourreau_warn_crit}' is invalid, should be BourreauName:Warn:Crit like 'Cedar:12:15'"
+            retcode = 3
+            next
+          end
+
+          warn = warn.to_i
+          crit = crit.to_i
+
+          useGB = bourreau.cbrain_tasks.wd_present.sum(:cluster_workdir_size).to_f / 1_000_000_000.0
+          prettyGB = sprintf("%.1f",useGB)
+
+          if useGB > crit
+            messages << "CRITICAL: #{bourreau.name} using #{prettyGB} GB of #{crit} GB"
+            retcode = 2 if retcode < 2
+          elsif useGB > warn
+            messages << "WARNING: #{bourreau.name} using #{prettyGB} GB of #{warn} GB"
+            retcode = 1 if retcode < 1
+          else
+            messages << "OK: #{bourreau.name} using #{prettyGB} GB"
+          end
+        end
+
+        puts messages.join(", ")
+        Kernel.exit retcode
+      end
+
+      #####################################################
       # OTHER NAGIOS CHECKERS: ADD HERE
       #####################################################
+      #desc "blah"
+      #task :blah => :environment do
+      #end
 
     end
   end
