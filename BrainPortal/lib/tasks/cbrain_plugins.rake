@@ -121,10 +121,10 @@ namespace :cbrain do
 
             erase_dead_symlinks = lambda do |name, directory|
               Dir.entries(directory)
-                 .map    { |entry|   Pathname.new(directory) + entry }
-                 .select { |subpath| subpath.symlink? }
-                 .select { |subpath| ! subpath.exist? } # checks that the symlink points to something valid
-                 .each  do |subpath|
+                 .map    { |entry|   [ entry, Pathname.new(directory) + entry ] }
+                 .select { |_,subpath| subpath.symlink? }
+                 .select { |_,subpath| ! subpath.exist? } # checks that the symlink points to something valid
+                 .each  do |entry, subpath|
                     puts "-> Erasing symlink for #{name} '#{entry}'." if verbose
                     logger.('DeadSymlink', 'None', name, entry)
                     File.unlink(subpath) # remove symlink
