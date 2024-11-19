@@ -55,7 +55,7 @@ class GroupsController < ApplicationController
 
     if view_mode == :list
       @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 50 })
-      @groups = @scope.pagination.apply(@view_scope)
+      @groups = @scope.pagination.apply(@view_scope, api_request?)
     else
       @groups = @view_scope.to_a
     end

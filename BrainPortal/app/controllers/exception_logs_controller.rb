@@ -36,7 +36,7 @@ class ExceptionLogsController < ApplicationController
     @view_scope = @scope.apply(@base_scope)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 50 })
-    @exception_logs = @scope.pagination.apply(@view_scope)
+    @exception_logs = @scope.pagination.apply(@view_scope, api_request?)
 
     scope_to_session(@scope)
 

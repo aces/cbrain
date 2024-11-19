@@ -70,7 +70,7 @@ class TasksController < ApplicationController
       end
       @tasks.compact!
     else
-      @tasks = @scope.pagination.apply(@view_scope).to_a
+      @tasks = @scope.pagination.apply(@view_scope, api_request?).to_a
       if ! api_request?
         @tasks.map! do |task|
           { :batch => task.batch_id, :first => task, :count => 1 }

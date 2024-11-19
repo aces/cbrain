@@ -38,7 +38,7 @@ class ToolConfigsController < ApplicationController
     @view_scope   = @scope.apply(@base_scope)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 15 })
-    @tool_configs = @scope.pagination.apply(@view_scope)
+    @tool_configs = @scope.pagination.apply(@view_scope, api_request?)
 
     respond_to do |format|
       format.html

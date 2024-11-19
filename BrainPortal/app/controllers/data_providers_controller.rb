@@ -392,7 +392,7 @@ class DataProvidersController < ApplicationController
     @fileinfolist = @scope.apply(@fileinfolist)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
-    @files = @scope.pagination.apply(@fileinfolist)
+    @files = @scope.pagination.apply(@fileinfolist, api_request?)
 
     scope_to_session(@scope)
 

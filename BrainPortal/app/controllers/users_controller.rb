@@ -49,7 +49,7 @@ class UsersController < ApplicationController
     @users = @view_scope = @scope.apply(@base_scope)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 50 })
-    @users = @scope.pagination.apply(@view_scope)
+    @users = @scope.pagination.apply(@view_scope, api_request?)
 
     # Precompute file, task and locked/unlocked counts.
     @users_file_counts    = Userfile.where(:user_id => @view_scope).group(:user_id).count

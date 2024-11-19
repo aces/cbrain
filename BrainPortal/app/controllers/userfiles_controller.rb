@@ -151,7 +151,7 @@ class UserfilesController < ApplicationController
     # General case
     else
       @userfiles = @view_scope
-      @userfiles = @scope.pagination.apply(@userfiles)
+      @userfiles = @scope.pagination.apply(@userfiles, api_request?)
     end
 
     # Save the modified scope object

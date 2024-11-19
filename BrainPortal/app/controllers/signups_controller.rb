@@ -189,7 +189,7 @@ class SignupsController < ApplicationController
     # Prepare the Pagination object
     @scope.pagination           ||= Scope::Pagination.from_hash({ :per_page => 25 })
 
-    @signups                    = @scope.pagination.apply(@view_scope)
+    @signups                    = @scope.pagination.apply(@view_scope, api_request?)
 
     scope_to_session(@scope)
 
