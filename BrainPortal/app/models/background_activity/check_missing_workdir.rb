@@ -29,11 +29,11 @@ class BackgroundActivity::CheckMissingWorkdir < BackgroundActivity
   # Creates a scheduled object for checking the workdirs.
   # Returns the object.
   # Will not do it if an object already exists that was updated less
-  # than 2 hours ago. In that case, returns nil.
+  # than 24 hours ago. In that case, returns nil.
   def self.setup!
-    # Don't schedule a check if we've had one in the past 2 hours
+    # Don't schedule a check if we've had one in the past 24 hours
     return nil if self.where(:remote_resource_id => CBRAIN::SelfRemoteResourceId)
-                      .where('updated_at > ?', 2.hours.ago)
+                      .where('updated_at > ?', 24.hours.ago)
                       .exists?
 
     # Create the scheduled object
