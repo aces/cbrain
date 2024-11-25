@@ -198,13 +198,6 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
       return
     end
 
-    begin
-      Kernel.open("#{Rails.root}/tmp/AgentLocker.lock", File::WRONLY|File::CREAT|File::EXCL).close
-    rescue Errno::EEXIST
-      puts "C> \t- Locker already being created. (#{Rails.root}/tmp/AgentLocker.lock)"
-      return
-    end
-
     puts "C> \t- No locker processes found. Creating one."
 
     al_logger = Log4r::Logger.new('AgentLocker')
