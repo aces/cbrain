@@ -104,14 +104,15 @@ class InteractiveBourreauControl
     while (! @got_stop) do # I hate writing this
 
       #print "\e[H\e[J"
-      show_bourreaux()
-      print <<-OPERATIONS
+      show_bourreaux()    if initial_command.blank?
+      print <<-OPERATIONS if initial_command.blank?
 
 Operations Queue: #{@operations.presence || "(None)"}
-Operations Mode : #{@mode == "each_command" ?
-    "Each command, in turn, executed to all selected bourreaux" :
-    "Each selected bourreau, in turn, executes all commands"
-  }
+Operations Mode : #{
+        @mode == "each_command" ?
+          "Each command, in turn, executed to all selected bourreaux" :
+          "Each selected bourreau, in turn, executes all commands"
+      }
 
       OPERATIONS
 
@@ -125,14 +126,15 @@ Operations Mode : #{@mode == "each_command" ?
         letter  = inputkeywords.shift # could be a number too
         dowait |= process_user_letter(letter)
       end
-      puts ""
+      puts "" if initial_command.nil?
       if dowait && initial_command.blank?
         Readline.readline("Press RETURN to continue: ",false)
         puts ""
       end
-      initial_command = nil
+      initial_command &&= ""  # nil means no command ever provided; "" means a command was provided
     end
-    puts "Exiting.\n"
+    puts "Exiting.\n" if initial_command.nil?
+    true
   end
 
 
