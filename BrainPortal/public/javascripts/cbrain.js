@@ -767,10 +767,13 @@
       if (typeof offset_x == 'undefined') {
         offset_x = '30';
       }
+
       var x = trigger.position().left + parseInt(offset_x, 10);
       var y = trigger.position().top  + parseInt(offset_y, 10);
+
       // Fixed position bug.
       tool_tip.remove().appendTo(trigger.parent());
+
       tool_tip.css('top',  y + 'px');
       tool_tip.css('left', x + 'px');
 
@@ -781,16 +784,6 @@
       var tool_tip = $("#" + tool_tip_id);
 
       tool_tip.hide();
-    });
-
-    // Close the tooltip when clicking on the close button
-    $(document).delegate(".close_html_tool_tip", "click", function(event) {
-      var trigger = $(this);
-      var tool_tip_id = trigger.data("tool-tip-id");
-      var tool_tip = $("#" + tool_tip_id);
-      tool_tip.hide();
-      // To prevent jump to the top of the page
-      event.preventDefault();
     });
 
     /////////////////////////////////////////////////////////////////////
