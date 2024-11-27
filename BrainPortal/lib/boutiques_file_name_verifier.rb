@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2021
+# Copyright (C) 2008-2024
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -43,13 +43,17 @@
 #     "optional":  false,
 #     "path-template": "[OUTPUT_DIR]"
 #   }
-# The prevent problems, right from the start before launching a task, we should validate
+# Right before launching a task, we should validate
 # them a little bit and make sure they respect the rules that CBRAIN impose for userfiles.
 #
 # "cbrain:integrator_modules": {
-#   "BoutiquesOutputNameValidator": [ "output_dir", "other_id", "other_id_2" ]
+#   "BoutiquesFileNameVerifier": [ "output_dir", "other_id", "other_id_2" ]
 # }
-module BoutiquesFileTypeVerifier
+#
+# Please do not include output ids in the list. This modules we does fully address complex analyses eg in presence of prefixes or multiple path-templates like
+#                    "path-template": "[SUBJECT_ID][SESSION_ID][OUTPUT_DIR]"
+# You still can resort to BoutiquesFileNameMatcher for complex cases
+module BoutiquesFileNameVerifier
 
   # Note: to access the revision info of the module,
   # you need to access the constant directly, the
@@ -59,9 +63,7 @@ module BoutiquesFileTypeVerifier
   def after_form #:nodoc:
     descriptor = self.descriptor_for_after_form
     verifs     = descriptor.custom_module_info('BoutiquesFileNameVerifier')
-
     verifs.each do |inputid| # 'myinput'
-      input = descriptor.input_by_id(inputid)
       found_match = Array(invoke_params[inputid])
         .map(&:presence)
         .compact
@@ -69,9 +71,8 @@ module BoutiquesFileTypeVerifier
           Userfile.is_legal_filename?(fname)
         end
       if ! found_match
-        # "file names should us printable characters only, with no slashes ASCII nulls,
-        # and they must start with a letter or digit"
-        params_errors.add(input.cb_invoke_name, "is not of the proper name for file (or directory), avoid hyphens or other special symbols")
+        input = descriptor.input_by_id(inputid)
+        params_errors.add(input.cb_invoke_name, "is not suitable for naming an output file. Please, change to a value that starts with a letter or number and avoid special or unprintable symbols")
       end
     end
 
