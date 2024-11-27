@@ -758,7 +758,7 @@
 
     //html_tool_tip_code based on xstooltip provided by
     //http://www.texsoft.it/index.php?%20m=sw.js.htmltooltip&c=software&l=it
-    $(document).on("mouseenter click", ".html_tool_tip_trigger", function(event) {
+    $(document).delegate(".html_tool_tip_trigger", "mouseenter", function(event) {
       var trigger = $(this);
       var tool_tip_id = trigger.data("tool-tip-id");
       var tool_tip = $("#" + tool_tip_id);
@@ -767,29 +767,21 @@
       if (typeof offset_x == 'undefined') {
         offset_x = '30';
       }
-
       var x = trigger.position().left + parseInt(offset_x, 10);
       var y = trigger.position().top  + parseInt(offset_y, 10);
-
       // Fixed position bug.
       tool_tip.remove().appendTo(trigger.parent());
-
       tool_tip.css('top',  y + 'px');
       tool_tip.css('left', x + 'px');
 
-      // If click event, show the tooltip even if other tooltips are visible
-      if (event.type === "click") {
-        tool_tip.show();
-        event.preventDefault();
-      }
-      // If mouseenter event, show the tooltip only if no other tooltips are visible
-      if (event.type === "mouseenter") {
-        // Only show the tooltip if other tooltips are not visible
-        if ($('.html_tool_tip:visible').length == 0) {
-          tool_tip.show();
-        }
-      }
-    })
+      tool_tip.show();
+    }).delegate(".html_tool_tip_trigger", "mouseleave", function(event) {
+      var trigger = $(this);
+      var tool_tip_id = trigger.data("tool-tip-id");
+      var tool_tip = $("#" + tool_tip_id);
+
+      tool_tip.hide();
+    });
 
     // Close the tooltip when clicking on the close button
     $(document).delegate(".close_html_tool_tip", "click", function(event) {
