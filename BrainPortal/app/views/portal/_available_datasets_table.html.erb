@@ -41,7 +41,14 @@
     end
   %>
   <tr>
-    <td><%= overlay_description((name + "\n" + description).strip) %></td>
+    <td>
+      <%= name %>
+      <%= overlay_content_link "(more)", :enclosing_element => "span" do %>
+        <h1><%= name %></h1>
+        <hr/>
+        <p style="max-width: 80em"><%= description.strip %></p>
+      <% end %>
+    </td>
     <td><%= access %></td>
   </tr>
 <% end %>

@@ -179,7 +179,16 @@
     // Tab Bar, div's of type tabs become tab_bars
     // See TabBar class
     loaded_element.find(".tabs").each( function() {
-      $(this).tabs();
+      $(this).tabs(
+        {
+          activate: function(event, ui) {
+            $(".ui-dialog-content:visible").each(function(_, element) {
+              var visible_dialog = $(element);
+              visible_dialog.dialog('close');
+            });
+          }
+        }
+      );
     });
 
     loaded_element.find(".inline_text_field").each(function() {
@@ -382,23 +391,28 @@
       return false;
     });
 
-    //Overlay dialogs
-    //See overlay_dialog_with_button()
+    // Overlay dialogs
+    // See overlay_dialog_with_button()
     loaded_element.find(".overlay_dialog").each( function(index,element) {
-      var enclosing_div = $(this);
-      var dialog_link = enclosing_div.children('.overlay_content_link');
-      var dialog = enclosing_div.children(".overlay_content")
-      var content_width = parseInt(dialog_link.data("width"), 10);
+      var enclosing_div  = $(this);
+      var dialog_link    = enclosing_div.children('.overlay_content_link');
+      var dialog         = enclosing_div.children('.overlay_content');
+      var content_width  = parseInt(dialog_link.data("width"), 10);
       var content_height = parseInt(dialog_link.data("height"), 10);
 
       dialog.dialog({
         autoOpen: false,
-        position: "center",
         width:  content_width  || 'auto',
         height: content_height || 'auto'
       });
 
       dialog_link.click(function() {
+        // Close all other dialogs
+        $(".ui-dialog-content:visible").each(function(_, element) {
+          var visible_dialog = $(element);
+          visible_dialog.dialog('close');
+        });
+
         dialog.dialog('open');
         return false;
       });
@@ -744,7 +758,7 @@
 
     //html_tool_tip_code based on xstooltip provided by
     //http://www.texsoft.it/index.php?%20m=sw.js.htmltooltip&c=software&l=it
-    $(document).delegate(".html_tool_tip_trigger", "mouseenter", function(event) {
+    $(document).on("mouseenter click", ".html_tool_tip_trigger", function(event) {
       var trigger = $(this);
       var tool_tip_id = trigger.data("tool-tip-id");
       var tool_tip = $("#" + tool_tip_id);
@@ -763,13 +777,28 @@
       tool_tip.css('top',  y + 'px');
       tool_tip.css('left', x + 'px');
 
-      tool_tip.show();
-    }).delegate(".html_tool_tip_trigger", "mouseleave", function(event) {
+      // If click event, show the tooltip even if other tooltips are visible
+      if (event.type === "click") {
+        tool_tip.show();
+        event.preventDefault();
+      }
+      // If mouseenter event, show the tooltip only if no other tooltips are visible
+      if (event.type === "mouseenter") {
+        // Only show the tooltip if other tooltips are not visible
+        if ($('.html_tool_tip:visible').length == 0) {
+          tool_tip.show();
+        }
+      }
+    })
+
+    // Close the tooltip when clicking on the close button
+    $(document).delegate(".close_html_tool_tip", "click", function(event) {
       var trigger = $(this);
       var tool_tip_id = trigger.data("tool-tip-id");
       var tool_tip = $("#" + tool_tip_id);
-
       tool_tip.hide();
+      // To prevent jump to the top of the page
+      event.preventDefault();
     });
 
     /////////////////////////////////////////////////////////////////////
