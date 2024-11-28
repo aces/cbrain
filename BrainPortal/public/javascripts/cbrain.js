@@ -179,16 +179,20 @@
     // Tab Bar, div's of type tabs become tab_bars
     // See TabBar class
     loaded_element.find(".tabs").each( function() {
-      $(this).tabs(
-        {
-          activate: function(event, ui) {
-            $(".ui-dialog-content:visible").each(function(_, element) {
-              var visible_dialog = $(element);
-              visible_dialog.dialog('close');
-            });
-          }
-        }
-      );
+      $(this).tabs();
+    });
+
+    // Find tabs in div with class available_tabs in order to close all overlay dialogs
+    loaded_element.find(".available_tabs").each( function() {
+      var available_tabs = $(this).tabs().find(".ui-tab");
+      available_tabs.each( function(_, tab) {
+        $(tab).click( event => {
+          // Close all dialogs
+          $(".ui-dialog-content:visible").each(function(_, element) {
+            $(element).dialog('close');
+          });
+        });
+      });
     });
 
     loaded_element.find(".inline_text_field").each(function() {

@@ -43,11 +43,7 @@
   <tr>
     <td>
       <%= name %>
-      <%= overlay_content_link "(more)", :enclosing_element => "span" do %>
-        <h1><%= name %></h1>
-        <hr/>
-        <p style="max-width: 80em"><%= description.strip %></p>
-      <% end %>
+      <%= closable_overlay_content_link(name, "(more)", description) %>
     </td>
     <td><%= access %></td>
   </tr>
