@@ -100,6 +100,19 @@ class BoutiquesClusterTask < ClusterTask
     true
   end
 
+  # narrows down local dp paths only to the most relevant, to be used at setup
+  def local_dp_storage_paths
+    return super & input_file_dps.pluck(:remote_dir)
+  end
+
+  # lists the dp involved into input files
+  def input_file_dps
+    file_ids = descriptor_for_setup.file_inputs.map do |input|
+      invoke_params[input.id]
+    end
+    return Userfile.where(id: file_ids).map &:data_provider
+  end
+
   def cluster_commands #:nodoc:
     # Our two main JSON structures for 'bosh'
     descriptor    = self.descriptor_for_cluster_commands
