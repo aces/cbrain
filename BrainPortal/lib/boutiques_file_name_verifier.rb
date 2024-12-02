@@ -21,7 +21,7 @@
 #
 
 # This module adds automatic verification of the
-# files (or directories ) names generated as output to prevent injection.
+# files (or directories ) names generated as output, which comply with CBRAIN restrictions.
 #
 # For exmaple, in the "inputs" section:
 #
@@ -34,6 +34,7 @@
 #     "value-key": "[OUTPUT_DIR]",
 #     "default-value": "xcpd_output"
 #   }
+#
 # and in the "output-files" section:
 #
 #   {
@@ -43,16 +44,19 @@
 #     "optional":  false,
 #     "path-template": "[OUTPUT_DIR]"
 #   }
+#
 # Right before launching a task, we should validate
 # them a little bit and make sure they respect the rules that CBRAIN impose for userfiles.
 #
-# "cbrain:integrator_modules": {
-#   "BoutiquesFileNameVerifier": [ "output_dir", "other_id", "other_id_2" ]
-# }
+#   "cbrain:integrator_modules": {
+#     "BoutiquesFileNameVerifier": [ "output_dir", "other_id", "other_id_2" ]
+#   }
 #
-# Please do not include output ids in the list. This modules we does fully address complex analyses eg in presence of prefixes or multiple path-templates like
+# Please do not include output ids in the list. This modules does fully address more complex analyses, when output file name template includes several input string, or  prefixes or multiple path-templates like
+#
 #                    "path-template": "[SUBJECT_ID][SESSION_ID][OUTPUT_DIR]"
-# You still can resort to BoutiquesFileNameMatcher for complex cases
+#
+# You may prefer to use BoutiquesInputRegexChecker is these situations.
 module BoutiquesFileNameVerifier
 
   # Note: to access the revision info of the module,
