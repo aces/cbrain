@@ -1,0 +1,1 @@
+../../BrainPortal/lib/boutiques_file_name_verifier.rb
