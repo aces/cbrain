@@ -27,7 +27,7 @@
 <!-- ********************* -->
 
 <div id="main" class="main-content">
-  <% unless params[:action] == "index" && params[:controller] == "messages" %>
+  <% unless page_is?("messages#index")  %>
     <div id="message_display">
       <%= render :partial => 'messages/message_display' %>
     </div>
