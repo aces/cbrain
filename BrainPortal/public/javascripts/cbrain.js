@@ -183,14 +183,11 @@
     });
 
     // Find tabs in div with class available_tabs in order to close all overlay dialogs
-    loaded_element.find(".available_tabs").each( function() {
-      var available_tabs = $(this).tabs().find(".ui-tab");
-      available_tabs.each( function(_, tab) {
-        $(tab).click( event => {
-          // Close all dialogs
-          $(".ui-dialog-content:visible").each(function(_, element) {
-            $(element).dialog('close');
-          });
+    loaded_element.find(".available_tabs").each( function(_, tab) {
+      $(tab).click( event => {
+        // Close all dialogs
+        $(".ui-dialog-content:visible").each(function(_, element) {
+          $(element).dialog('close');
         });
       });
     });
