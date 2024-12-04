@@ -71,8 +71,7 @@ module BoutiquesInputCopier
   #
   # For each input in BoutiquesInputCopier section create a new entry in the descriptor
   # that will be a flag to choose if the input will be copied if the checkbox is selected
-  def descriptor_for_before_form #:nodoc:
-    descriptor       = super.dup
+  def extension_of_descriptor(descriptor) #:nodoc:
     parent_input_ids = descriptor.custom_module_info('BoutiquesInputCopier')
 
     inputs      = descriptor["inputs"]
@@ -107,12 +106,19 @@ module BoutiquesInputCopier
     descriptor
   end
 
+  def descriptor_for_before_form #:nodoc:
+    descriptor = super.dup
+    extension_of_descriptor(descriptor)
+  end
+
   def descriptor_for_form #:nodoc:
-    descriptor_for_before_form()
+    descriptor = super.dup
+    extension_of_descriptor(descriptor)
   end
 
   def descriptor_for_after_form #:nodoc:
-      descriptor_for_before_form()
+    descriptor = super.dup
+    extension_of_descriptor(descriptor)
   end
 
   ############################################
@@ -121,18 +127,16 @@ module BoutiquesInputCopier
 
   # For input in +BoutiquesInputCopier+ section,
   def setup #:nodoc:
-    # Log revision information
-    basename = Revision_info.basename
-    commit   = Revision_info.short_commit
-
     descriptor = self.descriptor_for_setup
+
     # First call the main setup
     return false if !super
-    return true  if descriptor.custom_module_info('BoutiquesInputCopier').blank?
 
+    # Get the custom module info
     boutiques_input_copier = descriptor.custom_module_info('BoutiquesInputCopier')
-    invoke_params          = self.invoke_params
+    return true  if boutiques_input_copier.blank?
 
+    invoke_params = self.invoke_params
     boutiques_input_copier.each do |parent_inputid, config|
       to_be_copied = self.invoke_params.delete("#{parent_inputid}_copy")
 
@@ -151,7 +155,7 @@ module BoutiquesInputCopier
       self.invoke_params[parent_inputid]             = copy_to
       descriptor.input_by_id(parent_inputid)["type"] = "String"
 
-      rsync_cmd = "sleep 10; rsync -a -L --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{userfile.name.bash_escape}/* #{copy_to.bash_escape}"
+      rsync_cmd = "rsync -a -L --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{userfile.name.bash_escape} #{copy_to.bash_escape}"
       rsyncout  = bash_this(rsync_cmd)
       cb_error "Failed to install '#{copy_to}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
     end
