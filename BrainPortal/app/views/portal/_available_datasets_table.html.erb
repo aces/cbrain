@@ -41,7 +41,10 @@
     end
   %>
   <tr>
-    <td><%= overlay_description((name + "\n" + description).strip) %></td>
+    <td>
+      <%= name %>
+      <%= closable_overlay_content_link(name, "(more)", description) %>
+    </td>
     <td><%= access %></td>
   </tr>
 <% end %>
