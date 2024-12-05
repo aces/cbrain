@@ -1154,7 +1154,21 @@ class UserfilesController < ApplicationController
 
     # Find list of files accessible to the user
     userfiles_list = Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :read)
-    tot_size = userfiles_list.inject(0) { |total, u| total + (u.size || 0) }
+
+    # While a new FileCollection is being registered, the size and num_files attributes initially are set to nil.
+    # We do not want users download files, of unknown, potentially very very large size
+    too_fresh = userfiles_list.detect { |u| u.size.nil? }
+    if too_fresh
+       flash[:error] = "Size of #{too_fresh.name} is not yet determined." +
+                       " Probably data are still being registered. Please try latter.\n"
+       respond_to do |format|
+         format.html { redirect_to :action => :index, :format =>  request.format.to_sym }
+         format.json { render :json => { :error => flash[:error] } }
+      end
+      return
+    end
+
+    tot_size = userfiles_list.pluck(:size).sum
 
     # Check size limit
     if tot_size > MAX_DOWNLOAD_MEGABYTES.megabytes
