@@ -1150,13 +1150,12 @@ class UserfilesController < ApplicationController
       specified_filename = "cbrain_files_#{current_user.login}.#{timestamp}"
     end
 
-    tot_size = 0
-
     # Find list of files accessible to the user
     userfiles_list = Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :read)
 
-    # While a new FileCollection is being registered, the size and num_files attributes initially are set to nil.
-    # We do not want users download files, of unknown, potentially very very large size
+    # When a new FileCollection is registered, the size and num_files attributes are temporarily set to nil.
+    # It takes few moments to calculate its size, so meanwhile we block users download files, of unknown,
+    # and potentially very very large size
     too_fresh = userfiles_list.detect { |u| u.size.nil? }
     if too_fresh
        flash[:error] = "Size of #{too_fresh.name} is not yet determined." +
