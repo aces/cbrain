@@ -108,7 +108,7 @@ class ScirGcloudBatch < Scir
     end
 
     def bucket_mount_point
-      "/mnt/disks/share"
+      "/mnt/cbrain"
     end
 
     def gcloud_location
@@ -124,7 +124,7 @@ class ScirGcloudBatch < Scir
       raise "Error: name is required"    if self.name.blank?
       raise "Error: name must be made of alphanums and dashes" if self.name !~ /\A[a-zA-Z][\w\-]*\w\z/
 
-      command  = "gcloud batch jobs submit #{self.name} #{gcloud_location} "
+      command  = "gcloud batch jobs submit #{self.name.downcase} #{gcloud_location} "
       command += "#{self.tc_extra_qsub_args} "              if self.tc_extra_qsub_args.present?
       command += "#{Scir.cbrain_config[:extra_qsub_args]} " if Scir.cbrain_config[:extra_qsub_args].present?
 
@@ -140,10 +140,10 @@ class ScirGcloudBatch < Scir
 
       json_config_text = json_cloud_batch_jobs_config(
         script_command,
-        (walltime * 4000), # it's in millisecond, so that's 4 times the walltime in seconds
-        "#{memory}m",
+        memory,
         bucket_name(),
         bucket_mount_point(),
+        walltime,
       )
 
       # Write the json config to a file; use a name unique enough for the current submission,
@@ -157,15 +157,15 @@ class ScirGcloudBatch < Scir
       return command
     end
 
-    def json_cloud_batch_jobs_config(command, maxcpu_ms, maxmem_mb, bucket_name, mount_point, wallime_s)
+    def json_cloud_batch_jobs_config(command, maxmem_mb, bucket_name, mount_point, walltime_s)
       struct = struct_gcloud_batch_jobs_config_template.dup
       task_spec = struct["taskGroups"][0]["taskSpec"]
       task_spec["runnables"][0]["script"]["text"]  = command
-      task_spec["computeResource"]["cpuMilli"]     = maxcpu_ms
+      task_spec["computeResource"]["cpuMilli"]     = 2000, # 1000 per core
       task_spec["computeResource"]["memoryMib"]    = maxmem_mb
       task_spec["volumes"][0]["gcs"]["remotePath"] = bucket_name
       task_spec["volumes"][0]["mountPath"]         = mount_point
-      task_spec["maxRunDuration"]                  = wallime_s
+      task_spec["maxRunDuration"]                  = "#{walltime_s}s"
       struct.to_json
     end
 
