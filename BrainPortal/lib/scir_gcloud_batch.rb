@@ -111,6 +111,11 @@ class ScirGcloudBatch < Scir
       "/mnt/disks/share"
     end
 
+    def gcloud_location
+      #TODO better
+      "--location northamerica-northeast1"
+    end
+
     # Note: CBRAIN's 'queue' name is interpreted as SLURM's 'partition'.
     def qsub_command #:nodoc:
       raise "Error, this class only handle 'command' as /bin/bash and a single script in 'arg'" unless
