@@ -214,7 +214,7 @@ class Scir
     # We only support a subset of DRMAA's job template
     attr_accessor :name, :command, :arg, :wd,
         :stdin, :stdout, :stderr, :join,
-        :queue, :walltime, :memory,
+        :queue, :walltime, :memory,   # walltime is in seconds, memory in megabytes
         :tc_extra_qsub_args, :task_id
 
     def revision_info #:nodoc:
