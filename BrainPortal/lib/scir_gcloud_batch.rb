@@ -150,7 +150,7 @@ class ScirGcloudBatch < Scir
       # bu we can crush at a later date too. Maybe use job name?!?
       pid_threadid         = "#{Process.pid}-#{Thread.current.object_id}"
       json_tmp_config_file = "/tmp/job_submit-#{pid_threadid}.json"
-      File.open(json_tmp_config_file,"w") { |fh| wh.write json_config_text }
+      File.open(json_tmp_config_file,"w") { |fh| fh.write json_config_text }
 
       command += "--config #{json_tmp_config_file} 2>/dev/null" # we must ignore the friendly message line in stderr
 
