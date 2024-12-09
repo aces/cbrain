@@ -264,16 +264,20 @@ module RichUiHelper
   # Create a link that will open a dialog box.
   #
   # Options:
-  #   link_text:      text of the link
-  #   title:          title of the overlay
-  #   description:    content of the overlay
-  #   options[:size]: used to set the max-width of the overlay
-  def closable_overlay_content_link(link_text, title, description="", options = {size: "50em"})
+  #   title: title of the overlay
+  #   link_text: text of the link
+  #   description: content of the overlay
+  #   size: used to set the max-width of the overlay
+  def closable_overlay_content_link(title, link_text, description="", options = {size: "50em"})
     return "" if description.blank?
 
     link = overlay_content_link(link_text, :enclosing_element => "span") do
-      "<h1>#{h(title)}</h1><hr/>".html_safe +
-      "<p style=\"max-width: #{options[:size]};\">#{h(description)}</p>".html_safe
+      html = "<div style='overflow: auto; max-height: #{options[:size]}; max-width: #{options[:size]};'>" +
+      "<h1>#{h(title)}</h1><hr/>" +
+      "<p'>#{h(description)}</p>" +
+      "</div>"
+
+      html.html_safe
     end
 
     return link
