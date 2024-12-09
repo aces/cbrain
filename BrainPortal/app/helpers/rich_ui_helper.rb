@@ -272,8 +272,12 @@ module RichUiHelper
     return "" if description.blank?
 
     link = overlay_content_link(link_text, :enclosing_element => "span") do
-      "<h1>#{h(title)}</h1><hr/>".html_safe +
-      "<p style='max-width: #{options[:size]};'>#{h(description)}</p>".html_safe
+      html = "<div style='overflow: auto; max-height: #{options[:size]}; max-width: #{options[:size]};'>" +
+      "<h1>#{h(title)}</h1><hr/>" +
+      "<p'>#{h(description)}</p>" +
+      "</div>"
+
+      html.html_safe
     end
 
     return link
