@@ -95,8 +95,12 @@ class ScirGcloudBatch < Scir
 
     def qsubout_to_jid(txt) #:nodoc:
       struct = YAML.load(txt)
-      fullname = struct['name'] # "projects/tidal-reactor-438920-g4/locations/northamerica-northeast1/jobs/cbrain-123-1"
-      Pathname.new(fullname).basename # cbrain-123-1
+      fullname = struct['name'] # "projects/tidal-reactor-438920-g4/locations/northamerica-northeast1/jobs/cbrain-123-1-092332"
+      Pathname.new(fullname).basename # cbrain-123-1-092332
+    rescue => ex
+      raise "Cannot find job ID from 'gcloud batch jobs submit' output. Text was blank" if txt.blank?
+      File.open("/tmp/debug.submit_error.txt","a") { |fh| fh.write("\n----\n#{txt}") }
+      raise "Cannot find job ID from 'gcloud batch jobs submit' output."
     end
 
   end
@@ -116,13 +120,16 @@ class ScirGcloudBatch < Scir
       "--location northamerica-northeast1"
     end
 
-    # Note: CBRAIN's 'queue' name is interpreted as SLURM's 'partition'.
     def qsub_command #:nodoc:
       raise "Error, this class only handle 'command' as /bin/bash and a single script in 'arg'" unless
         self.command == "/bin/bash" && self.arg.size == 1
       raise "Error: stdin not supported" if self.stdin
       raise "Error: name is required"    if self.name.blank?
       raise "Error: name must be made of alphanums and dashes" if self.name !~ /\A[a-zA-Z][\w\-]*\w\z/
+
+      # The name is the job ID, so we need a distinct suffix even for the same task
+      name = name[0..50] if name.size > 50
+      name = name + DateTime.now.strftime("-%H%M%S") # this should be good enough
 
       command  = "gcloud batch jobs submit #{self.name.downcase} #{gcloud_location} "
       command += "#{self.tc_extra_qsub_args} "              if self.tc_extra_qsub_args.present?
@@ -161,7 +168,7 @@ class ScirGcloudBatch < Scir
       struct = struct_gcloud_batch_jobs_config_template.dup
       task_spec = struct["taskGroups"][0]["taskSpec"]
       task_spec["runnables"][0]["script"]["text"]  = command
-      task_spec["computeResource"]["cpuMilli"]     = 2000, # 1000 per core
+      task_spec["computeResource"]["cpuMilli"]     = 2000 # 1000 per core
       task_spec["computeResource"]["memoryMib"]    = maxmem_mb
       task_spec["volumes"][0]["gcs"]["remotePath"] = bucket_name
       task_spec["volumes"][0]["mountPath"]         = mount_point
