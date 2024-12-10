@@ -53,10 +53,7 @@
     end
   %>
   <tr>
-    <td>
-      <%= name %>
-      <%= closable_overlay_content_link(name, "(iz)", description) %>
-    </td>
+    <td><%= overlay_description((name + "\n" + description).strip) %></td>
     <td><%= versions %></td>
     <td><%= tags.join(", ") %></td>
     <td class="no_wrap"><%= access %></td>

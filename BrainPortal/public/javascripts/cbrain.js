@@ -182,19 +182,6 @@
       $(this).tabs();
     });
 
-    // Find tabs in div with class available_tabs in order to close all overlay dialogs
-    loaded_element.find(".available_tabs").each( function() {
-      var available_tabs = $(this).tabs().find(".ui-tab");
-      available_tabs.each( function(_, tab) {
-        $(tab).click( event => {
-          // Close all dialogs
-          $(".ui-dialog-content:visible").each(function(_, element) {
-            $(element).dialog('close');
-          });
-        });
-      });
-    });
-
     loaded_element.find(".inline_text_field").each(function() {
       var inline_text_field = $(this);
       var data_type = inline_text_field.data("type") || "script";
@@ -395,28 +382,23 @@
       return false;
     });
 
-    // Overlay dialogs
-    // See overlay_dialog_with_button()
+    //Overlay dialogs
+    //See overlay_dialog_with_button()
     loaded_element.find(".overlay_dialog").each( function(index,element) {
-      var enclosing_div  = $(this);
-      var dialog_link    = enclosing_div.children('.overlay_content_link');
-      var dialog         = enclosing_div.children('.overlay_content');
-      var content_width  = parseInt(dialog_link.data("width"), 10);
+      var enclosing_div = $(this);
+      var dialog_link = enclosing_div.children('.overlay_content_link');
+      var dialog = enclosing_div.children(".overlay_content")
+      var content_width = parseInt(dialog_link.data("width"), 10);
       var content_height = parseInt(dialog_link.data("height"), 10);
 
       dialog.dialog({
         autoOpen: false,
+        position: "center",
         width:  content_width  || 'auto',
         height: content_height || 'auto'
       });
 
       dialog_link.click(function() {
-        // Close all other dialogs
-        $(".ui-dialog-content:visible").each(function(_, element) {
-          var visible_dialog = $(element);
-          visible_dialog.dialog('close');
-        });
-
         dialog.dialog('open');
         return false;
       });
