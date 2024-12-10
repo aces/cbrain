@@ -44,7 +44,7 @@ class ScirGcloudBatch < Scir
       out_lines.each do |line|
         job_path, job_location, job_status = line.split(/\s+/)
         next unless job_path.present? && job_status.present?
-        job_id = Pathname.new(job_path).basename
+        job_id = Pathname.new(job_path).basename.to_s
         state = statestring_to_stateconst(job_status)
         @job_info_cache[job_id] = { :drmaa_state => state }
       end
@@ -53,6 +53,7 @@ class ScirGcloudBatch < Scir
 
     def statestring_to_stateconst(state) #:nodoc:
       return Scir::STATE_RUNNING        if state =~ /RUNNING/i
+      return Scir::STATE_QUEUED_ACTIVE  if state =~ /QUEUED/i
       return Scir::STATE_QUEUED_ACTIVE  if state =~ /SCHEDULED/i
       return Scir::STATE_DONE           if state =~ /COMPLETED/i
       return Scir::STATE_FAILED         if state =~ /FAILED/i
@@ -96,7 +97,7 @@ class ScirGcloudBatch < Scir
     def qsubout_to_jid(txt) #:nodoc:
       struct = YAML.load(txt)
       fullname = struct['name'] # "projects/tidal-reactor-438920-g4/locations/northamerica-northeast1/jobs/cbrain-123-1-092332"
-      Pathname.new(fullname).basename # cbrain-123-1-092332
+      Pathname.new(fullname).basename.to_s # cbrain-123-1-092332
     rescue => ex
       raise "Cannot find job ID from 'gcloud batch jobs submit' output. Text was blank" if txt.blank?
       File.open("/tmp/debug.submit_error.txt","a") { |fh| fh.write("\n----\n#{txt}") }
@@ -128,10 +129,11 @@ class ScirGcloudBatch < Scir
       raise "Error: name must be made of alphanums and dashes" if self.name !~ /\A[a-zA-Z][\w\-]*\w\z/
 
       # The name is the job ID, so we need a distinct suffix even for the same task
-      name = name[0..50] if name.size > 50
-      name = name + DateTime.now.strftime("-%H%M%S") # this should be good enough
+      gname = self.name.downcase
+      gname = gname[0..50] if gname.size > 50
+      gname = gname + DateTime.now.strftime("-%H%M%S") # this should be good enough
 
-      command  = "gcloud batch jobs submit #{self.name.downcase} #{gcloud_location} "
+      command  = "gcloud batch jobs submit #{gname} #{gcloud_location} "
       command += "#{self.tc_extra_qsub_args} "              if self.tc_extra_qsub_args.present?
       command += "#{Scir.cbrain_config[:extra_qsub_args]} " if Scir.cbrain_config[:extra_qsub_args].present?
 
