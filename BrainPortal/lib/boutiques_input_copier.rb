@@ -35,12 +35,12 @@
 #
 #     {
 #       "description": "A directory that contain the input data...",
-#       "id": "input",
+#       "id": "parent_input_id",
 #       "name": "Input",
 #       "optional": true,
 #       "type": "File",
-#       "command-line-flag": "--input",
-#       "value-key": "[INPUT]"
+#       "command-line-flag": "-i",
+#       "value-key": "<-i input>"
 #     },
 #
 # and in the `cbrain:integrator_modules` section look like:
@@ -51,7 +51,7 @@
 #
 # The final command line will be:
 #
-#     apptool [INPUT_COPY]...
+#     apptool <-i input_copy>...
 #
 #
 module BoutiquesInputCopier
