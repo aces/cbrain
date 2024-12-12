@@ -52,7 +52,7 @@
     <% plugins_basenames.sort.each do |plugin| %>
       <% revtag  = CbrainFileRevision.cbrain_head_tag(plugin)                 rescue CbrainFileRevision::DEFAULT_TAG %>
       <% revinfo = CbrainFileRevision.cbrain_head_revinfo(plugin).self_update rescue nil %>
-      <h5>Plugins Package: <%= plugin.titleize.gsub(/Cbrain|Plugins/, "") %></h5>
+      <h5>Plugins Package: <%= plugin.sub("cbrain-plugins-","").capitalize %></h5>
       <strong>Version:</strong> <%= revtag %>
       <br>
       <strong>Last Changed Author:</strong> <%= revinfo.try(:author) || "?" %>
