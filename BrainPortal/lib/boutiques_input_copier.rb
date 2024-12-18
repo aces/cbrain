@@ -151,9 +151,14 @@ module BoutiquesInputCopier
       userfile_id = invoke_params[parent_inputid]
       next if userfile_id.blank?
       userfile    = Userfile.find(userfile_id)
-      copy_to                                        = userfile.name + "_" + self.run_id.to_s
+      copy_to                                        = "inputcopier_tmp" + userfile.name
       self.invoke_params[parent_inputid]             = copy_to
       descriptor.input_by_id(parent_inputid)["type"] = "String"
+
+
+      # If copy_to exists in the working directory then we don't need to copy it again
+      copy_to_fullpath = self.full_cluster_workdir + copy_to
+      next if File.exist?(copy_to_fullpath)
 
       rsync_cmd = "rsync -a -L --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{userfile.name.bash_escape} #{copy_to.bash_escape}"
       rsyncout  = bash_this(rsync_cmd)
@@ -162,6 +167,17 @@ module BoutiquesInputCopier
 
     true
   end
+
+  def name_and_type_for_output_file(output, pathname)
+    # Call name_and_type_for_output_file from BoutiquesClusterTask
+    name, userfile_class  = super(output, pathname)
+
+    name = name.sub(/^inputcopier_tmp/, "")
+
+    [ name, userfile_class ]
+  end
+
+
 
   ############################################
   # Utility Methods for the Module           #
