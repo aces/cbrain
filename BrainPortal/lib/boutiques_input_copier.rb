@@ -66,122 +66,24 @@ module BoutiquesInputCopier
   # Portal Side Modifications
   ############################################
 
-  # Adjust the description for the input with the mention of
-  # the fake parent directory information
-  #
-  # For each input in BoutiquesInputCopier section create a new entry in the descriptor
-  # that will be a flag to choose if the input will be copied if the checkbox is selected
-  def extension_of_descriptor(descriptor) #:nodoc:
-    parent_input_ids = descriptor.custom_module_info('BoutiquesInputCopier')
 
-    inputs      = descriptor["inputs"]
+  # Utility Methods for the Module
+  ############################################
 
-    # In parent_input_ids, select all non hidden inputs
-    parent_input_ids = parent_input_ids.select { |_, config| !config["hide"] }
-    copied_info = fill_copied_info(parent_input_ids, descriptor, inputs)
+  def copy_name(original_name) #:nodoc:
+    "inputcopier_tmp_" + original_name
+  end
 
-    # Add the new inputs to the descriptor and to the group if needed
-    extracted_idx = copied_info.values.map { |info| info[:input_idx] }.sort.reverse
+  def need_to_copy(copy_value, config) #:nodoc:
+    to_copy    = false
 
-    extracted_idx.each do |index|
-      # In copied_info, find the one with input_idx == index
-      copied_info.each do |parent_inputid, info|
-        next if info[:hide]
-        next if info[:input_idx] != index
-
-        # Insert the new input in the descriptor
-        new_input = info[:new_input]
-        inputs.insert(index, new_input)
-
-        # Insert the new input in the group
-        next if !info[:member_info]
-        group        = descriptor.group_by_id(info[:member_info][:id])
-        members      = group["members"]
-        new_input_id = new_input["id"]
-        next if members.include?(new_input_id)
-        members.insert(info[:member_info][:idx], new_input_id)
-      end
+    # Special case if default-value is true and the field is hidden
+    if config["default-value"] && config["hide"]
+      return true
+    else
+      return copy_value.is_a?(TrueClass) ? true : false
     end
-
-    descriptor
   end
-
-  def descriptor_for_before_form #:nodoc:
-    descriptor = super.dup
-    extension_of_descriptor(descriptor)
-  end
-
-  def descriptor_for_form #:nodoc:
-    descriptor = super.dup
-    extension_of_descriptor(descriptor)
-  end
-
-  def descriptor_for_after_form #:nodoc:
-    descriptor = super.dup
-    extension_of_descriptor(descriptor)
-  end
-
-  ############################################
-  # Bourreau (Cluster) Side Modifications
-  ############################################
-
-  # For input in +BoutiquesInputCopier+ section,
-  def setup #:nodoc:
-    descriptor = self.descriptor_for_setup
-
-    # First call the main setup
-    return false if !super
-
-    # Get the custom module info
-    boutiques_input_copier = descriptor.custom_module_info('BoutiquesInputCopier')
-    return true  if boutiques_input_copier.blank?
-
-    invoke_params = self.invoke_params
-    boutiques_input_copier.each do |parent_inputid, config|
-      to_be_copied = self.invoke_params.delete("#{parent_inputid}_copy")
-
-      # Special case if default-value is true and the field is hidden
-      if to_be_copied.blank?
-        to_be_copied = true if config["default-value"] && config["hide"]
-      end
-
-      # Skip if the copy option is not selected
-      next if to_be_copied.blank? || to_be_copied == "0"
-
-      userfile_id = invoke_params[parent_inputid]
-      next if userfile_id.blank?
-      userfile    = Userfile.find(userfile_id)
-      copy_to                                        = "inputcopier_tmp" + userfile.name
-      self.invoke_params[parent_inputid]             = copy_to
-      descriptor.input_by_id(parent_inputid)["type"] = "String"
-
-
-      # If copy_to exists in the working directory then we don't need to copy it again
-      copy_to_fullpath = self.full_cluster_workdir + copy_to
-      next if File.exist?(copy_to_fullpath)
-
-      rsync_cmd = "rsync -a -L --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{userfile.name.bash_escape} #{copy_to.bash_escape}"
-      rsyncout  = bash_this(rsync_cmd)
-      cb_error "Failed to install '#{copy_to}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
-    end
-
-    true
-  end
-
-  def name_and_type_for_output_file(output, pathname)
-    # Call name_and_type_for_output_file from BoutiquesClusterTask
-    name, userfile_class  = super(output, pathname)
-
-    name = name.sub(/^inputcopier_tmp/, "")
-
-    [ name, userfile_class ]
-  end
-
-
-
-  ############################################
-  # Utility Methods for the Module           #
-  ############################################
 
   # Create copied_info with the following information:
   #   - idx_to_insert: index where the new input will be inserted
@@ -226,6 +128,138 @@ module BoutiquesInputCopier
     copied_info
   end
 
+  # Adjust the descriptor for the input with the mention of
+  # the fake parent directory information
+  #
+  # For each input in BoutiquesInputCopier section create a new entry in the descriptor
+  # that will be a flag to choose if the input will be copied if the checkbox is selected
+  def descriptor_with_special_input(descriptor) #:nodoc:
+    parent_input_ids = descriptor.custom_module_info('BoutiquesInputCopier')
+
+    inputs      = descriptor["inputs"]
+
+    # In parent_input_ids, select all non hidden inputs
+    parent_input_ids = parent_input_ids.select { |_, config| !config["hide"] }
+    copied_info      = fill_copied_info(parent_input_ids, descriptor, inputs)
+
+    # Add the new inputs to the descriptor and to the group if needed
+    extracted_idx = copied_info.values.map { |info| info[:input_idx] }.sort.reverse
+
+    extracted_idx.each do |index|
+      # In copied_info, find the one with input_idx == index
+
+      copied_info.each do |parent_inputid, info|
+        next if info[:hide]
+        next if info[:input_idx] != index
+
+        # Insert the new input in the descriptor
+        new_input = info[:new_input]
+        inputs.insert(index, new_input)
+
+        # Insert the new input in the group
+        next if !info[:member_info]
+        group        = descriptor.group_by_id(info[:member_info][:id])
+        members      = group["members"]
+        new_input_id = new_input["id"]
+        next if members.include?(new_input_id)
+        members.insert(info[:member_info][:idx], new_input_id)
+      end
+    end
+
+    descriptor
+  end
+
+  def descriptor_for_before_form #:nodoc:
+    descriptor_with_special_input(super.dup)
+  end
+
+  def descriptor_for_form #:nodoc:
+    descriptor_with_special_input(super.dup)
+  end
+
+  def descriptor_for_after_form #:nodoc:
+    descriptor_with_special_input(super.dup)
+  end
+
+  ############################################
+  # Bourreau (Cluster) Side Modifications
+  ############################################
+
+  # For input in +BoutiquesInputCopier+ section,
+  def setup #:nodoc:
+    original_userfile_ids = {}
+
+    basename = Revision_info.basename
+    commit   = Revision_info.short_commit
+    self.addlog("Creating a copy of the input files in BoutiquesInputCopier.")
+    self.addlog("#{basename} rev. #{commit}")
+
+    descriptor = self.descriptor_for_setup
+
+    parent_by_inputid = descriptor.custom_module_info('BoutiquesInputCopier')
+
+    # Invoke main setup
+    return false if !super
+
+    # Get the custom module info
+    boutiques_input_copier = descriptor.custom_module_info('BoutiquesInputCopier')
+    return true  if boutiques_input_copier.blank?
+
+    invoke_params = self.invoke_params
+
+    boutiques_input_copier.each do |parent_inputid, config|
+      copy_id    = "#{parent_inputid}_copy"
+      copy_value = false
+      if invoke_params[copy_id].present?
+        copy_value = invoke_params.delete(copy_id)
+      end
+
+      # Skip if the input is not selected
+      userfile_id = invoke_params[parent_inputid]
+      next if userfile_id.blank?
+
+      # Skip if the copy option is not selected
+      to_copy = need_to_copy(copy_value, config)
+      next if !to_copy
+
+      # Remove IDs from invoke_params if
+      original_userfile_ids[parent_inputid] = invoke_params[parent_inputid]
+
+      # Determine the name of the copy
+      userfile = Userfile.find(userfile_id)
+      copy_to  = copy_name(userfile.name)
+
+      # If copy_to exists in the working directory then we don't need to copy it again
+      copy_to_fullpath = self.full_cluster_workdir + copy_to
+      next if File.exist?(copy_to_fullpath)
+
+      rsync_cmd = "rsync -a -L --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{userfile.name.bash_escape} #{copy_to.bash_escape}"
+      rsyncout  = bash_this(rsync_cmd)
+
+      # Remove the copy_to from the invoke_params
+      invoke_params.delete("#{parent_inputid}_copy")
+
+      cb_error "Failed to install '#{copy_to}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
+    end
+
+    true
+  ensure
+    original_userfile_ids.each do |inputid, userfile_id|
+      invoke_params[inputid] = original_userfile_ids[inputid]
+    end
+  end
+
+  def name_and_type_for_output_file(output, pathname)
+    # Call name_and_type_for_output_file from BoutiquesClusterTask
+    name, userfile_class  = super(output, pathname)
+
+    name = name.sub(/^inputcopier_tmp_/, "")
+
+    [ name, userfile_class ]
+  end
+
+
+
   # This utility method runs a bash +command+ , captures the output
   # and returns it. The user of this method is expected to have already
   # properly escaped any special characters in the arguments to the
@@ -237,7 +271,34 @@ module BoutiquesInputCopier
     output
   end
 
-  def copy_name_run_id(copy_to) #:nodoc:
-    return copy_to + "_" + self.run_id.to_s
+  # Overrides the same method in BoutiquesClusterTask, as used
+  # during cluster_commands()
+  def finalize_bosh_invoke_struct(invoke_struct) #:nodoc:
+    override_invoke_params = super.dup
+
+    descriptor             = self.descriptor_for_cluster_commands
+    boutiques_input_copier = descriptor.custom_module_info('BoutiquesInputCopier')
+
+    # For each input in BoutiquesInputCopier override the input with the copy
+    # if the checkbox is selected
+    boutiques_input_copier.each do |parent_inputid, config|
+      userfile_id = invoke_params[parent_inputid]
+
+      copy_value = false
+      copy_id    = "#{parent_inputid}_copy"
+      if invoke_params[copy_id].present?
+        copy_value = invoke_params.delete(copy_id)
+      end
+
+      # Skip if the copy option is not selected
+      to_copy = need_to_copy(copy_value, config)
+      next if !to_copy
+      userfile_id = invoke_params[parent_inputid]
+      userfile    = Userfile.find(userfile_id)
+      override_invoke_params[parent_inputid] = copy_name(userfile.name)
+    end
+
+    override_invoke_params
   end
+
 end
