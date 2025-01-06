@@ -103,6 +103,10 @@ class BackgroundActivitiesController < ApplicationController
       @base_scope = @base_scope.where(:user_id => current_user.id)
     end
     @view_scope = @bacs = @scope.apply(@base_scope)
+
+    @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
+    @bacs = @scope.pagination.apply(@view_scope)
+
     scope_to_session(@scope)
 
     respond_to do |format|
