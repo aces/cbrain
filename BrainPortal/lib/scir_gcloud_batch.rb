@@ -148,6 +148,10 @@ class ScirGcloudBatch < Scir
       script_command += "1> #{shell_escape(self.stdout.sub(/\A:/,""))} " if self.stdout.present?
       script_command += "2> #{shell_escape(self.stderr.sub(/\A:/,""))} " if self.stderr.present?
 
+      # Wrapper around the command to switch UID, as normally
+      # the stupid GoogleCloud batch engine starts everything as root
+      script_command = "sudo -u #{CBRAIN::Rails_UserName.bash_escape} bash -c #{script_command.bash_escape}"
+
       walltime = self.walltime.presence || 600 # seconds
       memory   = self.memory.presence   || 2000 # mb
 
