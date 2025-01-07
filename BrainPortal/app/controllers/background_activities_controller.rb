@@ -105,7 +105,7 @@ class BackgroundActivitiesController < ApplicationController
     @view_scope = @bacs = @scope.apply(@base_scope)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
-    @bacs = @scope.pagination.apply(@view_scope)
+    @bacs = @scope.pagination.apply(@view_scope, api_request?)
 
     scope_to_session(@scope)
 
