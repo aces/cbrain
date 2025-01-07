@@ -122,7 +122,7 @@ class ScirGcloudBatch < Scir
     end
 
     def compute_node_image_name
-      "cbrain-compute-node-2-image"
+      "projects/tidal-reactor-438920-g4/global/images/cbrain-compute-node-2-image"
     end
 
     def qsub_command #:nodoc:
