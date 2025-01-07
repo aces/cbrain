@@ -49,6 +49,10 @@
 #       "parent_input_id": {"default": boolean, "hide": boolean, "description": string},
 #      },
 #
+# default:     boolean, true if the parent_input should be copied by default
+# hide:        boolean, true if the input should be hidden in the form
+# description: string, description of the input
+#
 # The final command line will be:
 #
 #     apptool <-i input_copy>...
