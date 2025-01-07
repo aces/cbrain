@@ -121,6 +121,10 @@ class ScirGcloudBatch < Scir
       "--location northamerica-northeast1"
     end
 
+    def compute_node_image_name
+      "cbrain-compute-node-2-image"
+    end
+
     def qsub_command #:nodoc:
       raise "Error, this class only handle 'command' as /bin/bash and a single script in 'arg'" unless
         self.command == "/bin/bash" && self.arg.size == 1
@@ -153,6 +157,7 @@ class ScirGcloudBatch < Scir
         bucket_name(),
         bucket_mount_point(),
         walltime,
+        compute_node_image_name,
       )
 
       # Write the json config to a file; use a name unique enough for the current submission,
@@ -166,8 +171,9 @@ class ScirGcloudBatch < Scir
       return command
     end
 
-    def json_cloud_batch_jobs_config(command, maxmem_mb, bucket_name, mount_point, walltime_s)
+    def json_cloud_batch_jobs_config(command, maxmem_mb, bucket_name, mount_point, walltime_s, compute_node_image_name)
       struct = struct_gcloud_batch_jobs_config_template.dup
+
       task_spec = struct["taskGroups"][0]["taskSpec"]
       task_spec["runnables"][0]["script"]["text"]  = command
       task_spec["computeResource"]["cpuMilli"]     = 2000 # 1000 per core
@@ -175,10 +181,15 @@ class ScirGcloudBatch < Scir
       task_spec["volumes"][0]["gcs"]["remotePath"] = bucket_name
       task_spec["volumes"][0]["mountPath"]         = mount_point
       task_spec["maxRunDuration"]                  = "#{walltime_s}s"
+
+      policy = struct["allocationPolicy"]["instances"][0]["policy"]
+      policy["bootDisk"]["image"] = compute_node_image_name
+
       struct.to_json
     end
 
     def struct_gcloud_batch_jobs_config_template
+      @_cached_frozen_struct_ ||=
       {
         "taskGroups" => [
           {
@@ -214,7 +225,9 @@ class ScirGcloudBatch < Scir
             {
               "policy" => {
                 "machineType"       => "n2d-standard-4",
-                "provisioningModel" => "SPOT",
+                "bootDisk" => {
+                  "image" => "COMPUTE_NODE_IMAGE_NAME_HERE",
+                }
               }
             }
           ]
