@@ -53,9 +53,10 @@
 # hide:        boolean, true if the input should be hidden in the form
 # description: string, description of the input
 #
-# The final command line will be:
+# If "hide" is set to false, a checkbox will be added to the form to allow the user to choose if the input should be copied.
+# If the checkbox is selected, the input will be copied in the working directory and the command line will be updated to use the copy.
 #
-#     apptool <-i input_copy>...
+#     apptool input_copy
 #
 #
 module BoutiquesInputCopier
@@ -74,10 +75,6 @@ module BoutiquesInputCopier
   # Utility Methods for the Module
   ############################################
 
-  def copy_name(original_name) #:nodoc:
-    "inputcopier_tmp_" + original_name
-  end
-
   def need_to_copy(copy_value, config) #:nodoc:
     to_copy    = false
 
@@ -85,7 +82,7 @@ module BoutiquesInputCopier
     if config["default-value"] && config["hide"]
       return true
     else
-      return copy_value.is_a?(TrueClass) ? true : false
+      return copy_value.to_s.match? /^(1|true)$/
     end
   end
 
@@ -140,7 +137,7 @@ module BoutiquesInputCopier
   def descriptor_with_special_input(descriptor) #:nodoc:
     parent_input_ids = descriptor.custom_module_info('BoutiquesInputCopier')
 
-    inputs      = descriptor["inputs"]
+    inputs      = descriptor.inputs
 
     # In parent_input_ids, select all non hidden inputs
     parent_input_ids = parent_input_ids.select { |_, config| !config["hide"] }
@@ -191,10 +188,12 @@ module BoutiquesInputCopier
 
   # For input in +BoutiquesInputCopier+ section,
   def setup #:nodoc:
-    original_userfile_ids = {}
+    # Invoke main setup
+    return false if !super
 
     basename = Revision_info.basename
     commit   = Revision_info.short_commit
+
     self.addlog("Creating a copy of the input files in BoutiquesInputCopier.")
     self.addlog("#{basename} rev. #{commit}")
 
@@ -202,23 +201,21 @@ module BoutiquesInputCopier
 
     parent_by_inputid = descriptor.custom_module_info('BoutiquesInputCopier')
 
-    # Invoke main setup
-    return false if !super
-
     # Get the custom module info
     boutiques_input_copier = descriptor.custom_module_info('BoutiquesInputCopier')
     return true  if boutiques_input_copier.blank?
 
-    invoke_params = self.invoke_params
-
+    original_userfile_ids = {}
+    invoke_params         = self.invoke_params
     boutiques_input_copier.each do |parent_inputid, config|
+      # Extract the copy option
       copy_id    = "#{parent_inputid}_copy"
       copy_value = false
       if invoke_params[copy_id].present?
         copy_value = invoke_params.delete(copy_id)
       end
 
-      # Skip if the input is not selected
+      # Skip if no input is selected
       userfile_id = invoke_params[parent_inputid]
       next if userfile_id.blank?
 
@@ -226,24 +223,25 @@ module BoutiquesInputCopier
       to_copy = need_to_copy(copy_value, config)
       next if !to_copy
 
-      # Remove IDs from invoke_params if
+      # Save the original userfile_id in case we need to restore it
       original_userfile_ids[parent_inputid] = invoke_params[parent_inputid]
 
       # Determine the name of the copy
-      userfile = Userfile.find(userfile_id)
-      copy_to  = copy_name(userfile.name)
+      userfile      = Userfile.find(userfile_id)
+      userfile_name = userfile.name
+      userfile_path = File.realpath(userfile_name)
 
-      # If copy_to exists in the working directory then we don't need to copy it again
-      copy_to_fullpath = self.full_cluster_workdir + copy_to
-      next if File.exist?(copy_to_fullpath)
+      # Remove the userfile from the working directory
+      File.delete(userfile_name) if File.exist?(userfile_name)
 
-      rsync_cmd = "rsync -a -L --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{userfile.name.bash_escape} #{copy_to.bash_escape}"
+      rsync_cmd = "rsync -a -L --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{userfile_path} #{self.full_cluster_workdir}"
+      self.addlog("Running: #{rsync_cmd}")
       rsyncout  = bash_this(rsync_cmd)
 
       # Remove the copy_to from the invoke_params
       invoke_params.delete("#{parent_inputid}_copy")
 
-      cb_error "Failed to install '#{copy_to}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
+      cb_error "Failed to rsync #{userfile.name} reported: #{rsyncout}" unless rsyncout.blank?
     end
 
     true
@@ -252,17 +250,6 @@ module BoutiquesInputCopier
       invoke_params[inputid] = original_userfile_ids[inputid]
     end
   end
-
-  def name_and_type_for_output_file(output, pathname)
-    # Call name_and_type_for_output_file from BoutiquesClusterTask
-    name, userfile_class  = super(output, pathname)
-
-    name = name.sub(/^inputcopier_tmp_/, "")
-
-    [ name, userfile_class ]
-  end
-
-
 
   # This utility method runs a bash +command+ , captures the output
   # and returns it. The user of this method is expected to have already
@@ -293,13 +280,6 @@ module BoutiquesInputCopier
       if invoke_params[copy_id].present?
         copy_value = invoke_params.delete(copy_id)
       end
-
-      # Skip if the copy option is not selected
-      to_copy = need_to_copy(copy_value, config)
-      next if !to_copy
-      userfile_id = invoke_params[parent_inputid]
-      userfile    = Userfile.find(userfile_id)
-      override_invoke_params[parent_inputid] = copy_name(userfile.name)
     end
 
     override_invoke_params
