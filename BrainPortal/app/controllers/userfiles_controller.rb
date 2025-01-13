@@ -994,20 +994,20 @@ class UserfilesController < ApplicationController
 
     if ! Userfile.is_legal_filename?(collection_name)
       flash[:error] = "Error: collection name '#{collection_name}' is not acceptable (illegal characters?)."
-      redirect_to :action => :index, :format =>  request.format.to_sym
+      redirect_to :action => :index
       return
     end
 
     # Check if the collection name chosen by the user already exists for this user on the data_provider
     if current_user.userfiles.exists?(:name => collection_name, :data_provider_id => data_provider_id)
       flash[:error] = "Error: collection with name '#{collection_name}' already exists."
-      redirect_to :action => :index, :format =>  request.format.to_sym
+      redirect_to :action => :index, :format =>  request
       return
     end
 
     if Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read).count == 0
       flash[:error] = "Error: No accessible files selected."
-      redirect_to :action => :index, :format =>  request.format.to_sym
+      redirect_to :action => :index
       return
     end
 
@@ -1139,7 +1139,7 @@ class UserfilesController < ApplicationController
       if ! Userfile.is_legal_filename?(specified_filename)
           flash[:error] = "Error: filename '#{specified_filename}' is not acceptable (illegal characters?)."
           respond_to do |format|
-            format.html { redirect_to :action => :index, :format =>  request.format.to_sym }
+            format.html { redirect_to :action => :index }
             format.json { render :json => { :error => flash[:error] } }
           end
           return
@@ -1158,23 +1158,23 @@ class UserfilesController < ApplicationController
     # and potentially very very large size
     unsized = userfiles_list.detect { |u| u.size.nil? }
     if unsized
-       flash[:error] = "Size of #{unsized.name} is not yet determined." +
-                       " Probably, data are still being registered. Please try again latter.\n"
+       flash[:error] = "Size of the file #{unsized.name} is not yet determined." +
+                       " Please try again latter.\n"
        respond_to do |format|
-         format.html { redirect_to :action => :index, :format =>  request.format.to_sym }
+         format.html { redirect_to :action => :index }
          format.json { render :json => { :error => flash[:error] } }
       end
       return
     end
 
-    tot_size = userfiles_list.pluck(:size).sum
+    tot_size = userfiles_list.sum(:size)
 
     # Check size limit
     if tot_size > MAX_DOWNLOAD_MEGABYTES.megabytes
       flash[:error] = "You cannot download data that exceeds #{MAX_DOWNLOAD_MEGABYTES} megabytes using a browser.\n" +
                       "Consider using an externally accessible Data Provider (ask the admins for more info).\n"
       respond_to do |format|
-          format.html { redirect_to :action => :index, :format =>  request.format.to_sym }
+          format.html { redirect_to :action => :index }
           format.json { render :json => { :error => flash[:error] } }
       end
       return
@@ -1185,7 +1185,7 @@ class UserfilesController < ApplicationController
     if name_list.size != name_list.uniq.size
       flash[:error] = "Some files have the same names and cannot be downloaded together. Use separate downloads."
       respond_to do |format|
-          format.html { redirect_to :action => :index, :format => request.format.to_sym }
+          format.html { redirect_to :action => :index }
           format.json { render :json => { :error => flash[:error] } }
       end
       return
@@ -1203,7 +1203,7 @@ class UserfilesController < ApplicationController
     if failed_list.present?
       error_message_sender("Error when syncing file(s)", failed_list);
       respond_to do |format|
-          format.html { redirect_to :action => :index, :format =>  request.format.to_sym }
+          format.html { redirect_to :action => :index }
           format.json { render :json => { :error => flash[:error] } }
       end
       return
