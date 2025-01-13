@@ -182,7 +182,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
       puts "C> \t- No SyncStatus objects are associated with obsolete resources."
     end
     ss_uids = SyncStatus.where({}).pluck(:userfile_id) || []
-    uids    = Userfile.where({}).ids(:id)            || []
+    uids    = Userfile.where({}).ids                   || []
     bad_ids = (ss_uids - uids).uniq
     if bad_ids.size > 0
       SyncStatus.where(:userfile_id => nil).destroy_all rescue true
