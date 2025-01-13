@@ -23,7 +23,7 @@
 #
 # Some tools modify the cached version of the input directory.
 #
-# This can lead to some issues when the input is used multiple times
+# This can lead to issues when the input is used multiple times
 # on the same Bourreau and the cached version is already modified.
 #
 # To solve this issue, we can create a copy of the directory in the working
@@ -43,18 +43,18 @@
 #       "value-key": "<-i input>"
 #     },
 #
-# and in the `cbrain:integrator_modules` section look like:
+# and in the `cbrain:integrator_modules` section, it looks like:
 #
 #     "BoutiquesInputCopier": {
-#       "file_input_id": {"select_box_selected": boolean, "select_box_hidden": boolean, "select_box_description": string},
+#       "file_input_id": {"checkbox_selected": boolean, "checkbox_hidden": boolean, "checkbox_description": string},
 #      },
 #
-# select_box_selected:    boolean, true if the parent_input should be copied by default
-# select_box_hidden:      boolean, true if the select_box should be hidden in the form,
+# checkbox_selected:    boolean, true if the parent_input should be copied by default
+# checkbox_hidden:      boolean, true if the select_box should be hidden in the form,
 # if set to true the input_file will be copied in all case.
-# select_box_description: string, description of the select_box input
+# checkbox_description: string, description of the checkbox input
 #
-# If "select_box_hidden" is set to false, a checkbox (select_box) will be added to the form
+# If "checkbox_hidden" is set to false, the checkbox will be added to the form
 # to allow the user to choose if the input should be copied or not.
 #
 # If the checkbox is selected, the input will be copied in the working directory replacing the symlink
@@ -63,7 +63,7 @@
 #     apptool input_copy
 #
 # WARNING: Since this module create a copy of the input and remove
-# the original symlink, it make the task not-restartable, it will fail
+# the original symlink, it makes the task non-restartable. It will fail
 # during the setup phase of the restarted task if the input is already copied.
 #
 module BoutiquesInputCopier
@@ -79,22 +79,21 @@ module BoutiquesInputCopier
   ############################################
 
   def descriptor_for_before_form #:nodoc:
-    descriptor_with_special_input(super.dup)
+    descriptor_with_added_checkboxes(super.dup)
   end
 
   def descriptor_for_form #:nodoc:
-    descriptor_with_special_input(super.dup)
+    descriptor_with_added_checkboxes(super.dup)
   end
 
   def descriptor_for_after_form #:nodoc:
-    descriptor_with_special_input(super.dup)
+    descriptor_with_added_checkboxes(super.dup)
   end
 
   ############################################
   # Bourreau (Cluster) Side Modifications
   ############################################
 
-  # For input in +BoutiquesInputCopier+ section,
   def setup #:nodoc:
     # NOTE: This method is not restartable, if the input is already copied
 
@@ -194,7 +193,7 @@ module BoutiquesInputCopier
     override_invoke_params
   end
 
-    # Utility Methods for the Module
+  # Utility Methods for the Module
   ############################################
 
   def create_checkbox_id(parent_inputid) #:nodoc:
@@ -203,54 +202,11 @@ module BoutiquesInputCopier
 
   def need_to_copy(copy_value, config) #:nodoc:
     # Special case if default-value is true and the field is hidden
-    if config["select_box_hidden"]
+    if config["checkbox_hidden"]
       return true
     else
       return copy_value.to_s.match? /^(1|true)$/
     end
-  end
-
-  # Create copied_info with the following information:
-  #   - idx_to_insert: index where the new input will be inserted
-  #   - member_idx:    index of the member in the group
-  def fill_copied_info(parent_input_ids, descriptor, inputs) #:nodoc:
-    copied_info = {}
-
-    parent_input_ids.each do |parent_inputid, config|
-      parent_input = descriptor.input_by_id(parent_inputid) rescue nil
-
-      next if parent_input.blank?
-      next if parent_input["type"] != "File"
-
-      # Get index of the input in the inputs array
-      index  = inputs.index(parent_input)
-      new_id = create_checkbox_id(parent_inputid)
-
-      # Create a new input with the same properties as the original input
-      new_input                  = parent_input.dup
-      new_input["name"]          = "#{parent_input["name"]} (copy)"
-      new_input["value-key"]     = "[#{new_id}]"
-      new_input["type"]          = "Flag"
-      new_input["id"]            = new_id
-      new_input["description"]   = config["select_box_description"] || "Copy the input in the working directory before running the command usefull when the input is modified by the command"
-      new_input["default-value"] = config["select_box_selected"]    || false
-      hide                       = config["select_box_hidden"]      || false
-      new_input.delete("command-line-flag")
-
-      copied_info[parent_inputid] = { input_idx: index+1, new_input: new_input, hide: hide}
-    end
-
-    # Get the position in the groups where the new inputs will be inserted
-    copied_info.each do |parent_inputid, info|
-      descriptor.groups.each do |group|
-        group["members"].each_with_index do |member, index|
-          next if member != parent_inputid
-          copied_info[parent_inputid][:member_info] = {idx: index + 1, id: group["id"]}
-        end
-      end
-    end
-
-    copied_info
   end
 
   # Adjust the descriptor for the input with the mention of
@@ -258,39 +214,45 @@ module BoutiquesInputCopier
   #
   # For each input in BoutiquesInputCopier section create a new entry in the descriptor
   # that will be a flag to choose if the input will be copied if the checkbox is selected
-  def descriptor_with_special_input(descriptor) #:nodoc:
-    parent_input_ids = descriptor.custom_module_info('BoutiquesInputCopier')
+  def descriptor_with_added_checkboxes(descriptor) #:nodoc:
+    module_config = descriptor.custom_module_info('BoutiquesInputCopier')
 
-    # In parent_input_ids, select all non hidden inputs
-    inputs           = descriptor.inputs
-    parent_input_ids = parent_input_ids.select { |_, config| !config["select_box_hidden"] }
-    copied_info      = fill_copied_info(parent_input_ids, descriptor, inputs)
+    return descriptor if module_config.blank?
 
-    # Add the new inputs to the descriptor and to the group if needed
-    extracted_idx = copied_info.values.map { |info| info[:input_idx] }.sort.reverse
+    # Add a checkbox for each input file
+    module_config.each do |file_input_id,config|
+      file_input        = descriptor.input_by_id(file_input_id)
 
-    extracted_idx.each do |index|
-      # In copied_info, find the one with input_idx == index
-      copied_info.each do |parent_inputid, info|
-        next if info[:select_box_hidden]
-        next if info[:input_idx] != index
+      checkbox_hidden   = config["checkbox_hidden"].present?
+      # If checkbox_hidden no need to add it to the form
+      next if checkbox_hidden
+      checkbox_selected = config["checkbox_selected"].present?
+      checkbox_desc     = config["checkbox_description"].presence
+      checkbox_id       = create_checkbox_id(file_input_id)
 
-        # Insert the new input in the descriptor
-        new_input = info[:new_input]
-        inputs.insert(index, new_input)
+      checkbox_input = BoutiquesSupport::Input.new(
+        :id             => checkbox_id,
+        :type           => "Flag",
+        :name           => "Full file copy of: #{file_input.name}",
+        :description    => (checkbox_desc || "Make a full copy of the file in the working directory"),
+        :optional       => file_input.optional.present?,
+        "default-value" => checkbox_selected,
+      )
 
-        # Insert the new input in the group
-        next if !info[:member_info]
-        group        = descriptor.group_by_id(info[:member_info][:id])
-        members      = group["members"]
-        new_input_id = new_input["id"]
-        next if members.include?(new_input_id)
-        members.insert(info[:member_info][:idx], new_input_id)
+      file_input_idx = descriptor.inputs.find_index { |input| input.id == file_input_id }
+      descriptor.inputs.insert(file_input_idx+1, checkbox_input)
+
+      descriptor.groups.each do |group|
+        members        = group.members.dup
+        file_input_idx = members.find_index(file_input_id)
+        next unless file_input_idx
+        members.insert(file_input_idx+1,checkbox_id) # this mutates directly in the group object
+        group.members = members
       end
     end
 
     descriptor
   end
 
-
 end
+
