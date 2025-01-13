@@ -1156,10 +1156,10 @@ class UserfilesController < ApplicationController
     # When a new FileCollection is registered, the size and num_files attributes are temporarily set to nil.
     # It takes few moments to calculate its size, so meanwhile we block users download files, of unknown,
     # and potentially very very large size
-    too_fresh = userfiles_list.detect { |u| u.size.nil? }
-    if too_fresh
-       flash[:error] = "Size of #{too_fresh.name} is not yet determined." +
-                       " Probably data are still being registered. Please try latter.\n"
+    unsized = userfiles_list.detect { |u| u.size.nil? }
+    if unsized
+       flash[:error] = "Size of #{unsized.name} is not yet determined." +
+                       " Probably, data are still being registered. Please try again latter.\n"
        respond_to do |format|
          format.html { redirect_to :action => :index, :format =>  request.format.to_sym }
          format.json { render :json => { :error => flash[:error] } }
