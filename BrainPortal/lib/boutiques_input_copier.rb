@@ -78,11 +78,126 @@ module BoutiquesInputCopier
   # Portal Side Modifications
   ############################################
 
+  def descriptor_for_before_form #:nodoc:
+    descriptor_with_special_input(super.dup)
+  end
 
-  # Utility Methods for the Module
+  def descriptor_for_form #:nodoc:
+    descriptor_with_special_input(super.dup)
+  end
+
+  def descriptor_for_after_form #:nodoc:
+    descriptor_with_special_input(super.dup)
+  end
+
+  ############################################
+  # Bourreau (Cluster) Side Modifications
   ############################################
 
-  def get_desciptor_id(parent_inputid) #:nodoc:
+  # For input in +BoutiquesInputCopier+ section,
+  def setup #:nodoc:
+    # NOTE: This method is not restartable, if the input is already copied
+
+    # Invoke main setup
+    return false if !super
+
+    descriptor = self.descriptor_for_setup
+
+    # Get the custom module info
+    boutiques_input_copier = descriptor.custom_module_info('BoutiquesInputCopier')
+    basename = Revision_info.basename
+    commit   = Revision_info.short_commit
+    self.addlog("#{basename} rev. #{commit}")
+
+    if boutiques_input_copier.blank?
+      self.addlog("Configuration for BoutiquesInputCopier is blank, nothing to do.")
+      return true
+    end
+
+    invoke_params         = self.invoke_params
+    boutiques_input_copier.each do |parent_inputid, config|
+      self.addlog("Handling copy of input: #{parent_inputid}")
+
+      # Skip if no input is selected
+      userfile_id = invoke_params[parent_inputid]
+      if userfile_id.blank?
+        self.addlog("No userfile found for #{parent_inputid}, skipping")
+        next
+      end
+
+
+      # Skip if the copy option is not selected
+      copy_id    = create_checkbox_id(parent_inputid)
+      copy_value = invoke_params[copy_id]
+      to_copy    = need_to_copy(copy_value, config)
+      if !to_copy
+        self.addlog("No need to copy for #{parent_inputid}, skipping")
+        next
+      end
+
+      # Determine the name of the copy
+      userfile                 = Userfile.find(userfile_id)
+      userfile_name            = userfile.name
+
+      userfile_path            = File.realpath(userfile_name) # Verifie ce qui est dans le workdir
+      userfile_cache_full_path = userfile.cache_full_path     # La valeur dans le userfile.
+
+      if !File.symlink?(userfile_name)
+        cb_error("Original userfile is not a symlink: #{userfile_name}, skipping.")
+      end
+
+      if  userfile_cache_full_path.to_s != userfile_path.to_s
+        cb_error("Path of cache is inconsistent for #{userfile_name}, skipping.")
+      end
+
+      # Remove the userfile from the working directory
+      File.delete(userfile_name) if File.exist?(userfile_name)
+
+      rsync_cmd = "rsync -a -L --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{userfile_path} #{self.full_cluster_workdir} 2>&1"
+      # self.addlog("Running: #{rsync_cmd}")
+      rsyncout  = bash_this(rsync_cmd)
+
+      unless rsyncout.blank?
+        File.rm_rf(userfile_name) if File.exist?(userfile_name)
+        cb_error "Failed to rsync #{userfile.name} reported: #{rsyncout}" unless rsyncout.blank?
+      end
+    end
+
+    true
+  end
+
+  # This utility method runs a bash +command+ , captures the output
+  # and returns it. The user of this method is expected to have already
+  # properly escaped any special characters in the arguments to the
+  # command.
+  def bash_this(command) #:nodoc:
+    fh = IO.popen(command,"r")
+    output = fh.read
+    fh.close
+    output
+  end
+
+  # Overrides the same method in BoutiquesClusterTask, as used
+  # during cluster_commands()
+  def finalize_bosh_invoke_struct(invoke_struct) #:nodoc:
+    override_invoke_params = super.dup
+
+    descriptor             = self.descriptor_for_cluster_commands
+    boutiques_input_copier = descriptor.custom_module_info('BoutiquesInputCopier')
+
+    # For each input in BoutiquesInputCopier override the input with the copy
+    # if the checkbox is selected
+    boutiques_input_copier.keys.each do |parent_inputid|
+      override_invoke_params.delete(create_checkbox_id(parent_inputid))
+    end
+
+    override_invoke_params
+  end
+
+    # Utility Methods for the Module
+  ############################################
+
+  def create_checkbox_id(parent_inputid) #:nodoc:
     "#{parent_inputid}_bic_copy"
   end
 
@@ -109,7 +224,7 @@ module BoutiquesInputCopier
 
       # Get index of the input in the inputs array
       index  = inputs.index(parent_input)
-      new_id = get_desciptor_id(parent_inputid)
+      new_id = create_checkbox_id(parent_inputid)
 
       # Create a new input with the same properties as the original input
       new_input                  = parent_input.dup
@@ -177,117 +292,5 @@ module BoutiquesInputCopier
     descriptor
   end
 
-  def descriptor_for_before_form #:nodoc:
-    descriptor_with_special_input(super.dup)
-  end
-
-  def descriptor_for_form #:nodoc:
-    descriptor_with_special_input(super.dup)
-  end
-
-  def descriptor_for_after_form #:nodoc:
-    descriptor_with_special_input(super.dup)
-  end
-
-  ############################################
-  # Bourreau (Cluster) Side Modifications
-  ############################################
-
-  # For input in +BoutiquesInputCopier+ section,
-  def setup #:nodoc:
-    # NOTE: This method is not restartable, if the input is already copied
-
-    # Invoke main setup
-    return false if !super
-
-    basename = Revision_info.basename
-    commit   = Revision_info.short_commit
-    self.addlog("Creating a copy of the input files in BoutiquesInputCopier.")
-    self.addlog("#{basename} rev. #{commit}")
-
-    descriptor = self.descriptor_for_setup
-
-    # Get the custom module info
-    boutiques_input_copier = descriptor.custom_module_info('BoutiquesInputCopier')
-    basename = Revision_info.basename
-    commit   = Revision_info.short_commit
-    self.addlog("#{basename} rev. #{commit}")
-
-    if boutiques_input_copier.blank?
-      self.addlog("Configuration for BoutiquesInputCopier is blank, nothing to do.")
-      return true
-    end
-
-    self.addlog("Creating a copy of input file(s) in BoutiquesInputCopier.")
-
-    invoke_params         = self.invoke_params
-    boutiques_input_copier.each do |parent_inputid, config|
-      # Skip if no input is selected
-      userfile_id = invoke_params[parent_inputid]
-      next if userfile_id.blank?
-
-      # Skip if the copy option is not selected
-      copy_id    = get_desciptor_id(parent_inputid)
-      copy_value = invoke_params[copy_id]
-      to_copy    = need_to_copy(copy_value, config)
-      next if !to_copy
-
-      # Determine the name of the copy
-      userfile                 = Userfile.find(userfile_id)
-      userfile_name            = userfile.name
-      userfile_path            = File.realpath(userfile_name) # Verifie ce qui est dans le workdir
-      userfile_cache_full_path = userfile.cache_full_path     # La valeur dans le userfile.
-
-      if !File.symlink?(userfile_name)
-        cb_error("Original userfile is not a symlink: #{userfile_name}, skipping.")
-      end
-
-      if  userfile_cache_full_path.to_s != userfile_path.to_s
-        cb_error("Path of cache is inconsistent for #{userfile_name}, skipping.")
-      end
-
-      # Remove the userfile from the working directory
-      File.delete(userfile_name) if File.exist?(userfile_name)
-
-      rsync_cmd = "rsync -a -L --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{userfile_path} #{self.full_cluster_workdir}"
-      # self.addlog("Running: #{rsync_cmd}")
-      rsyncout  = bash_this(rsync_cmd)
-
-      unless rsyncout.blank?
-        File.rm_rf(userfile_name) if File.exist?(userfile_name)
-        cb_error "Failed to rsync #{userfile.name} reported: #{rsyncout}" unless rsyncout.blank?
-      end
-    end
-
-    true
-  end
-
-  # This utility method runs a bash +command+ , captures the output
-  # and returns it. The user of this method is expected to have already
-  # properly escaped any special characters in the arguments to the
-  # command.
-  def bash_this(command) #:nodoc:
-    fh = IO.popen(command,"r")
-    output = fh.read
-    fh.close
-    output
-  end
-
-  # Overrides the same method in BoutiquesClusterTask, as used
-  # during cluster_commands()
-  def finalize_bosh_invoke_struct(invoke_struct) #:nodoc:
-    override_invoke_params = super.dup
-
-    descriptor             = self.descriptor_for_cluster_commands
-    boutiques_input_copier = descriptor.custom_module_info('BoutiquesInputCopier')
-
-    # For each input in BoutiquesInputCopier override the input with the copy
-    # if the checkbox is selected
-    boutiques_input_copier.each do |parent_inputid, config|
-      override_invoke_params.delete(get_desciptor_id(parent_inputid))
-    end
-
-    override_invoke_params
-  end
 
 end
