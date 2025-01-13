@@ -507,7 +507,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
       it "should update tags when requested" do
         tag = create(:tag, :userfiles => [admin_userfile], :user => admin)
-        allow(admin).to receive_message_chain(:available_tags, :raw_first_column).and_return([tag.id])
+        allow(admin).to receive_message_chain(:available_tags, :pluck, :ids).and_return([tag.id])
         post :update_multiple, params: {file_ids: [user_userfile.id], tags: [tag.id]}
         expect(user_userfile.tags).to match_array([tag])
       end
