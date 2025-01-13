@@ -1001,7 +1001,7 @@ class UserfilesController < ApplicationController
     # Check if the collection name chosen by the user already exists for this user on the data_provider
     if current_user.userfiles.exists?(:name => collection_name, :data_provider_id => data_provider_id)
       flash[:error] = "Error: collection with name '#{collection_name}' already exists."
-      redirect_to :action => :index, :format =>  request
+      redirect_to :action => :index
       return
     end
 
