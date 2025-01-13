@@ -791,7 +791,6 @@ class TasksController < ApplicationController
       grouped_tasks.each do |pair_bid_tasklist|
         bid       = pair_bid_tasklist[0]
         btasklist = pair_bid_tasklist[1]
-        bourreau  = Bourreau.find(bid)
         begin
 
           # MASS DELETE
@@ -819,33 +818,22 @@ class TasksController < ApplicationController
           # MASS NEW STATUS
           new_status  = PortalTask::OperationToNewStatus[operation] # from HTML form keyword to Task object keyword
           oktasks = btasklist.select do |t|
-            cur_status  = t.status
-            allowed_new = PortalTask::AllowedOperations[cur_status] || []
-            new_status && allowed_new.include?(new_status)
+            PortalTask::AllowedOperationsHash[[t.status,new_status]]
           end
           if oktasks.size > 0
             bac_klass = operation_to_bac[operation]
-            if bac_klass
-              bac = bac_klass.local_new(current_user.id, oktasks.map(&:id), bid, {})
-              bac.options[:archive_data_provider_id] = archive_dp_id   if operation == 'archive_file'
-              bac.options[:dup_bourreau_id]          = dup_bourreau_id if operation == 'duplicate'
-              bac.options[:atwhat]                   = 'Setup'         if operation == 'restart_setup'
-              bac.options[:atwhat]                   = 'Cluster'       if operation == 'restart_cluster'
-              bac.options[:atwhat]                   = 'PostProcess'   if operation == 'restart_postprocess'
-              bac.save
-              bacs << bac if bac.id
-            else # old mechanism for all other operations, performed by a message to the Bourreau
-              # Note: after refactoring in June 2024, at this point this should never be reached?!?
-              Rails.logger.warning "Old code invoked: AlterTasks for #{new_status}"
-              bourreau.send_command_alter_tasks(oktasks, new_status,
-                                               { :requester_user_id        => current_user.id,
-                                                 :new_bourreau_id          => dup_bourreau_id,
-                                                 :archive_data_provider_id => archive_dp_id
-                                               }
-                                              ) # TODO parse returned command object?
-            end
-            success_list += oktasks.map(&:id)
+            cb_error "Cannot find BackgroundActivity class required for '#{operation}'" if ! bac_klass
+
+            bac = bac_klass.local_new(current_user.id, oktasks.map(&:id), bid, {})
+            bac.options[:archive_data_provider_id] = archive_dp_id   if operation == 'archive_file'
+            bac.options[:dup_bourreau_id]          = dup_bourreau_id if operation == 'duplicate'
+            bac.options[:atwhat]                   = 'Setup'         if operation == 'restart_setup'
+            bac.options[:atwhat]                   = 'Cluster'       if operation == 'restart_cluster'
+            bac.options[:atwhat]                   = 'PostProcess'   if operation == 'restart_postprocess'
+            bac.save
+            bacs << bac if bac.id
           end
+          success_list += oktasks.map(&:id)
           skippedtasks = btasklist - oktasks
           skipped_list["Tasks have incompatible states"] = skippedtasks.map(&:id) if skippedtasks.present?
         rescue => e
