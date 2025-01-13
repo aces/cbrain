@@ -43,7 +43,7 @@ class UserfilesController < ApplicationController
       :export_file_list
   ]
 
-  MAX_DOWNLOAD_MEGABYTES = 400
+  MAX_DOWNLOAD_MEGABYTES = 1
 
   # GET /userfiles
   # GET /userfiles.xml
@@ -1154,8 +1154,8 @@ class UserfilesController < ApplicationController
     userfiles_list = Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :read)
 
     # When a new FileCollection is registered, the size and num_files attributes are temporarily set to nil.
-    # It takes few moments to calculate its size, so meanwhile we block users download files, of unknown,
-    # and potentially very very large size
+    # It takes few moments to calculate its size, so meanwhile we disallow downloading files of unknown,
+    # and potentially prohibitively large size
     unsized = userfiles_list.detect { |u| u.size.nil? }
     if unsized
        flash[:error] = "Size of the file #{unsized.name} is not yet determined." +
@@ -1167,7 +1167,7 @@ class UserfilesController < ApplicationController
       return
     end
 
-    tot_size = userfiles_list.sum(:size)
+    tot_size = userfiles_list.sum(&:size)
 
     # Check size limit
     if tot_size > MAX_DOWNLOAD_MEGABYTES.megabytes
