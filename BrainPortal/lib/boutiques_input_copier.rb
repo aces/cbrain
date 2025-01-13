@@ -35,7 +35,7 @@
 #
 #     {
 #       "description": "A directory that contain the input data...",
-#       "id": "parent_input_id",
+#       "id": "file_input_id",
 #       "name": "Input",
 #       "optional": true,
 #       "type": "File",
@@ -46,18 +46,25 @@
 # and in the `cbrain:integrator_modules` section look like:
 #
 #     "BoutiquesInputCopier": {
-#       "parent_input_id": {"default": boolean, "hide": boolean, "description": string},
+#       "file_input_id": {"select_box_selected": boolean, "select_box_hidden": boolean, "select_box_description": string},
 #      },
 #
-# default:     boolean, true if the parent_input should be copied by default
-# hide:        boolean, true if the input should be hidden in the form
-# description: string, description of the input
+# select_box_selected:    boolean, true if the parent_input should be copied by default
+# select_box_hidden:      boolean, true if the select_box should be hidden in the form,
+# if set to true the input_file will be copied in all case.
+# select_box_description: string, description of the select_box input
 #
-# If "hide" is set to false, a checkbox will be added to the form to allow the user to choose if the input should be copied.
-# If the checkbox is selected, the input will be copied in the working directory and the command line will be updated to use the copy.
+# If "select_box_hidden" is set to false, a checkbox (select_box) will be added to the form
+# to allow the user to choose if the input should be copied or not.
+#
+# If the checkbox is selected, the input will be copied in the working directory replacing the symlink
+# previously created
 #
 #     apptool input_copy
 #
+# WARNING: Since this module create a copy of the input and remove
+# the original symlink, it make the task not-restartable, it will fail
+# during the setup phase of the restarted task if the input is already copied.
 #
 module BoutiquesInputCopier
 
@@ -75,11 +82,13 @@ module BoutiquesInputCopier
   # Utility Methods for the Module
   ############################################
 
-  def need_to_copy(copy_value, config) #:nodoc:
-    to_copy    = false
+  def get_desciptor_id(parent_inputid) #:nodoc:
+    "#{parent_inputid}_bic_copy"
+  end
 
+  def need_to_copy(copy_value, config) #:nodoc:
     # Special case if default-value is true and the field is hidden
-    if config["default-value"] && config["hide"]
+    if config["select_box_hidden"]
       return true
     else
       return copy_value.to_s.match? /^(1|true)$/
@@ -100,17 +109,17 @@ module BoutiquesInputCopier
 
       # Get index of the input in the inputs array
       index  = inputs.index(parent_input)
-      new_id = "#{parent_inputid}_copy"
+      new_id = get_desciptor_id(parent_inputid)
 
       # Create a new input with the same properties as the original input
       new_input                  = parent_input.dup
       new_input["name"]          = "#{parent_input["name"]} (copy)"
-      new_input["value-key"]     = "[#{parent_inputid}_copy]"
+      new_input["value-key"]     = "[#{new_id}]"
       new_input["type"]          = "Flag"
       new_input["id"]            = new_id
-      new_input["description"]   = config["description"]   || "Copy the input in the working directory before running the command usefull when the input is modified by the command"
-      new_input["default-value"] = config["default-value"] || false
-      hide                       = config["hide"]          || false
+      new_input["description"]   = config["select_box_description"] || "Copy the input in the working directory before running the command usefull when the input is modified by the command"
+      new_input["default-value"] = config["select_box_selected"]    || false
+      hide                       = config["select_box_hidden"]      || false
       new_input.delete("command-line-flag")
 
       copied_info[parent_inputid] = { input_idx: index+1, new_input: new_input, hide: hide}
@@ -137,10 +146,9 @@ module BoutiquesInputCopier
   def descriptor_with_special_input(descriptor) #:nodoc:
     parent_input_ids = descriptor.custom_module_info('BoutiquesInputCopier')
 
-    inputs      = descriptor.inputs
-
     # In parent_input_ids, select all non hidden inputs
-    parent_input_ids = parent_input_ids.select { |_, config| !config["hide"] }
+    inputs           = descriptor.inputs
+    parent_input_ids = parent_input_ids.select { |_, config| !config["select_box_hidden"] }
     copied_info      = fill_copied_info(parent_input_ids, descriptor, inputs)
 
     # Add the new inputs to the descriptor and to the group if needed
@@ -148,9 +156,8 @@ module BoutiquesInputCopier
 
     extracted_idx.each do |index|
       # In copied_info, find the one with input_idx == index
-
       copied_info.each do |parent_inputid, info|
-        next if info[:hide]
+        next if info[:select_box_hidden]
         next if info[:input_idx] != index
 
         # Insert the new input in the descriptor
@@ -188,67 +195,71 @@ module BoutiquesInputCopier
 
   # For input in +BoutiquesInputCopier+ section,
   def setup #:nodoc:
+    # NOTE: This method is not restartable, if the input is already copied
+
     # Invoke main setup
     return false if !super
 
     basename = Revision_info.basename
     commit   = Revision_info.short_commit
-
     self.addlog("Creating a copy of the input files in BoutiquesInputCopier.")
     self.addlog("#{basename} rev. #{commit}")
 
     descriptor = self.descriptor_for_setup
 
-    parent_by_inputid = descriptor.custom_module_info('BoutiquesInputCopier')
-
     # Get the custom module info
     boutiques_input_copier = descriptor.custom_module_info('BoutiquesInputCopier')
-    return true  if boutiques_input_copier.blank?
+    basename = Revision_info.basename
+    commit   = Revision_info.short_commit
+    self.addlog("#{basename} rev. #{commit}")
 
-    original_userfile_ids = {}
+    if boutiques_input_copier.blank?
+      self.addlog("Configuration for BoutiquesInputCopier is blank, nothing to do.")
+      return true
+    end
+
+    self.addlog("Creating a copy of input file(s) in BoutiquesInputCopier.")
+
     invoke_params         = self.invoke_params
     boutiques_input_copier.each do |parent_inputid, config|
-      # Extract the copy option
-      copy_id    = "#{parent_inputid}_copy"
-      copy_value = false
-      if invoke_params[copy_id].present?
-        copy_value = invoke_params.delete(copy_id)
-      end
-
       # Skip if no input is selected
       userfile_id = invoke_params[parent_inputid]
       next if userfile_id.blank?
 
       # Skip if the copy option is not selected
-      to_copy = need_to_copy(copy_value, config)
+      copy_id    = get_desciptor_id(parent_inputid)
+      copy_value = invoke_params[copy_id]
+      to_copy    = need_to_copy(copy_value, config)
       next if !to_copy
 
-      # Save the original userfile_id in case we need to restore it
-      original_userfile_ids[parent_inputid] = invoke_params[parent_inputid]
-
       # Determine the name of the copy
-      userfile      = Userfile.find(userfile_id)
-      userfile_name = userfile.name
-      userfile_path = File.realpath(userfile_name)
+      userfile                 = Userfile.find(userfile_id)
+      userfile_name            = userfile.name
+      userfile_path            = File.realpath(userfile_name) # Verifie ce qui est dans le workdir
+      userfile_cache_full_path = userfile.cache_full_path     # La valeur dans le userfile.
+
+      if !File.symlink?(userfile_name)
+        cb_error("Original userfile is not a symlink: #{userfile_name}, skipping.")
+      end
+
+      if  userfile_cache_full_path.to_s != userfile_path.to_s
+        cb_error("Path of cache is inconsistent for #{userfile_name}, skipping.")
+      end
 
       # Remove the userfile from the working directory
       File.delete(userfile_name) if File.exist?(userfile_name)
 
       rsync_cmd = "rsync -a -L --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{userfile_path} #{self.full_cluster_workdir}"
-      self.addlog("Running: #{rsync_cmd}")
+      # self.addlog("Running: #{rsync_cmd}")
       rsyncout  = bash_this(rsync_cmd)
 
-      # Remove the copy_to from the invoke_params
-      invoke_params.delete("#{parent_inputid}_copy")
-
-      cb_error "Failed to rsync #{userfile.name} reported: #{rsyncout}" unless rsyncout.blank?
+      unless rsyncout.blank?
+        File.rm_rf(userfile_name) if File.exist?(userfile_name)
+        cb_error "Failed to rsync #{userfile.name} reported: #{rsyncout}" unless rsyncout.blank?
+      end
     end
 
     true
-  ensure
-    original_userfile_ids.each do |inputid, userfile_id|
-      invoke_params[inputid] = original_userfile_ids[inputid]
-    end
   end
 
   # This utility method runs a bash +command+ , captures the output
@@ -273,13 +284,7 @@ module BoutiquesInputCopier
     # For each input in BoutiquesInputCopier override the input with the copy
     # if the checkbox is selected
     boutiques_input_copier.each do |parent_inputid, config|
-      userfile_id = invoke_params[parent_inputid]
-
-      copy_value = false
-      copy_id    = "#{parent_inputid}_copy"
-      if invoke_params[copy_id].present?
-        copy_value = invoke_params.delete(copy_id)
-      end
+      override_invoke_params.delete(get_desciptor_id(parent_inputid))
     end
 
     override_invoke_params
