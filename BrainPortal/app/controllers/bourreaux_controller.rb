@@ -547,7 +547,7 @@ class BourreauxController < ApplicationController
       userids = userlist.keys.each { |uid| uid.to_s }.join(",")  # "uid,uid,uid"
       flash[:notice] += "\n" unless flash[:notice].blank?
       begin
-        remote_resource.send_command_clean_cache(userids,typeslist,cleanup_older.seconds.ago,cleanup_younger.seconds.ago)
+        remote_resource.send_command_clean_cache(current_user.id,userids,typeslist,cleanup_older.seconds.ago,cleanup_younger.seconds.ago)
         flash[:notice] += "Sending cleanup command to #{remote_resource.name}."
       rescue
         flash[:notice] += "Could not contact #{remote_resource.name}."

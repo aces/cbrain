@@ -650,7 +650,7 @@ class RemoteResource < ApplicationRecord
 
   # Utility method to send a clean_cache command to a
   # RemoteResource, whether local or not.
-  def send_command_clean_cache(userlist,typelist,older_than,younger_than)
+  def send_command_clean_cache(userid,userlist,typelist,older_than,younger_than)
     if older_than.is_a?(Integer)
        time_older = older_than.seconds.ago
     elsif older_than.is_a?(Time)
@@ -668,6 +668,7 @@ class RemoteResource < ApplicationRecord
     userlist = [ userlist ] unless userlist.is_a?(Array)
     useridlist = userlist.map { |u| u.is_a?(User) ? u.id.to_s : u.to_s }.join(",")
     command = RemoteCommand.new(
+      :requester_user_id => userid,
       :command     => 'clean_cache',
       :user_ids    => useridlist,
       :types       => Array(typelist).join(","),
@@ -868,6 +869,10 @@ class RemoteResource < ApplicationRecord
   # last accessed before the +before_date+ ; the task
   # is started in background, as it can be long.
   def self.process_command_clean_cache(command)
+
+    myself = RemoteResource.current_resource
+
+    user_id     = command.requester_user_id || AdminUser.first.id
     user_ids    = command.user_ids.presence
     before_date = command.before_date.presence
     after_date  = command.after_date.presence
@@ -876,22 +881,28 @@ class RemoteResource < ApplicationRecord
     user_id_list = user_ids ? user_ids.split(",") : nil
     types_list   = types    ? types.split(",")    : nil
 
-    CBRAIN.spawn_with_active_records(:admin, "Cache Cleanup") do
-      syncs = SyncStatus.where( :remote_resource_id => RemoteResource.current_resource.id )
-      syncs = syncs.where([ "sync_status.accessed_at < ?", before_date])          if before_date
-      syncs = syncs.where([ "sync_status.accessed_at > ?", after_date])           if after_date
-      syncs = syncs.joins(:userfile)                                              if user_id_list || types_list
-      syncs = syncs.where( 'userfiles.user_id' => user_id_list )                  if user_id_list
-      syncs = syncs.where( 'userfiles.type'    => types_list )                    if types_list
+    # Identify what to clean
+    syncs = SyncStatus.where( :remote_resource_id => RemoteResource.current_resource.id )
+    syncs = syncs.where([ "sync_status.accessed_at < ?", before_date])          if before_date
+    syncs = syncs.where([ "sync_status.accessed_at > ?", after_date])           if after_date
+    syncs = syncs.joins(:userfile)                                              if user_id_list || types_list
+    syncs = syncs.where( 'userfiles.user_id' => user_id_list )                  if user_id_list
+    syncs = syncs.where( 'userfiles.type'    => types_list )                    if types_list
+    userfile_ids = syncs.pluck(:userfile_id)
 
-      syncs = syncs.all.to_a.shuffle
-      syncs.each_with_index do |ss,i|
-        userfile = ss.userfile
-        Process.setproctitle "CacheCleanup ID=#{userfile.try :id} #{i+1}/#{syncs.size}"
-        userfile.cache_erase rescue nil
-        ss.delete rescue nil
-      end
-    end
+    # Create the collector object
+    col = BacItemsCollector.new(
+      BackgroundActivity::CleanCache.new(
+        :user_id            => user_id,
+        :remote_resource_id => myself.id,
+        :status             => 'InProgress',
+      ),
+      500,
+    )
+
+    # Let the collector create one or several BACs
+    col.add_items(userfile_ids)
+    col.flush
 
     true
   end
