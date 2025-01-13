@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2024
+# Copyright (C) 2008-2025
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -21,46 +21,60 @@
 #
 
 #
-# Some tools modify the cached version of the input directory.
+# Some tools modify their own inputs in place. Given
+# CBRAIN prepares all inputs in a cache directory where
+# several tasks are able to access them in parallel, we
+# need to force these tools to make a private copy of their
+# inputs before they run.
 #
-# This can lead to issues when the input is used multiple times
-# on the same Bourreau and the cached version is already modified.
+# This module can be configured in a Boutiques descriptor to
+# implement this functionality. For any input file, the
+# integrator can force the copying to occur, or can provide
+# the user with the ability to choose whether or not to trigger
+# the copying (if they know what they are doing) with a new
+# check box in the CBRAIN form.
 #
-# To solve this issue, we can create a copy of the directory in the working
-# directory and use this copy in the command line.
+# Given an input file defined in the descriptor such as this:
 #
-#     apptool [DIRECTORY_INPUT] ...
+#   {
+#     "description": "A directory that contain the input data...",
+#     "id": "file_input_id",
+#     "type": "File",
+#     "name": "The super data file",
+#     "optional": true,
+#   }
 #
-# with the following input in Boutiques:
+# then in the custom "cbrain:integrator_modules" section this module can
+# be configured like this (in pseudo JSON):
 #
-#     {
-#       "description": "A directory that contain the input data...",
-#       "id": "file_input_id",
-#       "name": "Input",
-#       "optional": true,
-#       "type": "File",
-#       "command-line-flag": "-i",
-#       "value-key": "<-i input>"
-#     },
+#   "custom": {
+#     "cbrain:integrator_modules": {
+#       "BoutiquesInputCopier": {
+#         "file_input_id": {
+#           "checkbox_selected": <boolean>,
+#           "checkbox_hidden": <boolean>,
+#           "checkbox_description": "string"
+#         },
+#         <configs for other inputs>
+#       }
+#     }
+#   }
 #
-# and in the `cbrain:integrator_modules` section, it looks like:
+# Each file input being copied is configured with three arguments:
 #
-#     "BoutiquesInputCopier": {
-#       "file_input_id": {"checkbox_selected": boolean, "checkbox_hidden": boolean, "checkbox_description": string},
-#      },
+# checkbox_selected: boolean; if set to true, the form's checkbox will
+# be already 'checked' by default. This option only makes sense if the
+# checkbox is not hidden.
 #
-# checkbox_selected:    boolean, true if the parent_input should be copied by default
-# checkbox_hidden:      boolean, true if the select_box should be hidden in the form,
-# if set to true the input_file will be copied in all case.
-# checkbox_description: string, description of the checkbox input
+# checkbox_hidden: boolean; if set to true the select box will not even
+# be shown to the user in the CBRAIN task form. This implies the
+# file's copying will be performed unconditionally.
 #
-# If "checkbox_hidden" is set to false, the checkbox will be added to the form
-# to allow the user to choose if the input should be copied or not.
+# checkbox_description: string, description of the checkbox input; if not
+# provided an internal description is generated.
 #
-# If the checkbox is selected, the input will be copied in the working directory replacing the symlink
-# previously created
-#
-#     apptool input_copy
+# If the users enables the checkbox, the input will be copied in the working directory
+# replacing the symlink previously created by the standard CBRAIN framework.
 #
 # WARNING: Since this module create a copy of the input and remove
 # the original symlink, it makes the task non-restartable. It will fail
@@ -72,7 +86,6 @@ module BoutiquesInputCopier
   # you need to access the constant directly, the
   # object method revision_info() won't work.
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-
 
   ############################################
   # Portal Side Modifications
@@ -103,62 +116,70 @@ module BoutiquesInputCopier
     descriptor = self.descriptor_for_setup
 
     # Get the custom module info
-    boutiques_input_copier = descriptor.custom_module_info('BoutiquesInputCopier')
+    module_config = descriptor.custom_module_info('BoutiquesInputCopier')
     basename = Revision_info.basename
     commit   = Revision_info.short_commit
     self.addlog("#{basename} rev. #{commit}")
 
-    if boutiques_input_copier.blank?
+    if module_config.blank?
       self.addlog("Configuration for BoutiquesInputCopier is blank, nothing to do.")
       return true
     end
 
-    invoke_params         = self.invoke_params
-    boutiques_input_copier.each do |parent_inputid, config|
-      self.addlog("Handling copy of input: #{parent_inputid}")
+    invoke_params = self.invoke_params
+
+    module_config.each do |parent_inputid, config|
+      self.addlog("#{basename}: handling copy of input '#{parent_inputid}'")
 
       # Skip if no input is selected
       userfile_id = invoke_params[parent_inputid]
       if userfile_id.blank?
-        self.addlog("No userfile found for #{parent_inputid}, skipping")
+        self.addlog("#{basename}: no input files provided for '#{parent_inputid}', skipping")
         next
       end
 
+      # The only value with need from config in this method
+      checkbox_hidden  = config["checkbox_hidden"]
 
       # Skip if the copy option is not selected
-      copy_id    = create_checkbox_id(parent_inputid)
-      copy_value = invoke_params[copy_id]
-      to_copy    = need_to_copy(copy_value, config)
-      if !to_copy
-        self.addlog("No need to copy for #{parent_inputid}, skipping")
+      checkbox_id      = create_checkbox_id(parent_inputid)
+      checkbox_checked = invoke_params[checkbox_id]
+
+      # We skip if (the checkbox is SHOWN) *AND* (the user DID NOT SELECT IT)
+      # We COPY in all other cases.
+      if checkbox_hidden.blank? && checkbox_checked.blank?
+        self.addlog("#{basename}: no need to copy for #{parent_inputid}, skipping")
         next
       end
 
+      # Copy code starts here.
       # Determine the name of the copy
       userfile                 = Userfile.find(userfile_id)
       userfile_name            = userfile.name
 
-      userfile_path            = File.realpath(userfile_name) # Verifie ce qui est dans le workdir
-      userfile_cache_full_path = userfile.cache_full_path     # La valeur dans le userfile.
+      userfile_path            = File.realpath(userfile_name) # Resolves symlink in workdir
+      userfile_cache_full_path = userfile.cache_full_path     # Path in cache
 
-      if !File.symlink?(userfile_name)
-        cb_error("Original userfile is not a symlink: #{userfile_name}, skipping.")
+      if ! File.symlink?(userfile_name)
+        cb_error("#{basename}: original userfile is not a symlink: '#{userfile_name}'.")
       end
 
-      if  userfile_cache_full_path.to_s != userfile_path.to_s
-        cb_error("Path of cache is inconsistent for #{userfile_name}, skipping.")
+      if userfile_cache_full_path.to_s != userfile_path.to_s
+        cb_error("#{basename}: path of cache and workdir are inconsistent for '#{userfile_name}'.")
       end
+
+      self.addlog("#{basename}: Copy input for '#{userfile_name}' in task work directory")
 
       # Remove the userfile from the working directory
-      File.delete(userfile_name) if File.exist?(userfile_name)
+      File.delete(userfile_name)
 
-      rsync_cmd = "rsync -a -L --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{userfile_path} #{self.full_cluster_workdir} 2>&1"
+      rsync_cmd = "rsync -a -L --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{userfile_cache_full_path.to_s.bash_escape} #{self.full_cluster_workdir.to_s.bash_escape} 2>&1"
       # self.addlog("Running: #{rsync_cmd}")
       rsyncout  = bash_this(rsync_cmd)
 
       unless rsyncout.blank?
         File.rm_rf(userfile_name) if File.exist?(userfile_name)
-        cb_error "Failed to rsync #{userfile.name} reported: #{rsyncout}" unless rsyncout.blank?
+        cb_error "Failed to copy '#{userfile.name}'; rsync reported: #{rsyncout}"
       end
     end
 
@@ -181,32 +202,24 @@ module BoutiquesInputCopier
   def finalize_bosh_invoke_struct(invoke_struct) #:nodoc:
     override_invoke_params = super.dup
 
-    descriptor             = self.descriptor_for_cluster_commands
-    boutiques_input_copier = descriptor.custom_module_info('BoutiquesInputCopier')
+    descriptor    = self.descriptor_for_cluster_commands
+    module_config = descriptor.custom_module_info('BoutiquesInputCopier')
 
     # For each input in BoutiquesInputCopier override the input with the copy
     # if the checkbox is selected
-    boutiques_input_copier.keys.each do |parent_inputid|
+    module_config.keys.each do |parent_inputid|
       override_invoke_params.delete(create_checkbox_id(parent_inputid))
     end
 
     override_invoke_params
   end
 
+  ############################################
   # Utility Methods for the Module
   ############################################
 
   def create_checkbox_id(parent_inputid) #:nodoc:
     "#{parent_inputid}_bic_copy"
-  end
-
-  def need_to_copy(copy_value, config) #:nodoc:
-    # Special case if default-value is true and the field is hidden
-    if config["checkbox_hidden"]
-      return true
-    else
-      return copy_value.to_s.match? /^(1|true)$/
-    end
   end
 
   # Adjust the descriptor for the input with the mention of
@@ -219,13 +232,14 @@ module BoutiquesInputCopier
 
     return descriptor if module_config.blank?
 
-    # Add a checkbox for each input file
+    # Add a checkbox for each input file modified by the module
     module_config.each do |file_input_id,config|
       file_input        = descriptor.input_by_id(file_input_id)
 
       checkbox_hidden   = config["checkbox_hidden"].present?
       # If checkbox_hidden no need to add it to the form
       next if checkbox_hidden
+
       checkbox_selected = config["checkbox_selected"].present?
       checkbox_desc     = config["checkbox_description"].presence
       checkbox_id       = create_checkbox_id(file_input_id)
@@ -239,9 +253,11 @@ module BoutiquesInputCopier
         "default-value" => checkbox_selected,
       )
 
+      # Insert the checkbox just below the File input
       file_input_idx = descriptor.inputs.find_index { |input| input.id == file_input_id }
       descriptor.inputs.insert(file_input_idx+1, checkbox_input)
 
+      # Insert the checkbox just below the File input in each group, if any.
       descriptor.groups.each do |group|
         members        = group.members.dup
         file_input_idx = members.find_index(file_input_id)
