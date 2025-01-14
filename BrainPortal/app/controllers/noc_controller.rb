@@ -239,9 +239,9 @@ class NocController < ApplicationController
       @active_tasks  = rand(fake)
       @data_transfer = rand(fake.gigabytes)
       @cpu_time      = rand(fake * 3600)
-      @dp_space_delta_P = DataProvider.where({}).ids.shuffle[0..rand(5)]
+      @dp_space_delta_P = DataProvider.ids.shuffle[0..rand(5)]
                                       .map { |dp| [ dp,   rand(fake.gigabytes) ] }.to_h
-      @dp_space_delta_M = DataProvider.where({}).ids.shuffle[0..rand(5)]
+      @dp_space_delta_M = DataProvider.ids.shuffle[0..rand(5)]
                                       .map { |dp| [ dp, - rand(fake.gigabytes) ] }.to_h
     end
 

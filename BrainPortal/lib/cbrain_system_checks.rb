@@ -172,7 +172,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
     puts "C> Cleaning up old SyncStatus objects..."
     #-----------------------------------------------------------------------------
 
-    rr_ids = RemoteResource.where({}).ids
+    rr_ids = RemoteResource.ids
     bad_ss = SyncStatus.where([ "remote_resource_id NOT IN (?)", rr_ids ])
     ss_deleted = bad_ss.count
     if ss_deleted > 0
@@ -181,8 +181,8 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
     else
       puts "C> \t- No SyncStatus objects are associated with obsolete resources."
     end
-    ss_uids = SyncStatus.where({}).pluck(:userfile_id) || []
-    uids    = Userfile.where({}).ids                   || []
+    ss_uids = SyncStatus.pluck(:userfile_id) || []
+    uids    = Userfile.ids                   || []
     bad_ids = (ss_uids - uids).uniq
     if bad_ids.size > 0
       SyncStatus.where(:userfile_id => nil).destroy_all rescue true
