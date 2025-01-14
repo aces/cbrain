@@ -43,7 +43,7 @@ class UserfilesController < ApplicationController
       :export_file_list
   ]
 
-  MAX_DOWNLOAD_MEGABYTES = 1
+  MAX_DOWNLOAD_MEGABYTES = 400
 
   # GET /userfiles
   # GET /userfiles.xml
