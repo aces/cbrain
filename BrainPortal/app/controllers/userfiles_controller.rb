@@ -116,7 +116,7 @@ class UserfilesController < ApplicationController
 
     # Special case; only userfile IDs are required (API request)
     if params[:ids_only] && (api_request? || jQuery_request?)
-      @userfiles = @view_scope.ids
+      @userfiles = @view_scope.pluck('userfiles.id')
 
     # Tree sort
     elsif @scope.custom[:tree_sort]

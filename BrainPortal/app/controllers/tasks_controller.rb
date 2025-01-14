@@ -520,7 +520,7 @@ class TasksController < ApplicationController
     task_ids   = Array(params[:tasklist]  || [])
     batch_ids  = Array(params[:batch_ids] || [])
     batch_ids << nil if batch_ids.delete('nil')
-    task_ids  += filtered_scope(CbrainTask.where(:batch_id => batch_ids)).select('cbrain_tasks.id').pluck
+    task_ids  += filtered_scope(CbrainTask.where(:batch_id => batch_ids)).pluck('cbrain_tasks.id')
     task_ids   = task_ids.map(&:to_i).uniq
 
     commit_name = extract_params_key([ :update_user_id, :update_group_id, :update_results_data_provider_id, :update_tool_config_id ])

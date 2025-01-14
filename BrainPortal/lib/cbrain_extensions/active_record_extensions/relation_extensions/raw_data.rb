@@ -57,7 +57,7 @@ module CBRAINExtensions #:nodoc:
         #    User.where('login like "a%"').select([:id,:login]).raw_rows
         #    => [[3, "annie"], [4, "ahmed"], [7, "albator"]]
         #
-        #    User.where('login like "a%"').pluck(:id,:login))
+        #    User.where('login like "a%"').raw_rows([:id,:login])
         #    => [[3, "annie"], [4, "ahmed"], [7, "albator"]]
         #
         # This is basically a wrapper around the connection's
