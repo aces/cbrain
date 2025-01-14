@@ -147,7 +147,7 @@ module BoutiquesInputCopier
 
       # We skip if (the checkbox is SHOWN) *AND* (the user DID NOT SELECT IT)
       # We COPY in all other cases.
-      if checkbox_hidden.blank? && checkbox_checked.blank?
+      if checkbox_hidden.blank? && (checkbox_checked.blank? || checkbox_checked == "0")
         self.addlog("#{basename}: no need to copy for #{parent_inputid}, skipping")
         next
       end
