@@ -814,7 +814,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
         it "should redirect to the index" do
           get :download, params: {:file_ids => [1], :specified_filename => "not_valid"}
-          expect(response).to redirect_to(:action => :index, :format => :html)
+          expect(response).to redirect_to(:action => :index)
         end
       end
 
@@ -835,7 +835,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
         it "should redirect to the index" do
           get :download, params: {:file_ids => [1]}
-          expect(response).to redirect_to(:action => :index, :format => :html)
+          expect(response).to redirect_to(:action => :index)
         end
       end
 
