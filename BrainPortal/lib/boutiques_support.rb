@@ -231,12 +231,6 @@ module BoutiquesSupport
       end.flatten
     end
 
-    def group_by_id(groupid)
-      groups = self.groups
-      groups.detect { |x| x.id == groupid } or
-        cb_error "No group found with ID '#{groupid}'"
-    end
-
     def input_by_id(inputid)
       inputs.detect { |x| x.id == inputid } or
         cb_error "No input found with ID '#{inputid}'"
