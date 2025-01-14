@@ -111,18 +111,18 @@ class Userfile < ApplicationRecord
   scope :has_no_parent, ->     { where(parent_id: nil) }
 
   scope :has_no_child,     lambda { |ignored|
-                             parents_ids = Userfile.where("parent_id IS NOT NULL").raw_first_column(:parent_id).uniq
+                             parents_ids = Userfile.where("parent_id IS NOT NULL").pluck(:parent_id).uniq
                              parents_ids.blank? ? where({}) : where("userfiles.id NOT IN (?)", parents_ids)
                            }
 
   scope :parent_name_like, lambda { |n|
-                             matching_parents_ids = Userfile.where("name like ?", "%#{n.strip}%").raw_first_column(:id).uniq
+                             matching_parents_ids = Userfile.where("name like ?", "%#{n.strip}%").ids.uniq
                              where(:parent_id => matching_parents_ids)
                            }
 
   scope :child_name_like,  lambda { |n|
-                             matching_children_ids = Userfile.where("name like ?", "%#{n.strip}%").where("parent_id IS NOT NULL").raw_first_column(:id).uniq
-                             matching_parents_ids  = Userfile.where(:id => matching_children_ids).raw_first_column(:parent_id).uniq
+                             matching_children_ids = Userfile.where("name like ?", "%#{n.strip}%").where("parent_id IS NOT NULL").ids.uniq
+                             matching_parents_ids  = Userfile.where(:id => matching_children_ids).pluck(:parent_id).uniq
                              where(:id => matching_parents_ids)
                            }
 
@@ -300,8 +300,7 @@ class Userfile < ApplicationRecord
     tags = [tags] unless tags.is_a? Array
 
     non_user_tags = self.tags
-                        .where(["tags.user_id <> ? AND tags.group_id NOT IN (?)", user.id, user.group_ids])
-                        .raw_first_column(:id)
+                        .where(["tags.user_id <> ? AND tags.group_id NOT IN (?)", user.id, user.group_ids]).ids
     new_tag_set = tags + non_user_tags
 
     self.tag_ids = new_tag_set

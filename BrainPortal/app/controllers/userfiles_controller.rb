@@ -94,7 +94,7 @@ class UserfilesController < ApplicationController
     @tag_filters = @base_scope
       .joins(:tags)
       .group('tags.name')
-      .raw_rows(['tags.name', 'tags.id', 'COUNT(tags.name)'])
+      .pluck('tags.name', 'tags.id', 'COUNT(tags.name)')
       .map do |name, id, count|
         {
           :value     => id,
@@ -116,13 +116,13 @@ class UserfilesController < ApplicationController
 
     # Special case; only userfile IDs are required (API request)
     if params[:ids_only] && (api_request? || jQuery_request?)
-      @userfiles = @view_scope.raw_first_column('userfiles.id')
+      @userfiles = @view_scope.pluck('userfiles.id')
 
     # Tree sort
     elsif @scope.custom[:tree_sort]
       # Sort using just IDs and parent IDs then paginate, giving the final
       # userfiles list in tuple (see +tree_sort_by_pairs+) form.
-      tuples = tree_sort_by_pairs(@view_scope.raw_rows(['userfiles.id', 'userfiles.parent_id']))
+      tuples = tree_sort_by_pairs(@view_scope.pluck('userfiles.id', 'userfiles.parent_id'))
       tuples = @scope.pagination.apply(tuples) unless api_request?
 
       # Keep just ID and depth/level; there is no need for the parent ID,
@@ -770,7 +770,7 @@ class UserfilesController < ApplicationController
 
     # Pre-spawn checks; tags, project and owner
     if changes.has_key?(:tags)
-      available_tags = current_user.available_tags.raw_first_column(:id)
+      available_tags = current_user.available_tags.ids
       flash[:error] += "You do not have access to all tags you want to update.\n" unless
         (changes[:tags] - available_tags).blank?
       changes[:tags] &= available_tags
@@ -821,7 +821,7 @@ class UserfilesController < ApplicationController
 
       # R/W access check
       failed["you don't have access"] = Userfile
-        .where(:id => file_ids - userfiles.raw_first_column(:id))
+        .where(:id => file_ids - userfiles.ids)
         .select([:id, :name, :type])
         .all.to_a
 

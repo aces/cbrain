@@ -303,8 +303,8 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
     # CASE 5
     tasks_archived_as_file = local_tasks.archived_as_file
-    valid_tasks_ids        = tasks_archived_as_file.joins(:workdir_archive).raw_first_column("cbrain_tasks.id").compact
-    all_tasks_ids          = tasks_archived_as_file.raw_first_column("cbrain_tasks.id")
+    valid_tasks_ids        = tasks_archived_as_file.joins(:workdir_archive).pluck("cbrain_tasks.id").compact
+    all_tasks_ids          = tasks_archived_as_file.pluck("cbrain_tasks.id")
     case5_tasks            = CbrainTask.find(all_tasks_ids - valid_tasks_ids)
     case5_count            = case5_tasks.size
     puts "C> \t- Processing #{case5_count} CbrainTasks that seem to be archived but that haven't workdir_archive." if case5_count > 0
@@ -388,7 +388,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
       uids2path[idstring.to_i] = path.strip.sub(/\A\.\//,"") #  12345 => "01/23/45"
     end
 
-    all_task_ids  = CbrainTask.where({}).raw_first_column(:id)
+    all_task_ids  = CbrainTask.where({}).ids
     spurious_ids  = uids2path.keys - all_task_ids
 
     if spurious_ids.empty?

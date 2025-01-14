@@ -433,8 +433,8 @@ class BourreauxController < ApplicationController
     user_ids    = params[:user_ids] || nil
 
     available_users = current_user.available_users
-    user_ids        = user_ids ? available_users.where(:id => user_ids).raw_first_column(:id) :
-                                 available_users.raw_first_column(:id)
+    user_ids        = user_ids ? available_users.where(:id => user_ids).ids :
+                                 available_users.ids
 
     raise "Bad params"              if bourreau_id.blank? || user_ids.blank?
     bourreau    = Bourreau.find(bourreau_id.to_i)
