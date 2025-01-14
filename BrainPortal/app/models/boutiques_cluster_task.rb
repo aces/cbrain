@@ -251,6 +251,7 @@ class BoutiquesClusterTask < ClusterTask
         if ! path_is_in_workdir?(path) # this also checks the existence
           self.addlog("Output file is missing or outside of task work directory: #{path}")
           all_ok = false
+          next
         end
 
         # Get name and filetype
