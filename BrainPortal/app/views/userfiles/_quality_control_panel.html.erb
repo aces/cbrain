@@ -57,7 +57,7 @@
     Full list of tags:<br>
     <select name="tag_ids[]" multiple="multiple" style="width: 15em" size="4" >
       <%= options_from_collection_for_select current_user.available_tags, 'id', 'name',
-          @userfile.get_tags_for_user(current_user).raw_first_column(:id) %>
+          @userfile.get_tags_for_user(current_user).ids %>
     </select>
   </fieldset>
 
