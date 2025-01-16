@@ -20,10 +20,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# This module adds automatic verification of the
-# files (or directories ) names generated as output, which comply with CBRAIN restrictions.
+# This module offers automatic verification of the
+# files (or directories) names generated as tool output, and therefore have comply with CBRAIN file name conventions.
 #
-# For example, in the "inputs" section:
+# For example, in the "inputs" section we might have:
 #
 #   {
 #     "description": "The name of the folder to store outputs of XCPD processing.",
@@ -35,9 +35,14 @@
 #     "default-value": "xcpd_output"
 #   }
 #
-# "cbrain:integrator_modules": {
-#   "BoutiquesFileNameVerifier": [ "output_dir", "other_id", "other_id_2" ]
-# }
+# And the custom property is specified like
+#
+#   "cbrain:integrator_modules": {
+#     "BoutiquesFileNameVerifier": [
+#       "output_dir",
+#       "another_id"
+#     ]
+#   }
 module BoutiquesFileNameVerifier
 
   # Note: to access the revision info of the module,
