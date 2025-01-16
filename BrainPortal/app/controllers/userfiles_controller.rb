@@ -1158,11 +1158,11 @@ class UserfilesController < ApplicationController
     # and potentially prohibitively large size
     unsized = userfiles_list.detect { |u| u.size.nil? }
     if unsized
-       flash[:error] = "Size of the file #{unsized.name} is not yet determined." +
-                       " Please try again latter.\n"
-       respond_to do |format|
-         format.html { redirect_to :action => :index }
-         format.json { render :json => { :error => flash[:error] } }
+      flash[:error] = "Size of the file #{unsized.name} is not yet determined." +
+                      " Please try again latter.\n"
+      respond_to do |format|
+        format.html { redirect_to :action => :index }
+        format.json { render :json => { :error => flash[:error] } }
       end
       return
     end
