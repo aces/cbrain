@@ -438,11 +438,6 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 %   end
       else # Check exit status value
         exit_status = status_file_content.to_i
-        # provide explanations for exit statuses (if any):
-        <% descriptor['error-codes']&.each do |err| %>
-          self.addlog(<%=err["description"].inspect %>)  if <%= err['code'].to_i %> == exit_status  # with escaping
-        <% end %>
-
         unless SystemExit.new(exit_status).success?
           self.addlog("Command failed, exit status #{exit_status}")
 %   if outputs.empty?
