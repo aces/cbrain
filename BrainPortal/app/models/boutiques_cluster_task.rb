@@ -28,7 +28,7 @@ class BoutiquesClusterTask < ClusterTask
   include RestartableTask
   include RecoverableTask
 
-  # This method returns the BoutiquesDescriptor
+  # This method returns the +BoutiquesDescriptor+
   # directly associated with the ToolConfig for the task
   def boutiques_descriptor
     self.tool_config.boutiques_descriptor
