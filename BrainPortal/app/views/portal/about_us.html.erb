@@ -42,7 +42,9 @@
                          .select(&:directory?)
                          .map(&:basename)
                          .map(&:to_s)
-                         .reject { |x| x =~ /test|^cbrain-plugins-base$|^installed-plugins$/ }  %>
+                         .reject { |x| x =~ /test|^cbrain-plugins-base$|^installed-plugins$/ }
+                         .sort
+  %>
 
   <% if plugins_basenames.present? %>
     <h3>CBRAIN Plugins Revision Information
