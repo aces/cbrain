@@ -97,7 +97,7 @@
         <th><%= for_tool ? "Execution Servers" : "Tools" %> </th>
         <th>Versions Configured</th>
         <th>Projects In Effect</th>
-        <th class="left_align">Users with access problem(s)</th>
+        <th class="left_align">Users with access problem(s) out of <%= users.count %></th>
       </tr>
     <% end %>
 
@@ -149,23 +149,20 @@
               users_with_access_pb = users.select do |user|
                 !user_can_access_resource[user] || !user_can_access_versus[user] || !tc.can_be_accessed_by?(user)
               end
+
+
+
             %>
-            <%=
-              array_to_table(users_with_access_pb,
-                :rows        => 1,
-                :table_class => 'simple',
-                :td_class    => 'warning'
-              ) do |user,r,c|
-            %>
+
               <!-- Add information on the tooltip -->
-              <%= html_tool_tip(user.login) do %>
-                <%= "* Execution Server's project<br/>".html_safe      unless
-                  ( for_tool ? user_can_access_versus[user] : user_can_access_resource[user] ) %>
-                <%= "* Tool's project<br/>".html_safe                  unless
-                  ( for_tool ? user_can_access_resource[user] : user_can_access_versus[user] ) %>
-                <%= "* Version configuration's project<br/>".html_safe unless tc.can_be_accessed_by?(user) %>
+              <%= html_tool_tip(users_with_access_pb.count.to_s + " users") do %>
+                <% tool_pb, exec_pb = user_can_access_versus, user_can_access_resource %>
+                <% exec_pb, tool_pb = tool_pb, exec_pb if for_tool %>
+
+
+                <%= "#{exec_pb.values.count false} - due Execution Server's project<br/>".html_safe unless exec_pb.values.all?  %>
+                <%= "#{tool_pb.values.count false} - due Tool's project<br/>".html_safe unless tool_pb.values.all?  %>
               <% end %>
-            <% end %>
           </td>
         </tr>
       <% end %>
