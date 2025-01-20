@@ -90,7 +90,7 @@ module BoutiquesTaskLogsCopier
 
     # Get the cleaning paths patterns from the descriptor
     descriptor = self.descriptor_for_save_results
-    destpaths  = descriptor.custom_module_info('BoutiquesTaskLogsCopier')
+    destpaths  = descriptor.custom_module_info('BoutiquesTaskLogsCopier') || {}
 
     # Copy STDOUT and STDERR, if possible
     install_std_log_file(science_stdout_basename, destpaths[:stdout],     "stdout")
@@ -188,7 +188,4 @@ module BoutiquesTaskLogsCopier
   end
 
 end
-
-
-
 

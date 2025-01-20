@@ -203,7 +203,7 @@ module BoutiquesInputCopier
     override_invoke_params = super.dup
 
     descriptor    = self.descriptor_for_cluster_commands
-    module_config = descriptor.custom_module_info('BoutiquesInputCopier')
+    module_config = descriptor.custom_module_info('BoutiquesInputCopier') || {}
 
     # For each input in BoutiquesInputCopier override the input with the copy
     # if the checkbox is selected

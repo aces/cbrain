@@ -51,7 +51,8 @@ module BoutiquesSaveStdOutStdErr
   def save_results
     # Get the folder where to save the log files from the descriptor
     descriptor  = self.descriptor_for_save_results
-    module_info = descriptor.custom_module_info('BoutiquesSaveStdOutStdErr')
+    module_info = descriptor.custom_module_info('BoutiquesSaveStdOutStdErr') || {}
+    return super if module_info.blank? # nothing special to do
 
     # Get parent file to set stderr and stdout as children of first input file
     main_input_id = descriptor.file_inputs.first.id
@@ -81,6 +82,8 @@ module BoutiquesSaveStdOutStdErr
   # for the show page of the task.
   def descriptor_for_show_params  #:nodoc:
     descriptor = super.dup
+    module_info = descriptor.custom_module_info('BoutiquesSaveStdOutStdErr') || {}
+    return descriptor if module_info.blank? # nothing special to do
 
     stdout_file = BoutiquesSupport::OutputFile.new({
       "id"   => "cbrain_stdout",

@@ -109,7 +109,8 @@ module BoutiquesOutputFilenameRenamer
   # each configured String input fields.
   def descriptor_with_renaming_explanations(descriptor)
     descriptor = descriptor.dup
-    config_map = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer')
+    config_map = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer') || {}
+    return descriptor if config_map.blank? # no config means nothing to do
 
     uniq_outnames = {}
 
@@ -170,7 +171,7 @@ module BoutiquesOutputFilenameRenamer
   def after_form
     message    = super
     descriptor = descriptor_for_after_form
-    config_map = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer')
+    config_map = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer') || {}
     config_map.each do |_, pair|  # pair = [ boutiques ID of input, filename for output ]
       _, outnameinputid = *pair
       outname_pattern = invoke_params[outnameinputid].presence || ""
@@ -195,7 +196,7 @@ module BoutiquesOutputFilenameRenamer
   # as the new effective value for the name.
   def setup
     descriptor = descriptor_for_setup
-    config_map = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer')
+    config_map = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer') || {}
     config_map.each do |_, pair|
       fileinputid, outnameinputid = *pair
       input_userfile_id = invoke_params[fileinputid]
@@ -220,7 +221,7 @@ module BoutiquesOutputFilenameRenamer
   def name_and_type_for_output_file(output, pathname)
     name, type = super # the standard names and types; the name will be replaced outright
     descriptor = descriptor_for_save_results
-    config_map = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer')
+    config_map = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer') || {}
     config_map.each do |outputid, pair| # boutiques ID of outfile-files entry, pair
       next unless outputid == output.id
       _, outnameinputid = *pair
