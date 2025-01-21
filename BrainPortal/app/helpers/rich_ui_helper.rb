@@ -263,12 +263,14 @@ module RichUiHelper
 
   # Create a link that will open a dialog box.
   #
+  #   +link_text+: clickable text that appears on the page in order to open the overlay
+  #   +title+: title that will show up as a header at the top of the overlay
+  #   +description+: text of the overlay content
+  #
   # Options:
-  #   title: title of the overlay
-  #   link_text: text of the link
-  #   description: content of the overlay
-  #   size: used to set the max-width of the overlay
-  def closable_overlay_content_link(title, link_text, description="", options = {size: "50em"})
+  #
+  #   +size+: maximum height and width of the overlay
+  def closable_overlay_content_link(link_text, title, description="", options = {size: "50em"})
     return "" if description.blank?
 
     link = overlay_content_link(link_text, :enclosing_element => "span") do

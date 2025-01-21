@@ -33,7 +33,7 @@ Not all of them are available to all users.
 <% open_tools     = @tools.select { |tool| (tool.group_id == @everyone_gid) && tool.tool_configs.where(:group_id => @everyone_gid).exists? } %>
 <% restrict_tools = @tools - open_tools %>
 
-<%= build_tabs({class: 'available_tabs'}) do |tb| %>
+<%= build_tabs( :class => 'available_tabs' ) do |tb| %>
   <%= tb.tab("Tools") do %>
     <%= render :partial => 'available_tools_table', :locals => { :tools => open_tools } %>
     <%= render :partial => 'available_tools_table', :locals => { :tools => restrict_tools } %>
