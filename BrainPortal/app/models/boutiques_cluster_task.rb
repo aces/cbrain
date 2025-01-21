@@ -211,6 +211,10 @@ class BoutiquesClusterTask < ClusterTask
         cb_error "Exit status file #{exit_status_filename()} has unexpected content"
       end
       status = out.strip.to_i
+      descriptor.error_codes ||= []
+      descriptor.error_codes.each do |err|  # note, 0 code is supported by boutiques
+        self.addlog err['description'] if err['code'] == status
+      end
       if exit_status_means_failure?(status)
         self.addlog "Command failed, exit status #{status}"
         return false
