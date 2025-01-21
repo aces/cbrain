@@ -1519,12 +1519,14 @@ class TasksController < ApplicationController
   end
 
   # This method handle the logic of loading and saving presets.
+  # It's terrible old code.
   def handle_preset_actions #:nodoc:
     commit_name  = extract_params_key([ :load_preset, :delete_preset, :save_preset ], :whatewer)
 
     if commit_name == :load_preset
       preset_id = params[:load_preset_id] # used for delete too
       if (! preset_id.blank?) && preset = CbrainTask.where(:id => preset_id, :status => [ 'Preset', 'SitePreset' ]).first
+        flash[:notice] += "Loaded preset '#{preset.short_description}'.\n"
         old_params = @task.params.clone
         @task.params         = preset.params
         @task.description    = @task.description || ""
@@ -1534,10 +1536,13 @@ class TasksController < ApplicationController
           @task.group = preset.group
         end
         if preset.tool_config && preset.tool_config.can_be_accessed_by?(current_user) && (@task.new_record? || preset.tool_config.bourreau_id == @task.bourreau_id)
-          @task.tool_config = preset.tool_config
+          if preset.tool_config.bourreau.online?
+            @task.tool_config = preset.tool_config
+          else
+            flash[:error] += "Warning: the preset's version of the tool is on an Execution server that is currently offline. Double-check the version you really need."
+          end
         end
         @task.bourreau = @task.tool_config.bourreau if @task.tool_config
-        flash[:notice] += "Loaded preset '#{preset.short_description}'.\n"
       else
         flash[:notice] += "No preset selected, so parameters are unchanged.\n"
       end
