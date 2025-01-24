@@ -145,29 +145,27 @@
           </td>
           <td class="left_align">
             <%
-              # An array with each user with problem access
-              users_with_access_pb = users.select do |user|
+              # An array of user without access
+              users_without_access = users.select do |user|
                 !user_can_access_resource[user] || !user_can_access_versus[user] || !tc.can_be_accessed_by?(user)
               end
-              users_with_access = users - users_with_access_pb
+              users_with_access = users - users_without_access
             %>
             <% tool_pb, exec_pb = user_can_access_versus, user_can_access_resource %>
             <% exec_pb, tool_pb = tool_pb, exec_pb if for_tool %>
               <!-- Add information on the tooltip -->
-            <span style="color:green">
-              <%= html_tool_tip((users_with_access).count, options={:style => {:color => :green}}) do %>
+              <%= html_tool_tip html_colorize(users_with_access.count, "green") do %>
                 <% admins = users_with_access.select {|u| u.has_role? :admin_user } %>
                 <%= "of which #{admins.count} are admins".html_safe %>
               <% end %>
-            </span>
             user(s) have access,
             <span class="warning">
-              <%= html_tool_tip(users_with_access_pb.count ) do %>
+              <%= html_tool_tip html_colorize users_without_access.count do %>
                 <%= "#{exec_pb.values.count false} - due Execution Server's project<br/>".html_safe unless exec_pb.values.all?  %>
-                <%= "#{tool_pb.values.count false} - due Tool's project<br/>".html_safe unless tool_pb.values.all?  %>
+                <%= "#{tool_pb.values.count false} - due Tool's project>".html_safe unless tool_pb.values.all?  %>
               <% end %>
             </span>
-            users have no access
+            user(s) have no access
           </td>
         </tr>
       <% end %>
