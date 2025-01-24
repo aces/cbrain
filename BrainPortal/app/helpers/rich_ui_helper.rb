@@ -266,17 +266,15 @@ module RichUiHelper
   #   +link_text+: clickable text that appears on the page in order to open the overlay
   #   +title+: title that will show up as a header at the top of the overlay
   #   +description+: text of the overlay content
-  #
-  # Options:
-  #
   #   +size+: maximum height and width of the overlay
-  def closable_overlay_content_link(link_text, title, description="", options = {size: "50em"})
+  #
+  def closable_overlay_content_link(link_text, title, description="", size="50em", options = {})
     return "" if description.blank?
 
     link = overlay_content_link(link_text, :enclosing_element => "span") do
-      html = "<div style='overflow: auto; max-height: #{options[:size]}; max-width: #{options[:size]};'>" +
+      html = "<div style='overflow: auto; max-height: #{size}; max-width: #{size};'>" +
       "<h1>#{h(title)}</h1><hr/>" +
-      "<p'>#{h(description)}</p>" +
+      "<p>#{h(description)}</p>" +
       "</div>"
 
       html.html_safe
