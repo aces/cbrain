@@ -162,7 +162,7 @@
             <span class="warning">
               <%= html_tool_tip html_colorize users_without_access.count do %>
                 <%= "#{exec_pb.values.count false} - due Execution Server's project<br/>".html_safe unless exec_pb.values.all?  %>
-                <%= "#{tool_pb.values.count false} - due Tool's project>".html_safe unless tool_pb.values.all?  %>
+                <%= "#{tool_pb.values.count false} - due Tool's project".html_safe unless tool_pb.values.all?  %>
               <% end %>
             </span>
             user(s) have no access
