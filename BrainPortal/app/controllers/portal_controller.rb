@@ -46,14 +46,14 @@ class PortalController < ApplicationController
     @default_data_provider  = DataProvider.find_by_id(current_user.meta["pref_data_provider_id"])
     @default_bourreau       = Bourreau.find_by_id(current_user.meta["pref_bourreau_id"])
 
-    @tool_count =  Tool
+    @tool_names =  Tool
       .joins(:tool_configs)
       .where.not(category: 'background')
       .where('tool_configs.bourreau_id IS NOT NULL')
       .where('tool_configs.bourreau_id > 0')
       .where('tool_configs.version_name IS NOT NULL')
       .distinct
-      .count
+      .pluck 'name'
 
     @dashboard_messages = Message
       .where(:message_type => 'cbrain_dashboard')
