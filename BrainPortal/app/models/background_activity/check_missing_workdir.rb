@@ -30,16 +30,16 @@ class BackgroundActivity::CheckMissingWorkdir < BackgroundActivity
   # Returns the object.
   # Will not do it if an object already exists that was updated less
   # than 24 hours ago. In that case, returns nil.
-  def self.setup!
+  def self.setup!(remote_resource_id = CBRAIN::SelfRemoteResourceId)
     # Don't schedule a check if we've had one in the past 24 hours
-    return nil if self.where(:remote_resource_id => CBRAIN::SelfRemoteResourceId)
+    return nil if self.where(:remote_resource_id => remote_resource_id)
                       .where('updated_at > ?', 24.hours.ago)
                       .exists?
 
     # Create the scheduled object
     self.new(
       :user_id            => User.admin.id,
-      :remote_resource_id => CBRAIN::SelfRemoteResourceId,
+      :remote_resource_id => remote_resource_id,
       :status             => 'Scheduled',
       :start_at           => Time.now + 300.seconds,
     )
@@ -48,7 +48,7 @@ class BackgroundActivity::CheckMissingWorkdir < BackgroundActivity
   end
 
   def process(task_id)
-    task = CbrainTask.where(:bourreau_id => CBRAIN::SelfRemoteResourceId).find(task_id)
+    task = CbrainTask.where(:bourreau_id => self.remote_resource_id).find(task_id)
     full = task.full_cluster_workdir
     return [ true, nil        ] if Dir.exists?(full.to_s)
     task.cluster_workdir      = nil

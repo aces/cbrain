@@ -141,7 +141,8 @@ class BoutiquesClusterTask < ClusterTask
     # Write down the file with the boutiques descriptor itself
     File.open(boutiques_json_basename, "w") do |fh|
       cleaned_desc = descriptor.dup
-      cleaned_desc.delete("groups") if cleaned_desc.groups.size == 0 # bosh is picky
+      cleaned_desc.delete("groups")      if cleaned_desc.groups.blank?         # bosh is picky
+      cleaned_desc.delete("error-codes") if cleaned_desc["error-codes"].blank? # and stupid
       fh.write JSON.pretty_generate(cleaned_desc)
       fh.write "\n"
     end
