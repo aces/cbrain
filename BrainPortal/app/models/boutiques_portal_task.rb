@@ -394,7 +394,13 @@ class BoutiquesPortalTask < PortalTask
     )
   end
 
-
+  # This method compares a params hash table +old_params+ with
+  # a +new_params+ hash provided, and log all the
+  # differences. The task object itself is not changed.
+  # Overrides the parent class method
+  def log_params_changes(old_params = {}, new_params = {})
+    super(old_params['invoke'], new_params['invoke'])
+  end
 
   ################################
   # Portal-side utilities

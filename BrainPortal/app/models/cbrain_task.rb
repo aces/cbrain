@@ -580,6 +580,7 @@ class CbrainTask < ApplicationRecord
   # This method compares a params hash table +old_params+ with
   # a +new_params+ hash provided, and log all the
   # differences. The task object itself is not changed.
+  # The method is overriden in BoutiquesTask subclass
   def log_params_changes(old_params = {}, new_params = {})
     numchanges = 0
     old_params.each do |ck,cv|
