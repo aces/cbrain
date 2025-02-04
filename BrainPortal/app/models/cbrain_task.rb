@@ -580,8 +580,20 @@ class CbrainTask < ApplicationRecord
   # This method compares a params hash table +old_params+ with
   # a +new_params+ hash provided, and log all the
   # differences. The task object itself is not changed.
-  def log_params_changes(old_params = {}, new_params = {})
+  # tool_params_only indicate to argument is technical
+  #
+  # +flatten_invoke+ is technical param, presently has no use, keep default value
+  def log_params_changes(old_params = {}, new_params = {}, flatten_invoke=true)
     numchanges = 0
+    if self.is_a?(BoutiquesPortalTask) && flatten_invoke
+      # invoke is a hash with actual tool parameters
+      numchanges = log_params_changes(old_params['invoke'], new_params['invoke'], false)  # a tool might have an invoke param itself
+      old_params = old_params.except('invoke')
+      new_params = new_params.except('invoke')
+    end
+    # presently most params seems to be either old/new_params hash keys or inside the invoke
+    # but we can potentially get one day some mixed cases, e.g. when migrating tool from old
+    # to new boutiques
     old_params.each do |ck,cv|
       if new_params.has_key?(ck)
         nv = new_params[ck]
@@ -603,6 +615,9 @@ class CbrainTask < ApplicationRecord
       self.addlog("Added key #{nk.inspect} with value #{nv.inspect}")
       numchanges += 1
     end
+
+    return numchanges if ! flatten_invoke  # no count reporting until non-tool params compared
+
     if numchanges > 0
       self.addlog("Total of #{numchanges} changes observed.")
     else
