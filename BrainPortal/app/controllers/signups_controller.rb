@@ -130,11 +130,21 @@ class SignupsController < ApplicationController
 
   # Confirms that a signup person's email address actually belongs to them
   def confirm #:nodoc:
-    @signup = Signup.find(params[:id]) rescue nil
+    @signup  = Signup.find(params[:id]) rescue nil
     token    = params[:token] || ""
+    is_valid = @signup.present? && token.present? && @signup.confirm_token == token
+    token    = "" if ! is_valid # that will just skip over everything and redirect at the end
+    req_method = request.method.to_s.upcase # GET or POST
 
-    # Params properly confirms the request? Then record that and show a nice message to user.
-    if @signup.present? && token.present? && @signup.confirm_token == token
+    # Params properly confirms the GET request? Show a simple page with button
+    if is_valid && req_method == 'GET'
+      @token = token # for the button
+      render 'confirm_button.html'
+      return
+    end
+
+    # Params properly confirms the POST request? Then record that and show a nice message to user.
+    if is_valid && req_method == 'POST'
       @signup.confirmed = true
       @signup.save
       @propose_view = can_edit?(@signup)
