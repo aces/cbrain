@@ -188,6 +188,7 @@ Rails.application.routes.draw do
     member do
       post 'resend_confirm'
       get  'confirm'
+      post 'confirm'
     end
     collection do
       post 'multi_action'
