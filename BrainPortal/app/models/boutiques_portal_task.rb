@@ -400,6 +400,16 @@ class BoutiquesPortalTask < PortalTask
   # Portal-side utilities
   ################################
 
+  # Utility to simplify adding an error to an invoke parameter;
+  # provide the Input object, or its ID, and the message. Optionally,
+  # you can provide an alternate descriptor.
+  def add_invoke_params_error(input_or_input_id, message, alt_descriptor = self.boutiques_descriptor)
+    if ! input_or_input_id.is_a?(BoutiquesSupport::Input)
+      input_or_input_id = alt_descriptor.input_by_id(input_or_input_id)
+    end
+    params_errors.add(input_or_input_id.cb_invoke_name, message)
+  end
+
   # Returns all the cbcsv files present (i.e. set by the user as inputs), as tuples (input, Userfile)
   def cbcsv_files(descriptor = self.descriptor_for_after_form)
     descriptor.file_inputs.map do |input|

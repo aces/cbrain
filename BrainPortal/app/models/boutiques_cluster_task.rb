@@ -141,7 +141,8 @@ class BoutiquesClusterTask < ClusterTask
     # Write down the file with the boutiques descriptor itself
     File.open(boutiques_json_basename, "w") do |fh|
       cleaned_desc = descriptor.dup
-      cleaned_desc.delete("groups") if cleaned_desc.groups.size == 0 # bosh is picky
+      cleaned_desc.delete("groups")      if cleaned_desc.groups.blank?         # bosh is picky
+      cleaned_desc.delete("error-codes") if cleaned_desc["error-codes"].blank? # and stupid
       fh.write JSON.pretty_generate(cleaned_desc)
       fh.write "\n"
     end
@@ -211,6 +212,10 @@ class BoutiquesClusterTask < ClusterTask
         cb_error "Exit status file #{exit_status_filename()} has unexpected content"
       end
       status = out.strip.to_i
+      descriptor.error_codes ||= []
+      descriptor.error_codes.each do |err|  # note, 0 code is supported by boutiques
+        self.addlog err['description'] if err['code'] == status
+      end
       if exit_status_means_failure?(status)
         self.addlog "Command failed, exit status #{status}"
         return false
@@ -251,6 +256,7 @@ class BoutiquesClusterTask < ClusterTask
         if ! path_is_in_workdir?(path) # this also checks the existence
           self.addlog("Output file is missing or outside of task work directory: #{path}")
           all_ok = false
+          next
         end
 
         # Get name and filetype

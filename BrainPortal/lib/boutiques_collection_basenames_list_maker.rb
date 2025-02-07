@@ -54,6 +54,7 @@ module BoutiquesCollectionBasenamesListMaker
     def descriptor_for_form #:nodoc:
         descriptor             = super.dup()
         input_id, type, regex_string,  = descriptor.custom_module_info('BoutiquesCollectionBasenamesListMaker')
+        return descriptor if input_id.nil? # no config at all
 
         # Get the userfile_ids from the params
         # Return immediately if there is no exactly one file.
@@ -81,6 +82,7 @@ module BoutiquesCollectionBasenamesListMaker
     def final_task_list #:nodoc:
       descriptor     = self.descriptor_for_final_task_list
       input_id, _, _ = descriptor.custom_module_info('BoutiquesCollectionBasenamesListMaker')
+      return super if input_id.nil? # no config at all
 
       params_values = self.invoke_params[input_id]
       return super if params_values.blank? || params_values.size == 1
@@ -95,4 +97,5 @@ module BoutiquesCollectionBasenamesListMaker
       end
 
     end
-  end
+
+end

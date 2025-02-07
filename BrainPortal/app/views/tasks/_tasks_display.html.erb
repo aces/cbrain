@@ -252,7 +252,7 @@
         <%= colored_archived_status(as) %>
         <% if task.cluster_workdir_size.present? %>
           <%= colored_pretty_size(task.cluster_workdir_size, :blank => '') %>
-        <% elsif as == :userfile && ar_file_size = Userfile.where(:id => task.workdir_archive_userfile_id).raw_first_column(:size)[0] %>
+        <% elsif as == :userfile && ar_file_size = Userfile.where(:id => task.workdir_archive_userfile_id).pluck(:size)[0] %>
           (<%= colored_pretty_size(ar_file_size, :blank => '') %>)
         <% end %>
       <% end %>

@@ -49,7 +49,7 @@ module BoutiquesOutputFileTypeSetter
 
     # Get the suggestion from the descriptor
     descriptor           = self.descriptor_for_save_results
-    out_classes          = descriptor.custom_module_info('BoutiquesOutputFileTypeSetter')
+    out_classes          = descriptor.custom_module_info('BoutiquesOutputFileTypeSetter') || {}
     suggested_class_name = out_classes[output.id]
     return [ name, userfile_class ] if suggested_class_name.blank?
 

@@ -49,7 +49,7 @@ module BoutiquesInputRegexChecker
 
     # Find the configured info
     descriptor = self.boutiques_descriptor
-    checkers   = descriptor.custom_module_info('BoutiquesInputRegexChecker') || {} # the raw struct in the decriptor
+    checkers   = descriptor.custom_module_info('BoutiquesInputRegexChecker') || {} # the raw struct in the descriptor
 
     # Run the checks
     checkers.each do |input_id,regex_message|

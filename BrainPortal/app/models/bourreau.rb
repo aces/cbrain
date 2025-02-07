@@ -336,31 +336,12 @@ class Bourreau < RemoteResource
   def send_command_get_task_outputs(task_id,run_number=nil,stdout_lim=nil,stderr_lim=nil)
     command = RemoteCommand.new(
       :command     => 'get_task_outputs',
-      :task_ids    => task_id.to_s,
+      :task_id     => task_id.to_s,
       :run_number  => run_number,
       :stdout_lim  => stdout_lim,
       :stderr_lim  => stderr_lim,
     )
     send_command(command) # will return a command object with stdout and stderr
-  end
-
-  # Utility method to send a +alter_tasks+ command to a
-  # Bourreau RemoteResource, whether local or not.
-  # +tasks+ must be a single task ID or an array of such,
-  # or a single CbrainTask object or an array of such.
-  # +new_task_status+ is one of the keywords recognized by
-  # process_command_alter_tasks(); in the case where operation
-  # is 'Duplicated', then a +new_bourreau_id+ can be supplied too.
-  def send_command_alter_tasks(tasks,new_task_status,extra_remote_commands = {})
-    tasks    = [ tasks ] unless tasks.is_a?(Array)
-    task_ids = tasks.map { |t| t.is_a?(CbrainTask) ? t.id : t.to_i }
-    command  = RemoteCommand.new(
-      :command                  => 'alter_tasks',
-      :task_ids                 => task_ids.join(","),
-      :new_task_status          => new_task_status,
-    )
-    command.merge!(extra_remote_commands)
-    send_command(command)
   end
 
 
@@ -436,140 +417,9 @@ class Bourreau < RemoteResource
     worker_pool.wake_up_workers
   end
 
-  # Modifies a task's state.
-  def self.process_command_alter_tasks(command)
-    myself = RemoteResource.current_resource
-    cb_error "Got control command #{command.command} but I'm not a Bourreau!" unless
-      myself.is_a?(Bourreau)
-
-Message.send_message(:admin,
-   :message_type => :system,
-   :header => "Bourreau #{myself.name} got AlterTask",
-   :description => "This is to track a deprecated piece of code, we should not get this.",
-   :critical => true,
-   :variable_text => command.inspect,
-)
-
-    # 'taskids' is an array of tasks to process.
-    # 'newstatus', as received in the command object, is not
-    # necessarily an official legal task status name, it can be a
-    # description of an action to perform here (e.g. RemoveWorkDir)
-    taskids   = command.task_ids.split(/,/)
-    newstatus = command.new_task_status
-    userid    = command.requester_user_id
-
-    tasks_affected = 0
-
-    CBRAIN.spawn_with_active_records(:admin, "AlterTask #{newstatus}") do
-
-    signaled_finish = false # set to true when receiving TERM
-    Signal.trap("TERM") { signaled_finish = true }
-
-    taskids.shuffle.each_with_index do |task_id,count|
-      break if signaled_finish # ends the entire task ID list
-      Process.setproctitle "AlterTask #{newstatus} ID=#{task_id} #{count+1}/#{taskids.size}"
-      task = CbrainTask.where(:id => task_id, :bourreau_id => myself.id).first
-      next unless task # doesn't even exist? just ignore it
-
-      begin
-        old_status = task.status # so we can detect if the operation did anything.
-        task.update_status
-
-        # 'Destroy' is different, it terminates (if allowed) then
-        # removes all traces of the task from the DB.
-        if newstatus == "Destroy"  # verb instead of adjective
-          task.destroy
-          next
-        end
-
-        # The 'Duplicated' operation copies the task object into a brand new task.
-        # As a side effect, the task can be reassigned to another Bourreau too
-        # (Note that the task will fail at Setup if the :share_wd_id attribute specify
-        # a task that currently is on the original Bourreau).
-        # Duplicating a task could also be performed on the client side (BrainPortal).
-        if newstatus == 'Duplicated'
-          new_bourreau_id = command.new_bourreau_id || task.bourreau_id || myself.id
-          new_task = task.class.new(task.attributes) # a kind of DUP!
-          new_task.id                          = nil
-          new_task.bourreau_id                 = new_bourreau_id
-          new_task.cluster_jobid               = nil
-          new_task.cluster_workdir             = nil
-          new_task.cluster_workdir_size        = nil
-          new_task.workdir_archived            = false
-          new_task.workdir_archive_userfile_id = nil
-          new_task.run_number                  = 0
-          new_task.status                      = "Duplicated"
-          new_task.addlog_context(self,"Duplicated from task '#{task.bname_tid}'.")
-          task=new_task
-        end
-
-        # Handle archiving or unarchiving the task's workdir
-        if newstatus == 'ArchiveWorkdir'
-          task.archive_work_directory
-          next
-        elsif newstatus == 'ArchiveWorkdirAsFile'
-          task.archive_work_directory_to_userfile(command.archive_data_provider_id)
-          next
-        elsif newstatus == 'UnarchiveWorkdir'
-          if task.archived_status == :userfile # automatically guess which kind of unarchiving to do
-            task.unarchive_work_directory_from_userfile
-          else
-            task.unarchive_work_directory
-          end
-          next
-        elsif newstatus == 'RemoveWorkdir'
-          task.send(:remove_cluster_workdir) # it's a protected method
-          next
-        elsif newstatus == 'SaveWorkdir'
-          task.send(:save_cluster_workdir, userid) # it's a protected method
-          next
-        end
-
-        # No other operations are allowed for archived tasks,
-        # no matter what their status is.
-        next if task.workdir_archived?
-
-        # The method we'll now call are defined in the Bourreau side's CbrainTask model.
-        # These methods trigger task control actions on the cluster.
-        # They will update the "status" field depending on the action's result;
-        # if the action is invalid it will silently be ignored and the task
-        # will stay unchanged.
-        task.suspend      if newstatus == "Suspended"
-        task.resume       if newstatus == "On CPU"
-        task.hold         if newstatus == "On Hold"
-        task.release      if newstatus == "Queued"
-        task.terminate    if newstatus == "Terminated"
-
-        # These actions trigger special handling code in the workers
-        task.recover                       if newstatus == "Recover"         # For 'Failed*' tasks
-        task.restart(Regexp.last_match[1]) if newstatus =~ /\ARestart (\S+)/ # For 'Completed' or 'Terminated' tasks only
-
-        # OK now, if something has changed (based on status), we proceed we the update.
-        next if task.status == old_status
-        task.addlog_current_resource_revision("New status: #{task.status}")
-        task.save
-        tasks_affected += 1 if task.bourreau_id == myself.id
-      rescue => ex
-        Rails.logger.debug "Something has gone wrong altering task '#{task_id}' with new status '#{newstatus}'."
-        Rails.logger.debug "#{ex.class.to_s}: #{ex.message}"
-        Rails.logger.debug ex.backtrace.join("\n")
-      end
-    end
-
-    # Artificially trigger a 'wakeup workers' command if any task was
-    # affected locally. Unfortunately we can't wake up workers on
-    # a different Bourreau yet.
-    if tasks_affected > 0
-      myself.send_command_start_workers
-    end
-
-    end # spawn
-
-  end
-
   # Returns the STDOUT and STDERR of a task.
   def self.process_command_get_task_outputs(command)
-    task_id    = command.task_ids.to_i # expects only one
+    task_id    = command.task_id.to_i
     task = CbrainTask.find(task_id)
     run_number = command.run_number || task.run_number
     stdout_lim = command.stdout_lim

@@ -339,7 +339,7 @@ class ToolConfigsController < ApplicationController
     unless current_user.has_role?(:admin_user)
       bourreau_ids = Bourreau.all.select { |b| b.can_be_accessed_by?(current_user) }.map(&:id)
       tool_ids     = Tool.all.select     { |t| t.can_be_accessed_by?(current_user) }.map(&:id)
-      group_ids    = current_user.groups.raw_first_column(:id)
+      group_ids    = current_user.groups.ids
       scope = scope.where(
         :bourreau_id => bourreau_ids,
         :tool_id     => tool_ids,

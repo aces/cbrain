@@ -20,9 +20,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# This module allows one to fix some of input parameters to specific constand values
+# This module allows one to fix some of input parameters to specific constant values
 # The fixed input(s) would no longer be shown to the user in the form.
-# The optional inputs assigned null value will be removed 
+# The optional inputs assigned null value will be removed
 # (do not use with mandatory input parameters)
 #
 # In the descriptor, the spec would look like:
@@ -52,9 +52,9 @@ module BoutiquesInputValueFixer
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
 
-  # the hash of input parameter values to be fixed or, if value is null, to be omited  
+  # the hash of input parameter values to be fixed or, if value is null, to be omitted
   def fixed_values
-    self.boutiques_descriptor.custom_module_info('BoutiquesInputValueFixer')
+    self.boutiques_descriptor.custom_module_info('BoutiquesInputValueFixer') || {}
   end
 
   # deletes fixed inputs listed in the custom 'integrator_modules'
@@ -63,6 +63,7 @@ module BoutiquesInputValueFixer
     # other will be given fixed values during execution; neither should appear in web form UI
 
     fixed_input_ids = fixed_values.keys
+    return descriptor if fixed_input_ids.blank? # no config means nothing to do
     descriptor_dup  = descriptor.dup
     fully_removed   = fixed_input_ids.select do |i_id|  # this variables are flagged to be removed rather than assigned value
                                                    # in the spec, so they will be treated slightly different

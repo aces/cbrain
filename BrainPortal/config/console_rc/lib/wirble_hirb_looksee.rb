@@ -121,8 +121,8 @@ end
 ========================================================
 Feature: Hirb pretty model tables, and table helpers
 ========================================================
-  Models have pretty unicode tables: User.limit(4)
-  Full attributes in tables with: 'tv obj'
+  Many models have pretty unicode tables: 'User.limit(4)'
+  See all attributes as a table with: 'tv obj'
   Console commands: 'table', 'htable' and 'view'
   Toggle with: Hirb.enable ; Hirb.disable
   (See the doc for the gem Hirb for more info)

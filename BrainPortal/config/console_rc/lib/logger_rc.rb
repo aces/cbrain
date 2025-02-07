@@ -61,9 +61,12 @@ end
 ========================================================
 Feature: Toggling ActiveRecord logging messages
 ========================================================
-  (These things: "User Load (0.8ms) SELECT `users`...")
-  Turn on or off permanently with: do_log ; no_log
-  Note: these two methods can take a block and apply the
-  log setting restriction while running it.
+  no_log  # turn off SQL logging
+  do_log  # turn on SQL logging
+
+  These are the SQL message shown whenever the rails command
+  triggers a database access, e.g. "User Load (0.8ms) SELECT..."
+  Note: these two methods can take also take a Ruby block:
+  no_log { User.count }  # no logging just during the block
 FEATURES
 

@@ -56,5 +56,13 @@ class BackgroundActivity::RegisterAndCopyFile < BackgroundActivity::RegisterFile
     return [ false, "Copy failed" ] # when provider_copy returns false
   end
 
+  def successful_items
+    selected_items_from_messages_matching(/^\d+$/) # must be a numberic ID
+  end
+
+  def failed_items
+    selected_items_from_messages_matching(/^\D/) # Anything starting with not a digit
+  end
+
 end
 

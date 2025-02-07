@@ -54,7 +54,7 @@ module BoutiquesExt3Capturer
 
     # Get values in descriptor, as a hash
     descriptor = self.descriptor_for_cluster_commands
-    ext3_specs = descriptor.custom_module_info('BoutiquesExt3Capturer')
+    ext3_specs = descriptor.custom_module_info('BoutiquesExt3Capturer') || {}
 
     # Append our own entries; note that duplications of basenames
     # will mean only the first entry is used!

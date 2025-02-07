@@ -47,7 +47,7 @@ module BoutiquesFileNameMatcher
 
   def after_form #:nodoc:
     descriptor = self.descriptor_for_after_form
-    verifs     = descriptor.custom_module_info('BoutiquesFileNameMatcher')
+    verifs     = descriptor.custom_module_info('BoutiquesFileNameMatcher') || []
 
     verifs.each do |inputid,regexstring| # 'myinput' => "^sub-[a-zA-Z0-9]*$"
       input = descriptor.input_by_id(inputid)

@@ -52,6 +52,8 @@ module BoutiquesOutputCacheCleaner
   # user to disable this module's core function.
   def descriptor_with_special_input(descriptor)
     descriptor = descriptor.dup
+    output_ids = descriptor.custom_module_info('BoutiquesOutputCacheCleaner') || []
+    return descriptor if output_ids.blank? # no config means no changes.
 
     # Add new input
     new_input = BoutiquesSupport::Input.new(
@@ -108,7 +110,7 @@ module BoutiquesOutputCacheCleaner
     message = super
     return message if params_errors.present? || errors.present?
     enabled = self.invoke_params.delete :cbrain_enable_output_cache_cleaner
-    self.params[:cbrain_enable_output_cache_cleaner] = (enabled.to_s.match? /^(1|true)$/)
+    self.params[:cbrain_enable_output_cache_cleaner] = (enabled.to_s.match?(/^(1|true)$/))
     message
   end
 
@@ -126,7 +128,7 @@ module BoutiquesOutputCacheCleaner
 
     # Get the list of outputs to clean from the descriptor
     descriptor = self.descriptor_for_save_results
-    output_ids = descriptor.custom_module_info('BoutiquesOutputCacheCleaner')
+    output_ids = descriptor.custom_module_info('BoutiquesOutputCacheCleaner') || []
 
     # Get the userfile IDs of all outputs.
     # The Boutiques integrator create arrays of userfile

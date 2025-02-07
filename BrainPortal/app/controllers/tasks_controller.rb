@@ -520,7 +520,7 @@ class TasksController < ApplicationController
     task_ids   = Array(params[:tasklist]  || [])
     batch_ids  = Array(params[:batch_ids] || [])
     batch_ids << nil if batch_ids.delete('nil')
-    task_ids  += filtered_scope(CbrainTask.where(:batch_id => batch_ids)).select('cbrain_tasks.id').raw_first_column
+    task_ids  += filtered_scope(CbrainTask.where(:batch_id => batch_ids)).pluck('cbrain_tasks.id')
     task_ids   = task_ids.map(&:to_i).uniq
 
     commit_name = extract_params_key([ :update_user_id, :update_group_id, :update_results_data_provider_id, :update_tool_config_id ])
@@ -791,7 +791,6 @@ class TasksController < ApplicationController
       grouped_tasks.each do |pair_bid_tasklist|
         bid       = pair_bid_tasklist[0]
         btasklist = pair_bid_tasklist[1]
-        bourreau  = Bourreau.find(bid)
         begin
 
           # MASS DELETE
@@ -819,33 +818,22 @@ class TasksController < ApplicationController
           # MASS NEW STATUS
           new_status  = PortalTask::OperationToNewStatus[operation] # from HTML form keyword to Task object keyword
           oktasks = btasklist.select do |t|
-            cur_status  = t.status
-            allowed_new = PortalTask::AllowedOperations[cur_status] || []
-            new_status && allowed_new.include?(new_status)
+            PortalTask::AllowedOperationsHash[[t.status,new_status]]
           end
           if oktasks.size > 0
             bac_klass = operation_to_bac[operation]
-            if bac_klass
-              bac = bac_klass.local_new(current_user.id, oktasks.map(&:id), bid, {})
-              bac.options[:archive_data_provider_id] = archive_dp_id   if operation == 'archive_file'
-              bac.options[:dup_bourreau_id]          = dup_bourreau_id if operation == 'duplicate'
-              bac.options[:atwhat]                   = 'Setup'         if operation == 'restart_setup'
-              bac.options[:atwhat]                   = 'Cluster'       if operation == 'restart_cluster'
-              bac.options[:atwhat]                   = 'PostProcess'   if operation == 'restart_postprocess'
-              bac.save
-              bacs << bac if bac.id
-            else # old mechanism for all other operations, performed by a message to the Bourreau
-              # Note: after refactoring in June 2024, at this point this should never be reached?!?
-              Rails.logger.warning "Old code invoked: AlterTasks for #{new_status}"
-              bourreau.send_command_alter_tasks(oktasks, new_status,
-                                               { :requester_user_id        => current_user.id,
-                                                 :new_bourreau_id          => dup_bourreau_id,
-                                                 :archive_data_provider_id => archive_dp_id
-                                               }
-                                              ) # TODO parse returned command object?
-            end
-            success_list += oktasks.map(&:id)
+            cb_error "Cannot find BackgroundActivity class required for '#{operation}'" if ! bac_klass
+
+            bac = bac_klass.local_new(current_user.id, oktasks.map(&:id), bid, {})
+            bac.options[:archive_data_provider_id] = archive_dp_id   if operation == 'archive_file'
+            bac.options[:dup_bourreau_id]          = dup_bourreau_id if operation == 'duplicate'
+            bac.options[:atwhat]                   = 'Setup'         if operation == 'restart_setup'
+            bac.options[:atwhat]                   = 'Cluster'       if operation == 'restart_cluster'
+            bac.options[:atwhat]                   = 'PostProcess'   if operation == 'restart_postprocess'
+            bac.save
+            bacs << bac if bac.id
           end
+          success_list += oktasks.map(&:id)
           skippedtasks = btasklist - oktasks
           skipped_list["Tasks have incompatible states"] = skippedtasks.map(&:id) if skippedtasks.present?
         rescue => e
@@ -1531,12 +1519,14 @@ class TasksController < ApplicationController
   end
 
   # This method handle the logic of loading and saving presets.
+  # It's terrible old code.
   def handle_preset_actions #:nodoc:
     commit_name  = extract_params_key([ :load_preset, :delete_preset, :save_preset ], :whatewer)
 
     if commit_name == :load_preset
       preset_id = params[:load_preset_id] # used for delete too
       if (! preset_id.blank?) && preset = CbrainTask.where(:id => preset_id, :status => [ 'Preset', 'SitePreset' ]).first
+        flash[:notice] += "Loaded preset '#{preset.short_description}'.\n"
         old_params = @task.params.clone
         @task.params         = preset.params
         @task.description    = @task.description || ""
@@ -1546,10 +1536,13 @@ class TasksController < ApplicationController
           @task.group = preset.group
         end
         if preset.tool_config && preset.tool_config.can_be_accessed_by?(current_user) && (@task.new_record? || preset.tool_config.bourreau_id == @task.bourreau_id)
-          @task.tool_config = preset.tool_config
+          if preset.tool_config.bourreau.online?
+            @task.tool_config = preset.tool_config
+          else
+            flash[:error] += "Warning: the preset's version of the tool is on an Execution server that is currently offline. Double-check the version you really need."
+          end
         end
         @task.bourreau = @task.tool_config.bourreau if @task.tool_config
-        flash[:notice] += "Loaded preset '#{preset.short_description}'.\n"
       else
         flash[:notice] += "No preset selected, so parameters are unchanged.\n"
       end

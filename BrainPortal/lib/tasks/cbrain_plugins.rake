@@ -411,8 +411,7 @@ namespace :cbrain do
       puts "Checking for orphan userfiles..."
       orphan_userfiles = Userfile
         .where("type not in (?)", userfile_classes)
-        .raw_rows([:id, :type])
-        .to_a
+        .pluck(:id, :type)
       unless orphan_userfiles.empty?
         puts "#{orphan_userfiles.size} orphan userfile(s) found:"
         orphan_userfiles.each do |orphan|
@@ -423,8 +422,7 @@ namespace :cbrain do
       puts "Checking for orphan tasks..."
       orphan_tasks = CbrainTask
         .where("type not in (?)", task_classes)
-        .raw_rows([:id, :type])
-        .to_a
+        .pluck(:id, :type)
       unless orphan_tasks.empty?
         puts "#{orphan_tasks.size} orphan task(s) found:"
         orphan_tasks.each do |orphan|
