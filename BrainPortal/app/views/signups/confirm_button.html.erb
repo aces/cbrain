@@ -26,10 +26,14 @@
 
 <h1>Please confirm your new account request.</h1>
 
-Thank you for following that link in your mailbox. It is needed to make sure you are indeed the owner of that email account.
+Thank you for following the link from CBRAIN in your mailbox.
 <p>
-There is only one final step required: Click the button below! This will tell the CBRAIN administrators that your request is now official.
+To ensure you are indeed the owner of the email address that has
+requested the creation of an account on CBRAIN, please complete the
+final required step by clicking the button below. This will tell
+the CBRAIN administrators that your request is legitimate and
+official.
 <p>
 
-<%= link_to('Confirm request', confirm_signup_path(@signup, :token => @token), :class => "button", :method => :post ) %>
+<%= link_to( 'Confirm request', confirm_signup_path(@signup, :token => @token), :class => "button", :method => :post ) %>
 
