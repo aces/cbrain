@@ -58,6 +58,11 @@ class BackgroundActivity::CheckMissingWorkdir < BackgroundActivity
     return [ true, "Adjusted" ]  # keyword used in after_last_item() below
   end
 
+  # Never consider anything as 'failed', to disable the retry mechanism
+  def failed_items
+    []
+  end
+
   def prepare_dynamic_items
     local_tasks_with_workdirs = CbrainTask
       .real_tasks

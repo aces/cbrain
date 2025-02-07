@@ -33,11 +33,5 @@ class BackgroundActivity::CopyFileAndUnregister < BackgroundActivity::CopyFile
     [ true, nil ]
   end
 
-  def indices_of_failures
-    self.messages.each_with_index.map do |message,idx|
-      idx if message.to_s.starts_with?('Failed')
-    end.compact
-  end
-
 end
 

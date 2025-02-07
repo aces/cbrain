@@ -65,6 +65,18 @@ class BackgroundActivity::CopyFile < BackgroundActivity
     return [ false, "Failed to copy '#{userfile.name}'" ]
   end
 
+  def successful_items
+    selected_items_from_messages_matching(/^(Skipped|\d+)$/) # Skipped or an ID
+  end
+
+  def failed_items
+    myitems = self.items
+    messages.each_with_index.map do |mess,idx|
+      next nil if mess.to_s.match(/^(Skipped|\d+)$/)
+      myitems[idx]
+    end.compact
+  end
+
   def prepare_dynamic_items
     populate_items_from_userfile_custom_filter
   end
