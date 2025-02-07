@@ -139,7 +139,7 @@ class SignupsController < ApplicationController
     # Params properly confirms the GET request? Show a simple page with button
     if is_valid && req_method == 'GET'
       @token = token # for the button
-      render 'confirm_button.html'
+      render 'confirm_button.html.erb'
       return
     end
 
