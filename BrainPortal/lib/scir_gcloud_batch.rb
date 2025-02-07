@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2024
+# Copyright (C) 2008-2025
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -20,7 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# This particular subclass of class Scir implements the SLURM interface.
+# This particular subclass of class Scir implements a simulated
+# cluster system on the Google Cloud Platform's Batch.
 class ScirGcloudBatch < Scir
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -108,21 +109,14 @@ class ScirGcloudBatch < Scir
 
   class JobTemplate < Scir::JobTemplate #:nodoc:
 
-    def bucket_name
-      "bianca-9945788255514"
-    end
-
-    def bucket_mount_point
-      "/mnt/cbrain"
-    end
-
     def gcloud_location
       #TODO better
       "--location northamerica-northeast1"
     end
 
     def compute_node_image_name
-      "projects/tidal-reactor-438920-g4/global/images/cbrain-compute-node-2-image"
+      #TODO better
+      "projects/cbrain-449118/zones/northamerica-northeast1-b/disks/cbrain-compute"
     end
 
     def qsub_command #:nodoc:
@@ -158,8 +152,6 @@ class ScirGcloudBatch < Scir
       json_config_text = json_cloud_batch_jobs_config(
         script_command,
         memory,
-        bucket_name(),
-        bucket_mount_point(),
         walltime,
         compute_node_image_name,
       )
@@ -175,15 +167,13 @@ class ScirGcloudBatch < Scir
       return command
     end
 
-    def json_cloud_batch_jobs_config(command, maxmem_mb, bucket_name, mount_point, walltime_s, compute_node_image_name)
+    def json_cloud_batch_jobs_config(command, maxmem_mb, walltime_s, compute_node_image_name)
       struct = struct_gcloud_batch_jobs_config_template.dup
 
       task_spec = struct["taskGroups"][0]["taskSpec"]
       task_spec["runnables"][0]["script"]["text"]  = command
       task_spec["computeResource"]["cpuMilli"]     = 2000 # 1000 per core
       task_spec["computeResource"]["memoryMib"]    = maxmem_mb
-      task_spec["volumes"][0]["gcs"]["remotePath"] = bucket_name
-      task_spec["volumes"][0]["mountPath"]         = mount_point
       task_spec["maxRunDuration"]                  = "#{walltime_s}s"
 
       policy = struct["allocationPolicy"]["instances"][0]["policy"]
@@ -209,14 +199,6 @@ class ScirGcloudBatch < Scir
                 "cpuMilli"  => 2000,
                 "memoryMib" => 2048,
               },
-              "volumes" => [
-                {
-                  "gcs" => {
-                    "remotePath" => "BUCKET_NAME_HERE",
-                  },
-                  "mountPath" => "BUCKET_MOUNT_PATH_HERE",
-                }
-              ],
               "maxRetryCount"  => 1,
               "maxRunDuration" => "WALLTIME_HERE",
             },
