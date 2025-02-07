@@ -431,6 +431,10 @@ end
 ========================================================
 Feature: Pretty View for some objects
 ========================================================
-  Activate with: pv obj [, obj , ...]
+  pv obj [, obj , ...]
+
+  If an object responds to 'pretview', show that view.
+  Currently implemented: User, CbrainTask, Group, and
+  about a dozen other common CBRAIN models.
 FEATURES
 

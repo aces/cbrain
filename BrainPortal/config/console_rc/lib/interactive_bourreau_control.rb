@@ -493,6 +493,11 @@ end
 ========================================================
 Feature: Interactive Bourreau Control
 ========================================================
-  Activate with: ibc
+  ibc          # interactive CLI
+  ibc "o p q"  # non-interactive
+
+  This is an interactive tool with a built-in help,
+  allowing the admin to start and stop bourreaux,
+  and query their status etc. Useful during maintenance.
 FEATURES
 

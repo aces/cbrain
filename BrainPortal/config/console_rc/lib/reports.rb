@@ -109,9 +109,8 @@ end
 ========================================================
 Feature: Reports
 ========================================================
-  In the console simply type:
-    trans    : report of active transfers between resources and DP
-    acttasks : active tasks
-    last [n] : last connected users (n = limit, default 20)
+  trans    : report of active transfers between resources and DP
+  acttasks : report active tasks
+  last [n] : last connected users (n = limit, default 20)
 FEATURES
 
