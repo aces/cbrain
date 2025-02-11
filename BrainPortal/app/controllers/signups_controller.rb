@@ -63,7 +63,9 @@ class SignupsController < ApplicationController
       return
     end
 
+    # Validation failed, return to form
     if ! @signup.save
+      @auth_spec = form_generated_at_int # keep old form_generated time
       render :action => :new
       return
     end
