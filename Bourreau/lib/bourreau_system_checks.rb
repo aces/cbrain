@@ -63,7 +63,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     cluster_type  = myself.cms_class.presence
     raise "CBRAIN configuration error: cluster type is unset." if cluster_type.blank?
     cluster_class = cluster_type.constantize rescue nil
-    raise "CBRAIN configuration error: cluster type is set to an invalid Scir class name '#{cluster_type}'." if (! cluster_class) || (! cluster_class < Scir)
+    raise "CBRAIN configuration error: cluster type is set to an invalid Scir class name '#{cluster_type}'." if (! cluster_class) || (! (cluster_class < Scir))
     session = myself.scir_session
     rev = session.revision_info.format("%f %s %a %d") # loads it?
     puts "C> \t- Layer for '#{cluster_class}' #{rev} loaded."
