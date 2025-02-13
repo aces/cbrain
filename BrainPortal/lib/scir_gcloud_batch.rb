@@ -116,7 +116,7 @@ class ScirGcloudBatch < Scir
 
     def compute_node_image_name
       #TODO better
-      "projects/cbrain-449118/zones/northamerica-northeast1-b/disks/cbrain-compute"
+      "projects/cbrain-449118/global/images/cbrain-compute"
     end
 
     def qsub_command #:nodoc:
@@ -210,7 +210,6 @@ class ScirGcloudBatch < Scir
           "instances" => [
             {
               "policy" => {
-                "machineType"       => "n2d-standard-4",
                 "bootDisk" => {
                   "image" => "COMPUTE_NODE_IMAGE_NAME_HERE",
                 }
