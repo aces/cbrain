@@ -184,15 +184,12 @@ class ApplicationController < ActionController::Base
   #
   # The message looks like
   #
-  #  "User: tsmith on instance C4044 from example.com (256.0.0.9) using FireChrome 99.9"
+  #  "User: tsmith from example.com (256.0.0.9) using FireChrome 99.9"
   def log_user_info #:nodoc:
     reqenv = request.env || {}
 
     # Short username for the message
     login  = current_user ? current_user.login : "(none)"
-
-    # Find out the instance name
-    instname = CBRAIN::Instance_Name rescue "(?)"
 
     # Get host and IP from session (when logged in)
     from_ip   = cbrain_session[:guessed_remote_ip].presence
@@ -204,7 +201,7 @@ class ApplicationController < ActionController::Base
 
     # Create final message
     from  = (from_host.present? && from_host != from_ip) ? "#{from_host} (#{from_ip})" : from_ip
-    mess  = "User: #{login} on instance #{instname} from #{from} using #{brow} #{b_ver}"
+    mess  = "User: #{login} from #{from} using #{brow} #{b_ver}"
     Rails.logger.info mess
     true
   rescue => ex
