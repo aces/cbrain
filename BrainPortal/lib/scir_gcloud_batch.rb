@@ -26,13 +26,23 @@ class ScirGcloudBatch < Scir
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # Utility class method; given a from_string like
+  #  "GCLOUD_PROJECT=abcde GCLOUD_IMAGE_BASENAME=baseim GCLOUD_LOCATION=westofhere"
+  # and a varname like "GCLOUD_PROJECT", this method returns the value, "abcde".
+  def self.extract_config_value(varname, from_string)
+    return nil if from_string.blank? || varname.blank?
+    search_val = Regexp.new('\b' + Regexp.escape(varname) + '\s*=\s*(\w[\.\w-]+)', Regexp::IGNORECASE)
+    return Regexp.last_match[1] if from_string.match(search_val)
+    nil
+  end
+
   class Session < Scir::Session #:nodoc:
 
     def update_job_info_cache #:nodoc:
       out_text, err_text = bash_this_and_capture_out_err(
         # the '%A' format returns the job ID
         # the '%t' format returns the status with the one or two letter codes.
-        "gcloud batch jobs list --location #{gcloud_location()}"
+        "gcloud batch jobs list --location #{gcloud_location}"
       )
       raise "Cannot get output of 'squeue'" if err_text.present?
       out_lines = out_text.split("\n")
@@ -83,9 +93,10 @@ class ScirGcloudBatch < Scir
       return
     end
 
+    # Fetches the location from the Bourreau level config; cannot fetch from tool config level
+    # within a ScirSession
     def gcloud_location
-      #TODO better
-      "--location northamerica-northeast1"
+      ScirGcloudBatch.extract_config_value('GCLOUD_LOCATION', Scir.cbrain_config[:extra_qsub_args])
     end
 
     def queue_tasks_tot_max #:nodoc:
@@ -140,14 +151,9 @@ class ScirGcloudBatch < Scir
       value
     end
 
-    # Given a from_string like
-    #  "GCLOUD_PROJECT=abcde GCLOUD_IMAGE_BASENAME=baseim GCLOUD_LOCATION=westofhere"
-    # and a varname like "GCLOUD_PROJECT", this method returns the value, "abcde".
+    # just calls the utility in the main class
     def extract_config_value(varname, from_string)
-      return nil if from_string.blank?
-      search_val = Regexp.new('\b' + Regexp.escape(varname) + '\s*=\s*(\w[\.\w-]+)', Regexp::IGNORECASE)
-      return Regexp.last_match[1] if from_string.match(search_val)
-      nil
+      ScirGcloudBatch.extract_config_value(varname, from_string)
     end
 
     def qsub_command #:nodoc:
