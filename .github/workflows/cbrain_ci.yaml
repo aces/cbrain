@@ -17,7 +17,7 @@ on:   [ push, pull_request ]
 jobs:
   run-tests:
     name: Continuous Integration Tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       RAILS_ENV: test
 
@@ -70,7 +70,7 @@ jobs:
         uses: actions/cache@v3 # speeds up 'Prepare Ruby Gems' below
         with:
           path: gem-cache
-          key: ${{ runner.os }}-gems-${{ hashFiles('*/Gemfile') }}
+          key: ubuntu-24-gems-${{ hashFiles('*/Gemfile') }}
 
       ###########################################################
       - name: Prepare Ruby Gems

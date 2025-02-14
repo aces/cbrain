@@ -43,7 +43,6 @@
     <% t.cell("Parameters", :td_options => { :class => "wrap" }) { @exception_log.request[:parameters] } %>
     <% t.cell("Format")               { @exception_log.request[:format] } %>
     <% t.cell("User")                 { @exception_log.user.try(:login) || "(Not signed in)" } %>
-    <% t.cell("Received by instance") { @exception_log.instance_name } %>
     <% t.cell("Start time revision")  { @exception_log.revision_no} %>
   <% end %>
 
