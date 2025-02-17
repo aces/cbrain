@@ -26,7 +26,7 @@
 
 <%= form_for @signup, :url => {:action => (@signup.new_record? ? "create" : "update"), :id => @signup.id} do |f| %>
   <%= error_messages_for @signup %>
-  <%= hidden_field_tag(:auth_spec, (@auth_spec.to_s || Time.now.to_i.to_s)) %>
+  <%= hidden_field_tag(:auth_spec, (@auth_spec.to_s.presence || Time.now.to_i.to_s)) %>
 
   <div class="generalbox">
     <p class="warning"> Fields with an asterisk (*) are mandatory.</p>
