@@ -93,6 +93,12 @@ class ScirGcloudBatch < Scir
       return
     end
 
+    # Fetches the project from the Bourreau level config; cannot fetch from tool config level
+    # within a ScirSession; not used yet
+    def gcloud_project
+      ScirGcloudBatch.extract_config_value('GCLOUD_PROJECT', Scir.cbrain_config[:extra_qsub_args])
+    end
+
     # Fetches the location from the Bourreau level config; cannot fetch from tool config level
     # within a ScirSession
     def gcloud_location
@@ -120,16 +126,16 @@ class ScirGcloudBatch < Scir
 
   class JobTemplate < Scir::JobTemplate #:nodoc:
 
+    def gcloud_project
+      get_config_value_from_extra_qsubs('GCLOUD_PROJECT')
+    end
+
     def gcloud_location
       get_config_value_from_extra_qsubs('GCLOUD_LOCATION')
     end
 
     def gcloud_compute_image_basename
       get_config_value_from_extra_qsubs('GCLOUD_IMAGE_BASENAME')
-    end
-
-    def gcloud_project
-      get_config_value_from_extra_qsubs('GCLOUD_PROJECT')
     end
 
     # This method should not be overriden
@@ -168,7 +174,11 @@ class ScirGcloudBatch < Scir
       gname = gname[0..50] if gname.size > 50
       gname = gname + DateTime.now.strftime("-%H%M%S") # this should be good enough
 
-      command  = "gcloud batch jobs submit #{gname} --location #{gcloud_location} "
+      command  = "gcloud batch jobs submit #{gname} "
+      command += "--location   #{gcloud_location} "
+      command += "--network    projects/#{gcloud_project}/global/networks/default "
+      command += "--subnetwork projects/#{gcloud_project}/regions/#{gcloud_location}/subnetworks/default "
+      command += "--no-external-ip-address "
 
       script_name = self.arg[0]
       script_command  = ""
