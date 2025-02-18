@@ -86,6 +86,7 @@ class User < ApplicationRecord
   before_save               :apply_access_profiles
   after_update              :system_group_site_update
   after_destroy             :destroy_system_group
+  after_destroy             :destroy_empty_work_groups
   after_destroy             :destroy_user_sessions
   after_destroy             :destroy_user_ssh_key
 
@@ -593,6 +594,12 @@ class User < ApplicationRecord
   def destroy_system_group #:nodoc:
     system_group = UserGroup.where( :name => self.login ).first
     system_group.destroy if system_group
+  end
+
+  def destroy_empty_work_groups
+    return if self.id == User.admin&.id
+    # spare groups with other users files
+    WorkGroup.where(creator_id: self.id).left_outer_joins(:userfiles).where(userfiles: { id: nil }).destroy_all
   end
 
   def add_system_groups #:nodoc:
