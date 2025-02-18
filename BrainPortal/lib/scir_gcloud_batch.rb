@@ -176,9 +176,13 @@ class ScirGcloudBatch < Scir
 
       command  = "gcloud batch jobs submit #{gname} "
       command += "--location   #{gcloud_location} "
-      command += "--network    projects/#{gcloud_project}/global/networks/default "
-      command += "--subnetwork projects/#{gcloud_project}/regions/#{gcloud_location}/subnetworks/default "
-      command += "--no-external-ip-address "
+
+      # For some ugly reason, we can't disable the external IP address interface that way,
+      # the compute engine layer won't be able to connect to the VM to monitor it.
+      # I suspect special configuration would be needed to make this work.
+      #command += "--network    projects/#{gcloud_project}/global/networks/default "
+      #command += "--subnetwork projects/#{gcloud_project}/regions/#{gcloud_location}/subnetworks/default "
+      #command += "--no-external-ip-address "
 
       script_name = self.arg[0]
       script_command  = ""
