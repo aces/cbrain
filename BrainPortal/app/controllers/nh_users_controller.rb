@@ -43,7 +43,7 @@ class NhUsersController < NeurohubApplicationController
     # Array of enabled OIDC providers configurations
     @oidc_configs    = OidcConfig.all
     # Hash of OIDC uris with the OIDC name as key
-    @oidc_uris       = generate_oidc_login_uri(@oidc_configs, nh_globus_url)
+    @oidc_uris       = generate_oidc_login_uri(@oidc_configs, "nh_route_please")
     @orcid_canonical = orcid_canonize(@user.meta[:orcid])
     render :show
   end
@@ -61,7 +61,7 @@ class NhUsersController < NeurohubApplicationController
     # Array of enabled OIDC providers configurations
     @oidc_configs    = OidcConfig.all
     # Hash of OIDC uris with the OIDC name as key
-    @oidc_uris       = generate_oidc_login_uri(@oidc_configs, nh_globus_url)
+    @oidc_uris       = generate_oidc_login_uri(@oidc_configs, "nh_route_please")
   end
 
   def change_password #:nodoc:
