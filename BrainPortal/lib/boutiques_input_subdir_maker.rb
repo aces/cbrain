@@ -128,9 +128,9 @@ module BoutiquesInputSubdirMaker
   def setup #:nodoc:
     descriptor = self.descriptor_for_setup
     parent_dirname_by_inputid = descriptor.custom_module_info('BoutiquesInputSubdirMaker') || {}
-    return super if parent_dirname_by_inputid.blank? # no config means nothing to do
+    original_userfile_ids = {} # Needed in 'ensure' clause below
 
-    original_userfile_ids = {}
+    return super if parent_dirname_by_inputid.blank? # no config means nothing to do
 
     # Log revision information
     basename = Revision_info.basename
