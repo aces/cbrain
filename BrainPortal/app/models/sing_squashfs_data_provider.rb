@@ -153,9 +153,12 @@ class SingSquashfsDataProvider < SshDataProvider
   # since this DP type is for static, read-only data.
   def impl_provider_list_all(user=nil,browse_path=nil) #:nodoc:
     cache_key  = "#{self.class}-#{self.id}-file_infos"
+    cache_key += "-#{browse_path.to_s}" if browse_path.present?
 
     file_infos = Rails.cache.fetch(cache_key, :expires_in => BROWSE_CACHE_EXPIRATION) do
-      text = remote_in_sing_stat_all(self.containerized_path,".",true)
+      sourcedir  = Pathname.new(self.containerized_path)
+      sourcedir += browse_path if browse_path.present?
+      text = remote_in_sing_stat_all(sourcedir.to_s, "." ,true)
       stat_reports_to_fileinfos(text)
     end
 
@@ -172,13 +175,13 @@ class SingSquashfsDataProvider < SshDataProvider
     # The behavior of the *collection_index methods is weird.
     basedir = Pathname.new(self.containerized_path)
     if directory == :all
-      subdir     = userfile.name
+      subdir     = userfile.browse_name
       one_level  = false
     elsif directory == :top
-      subdir     = userfile.name
+      subdir     = userfile.browse_name
       one_level  = true
     else
-      subdir     = Pathname.new(userfile.name) + directory
+      subdir     = Pathname.new(userfile.browse_name) + directory
       one_level  = true
     end
 
