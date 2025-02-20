@@ -67,7 +67,7 @@ class SingSquashfsDataProvider < SshDataProvider
 
   # This returns the category of the data provider
   def self.pretty_category_name #:nodoc:
-    "Singularity SquashFS"
+    "Single Level"
   end
 
   def impl_is_alive? #:nodoc:
