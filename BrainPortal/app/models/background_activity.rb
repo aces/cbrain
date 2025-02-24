@@ -724,6 +724,20 @@ class BackgroundActivity < ApplicationRecord
     return nil
   end
 
+  # This method takes a failed BAC and schedules an immediate retry
+  # even if it wasn't originally configured as retryable.
+  # The retry_count will be set to 1, setup_retry! will be invoked
+  # and the scheduled start will be set to +when+ .
+  # Returns the backup BAC object just likes setup_retry!
+  def force_single_retry(when_at=Time.now)
+    self.update_column(:retry_count, 1)
+    backup_bac = self.setup_retry!
+    if backup_bac
+      self.update_column(:start_at, when_at)
+    end
+    backup_bac
+  end
+
   # On a retry backup object, returns the ID of the main target
   # of the retry mechanism.
   def retry_main_bac_id

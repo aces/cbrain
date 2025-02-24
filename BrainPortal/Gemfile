@@ -84,7 +84,7 @@ group :development do
   gem "hirb"
   gem "pry"
   gem "pry-byebug"
-  gem "listen", '~> 3.0.5'
+  gem "listen"
 end
 
 #----------------------
