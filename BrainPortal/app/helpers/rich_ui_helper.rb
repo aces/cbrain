@@ -52,6 +52,20 @@ module RichUiHelper
     "<span style=\"white-space: pre-wrap;\">".html_safe + description + "</span>".html_safe
   end
 
+  def full_description(description, autolink=false)
+
+    if autolink
+      description = ERB::Util.html_escape(description)
+      description = description.gsub(URI::DEFAULT_PARSER.make_regexp(['https'])) do |url|
+        "<a href='#{url}' target='_blank' rel='noopener'>#{url}</a>"
+      end.html_safe
+    end
+
+    return "<span style=\"white-space: pre-wrap;\">".html_safe + description + "</span>".html_safe
+
+  end
+
+
   # Create an element that opens a dropdown when it's
   # hovered over.
   def hover_dropdown(header, options = {}, &block)

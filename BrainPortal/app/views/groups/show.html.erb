@@ -63,9 +63,13 @@
 
     <% t.cell("Type") { @group.pretty_category_name(current_user) } %>
 
-    <% t.edit_cell(:description, :content =>  full_description(@group.description)) do |f| %>
+    <% t.edit_cell(:description, :content =>  full_description(@group.description, @group.meta['autolink_description'] == 'yes')) do |f| %>
         <%= f.text_area :description, :rows => 4, :cols => 40 %><br>
         <div class="field_explanation">The first line should be a short summary, and the rest are for details.</div><br>
+    <% end %>
+
+    <% if current_user.has_role?(:admin_user) && @group.is_a?(WorkGroup) %>
+      <% t.boolean_edit_cell("meta[autolink_description]", @group.meta["autolink_description"].to_s, "yes", "", :header => "Urls are clickable ") %>
     <% end %>
 
     <% t.edit_cell("Not assignable", :content => check_box_tag(nil ,nil, @group.not_assignable?, :disabled => true)) do |f| %>
