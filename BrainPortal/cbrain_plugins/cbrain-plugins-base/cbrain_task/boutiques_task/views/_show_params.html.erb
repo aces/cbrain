@@ -24,12 +24,24 @@
 
 <%-
   # Parameter groups
-  @descriptor = @task.descriptor_for_show_params
-  inputs      = @descriptor.inputs
-  file_inputs = @descriptor.file_inputs
-  params      = inputs.select { |i| i.type != 'File' }
-  outputs     = @descriptor.output_files
+  @descriptor     = @task.descriptor_for_show_params
+  inputs          = @descriptor.inputs
+  file_inputs     = @descriptor.file_inputs
+  file_inputs_ids = file_inputs.map(&:id)
+  params          = inputs.select { |i| i.type != 'File' }
+  param_ids       = params.map { |p| p.id }
+  outputs         = @descriptor.output_files
+  groups          = @descriptor.groups
+
+  # Find parameters that are part of groups
+  param_with_groups_ids    = groups.map { |m| m.members || []}.flatten - file_inputs.map(&:id)
+  params_with_groups       = params.select { |p| param_with_groups_ids.include?(p.id) }
+
+  # Keep in params, those that are not part of groups
+  param_without_groups_ids = param_ids - param_with_groups_ids
+  params                   = params.select { |p| param_without_groups_ids.include?(p.id) }
 -%>
+
 <%- unless [params, file_inputs, outputs].all?(&:empty?) -%>
 <%
   # Format a parameter (input or output) +value+ for display. Mostly for
@@ -59,18 +71,27 @@
           Parameters
         </th>
       </tr>
-    <%- params.each do |param| -%>
-      <tr>
-        <td class="tsk-sw-name"><%= param.name %></td>
-        <td class="tsk-sw-val">
-          <% if param.type == 'Flag' %>
-            <%= red_if(@task.invoke_params[param.id].to_s =~ /^1$|^true$/, "No", "Yes", { :color1 => 'red', :color2 => 'green' }) %>
-          <% else %>
-            <%= format_param.(@task.invoke_params[param.id]) %>
-          <% end %>
-        </td>
-      </tr>
-    <%- end -%>
+      <%- params.each do |param| -%>
+        <%= render :partial => task_partial(:show_param), :locals => { :param => param, :format_param => format_param } %>
+      <%- end -%>
+    </tbody>
+  <%- end -%>
+  <%- unless params_with_groups.empty? -%>
+    <tbody class="tsk-sw-param">
+      <%- groups.each do |group| -%>
+        <%- members = group.members || [] -%>
+        <%- params_members = members - file_inputs_ids -%>
+        <%- next if params_members.empty? -%>
+        <tr>
+          <th colspan="2" class="tsk-sw-sub-hdr">
+            <%= group.name %>
+          </th>
+        </tr>
+        <%- params_members.each do |param_id| -%>
+          <%- param = params_with_groups.find { |p| p.id == param_id } -%>
+          <%= render :partial => task_partial(:show_param), :locals => { :param => param, :format_param => format_param } %>
+        <%- end -%>
+      <%- end -%>
     </tbody>
   <%- end -%>
   <%- unless file_inputs.empty? -%>
