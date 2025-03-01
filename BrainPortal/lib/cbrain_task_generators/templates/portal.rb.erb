@@ -70,7 +70,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 %   optional.delete(single_file)
 % end
 %
-  # Task properties are special boolean properties of your task, returned as a
+  # Task properties are special properties of your task, returned as a
   # hash table. Used internally by CBRAIN to enable/disable special task
   # handling. All properties are unset (false) by default.
   #
@@ -105,6 +105,16 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
           !!descriptor['custom']['cbrain:readonly-input-files']
         elsif descriptor['custom'] && descriptor['custom'].has_key?('cbrain:alters-input-files')
           !descriptor['custom']['cbrain:alters-input-files']
+        else
+          false
+        end
+      %>,
+
+      # The input_notes array is a list of strings that will be displayed
+      # at the top of the 'Task Parameters' section of the task's form.
+      :input_notes => <%=
+        if descriptor['custom'] && descriptor['custom'].has_key?('cbrain:input_notes') && descriptor['custom']['cbrain:input_notes'].is_a?(Array)
+          descriptor['custom']['cbrain:input_notes']
         else
           false
         end
