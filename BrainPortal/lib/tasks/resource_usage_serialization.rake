@@ -66,7 +66,37 @@ namespace :cbrain do
         WalltimeResourceUsageForCbrainTask  => :cbrain_task,
         SpaceResourceUsageForUserfile       => :userfile,
       }
+
+      puts <<-HEADER
+
+=================================================
+ResourceUsage Database Cleanup Rake Task Starting
+=================================================
+
+Timestamp for dump files:
+ * #{timestamp}
+
+Selected RU objects:
+#{
+  allrecords != 'ALL' ?
+  " * Dump only RU records linked to deleted objects (files, tasks)" :
+  " * All RU records will be dumped"
+}
+
+Disposition of dumped records:
+#{
+  destroy == 'DESTROY_ALL' ?
+  " * Dumped records will be destroyed" :
+  " * No records will be destroyed (warning: you now have dups in the dump file and in the DB!)"
+}
+      HEADER
+
       type_to_nullmodel.each do |type,nullmodel|
+
+        puts ""
+        puts "-------------------------------------------------------"
+        puts "ResourceUsage Model: #{type}"
+        puts "-------------------------------------------------------"
 
         # Identify what to dump
         old_records = type.all
@@ -79,24 +109,31 @@ namespace :cbrain do
         # Inform user
         count       = old_records.count
         filename    = Rails.root + "data_dumps" + "#{type.to_s}.#{timestamp}.yaml"
-        printf "%36s : %7d records %s\n", type.to_s, count, (count == 0 ? "(nothing to dump)" : "dumped in #{filename}")
+        printf "%36s : %7d records %s\n", type.to_s, count, (count == 0 ? "(nothing to dump)" : "being dumped in #{filename}")
         next if count == 0
 
         # Dump records
         File.open(filename,"w") do |fh|
           fh.write(old_records.to_a.map(&:attributes).to_yaml)
         end
+        puts " -> dump finished, you can gzip that file if you want."
 
         # Destroy them
         if destroy == 'DESTROY_ALL'
-          puts " -> destroying records in database..."
           if allrecords == 'ALL'
+            puts " -> destroying ALL records in database..."
             type.delete_all
           else
+            puts " -> destroying DUMPED records in database..."
             # Note: you can't .delete_all on a left_outer_join relation... :-(
-            old_records.find_each do |obj|  # will do 1000 objects at time
+            counter=0;modulo=10000
+            print " -> (#{modulo} records per X): "
+            old_records.find_each do |obj|  # will fetch 1000 objects at time
+              print "X" if counter % modulo == 0
+              counter += 1
               obj.delete
             end
+            puts ""
           end
         end
 

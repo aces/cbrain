@@ -120,17 +120,18 @@ class BackgroundActivitiesController < ApplicationController
   def operation #:nodoc:
     # It's quite stupid but we detect the type of operation
     # based on the value returned by the submit button
-    op      = :cancel!    if params[:commit] =~ /cancel/i
-    op      = :suspend!   if params[:commit] =~ /\bsuspend/i
-    op      = :unsuspend! if params[:commit] =~ /unsuspend/i
-    op      = :destroy    if params[:commit] =~ /destroy/i
-    op      = :activate!  if params[:commit] =~ /activate/i
+    op      = :cancel!             if params[:commit] =~ /cancel/i
+    op      = :suspend!            if params[:commit] =~ /\bsuspend/i
+    op      = :unsuspend!          if params[:commit] =~ /unsuspend/i
+    op      = :destroy             if params[:commit] =~ /destroy/i
+    op      = :activate!           if params[:commit] =~ /activate/i
+    op      = :force_single_retry  if params[:commit] =~ /retry/i
     bac_ids = Array(params[:bac_ids])
     bacs = BackgroundActivity.where(:id => bac_ids)
     bacs = bacs.where(:user_id => current_user.id) if ! current_user.has_role? :admin_user
     bacs = bacs.to_a.select { |bac| bac.send(op) }
     # These messages are clumsy
-    flash[:notice] = "#{bacs.size} activities affected by #{op.to_s.gsub(/\W/,"")}." if bacs.size  > 0
+    flash[:notice] = "#{bacs.size} activities affected by '#{op.to_s.gsub(/\W/,"").humanize}'." if bacs.size  > 0
     flash[:notice] = "No activities affected."  if bacs.size == 0
     redirect_to :action => :index
   end
