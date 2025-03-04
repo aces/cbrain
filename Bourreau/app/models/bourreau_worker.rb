@@ -286,9 +286,7 @@ class BourreauWorker < Worker
       # Mechanism for tasks to submit other tasks: tasks that are active
       # may submit new tasks dynamically provided that they have the :can_submit_new_tasks
       # property.
-      if task.class.properties[:can_submit_new_tasks].present?
-        task.submit_subtasks_from_json
-      end
+      
 
       return if initial_status == 'On CPU' && new_status == 'On CPU'; # nothing else to do
 
