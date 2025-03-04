@@ -1048,13 +1048,14 @@ class CbrainTask < ApplicationRecord
   #   cluster_stderr
   #   script_text
   def for_api
-    super.merge(
-      {
-        'cluster_stdout' => self.cluster_stdout.presence,
-        'cluster_stderr' => self.cluster_stderr.presence,
-        'script_text'    => self.script_text.presence,
-      }
-    )
+    orig = super.dup
+    # The reason for this ugly set of assignments is that we can't
+    # have the keys with null values in some of the test suites, and
+    # for backwards compatibility too.
+    orig['cluster_stdout'] = self.cluster_stdout if self.cluster_stdout.present?
+    orig['cluster_stderr'] = self.cluster_stderr if self.cluster_stderr.present?
+    orig['script_text']    = self.script_text    if self.script_text.present?
+    orig
   end
 
 
