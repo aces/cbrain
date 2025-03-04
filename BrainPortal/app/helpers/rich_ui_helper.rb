@@ -48,9 +48,19 @@ module RichUiHelper
 
   # Takes a +description+ with multiple lines and shows
   # the whole thing, including line breaks.
-  def full_description(description)
-    "<span style=\"white-space: pre-wrap;\">".html_safe + description + "</span>".html_safe
+  # +autolink+ indicates are urls clickable or not
+  def full_description(description, autolink=false)
+    if autolink
+      description = ERB::Util.html_escape(description)
+      description = description.gsub(URI::DEFAULT_PARSER.make_regexp(['https'])) do |url|
+        "<a href='#{url}' target='_blank' rel='noopener'>#{url}</a>"
+      end.html_safe
+    end
+
+    return "<span style=\"white-space: pre-wrap;\">".html_safe + description + "</span>".html_safe
+
   end
+
 
   # Create an element that opens a dropdown when it's
   # hovered over.

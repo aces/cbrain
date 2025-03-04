@@ -185,6 +185,7 @@ class GroupsController < ApplicationController
     respond_to do |format|
       if @group.update_attributes_with_logging(new_group_attr,current_user)
         @group.reload
+        add_meta_data_from_form(@group, [:autolink_description])
         if new_group_attr[:creator_id].present?
           @group.addlog_object_list_updated("Creator", User, original_creator, @group.creator_id, current_user, :login)
         end
