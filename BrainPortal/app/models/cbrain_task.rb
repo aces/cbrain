@@ -1034,6 +1034,31 @@ class CbrainTask < ApplicationRecord
     true
   end
 
+
+
+  ##################################################################
+  # API support methods
+  ##################################################################
+
+  # Override the default for_api() method so that the resulting
+  # list of attributes also contains some more pseudo-attributes
+  # implemented as attr_accessor :
+  #
+  #   cluster_stdout
+  #   cluster_stderr
+  #   script_text
+  def for_api
+    super.merge(
+      {
+        'cluster_stdout' => self.cluster_stdout.presence,
+        'cluster_stderr' => self.cluster_stderr.presence,
+        'script_text'    => self.script_text.presence,
+      }
+    )
+  end
+
+
+
   # Returns a structure with miscellaneous info about the task;
   # only really useful for a task that has completed.
   # Anything that can be captured that is not already in

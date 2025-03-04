@@ -143,6 +143,7 @@ class TasksController < ApplicationController
     if ((! api_request?) || params[:get_task_outputs]) && @task.full_cluster_workdir.present? && ! @task.workdir_archived?
       begin
         @task.capture_job_out_err(@run_number,@stdout_lim,@stderr_lim) # PortalTask method: sends command to bourreau to get info
+        @task.script_text = nil unless current_user.has_role?(:admin_user)
       rescue Errno::EADDRNOTAVAIL, # all sorts of things can go wrong here
              Errno::ECONNREFUSED,
              Errno::ECONNRESET,
