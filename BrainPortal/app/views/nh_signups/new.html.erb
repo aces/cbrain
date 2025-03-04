@@ -33,6 +33,7 @@
   <div class="nh_form">
     <%= error_messages_for @signup %>
     <%= form_for @signup, :url => { :action => (@signup.new_record? ? "create" : "update"), :id => @signup.id } do |f|%>
+      <%= hidden_field_tag(:auth_spec, (@auth_spec.to_s.presence || Time.now.to_i.to_s)) %>
       <div class="nh_form_title">
         Register
         <p class="text-xs text-italic">Fields with an asterisk (*) are mandatory.</p>
