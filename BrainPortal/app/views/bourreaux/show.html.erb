@@ -296,7 +296,6 @@
                   [ "MOAB",            "ScirMoab" ],
                   [ "Sharcnet custom", "ScirSharcnet" ],
                   [ "LSF",             "ScirLsf" ],
-                  [ "Amazon EC2",      "ScirAmazon" ],
                   [ "SLURM",           "ScirSlurm" ],
                   [ "Google Cloud",    "ScirGcloudBatch" ],
                   [ "UNIX processes",  "ScirUnix" ],
@@ -319,40 +318,6 @@
         <% t.edit_cell(:cms_extra_qsub_args, :header => "Extra 'qsub' options") do |f| %>
           <%= f.text_field :cms_extra_qsub_args, :size => 60 %><br/>
           <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
-        <% end %>
-
-        <% if @bourreau.cms_class == "ScirAmazon" %>
-          <% t.edit_cell('meta[amazon_ec2_access_key_id]',
-                         :header => "Amazon EC2 Access Key Id",
-                         :content => (@bourreau.meta[:amazon_ec2_access_key_id].blank? ? "(None)" : @bourreau.meta[:amazon_ec2_access_key_id])) do %>
-            <%= text_field_tag "meta[amazon_ec2_access_key_id]", @bourreau.meta[:amazon_ec2_access_key_id], :size => 60 %><br/>
-            <div class="field_explanation">See <a href="http://docs.aws.amazon.com/AWSSdkDocsRuby/latest/DeveloperGuide/ruby-dg-setup.html" target="_blank">Amazon SDK documentation</a>.</div>
-          <% end %>
-
-          <% t.edit_cell('meta[amazon_ec2_secret_access_key]',
-                         :header => "Amazon EC2 Secret Access Key",
-                         :content => (@bourreau.meta[:amazon_ec2_secret_access_key].blank? ? "(None)" : @bourreau.meta[:amazon_ec2_secret_access_key])) do %>
-            <%= text_field_tag "meta[amazon_ec2_secret_access_key]", @bourreau.meta[:amazon_ec2_secret_access_key], :size => 60 %><br/>
-            <div class="field_explanation">See <a href="http://docs.aws.amazon.com/AWSSdkDocsRuby/latest/DeveloperGuide/ruby-dg-setup.html" target="_blank">Amazon SDK documentation</a>.</div>
-          <% end %>
-
-          <% t.edit_cell('meta[amazon_ec2_region]',
-                         :header => "Amazon EC2 Region",
-                         :content => (@bourreau.meta[:amazon_ec2_region].blank? ? "(None)" : @bourreau.meta[:amazon_ec2_region])
-           ) do %>
-            <%= select_tag "meta[amazon_ec2_region]", options_for_select([
-                  [ "eu-central-1" ],
-                  [ "sa-east-1" ],
-                  [ "ap-northeast-1" ],
-                  [ "eu-west-1" ],
-                  [ "us-east-1" ],
-                  [ "us-west-1" ],
-                  [ "us-west-2" ],
-                  [ "ap-southeast-2" ],
-                  [ "ap-southeast-1" ]
-              ], :selected => @bourreau.meta[:amazon_ec2_region])
-            %><br/>
-          <% end %>
         <% end %>
 
         <% t.edit_cell 'meta[task_limit_user_default]',

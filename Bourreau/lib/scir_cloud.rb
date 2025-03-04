@@ -1,1 +1,0 @@
-../../BrainPortal/lib/scir_cloud.rb
