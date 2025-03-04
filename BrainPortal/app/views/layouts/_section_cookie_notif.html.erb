@@ -22,10 +22,7 @@
 #
 -%>
 
-<%
-   if params[:controller].to_s =~ /^(sessions|signups|nh_sessions)$/ &&
-      params[:action].to_s     =~ /^(new)$/
-%>
+<% if page_is?("sessions#new", "signups#new", "nh_sessions#new")%>
 
 <div class="cookie_notification">
   <fieldset>
