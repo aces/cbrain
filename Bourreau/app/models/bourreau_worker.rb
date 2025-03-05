@@ -282,12 +282,7 @@ class BourreauWorker < Worker
       new_status = task.status
 
       worker_log.debug "Updated #{task.tname_tid} to state #{new_status}"
-
-      # Mechanism for tasks to submit other tasks: tasks that are active
-      # may submit new tasks dynamically provided that they have the :can_submit_new_tasks
-      # property.
-      
-
+            
       return if initial_status == 'On CPU' && new_status == 'On CPU'; # nothing else to do
 
       # Record bourreau delay time for Queued -> On CPU
