@@ -596,7 +596,7 @@ class User < ApplicationRecord
     system_group.destroy if system_group
   end
 
-  def destroy_empty_work_groups
+  def destroy_empty_work_groups #:nodoc:
     return if self.id == User.admin&.id
     # spare groups with other users files
     WorkGroup.where(creator_id: self.id).left_outer_joins(:userfiles).where(userfiles: { id: nil }).destroy_all
