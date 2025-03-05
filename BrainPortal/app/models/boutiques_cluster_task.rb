@@ -67,9 +67,7 @@ class BoutiquesClusterTask < ClusterTask
   ##############################
 
   def self.properties #:nodoc:
-    {
-      :can_submit_new_tasks => false, # TODO this is a class method, no access to descriptor
-    }
+    { } # No default class-level properties!
   end
 
   def setup #:nodoc:

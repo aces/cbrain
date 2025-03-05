@@ -131,7 +131,7 @@ module BoutiquesSupport
   # The following assignement is pretty much like
   #   class BoutiquesDescriptor < RestrictedHash
   # except we have a closure and we can access the variables
-  # initialize above (top_prop_names etc).
+  # initialized above (top_prop_names etc).
   BoutiquesDescriptor = Class.new(RestrictedHash) do |klass|
 
     allowed_keys top_prop_names # 'name', 'author' etc
@@ -151,7 +151,7 @@ module BoutiquesSupport
 
     def initialize(hash={})
       super(hash)
-      # The following re-assignment transforms hashed into subobjects (like OutputFile etc)
+      # The following re-assignments transforms hashes into subobjects (like OutputFile etc)
       # as a side-effect. This is accomplished by the methods later in this class.
       self.inputs            = self.inputs          || []
       self.output_files      = self.output_files    || []
