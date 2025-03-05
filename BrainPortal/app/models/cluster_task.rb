@@ -1340,7 +1340,7 @@ class ClusterTask < CbrainTask
     cb_error "Tried to archive a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
 
-    tar_file      = self.in_situ_workdir_archive_file nozip
+    tar_file      = self.in_situ_workdir_archive_file(nozip)
     temp_tar_file = "T_#{tar_file}"
     tar_capture   = "/tmp/tar.capture.#{Process.pid}.out"
 
@@ -1464,7 +1464,7 @@ class ClusterTask < CbrainTask
     cb_error "Tried to unarchive a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
 
-    tar_file      = self.in_situ_workdir_archive_file false  # first assume tar file is gzip-compressed
+    tar_file      = self.in_situ_workdir_archive_file(false)  # first assume tar file is gzip-compressed
     tar_capture   = "/tmp/tar.capture.#{Process.pid}.out"
     if self.cluster_workdir.blank?
       self.addlog("Cannot unarchive: no work directory configured.")
@@ -1483,7 +1483,7 @@ class ClusterTask < CbrainTask
         self.addlog("Cannot unarchive: tar archive #{tar_file} does not exist.")
         tar_file.sub!(/\.gz\z/,"") # try without the .gz
         if ! File.exists?(tar_file)
-          self.addlog("Cannot unarchive: tar archive #{tar_file} does not exist.")
+          self.addlog("Cannot unarchive: tar archive does not exist.")
           return false
         end
       end
@@ -2057,6 +2057,7 @@ exit $status
     cb_error "Tried to remove a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
     return true if self.share_wd_tid.present?  # Do not erase if using some other task's workdir.
+
     full=self.full_cluster_workdir
     return if full.blank?
     self.addlog("Removing workdir '#{full}'.")
