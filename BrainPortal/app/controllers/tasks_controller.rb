@@ -716,7 +716,7 @@ class TasksController < ApplicationController
     archive_dp_id   = params[:archive_dp_id].presence   # for 'archive as file' operation
     dup_bourreau_id = nil unless dup_bourreau_id && Bourreau.find_all_accessible_by_user(current_user).where(:id => dup_bourreau_id).exists?
     archive_dp_id   = nil unless archive_dp_id   && DataProvider.find_all_accessible_by_user(current_user).where(:id => archive_dp_id).exists?
-    nozip           = params[:nozip].presence  && current_user.has_role?(:admin_user) # for archiving without compression, admin only
+    nozip           = params[:nozip].present?  && current_user.has_role?(:admin_user) # for archiving without compression, admin only
 
     # This does the actual work and returns info about the
     # successes and failures.
