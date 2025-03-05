@@ -24,12 +24,14 @@
 
 <%-
   # Parameter groups
-  @descriptor   = @task.descriptor_for_show_params
-  inputs        = @descriptor.inputs
-  file_inputs   = @descriptor.file_inputs
-  params        = inputs.select { |i| i.type != 'File' }
-  member_inputs = @descriptor.groups.map { |g| g.members }.flatten
-  outputs       = @descriptor.output_files
+  @descriptor                 = @task.descriptor_for_show_params
+  inputs                      = @descriptor.inputs
+  file_inputs                 = @descriptor.file_inputs
+  member_inputs               = @descriptor.groups.map { |g| g.members }.flatten
+  param_without_group         = BoutiquesSupport::Group.new
+  param_without_group.members = inputs.map(&:id) - member_inputs
+  all_groups                  = [param_without_group] + @descriptor.groups
+  outputs                     = @descriptor.output_files
 -%>
 
 <%- unless [params, file_inputs, outputs].all?(&:empty?) -%>
@@ -54,39 +56,30 @@
   No parameters, no inputs, no ouputs.
 <%- else -%>
   <table>
-  <%- unless params.empty? -%>
+  <%- unless all_groups.empty? -%>
     <tbody class="tsk-sw-param">
       <tr>
         <th colspan="2" class="tsk-sw-hdr">
           Parameters
         </th>
       </tr>
-      <%- params.each do |param| -%>
-        <%- next if member_inputs.include?(param.id) -%>
-        <tr>
-          <td class="tsk-sw-name"><%= param.name %></td>
-          <td class="tsk-sw-val">
-            <% if param.type == 'Flag' %>
-              <%= red_if(@task.invoke_params[param.id].to_s =~ /^1$|^true$/, "No", "Yes", { :color1 => 'red', :color2 => 'green' }) %>
-            <% else %>
-              <%= format_param.(@task.invoke_params[param.id]) %>
-            <% end %>
-          </td>
-        </tr>
-      <%- end -%>
-      <%- @descriptor.groups.each do |group| -%>
-        <%- group.members = group.members.select { |id| @descriptor.input_by_id(id).type != 'File' } -%>
-        <%- next if group.members.empty? -%>
-        <tr>
-          <th colspan="2" class="tsk-sw-sub-hdr">
-            <%= group.name %>
-          </th>
-        </tr>
-        <%- group.members.each do |param_id| -%>
+      <%- all_groups.each do |group| -%>
+        <%- name          = group.name    -%>
+        <%- member_ids    = group.members -%>
+        <%- member_inputs = member_ids.select { |id| @descriptor.input_by_id(id).type != 'File' } -%>
+        <%- next if member_inputs.empty? -%>
+        <%- if name.present? -%>
+          <tr>
+            <th colspan="2" class="tsk-sw-sub-hdr">
+              <%= name %>
+            </th>
+          </tr>
+        <%- end -%>
+        <%- member_inputs.each do |param_id| -%>
           <%- param =  @descriptor.input_by_id(param_id) -%>
-            <tr>
-              <td class="tsk-sw-name"><%= param.name %></td>
-              <td class="tsk-sw-val">
+          <tr>
+            <td class="tsk-sw-name"><%= param.name %></td>
+            <td class="tsk-sw-val">
               <% if param.type == 'Flag' %>
                 <%= red_if(@task.invoke_params[param.id].to_s =~ /^1$|^true$/, "No", "Yes", { :color1 => 'red', :color2 => 'green' }) %>
               <% else %>
