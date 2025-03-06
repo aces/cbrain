@@ -167,11 +167,12 @@
       <strong>Your current time:</strong> <%= to_localtime(Time.now, :datetime) %><BR>
     </p>
     <p>
-      <strong>Tools available to you (out of <%= link_to @tool_names.count , available_path %>):</strong><br/>
-      <%= array_to_table(current_user.available_tools.pluck(:name).sort & @tool_names, :table_class => 'simple', :cols => 4) %>
+    <p>
+      <strong> The complete list of curated datasets and all <%= @tool_names.count %> tools on this portal:</strong> <%= link_to 'here.', available_path %>
     </p>
     <p>
-      <strong>Note:</strong> The full list of <em> all tools </em> and curated datasets is <%= link_to 'here', available_path %>
+      <strong> Tools available to you:</strong><br/>
+      <%= array_to_table(current_user.available_tools.pluck(:name).sort & @tool_names, :table_class => 'simple', :cols => 4) %>
     </p>
     <p>
        <strong>Projects you belong to:</strong>  <%= array_to_table(@groups, :table_class => 'simple', :cols => 4) { |g,r,c| link_to_group_if_accessible(g) } %>
