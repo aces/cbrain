@@ -403,7 +403,7 @@ class BoutiquesPortalTask < PortalTask
     super(old_params['invoke'], new_params['invoke']) if new_params.key?('invoke') || old_params.key?('invoke')
 
     # just a precation, perhaps, not used now
-    super(old_params.except('invoke'), new_params.except('invoke')) if new_params.except('invoke') != old_params.except('invoke')
+    super(old_params.except('invoke'), new_params.except('invoke'))
 
   end
 
