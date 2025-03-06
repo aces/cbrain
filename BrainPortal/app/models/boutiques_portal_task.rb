@@ -399,8 +399,8 @@ class BoutiquesPortalTask < PortalTask
   # differences. It makes up for a difference The task object itself is not changed.
   # Overrides the parent class method
   def log_params_changes(old_params = {}, new_params = {})
-    # in this class all non-file parameters are moved inside invoke key
-    super(old_params['invoke'], new_params['invoke']) if new_params.key?('invoke') || old_params.key?('invoke')
+    # in this class all non-file parameters are inside the invoke sub-hash
+    super(old_params['invoke'] || {}, new_params['invoke'] || {})
 
     # just a precation, perhaps, not used now
     super(old_params.except('invoke'), new_params.except('invoke'))
