@@ -67,7 +67,7 @@ class NhUsersController < NeurohubApplicationController
   def change_password #:nodoc:
     @user = current_user
     if user_must_link_to_oidc?(@user)
-       cb_error "Your account can only authenticate with OpenID identities (such as Globus).", :redirect => { :action => :myaccount }
+       cb_error "Your account can only authenticate with OpenID identities.", :redirect => { :action => :myaccount }
     end
   end
 
