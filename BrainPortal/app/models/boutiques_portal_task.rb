@@ -400,7 +400,7 @@ class BoutiquesPortalTask < PortalTask
   # Overrides the parent class method
   def log_params_changes(old_params = {}, new_params = {})
     # in this class all non-file parameters are moved inside invoke key
-    super(old_params['invoke'], new_params['invoke']) if new_params.key?('invoke') || old_params['invoke'].key?('inovoke')
+    super(old_params['invoke'], new_params['invoke']) if new_params.key?('invoke') || old_params.key?('invoke')
 
     # just a precation, perhaps, not used now
     super(old_params.except('invoke'), new_params.except('invoke')) if new_params.except('invoke') != old_params.except('invoke')
