@@ -53,7 +53,8 @@ class PortalController < ApplicationController
       .where('tool_configs.bourreau_id > 0')
       .where('tool_configs.version_name IS NOT NULL')
       .distinct
-      .pluck 'name'
+      .pluck('name')
+      .sort
 
     @dashboard_messages = Message
       .where(:message_type => 'cbrain_dashboard')
