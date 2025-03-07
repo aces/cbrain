@@ -1480,7 +1480,6 @@ class ClusterTask < CbrainTask
     Dir.chdir(full) do
 
       if ! File.exists?(tar_file)
-        self.addlog("Cannot unarchive: tar archive #{tar_file} does not exist.")
         tar_file.sub!(/\.gz\z/,"") # try without the .gz
         if ! File.exists?(tar_file)
           self.addlog("Cannot unarchive: tar archive does not exist.")
@@ -1547,6 +1546,7 @@ class ClusterTask < CbrainTask
     file_id  = self.workdir_archive_userfile_id
     return true if file_id
     full=self.full_cluster_workdir
+
     if ! Dir.exists?(full)
       self.addlog("Cannot archive: work directory '#{full}' does not exist.")
       return false
@@ -1616,8 +1616,6 @@ class ClusterTask < CbrainTask
       return false
     end
 
-    # todo 'file' command can be used to reliably determine actual archive type, Alpine etc ...
-    # (save few custom, strip-down or minimalist OSs like Alpine)
     nozip    = !taskarch_userfile.name.end_with?(".gz")  # archive is likely zipped if ends with gz
     tar_file = self.in_situ_workdir_archive_file(nozip)
 
