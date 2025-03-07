@@ -605,8 +605,6 @@ class CbrainTask < ApplicationRecord
     end
     if numchanges > 0
       self.addlog("Total of #{numchanges} changes observed.")
-    else
-      self.addlog("No changes to params observed.")
     end
   end
 
