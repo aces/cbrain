@@ -254,43 +254,7 @@
   <% end %>
 
 
-
   <% bourreau = @tool_config.bourreau %>
-  <% if bourreau.present? && bourreau.scir_class < ScirCloud %>
-    <% "" # This is all obsolete code %>
-    <% available_disk_images    = bourreau.scir_class.get_available_disk_images(bourreau)
-       available_instance_types = bourreau.scir_class.get_available_instance_types(bourreau)
-       available_ssh_key_pairs  = bourreau.scir_class.get_available_key_pairs(bourreau)
-    %>
-
-    <%= show_table(@tool_config, :form_helper => cf, :header => "Cloud configuration", :edit_condition => check_role(:admin_user)) do |t| %>
-
-      <% t.edit_cell(:cloud_vm_user, header: "VM user") do |f| %>
-        <%= f.text_field :cloud_vm_user %>
-      <% end %>
-
-      <% t.edit_cell(:cloud_ssh_key_pair, header: "SSH key pair") do |f| %>
-        <%= f.select :cloud_ssh_key_pair, available_ssh_key_pairs %>
-      <% end %>
-
-      <% t.edit_cell(:cloud_instance_type, header: "Instance type") do |f| %>
-        <%= f.select :cloud_instance_type, available_instance_types %>
-      <% end %>
-
-      <% t.edit_cell(:cloud_job_slots, header: "Job slots") do |f| %>
-        <%= f.text_field :cloud_job_slots %>
-      <% end %>
-
-      <% t.edit_cell(:cloud_vm_boot_timeout, header: "VM boot timeout (s)") do |f| %>
-        <%= f.text_field :cloud_vm_boot_timeout %>
-      <% end %>
-
-      <% t.edit_cell(:cloud_vm_ssh_tunnel_port, header: "VM SSH tunnel port") do |f| %>
-        <%= f.text_field :cloud_vm_ssh_tunnel_port %>
-      <% end %>
-
-    <% end %>
-  <% end %>
 
   <p>
 

@@ -157,9 +157,6 @@ class BourreauxController < ApplicationController
     # Options for SSH Data Providers
     add_meta_data_from_form(@bourreau, [ :use_persistent_ssh_masters_for_dps ])
 
-    # Amazon EC2 properties
-    add_meta_data_from_form(@bourreau, [:amazon_ec2_access_key_id, :amazon_ec2_secret_access_key, :amazon_ec2_region] )
-
     # Clean up all file synchronization stuff if the DP cache dir has changed.
     if old_dp_cache_dir != @bourreau.dp_cache_dir
       old_ss = SyncStatus.where( :remote_resource_id => @bourreau.id )
