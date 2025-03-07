@@ -37,7 +37,7 @@ class BackgroundActivity::RestartTask < BackgroundActivity
     old_status = task.status
     ok         = task.restart(atwhat)
     task.addlog("New status: #{task.status}") if ok && (old_status != task.status)
-    return [ true,  "Restarting" ] if   ok
+    return [ true,  nil          ] if   ok
     return [ false, "Skipped"    ] if ! ok
   end
 

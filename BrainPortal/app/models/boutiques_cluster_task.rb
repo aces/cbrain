@@ -67,9 +67,7 @@ class BoutiquesClusterTask < ClusterTask
   ##############################
 
   def self.properties #:nodoc:
-    {
-      :can_submit_new_tasks => false, # TODO this is a class method, no access to descriptor
-    }
+    { } # No default class-level properties!
   end
 
   def setup #:nodoc:
@@ -141,7 +139,8 @@ class BoutiquesClusterTask < ClusterTask
     # Write down the file with the boutiques descriptor itself
     File.open(boutiques_json_basename, "w") do |fh|
       cleaned_desc = descriptor.dup
-      cleaned_desc.delete("groups") if cleaned_desc.groups.size == 0 # bosh is picky
+      cleaned_desc.delete("groups")      if cleaned_desc.groups.blank?         # bosh is picky
+      cleaned_desc.delete("error-codes") if cleaned_desc["error-codes"].blank? # and stupid
       fh.write JSON.pretty_generate(cleaned_desc)
       fh.write "\n"
     end
@@ -211,6 +210,10 @@ class BoutiquesClusterTask < ClusterTask
         cb_error "Exit status file #{exit_status_filename()} has unexpected content"
       end
       status = out.strip.to_i
+      descriptor.error_codes ||= []
+      descriptor.error_codes.each do |err|  # note, 0 code is supported by boutiques
+        self.addlog err['description'] if err['code'] == status
+      end
       if exit_status_means_failure?(status)
         self.addlog "Command failed, exit status #{status}"
         return false
@@ -251,6 +254,7 @@ class BoutiquesClusterTask < ClusterTask
         if ! path_is_in_workdir?(path) # this also checks the existence
           self.addlog("Output file is missing or outside of task work directory: #{path}")
           all_ok = false
+          next
         end
 
         # Get name and filetype
@@ -371,9 +375,28 @@ class BoutiquesClusterTask < ClusterTask
     if custom['cbrain:walltime-estimate'].present?
       return custom['cbrain:walltime-estimate'].seconds
     end
-    if descriptor.suggested_resources.present? &&
-       descriptor.suggested_resources['walltime-estimate'].present?
-       return descriptor.suggested_resources['walltime-estimate'].seconds
+    if descriptor.suggested_resources.present? && descriptor.suggested_resources['walltime-estimate'].present?
+      return descriptor.suggested_resources['walltime-estimate'].seconds
+    end
+    nil
+  end
+
+  # Conservative maximal memory estimate for the job.
+  # This value should be somewhat larger than the largest
+  # expected memory use without being overly excessive; it
+  # will be submitted along with the job to the cluster
+  # management system for scheduling purposes. The units
+  # are megabytes.
+  def job_memory_estimate
+    descriptor = self.descriptor_for_cluster_commands
+    custom     = descriptor.custom || {} # 'custom' is not packaged as an object, just a hash
+    if custom['cbrain:memory-estimate'].present?
+      return custom['cbrain:memory-estimate'].to_i # in megabytes
+    end
+    if descriptor.suggested_resources.present? && descriptor.suggested_resources['ram'].present?
+      gigs = descriptor.suggested_resources['ram'].to_f
+      megs = gigs * 1024
+      return megs.truncate
     end
     nil
   end

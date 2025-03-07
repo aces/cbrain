@@ -44,6 +44,9 @@ class ResourceUsage < ApplicationRecord
 
   before_save :record_names_and_types
 
+  scope :increased, -> { where( "resource_usage.value > 0" ) }
+  scope :decreased, -> { where( "resource_usage.value < 0" ) }
+
   # If any of the "_id" attributes are provided,
   # then we also automatically fill in the duplicated
   # information that we keep about the associated object.

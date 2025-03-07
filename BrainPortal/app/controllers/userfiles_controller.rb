@@ -54,6 +54,7 @@ class UserfilesController < ApplicationController
     # Manually handle the 'name_like' input, as it cant be pre-computed
     # server-side (and going the JS route would be overkill).
     params[:name_like].strip! if params[:name_like]
+    params[:name_like] += ' ' if params[:name_like] && params[:name_like].to_s =~ /\A\d+_\z/ # bug workaround
     scope_filter_from_params(@scope, :name_like, {
       :attribute => 'name',
       :operator  => 'match'
@@ -93,7 +94,7 @@ class UserfilesController < ApplicationController
     @tag_filters = @base_scope
       .joins(:tags)
       .group('tags.name')
-      .raw_rows(['tags.name', 'tags.id', 'COUNT(tags.name)'])
+      .pluck('tags.name', 'tags.id', 'COUNT(tags.name)')
       .map do |name, id, count|
         {
           :value     => id,
@@ -115,13 +116,13 @@ class UserfilesController < ApplicationController
 
     # Special case; only userfile IDs are required (API request)
     if params[:ids_only] && (api_request? || jQuery_request?)
-      @userfiles = @view_scope.raw_first_column('userfiles.id')
+      @userfiles = @view_scope.pluck('userfiles.id')
 
     # Tree sort
     elsif @scope.custom[:tree_sort]
       # Sort using just IDs and parent IDs then paginate, giving the final
       # userfiles list in tuple (see +tree_sort_by_pairs+) form.
-      tuples = tree_sort_by_pairs(@view_scope.raw_rows(['userfiles.id', 'userfiles.parent_id']))
+      tuples = tree_sort_by_pairs(@view_scope.pluck('userfiles.id', 'userfiles.parent_id'))
       tuples = @scope.pagination.apply(tuples) unless api_request?
 
       # Keep just ID and depth/level; there is no need for the parent ID,
@@ -150,7 +151,7 @@ class UserfilesController < ApplicationController
     # General case
     else
       @userfiles = @view_scope
-      @userfiles = @scope.pagination.apply(@userfiles)
+      @userfiles = @scope.pagination.apply(@userfiles, api_request?)
     end
 
     # Save the modified scope object
@@ -356,31 +357,40 @@ class UserfilesController < ApplicationController
       @viewer.apply_conditions(@userfile) if @viewer
     end
 
-    begin
-      if @viewer
-        if @viewer.errors.present?
-          render :partial => "viewer_errors"
-        elsif params[:apply_div] == "false"
-          render :file   => @viewer.partial_path.to_s, :layout => params[:apply_layout].present?
-        else
-          render :action => :display,                  :layout => params[:apply_layout].present?
-        end
-      else
-        render :html => "<div class=\"warning\">Could not find viewer #{viewer_name}.</div>".html_safe, :status  => "404"
-      end
-    rescue ActionView::Template::Error => e
-      exception = e.original_exception
-
-      raise exception unless Rails.env == 'production'
-      ExceptionLog.log_exception(exception, current_user, request)
-      Message.send_message(current_user,
-        :message_type => 'error',
-        :header => "Could not view #{@userfile.name}",
-        :description => "An internal error occurred when trying to display the contents of #{@userfile.name}."
-      )
-
-      render :html => "<div class=\"warning\">Error generating view code for viewer #{params[:viewer]}.</div>".html_safe, :status => "500"
+    # No viewer
+    if ! @viewer
+      render :html => "<div class=\"warning\">Could not find viewer #{viewer_name}.</div>".html_safe, :status  => "404"
+      return
     end
+
+    # Viewer reports errors
+    if @viewer.errors.present?
+      render :partial => "viewer_errors"
+      return
+    end
+
+    # Render partial
+    if params[:apply_div] == "false"
+      render :file   => @viewer.partial_path.to_s, :layout => params[:apply_layout].present?
+      return
+    end
+
+    # Render standard display action
+    render :action => :display, :layout => params[:apply_layout].present?
+
+  # Handle all errors
+  rescue => e
+    exception = e.respond_to?(:original_exception) ? e.original_exception : e
+
+    raise exception unless Rails.env == 'production'
+    ExceptionLog.log_exception(exception, current_user, request)
+    Message.send_message(current_user,
+      :message_type => 'error',
+      :header => "Could not view #{@userfile.name}",
+      :description => "An internal error occurred when trying to display the contents of #{@userfile.name}."
+    )
+
+    render :html => "<div class=\"warning\">Error generating view code for viewer '#{params[:viewer]}'. Admins have been notified and will look into the problem. In the meantime, there's not much you can do about this.</div>".html_safe
   end
 
   def show #:nodoc:
@@ -760,7 +770,7 @@ class UserfilesController < ApplicationController
 
     # Pre-spawn checks; tags, project and owner
     if changes.has_key?(:tags)
-      available_tags = current_user.available_tags.raw_first_column(:id)
+      available_tags = current_user.available_tags.ids
       flash[:error] += "You do not have access to all tags you want to update.\n" unless
         (changes[:tags] - available_tags).blank?
       changes[:tags] &= available_tags
@@ -811,7 +821,7 @@ class UserfilesController < ApplicationController
 
       # R/W access check
       failed["you don't have access"] = Userfile
-        .where(:id => file_ids - userfiles.raw_first_column(:id))
+        .where(:id => file_ids - userfiles.ids)
         .select([:id, :name, :type])
         .all.to_a
 
@@ -984,20 +994,20 @@ class UserfilesController < ApplicationController
 
     if ! Userfile.is_legal_filename?(collection_name)
       flash[:error] = "Error: collection name '#{collection_name}' is not acceptable (illegal characters?)."
-      redirect_to :action => :index, :format =>  request.format.to_sym
+      redirect_to :action => :index
       return
     end
 
     # Check if the collection name chosen by the user already exists for this user on the data_provider
     if current_user.userfiles.exists?(:name => collection_name, :data_provider_id => data_provider_id)
       flash[:error] = "Error: collection with name '#{collection_name}' already exists."
-      redirect_to :action => :index, :format =>  request.format.to_sym
+      redirect_to :action => :index
       return
     end
 
     if Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read).count == 0
       flash[:error] = "Error: No accessible files selected."
-      redirect_to :action => :index, :format =>  request.format.to_sym
+      redirect_to :action => :index
       return
     end
 
@@ -1069,7 +1079,7 @@ class UserfilesController < ApplicationController
     if task == :copy
       my_group_id  = current_assignable_group.id
       bac = BackgroundActivity::CopyFile.setup!(current_user.id, selected_ids, nil, new_provider.id,
-        { :crush_destination => crush_destination, :group_id => my_group_id }
+        { :crush_destination => crush_destination, :user_id => current_user.id, :group_id => my_group_id }
       )
     else # :move
       selected_ids  = selected_ids.select { |id| Userfile.find(id).has_owner_access?(current_user) }
@@ -1129,7 +1139,7 @@ class UserfilesController < ApplicationController
       if ! Userfile.is_legal_filename?(specified_filename)
           flash[:error] = "Error: filename '#{specified_filename}' is not acceptable (illegal characters?)."
           respond_to do |format|
-            format.html { redirect_to :action => :index, :format =>  request.format.to_sym }
+            format.html { redirect_to :action => :index }
             format.json { render :json => { :error => flash[:error] } }
           end
           return
@@ -1140,18 +1150,31 @@ class UserfilesController < ApplicationController
       specified_filename = "cbrain_files_#{current_user.login}.#{timestamp}"
     end
 
-    tot_size = 0
-
     # Find list of files accessible to the user
     userfiles_list = Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :read)
-    tot_size = userfiles_list.inject(0) { |total, u| total + (u.size || 0) }
+
+    # When a new FileCollection is registered, the size and num_files attributes are temporarily set to nil.
+    # It takes few moments to calculate its size, so meanwhile we disallow downloading files of unknown,
+    # and potentially prohibitively large size
+    unsized = userfiles_list.detect { |u| u.size.nil? }
+    if unsized
+      flash[:error] = "Size of the file #{unsized.name} is not yet determined." +
+                      " Please try again latter.\n"
+      respond_to do |format|
+        format.html { redirect_to :action => :index }
+        format.json { render :json => { :error => flash[:error] } }
+      end
+      return
+    end
+
+    tot_size = userfiles_list.sum(&:size)
 
     # Check size limit
     if tot_size > MAX_DOWNLOAD_MEGABYTES.megabytes
       flash[:error] = "You cannot download data that exceeds #{MAX_DOWNLOAD_MEGABYTES} megabytes using a browser.\n" +
                       "Consider using an externally accessible Data Provider (ask the admins for more info).\n"
       respond_to do |format|
-          format.html { redirect_to :action => :index, :format =>  request.format.to_sym }
+          format.html { redirect_to :action => :index }
           format.json { render :json => { :error => flash[:error] } }
       end
       return
@@ -1162,7 +1185,7 @@ class UserfilesController < ApplicationController
     if name_list.size != name_list.uniq.size
       flash[:error] = "Some files have the same names and cannot be downloaded together. Use separate downloads."
       respond_to do |format|
-          format.html { redirect_to :action => :index, :format => request.format.to_sym }
+          format.html { redirect_to :action => :index }
           format.json { render :json => { :error => flash[:error] } }
       end
       return
@@ -1180,7 +1203,7 @@ class UserfilesController < ApplicationController
     if failed_list.present?
       error_message_sender("Error when syncing file(s)", failed_list);
       respond_to do |format|
-          format.html { redirect_to :action => :index, :format =>  request.format.to_sym }
+          format.html { redirect_to :action => :index }
           format.json { render :json => { :error => flash[:error] } }
       end
       return

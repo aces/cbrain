@@ -103,7 +103,7 @@ module BoutiquesInputSubdirMaker
   # the fake parent directory information
   def descriptor_for_form #:nodoc:
     descriptor                = super.dup
-    parent_dirname_by_inputid = descriptor.custom_module_info('BoutiquesInputSubdirMaker')
+    parent_dirname_by_inputid = descriptor.custom_module_info('BoutiquesInputSubdirMaker') || {}
 
     parent_dirname_by_inputid.each do |inputid,subdir_config|
       # Adjust the description
@@ -126,7 +126,11 @@ module BoutiquesInputSubdirMaker
   # create a fake parent directory that will contains a symlink
   # to the orginal selected Userfile.
   def setup #:nodoc:
-    original_userfile_ids = {}
+    descriptor = self.descriptor_for_setup
+    parent_dirname_by_inputid = descriptor.custom_module_info('BoutiquesInputSubdirMaker') || {}
+    original_userfile_ids = {} # Needed in 'ensure' clause below
+
+    return super if parent_dirname_by_inputid.blank? # no config means nothing to do
 
     # Log revision information
     basename = Revision_info.basename
@@ -134,10 +138,7 @@ module BoutiquesInputSubdirMaker
     self.addlog("Creating parent directories in BoutiquesInputSubdirMaker.")
     self.addlog("#{basename} rev. #{commit}")
 
-    descriptor = self.descriptor_for_setup
-
     # Remove IDs from invoke_params
-    parent_dirname_by_inputid = descriptor.custom_module_info('BoutiquesInputSubdirMaker')
     parent_dirname_by_inputid.each_key do |inputid|
       original_userfile_ids[inputid]  = invoke_params[inputid]
       invoke_params[inputid]          = nil
@@ -187,7 +188,7 @@ module BoutiquesInputSubdirMaker
     override_invoke_params = super.dup
 
     descriptor = self.descriptor_for_cluster_commands
-    parent_dirname_by_inputid = descriptor.custom_module_info('BoutiquesInputSubdirMaker')
+    parent_dirname_by_inputid = descriptor.custom_module_info('BoutiquesInputSubdirMaker') || {}
     parent_dirname_by_inputid.each do |inputid,subdir_config|
       if override_invoke_params[inputid].blank?
         override_invoke_params.delete(inputid)

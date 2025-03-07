@@ -84,6 +84,11 @@ class SingBindmountDataProvider < SshDataProvider
     true
   end
 
+  # Returns true: forces this DP type to be read-only.
+  def read_only? #:nodoc:
+    true
+  end
+
   # We just ignore all changes to this attribute too.
   def read_only=(val) #:nodoc:
     val

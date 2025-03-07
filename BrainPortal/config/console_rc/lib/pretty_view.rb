@@ -48,7 +48,8 @@ end
 
 # Make sure the classes are loaded
 [ Userfile, CbrainTask, User, Group, DataProvider, RemoteResource,
-  RemoteResourceInfo, Site, Tool, ToolConfig, Bourreau, DiskQuota, DataUsage ]
+  RemoteResourceInfo, Site, Tool, ToolConfig, Bourreau, DiskQuota, DataUsage,
+  BackgroundActivity ]
 # Note that it's important to load PortalTask and/or ClusterTask too, because of its own pre-loading of subclasses.
 PortalTask.nil? rescue true
 ClusterTask.nil? rescue true
@@ -430,6 +431,10 @@ end
 ========================================================
 Feature: Pretty View for some objects
 ========================================================
-  Activate with: pv obj [, obj , ...]
+  pv obj [, obj , ...]
+
+  If an object responds to 'pretview', show that view.
+  Currently implemented: User, CbrainTask, Group, and
+  about a dozen other common CBRAIN models.
 FEATURES
 

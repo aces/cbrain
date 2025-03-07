@@ -41,7 +41,7 @@ class BackgroundActivity::UnregisterFile < BackgroundActivity
     return [ false, "File is not on a browsable DataProvider" ] if
       ! userfile.data_provider.is_browsable?
     ok = userfile.unregister # only remove entries from DB, does not affect file content
-    [ ok, "Unregistered" ]
+    return [ ok, nil ]
   end
 
   # Currently, there is no user interface to schedule

@@ -97,8 +97,8 @@ class ToolConfig < ApplicationRecord
       ToolConfig.specific_versions
     else
       gids = user.group_ids
-      bids = Bourreau.find_all_accessible_by_user(user).raw_first_column("remote_resources.id")
-      tids = Tool.find_all_accessible_by_user(user).raw_first_column("tools.id")
+      bids = Bourreau.find_all_accessible_by_user(user).ids
+      tids = Tool.find_all_accessible_by_user(user).ids
       ToolConfig.specific_versions.where(:group_id => gids, :bourreau_id => bids, :tool_id => tids)
     end
   end
@@ -679,7 +679,7 @@ class ToolConfig < ApplicationRecord
       :version_name    => descriptor.tool_version,
       # Other attributes
       :group_id        => User.admin.own_group.id,
-      :description     => "Auto-created by Boutiques integrator",
+      :description     => descriptor.description.to_s + "\n\n(Auto-created by Boutiques integrator)",
       :env_array       => [],
       :script_prologue => nil,
       :script_epilogue => nil,

@@ -57,7 +57,7 @@ class BackgroundActivity::WipeOldCache < BackgroundActivity
     parent1 = full.parent      # "root/101/22"
     parent2 = parent1.parent   # "root/101"
     (Dir.rmdir(parent1.to_s) rescue nil) && (Dir.rmdir(parent2.to_s) rescue nil)
-    [ true, "" ]
+    return [ true, nil ]
   end
 
   # Scans the filesystem and compares
@@ -96,7 +96,7 @@ class BackgroundActivity::WipeOldCache < BackgroundActivity
     # yet we couldn't find any files on disk.
     rr_id                    = self.remote_resource_id
     supposedly_in_cache      = SyncStatus.where( :remote_resource_id => rr_id, :status => [ 'InSync', 'CacheNewer' ] )
-    supposedly_in_cache_uids = supposedly_in_cache.raw_first_column(:userfile_id)
+    supposedly_in_cache_uids = supposedly_in_cache.pluck(:userfile_id)
     not_in_cache_uids        = supposedly_in_cache_uids - uids_seen_in_cache
     supposedly_in_cache.where( :userfile_id => not_in_cache_uids ).destroy_all if not_in_cache_uids.present?
 

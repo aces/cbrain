@@ -37,6 +37,7 @@ class OidcConfig
                 :client_id, # client_secrets are kept in the class
                 :scope,
                 :identity_provider_key, :identity_provider_display_name_key, :identity_preferred_username_key,
+                :use_globus_url,
                 :help_label, :help_uri
 
   REQUIRED_KEYS = %w(
@@ -90,6 +91,7 @@ class OidcConfig
       oidc.identity_provider_key              = config[:identity_provider_key]
       oidc.identity_provider_display_name_key = config[:identity_provider_display_name_key]
       oidc.identity_preferred_username_key    = config[:identity_preferred_username_key]
+      oidc.use_globus_url                     = config[:use_globus_url].present?
       oidc.help_label                         = config[:help_label]
       oidc.help_uri                           = config[:help_uri]
 

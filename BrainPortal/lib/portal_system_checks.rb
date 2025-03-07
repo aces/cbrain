@@ -198,13 +198,6 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
       return
     end
 
-    begin
-      Kernel.open("#{Rails.root}/tmp/AgentLocker.lock", File::WRONLY|File::CREAT|File::EXCL).close
-    rescue Errno::EEXIST
-      puts "C> \t- Locker already being created. (#{Rails.root}/tmp/AgentLocker.lock)"
-      return
-    end
-
     puts "C> \t- No locker processes found. Creating one."
 
     al_logger = Log4r::Logger.new('AgentLocker')
@@ -261,8 +254,8 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
     puts "C> Starting Background Activity Worker..."
     #----------------------------------------------------------------------------
 
-    if ENV['CBRAIN_NO_BACKGROUND_ACTIVITY_WORKER'].present?
-      puts "C> \t- NOT started as env variable CBRAIN_NO_BACKGROUND_ACTIVITY_WORKER is set."
+    if ENV['CBRAIN_NO_BACKGROUND_ACTIVITY_WORKER'].present? || Rails.env == 'test'
+      puts "C> \t- NOT started as we are in test mode, or env variable CBRAIN_NO_BACKGROUND_ACTIVITY_WORKER is set."
       return
     end
 

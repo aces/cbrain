@@ -49,7 +49,7 @@ class UsersController < ApplicationController
     @users = @view_scope = @scope.apply(@base_scope)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 50 })
-    @users = @scope.pagination.apply(@view_scope)
+    @users = @scope.pagination.apply(@view_scope, api_request?)
 
     # Precompute file, task and locked/unlocked counts.
     @users_file_counts    = Userfile.where(:user_id => @view_scope).group(:user_id).count
@@ -94,7 +94,7 @@ class UsersController < ApplicationController
     # Array of enabled OIDC providers configurations
     @oidc_configs = OidcConfig.all
     # Hash of OIDC uris with the OIDC name as key
-    @oidc_uris    = generate_oidc_login_uri(@oidc_configs, globus_url)
+    @oidc_uris    = generate_oidc_login_uri(@oidc_configs)
 
     respond_to do |format|
       format.html # show.html.erb
@@ -386,6 +386,16 @@ class UsersController < ApplicationController
     @user = User.where( :login  => params[:login], :email  => params[:email] ).first
 
     if @user
+      if user_must_link_to_oidc?(@user)
+        contact = RemoteResource.current_resource.support_email.presence || User.admin.email.presence || "the support staff"
+        wipe_user_password_after_oidc_link("password-rest", @user)  # for legacy or erroneously set users
+        flash[:error] = "Your account can only authenticate with OpenID identities. Thus you are not allowed to use or reset password. Please contact #{contact} for help."
+        respond_to do |format|
+          format.html { redirect_to login_path }
+          format.any { head :unauthorized }
+        end
+        return
+      end
       if @user.account_locked?
         contact = RemoteResource.current_resource.support_email.presence || User.admin.email.presence || "the support staff"
         flash[:error] = "This account is locked, please write to #{contact} to get this account unlocked."

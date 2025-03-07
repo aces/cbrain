@@ -41,7 +41,7 @@ class BackgroundActivity::SuspendTask < BackgroundActivity
     task  = CbrainTask.where(:bourreau_id => CBRAIN::SelfRemoteResourceId).find(item)
     ok    = task.suspend
     task.addlog("New status: #{task.status}") if ok
-    return [ true,  "Suspended" ] if   ok
+    return [ true,  nil         ] if   ok
     return [ false, "Skipped"   ] if ! ok
   end
 

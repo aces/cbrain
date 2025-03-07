@@ -248,8 +248,8 @@ class DataProvidersController < ApplicationController
     user_ids        = params[:user_ids] || nil
 
     available_users = current_user.available_users
-    user_ids        = user_ids ? available_users.where(:id => user_ids).raw_first_column(:id) :
-                                 available_users.raw_first_column(:id)
+    user_ids        = user_ids ? available_users.where(:id => user_ids).ids :
+                                 available_users.ids
 
     raise "Bad params"              if dataprovider_id.blank? || user_ids.blank?
     dataprovider    = DataProvider.find(dataprovider_id.to_i)
@@ -392,7 +392,7 @@ class DataProvidersController < ApplicationController
     @fileinfolist = @scope.apply(@fileinfolist)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
-    @files = @scope.pagination.apply(@fileinfolist)
+    @files = @scope.pagination.apply(@fileinfolist, api_request?)
 
     scope_to_session(@scope)
 

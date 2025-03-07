@@ -63,7 +63,9 @@ class SignupsController < ApplicationController
       return
     end
 
+    # Validation failed, return to form
     if ! @signup.save
+      @auth_spec = form_generated_at_int # keep old form_generated time
       render :action => :new
       return
     end
@@ -130,11 +132,21 @@ class SignupsController < ApplicationController
 
   # Confirms that a signup person's email address actually belongs to them
   def confirm #:nodoc:
-    @signup = Signup.find(params[:id]) rescue nil
+    @signup  = Signup.find(params[:id]) rescue nil
     token    = params[:token] || ""
+    is_valid = @signup.present? && token.present? && @signup.confirm_token == token
+    token    = "" if ! is_valid # that will just skip over everything and redirect at the end
+    req_method = request.method.to_s.upcase # GET or POST
 
-    # Params properly confirms the request? Then record that and show a nice message to user.
-    if @signup.present? && token.present? && @signup.confirm_token == token
+    # Params properly confirms the GET request? Show a simple page with button
+    if is_valid && req_method == 'GET'
+      @token = token # for the button
+      render 'confirm_button.html.erb'
+      return
+    end
+
+    # Params properly confirms the POST request? Then record that and show a nice message to user.
+    if is_valid && req_method == 'POST'
       @signup.confirmed = true
       @signup.save
       @propose_view = can_edit?(@signup)
@@ -189,7 +201,7 @@ class SignupsController < ApplicationController
     # Prepare the Pagination object
     @scope.pagination           ||= Scope::Pagination.from_hash({ :per_page => 25 })
 
-    @signups                    = @scope.pagination.apply(@view_scope)
+    @signups                    = @scope.pagination.apply(@view_scope, api_request?)
 
     scope_to_session(@scope)
 

@@ -20,6 +20,28 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# This module will attempt to force an output file
+# created by the boutiques integrator to be stored
+# with a "browse_path" under the target destination
+# DataProvider, if possible. e.g.
+#
+#    "custom": {
+#        "cbrain:integrator_modules": {
+#            "BoutiquesForcedOutputBrowsePath" : {
+#              "supertool_output_dir":  "derivatives/supertool",
+#              "supertool_html_report": "reports/[VERSION]/supertool",
+#            },
+#        }
+#    }
+#
+# The keys are IDs of the output-files section of the descriptor,
+# and the values are relative paths on the target result DP.
+# The relative paths can contain templated values that will be
+# substituted when the results are saved.
+#
+# If the target DP doesn't have browse_path capabilities, the
+# browse path will be set to nil and a warning will be added
+# to the task's log.
 module BoutiquesForcedOutputBrowsePath
 
   # Note: to access the revision info of the module,
@@ -72,7 +94,7 @@ module BoutiquesForcedOutputBrowsePath
     end
     name, type  = super # the standard names and types; the name will be replaced
     descriptor  = descriptor_for_save_results
-    config      = descriptor.custom_module_info('BoutiquesForcedOutputBrowsePath')
+    config      = descriptor.custom_module_info('BoutiquesForcedOutputBrowsePath') || {}
     browse_path = config[output.id]  # "a/b/c"
     return [ name, type ] if browse_path.blank? # no configured browse_path for this output
     browse_path = apply_value_keys(browse_path) # replaces [XYZ] strings with values from params

@@ -22,6 +22,13 @@
 #
 -%>
 
+    <%
+      toggle_url = lambda do |key|
+        url_for(scope_custom_params(@scope, { key => !@scope.custom[key] }))
+      end
+    %>
+
+
 <div id="static-actions">
   <span id="launch-btn"
     class="act-btn"
@@ -34,6 +41,20 @@
     data-dialog="upload-dialog"
     data-icon="ui-icon-arrowthick-1-n"
   >Upload</span>
+
+  <span id="vown-btn"
+    class="act-btn"
+    data-url="<%= toggle_url.(:view_all) %>"
+    data-method="GET"
+    data-ajax="1"
+  >
+    <% if @scope.custom[:view_all] %>
+      Show only my files
+    <% else %>
+      Show all files
+    <% end %>
+  </span>
+
 </div>
 
 <div id="dynamic-actions" class="hidden">
@@ -186,11 +207,6 @@
 
     <li class="menu-separator">-</li>
 
-    <%
-      toggle_url = lambda do |key|
-        url_for(scope_custom_params(@scope, { key => !@scope.custom[key] }))
-      end
-    %>
     <li id="vown-item"
       class="act-item"
       data-url="<%= toggle_url.(:view_all) %>"

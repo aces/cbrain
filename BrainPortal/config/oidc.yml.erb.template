@@ -50,6 +50,10 @@ Keycloak:
   identity_provider_key:              "sub"
   identity_provider_display_name_key: "aud"
   identity_preferred_username_key:    "preferred_username"
+  # This value is optional. The redirect URLs configured with your provider must match the setting.
+  # If set to false (default), the redirects used are /oidc or /nh_oidc
+  # If set to true, the redirects used are /globus and /nh_globus
+  use_globus_url:                     false
   # These two are optional. Adjust to provide users a link to your actual ID provider!
   help_label:                         "" # "Keycloak"
   help_uri:                           "" # "https://www.keycloak.org/"
@@ -67,6 +71,10 @@ Globus:
   identity_provider_key:              "identity_provider"
   identity_provider_display_name_key: "identity_provider_display_name"
   identity_preferred_username_key:    "username"
+  # This value is optional. The redirect URLs configured with your provider must match the setting.
+  # if false (default), the redirects to use are /oidc or /nh_oidc
+  # if true, the redirects to use are /globus and /nh_globus
+  use_globus_url:                     true # use /globus and /nh_globus (if you really want, instead of /oidc)
   # Optional
   help_label:                         "" # "Globus"
   help_uri:                           "" # "https://testglobus.example.com/"

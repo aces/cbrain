@@ -32,7 +32,7 @@ on Execution Server
 <strong><%= @tool_config.bourreau.name %></strong>.
 <p>
 
-<pre><%= JSON.pretty_generate(@descriptor) %></pre>
+<pre><%= @prettify ? @descriptor.super_pretty_json : JSON.pretty_generate(@descriptor) %></pre>
 
 <% else %>
 

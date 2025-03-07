@@ -433,8 +433,8 @@ class BourreauxController < ApplicationController
     user_ids    = params[:user_ids] || nil
 
     available_users = current_user.available_users
-    user_ids        = user_ids ? available_users.where(:id => user_ids).raw_first_column(:id) :
-                                 available_users.raw_first_column(:id)
+    user_ids        = user_ids ? available_users.where(:id => user_ids).ids :
+                                 available_users.ids
 
     raise "Bad params"              if bourreau_id.blank? || user_ids.blank?
     bourreau    = Bourreau.find(bourreau_id.to_i)
@@ -547,7 +547,7 @@ class BourreauxController < ApplicationController
       userids = userlist.keys.each { |uid| uid.to_s }.join(",")  # "uid,uid,uid"
       flash[:notice] += "\n" unless flash[:notice].blank?
       begin
-        remote_resource.send_command_clean_cache(userids,typeslist,cleanup_older.seconds.ago,cleanup_younger.seconds.ago)
+        remote_resource.send_command_clean_cache(current_user.id,userids,typeslist,cleanup_older.seconds.ago,cleanup_younger.seconds.ago)
         flash[:notice] += "Sending cleanup command to #{remote_resource.name}."
       rescue
         flash[:notice] += "Could not contact #{remote_resource.name}."
@@ -608,29 +608,6 @@ class BourreauxController < ApplicationController
       redirect_to :action => :rr_access_dp  # try again, without the 'refresh' param
     end
 
-  end
-
-  # API method to copy files from one DP to another via a bourreau
-  def file_copy #:nodoc:
-    bourreau_id      = params[:id]
-    userfile_ids     = params[:userfile_ids]
-    data_provider_id = params[:dataprovider_id]
-
-    bourreau         = Bourreau.find(bourreau_id)
-    data_provider    = DataProvider.find(data_provider_id)
-
-    # Check if the user has access to the bourreau and the data provider
-    if !bourreau.can_be_accessed_by?(current_user) || !data_provider.can_be_accessed_by?(current_user)
-      render :json => { :error => "Access denied" }, :status => :forbidden
-      return
-    end
-
-    # Filter out userfile_ids that are not readable by the user
-    userfile_ids = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read)
-                        .where(:id => userfile_ids).pluck(:id)
-
-    bourreau.send_command_copy_files(userfile_ids, data_provider_id, current_user.id)
-    render :json => { :status => "ok", :file_copied_count => userfile_ids.size }
   end
 
   # API method to copy files from one DP to another via a bourreau;

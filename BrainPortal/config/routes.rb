@@ -99,7 +99,6 @@ Rails.application.routes.draw do
     member do
       post 'start'
       post 'stop'
-      post 'file_copy'
       get  'row_data'
       get  'info'
       get  'cache_disk_usage'
@@ -189,6 +188,7 @@ Rails.application.routes.draw do
     member do
       post 'resend_confirm'
       get  'confirm'
+      post 'confirm'
     end
     collection do
       post 'multi_action'

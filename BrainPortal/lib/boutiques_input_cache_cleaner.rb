@@ -108,7 +108,7 @@ module BoutiquesInputCacheCleaner
   # module's config.
   def to_clean_userfile_ids #:nodoc:
     descriptor = self.descriptor_for_save_results
-    input_ids  = descriptor.custom_module_info('BoutiquesInputCacheCleaner')
+    input_ids  = descriptor.custom_module_info('BoutiquesInputCacheCleaner') || []
     input_ids # 'my_input1', 'my_input2'
       .map { |inputid| invoke_params[inputid] } # the userfile ID(s) in the params; scalar or array
       .flatten                                  # flatten them all

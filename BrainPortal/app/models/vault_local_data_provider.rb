@@ -89,7 +89,7 @@ class VaultLocalDataProvider < LocalDataProvider
     issues    = []
     base_path = Pathname.new(remote_dir)
     users     = User.where({})
-    user_dirs = users.raw_rows(:login).flatten
+    user_dirs = users.pluck(:login)
 
     # Look for files outside user directories
     Dir.foreach(base_path).reject { |f| f.start_with?('.') || user_dirs.include?(f) }.each do |out|
@@ -104,7 +104,7 @@ class VaultLocalDataProvider < LocalDataProvider
     # Look for unregistered files in user directories
     users.each do |user|
       next unless File.directory?(base_path + user.login)
-      registered = self.userfiles.where(:user_id => user).raw_rows(:name).flatten
+      registered = self.userfiles.where(:user_id => user).pluck(:name)
       Dir.foreach(base_path + user.login).reject { |f| f.start_with?('.') || registered.include?(f) }.each do |unreg|
         issues << {
           :type      => :vault_unregistered,

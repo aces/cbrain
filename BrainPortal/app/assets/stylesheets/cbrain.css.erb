@@ -1809,6 +1809,7 @@ th.center_align_heading {
 }
 
 .tsk-sw-hdr,
+.tsk-sw-sub-hdr,
 .tsk-sw-name,
 .tsk-sw-val {
   background: inherit;
@@ -1824,6 +1825,14 @@ th.center_align_heading {
   text-align: left;
 }
 
+.tsk-sw-sub-hdr {
+  font-family: sans-serif;
+  font-size: 0.9em;
+  font-weight: bold;
+  text-align: left;
+  text-decoration: underline;
+}
+
 .tsk-sw-name {
   padding-right: 40px;
 }
@@ -1831,6 +1840,11 @@ th.center_align_heading {
 .tsk-sw-param > tr > .tsk-sw-hdr {
   padding-top: 5px;
 }
+
+.tsk-sw-param > tr > .tsk-sw-sub-hdr {
+  padding-top: 5px;
+}
+
 
 .tsk-sw-param > tr > .tsk-sw-val {
   font-family: monospace;
@@ -2586,6 +2600,8 @@ img {
   padding: 5px;
   border: 1px solid black;
   max-width: 42em;
+  word-wrap: break-word;
+  white-space: normal;
 }
 
 .white_bg {

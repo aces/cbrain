@@ -31,7 +31,7 @@ class BackgroundActivity::RemoveTaskWorkdir < BackgroundActivity::TerminateTask
     super(item) # invokes the terminate code; will skip tasks that don't need to be terminated
     cbrain_task  = CbrainTask.where(:bourreau_id => CBRAIN::SelfRemoteResourceId).find(item)
     ok           = cbrain_task.send(:remove_cluster_workdir) # it's a protected method
-    return [ true,  "Cleaned" ] if   ok
+    return [ true,  nil       ] if   ok
     return [ false, "Skipped" ] if ! ok
   end
 

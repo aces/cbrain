@@ -676,7 +676,7 @@ module ViewScopes
 
         # match is more-or-less LIKE
         when 'match'
-          pattern = "%#{@value.gsub(/([%_!])/, '!\1')}%"
+          pattern = "%#{@value.strip.gsub(/([%_!])/, '!\1')}%"
           return model.where("#{attribute} LIKE ? ESCAPE '!'", pattern)
 
         # range is exactly BETWEEN
@@ -986,7 +986,7 @@ module ViewScopes
       # Paginate +collection+, (an ActiveRecord model or a Ruby Enumerable)
       # with *per_page* elements per page, and return the paginated collection
       # scoped to the page corresponding to *page*.
-      def apply(collection)
+      def apply(collection, is_api_request = false)
         collection = collection.where(nil) if collection.is_a?(ApplicationRecord)
         collection = collection.to_a unless
           (collection.is_a?(ActiveRecord::Relation))
@@ -994,7 +994,12 @@ module ViewScopes
         # Validate @total and clamp @page and @per_page to a sane range
         total    = (@total || collection.size).to_i
         per_page = [1, @per_page.to_i, 1000].sort[1]
-        page     = [1, @page.to_i, (total + per_page - 1) / per_page].sort[1]
+        if is_api_request
+          page   = @page.to_i rescue 1
+          page   = 1 if page < 1
+        else
+          page   = [1, @page.to_i, (total + per_page - 1) / per_page].sort[1]
+        end
 
         # Is there a native paginate method available?
         if collection.respond_to?(:paginate)

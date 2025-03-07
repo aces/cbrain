@@ -28,15 +28,43 @@ module GlobusHelpers
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # So we have this mess of four possible redirect URLs:
+  #
+  #   /globus
+  #   /nh_globus
+  #   /oidc
+  #   /nh_oidc
+  #
+  # Originally, we used the 'globus' versions.
+  # The nh versions render the NH interface pages.
+  #
+  # In the future, we'll use the 'oidc' URLs only, which are the
+  # true API entry points. 'globus' is now just an alias.
+  #
+  # But if external identity providers are already configured
+  # with "globus" in their URL, we still want them to work.
+  # So the Oidc config class contains a option select explicitly
+  # for 'globus' instead of the default 'oidc'. And if +nh_mode+ is set,
+  # we use the 'nh_' routes version of each.
+  def oidc_redirect_url(oidc, nh_mode=false)
+    if oidc.use_globus_url.present? #old convention is globus
+      return globus_url if ! nh_mode
+      return nh_globus_url
+    end
+    # New convention is oidc
+    return oidc_url if ! nh_mode
+    return nh_oidc_url
+  end
+
   # Create a URL for a login button, with the redirect URL
   # to call back to.
-  def oidc_login_uri(oidc, redirect_url)
+  def oidc_login_uri(oidc, nh_mode=false)
     # Create the URI to authenticate with OIDC
     oidc_params = {
             :client_id     => oidc.client_id,
             :response_type => 'code',
             :scope         => oidc.scope,
-            :redirect_uri  => redirect_url,  # generated from Rails routes
+            :redirect_uri  => oidc_redirect_url(oidc, nh_mode),  # generated from Rails routes
             :state         => oidc_current_state(oidc), # method is below
     }
 
@@ -86,7 +114,10 @@ module GlobusHelpers
   # the trick. The Rails session is maintained by a cookie already
   # created and maintained, at this point.
   def oidc_current_state(oidc)
-    oidc.create_state( request.session_options[:id] )
+    # Some dubious clients post to /sessions with no prior cookies set, so rails end up
+    # with no ID for the session in the request. We generate a dummy one that will make auth fail.
+    rails_session_id = request.session_options[:id] || (rand(10000000000).to_s + rand(22222222222).to_s)
+    oidc.create_state( rails_session_id )
   end
 
   # Record the OIDC identity for the current user.
@@ -148,8 +179,9 @@ module GlobusHelpers
   end
 
   def wipe_user_password_after_oidc_link(oidc, user)
-    user.update_attribute(:crypted_password, "Wiped-By-#{oidc.name}-Link-" + User.random_string)
-    user.update_attribute(:salt            , "Wiped-By-#{oidc.name}-Link-" + User.random_string)
+    wipe_by = oidc.is_a?(String) ? "Wiped-By-#{oidc}-Link-" : "Wiped-By-#{oidc.name}-Link-"
+    user.update_attribute(:crypted_password, wipe_by + User.random_string)
+    user.update_attribute(:salt            , wipe_by + User.random_string)
     user.update_attribute(:password_reset  , false)
   end
 
@@ -213,9 +245,9 @@ module GlobusHelpers
   # Returns a hash table with keys being the names of the OidcConfigs
   # and values being the login URL that includes the redirect callback URL.
   # This is used by the interface to generate login buttons.
-  def generate_oidc_login_uri(oidc_providers, redirect_url)
+  def generate_oidc_login_uri(oidc_providers, nh_mode=false)
     oidc_providers.map do |oidc|
-      [ oidc.name, oidc_login_uri(oidc, redirect_url) ]
+      [ oidc.name, oidc_login_uri(oidc, nh_mode) ]
     end.to_h
   end
 

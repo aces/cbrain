@@ -31,8 +31,7 @@ class PortalTask < CbrainTask
   # This associate one of the keywords we use in the interface
   # to a task status that 'implements' the operation (basically,
   # simply setting the task's status to the value modifies the
-  # task's state). This is used in the tasks controller
-  # for issuing 'alter_tasks' remote commands.
+  # task's state). This is used in the tasks controller.
   #
   # Really, this should not be in the model, but in the controller somewhere.
   OperationToNewStatus = {
@@ -120,6 +119,12 @@ class PortalTask < CbrainTask
     # instance, "On CPU" to "Data Ready", which is
     # handled by the Bourreau Workers.
   }
+
+  # This constant is a direct way of accessing AllowedOperations, with
+  # true returned from AllowedOperationsHash[[state,newstate]]
+  AllowedOperationsHash = AllowedOperations.inject({}) do |hash,(state,newstates)|
+    newstates.each { |newstate| hash[[state,newstate]]=true } ; hash
+  end
 
 
 

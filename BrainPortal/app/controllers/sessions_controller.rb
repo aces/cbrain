@@ -46,7 +46,7 @@ class SessionsController < ApplicationController
     # Array of enabled OIDC providers configurations
     @oidc_configs    = OidcConfig.all
     # Hash of OIDC uris with the OIDC name as key
-    @oidc_uris       = generate_oidc_login_uri(@oidc_configs, globus_url)
+    @oidc_uris       = generate_oidc_login_uri(@oidc_configs)
 
     respond_to do |format|
       format.html
@@ -62,7 +62,7 @@ class SessionsController < ApplicationController
     # Array of enabled OIDC providers configurations
     @oidc_configs       = OidcConfig.all
     # Array of URIs to redirect to OIDC providers
-    @oidc_uris          = generate_oidc_login_uri(@oidc_configs, globus_url)
+    @oidc_uris          = generate_oidc_login_uri(@oidc_configs)
 
     respond_to do |format|
       format.html
@@ -81,7 +81,7 @@ class SessionsController < ApplicationController
       # Array of enabled OIDC providers configurations
       @oidc_configs   = OidcConfig.all
       # Hash of OIDC uris with the OIDC name as key
-      @oidc_uris      = generate_oidc_login_uri(@oidc_configs, globus_url)
+      @oidc_uris      = generate_oidc_login_uri(@oidc_configs)
 
       auth_failed()
       return
@@ -157,7 +157,7 @@ class SessionsController < ApplicationController
     end
 
     # Query OpenID provider; this returns all the info we need at the same time.
-    identity_struct = oidc_fetch_token(oidc, code, globus_url) # globus_url is generated from routes
+    identity_struct = oidc_fetch_token(oidc, code, oidc_redirect_url(oidc))
     if !identity_struct
       cb_error "Could not fetch your identity information from #{oidc.name}"
     end

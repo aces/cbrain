@@ -605,8 +605,6 @@ class CbrainTask < ApplicationRecord
     end
     if numchanges > 0
       self.addlog("Total of #{numchanges} changes observed.")
-    else
-      self.addlog("No changes to params observed.")
     end
   end
 
@@ -1033,6 +1031,32 @@ class CbrainTask < ApplicationRecord
     return false if ! self.respond_to?(:base_zenodo_deposit) || ! self.respond_to?(:zenodo_outputfile_ids)
     true
   end
+
+
+
+  ##################################################################
+  # API support methods
+  ##################################################################
+
+  # Override the default for_api() method so that the resulting
+  # list of attributes also contains some more pseudo-attributes
+  # implemented as attr_accessor :
+  #
+  #   cluster_stdout
+  #   cluster_stderr
+  #   script_text
+  def for_api
+    orig = super.dup
+    # The reason for this ugly set of assignments is that we can't
+    # have the keys with null values in some of the test suites, and
+    # for backwards compatibility too.
+    orig['cluster_stdout'] = self.cluster_stdout if self.cluster_stdout.present?
+    orig['cluster_stderr'] = self.cluster_stderr if self.cluster_stderr.present?
+    orig['script_text']    = self.script_text    if self.script_text.present?
+    orig
+  end
+
+
 
   # Returns a structure with miscellaneous info about the task;
   # only really useful for a task that has completed.

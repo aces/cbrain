@@ -40,7 +40,7 @@ class BackgroundActivity::VerifyDataProvider < BackgroundActivity
       return [ false, "Missing SSH key for #{dp_user.login}" ] unless key_ok
     end
     is_alive = data_provider.is_alive_with_caching?
-    return [ true,  "" ] if is_alive
+    return [ true, nil ] if is_alive
     return [ false, "Not alive: #{data_provider.name}" ]
   end
 

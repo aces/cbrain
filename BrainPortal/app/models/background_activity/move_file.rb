@@ -41,7 +41,7 @@ class BackgroundActivity::MoveFile < BackgroundActivity
     dest_dp_id = self.options[:dest_data_provider_id]
     dest_dp    = DataProvider.find(dest_dp_id)
     ok         = userfile.provider_move_to_otherprovider(dest_dp, self.options || {})
-    message    = ok ? "Moved" : "Failed to move '#{userfile.name}'"
+    message    = ok ? nil : "Failed to move '#{userfile.name}'"
     [ ok, message ]
   end
 

@@ -33,7 +33,7 @@ class BackgroundActivity::DuplicateTask < BackgroundActivity
     new_bid      = options[:dup_bourreau_id].presence || task.bourreau_id
     new_bourreau = Bourreau.find(new_bid)
     ok           = task.duplicate!(new_bourreau)
-    return [ true,  "Duplicated" ] if   ok
+    return [ true,  nil          ] if   ok
     return [ false, "Skipped"    ] if ! ok
   end
 

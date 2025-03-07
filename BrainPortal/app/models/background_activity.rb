@@ -49,7 +49,9 @@
 #   current_item        # increasing counter within items, starts at 0
 #   num_successes       # as processing goes on records successes
 #   num_failures        # same for failures
-#   messages            # array of string messages, aligned with items (serialized)
+#   messages            # array of string messages, aligned with items (serialized);
+#                       # by convention, the message nil is used to indicate an item
+#                       # was processed properly
 #   options             # hash of arbitrary options, specific to the BAC class
 #   created_at
 #   updated_at
@@ -258,10 +260,14 @@ class BackgroundActivity < ApplicationRecord
     ok,message = nil,nil
     begin
       ok,message = self.process(item)
-    rescue => ex
+    rescue ActiveRecord::RecordNotFound
       ok      = false
+      message = 'NotFound'
+    rescue => ex
+      ok = false
       better_message = ex.message
-      better_message.sub!(/\[WHERE.*/, "") if ex.is_a?(ActiveRecord::RecordNotFound)
+      # place code here to simplify other common exception messages
+      better_message.sub!(/Internal error: Cannot create or find SyncStatus object for userfile.*/, "No SyncStatus")
       message = "#{ex.class}: #{better_message}"
     end
 
@@ -319,6 +325,100 @@ class BackgroundActivity < ApplicationRecord
       .sort_by    { |_,c| c }
       .reverse
     counts[0..4].map { |m,c| "#{c}x #{m.strip}" }
+  end
+
+  # Returns an array of all items that have been
+  # processed properly; by default this is the
+  # equivalent of selected_items_from_nil_messages
+  # but subclasses can override this behavior.
+  def successful_items
+    selected_items_from_nil_messages()
+  end
+
+  # Returns an array of all items that have failed
+  # to process properly; by default this is the
+  # equivalent of selected_items_from_present_messages
+  # but subclasses can override this behavior.
+  def failed_items
+    selected_items_from_present_messages()
+  end
+
+  # Returns the tail end of the items list
+  # containing all the items yet to be processed,
+  # that is, items with index >= current_item
+  def remaining_items
+    self.items[self.current_item..-1] || []
+  end
+
+  # Utility method that returns an ordered subset of
+  # the items list, but only for items where
+  # the associated message (in the +messages+ list)
+  # match the regular expression +regex+ . If
+  # +regex+ is nil, will return the subset of items where
+  # the associated messages is nil.
+  #
+  # Note that the official interface for extracting
+  # successful and failed items are in the methods
+  # +failed_items+ and +successful_items+.  These two methods
+  # actually indirectly invoke this method here.
+  #
+  # By convention, a succesfully processed item is
+  # generally recorded as a nil in the message array,
+  # and a failed or skipped item is recorded with
+  # a short message. So this method can be used to:
+  #
+  # 1. retrieve a list of successful items
+  #
+  #   selected_items_from_messages_matching(nil)
+  #
+  # 2. retrieve a list of failed items (any reason)
+  #
+  #   selected_items_from_messages_matching(/./)
+  #
+  # 3. retrieve a list of specific failures (e.g. Skipped keyword)
+  #
+  #   selected_items_from_messages_matching(/skip/i)
+  #
+  # This method scans the messages array, so if the current
+  # BAC is in progress and the messages array is shorter
+  # then the items array, it will not report any items
+  # that have not yet been attempted (that is, with index
+  # greater than the size of the messages array).
+  #
+  # This method cannot work on items that have a nil
+  # value.
+  def selected_items_from_messages_matching(regex)
+    myitems = self.items
+    messages.each_with_index.map do |mess,idx|
+      next myitems[idx] if regex.nil? && mess.nil?
+      next nil          if regex.nil?
+      next myitems[idx] if mess.to_s.match?(regex)
+      next nil
+    end.compact
+  end
+
+  # This is a utility method that runs
+  #
+  #   selected_items_from_messages_matching(nil)
+  #
+  # thus returning the subset of items that recorded
+  # a message value +nil+ (usually, success).
+  #
+  # See also the method +successful_items+ .
+  def selected_items_from_nil_messages
+    selected_items_from_messages_matching(nil)
+  end
+
+  # This is a utility method that runs
+  #
+  #   selected_items_from_messages_matching(/./)
+  #
+  # thus returning the subset of items that
+  # retured a string message (usually, a failure).
+  #
+  # See also the method +failed_items+ .
+  def selected_items_from_present_messages
+    selected_items_from_messages_matching(/./)
   end
 
   ###########################################
@@ -561,8 +661,7 @@ class BackgroundActivity < ApplicationRecord
   # 5- internally double retry_delay (so that at the next retry, the
   # rescheduling happens even later)
   #
-  # For step 3 to work, a BAC's class must implement the method indices_of_failures();
-  # if this method doesn't exist, retrying will fail.
+  # For step 3 to work, a BAC's class must implement the method failed_items() properly.
   #
   # If everything is ok, this method returns the backup object created
   # in step 1, otherwise it returns nil.
@@ -571,8 +670,7 @@ class BackgroundActivity < ApplicationRecord
     # First, a few consistency checks and cleanup at the same time.
     if (self.status !~ /Failed|PartiallyCompleted/) ||
        (self.retry_count.blank?)                    ||
-       (self.retry_count < 1)                       ||
-       (self.status == "PartiallyCompleted" && ! self.respond_to?(:indices_of_failures))
+       (self.retry_count < 1)
       self.zap_retry_attributes
       self.save
       return nil
@@ -591,13 +689,7 @@ class BackgroundActivity < ApplicationRecord
     # If the bac is in PartiallyCompleted state,
     # we extract just the elements to try again.
     if self.status = "PartiallyCompleted"
-      fail_idx = self.indices_of_failures rescue nil
-      if fail_idx.blank? || (!fail_idx.is_a?(Array)) # that's an error
-        self.internal_error!('Bad value for indices_of_failures()')
-        return nil
-      end
-      orig_items = self.items
-      new_items  = fail_idx.sort.map { |i| orig_items[i] }.compact
+      new_items = self.failed_items
       if new_items.blank?
         self.internal_error!('No items list after retry')
         return nil
@@ -630,6 +722,20 @@ class BackgroundActivity < ApplicationRecord
   rescue => ex
     self.internal_error!("setup_retry: #{ex.class} #{ex.message} #{ex.backtrace.first}")
     return nil
+  end
+
+  # This method takes a failed BAC and schedules an immediate retry
+  # even if it wasn't originally configured as retryable.
+  # The retry_count will be set to 1, setup_retry! will be invoked
+  # and the scheduled start will be set to +when+ .
+  # Returns the backup BAC object just likes setup_retry!
+  def force_single_retry(when_at=Time.now)
+    self.update_column(:retry_count, 1)
+    backup_bac = self.setup_retry!
+    if backup_bac
+      self.update_column(:start_at, when_at)
+    end
+    backup_bac
   end
 
   # On a retry backup object, returns the ID of the main target

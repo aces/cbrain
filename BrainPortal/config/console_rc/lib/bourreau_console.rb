@@ -49,5 +49,10 @@ end
 ========================================================
 Feature: invoking a console on a bourreau, for debugging
 ========================================================
-  Activate with: bourreau.console ; Bourreau.console(id)
+  bourreau.console     # if bourreau is a Bourreau object
+  Bourreau.console(id) # if you have th ID
+
+  Note: do not connect from the same terminal that started
+  the bourreau with 'ibc', the pseudo-ttys get confused.
+  Start another rails console in another terminal if needed.
 FEATURES

@@ -145,6 +145,7 @@ class ScirSge < Scir
       command += "#{Scir.cbrain_config[:extra_qsub_args]} " unless Scir.cbrain_config[:extra_qsub_args].blank?
       command += "#{self.tc_extra_qsub_args} "              unless self.tc_extra_qsub_args.blank?
       command += "-l h_rt=#{self.walltime.to_i} "           unless self.walltime.blank?
+      command += "-l mem_free=#{self.memory}M "             unless self.memory.blank?
       command += "#{shell_escape(self.arg[0])}"
       command += " 2>&1"
 
