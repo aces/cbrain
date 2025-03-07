@@ -67,7 +67,7 @@
       <% end %>
       
       <%- # projects -%>
-      <% if page_is?("nh_projects#new", "nh_invitations#new") %>
+      <% if page_is?("nh_projects#", "nh_invitations#new") %>
         <%= link_to "Projects", nh_projects_path, { :class => "nh_breadcrumbs_item", "data-active" => page_is?("nh_projects#index") }%>
 
         <% if(@nh_project && @nh_project.id)%>
