@@ -167,11 +167,7 @@
       <strong>Your current time:</strong> <%= to_localtime(Time.now, :datetime) %><BR>
     </p>
     <p>
-    <p>
-      <strong> The complete list of curated datasets and all <%= @tool_names.count %> tools on this portal:</strong> <%= link_to 'here.', available_path %>
-    </p>
-    <p>
-      <strong> Tools available to you:</strong><br/>
+      <strong> Tools available to you (<%= current_user.available_tools.count  %> out of <%= @tool_names.count %>, <%= link_to 'full list of all tools here', available_path %>):</strong><br/>
       <%= array_to_table(current_user.available_tools.pluck(:name).sort & @tool_names, :table_class => 'simple', :cols => 4) %>
     </p>
     <p>
