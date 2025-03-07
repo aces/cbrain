@@ -167,14 +167,11 @@
       <strong>Your current time:</strong> <%= to_localtime(Time.now, :datetime) %><BR>
     </p>
     <p>
+      <strong> Tools available to you (<%= current_user.available_tools.count  %> out of <%= @tool_names.count %>, <%= link_to 'full list of all tools here', available_path %>):</strong><br/>
+      <%= array_to_table(current_user.available_tools.pluck(:name).sort & @tool_names, :table_class => 'simple', :cols => 4) %>
+    </p>
+    <p>
        <strong>Projects you belong to:</strong>  <%= array_to_table(@groups, :table_class => 'simple', :cols => 4) { |g,r,c| link_to_group_if_accessible(g) } %>
-    </p>
-    <p>
-      <strong>Tools available to you:</strong><br/>
-      <%= array_to_table(current_user.available_tools.where( "category <> 'background'" ).to_a.map(&:name).sort, :table_class => 'simple', :cols => 4) %>
-    </p>
-    <p>
-      <strong>Note:</strong> A full list of all tools and datasets is <%= link_to 'here', available_path %>
     </p>
     <p>
       <strong>Your default Data Provider:</strong> <%= link_to_data_provider_if_accessible(@default_data_provider) %>
