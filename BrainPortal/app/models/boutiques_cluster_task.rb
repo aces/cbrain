@@ -100,15 +100,17 @@ class BoutiquesClusterTask < ClusterTask
 
   # narrows down local dp paths only to the most relevant, to be used at setup
   def local_dp_storage_paths
-    return super & input_file_dps.pluck(:remote_dir)
+    return super & input_file_dps.select{ |dp| dp.is_fast_syncing? }.pluck(:remote_dir)
   end
 
-  # lists the dp involved into input files
+  # lists the dp involved into input files, unique
   def input_file_dps
     file_ids = descriptor_for_setup.file_inputs.map do |input|
       invoke_params[input.id]
     end
-    return Userfile.where(id: file_ids).map &:data_provider
+    return DataProvider.joins(:userfiles)
+                       .where(userfiles: { id: file_ids })
+                       .distinct
   end
 
   def cluster_commands #:nodoc:
