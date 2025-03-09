@@ -112,16 +112,6 @@ class ClusterTask < CbrainTask
     self.addlog("#{subrev.basename} rev. #{subrev.short_commit}",   :caller_level => caller_level + 1)
   end
 
-  # This determines if the task expects to only read its input files,
-  # or modify them, and return respectively :read or :write (the default).
-  # The symbol can be passed to methods such as Userfile.find_accessible_by_user().
-  # Depending on the value, more or less files are allowed to be processed.
-  # When the value is :read, it means we only need file for input and not
-  # for output.
-  def file_access_symbol
-    @_file_access ||= (self.class.properties[:readonly_input_files].present? || self.tool_config.try(:inputs_readonly) ? :read : :write)
-  end
-
 
 
   ##################################################################
