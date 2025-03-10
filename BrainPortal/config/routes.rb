@@ -250,33 +250,6 @@ Rails.application.routes.draw do
   # Portal log
   get   '/portal_log',            :controller => :portal, :action => :portal_log
 
-  ####################################################################################
-  # CARMIN platform routes
-  ####################################################################################
-  get    '/platform',               :controller => :carmin, :action => :platform
-  post   '/authenticate',           :controller => :carmin, :action => :authenticate
-  get    '/executions',             :controller => :carmin, :action => :executions
-  get    '/executions/count',       :controller => :carmin, :action => :exec_count
-  get    '/executions/:id/results', :controller => :carmin, :action => :exec_results
-  get    '/executions/:id/stdout',  :controller => :carmin, :action => :exec_stdout
-  get    '/executions/:id/stderr',  :controller => :carmin, :action => :exec_stderr
-  put    '/executions/:id/play',    :controller => :carmin, :action => :exec_play
-  put    '/executions/:id/kill',    :controller => :carmin, :action => :exec_kill
-  put    '/executions/:id',         :controller => :carmin, :action => :exec_update
-  get    '/executions/:id',         :controller => :carmin, :action => :exec_show
-  delete '/executions/:id',         :controller => :carmin, :action => :exec_delete
-  post   '/executions',             :controller => :carmin, :action => :exec_create
-  get    '/pipelines',              :controller => :carmin, :action => :pipelines
-  get    '/pipelines/:id',          :controller => :carmin, :action => :pipelines_show
-  get    '/pipelines/:id/boutiquesdescriptor', # man is this long!
-                                    :controller => :carmin, :action => :pipelines_boutiques
-  # Note: the constraints below prevent the parser from processing and removing the extensions
-  # to the paths given, e.g. for '/path/mydir/hello.txt', the :path will be 'mydir/hello.txt'
-  get    '/path/*path',             :controller => :carmin, :action => :path_show,    :constraints => { :path => nil }
-  put    '/path/*path',             :controller => :carmin, :action => :path_create,  :constraints => { :path => nil }
-  delete '/path/*path',             :controller => :carmin, :action => :path_delete,  :constraints => { :path => nil }
-
-
 
   ####################################################################################
   # NeuroHub routes

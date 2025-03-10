@@ -577,33 +577,6 @@ class ToolConfig < ApplicationRecord
     self.errors.add(:version_name, 'cannot be changed because this is a Boutiques tool')
   end
 
-  ##################################################################
-  # CARMIN converters
-  ##################################################################
-
-  public
-
-  # Returns a CARMIN-compliant structure for their 'Piepline' model.
-  # We combine the information of the ToolConfig, and its associated
-  # Bourreau and Tool.
-  def to_carmin #:nodoc:
-    bourreau = self.bourreau
-    tool     = self.tool
-    {
-      :identifier         => self.id,
-      :name               => "#{tool.name}@#{bourreau.name}",
-      :version            => self.version_name,
-      :description        => "#{tool.description}\n#{self.description}".strip,
-      :canExecute         => true,
-      :parameters         => [ { } ], # PipelineParameter ... TODO
-      :properties         => {
-        :tool_name    => tool.name,
-        :exec_name    => bourreau.name,
-        :version_name => self.version_name,
-      },
-      :errorCodesAndMessages => [], # TODO
-    }
-  end
 
   ##################################################################
   # Boutiques Integrator: Descriptor Registration
