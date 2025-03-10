@@ -941,5 +941,20 @@ class BackgroundActivity < ApplicationRecord
     options_have!(key)
   end
 
+  public
+
+  # Patch: pre-load all model files for the subclasses
+  def self.preload_subclasses
+    Dir.chdir(Rails.root + "app/models/background_activity") do
+      Dir.glob("*.rb").each do |model_file|
+        next unless File.file?(model_file)
+        model = model_file.sub(/\.rb$/,"").classify
+        next if BackgroundActivity.const_defined? model # already loaded? Skip.
+        #puts_blue "Loading Userfile subclass #{model} from #{model_file} ..."
+       require_dependency(Rails.root + "app/models/background_activity" + model_file)
+      end
+    end
+  end
+
 end
 

@@ -38,8 +38,10 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     # which forces the pre-load of all their subclasses.
     Userfile.nil?
     ClusterTask.nil? # not PortalTask, which is only on the BrainPortal rails app
+    BackgroundActivity.nil?
     Userfile.preload_subclasses
     ClusterTask.preload_subclasses
+    BackgroundActivity.preload_subclasses
   end
 
 
