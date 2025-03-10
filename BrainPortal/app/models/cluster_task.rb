@@ -1316,9 +1316,9 @@ class ClusterTask < CbrainTask
   # Work Directory Archiving API
   ##################################################################
 
-  def in_situ_workdir_archive_file #:nodoc:
+  def in_situ_workdir_archive_file(nozip) #:nodoc:
     fn_id = self.fullname.gsub(/[^\w\-]+/,"_").sub(/\A_*/,"").sub(/_*$/,"")
-    "CbrainTask_Workdir_#{fn_id}.tar.gz" # note: also check in the TaskWorkdirArchive model
+    "CbrainTask_Workdir_#{fn_id}.tar#{'.gz' unless nozip}" # note: also check in the TaskWorkdirArchive model
   end
 
   # This method will create a .tar.gz file of the
@@ -1329,7 +1329,7 @@ class ClusterTask < CbrainTask
   # in_situ_workdir_archive_file(). Restoring the
   # state of the workdir can be performed with
   # unarchive_work_directory().
-  def archive_work_directory
+  def archive_work_directory(nozip = false)
 
     # Keep updated_at value in order to reset it at the end of method
     updated_at_value = self.updated_at
@@ -1340,7 +1340,7 @@ class ClusterTask < CbrainTask
     cb_error "Tried to archive a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
 
-    tar_file      = self.in_situ_workdir_archive_file
+    tar_file      = self.in_situ_workdir_archive_file(nozip)
     temp_tar_file = "T_#{tar_file}"
     tar_capture   = "/tmp/tar.capture.#{Process.pid}.out"
 
@@ -1390,7 +1390,7 @@ class ClusterTask < CbrainTask
 
       system("chmod","-R","u+rwX",".") # uppercase X mode affects only directories
       status = with_stdout_stderr_capture(tar_capture) do
-        system("tar","-czf", temp_tar_file, "--exclude", "*#{temp_tar_file}", ".")
+        system("tar","-c#{'z' unless nozip }f", temp_tar_file, "--exclude", "*#{temp_tar_file}", ".")
         $? # a Process::Status object
       end
 
@@ -1464,7 +1464,7 @@ class ClusterTask < CbrainTask
     cb_error "Tried to unarchive a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
 
-    tar_file      = self.in_situ_workdir_archive_file
+    tar_file      = self.in_situ_workdir_archive_file(false)  # first assume tar file is gzip-compressed
     tar_capture   = "/tmp/tar.capture.#{Process.pid}.out"
 
     if self.cluster_workdir.blank?
@@ -1542,12 +1542,12 @@ class ClusterTask < CbrainTask
   # is the task's results_data_provider_id.
   # Restoring the state of the workdir can be performed
   # with unarchive_work_directory_from_userfile().
-  def archive_work_directory_to_userfile(dp_id = nil)
-    return false unless self.archive_work_directory
+  def archive_work_directory_to_userfile(dp_id = nil, nozip = nil)
+    return false unless self.archive_work_directory(nozip)
     file_id  = self.workdir_archive_userfile_id
     return true if file_id
-
     full=self.full_cluster_workdir
+
     if ! Dir.exists?(full)
       self.addlog("Cannot archive: work directory '#{full}' does not exist.")
       return false
@@ -1559,7 +1559,7 @@ class ClusterTask < CbrainTask
       return false
     end
 
-    tar_file = self.in_situ_workdir_archive_file
+    tar_file = self.in_situ_workdir_archive_file(nozip)
 
     Dir.chdir(full) do
       if ! File.exists?(tar_file)
@@ -1604,7 +1604,6 @@ class ClusterTask < CbrainTask
   # the method fetches it, and use its content
   # to recreate the task's work directory.
   def unarchive_work_directory_from_userfile
-    tar_file = self.in_situ_workdir_archive_file
 
     return false unless self.workdir_archived? && self.workdir_archive_userfile_id
 
@@ -1617,6 +1616,9 @@ class ClusterTask < CbrainTask
       self.update_column(:workdir_archive_userfile_id,nil)
       return false
     end
+
+    nozip    = !taskarch_userfile.name.end_with?(".gz")  # archive is likely zipped if ends with gz
+    tar_file = self.in_situ_workdir_archive_file(nozip)
 
     self.addlog("Attempting to restore TaskWorkdirArchive.")
 
@@ -2054,6 +2056,7 @@ exit $status
     cb_error "Tried to remove a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
     return true if self.share_wd_tid.present?  # Do not erase if using some other task's workdir.
+
     full=self.full_cluster_workdir
     return if full.blank?
     self.addlog("Removing workdir '#{full}'.")
