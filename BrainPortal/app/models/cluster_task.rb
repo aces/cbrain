@@ -1466,6 +1466,7 @@ class ClusterTask < CbrainTask
 
     tar_file      = self.in_situ_workdir_archive_file(false)  # first assume tar file is gzip-compressed
     tar_capture   = "/tmp/tar.capture.#{Process.pid}.out"
+
     if self.cluster_workdir.blank?
       self.addlog("Cannot unarchive: no work directory configured.")
       return false
