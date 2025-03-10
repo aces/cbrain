@@ -387,7 +387,6 @@ class CbrainTask < ApplicationRecord
     header
   end
 
-
   # This determines if the task expects to only read its input files,
   # or modify them, and return respectively :read or :write (the default).
   # The symbol can be passed to methods such as Userfile.find_accessible_by_user().
@@ -397,6 +396,7 @@ class CbrainTask < ApplicationRecord
   def file_access_symbol
     @_file_access ||= (self.class.properties[:readonly_input_files].present? || self.tool_config.try(:inputs_readonly) ? :read : :write)
   end
+
 
 
   ##################################################################
