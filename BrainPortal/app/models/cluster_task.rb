@@ -2384,10 +2384,11 @@ docker_image_name=#{full_image_name.bash_escape}
     # must be on a device different from the one for the work directory.
     capture_basenames = ext3capture_basenames.map { |basename,_| basename }
 
-    # (4) More -B (bind mounts) for all the local data providers.
+    # (4) More -B (bind mounts) for all the relevant local data providers.
     # This will be a string "-B path1 -B path2 -B path3" etc.
+    # In the case of read-only input files, ro option is added
     esc_local_dp_mountpoints = local_dp_storage_paths.inject("") do |sing_opts,path|
-      "#{sing_opts} -B #{path.bash_escape}"
+      "#{sing_opts} -B #{path.bash_escape}#{":#{path.bash_escape}:ro" if file_access_symbol == :read}"
     end
 
     # (5) Overlays defined in the ToolConfig
