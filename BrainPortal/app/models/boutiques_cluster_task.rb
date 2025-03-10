@@ -103,7 +103,7 @@ class BoutiquesClusterTask < ClusterTask
     return super & input_file_dps.select{ |dp| dp.is_fast_syncing? }.pluck(:remote_dir)
   end
 
-  # lists the dp involved into input files, unique
+  # retrieve (distinct) data providers that host the task's input files
   def input_file_dps
     file_ids = descriptor_for_setup.file_inputs.map do |input|
       invoke_params[input.id]
