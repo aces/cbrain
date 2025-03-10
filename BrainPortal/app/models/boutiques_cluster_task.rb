@@ -98,6 +98,21 @@ class BoutiquesClusterTask < ClusterTask
     true
   end
 
+  # narrows down local dp paths only to the most relevant, to be used at setup
+  def local_dp_storage_paths
+    return super & input_file_dps.select{ |dp| dp.is_fast_syncing? }.pluck(:remote_dir)
+  end
+
+  # retrieve (distinct) data providers that host the task's input files
+  def input_file_dps
+    file_ids = descriptor_for_setup.file_inputs.map do |input|
+      invoke_params[input.id]
+    end
+    return DataProvider.joins(:userfiles)
+                       .where(userfiles: { id: file_ids })
+                       .distinct
+  end
+
   def cluster_commands #:nodoc:
     # Our two main JSON structures for 'bosh'
     descriptor    = self.descriptor_for_cluster_commands
@@ -460,16 +475,6 @@ class BoutiquesClusterTask < ClusterTask
 
   def invoke_params
     self.params[:invoke] ||= {}
-  end
-
-  # This determines if the task expects to only read its input files,
-  # or modify them, and return respectively :read or :write (the default).
-  # The symbol can be passed to methods such as Userfile.find_accessible_by_user().
-  # Depending on the value, more or less files are allowed to be processed.
-  # When the value is :read, it means we only need file for input and not
-  # for output.
-  def file_access_symbol
-    @_file_access ||= (self.class.properties[:readonly_input_files].present? || self.tool_config.try(:inputs_readonly) ? :read : :write)
   end
 
 end
