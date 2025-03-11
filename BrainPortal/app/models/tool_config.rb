@@ -356,8 +356,8 @@ class ToolConfig < ApplicationRecord
     self.tool.cbrain_task_class
   end
 
-  # Returns an array of full paths to the Singularity overlay files that
-  # need to be mounted, along with explanation of their origin.
+  # Returns a hash of full paths to the Singularity overlay files that
+  # need to be mounted along with explanation of their origin.
   # Some of paths might
   # be patterns and will need to be resolved at run time. The dsl is
   #      # A file located on the cluster
@@ -372,31 +372,30 @@ class ToolConfig < ApplicationRecord
     specs = parsed_overlay_specs
     specs.map do |knd, id_or_name|
 
-      # Old style file spec (legacy, to be removed)
-      next ["Local File", knd, [knd]] if knd =~ /^\//  # FIXME delete it after successful migration
-
       case knd
       when 'dp'
         dp = DataProvider.where_id_or_name(id_or_name).first
         cb_error "Can't find DataProvider #{id_or_name} for fetching overlays" if ! dp
         dp_ovs = dp.singularity_overlays_full_paths rescue nil
         cb_error "DataProvider #{id_or_name} does not have any overlays configured." if dp_ovs.blank?
-        ["Data Provider", id_or_name, dp_ovs]
+        dp_ovs.map do |dp_path|
+          { dp_path => "Data Provider" }
+        end
       when 'file'
         cb_error "Provide absolute path for overlay file '#{id_or_name}'." if (Pathname.new id_or_name).relative?
-        ["local file", id_or_name, [id_or_name]]  # for local file, it is full file name (no ids)
+        { id_or_name => "local file" }  # for local file, it is full file name (no ids)
       when 'userfile'
         # db registered file, note admin can access all files
         userfile = SingleFile.where(:id => id_or_name).last
         cb_error "Userfile with id '#{id_or_name}' for overlay fetching not found." if ! userfile
         userfile.sync_to_cache() rescue cb_error "Userfile with id '#{id_or_name}' for fetching overlay failed to synchronize."
-        ["registered file with id", id_or_name, [userfile.cache_full_path()]]
+        { userfile.cache_full_path() =>  "registered userfile" }
       when 'ext3capture'
-        nil  # handled separately
+        []  # handled separately
       else
         cb_error "Invalid '#{knd}:#{id_or_name}' overlay."
       end
-    end.uniq.compact
+    end.flatten.reduce(&:merge)
   end
 
   # Returns an array of the data providers that are
@@ -446,7 +445,7 @@ class ToolConfig < ApplicationRecord
       errors[:container_engine] = "a container hub image name or a container image userfile ID should be set when the container engine is set"
     end
 
-    if self.container_engine.present? && self.container_engine == "Singularity" 
+    if self.container_engine.present? && self.container_engine == "Singularity"
       if self.container_index_location.present? && self.container_index_location !~ /\A[a-z0-9]+\:\/\/\z/i
         errors[:container_index_location] = "is invalid for container engine Singularity. Should end in '://'."
       end
@@ -486,14 +485,8 @@ class ToolConfig < ApplicationRecord
     # Iterate over each spec and validate them
     specs.each do |kind, id_or_name|
 
-      # compatibility layer for old file spec format, to be eventually deleted after migration
-      if id_or_name.nil?
-        id_or_name = kind
-        kind = 'old style file'
-      end
-
       case kind # different validations rules for file, userfile and dp specs
-      when 'file', 'old style file' # full path specification for a local file, e.g. "file:/myfiles/c.sqs"
+      when 'file' # full path specification for a local file, e.g. "file:/myfiles/c.sqs"
         if id_or_name !~ /^\/\S+\.(sqs|sqfs|squashfs)$/
           self.errors.add(:singularity_overlays_specs,
             " contains invalid #{kind} named '#{id_or_name}'. It should be a full path that ends in .squashfs, .sqs or .sqfs")

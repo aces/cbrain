@@ -2367,6 +2367,7 @@ docker_image_name=#{full_image_name.bash_escape}
       mountpoint = "#{effect_workdir}/#{basename}" # e.g. /path/to/workdir/work or /T123/work
       install_ext3fs_filesystem(fs_name,size)
       safe_mkdir(basename)
+      self.addlog("Overlay configured: ext3 capture #{fs_name}")
       "#{sing_opts} -B #{fs_name.bash_escape}:#{mountpoint.bash_escape}:image-src=/"
     end
     # This list will be used to make a device number check: all components
@@ -2383,16 +2384,14 @@ docker_image_name=#{full_image_name.bash_escape}
     # Some of them might be patterns (e.g. /a/b/data*.squashfs) that need to
     # be resolved locally.
     # This will be a string "--overlay=path:ro --overlay=path:ro" etc.
-    overlay_paths = self.tool_config.singularity_overlays_full_paths.map do |knd, id_or_name, paths|
-      self.addlog("Processing container overlay spec #{knd} #{id_or_name}:")
-      paths.map do |path|
-        self.addlog(" - checking #{path} ... ")
-        local_paths = Dir.glob(path) # assume no glob expression in overlay files
-        cb_error "Can't find any local file matching '#{path}'" if local_paths.blank?
-        self.addlog("   found local file(s) #{local_paths.join', '}")
-        local_paths
+    overlay_paths = self.tool_config.singularity_overlays_full_paths.map do |path, knd|
+      paths = Dir.glob(path) # assume no glob expression in overlay files
+      cb_error "Can't find any local file matching overlay '#{path}'" if paths.blank?
+      paths.each do |f|
+        f = File.basename(f) if knd == 'registered userfile'
+        self.addlog("Overlay configured: #{knd} #{f}")
       end
-    end.flatten
+    end.flatten.uniq  #  paths can repeat e.g with too broad patterns
     overlay_mounts = overlay_paths.inject("") do |sing_opts,path|
       "#{sing_opts} --overlay=#{path.bash_escape}:ro"
     end
@@ -2562,9 +2561,7 @@ bash -c "exit $_cbrain_status_"
 
   # Just invokes the same method on the task's ToolConfig.
   def ext3capture_basenames
-    names = self.tool_config.ext3capture_basenames
-    self.addlog("Overlaying ext3 capturing basenames #{names}")
-    names
+    self.tool_config.ext3capture_basenames
   end
 
   # This method creates an empty +filename+ with +size+ bytes
@@ -2982,4 +2979,3 @@ bash -c "exit $_cbrain_status_"
   end
 
 end
-
