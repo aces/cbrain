@@ -1,1 +1,0 @@
-GET /path/topdir/file1.txt?NTOK&action=properties application/json NoRubyClient
