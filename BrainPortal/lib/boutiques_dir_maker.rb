@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2023
+# Copyright (C) 2008-2025
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -48,6 +48,8 @@ module BoutiquesDirMaker
 
   # create few sub directories in the work folder
   def cluster_commands #:nodoc:
+    # invoke overridden method
+    commands = super
 
     # Log revision information
     self.addlog("Creating directories with BoutiquesDirMaker.")
@@ -57,10 +59,6 @@ module BoutiquesDirMaker
 
     descriptor = self.descriptor_for_setup
     patterns   = descriptor.custom_module_info('BoutiquesDirMaker')
-
-    # invoke overridden method
-    commands = super
-    return false if ! commands # early return
 
     substitutions_by_token  = descriptor.build_substitutions_by_tokens_hash(
       JSON.parse(File.read(self.invoke_json_basename))
