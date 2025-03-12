@@ -1,0 +1,115 @@
+TABLE OF CBRAIN SPECIFIC BOUTIQUES CUSTOM PROPERTIES
+
+The standard Boutiques properties set does not cover all the need for CBRAIN
+thus we introduce a number of custom properties, which can be added to the
+"custom" section of a Boutiques descriptor, to fine-tune the way CBRAIN
+interpret the descriptor. For example,
+
+
+    "custom":{
+        "cbrain:readonly-input-files":true,
+        "cbrain:author":"Erik Lee <leex6144@umn.edu>",
+        "cbrain:allow_empty_strings":[
+            "derivatives_prefix"
+        ],
+        "cbrain:no-run-id-for-outputs":[
+            "OutputDirectory"
+        ],
+        "cbrain:integrator_modules":{
+            "BoutiquesFileTypeVerifier":{
+                "SubjectDirectory":[
+                    "BidsSubject"
+                ]
+            },
+            "BoutiquesFileNameMatcher":{
+                "SubjectDirectory":"^sub-[a-zA-Z0-9_]+$"
+            },
+            "BoutiquesOutputFileTypeSetter":{
+                "OutputDirectory":"MADEOutput"
+            },
+            "BoutiquesForcedOutputBrowsePath":{
+                "OutputDirectory":"[DERIVATIVES_PREFIX]made"
+            },
+            "BoutiquesBidsSingleSubjectMaker":"SubjectDirectory",
+            "BoutiquesBidsSubjectFileSelector":{
+                "SubjectDirectory":"all_to_keep"
+            }
+        }
+    }
+
+
++-----------------------------------+----------------------------------------------------------------------------------+
+| PROPERTY                          | DESCRIPTION                                                                      |
++-----------------------------------+----------------------------------------------------------------------------------+
+| "cbrain:author":                  |                                                                                  |
+|   "Full Name <email@address>"     | Author(s) of boutiques descriptor                                                |
++-----------------------------------+----------------------------------------------------------------------------------+
+| "cbrain:can-submit-new-tasks":    |                                                                                  |
+|   true                            | Allows forking sub-task(s). To submit a subtask, a task must create              |
+|                                   | a ".new-task-*.json" JSON file at the root of its work directory                 |
++-----------------------------------+----------------------------------------------------------------------------------+
+| "cbrain:ignore_outputs": [        |                                                                                  |
+|   output_id_1,                    |   The listed outputs will not be saved.                                          |
+|   output_id_2,                    |                                                                                  |
+|   output_id_3,                    |                                                                                  |
+|   ...                             |                                                                                  |
+| ]                                 |                                                                                  |
+|                                   |                                                                                  |
++-----------------------------------+----------------------------------------------------------------------------------+
+| "cbrain:save_back_inputs": [      |                                                                                  |
+|   id_1,                           |   Saves back listed inputs to the dataprovider (mutates the original inputs)     |
+|   id_2,                           |                                                                                  |
+|   id_3,                           |                                                                                  |
+|   ...                             |                                                                                  |
+| ]                                 |                                                                                  |
+|                                   |                                                                                  |
++-----------------------------------+----------------------------------------------------------------------------------+
+| "cbrain:readonly-input-files":    |                                                                                  |
+|   true                            | Indicates that the tool cannot modify inputs                                     |
++-----------------------------------+----------------------------------------------------------------------------------+
+| "cbrain:alters-input-files":      |                                                                                  |
+|    true                           | Indicates that this task may alter its input files                               |
++-----------------------------------+----------------------------------------------------------------------------------+
+| "cbrain:no-run-id-for-outputs": [ |                                                                                  |
+|   id_1,                           |   Lists output IDs where no run id is inserted.                                  |
+|   id_2,                           |   Prevents the usual practice of adding a run id to output file names.           |
+|   id_3,                           |   Only allowed for MultiLevel data-providers with "browse path" capability.      |
+| ]                                 |   With this option, new results can overwrite old files.                         |
+|                                   |                                                                                  |
+|                                   |                                                                                  |
++-----------------------------------+----------------------------------------------------------------------------------+
+| "cbrain:allow_empty_strings":     |                                                                                  |
+|   [input_id_1, input_id_2 ...]    |   Allow an empty string as a valid input                                         |
+|                                   |                                                                                  |
++-----------------------------------+----------------------------------------------------------------------------------+
+| "cbrain:boutiques_bosh_exec_mode":| (Experimental)                                                                   |
+|   "launch"                        | The default implied value is 'simulate'.                                         |
+|                                   | In the mode 'simulate', at the moment of creating the                            |
+|                                   | tool's script in cluster_commands(), the output of                               |
+|                                   |      bosh exec simulate                                                          |
+|                                   | will be substituted in the script to                                             |
+|                                   | generate the tool's command. In the mode 'launch', an actual                     |
+|                                   |      bosh exec launch                                                            |
+|                                   | command will be put in the script instead.                                       |
++-----------------------------------+----------------------------------------------------------------------------------+
+| "cbrain:inherits-from-class":     | ( Restricted use )                                                               |
+|   "MyClassName"                   | An advanced feature for seasoned CBRAIN experts only.                            |
+|                                   | That allows overwriting the standard task behavior with a custom class.          |
++-----------------------------------+----------------------------------------------------------------------------------+
+| "cbrain:integrator_modules": {    |  Works only for the most recent Boutiques integration method.                    |                                                         |
+|   "BoutiquesModuleOne":           |  All the modules are defined in the lib folder of  CBRAIN                        |
+|     {module-specific-parameters}, |  codebase or a plugin. Thus documentation for all the                            |
+|   "BoutiquesModuleTwo":           |  module-based sub-properties can be auto-generated                               |
+|     {module-specific-parameters}  |  with the rdoc utility.                                                          |
+| }                                 |                                                                                  |
+|                                   |                                                                                  |
++-----------------------------------+----------------------------------------------------------------------------------+
+| "cbrain:ignore-exit-status":      | (Deprecated)                                                                     |
+|   true                            | Considers the task successful even if there is a wrong exit status.              |
+|                                   | For the case the tool has wrong exit codes                                       |
+|                                   | (deprecated and being superseded by a module-based property).                    |
+|                                   |                                                                                  |
++-----------------------------------+----------------------------------------------------------------------------------+
+| "cbrain:walltime-estimate":       | (Deprecated)                                                                     |
+|   value_in_seconds                | Since walltime was added to Boutiques resources sections.                        |
++-----------------------------------+----------------------------------------------------------------------------------+

@@ -24,22 +24,23 @@
 #
 # See also the Boutiques repository: https://github.com/boutiques/boutiques
 #
-# The modules provides one main Ruby class, BoutiquesSupport::BoutiquesDescriptor,
+# The module provides one main Ruby class, +BoutiquesSupport::BoutiquesDescriptor+,
 # and several smaller data classes representing components of a descriptor.
 # These classes are subclasses of RestrictedHash, a type of Hash class that
 # only recognize a select set of keys and raise an exception when other keys
 # are used.
 #
-# Methods of BoutiquesSupport::BoutiquesDescriptor (which inherits from RestrictedHash)
+# ==Methods of +BoutiquesSupport::BoutiquesDescriptor+
+# which inherits from RestrictedHash
 #
-# Creation methods:
+# ===Creation methods:
 #
 #   desc = BoutiquesSupport::BoutiquesDescriptor.new()     # a blank descriptor
 #   desc = BoutiquesSupport::BoutiquesDescriptor.new(hash) # filled from a hash
 #   desc = BoutiquesSupport::BoutiquesDescriptor.new_from_string(jsontext)
 #   desc = BoutiquesSupport::BoutiquesDescriptor.new_from_file(path_to_json)
 #
-# Accessor methods:
+# ===Accessor methods:
 #
 # Note that when an attribute name contains a dash (-) then the corresponding
 # method name is written with an underscore (_).
@@ -47,67 +48,279 @@
 #   desc.name = 'SuperTool'  # set the name
 #   toolname  = desc.name    # gets the name
 #   ver       = desc.tool_version  # gets 'tool-version'
-#   inputs    = desc.inputs  # array of BoutiquesSupport::Input objects
+#   inputs    = desc.inputs  # array of +BoutiquesSupport::Input+ objects
 #   custom    = desc.custom  # 'custom' object within descriptor
 #
-# The same conventions apply to Boutiques::Input, Boutiques::OutputFile
-# and Boutiques::Group. See the schema of a Boutiques descriptor for the
-# list of allowed attributes in each object.
+# The same conventions apply to
+# +BoutiquesSupport::Input+,
+# +BoutiquesSupport::OutputFile+
+# and +BoutiquesSupport::Group+.
+# See the schema of a Boutiques descriptor for the list of allowed attributes
+# in each object.
 #
 # Other utility methods are documented in the source code but might not
 # appear in RDOC-generated documentation. Among these, many are
 # used by the BoutiquesTask integrator.
 #
-#   # Returns the name of the tool NNNN, appropriate to use as
-#   # a class name as BoutiquesTask::NNNN
-#   desc.name_as_ruby_class
-#
-#   # Returns all tags as a flat array
-#   desc.flat_tag_list
-#
-#   # Finds a specific BoutiquesSupport:Input by ID
-#   desc.input_by_id(inputid)
-#
-#   # Subset of the list of inputs with just the optional ones
-#   desc.optional_inputs
-#
-#   # Subset of the list of inputs with just the mandatory ones
-#   desc.required_inputs
-#
-#   # Subset of the list of inputs with just the multi-valued ones
-#   desc.list_inputs
-#
-#   # Subset of the list of inputs with just the File inputs
-#   desc.file_inputs
-#
-#   # List of File inputs that are optional
-#   desc.optional_file_inputs
-#
-#   # List of File inputs that are mandatory
-#   desc.required_file_inputs
-#
-#   # Returns the entry for a custom Boutiques integration module
-#   desc.custom_module_info(modulename)
-#
-#   # Utility for building a replacement hash for the inputs based on
-#   # the values in invoke_structure
-#   desc.build_substitutions_by_tokens_hash(invoke_structure)
-#
-#   # Utility to perform the subsitutions of tokens in a string
-#   desc.apply_substitutions(string, substitutions_by_tokens, to_strip=[])
-#
-#   # Returns a new descriptor with the attributes in a canonical beautiful order
-#   desc.pretty_ordered
-#
-#   # Generates a JSON with nice spacing
-#   desc.super_pretty_json
-#
+# A number of BoutiquesDescriptor methods provide access to 'custom',
+# {CBRAIN-specific properties}[../../public/doc/cbrain_boutiques_extensions/cbrain_properties.txt]
+# of a descriptor. Such methods start with +custom+ prefix. It is strongly recommended to use these
+# methods rather than via +custom+ methods attributes.
+# We details these and few other utility methods below
 module BoutiquesSupport
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # Descriptor schema
+  # = class BoutiquesDescriptor
+  # is a closure in this module, and thus can access both schema and data extracted using it
   SCHEMA_FILE = "#{Rails.root.to_s}/lib/cbrain_task_generators/schemas/boutiques.schema.json"
+
+  # Attention! below we define anonymous class BoutiquesDescriptor
+  # and it's methods for rdoc. rdoc skips anonymous classes so we have to
+  # do it before of after
+
+
+  # :section: Utility methods of BoutiquesDescriptor
+
+  # :method: super_pretty_json
+  # Generates a JSON with nice spacing
+
+  # :section: Utility methods of BoutiquesDescriptor
+
+  # :method: pretty_ordered
+  # Returns a new descriptor with the attributes in a canonical beautiful order
+
+
+  # :section: Utility methods of BoutiquesDescriptor
+
+  # :method: apply_substitutions
+  # Utility to perform the substitutions of tokens in a string
+  # :call-seq:
+  #   apply_substitutions(string, substitutions_by_tokens, to_strip=[])
+
+
+  # :section: Utility methods of BoutiquesDescriptor
+
+  # :method: build_substitutions_by_tokens_hash
+  # Utility for building a replacement hash for the inputs based on
+  # the values in invoke_structure
+  # :call-seq:
+  #   build_substitutions_by_tokens_hash(invoke_structure)
+
+
+  # :section: Getter methods of BoutiquesDescriptor for CBRAIN specific properties of the descriptor custom section
+
+  # :method: custom_module_info
+  # Given a module name, returns the structure with the
+  # data for it stored under the "custom"['cbrain:integrator_modules']
+  # entry of the descriptor.
+  # All these modules are well documented with rdoc, and can be found in the +lib+ subdirectory
+  # of CBRAIN itself or a plugin; their names start with +Boutiques+ prefix.
+  # :call-seq:
+  #   custom_module_info(modulename)
+
+
+  # :section: Other getters of BoutiquesDescriptor class
+
+  # :method: required_file_inputs
+  # List of File inputs that are mandatory
+
+
+  # :section: Other getters of BoutiquesDescriptor class
+
+  # :method: optional_file_inputs
+  # List of File inputs that are optional
+
+
+  # :section: Other getters of BoutiquesDescriptor class
+
+  # :method: file_inputs
+  # File inputs
+
+
+  # :section: Other getters of BoutiquesDescriptor class
+
+  # :method: list_inputs
+  # Multi-valued inputs
+
+
+  # :section: Other getters of BoutiquesDescriptor class
+
+  # :method: required_inputs
+  # Mandatory inputs
+
+
+  # :section: Other getters of BoutiquesDescriptor class
+
+  # :method: optional_inputs
+  # Optional inputs
+
+
+  # :section: Other getters of BoutiquesDescriptor class
+
+  # :method: input_by_id
+  # Finds a specific BoutiquesSupport:Input by ID
+  # :call-seq:
+  #   input_by_id(inputid)
+
+
+  # :section: Other getters of BoutiquesDescriptor class
+
+  # :method: flat_tag_list
+  # Returns all tags as a flat array
+
+
+  # :section: Utility methods of BoutiquesDescriptor
+
+  # :method: name_as_ruby_class
+  # Returns the name of the tool NNNN, appropriate to use as
+  # a class name as BoutiquesTask::NNNN
+
+
+  # :section: Getter methods of BoutiquesDescriptor for CBRAIN specific properties of the descriptor custom section
+
+  # :method: custom_inherits_from_class
+  # An advanced feature for seasoned CBRAIN experts only, that allows
+  # overwrite the standard task behavior with custom class.
+  # An example of property definition in a tool descriptor:
+  #   "custom: {
+  #     "cbrain:inherits-from-class": "MyClassName"
+  #   }
+  #
+
+
+  # :section: Getter methods of BoutiquesDescriptor for CBRAIN specific properties of the descriptor custom section
+
+  # :method: custom_can_submit_new_tasks
+  # (Experimental)
+  # A method of BoutiquesDescriptor.Returns Boutiques CBRAIN custom property indicating
+  # are forking sub-task(s) allowed. To submit a subtask, a task must create a JSON file
+  # named ".new-task-*.json"  at the root of its
+  # work directory.
+  # An example of property definition in a tool descriptor:
+  #   "custom: {
+  #     "cbrain:can-submit-new-tasks": true
+  #   }
+
+
+  # :section: Getter methods of BoutiquesDescriptor for CBRAIN specific properties of the descriptor custom section
+
+  # :method: custom_author
+  # Returns a string with name(s) and emails(s) of the Boutiques descriptor authors, enlisted in
+  # "cbrain:author" custom property of the descriptors. Emails are optional
+  # and should be in angle brackets.
+  #
+  # For example, given the descriptor with
+  #    "custom": { "cbrain:author": "Full Name  <email@address.ca>, Co-author Name  <anotheremail@address.org>" }
+  # The method returns string
+  #    "Full Name  <email@address.ca>, Co-author Name  <anotheremail@address.org>"
+
+
+  # :section: Getter methods of BoutiquesDescriptor for CBRAIN specific properties of the descriptor custom section
+
+  # :method: custom_ignore_outputs
+  # Returns Boutiques CBRAIN custom property indicating
+  # the outputs which will not be saved.
+  # An example of property definition in a tool descriptor:
+  #   "custom: {
+  #     "cbrain:ignore_outputs": [output_id_1, output_id_2, output_id_3 ... ]
+  #   }
+
+
+  # :section: Getter methods of BoutiquesDescriptor for CBRAIN specific properties of the descriptor custom section
+
+  # :method: custom_save_back_inputs
+  # Returns Boutiques CBRAIN custom property indicating
+  # inputs which are saved back to the dataprovider (the original data will be mutated).
+  # An example of property definition in a tool descriptor:
+  #   "custom: {
+  #     "cbrain:save_back_inputs": [id_1, id_2, id_3 ...]
+  #   }
+
+
+  # :section: Getter methods of BoutiquesDescriptor for CBRAIN specific properties of the descriptor custom section
+
+  # :method: custom_readonly_input_files
+  # Returns Boutiques CBRAIN custom property indicating
+  # that the tool does not modify inputs.
+  # An example of property definition in a tool descriptor:
+  #   "custom: {
+  #     "cbrain:readonly-input-files": true
+  #   }
+
+
+  # :section: Getter methods of BoutiquesDescriptor for CBRAIN specific properties of the descriptor custom section
+
+  # :method: custom_alters_input_files
+  # Returns Boutiques CBRAIN custom property indicating
+  # if this task may alter its input files.
+  # An example of property definition in a tool descriptor:
+  #   "custom: {
+  #     "cbrain:alters-input-files": true
+  #   }
+
+
+  # :section: Getter methods of BoutiquesDescriptor for CBRAIN specific properties of the descriptor custom section
+
+  # :method: custom_no_run_id_for_outputs
+  # Returns Boutiques CBRAIN custom property indicating for which outputs
+  # the usual practice of adding a run id to output file names is cancelled,
+  # list of output IDs where no run id inserted. Only allowed for MultiLevel
+  # data-providers with "browse path" capability.
+  # For listed outputs ids new results overwrite old files.
+  # An example of property definition in a tool descriptor:
+  #   "custom: {
+  #     "cbrain:no-run-id-for-outputs": []id_1, id_2, id_3 ...]
+  #   }
+
+
+  # :section: Getter methods of BoutiquesDescriptor for CBRAIN specific properties of the descriptor custom section
+
+  # :method: custom_allow_empty_strings
+  # Returns Boutiques CBRAIN custom property indicating
+  # for which inputs an empty string is a valid input.
+  # An example of property definition in a tool descriptor:
+  #   "custom: {
+  #     "cbrain:allow_empty_strings": [input_id]
+  #   }
+
+
+  # :section: Getter methods of BoutiquesDescriptor for CBRAIN specific properties of the descriptor custom section
+
+  # :method: custom_boutiques_bosh_exec_mode
+  # Experimental
+  # The default implied value is 'simulate'
+  # In the mode 'simulate', at the moment of creating
+  # the tool's script in cluster_commands(), the
+  # output of 'bosh exec simulate' will be substituted in
+  # the script to generate the tool's command.
+  # In the mode 'launch', an actual 'bosh exec launch' command
+  # will be put in the script instead.
+  # An example of property definition in a tool descriptor:
+  #   "custom: {
+  #     "cbrain:boutiques_bosh_exec_mode": "launch"
+  #   }
+
+
+  # :section: Utility methods of +class Input+
+
+  # :method: cb_invoke_name
+  # This method return the parameter name for the input.
+  # We put all input Boutiques parameters under a 'invoke' substructure.
+  # E.g. for a input with ID 'abcd' in a task, we'll find the value
+  # in task.params['invoke']['abcd'] and the parameter name is thus
+  # "invoke[abcd]"
+
+  # :section: Utility methods of +class Input+
+
+  # :method: cb_invoke_html_name
+
+
+  # :section: Utility methods of +class Input+
+
+  # :method: cb_invoke_html_id
+
 
   # Read schema, extract some name lists
   @schema = JSON.parse(File.read(SCHEMA_FILE))
@@ -120,7 +333,7 @@ module BoutiquesSupport
   group_prop_names  = @schema['properties']['groups']['items']['properties'].keys
   cont_prop_names   = @schema['properties']['container-image']['allOf'][1]['oneOf'][0]['properties'].keys
 
-  def self.validate(json)
+  def self.validate(json) # :nodoc:
     JSON::Validator.fully_validate(
       @schema,
       json,
@@ -128,7 +341,7 @@ module BoutiquesSupport
     )
   end
 
-  # The following assignement is pretty much like
+  # The following assignment is pretty much like
   #   class BoutiquesDescriptor < RestrictedHash
   # except we have a closure and we can access the variables
   # initialized above (top_prop_names etc).
@@ -275,9 +488,132 @@ module BoutiquesSupport
       CbrainFileRevision.for_relpath(path)
     end
 
+    #-------------------------------------------------------------------------
+    # Methods to access and document CBRAIN specific custom properties
+    #-------------------------------------------------------------------------
+    # see public/doc/boutiques_extensions for a list of these custom properties
+
+    # Returns a string with name(s) and emails(s) of the Boutiques descriptor authors, enlisted in
+    # "cbrain:author" custom property of the descriptors. Emails are optional
+    # and should be in angle brackets
+    #
+    # For example, given the descriptor with
+    #    "custom": { "cbrain:author": "Full Name  <email@address.ca>, Co-author Name  <anotheremail@address.org>" }
+    # The method returns string
+    #    "Full Name  <email@address.ca>, Co-author Name  <anotheremail@address.org>"
+    def custom_author
+      authors = self.custom['cbrain:author']
+      return authors if authors is_a? String
+      return authors.join(", ")   #  if author field is arrays
+    end
+
+    # Returns Boutiques CBRAIN custom property indicating
+    # are forking sub-task(s) allowed. To submit a subtask, a task must create a JSON file
+    # named ".new-task-*.json"  at the root of its
+    # work directory.
+    # An example of property definition in a tool descriptor:
+    #   "custom: {
+    #     "cbrain:can-submit-new-tasks": true
+    #   }
+    def custom_can_submit_new_tasks
+      return self.custom["cbrain:can-submit-new-tasks"]
+    end
+
+    # Returns Boutiques CBRAIN custom property indicating
+    # the outputs which will not be saved.
+    # An example of property definition in a tool descriptor:
+    #   "custom: {
+    #     "cbrain:ignore_outputs": [output_id_1, output_id_2, output_id_3 ... ]
+    #   }
+    def custom_ignore_outputs
+      return self.custom["cbrain:ignore_outputs"]
+    end
+
+    # Returns Boutiques CBRAIN custom property indicating
+    # inputs which are saved back to the dataprovider
+    # (the original data will be mutated).
+    # An example of property definition in a tool descriptor:
+    #   "custom: {
+    #     "cbrain:save_back_inputs": [id_1, id_2, id_3 ...]
+    #   }
+    def custom_save_back_inputs
+      return self.custom["cbrain:save_back_inputs"]
+    end
+
+    # Returns Boutiques CBRAIN custom property indicating
+    # that the tool does not modify inputs.
+    # An example of property definition in a tool descriptor:
+    #   "custom: {
+    #     "cbrain:readonly-input-files": true
+    #   }
+    def custom_readonly_input_files
+      return self.custom["cbrain:readonly-input-files"]
+    end
+
+    # Returns Boutiques CBRAIN custom property indicating
+    # if this task may alter its input files.
+    # An example of property definition in a tool descriptor:
+    #   "custom: {
+    #     "cbrain:alters-input-files": true
+    #   }
+    def custom_alters_input_files
+      return self.custom["cbrain:alters-input-files"]
+    end
+
+    # Returns Boutiques CBRAIN custom property indicating for which outputs
+    # the usual practice of adding a run id to output file names is cancelled,
+    # list of output IDs where no run id inserted. Only allowed for MultiLevel
+    # data-providers with "browse path" capability.
+    # For listed outputs ids new results overwrite old files.
+    # An example of property definition in a tool descriptor:
+    #   "custom: {
+    #     "cbrain:no-run-id-for-outputs": "id_1, id_2, id_3 .."
+    #   }
+    def custom_no_run_id_for_outputs
+      return self.custom["cbrain:no-run-id-for-outputs"]
+    end
+
+    # Returns Boutiques CBRAIN custom property indicating
+    # for which inputs an empty string is a valid input.
+    # An example of property definition in a tool descriptor:
+    #   "custom: {
+    #     "cbrain:allow_empty_strings": [input_id]
+    #   }
+    def custom_allow_empty_strings
+      return self.custom["cbrain:allow_empty_strings"]
+    end
+
+    # Experimental
+    # The default implied value is 'simulate'
+    # In the mode 'simulate', at the moment of creating
+    # the tool's script in cluster_commands(), the
+    # output of 'bosh exec simulate' will be substituted in
+    # the script to generate the tool's command.
+    # In the mode 'launch', an actual 'bosh exec launch' command
+    # will be put in the script instead.
+    # An example of property definition in a tool descriptor:
+    #   "custom: {
+    #     "cbrain:boutiques_bosh_exec_mode": "launch"
+    #   }
+    def custom_boutiques_bosh_exec_mode
+      return self.custom["cbrain:boutiques_bosh_exec_mode"]
+    end
+
+    # An advanced feature for seasoned CBRAIN experts only. That allows
+    # overwrite the standard task behavior with custom class.
+    # An example of property definition in a tool descriptor:
+    #   "custom: {
+    #     "cbrain:inherits-from-class": "MyClassName"
+    #   }
+    def custom_inherits_from_class
+      return self.custom["cbrain:inherits-from-class"]
+    end
+
     # Given a module name, returns the structure with the
     # data for it stored under the "custom"['cbrain:integrator_modules']
     # entry of the descriptor.
+    # All modules can be found in the lib subdirectory of a CBRAIN plugin
+    # or CBRAIN itself and start with Boutiques prefix.
     def custom_module_info(modulename)
       self.custom['cbrain:integrator_modules'][modulename]
     end
