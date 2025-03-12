@@ -20,20 +20,25 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'fileutils'
 
 # Some tools expect that a directory e.g. results, etc exists in the working directory
 #
 # While traditionally we add to the boutiques command line prefix akin to 'mkdir -p [OUTPUT];'
-# external collaborators might dislike polluting the command line with technical staff
+# collaborators might dislike polluting the command line with technical staff
 # or need a clean boutiques descriptor which does not create any new folders
 # The the `cbrain:integrator_modules` section look like:
 #
-#     "BoutiquesDirMaker":
-#          [ "[OUTDIR]", "[OUTDIR]/[THRESHOLD]_res", "tmp" ]
+#     "cbrain:integrator_modules": {
+#        "BoutiquesDirMaker": [
+#           "[OUTDIR]",
+#           "[OUTDIR]/[THRESHOLD]_res",
+#           "[OUTDIR]/[THRESHOLD]_res/info",
+#           "tmp"
+#        ]
 #
-# Please avoid special characters save underscore and hyphen, and
-# use relative paths. Boutiques templates (hereafter called patterns) are supported
+# Please avoid single or double dots, spaces and special characters save underscore and hyphen, and
+# use relative paths only. Boutiques templates (hereafter called patterns) are supported and always substitued.
+# Nested directories should be create step by step, e.g as with [OUTDIR]/[THRESHOLD]_res/info in the above example
 #
 module BoutiquesDirMaker
 
@@ -52,7 +57,7 @@ module BoutiquesDirMaker
     commands = super
 
     # Log revision information
-    self.addlog("Creating directories with BoutiquesDirMaker.")
+    self.addlog("Creating additional directories with BoutiquesDirMaker.")
     basename = Revision_info.basename
     commit   = Revision_info.short_commit
     self.addlog("#{basename} rev. #{commit}")
@@ -65,22 +70,13 @@ module BoutiquesDirMaker
     )
 
     # Process each directory pattern
-    paths = patterns.map do |pattern|
-      # Replace tokens
+    patterns.each do |pattern|
       path = descriptor.apply_substitutions(pattern, substitutions_by_token)
-
-      if Pathname(path).absolute?
-        self.addlog("BoutiquesDirMaker skips '#{pattern}', dir '#{path}', absolute paths are not supported")
-        next
-      end
-
-      # replacing weird and special characters
-      if path.gsub!(/[^0-9A-Za-z.\/\-_ ]+|(\.\.+)/, '_')
-        self.addlog("Note, special symbols are encountered in directory name which is replace with '#{path}'")
-      end
-      path
+      path = path.strip  # whitespaces in dir names are not supported
+      path = Pathname.new(path.strip).cleanpath  # normalizing: removing unnecessary dots ...
+      cb_error "BoutiquesDirMaker cannot create path '#{path}' (pattern '#{pattern}')." if path.to_s.start_with?('.')
+      safe_mkdir(path)
     end
-    FileUtils.mkdir_p paths.compact
     commands
   end
 end
