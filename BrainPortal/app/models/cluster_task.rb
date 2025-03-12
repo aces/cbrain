@@ -2381,6 +2381,7 @@ docker_image_name=#{full_image_name.bash_escape}
       mountpoint = "#{effect_workdir}/#{basename}" # e.g. /path/to/workdir/work or /T123/work
       install_ext3fs_filesystem(fs_name,size)
       safe_mkdir(basename)
+      self.addlog("Overlay configured: ext3 capture #{fs_name}")
       "#{sing_opts} -B #{fs_name.bash_escape}:#{mountpoint.bash_escape}:image-src=/"
     end
     # This list will be used to make a device number check: all components
@@ -2398,11 +2399,14 @@ docker_image_name=#{full_image_name.bash_escape}
     # Some of them might be patterns (e.g. /a/b/data*.squashfs) that need to
     # be resolved locally.
     # This will be a string "--overlay=path:ro --overlay=path:ro" etc.
-    overlay_paths = self.tool_config.singularity_overlays_full_paths.map do |path|
-      paths = Dir.glob(path) # checks on the local file system
-      cb_error "Can't find any overlays matching '#{path}'" if paths.blank?
-      paths
-    end.flatten
+    overlay_paths = self.tool_config.singularity_overlays_full_paths.map do |path, knd|
+      paths = Dir.glob(path) # assume no glob expression in overlay files
+      cb_error "Can't find any local file matching overlay '#{path}'" if paths.blank?
+      paths.each do |f|
+        f = File.basename(f) if knd == 'registered userfile'
+        self.addlog("Overlay configured: #{knd} #{f}")
+      end
+    end.flatten.uniq  #  paths can repeat e.g with too broad patterns
     overlay_mounts = overlay_paths.inject("") do |sing_opts,path|
       "#{sing_opts} --overlay=#{path.bash_escape}:ro"
     end
@@ -2843,4 +2847,3 @@ bash -c "exit $_cbrain_status_"
   end
 
 end
-
