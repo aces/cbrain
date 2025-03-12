@@ -56,14 +56,13 @@ module BoutiquesDirMaker
     # invoke overridden method
     commands = super
 
-    # Log revision information
-    self.addlog("Creating additional directories with BoutiquesDirMaker.")
-    basename = Revision_info.basename
-    commit   = Revision_info.short_commit
-    self.addlog("#{basename} rev. #{commit}")
-
     descriptor = self.descriptor_for_setup
     patterns   = descriptor.custom_module_info('BoutiquesDirMaker')
+    return commands if patterns.blank?
+
+    # Log revision information
+    commit = Revision_info.short_commit
+    self.addlog("Creating auxiliary directories with BoutiquesDirMaker rev. #{commit}.")
 
     substitutions_by_token  = descriptor.build_substitutions_by_tokens_hash(
       JSON.parse(File.read(self.invoke_json_basename))
@@ -76,6 +75,7 @@ module BoutiquesDirMaker
       path = Pathname.new(path.strip).cleanpath  # normalizing: removing unnecessary dots ...
       cb_error "BoutiquesDirMaker cannot create path '#{path}' (pattern '#{pattern}')." if path.to_s.start_with?('.')
       safe_mkdir(path)
+      self.addlog("BoutiquesDirMaker created '#{path}'.")
     end
     commands
   end
