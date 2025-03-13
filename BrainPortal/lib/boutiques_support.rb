@@ -282,6 +282,23 @@ module BoutiquesSupport
       self.custom['cbrain:integrator_modules'][modulename]
     end
 
+    # This method pushes a small string (usually
+    # a single line of text) that will appear as
+    # a note at the top of a parameter form. If
+    # the note is already present, the method will
+    # do nothing. Returns the current list of notes
+    # as an array.
+    #
+    # Careful, this method mutates the descriptor.
+    def add_cbrain_input_note(one_line_note)
+      self.custom ||= {}
+      notes = self.custom['cbrain:input_notes'] ||= []
+      if ! notes.include?(one_line_note)
+        notes << one_line_note
+      end
+      notes
+    end
+
     # Given an invoke structure (like required by bosh, where
     # keys are input IDs and values are input values),
     # this returns the same hash with the substitution tokens
