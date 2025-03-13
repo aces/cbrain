@@ -24,8 +24,9 @@
 # Some tools expect that a directory e.g. results, etc exists in the working directory
 #
 # While traditionally we add to the boutiques command line prefix akin to 'mkdir -p [OUTPUT];'
-# collaborators might dislike polluting the command line with technical staff
-# or need a clean boutiques descriptor which does not create any new folders
+# multiple mkdir commands might render command line hard to read and maintain. This utility
+# allows create auxiliary sub-directories without using the command line.
+# 
 # The the `cbrain:integrator_modules` section look like:
 #
 #     "cbrain:integrator_modules": {
