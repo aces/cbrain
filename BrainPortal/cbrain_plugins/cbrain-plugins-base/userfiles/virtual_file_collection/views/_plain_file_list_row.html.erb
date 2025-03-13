@@ -1,0 +1,87 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+  # This partial receives one local variable:
+  #  file : a file structure as returned by the FileCollection listing method
+  #         Note that is contains a full relative path, starting with the @userfile's name itself.
+%>
+
+<td>
+  <% if @userfile.is_locally_synced? && file.symbolic_type == :regular %>
+    <%= check_box_tag("collection_files[]", "#{@userfile.id}##{file.name}", false, :class  => "collection_checkbox", :id => nil) %>
+  <% end %>
+</td>
+
+<td class="left">
+     &nbsp;
+
+    <div style="display: inline-flex">
+      <% if file.symbolic_type == :directory %>
+        <%= image_tag "/images/folder_icon_solid.png" %>
+      <% else %>
+        <%= image_tag "/images/file_icon.png" %>
+      <% end %>
+
+      &nbsp;
+      <% bname = Pathname.new(file.name).basename.to_s %>
+
+      <% fname = file.name %>
+      <% fname = fname.delete_prefix(@userfile.name + '/') if @userfile != file.userfile %>
+
+      <% if file.size > 0 %>
+        <%=   data_link fname, file.userfile      %>
+      <% else %>
+        <%= bname %>
+      <% end %>
+
+      <% if file.symbolic_type == :directory %>
+        &nbsp;
+        <span class="ajax_onclick_show_child small warning">Expand</span>
+        <span class="ajax_onclick_hide_child small warning" style="display:none">Hide</span>
+      <% end %>
+    </div>
+</td>
+
+<td>
+  <% if file.symbolic_type == :regular && file.size > 0 && file.size <  UserfilesController::MAX_DOWNLOAD_MEGABYTES.megabytes %>
+
+    <% if @userfile.id != file.userfile.id %>
+      <% download_url =  url_for(:action  => :content, :content_loader => :collection_file, :id => file.userfile.id, :arguments => fname) %>
+    <%  else %>
+      <% download_url =  url_for(:action  => :download, :id => file.userfile.id) %>
+    <% end %>
+
+    <%= link_to  download_url do %>
+        <span title="Download file" id="span" class="ui-button-icon ui-icon ui-icon-arrowthickstop-1-s"></span>
+    <% end %>
+
+  <% end %>
+</td>
+
+<td>
+  <%  if file.symbolic_type != :directory  %>
+    <%= colored_pretty_size(file.size) %>
+  <% end %>
+</td>
