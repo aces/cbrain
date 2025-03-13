@@ -37,8 +37,6 @@
   input_notes      = @descriptor.custom['cbrain:input_notes'] || []
 %>
 
-
-
 <%- if input_notes.any? -%>
 <%- header = input_notes.length > 1 ? "Notes" : "Note" -%>
   <div class="group btq-grp-notes">
@@ -95,5 +93,4 @@
 %>
 
 <%= render :partial => task_partial(:form_js), :locals => { :interface_files => interface_files } %>
-
 
