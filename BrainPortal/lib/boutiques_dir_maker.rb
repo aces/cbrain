@@ -23,9 +23,10 @@
 
 # Some tools expect that a directory e.g. results, etc exists in the working directory
 #
-# While traditionally we add to the boutiques command line prefix akin to 'mkdir -p [OUTPUT];'
-# multiple mkdir commands might render command line hard to read and maintain. This utility
-# allows create auxiliary sub-directories without using the command line.
+# While in a descriptor's command line can include a prefix 'mkdir -p DIRNAME;' for that purpose,
+# creating multiple directories  makes the command line harder to read and maintain. 
+#
+# This utility # allows the creation auxiliary sub-directories without using command line.
 # 
 # The the `cbrain:integrator_modules` section look like:
 #
@@ -37,10 +38,14 @@
 #           "tmp"
 #        ]
 #
-# Please avoid single or double dots, spaces and special characters save underscore and hyphen, and
-# use relative paths only. Boutiques templates (hereafter called patterns) are supported and always substitued.
-# Nested directories should be create step by step, e.g as with [OUTDIR]/[THRESHOLD]_res/info in the above example
+# Please avoid single or double dots, spaces and special characters, except underscore and hyphen.
+# Use relative paths only. 
 #
+# Boutiques templates (aka patterns) are supported and always substituted.
+#
+# Nested directories should be created step by step, as demonstrated with [OUTDIR]/[THRESHOLD]_res/info 
+# in the snippet above.
+
 module BoutiquesDirMaker
 
   # Note: to access the revision info of the module,
