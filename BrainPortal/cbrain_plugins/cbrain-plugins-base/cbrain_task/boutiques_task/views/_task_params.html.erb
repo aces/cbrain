@@ -38,67 +38,62 @@
 %>
 
 
-<div style="display: flex; flex-direction: column; width: fit-content;">
 
-  <%-
-  if input_notes.any?
-    header = input_notes.length > 1 ? "Notes:" : "Note:"
-  -%>
-    <div class="notesbox" style="border-width: 2px">
-      <div class="group btq-grp-notes">
-        <div style="border-bottom: 2px solid #bbbbbb; padding-bottom: 2px;">
-          <h3 style="border-width: 0px; margin: 0px; padding: 1px; padding-left: 0px;">
-            <%= header %>
-          </h3>
-        </div>
-        <ul>
-          <%- input_notes.each do |note| -%>
-            <li><%= note %></li>
-          <%- end -%>
-        </ul>
-      </div>
+<%- if input_notes.any? -%>
+<%- header = input_notes.length > 1 ? "Notes" : "Note" -%>
+  <div class="group btq-grp-notes">
+    <div style="border-bottom: 2px solid #bbbbbb; padding-bottom: 2px;">
+      <h3 style="border-width: 0px; margin: 0px; padding: 1px; padding-left: 0px;">
+        <%= header %>
+      </h3>
     </div>
-  <%- end -%>
-
-  <div class="task-params">
-    <%- if inputs.empty? -%>
-      <%= @task.name %> has no parameters.
-    <%- else -%>
     <ul>
-      <%# Write info for ungrouped parameters %>
-      <% (required + optional).each do |input| %>
-        <% next if params_in_groups.include? input.id %>
-        <%= render :partial => task_partial(:boutiques_input), :locals =>
-            { :input           => input,
-              :isGroupMember   => false,
-              :interface_files => interface_files,
-            }
-        %>
-      <% end %>
-      <%# Write info for grouped parameters %>
-      <%- groups.each do |group| %>
-        <%= render :partial => task_partial(:boutiques_group), :locals =>
-            { :group           => group,
-              :interface_files => interface_files,
-            }
-        %>
-      <% end %>
+      <%- input_notes.each do |note| -%>
+        <li><%= note %></li>
+      <%- end -%>
     </ul>
-    <%- end -%>
   </div>
+  <hr/>
+<%- end -%>
 
-  <%= render :partial => task_partial(:boutiques_preview) %>
-
-  <%=
-  ## Debug code: to capture the JS code of 'form_js' in a file in /tmp
-  #  cap = capture do
-  #    render :partial => task_partial(:form_js), :locals => { :interface_files => interface_files }
-  #  end
-  #  File.open("/tmp/x.html.erb","w") { |fh| fh.write cap }
-  #  cap.html_safe
-  %>
-
-  <%= render :partial => task_partial(:form_js), :locals => { :interface_files => interface_files } %>
-
+<div class="task-params">
+  <%- if inputs.empty? -%>
+    <%= @task.name %> has no parameters.
+  <%- else -%>
+  <ul>
+    <%# Write info for ungrouped parameters %>
+    <% (required + optional).each do |input| %>
+      <% next if params_in_groups.include? input.id %>
+      <%= render :partial => task_partial(:boutiques_input), :locals =>
+          { :input           => input,
+            :isGroupMember   => false,
+            :interface_files => interface_files,
+          }
+      %>
+    <% end %>
+    <%# Write info for grouped parameters %>
+    <%- groups.each do |group| %>
+      <%= render :partial => task_partial(:boutiques_group), :locals =>
+          { :group           => group,
+            :interface_files => interface_files,
+          }
+      %>
+    <% end %>
+  </ul>
+  <%- end -%>
 </div>
+
+<%= render :partial => task_partial(:boutiques_preview) %>
+
+<%=
+## Debug code: to capture the JS code of 'form_js' in a file in /tmp
+#  cap = capture do
+#    render :partial => task_partial(:form_js), :locals => { :interface_files => interface_files }
+#  end
+#  File.open("/tmp/x.html.erb","w") { |fh| fh.write cap }
+#  cap.html_safe
+%>
+
+<%= render :partial => task_partial(:form_js), :locals => { :interface_files => interface_files } %>
+
 
