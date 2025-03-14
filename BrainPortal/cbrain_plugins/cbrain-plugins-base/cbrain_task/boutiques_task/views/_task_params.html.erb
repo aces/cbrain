@@ -27,14 +27,32 @@
 <% end %>
 
 <%
-  @descriptor = @task.descriptor_for_form
-  inputs      = @descriptor.inputs          || []
-  required    = @descriptor.required_inputs || []
-  optional    = @descriptor.optional_inputs || []
-  groups      = @descriptor.groups          || []
+  @descriptor      = @task.descriptor_for_form
+  inputs           = @descriptor.inputs          || []
+  required         = @descriptor.required_inputs || []
+  optional         = @descriptor.optional_inputs || []
+  groups           = @descriptor.groups          || []
   params_in_groups = groups.map(&:members).flatten.uniq # list of param IDs
   interface_files  = Userfile.where(:id => @task.params[:interface_userfile_ids])
+  input_notes      = @descriptor.custom['cbrain:input_notes'] || []
 %>
+
+<%- if input_notes.any? -%>
+<%- header = input_notes.length > 1 ? "Notes" : "Note" -%>
+  <div class="group btq-grp-notes">
+    <div style="border-bottom: 2px solid #bbbbbb; padding-bottom: 2px;">
+      <h3 style="border-width: 0px; margin: 0px; padding: 1px; padding-left: 0px;">
+        <%= header %>
+      </h3>
+    </div>
+    <ul>
+      <%- input_notes.each do |note| -%>
+        <li><%= note %></li>
+      <%- end -%>
+    </ul>
+  </div>
+  <hr/>
+<%- end -%>
 
 <div class="task-params">
   <%- if inputs.empty? -%>
@@ -43,21 +61,21 @@
   <ul>
     <%# Write info for ungrouped parameters %>
     <% (required + optional).each do |input| %>
-       <% next if params_in_groups.include? input.id %>
-       <%= render :partial => task_partial(:boutiques_input), :locals =>
-           { :input           => input,
-             :isGroupMember   => false,
-             :interface_files => interface_files,
-           }
-       %>
+      <% next if params_in_groups.include? input.id %>
+      <%= render :partial => task_partial(:boutiques_input), :locals =>
+          { :input           => input,
+            :isGroupMember   => false,
+            :interface_files => interface_files,
+          }
+      %>
     <% end %>
     <%# Write info for grouped parameters %>
     <%- groups.each do |group| %>
-       <%= render :partial => task_partial(:boutiques_group), :locals =>
-           { :group           => group,
-             :interface_files => interface_files,
-           }
-       %>
+      <%= render :partial => task_partial(:boutiques_group), :locals =>
+          { :group           => group,
+            :interface_files => interface_files,
+          }
+      %>
     <% end %>
   </ul>
   <%- end -%>

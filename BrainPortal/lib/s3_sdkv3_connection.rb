@@ -126,6 +126,7 @@ class S3Sdkv3Connection
   # above, but containing the information for a single object
   # with +key+ .
   def list_single_object(key)
+    key  = key.to_s
     info = get_object_info(key)
     return [] unless info
     [

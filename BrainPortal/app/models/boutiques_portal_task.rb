@@ -220,7 +220,7 @@ class BoutiquesPortalTask < PortalTask
     # Check the content of all CbrainFileLists (cbcsv)
     # ------------------------------------------------
     # Get all the input cbcsv files
-    cbcsvs  = self.cbcsv_files
+    cbcsvs  = self.cbcsv_files # [ [input, cbcsv_userfile], [input, cbcsv_userfile], ... ]
     numRows = nil # Keep track of number of files per cbcsv
     # Validate each cbcsv (all columns match per row, user has access to the file)
     for input, cbcsv in cbcsvs
@@ -232,8 +232,8 @@ class BoutiquesPortalTask < PortalTask
       # If the number of rows does not match, error
       # We need only check this for inputs that are not "list".
       if ! input.list
-        currNumRows = (cbcsv.ordered_raw_ids || []).length
-        numRows     = numRows.nil? ? currNumRows : numRows
+        currNumRows   = (cbcsv.ordered_raw_ids || []).length
+        numRows     ||= currNumRows
         if currNumRows != numRows
           params_errors.add(invokename, " does not have the same number of files (#{currNumRows}) as in other present cbcsvs (#{numRows})")
           next
@@ -264,13 +264,22 @@ class BoutiquesPortalTask < PortalTask
   # Final set of tasks to be launched based on this task's parameters.
   def final_task_list #:nodoc:
     descriptor = self.descriptor_for_final_task_list
-    self.addlog(descriptor.file_revision_info.format("%f rev. %s %a %d"))
-    valid_input_keys = descriptor.inputs.map(&:id)
+
+    self.addlog(Revision_info.format("%f rev. %s %a %d"))
+    self.addlog(self.boutiques_descriptor.file_revision_info.format("%f rev. %s %a %d"))
+
+    # Add author(s) information
+    authors = Array(descriptor.custom['cbrain:author'])
+    authors = authors.empty? ? "No CBRAIN author information" :
+                                authors.join(", ")
+    self.addlog("CBRAIN Author(s): #{authors}")
 
     # Add information about Boutiques module
     boutiques_module_information().each do |log_info|
        self.addlog(log_info)
     end
+
+    valid_input_keys = descriptor.inputs.map(&:id)
 
     # --------------------------------------
     # Special case where there is a single file input
@@ -286,16 +295,18 @@ class BoutiquesPortalTask < PortalTask
       input = descriptor.file_inputs.first
 
       fillTask = lambda do |userfile,tsk,extra_params=nil|
-        tsk.invoke_params[input.id] = userfile.id
+        tsk.params[:interface_userfile_ids] |= [ userfile.id.to_s ]
+        tsk.invoke_params[input.id]          = userfile.id
         tsk.sanitize_param(input)
-        tsk.description ||= ''
-        tsk.description  += " #{input.id}: #{userfile.name}"
+        tsk.description = "#{input.id}: #{userfile.name}\n#{tsk.description}".strip
         tsk.invoke_params.merge!(extra_params.slice(*valid_input_keys)) if extra_params
         tsk.description.strip!
         tsk
       end
 
-      tasklist = self.params[:interface_userfile_ids].map do |userfile_id|
+      original_userfiles_ids = self.params[:interface_userfile_ids].dup
+      self.params[:interface_userfile_ids] = [] # zap it; we'll re-introduce each userfile.id as needed
+      tasklist = original_userfiles_ids.map do |userfile_id|
         f = Userfile.find_accessible_by_user( userfile_id, self.user, :access_requested => file_access_symbol() )
 
         # One task for that file
@@ -326,7 +337,7 @@ class BoutiquesPortalTask < PortalTask
     # --------------------------------------
 
     # Grab all the cbcsv input files
-    cbcsvs = self.cbcsv_files(descriptor)
+    cbcsvs = self.cbcsv_files(descriptor) # [ [input, cbcsv_userfile], [input, cbcsv_userfile], ... ]
     cbcsvs.reject! { |pair| pair[0].list } # ignore file inputs with list=true; they just get the CBCSV directly
 
     # Default case: just return self as a single task
@@ -383,11 +394,32 @@ class BoutiquesPortalTask < PortalTask
     )
   end
 
+  # This method compares a params hash table +old_params+ with
+  # a +new_params+ hash provided, and log all the
+  # differences. It makes up for a difference The task object itself is not changed.
+  # Overrides the parent class method
+  def log_params_changes(old_params = {}, new_params = {})
+    # in this class all non-file parameters are inside the invoke sub-hash
+    super(old_params['invoke'] || {}, new_params['invoke'] || {})
 
+    # just a precation, perhaps, not used now
+    super(old_params.except('invoke'), new_params.except('invoke'))
+
+  end
 
   ################################
   # Portal-side utilities
   ################################
+
+  # Utility to simplify adding an error to an invoke parameter;
+  # provide the Input object, or its ID, and the message. Optionally,
+  # you can provide an alternate descriptor.
+  def add_invoke_params_error(input_or_input_id, message, alt_descriptor = self.boutiques_descriptor)
+    if ! input_or_input_id.is_a?(BoutiquesSupport::Input)
+      input_or_input_id = alt_descriptor.input_by_id(input_or_input_id)
+    end
+    params_errors.add(input_or_input_id.cb_invoke_name, message)
+  end
 
   # Returns all the cbcsv files present (i.e. set by the user as inputs), as tuples (input, Userfile)
   def cbcsv_files(descriptor = self.descriptor_for_after_form)
@@ -410,7 +442,7 @@ class BoutiquesPortalTask < PortalTask
     (
       val.nil? || # most of the time, the interface sends NO value at all, which is what we prefer
       (type == 'Flag' && val == "0")   || # checkboxes send their values as strings 0 and 1,
-      (type == 'Flag' && val == false)    # but normally they are transformed into bool in sanitize_params
+      (type == 'Flag' && val == false)    # but normally they are transformed into bool in sanitize_param()
     )
   end
 
@@ -474,6 +506,11 @@ class BoutiquesPortalTask < PortalTask
     name = input.id
     type = input.type.downcase.to_sym # old code convention from previous integrator
 
+    # For strings, we support a special list of parameters
+    # that can be empty strings.
+    descriptor = self.descriptor_for_after_form
+    empty_string_allowed = Array(descriptor.custom['cbrain:allow_empty_strings']).include?(name)
+
     # Taken userfile names. An error will be raised if two input files have the
     # same name.
     @taken_files ||= Set.new
@@ -502,18 +539,17 @@ class BoutiquesPortalTask < PortalTask
       when :string
         value = value.to_s if value.is_a?(Symbol)
         params_errors.add(invokename, " not a string (#{value})")      unless value.is_a?(String)
-        params_errors.add(invokename, " is blank")                         if value.blank?
+        params_errors.add(invokename, " is blank")                         if value.blank? && !empty_string_allowed
         # The following two checks are to prevent cases when
         # a string param is used as a path
         params_errors.add(invokename, " cannot contain newlines")          if value.to_s =~ /[\n\r]/
         params_errors.add(invokename, " cannot start with this character") if value.to_s =~ /^[\.\/]+/
+        params_errors.add(invokename, " cannot move up dirs")              if value.to_s.include? "/../"
 
       # Try to match against various common representation of true and false
       when :flag
-        if value.is_a?(String)
-          value = true  if value =~ /\A(true|t|yes|y|on|1)\z/i
-          value = false if value =~ /\A(false|f|no|n|off|0|)\z/i
-        end
+        value = true  if value.to_s =~ /\A(true|t|yes|y|on|1)\z/i
+        value = false if value.to_s =~ /\A(false|f|no|n|off|0|)\z/i
 
         if ! [ true, false ].include?(value)
           params_errors.add(invokename, ": not true or false (#{value})")
@@ -636,16 +672,6 @@ class BoutiquesPortalTask < PortalTask
 
   def invoke_params
     self.params[:invoke] ||= {}
-  end
-
-  # This determines if the task expects to only read its input files,
-  # or modify them, and return respectively :read or :write (the default).
-  # The symbol can be passed to methods such as Userfile.find_accessible_by_user().
-  # Depending on the value, more or less files are allowed to be processed.
-  # When the value is :read, it means we only need file for input and not
-  # for output.
-  def file_access_symbol
-    @_file_access ||= (self.class.properties[:readonly_input_files].present? || self.tool_config.try(:inputs_readonly) ? :read : :write)
   end
 
   # In the case of a misconfiguration of the portal, or if the file for

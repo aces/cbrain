@@ -55,6 +55,11 @@ class SingSquashfsDataProvider < SshDataProvider
     true
   end
 
+  # Returns true: forces this DP type to be read-only.
+  def read_only? #:nodoc:
+    true
+  end
+
   # We just ignore all changes to this attribute too.
   def read_only=(val) #:nodoc:
     val
@@ -62,7 +67,7 @@ class SingSquashfsDataProvider < SshDataProvider
 
   # This returns the category of the data provider
   def self.pretty_category_name #:nodoc:
-    "Singularity SquashFS"
+    "Single Level"
   end
 
   def impl_is_alive? #:nodoc:
@@ -128,10 +133,13 @@ class SingSquashfsDataProvider < SshDataProvider
     source_escaped = provider_is_remote ? remote_shell_escape(remotefull) : remotefull.to_s.bash_escape
     # As of rsync 3.1.2, rsync does the escaping of the remote path properly itself
     source_escaped = remotefull.to_s.bash_escape if self.class.local_rsync_protects_args?
+    # We need the SSH agent even when doing local transfers
+    CBRAIN.with_unlocked_agent
+
     text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{source_colon}#{source_escaped}#{sourceslash} #{shell_escape(localfull)} 2>&1")
-    cb_error "Error syncing userfile to local cache, rsync returned:\n#{text}" unless text.blank?
+    cb_error "Error syncing userfile ##{userfile.id} to local cache, rsync returned:\n#{text}" unless text.blank?
     unless File.exist?(localfull)
-      cb_error "Error syncing userfile to local cache: no destination file found after rsync?\n" +
+      cb_error "Error syncing userfile ##{userfile.id} to local cache: no destination file found after rsync?\n" +
                "Make sure you are running rsync 3.0.6 or greater!"
     end
     true
@@ -145,9 +153,12 @@ class SingSquashfsDataProvider < SshDataProvider
   # since this DP type is for static, read-only data.
   def impl_provider_list_all(user=nil,browse_path=nil) #:nodoc:
     cache_key  = "#{self.class}-#{self.id}-file_infos"
+    cache_key += "-#{browse_path.to_s}" if browse_path.present?
 
     file_infos = Rails.cache.fetch(cache_key, :expires_in => BROWSE_CACHE_EXPIRATION) do
-      text = remote_in_sing_stat_all(self.containerized_path,".",true)
+      sourcedir  = Pathname.new(self.containerized_path)
+      sourcedir += browse_path if browse_path.present?
+      text = remote_in_sing_stat_all(sourcedir.to_s, "." ,true)
       stat_reports_to_fileinfos(text)
     end
 
@@ -164,13 +175,13 @@ class SingSquashfsDataProvider < SshDataProvider
     # The behavior of the *collection_index methods is weird.
     basedir = Pathname.new(self.containerized_path)
     if directory == :all
-      subdir     = userfile.name
+      subdir     = userfile.browse_name
       one_level  = false
     elsif directory == :top
-      subdir     = userfile.name
+      subdir     = userfile.browse_name
       one_level  = true
     else
-      subdir     = Pathname.new(userfile.name) + directory
+      subdir     = Pathname.new(userfile.browse_name) + directory
       one_level  = true
     end
 
@@ -278,7 +289,7 @@ class SingSquashfsDataProvider < SshDataProvider
       remote_cmd  = "cd #{self.remote_dir.bash_escape} && ls -1"
       text        = self.remote_bash_this(remote_cmd)
       lines       = text.split("\n")
-      @sq_files   = lines.select { |l| l =~ /\A\S+\.(squashfs|sqs)\z/ }.sort
+      @sq_files   = lines.select { |l| l =~ /\A\S+\.(squashfs|sqs|sqfs)\z/ }.sort
       self.meta[:squashfs_basenames] = @sq_files
     end
 

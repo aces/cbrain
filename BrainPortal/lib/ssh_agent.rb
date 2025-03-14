@@ -225,7 +225,7 @@ class SshAgent
       # "Could not open a connection to your authentication agent."
       return false if     out =~ /could not open/i
       return true  if     out =~ /agent has no identities/i
-      return true  if     out =~ /\A\d+\s+SHA256:/i   # OpenSsh 6.8 + shows base64 SHA256 fingerprints
+      return true  if     out =~ /^\d+\s+SHA256:/i   # OpenSsh 6.8 + shows base64 SHA256 fingerprints
       return true  if     out =~ /:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:/ # md5
       false
     end

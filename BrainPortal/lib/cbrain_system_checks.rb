@@ -36,7 +36,6 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
     puts "C> CBRAIN System Checks starting, " + Time.now.to_s
     puts "C> Ruby #{RUBY_VERSION} on Rails #{Rails::VERSION::STRING}, environment is set to '#{Rails.env}'"
     puts "C> RAILS_ENV variable is set to '#{ENV['RAILS_ENV']}'" if (! ENV['RAILS_ENV'].blank?) && (Rails.env != ENV['RAILS_ENV'])
-    puts "C> CBRAIN instance is named '#{CBRAIN::Instance_Name}'"
     puts "C> Hostname is '#{Socket.gethostname rescue "(Exception)"}'"
     #-----------------------------------------------------------------------------
   end
@@ -172,7 +171,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
     puts "C> Cleaning up old SyncStatus objects..."
     #-----------------------------------------------------------------------------
 
-    rr_ids = RemoteResource.where({}).raw_first_column(:id)
+    rr_ids = RemoteResource.ids
     bad_ss = SyncStatus.where([ "remote_resource_id NOT IN (?)", rr_ids ])
     ss_deleted = bad_ss.count
     if ss_deleted > 0
@@ -181,8 +180,8 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
     else
       puts "C> \t- No SyncStatus objects are associated with obsolete resources."
     end
-    ss_uids = SyncStatus.where({}).raw_first_column(:userfile_id) || []
-    uids    = Userfile.where({}).raw_first_column(:id)            || []
+    ss_uids = SyncStatus.pluck(:userfile_id) || []
+    uids    = Userfile.ids                   || []
     bad_ids = (ss_uids - uids).uniq
     if bad_ids.size > 0
       SyncStatus.where(:userfile_id => nil).destroy_all rescue true
@@ -310,27 +309,8 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
       DataProvider.cache_revision_of_last_init(:force)
 
     # Just crud removal needed.
-    else
-
+    elsif BackgroundActivity::WipeOldCache.setup! # schedules a check and cleanup in background
       puts "C> \t- Wiping old files in Data Provider cache (in background)."
-
-      CBRAIN.spawn_with_active_records(User.admin, "CacheCleanup") do
-        wiped = DataProvider.cleanup_leftover_cache_files("Yeah, Do it!", :update_dollar_zero => true) rescue []
-        unless wiped.empty?
-          Rails.logger.info "Wiped #{wiped.size} old files in DP cache."
-          Message.send_message(User.admin,
-            :type          => :system,
-            :header        => "Report of cache crud removal on #{myself.is_a?(BrainPortal) ? "Portal" : "Execution Server"} '#{myself.name}'",
-            :description   => "These relative paths in the local Data Provider cache were\n" +
-                              "removed as there are no longer any userfiles matching them.\n",
-            :variable_text => "#{wiped.size} cache subpaths:\n" + wiped.sort
-                              .each_slice(10).map { |pp| pp.join(" ") }.join("\n"),
-            :critical      => true,
-            :send_email    => false
-          ) rescue true
-        end
-      end
-
     end
   end
 

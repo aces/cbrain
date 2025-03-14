@@ -99,9 +99,9 @@ describe Message do
       expect do
         exception = Exception.new("error")
         allow(exception).to receive(:backtrace).and_return([""])
-        allow(WorkGroup).to receive(:find_by_id).and_return(User.all_admins.map(&:own_group).compact)
+        allow(WorkGroup).to receive(:find_by_id).and_return(User.all_admins.map(&:own_group).uniq.compact)
         Message.send_internal_error_message("","head", exception)
-      end.to change { Message.count }.by(User.all_admins.map(&:own_group).compact.count)
+      end.to change { Message.count }.by(User.all_admins.count)
     end
 
     it "send a message to all users and admin (admin + normal user)" do
@@ -109,9 +109,9 @@ describe Message do
       expect do
         exception = Exception.new("error")
         allow(exception).to receive(:backtrace).and_return([""])
-        allow(WorkGroup).to receive(:find_by_id).and_return(User.all_admins.map(&:own_group).compact)
+        allow(WorkGroup).to receive(:find_by_id).and_return(User.all_admins.map(&:own_group).uniq.compact)
         Message.send_internal_error_message(users,"head", exception)
-      end.to change { Message.count }.by(User.all_admins.map(&:own_group).compact.count + users.size)
+      end.to change { Message.count }.by(User.all_admins.count + users.size)
     end
 
   end

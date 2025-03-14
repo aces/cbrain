@@ -159,6 +159,15 @@ class ClusterTask < CbrainTask
     24.hours
   end
 
+  # This method can be redefined in a subclass;
+  # it will be called to provide the framework
+  # with an amount of memory needed by the cluster job.
+  # The value should be a number, in units of megabytes.
+  # The value returned by default here is nil.
+  def job_memory_estimate
+    nil
+  end
+
 
 
   ##################################################################
@@ -515,14 +524,14 @@ class ClusterTask < CbrainTask
   # and add a log entry to each userfile identifying that
   # it was processed by the current task. An optional
   # comment can be appended to the message.
-  def addlog_to_userfiles_processed(userfiles,comment = "")
+  def addlog_to_userfiles_processed(userfiles, comment = "", caller_level=0)
     userfiles = [ userfiles ] unless userfiles.is_a?(Array)
     myname   = self.fullname
     mylink   = "/tasks/#{self.id}"  # can't use show_task_path() on Bourreau side
     mymarkup = "[[#{myname}][#{mylink}]]"
     userfiles.each do |u|
       next unless u.is_a?(Userfile) && u.id
-      u.addlog_context(self,"Processed by task #{mymarkup} #{comment}",3)
+      u.addlog_context(self,"Processed by task #{mymarkup} #{comment}",3+caller_level)
     end
   end
 
@@ -530,14 +539,14 @@ class ClusterTask < CbrainTask
   # and add a log entry to each userfile identifying that
   # it was created by the current task. An optional
   # comment can be appended to the message.
-  def addlog_to_userfiles_created(userfiles,comment = "")
+  def addlog_to_userfiles_created(userfiles, comment = "", caller_level=0)
     userfiles = [ userfiles ] unless userfiles.is_a?(Array)
     myname   = self.fullname
     mylink   = "/tasks/#{self.id}" # can't use show_task_path() on Bourreau side
     mymarkup = "[[#{myname}][#{mylink}]]"
     userfiles.each do |u|
       next unless u.is_a?(Userfile) && u.id
-      u.addlog_context(self,"Created/updated by #{mymarkup} #{comment}",3)
+      u.addlog_context(self,"Created/updated by #{mymarkup} #{comment}",3+caller_level)
     end
   end
 
@@ -546,7 +555,7 @@ class ClusterTask < CbrainTask
   # and records for each created file what were the creators, and for
   # each creator file what files were created, along with a link
   # to the task itself. An optional comment can be appended to the header message.
-  def addlog_to_userfiles_these_created_these(creatorlist, createdlist, comment = "")
+  def addlog_to_userfiles_these_created_these(creatorlist, createdlist, comment="", caller_level=0)
 
     # Two lists of userfiles. Make sure their contents are OK.
     creatorlist = Array(creatorlist).select { |u| u.is_a?(Userfile) && u.id }
@@ -564,9 +573,9 @@ class ClusterTask < CbrainTask
     # Add an entry to each creator files, listing created files
     creatorlist.each do |creator|
       if createdlist.size == 1 # a common case; create shorter log entry then.
-        creator.addlog_context(self, "Used by task #{mymarkup} to create #{createdMarkups[0]}. #{comment}", 4)
+        creator.addlog_context(self, "Used by task #{mymarkup} to create #{createdMarkups[0]}. #{comment}", 4+caller_level)
       else
-        creator.addlog_context(self, "Used by task #{mymarkup}, list of #{createdlist.size} created files follow. #{comment}", 4)
+        creator.addlog_context(self, "Used by task #{mymarkup}, list of #{createdlist.size} created files follow. #{comment}", 4+caller_level)
         createdMarkups.each_slice(5).each do |files_4|
           creator.addlog(files_4.join(", "))
         end
@@ -576,9 +585,9 @@ class ClusterTask < CbrainTask
     # Add an entry to each created files, listing creators
     createdlist.each do |created|
       if creatorlist.size == 1 # a common case; create shorter log entry then.
-        created.addlog_context(self, "Created/updated by task #{mymarkup} from file #{creatorMarkups[0]}. #{comment}", 4)
+        created.addlog_context(self, "Created/updated by task #{mymarkup} from file #{creatorMarkups[0]}. #{comment}", 4+caller_level)
       else
-        created.addlog_context(self, "Created/updated by task #{mymarkup}, list of #{creatorlist.size} used files follow. #{comment}", 4)
+        created.addlog_context(self, "Created/updated by task #{mymarkup}, list of #{creatorlist.size} used files follow. #{comment}", 4+caller_level)
         creatorMarkups.each_slice(5).each do |files_4|
           created.addlog(files_4.join(", "))
         end
@@ -1307,9 +1316,9 @@ class ClusterTask < CbrainTask
   # Work Directory Archiving API
   ##################################################################
 
-  def in_situ_workdir_archive_file #:nodoc:
+  def in_situ_workdir_archive_file(nozip) #:nodoc:
     fn_id = self.fullname.gsub(/[^\w\-]+/,"_").sub(/\A_*/,"").sub(/_*$/,"")
-    "CbrainTask_Workdir_#{fn_id}.tar.gz" # note: also check in the TaskWorkdirArchive model
+    "CbrainTask_Workdir_#{fn_id}.tar#{'.gz' unless nozip}" # note: also check in the TaskWorkdirArchive model
   end
 
   # This method will create a .tar.gz file of the
@@ -1320,7 +1329,7 @@ class ClusterTask < CbrainTask
   # in_situ_workdir_archive_file(). Restoring the
   # state of the workdir can be performed with
   # unarchive_work_directory().
-  def archive_work_directory
+  def archive_work_directory(nozip = false)
 
     # Keep updated_at value in order to reset it at the end of method
     updated_at_value = self.updated_at
@@ -1331,7 +1340,7 @@ class ClusterTask < CbrainTask
     cb_error "Tried to archive a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
 
-    tar_file      = self.in_situ_workdir_archive_file
+    tar_file      = self.in_situ_workdir_archive_file(nozip)
     temp_tar_file = "T_#{tar_file}"
     tar_capture   = "/tmp/tar.capture.#{Process.pid}.out"
 
@@ -1370,6 +1379,7 @@ class ClusterTask < CbrainTask
       # Serialize a copy of the ActiveRecord for this task, for reference.
       File.open(".cbrain_task.json","w") do |fh|
         fh.write JSON.pretty_generate(JSON[self.to_json])
+        fh.write "\n"
       end
 
       # Remove core files. Core file names can be customized by a sysadmin, so
@@ -1380,7 +1390,7 @@ class ClusterTask < CbrainTask
 
       system("chmod","-R","u+rwX",".") # uppercase X mode affects only directories
       status = with_stdout_stderr_capture(tar_capture) do
-        system("tar","-czf", temp_tar_file, "--exclude", "*#{temp_tar_file}", ".")
+        system("tar","-c#{'z' unless nozip }f", temp_tar_file, "--exclude", "*#{temp_tar_file}", ".")
         $? # a Process::Status object
       end
 
@@ -1454,7 +1464,7 @@ class ClusterTask < CbrainTask
     cb_error "Tried to unarchive a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
 
-    tar_file      = self.in_situ_workdir_archive_file
+    tar_file      = self.in_situ_workdir_archive_file(false)  # first assume tar file is gzip-compressed
     tar_capture   = "/tmp/tar.capture.#{Process.pid}.out"
 
     if self.cluster_workdir.blank?
@@ -1532,12 +1542,12 @@ class ClusterTask < CbrainTask
   # is the task's results_data_provider_id.
   # Restoring the state of the workdir can be performed
   # with unarchive_work_directory_from_userfile().
-  def archive_work_directory_to_userfile(dp_id = nil)
-    return false unless self.archive_work_directory
+  def archive_work_directory_to_userfile(dp_id = nil, nozip = nil)
+    return false unless self.archive_work_directory(nozip)
     file_id  = self.workdir_archive_userfile_id
     return true if file_id
-
     full=self.full_cluster_workdir
+
     if ! Dir.exists?(full)
       self.addlog("Cannot archive: work directory '#{full}' does not exist.")
       return false
@@ -1549,7 +1559,7 @@ class ClusterTask < CbrainTask
       return false
     end
 
-    tar_file = self.in_situ_workdir_archive_file
+    tar_file = self.in_situ_workdir_archive_file(nozip)
 
     Dir.chdir(full) do
       if ! File.exists?(tar_file)
@@ -1594,7 +1604,6 @@ class ClusterTask < CbrainTask
   # the method fetches it, and use its content
   # to recreate the task's work directory.
   def unarchive_work_directory_from_userfile
-    tar_file = self.in_situ_workdir_archive_file
 
     return false unless self.workdir_archived? && self.workdir_archive_userfile_id
 
@@ -1607,6 +1616,9 @@ class ClusterTask < CbrainTask
       self.update_column(:workdir_archive_userfile_id,nil)
       return false
     end
+
+    nozip    = !taskarch_userfile.name.end_with?(".gz")  # archive is likely zipped if ends with gz
+    tar_file = self.in_situ_workdir_archive_file(nozip)
 
     self.addlog("Attempting to restore TaskWorkdirArchive.")
 
@@ -1849,13 +1861,38 @@ date '+CBRAIN Task Starting At %s : %F %T' 1>&2
 # Record runtime environment
 bash #{Rails.root.to_s.bash_escape}/vendor/cbrain/bin/runtime_info.sh > #{runtime_info_basename}
 
-# stdout and stderr captured below will be re-substituted in
-# the output and error of this script.
-bash '#{sciencefile}' >> #{science_stdout_basename} 2>> #{science_stderr_basename} </dev/null
-status="$?"
+# With apptainer/singularity jobs, we sometimes get an error booting the container,
+# so we try up to five times.
+for singularity_attempts in 1 2 3 4 5 ; do  # note: the number 5 is used a bit below in an 'if'
+  SECONDS=0 # this is a special bash variable, see the doc
 
-echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      # where stdout captured below will be substituted
-echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      1>&2 # where stderr captured below will be substituted
+  # stdout and stderr captured below will be re-substituted in
+  # the output and error of this script here (this one!)
+  bash '#{sciencefile}' >> #{science_stdout_basename} 2>> #{science_stderr_basename} </dev/null
+  status="$?"
+
+  test $status -eq 0 && break # all is good
+
+  # Detect failed boot of singularity container
+  if ! grep -i 'FATAL.*container.*creation.*failed' #{science_stderr_basename} >/dev/null ; then
+    break # move on, for any other error or even non zero successes
+  fi
+
+  # Detect that final attempt to boot failed
+  if test $singularity_attempts -eq 5 ; then
+    echo "Apptainer container boot attempts all failed, giving up."
+    status=99 # why not
+    break
+  fi
+
+  # Cleanup and try again
+  echo "Apptainer boot attempt number $singularity_attempts failed, trying again."
+  grep -v -i 'FATAL.*container.*creation.*failed' < #{science_stderr_basename} > #{science_stderr_basename}.clean
+  mv -f #{science_stderr_basename}.clean #{science_stderr_basename}
+done
+
+echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      # where stdout captured above will be substituted
+echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      1>&2 # where stderr captured above will be substituted
 date "+CBRAIN Task Ending With Status $status After $SECONDS seconds, at %s : %F %T"
 date "+CBRAIN Task Ending With Status $status After $SECONDS seconds, at %s : %F %T" 1>&2
 
@@ -1886,6 +1923,7 @@ exit $status
     job.wd       = workdir
     job.name     = self.tname_tid  # "#{self.name}-#{self.id}" # some clusters want all names to be different!
     job.walltime = self.job_walltime_estimate
+    job.memory   = self.job_memory_estimate
     job.task_id  = self.id
 
     # Note: all extra_qsub_args defined in the tool_configs (bourreau, tool and bourreau/tool)
@@ -2018,6 +2056,7 @@ exit $status
     cb_error "Tried to remove a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
     return true if self.share_wd_tid.present?  # Do not erase if using some other task's workdir.
+
     full=self.full_cluster_workdir
     return if full.blank?
     self.addlog("Removing workdir '#{full}'.")
@@ -2034,7 +2073,7 @@ exit $status
 
   # Save the directory created to run the job.
   # The directory will be saved as a FileCollection
-  # only if the task have a results Data Provider.
+  # only if the task has a results Data Provider.
   def save_cluster_workdir(user_id)
     full_cluster_workdir = self.full_cluster_workdir
     user                 = User.find(user_id)
@@ -2342,27 +2381,32 @@ docker_image_name=#{full_image_name.bash_escape}
       mountpoint = "#{effect_workdir}/#{basename}" # e.g. /path/to/workdir/work or /T123/work
       install_ext3fs_filesystem(fs_name,size)
       safe_mkdir(basename)
+      self.addlog("Overlay configured: ext3 capture #{fs_name}")
       "#{sing_opts} -B #{fs_name.bash_escape}:#{mountpoint.bash_escape}:image-src=/"
     end
     # This list will be used to make a device number check: all components
     # must be on a device different from the one for the work directory.
     capture_basenames = ext3capture_basenames.map { |basename,_| basename }
 
-    # (4) More -B (bind mounts) for all the local data providers.
+    # (4) More -B (bind mounts) for all the relevant local data providers.
     # This will be a string "-B path1 -B path2 -B path3" etc.
+    # In the case of read-only input files, ro option is added
     esc_local_dp_mountpoints = local_dp_storage_paths.inject("") do |sing_opts,path|
-      "#{sing_opts} -B #{path.bash_escape}"
+      "#{sing_opts} -B #{path.bash_escape}#{":#{path.bash_escape}:ro" if file_access_symbol == :read}"
     end
 
     # (5) Overlays defined in the ToolConfig
     # Some of them might be patterns (e.g. /a/b/data*.squashfs) that need to
     # be resolved locally.
     # This will be a string "--overlay=path:ro --overlay=path:ro" etc.
-    overlay_paths = self.tool_config.singularity_overlays_full_paths.map do |path|
-      paths = Dir.glob(path) # checks on the local file system
-      cb_error "Can't find any overlays matching '#{path}'" if paths.blank?
-      paths
-    end.flatten
+    overlay_paths = self.tool_config.singularity_overlays_full_paths.map do |path, knd|
+      paths = Dir.glob(path) # assume no glob expression in overlay files
+      cb_error "Can't find any local file matching overlay '#{path}'" if paths.blank?
+      paths.each do |f|
+        f = File.basename(f) if knd == 'registered userfile'
+        self.addlog("Overlay configured: #{knd} #{f}")
+      end
+    end.flatten.uniq  #  paths can repeat e.g with too broad patterns
     overlay_mounts = overlay_paths.inject("") do |sing_opts,path|
       "#{sing_opts} --overlay=#{path.bash_escape}:ro"
     end
@@ -2555,7 +2599,7 @@ bash -c "exit $_cbrain_status_"
     end
 
     # Format it. Only works on linux obviously
-    system("echo y | mkfs.ext3 -t ext3 -q -E root_owner  #{filename.bash_escape}")
+    system("echo y | mkfs.ext3 -t ext3 -m 0 -q -E root_owner #{filename.bash_escape}")
     status  = $? # A Process::Status object
     if ! status.success?
       cb_error "Cannot format EXT3 filesystem file '#{filename}': #{status.to_s}"
@@ -2568,153 +2612,6 @@ bash -c "exit $_cbrain_status_"
   end
 
 
-
-  ##################################################################
-  # Internal Subtask Submission Mechanism
-  ##################################################################
-
-  public
-
-  # Handles +subtasks+ submitted while a task is running. To submit a subtask, a
-  # task must create a ".new-task-*.json" JSON file at the root of its
-  # work directory. Once a JSON file has been handled, it is deleted.
-  def submit_subtasks_from_json
-    workdir = self.full_cluster_workdir
-    return nil if workdir.blank? || ! File.directory?(workdir) # in case workdir doesn't exist yet
-    Dir.chdir(workdir) do
-      taskfiles = Dir.glob(".new-task-*.json")
-      return unless taskfiles.present?
-      self.reload
-      current_status = self.status
-      return if     current_status == "Subtasking"
-      return unless self.status_transition(current_status, "Subtasking") # ensures only one process can do the rest
-      taskfiles.each do |taskfile|
-        #self.addlog("Found new subtask file: #{taskfile}")
-        begin
-          file_content = File.read(taskfile)
-          self.submit_task_from_string(taskfile,file_content)
-        rescue => ex
-          self.addlog_exception(ex,"Error submitting subtask")
-        ensure
-          File.unlink(taskfile) rescue nil # to make sure we won't retry forever
-          #For debug
-          #File.rename(taskfile,"#{taskfile}.processed")
-        end
-      end # each new json descriptor
-      self.status_transition("Subtasking", current_status)
-    end
-  end
-
-  protected
-
-  # Creates and submits a subtask defined by a JSON object.
-  # Parameters:
-  # * json_string: A string containing a JSON object defining the task.
-  #                Example:
-  #                  {
-  #                    "tool-class": "CbrainTask::TestTool",
-  #                    "description": "A task running TestTool",
-  #                    "parameters": {
-  #                       "important_number": "123",
-  #                       "dummy_parameter": "432"
-  #                    }
-  #                  }
-  def submit_task_from_string(json_filename,json_string)
-
-    # Parses JSON string and checks format
-    validate_json_string(json_string) # Raises an exception if string is not valid
-    new_task_hash = JSON.parse(json_string)
-
-    # Extract the main info about this new task
-    new_task_class_name  = new_task_hash["tool-class"].presence    || "ErrorNoSuchClassMyFriend"
-    new_share_wd_tid     = new_task_hash["share-wd-tid"].presence     # optional
-    new_tcid             = new_task_hash["tool-config-id"].presence   # optional
-    new_params           = new_task_hash["parameters"].presence    || {}
-    new_description      = new_task_hash["description"].presence   || "Task submitted by task #{self.id}"
-    new_prereqs          = new_task_hash["prerequisites"].presence || ""
-
-    # Prints log message in the task's logs
-    self.addlog("Submitting new subtask #{new_task_class_name}")
-
-    # Creates task
-    new_task              = CbrainTask.const_get(new_task_class_name).new # Raises an exception if tool class is not found
-    raise "Invalid tool class: #{new_task_class_name}" unless new_task.class < ClusterTask
-
-    new_task.batch_id     = self.id
-    self.level            = 0 if self.level.blank?
-    new_task.level        = self.level + 1 # New task will be one level up its "parent" task in the task table.
-    if new_share_wd_tid.present?
-      new_share_wd_tid      = self.id if new_share_wd_tid == 0 # a value of 0 means current task
-      new_task.share_workdir_with(new_share_wd_tid, "Queued")
-    end
-
-    # Sets tool config among tool configs accessible by user of current task
-    new_tool                = new_task.tool
-    accessible_tool_configs = ToolConfig.find_all_accessible_by_user(self.user).where(:tool_id => new_tool.id, :bourreau_id => self.bourreau_id)
-    new_tcid                = accessible_tool_configs.limit(1).raw_first_column(:id)[0] if new_tcid.blank?
-    if new_tcid.blank? || ! accessible_tool_configs.where(:id => new_tcid).exists?
-      cb_error "Cannot find an acceptable tool config ID for this user, tool, and bourreau."
-    end
-    new_task.tool_config_id = new_tcid
-
-    # Sets task parameters
-    new_task.params = new_params.symbolize_keys
-
-    # Sets task prerequisites
-    new_prereqs.split(",").each do |dep_id|
-      new_task.add_prerequisites_for_setup(dep_id,'Completed')
-    end
-
-    # Sets other task attributes
-    # In the future, we could allow to register results to another data provider
-    # or to submit the task to another bourreau. This would require to carefully
-    # check permissions of the task's current user, though.
-    new_task.description              = new_description
-    new_task.user_id                  = self.user_id
-    new_task.results_data_provider_id = self.results_data_provider_id
-    new_task.bourreau_id              = self.bourreau_id
-    new_task.group_id                 = self.group_id
-
-    # Submits the task
-    new_task.status = "New"
-    new_task.save!
-
-    # Returns subtask id to application as a tiny .cbid file
-    taskid_filename = json_filename.sub(/\.json$/i,".cbid")
-    File.write(taskid_filename, "#{new_task.id}\n" )
-
-    # Add new task as a pre-requisite of the current task if requested
-    if new_task_hash["required-to-post-process"]
-      self.add_prerequisites_for_post_processing(new_task,'Completed')
-      self.save!
-    end
-
-  end
-
-  # Validates a JSON string against
-  # the schema used to define new tasks.
-  def validate_json_string json_string
-    # The JSON schema could be extended with bourreau id and results
-    # data provider id but that would require careful permission
-    # checks. tool-config-id is not mandatory because it's specific
-    # to a CBRAIN installation and cannot be easily obtained by an
-    # external agent. In case no tool config id is provided, the first
-    # accessible tool config id will be selected.
-    schema = {
-      "type"       => "object",
-      "required"   => [ "tool-class", "parameters" ],
-      "properties" => {
-        "tool-class"     => { "type" => "string" },                                         # Class of the new task
-        "tool-config-id" => { "type" => "number" },                                         # Tool config id of the new task
-        "share-wd-tid"   => { "type" => "string" },                                         # ID of other task to share workdir
-        "description"    => { "type" => "string" },                                         # Description of the new task
-        "parameters"     => { "type" => "object", "properties" => {"type" => "string" } },  # Parameters of the new task
-        "prerequisites"  => { "type" => "string" },                                         # List of task ids that are a prerequisite to setup the new task
-        "required-to-post-process" => { "type" => "boolean" }  # If true, the current task will not post-process before the new task is completed
-      }
-    }
-    JSON::Validator.validate!(schema,json_string) # raises an exception if json_string is not valid
-  end
 
   ##################################################################
   # Singularity load
@@ -2950,4 +2847,3 @@ bash -c "exit $_cbrain_status_"
   end
 
 end
-

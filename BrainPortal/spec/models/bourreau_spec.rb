@@ -147,18 +147,5 @@ describe Bourreau do
       bourreau.send_command_get_task_outputs("task_id")
     end
   end
-  describe "#send_command_alter_tasks" do
-    before(:each) do
-      allow(bourreau).to receive(:send_command)
-    end
-    it "should create a 'get task outputs' command" do
-      expect(RemoteCommand).to receive(:new).with(hash_including(:command => 'alter_tasks')).and_return({})
-      bourreau.send_command_alter_tasks("task_id", "New")
-    end
-    it "should send the command" do
-      expect(bourreau).to receive(:send_command)
-      bourreau.send_command_alter_tasks("task_id", "New")
-    end
-  end
 end
 

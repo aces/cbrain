@@ -17,14 +17,14 @@ on:   [ push, pull_request ]
 jobs:
   run-tests:
     name: Continuous Integration Tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       RAILS_ENV: test
 
     ###########################################################
     services:
       mariadb:
-        image: mariadb/server
+        image: mariadb
         env: # the docker container's autosetup use MYSQL_ variables
           MYSQL_ROOT_PASSWORD: that_is_nothing
           MYSQL_DATABASE:      cbrain_test
@@ -38,13 +38,13 @@ jobs:
 
       ###########################################################
       - name: Checkout CBRAIN Codebase
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       ###########################################################
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 2.6.6
+          ruby-version: 2.7.2
 
       ###########################################################
       - name: Setup BrainPortal And Bourreau Names
@@ -70,7 +70,7 @@ jobs:
         uses: actions/cache@v3 # speeds up 'Prepare Ruby Gems' below
         with:
           path: gem-cache
-          key: ${{ runner.os }}-gems-${{ hashFiles('*/Gemfile') }}
+          key: ubuntu-24-gems-${{ hashFiles('*/Gemfile') }}
 
       ###########################################################
       - name: Prepare Ruby Gems

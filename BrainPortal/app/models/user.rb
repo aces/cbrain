@@ -86,6 +86,7 @@ class User < ApplicationRecord
   before_save               :apply_access_profiles
   after_update              :system_group_site_update
   after_destroy             :destroy_system_group
+  after_destroy             :destroy_empty_work_groups
   after_destroy             :destroy_user_sessions
   after_destroy             :destroy_user_ssh_key
 
@@ -100,6 +101,7 @@ class User < ApplicationRecord
   has_many                :tags,            :dependent => :destroy
   has_many                :custom_filters,  :dependent => :destroy
   has_many                :exception_logs,  :dependent => :destroy
+  has_many                :background_activities, :dependent => :destroy
   # Resource usage is kept forever even if account is destroyed.
   has_many                :resource_usage
 
@@ -382,7 +384,7 @@ class User < ApplicationRecord
   # If option +create_it+ is true, create the key files if necessary.
   # If option +ok_no_files+ is true, will return the object even if
   # the key files don't exist yet (default it to raise an exception)
-  def ssh_key(options = { :create_id => false, :ok_no_files => false })
+  def ssh_key(options = { :create_it => false, :ok_no_files => false })
     name = "u#{self.id}" # Avoiding username in ssh filenames or in comment.
     return SshKey.find_or_create(name) if options[:create_it]
     return SshKey.new(name)            if options[:ok_no_files]
@@ -527,8 +529,8 @@ class User < ApplicationRecord
 
   # Create a random string (currently for passwords).
   def self.random_string
-    length = rand(5) + 4
-    s = ""
+    length = rand(4) + 8
+    s = "T"
     length.times do
       c = rand(75) + 48 # ascii range from '0' to 'z'
       redo if c == 92 || c == 96  # \ or '
@@ -592,6 +594,12 @@ class User < ApplicationRecord
   def destroy_system_group #:nodoc:
     system_group = UserGroup.where( :name => self.login ).first
     system_group.destroy if system_group
+  end
+
+  def destroy_empty_work_groups #:nodoc:
+    return if self.id == User.admin&.id
+    # spare groups with other users files
+    WorkGroup.where(creator_id: self.id).left_outer_joins(:userfiles).where(userfiles: { id: nil }).destroy_all
   end
 
   def add_system_groups #:nodoc:

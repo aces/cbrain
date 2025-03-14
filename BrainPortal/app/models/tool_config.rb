@@ -60,6 +60,7 @@ class ToolConfig < ApplicationRecord
 
   validate        :validate_container_rules
   validate        :validate_overlays_specs
+  validate        :prevent_version_name_change_for_boutiques_tool
 
   scope           :global_for_tools     , -> { where( { :bourreau_id => nil } ) }
   scope           :global_for_bourreaux , -> { where( { :tool_id => nil } ) }
@@ -96,10 +97,35 @@ class ToolConfig < ApplicationRecord
       ToolConfig.specific_versions
     else
       gids = user.group_ids
-      bids = Bourreau.find_all_accessible_by_user(user).raw_first_column("remote_resources.id")
-      tids = Tool.find_all_accessible_by_user(user).raw_first_column("tools.id")
+      bids = Bourreau.find_all_accessible_by_user(user).ids
+      tids = Tool.find_all_accessible_by_user(user).ids
       ToolConfig.specific_versions.where(:group_id => gids, :bourreau_id => bids, :tool_id => tids)
     end
+  end
+
+  # Returns a AR relation for all ToolConfigs
+  # that are on +bourreau+ and have the
+  # same tool, version_name and group as the receiver.
+  def all_other_compatible_on_bourreau(bourreau=self.bourreau)
+    other_tcs = self.class.where(
+      :bourreau_id  => bourreau.id,
+      :tool_id      => self.tool_id,
+      :version_name => self.version_name,
+      :group_id     => self.group_id,
+    )
+    other_tcs
+  end
+
+  # Returns the latest compatible TC on +bourreau+ (from the list returned
+  # by all_other_compatible_on_bourreau) that +user+ has access to.
+  def find_latest_compatible_for_user_on_bourreau!(user,bourreau)
+    all_accessible_ids = self.class.find_all_accessible_by_user(user).pluck(:id)
+    found = self.all_other_compatible_on_bourreau(bourreau)
+      .where(:id => all_accessible_ids)
+      .order("updated_at desc")
+      .first
+    cb_error "Cannot find compatible ToolConfig on '#{bourreau.name}'" if ! found
+    found
   end
 
   # Returns true if both the bourreau and the tool associated
@@ -228,7 +254,6 @@ class ToolConfig < ApplicationRecord
 
     prologue = self.script_prologue || ""
     script  += <<-SCRIPT_HEADER
-        
 
 #---------------------------------------------------
 # Script Prologue:#{prologue.blank? ? " (NONE SUPPLIED)" : ""}
@@ -356,8 +381,9 @@ class ToolConfig < ApplicationRecord
     self.tool.cbrain_task_class
   end
 
-  # Returns an array of full paths to the Singularity overlay files that
-  # need to be mounted, as configured by the admin. Some of them might
+  # Returns a hash of full paths to the Singularity overlay files that
+  # need to be mounted along with explanation of their origin.
+  # Some of paths might
   # be patterns and will need to be resolved at run time. The dsl is
   #      # A file located on the cluster
   #        file:/path/to/file.squashfs
@@ -371,31 +397,30 @@ class ToolConfig < ApplicationRecord
     specs = parsed_overlay_specs
     specs.map do |knd, id_or_name|
 
-      # Old style file spec (legacy, to be removed)
-      next knd if knd =~ /^\//  # FIXME delete it after successful migration
-
       case knd
       when 'dp'
         dp = DataProvider.where_id_or_name(id_or_name).first
         cb_error "Can't find DataProvider #{id_or_name} for fetching overlays" if ! dp
         dp_ovs = dp.singularity_overlays_full_paths rescue nil
         cb_error "DataProvider #{id_or_name} does not have any overlays configured." if dp_ovs.blank?
-        dp_ovs
+        dp_ovs.map do |dp_path|
+          { dp_path => "Data Provider" }
+        end
       when 'file'
         cb_error "Provide absolute path for overlay file '#{id_or_name}'." if (Pathname.new id_or_name).relative?
-        id_or_name  # for local file, it is full file name (no ids)
+        { id_or_name => "local file" }  # for local file, it is full file name (no ids)
       when 'userfile'
         # db registered file, note admin can access all files
         userfile = SingleFile.where(:id => id_or_name).last
         cb_error "Userfile with id '#{id_or_name}' for overlay fetching not found." if ! userfile
         userfile.sync_to_cache() rescue cb_error "Userfile with id '#{id_or_name}' for fetching overlay failed to synchronize."
-        userfile.cache_full_path()
+        { userfile.cache_full_path() =>  "registered userfile" }
       when 'ext3capture'
-        [] # flatten will remove all that
+        []  # handled separately
       else
         cb_error "Invalid '#{knd}:#{id_or_name}' overlay."
       end
-    end.flatten.uniq
+    end.flatten.reduce(&:merge)
   end
 
   # Returns an array of the data providers that are
@@ -445,7 +470,7 @@ class ToolConfig < ApplicationRecord
       errors[:container_engine] = "a container hub image name or a container image userfile ID should be set when the container engine is set"
     end
 
-    if self.container_engine.present? && self.container_engine == "Singularity" 
+    if self.container_engine.present? && self.container_engine == "Singularity"
       if self.container_index_location.present? && self.container_index_location !~ /\A[a-z0-9]+\:\/\/\z/i
         errors[:container_index_location] = "is invalid for container engine Singularity. Should end in '://'."
       end
@@ -485,17 +510,11 @@ class ToolConfig < ApplicationRecord
     # Iterate over each spec and validate them
     specs.each do |kind, id_or_name|
 
-      # compatibility layer for old file spec format, to be eventually deleted after migration
-      if id_or_name.nil?
-        id_or_name = kind
-        kind = 'old style file'
-      end
-
       case kind # different validations rules for file, userfile and dp specs
-      when 'file', 'old style file' # full path specification for a local file, e.g. "file:/myfiles/c.sqs"
-        if id_or_name !~ /^\/\S+\.(sqs|squashfs)$/i
+      when 'file' # full path specification for a local file, e.g. "file:/myfiles/c.sqs"
+        if id_or_name !~ /^\/\S+\.(sqs|sqfs|squashfs)$/
           self.errors.add(:singularity_overlays_specs,
-            " contains invalid #{kind} named '#{id_or_name}'. It should be a full path that ends in .squashfs or .sqs")
+            " contains invalid #{kind} named '#{id_or_name}'. It should be a full path that ends in .squashfs, .sqs or .sqfs")
         end
 
       when 'userfile' # db-registered file spec, e.g. "userfile:42"
@@ -510,9 +529,9 @@ class ToolConfig < ApplicationRecord
           self.errors.add(:singularity_overlays_specs,
             %{" contains invalid userfile id '#{id_or_name}'. The file with id '#{id_or_name}' is not found."}
           )
-        elsif ! userfile.name.end_with?('.sqs') && ! userfile.name.end_with?('.squashfs')
+        elsif userfile.name.to_s !~ /\.(sqs|sqfs|squashfs)$/
           self.errors.add(:singularity_overlays_specs,
-          " contains invalid userfile with id '#{id_or_name}' and name '#{userfile.name}'. File name should end in .squashfs or .sqs")
+          " contains invalid userfile with id '#{id_or_name}' and name '#{userfile.name}'. File name should end in .squashfs, .sqs or .sqfs")
           # todo maybe or/and check file type?
         end
 
@@ -537,6 +556,19 @@ class ToolConfig < ApplicationRecord
     end
 
     errors.empty?
+  end
+
+  # Since the version_name of the tool config is used as
+  # a lookup in the ToolConfig class to find the associated
+  # Boutiques descriptor, we can't change it. We'd
+  # need a way to adjust the lookup table too, and
+  # also the content of the files on disk. Ideally,
+  # the JSON file should be linked by the IDs instead...
+  def prevent_version_name_change_for_boutiques_tool #:nodoc:
+    return if     self.new_record?
+    return unless self.version_name_change
+    return unless self.tool&.cbrain_task_class_name&.to_s&.match(/^BoutiquesTask::/)
+    self.errors.add(:version_name, 'cannot be changed because this is a Boutiques tool')
   end
 
   ##################################################################
@@ -641,7 +673,7 @@ class ToolConfig < ApplicationRecord
       :version_name    => descriptor.tool_version,
       # Other attributes
       :group_id        => User.admin.own_group.id,
-      :description     => "Auto-created by Boutiques integrator",
+      :description     => descriptor.description.to_s + "\n\n(Auto-created by Boutiques integrator)",
       :env_array       => [],
       :script_prologue => nil,
       :script_epilogue => nil,

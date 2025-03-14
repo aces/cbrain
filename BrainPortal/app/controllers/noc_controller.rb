@@ -189,6 +189,10 @@ class NocController < ApplicationController
     doroll           = params[:roll].presence
     @refresh_every   = params[:r].presence.try(:to_i)
     fake             = params[:fake].presence.try(:to_i) # fake statuses / offline / disk space etc
+    since_minutes    = params[:since_minutes].presence.try(:to_i)
+    if since_minutes
+      since_when = [2,since_minutes,527040].sort[1].minutes.ago
+    end
 
     # Auto refresh: default every two minutes.
     @refresh_every   = nil if @refresh_every.present? && @refresh_every < 10
@@ -196,13 +200,15 @@ class NocController < ApplicationController
 
     # RemoteResources, including the portal itself
     @myself        = RemoteResource.current_resource
-    @bourreaux     = Bourreau.where([ "updated_at > ?", offline_resource_limit.ago ]).order(:name).all # must have been toggled within a month
+    acttasks_bids  = CbrainTask.active.group(:bourreau_id).pluck(:bourreau_id)
+    updated_bids   = Bourreau.where([ "updated_at > ?", offline_resource_limit.ago ]).pluck(:id) # must have been toggled within a month.
+    @bourreaux     = Bourreau.where(:id => (acttasks_bids | updated_bids)).order(:name).all
 
     # Some numbers: active users, active tasks, sum of files sizes being transferred, sum of CPU time
     @active_users  = CbrainSession.session_model
                        .where([ "updated_at > ?", since_when ])
                        .where(:active => true)
-                       .raw_first_column(:user_id)
+                       .pluck(:user_id)
                        .compact.uniq.size
     @active_tasks  = CbrainTask.active.count
     @data_transfer = SyncStatus
@@ -233,9 +239,9 @@ class NocController < ApplicationController
       @active_tasks  = rand(fake)
       @data_transfer = rand(fake.gigabytes)
       @cpu_time      = rand(fake * 3600)
-      @dp_space_delta_P = DataProvider.where({}).raw_first_column(:id).shuffle[0..rand(5)]
+      @dp_space_delta_P = DataProvider.ids.shuffle[0..rand(5)]
                                       .map { |dp| [ dp,   rand(fake.gigabytes) ] }.to_h
-      @dp_space_delta_M = DataProvider.where({}).raw_first_column(:id).shuffle[0..rand(5)]
+      @dp_space_delta_M = DataProvider.ids.shuffle[0..rand(5)]
                                       .map { |dp| [ dp, - rand(fake.gigabytes) ] }.to_h
     end
 
@@ -255,7 +261,7 @@ class NocController < ApplicationController
 
       # Count of active statuses
       info[:status_counts] = b.is_a?(BrainPortal) ? [] :
-        b.cbrain_tasks.where(["updated_at > ?", since_when ])
+        b.cbrain_tasks.where(["updated_at > ? or status in (?)", since_when, CbrainTask::RUNNING_STATUS ])
                       .group(:status)
                       .count
                       .to_a  # [ [ status, count ], [ status, count ] ... ]
@@ -287,14 +293,14 @@ class NocController < ApplicationController
     # Add entries with 0 for DPs that happen to be offline, so we see still them in red.
     DataProvider.where(:online => false)
                 .where(["updated_at > ?", offline_resource_limit.ago])
-                .raw_first_column(:id)
+                .ids
                 .each do |dpid|
     #  @updated_files[dpid]    = 0 unless @updated_files[dpid].present?
       @dp_space_delta_P[dpid] = 0 unless @dp_space_delta_P[dpid].present?
     end
 
     #if fake
-    #  @updated_files = DataProvider.where({}).raw_first_column(:id).shuffle[0..rand(5)]
+    #  @updated_files = DataProvider.where({}).ids.shuffle[0..rand(5)]
     #                               .map { |dp| [ dp, rand(fake.gigabytes) ] }.to_h
     #end
 
@@ -309,6 +315,17 @@ class NocController < ApplicationController
     # Number of exceptions
     @num_exceptions = ExceptionLog.where([ "created_at > ?", since_when ]).count
     @num_exceptions = rand(fake) if fake
+
+    # Number of BackgroundActivities (non scheduled) updated
+    bacs = BackgroundActivity
+      .where(:status => [ 'InProgress', 'Completed', 'Failed', 'PartiallyCompleted' ])
+      .where([ "updated_at > ?", since_when ])
+      .group(:status).count
+    @num_bacs_progress  = bacs['InProgress']         || 0  # in blue
+    @num_bacs_completed = bacs['Completed']          || 0  # in green
+    @num_bacs_partial   = bacs['PartiallyCompleted'] || 0  # in yellow
+    @num_bacs_failed    = bacs['Failed']             || 0  # in red
+
   end
 
   # Show IP address

@@ -31,6 +31,7 @@ gem 'rails', '~> 5.0.6'
 # Network components mostly
 gem "net-ssh",       :require => 'net/ssh'
 gem "net-sftp",      :require => 'net/sftp'
+gem "x25519"
 gem "rbnacl"
 gem "ed25519"
 gem "rbnacl-libsodium"
@@ -70,7 +71,8 @@ end
 group :test do
   gem "rspec"
   gem "rspec-rails"
-  gem "factory_bot_rails", :require => false
+  gem "factory_bot",       '6.4.2', :require => false
+  gem "factory_bot_rails", '6.4.2', :require => false
   gem "rails-controller-testing"
   gem "rspec-mocks"
   gem "rspec-activemodel-mocks"

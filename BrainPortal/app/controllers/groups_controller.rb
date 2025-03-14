@@ -48,21 +48,22 @@ class GroupsController < ApplicationController
     @scope.custom[:button] = true if
       current_user.has_role?(:normal_user) && @scope.custom[:button].nil?
 
+    view_mode = (@scope.custom[:button].present?) ? :button : :list
+
     @base_scope = current_user.listable_groups.includes(:site)
     @view_scope = @scope.apply(@base_scope)
 
-    @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 50 })
-    @groups = @scope.pagination.apply(@view_scope)
-    @groups = (@groups.to_a << 'ALL') if @scope.custom[:button]
+    if view_mode == :list
+      @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 50 })
+      @groups = @scope.pagination.apply(@view_scope, api_request?)
+    else
+      @groups = @view_scope.to_a
+    end
 
     # For regular groups
     @group_id_2_userfile_counts      = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read).group("group_id").count
     @group_id_2_task_counts          = CbrainTask.find_all_accessible_by_user(current_user).group("group_id").count
     @group_id_2_user_counts          = User.joins(:groups).group("group_id").count.convert_keys!(&:to_i) # .joins make keys as string
-    @group_id_2_tool_counts          = Tool.find_all_accessible_by_user(current_user).group("group_id").count
-    @group_id_2_data_provider_counts = DataProvider.find_all_accessible_by_user(current_user).group("group_id").count
-    @group_id_2_bourreau_counts      = Bourreau.find_all_accessible_by_user(current_user).group("group_id").count
-    @group_id_2_brain_portal_counts  = BrainPortal.find_all_accessible_by_user(current_user).group("group_id").count
 
     # For `ALL` group
     @group_id_2_userfile_counts[nil] = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read).count
@@ -184,6 +185,7 @@ class GroupsController < ApplicationController
     respond_to do |format|
       if @group.update_attributes_with_logging(new_group_attr,current_user)
         @group.reload
+        add_meta_data_from_form(@group, [:autolink_description])
         if new_group_attr[:creator_id].present?
           @group.addlog_object_list_updated("Creator", User, original_creator, @group.creator_id, current_user, :login)
         end
@@ -275,12 +277,12 @@ class GroupsController < ApplicationController
       params.require_as_params(:group).permit(
         :name, :description, :not_assignable,
         :site_id, :creator_id, :invisible, :track_usage,
-        :user_ids => []
+        :public, :user_ids => []
       )
     else # non admin users
       params.require_as_params(:group).permit(
         :name, :description, :not_assignable,
-        :user_ids => []
+        :public, :user_ids => []
       )
     end
   end

@@ -31,10 +31,13 @@ gem 'rails', '~> 5.0.6'
 # Network components mostly
 gem "net-ssh",       :require => 'net/ssh'
 gem "net-sftp",      :require => 'net/sftp'
-gem "rbnacl"
+gem "x25519"
 gem "ed25519"
-gem "rbnacl-libsodium"
 gem "bcrypt_pbkdf"
+# You can comment-out the following two gems if you don't mind not having 'userkey' data providers.
+# They are usually the most tricky to compile and integrate into the app.
+gem "rbnacl"
+gem "rbnacl-libsodium"
 
 # Other utilities
 gem "sys-proctable", '~> 1.2.0'
@@ -46,6 +49,7 @@ gem "json-schema"
 gem "aws-sdk-s3", '~> 1'
 gem 'zenodo_client', '>= 1.0.0', :git => 'https://github.com/aces/zenodo-client-gem'
 gem 'jwt'
+gem "rack-cors"
 
 # User interface gems
 gem "will_paginate"
@@ -65,7 +69,7 @@ gem "activemodel-serializers-xml"
 
 gem 'sassc-rails' # "rake assets:precompile" fails if this gems is put into the :assets group
 group :assets do
-  gem 'therubyracer'
+  #gem 'therubyracer'  # very old; consider installing ANY other JS engine, like 'node'. If not, try 'mini_racer'.
   gem 'coffee-rails'
   gem 'uglifier'
 end
@@ -80,7 +84,7 @@ group :development do
   gem "hirb"
   gem "pry"
   gem "pry-byebug"
-  gem "listen", '~> 3.0.5'
+  gem "listen"
 end
 
 #----------------------
@@ -90,12 +94,13 @@ end
 group :test do
   gem "rspec"
   gem "rspec-rails"
-  gem "factory_bot_rails", :require => false
+  gem "factory_bot",       '6.4.2', :require => false
+  gem "factory_bot_rails", '6.4.2', :require => false
   gem "rails-controller-testing"
   gem "rspec-mocks"
   gem "rspec-activemodel-mocks"
   gem "rspec-collection_matchers"
   gem "database_cleaner"
-  gem 'cbrain_client', '>= 5.1.3', :git => 'https://github.com/aces/cbrain-client-gem'
+  gem 'cbrain_client', '>= 6.4.0', :git => 'https://github.com/aces/cbrain-client-gem'
 end
 

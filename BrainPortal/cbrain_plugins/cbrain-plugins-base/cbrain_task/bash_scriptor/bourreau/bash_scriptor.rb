@@ -57,6 +57,7 @@ class CbrainTask::BashScriptor < ClusterTask
   def cluster_commands #:nodoc:
     params       = self.params
     file_ids     = params[:interface_userfile_ids] || []
+    File.unlink(self.stdout_cluster_filename) rescue nil # needed in case of retries
 
     raw_text     = params[:bash_script]
     raw_text.tr!("\r","") # text areas have CRs in line terminators, yuk!

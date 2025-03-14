@@ -72,7 +72,7 @@ class BoutiquesBootIntegrator
       # The real meat is in ParentClass.
       klass = Class.new(parent)
       BoutiquesTask.const_set klass_name.to_sym, klass
-      klass.const_set :Revision_info, CbrainFileRevision[path] # the class gets the JSON file's rev info
+      klass.const_set :Revision_info, CbrainFileRevision[__FILE__]
     end
 
     # Add special module functionality if necessary
@@ -95,7 +95,7 @@ class BoutiquesBootIntegrator
   # This method scans a directory for JSON boutiques descriptors and
   # loads them all.
   def self.link_all(dir = CBRAIN::BoutiquesDescriptorsPlugins_Dir)
-    jsons=Dir.glob(Pathname.new(dir) + "*.json")
+    jsons=Dir.glob(Pathname.new(dir) + "*.json").sort
     jsons.each do |json|
       self.link_from_json_file(json)
     end

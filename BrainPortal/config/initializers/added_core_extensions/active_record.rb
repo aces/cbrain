@@ -35,12 +35,6 @@ module ActiveRecord #:nodoc:
     prepend CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::SafeInspect
 
     #####################################################################
-    # ActiveRecord::Relation Added Behavior For Unstructured Data Fetches
-    #####################################################################
-
-    include CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::RawData
-
-    #####################################################################
     # ActiveRecord::Relation Added Behavior For API Requests
     #####################################################################
 

@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2023
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -36,6 +36,13 @@ Rails.application.routes.draw do
   # ResourceUsage
   resources :resource_usage,  :only => [ :index ]
 
+  # BackgroundActivity
+  resources :background_activities,  :only => [ :index, :new, :create, :show ] do
+    collection do
+      post 'operation'
+    end
+  end
+
   # Standard CRUD resources
   resources :sites,           :except => [ :edit ]
   resources :custom_filters,  :except => [ :index ]
@@ -67,6 +74,7 @@ Rails.application.routes.draw do
   resources :users,           :except => [ :edit ] do
     member do
       get  'change_password'
+      post 'create_user_session'
       post 'switch'
       put  'push_keys'
     end
@@ -101,6 +109,7 @@ Rails.application.routes.draw do
       get  'rr_access'
       post 'cleanup_caches'
       get  'rr_access_dp'
+      post 'dispatcher_file_copy'
     end
   end
 
@@ -115,10 +124,13 @@ Rails.application.routes.draw do
       get  'report'
       post 'report'
       post 'repair'
+      post 'check_personal'
     end
     collection do
       get  'dp_access'
       get  'dp_transfers'
+      get  'new_personal'
+      post 'create_personal'
     end
   end
 
@@ -176,6 +188,7 @@ Rails.application.routes.draw do
     member do
       post 'resend_confirm'
       get  'confirm'
+      post 'confirm'
     end
     collection do
       post 'multi_action'
@@ -205,10 +218,12 @@ Rails.application.routes.draw do
   get   '/session_status'         => 'sessions#show'
   get   '/session_data'           => 'session_data#show'
   post  '/session_data'           => 'session_data#update'
-  # Globus authentication
-  get   '/globus'                 => 'sessions#globus'
-  post  '/unlink_globus'          => 'sessions#unlink_globus'
-  get   '/mandatory_globus'       => 'sessions#mandatory_globus'
+
+  # OIDC authentication
+  get   '/oidc'                   => 'sessions#oidc'
+  get   '/globus'                 => 'sessions#oidc' # for compatibility
+  post  '/unlink_oidc'            => 'sessions#unlink_oidc'
+  get   '/mandatory_oidc'         => 'sessions#mandatory_oidc'
 
   # Report Maker
   get   "/report",                :controller => :portal, :action => :report
@@ -275,10 +290,11 @@ Rails.application.routes.draw do
     get   '/signout'                => 'nh_sessions#destroy'
     get   '/myaccount'              => 'nh_users#myaccount'
 
-    # Globus authentication
-    get   '/nh_globus'              => 'nh_sessions#nh_globus'
-    post  '/nh_unlink_globus'       => 'nh_sessions#nh_unlink_globus'
-    get   '/nh_mandatory_globus'    => 'nh_sessions#nh_mandatory_globus'
+    # OIDC authentication
+    get   '/nh_oidc'                => 'nh_sessions#nh_oidc'
+    get   '/nh_globus'              => 'nh_sessions#nh_oidc' # for compatibility
+    post  '/nh_unlink_oidc'         => 'nh_sessions#nh_unlink_oidc'
+    get   '/nh_mandatory_oidc'      => 'nh_sessions#nh_mandatory_oidc'
 
     # ORCID authentication
     get   '/orcid'                  => 'nh_sessions#orcid'

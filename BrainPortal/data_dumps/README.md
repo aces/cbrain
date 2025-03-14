@@ -1,9 +1,17 @@
 
 # CBRAIN Data Dump Subdirectory
 
-This directory is initially empty
-but it's where some CBRAIN maintenance
-and statistics tasks dump their files.
+This directory is initially empty but it's where some CBRAIN
+maintenance and statistics tasks dump their files.
+
+### BackgroundActivity Dumps (under "bacs/")
+
+These are files named like 'loginname.jsonl'. They are
+concatenations of BackgroundActivity objects in JSON format,
+grouped by user, one JSON record per line. They are created
+whenever a user destroy a BackgroundActivity, either
+directly with the interface, or by the admin when scheduling
+BackgroundActivity::EraseBackgroundActivities objects.
 
 ### ResourceUsage Dumps
 

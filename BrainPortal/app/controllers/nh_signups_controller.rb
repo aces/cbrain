@@ -42,6 +42,14 @@ class NhSignupsController < NeurohubApplicationController
     @signup.form_page          = 'NeuroHub' # Just a keyword that IDs the signup page
     @signup.generate_token
 
+    # Bulletproof code to extract the timestamp of the form in the
+    # obfuscated 'auth_spec' parameter
+    form_generated_at_s   = params[:auth_spec].presence || Time.now.to_i.to_s
+    form_generated_at_int = form_generated_at_s.to_i rescue Time.now.to_i
+    form_generated_at     = Time.at(form_generated_at_int)
+    # If form was generated less then 10 seconds ago, ban the IP address
+    return ban_ip("Signup form filled too quickly") if @signup.email.present? && (Time.now - form_generated_at < 10.0)
+
     unless can_edit?(@signup)
       # this check is probably just a precation
       flash[:error] = 'Errors occurred, please try again.'
@@ -50,6 +58,7 @@ class NhSignupsController < NeurohubApplicationController
     end
 
     if ! @signup.save
+      @auth_spec = form_generated_at_int # keep old form_generated time
       flash.now[:error] = 'We are not able to accept your request.'
       render :action => :new
       return

@@ -99,8 +99,6 @@ module ViewHelpers
     ]
 
     components = components.select { |c| c[0] > 0 }
-    components.pop   while components.size > 0 && components[-1] == 0
-    components.shift while components.size > 0 && components[0]  == 0
 
     if options[:num_components]
       while components.size > options[:num_components]

@@ -95,24 +95,34 @@ class Userfile < ApplicationRecord
   attr_accessor           :tree_children
   attr_accessor           :rank_order
 
+  # Flag to keep the DP content when erasing the userfile;
+  # this flag is checked by a callback before_destroy()
+  attr_accessor           :keep_dp_content_on_destroy
+
+  # Special array of file patterns when performing syncing of
+  # only a subset of the files in a FileCollection. Not a
+  # commonly used feature of the model, and this is used only
+  # by certain DataProvider types which understand these patterns.
+  attr_accessor           :sync_select_patterns
+
   # Utility named scopes
   scope :name_like,     -> (n) { where("userfiles.name LIKE ?", "%#{n.strip}%") }
 
   scope :has_no_parent, ->     { where(parent_id: nil) }
 
   scope :has_no_child,     lambda { |ignored|
-                             parents_ids = Userfile.where("parent_id IS NOT NULL").raw_first_column(:parent_id).uniq
+                             parents_ids = Userfile.where("parent_id IS NOT NULL").pluck(:parent_id).uniq
                              parents_ids.blank? ? where({}) : where("userfiles.id NOT IN (?)", parents_ids)
                            }
 
   scope :parent_name_like, lambda { |n|
-                             matching_parents_ids = Userfile.where("name like ?", "%#{n.strip}%").raw_first_column(:id).uniq
+                             matching_parents_ids = Userfile.where("name like ?", "%#{n.strip}%").ids.uniq
                              where(:parent_id => matching_parents_ids)
                            }
 
   scope :child_name_like,  lambda { |n|
-                             matching_children_ids = Userfile.where("name like ?", "%#{n.strip}%").where("parent_id IS NOT NULL").raw_first_column(:id).uniq
-                             matching_parents_ids  = Userfile.where(:id => matching_children_ids).raw_first_column(:parent_id).uniq
+                             matching_children_ids = Userfile.where("name like ?", "%#{n.strip}%").where("parent_id IS NOT NULL").ids.uniq
+                             matching_parents_ids  = Userfile.where(:id => matching_children_ids).pluck(:parent_id).uniq
                              where(:id => matching_parents_ids)
                            }
 
@@ -290,8 +300,7 @@ class Userfile < ApplicationRecord
     tags = [tags] unless tags.is_a? Array
 
     non_user_tags = self.tags
-                        .where(["tags.user_id <> ? AND tags.group_id NOT IN (?)", user.id, user.group_ids])
-                        .raw_first_column(:id)
+                        .where(["tags.user_id <> ? AND tags.group_id NOT IN (?)", user.id, user.group_ids]).ids
     new_tag_set = tags + non_user_tags
 
     self.tag_ids = new_tag_set
@@ -638,6 +647,24 @@ class Userfile < ApplicationRecord
     self.data_provider.online?
   end
 
+  # This method is basically a destroy() with all the
+  # consequences, except that the file's content on
+  # the data provider side is NOT removed.
+  #
+  # That content is kept by setting a special flag
+  # that disables the provider_erase() callback.
+  #
+  # This behavior will only happen on browsable data
+  # providers; on other providers this method will
+  # raise an exception.
+  def unregister
+    dp = self.data_provider
+    cb_error "DataProvider '#{dp.name}' is not browsable, cannot unregister file ##{self.id}" unless
+      dp.is_browsable?
+    self.keep_dp_content_on_destroy = true
+    self.destroy
+  end
+
 
 
   ##############################################
@@ -649,11 +676,11 @@ class Userfile < ApplicationRecord
   # local userfile, and get to the cache quickly if it's already there.
   #
   # The +attributes+ describes a userfile's attribute for tracking
-  # the data; normally only the 'name' is required is should be specific
+  # the data. Normally only the 'name' is required and it should be specific
   # enough to represent a particular piece of data (e.g. a container
   # image name with full version in it). A block must be given to the
-  # method, and it will be invoked if the data is not already cached;
-  # it will receive a single argument, the path to the caching subsystem
+  # method, and it will be invoked if the data is not already cached.
+  # The block will receive a single argument, the path to the caching subsystem
   # where the userfile's data should be installed (the path is the same
   # as that returned by 'DataProvider#cache_full_path()'. The block is
   # expected to fill this path with appropriate files and/or directories.
@@ -1053,7 +1080,7 @@ class Userfile < ApplicationRecord
   # Before destroy callback
   def erase_data_provider_content_and_cache #:nodoc:
     self.cache_erase rescue true
-    self.provider_erase
+    self.provider_erase unless self.keep_dp_content_on_destroy
     true
   end
 

@@ -32,8 +32,8 @@ include Rails.application.routes.url_helpers # for userfile_path(3) etc
 ========================================================
 Feature: shortcuts to view helpers
 ========================================================
-  Invoke these directly: h("jack&jill"), model_path(),
+  Invoke these directly: h("jack&jill"), user_path(1),
   pretty_size(1234567), etc.
-  Other view helpers: helper.helper_method(args)
+  Other view helpers can also be tested with: helper.helper_method(args)
 FEATURES
 

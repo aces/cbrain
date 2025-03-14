@@ -27,6 +27,7 @@
   <tr>
     <th>Name and description</th>
     <th>Versions</th>
+    <th>Tags</th>
     <th>Availability</th>
   </tr>
 
@@ -35,6 +36,7 @@
     name        = tool.name
     description = (tool.description.presence || "").strip
     description = "" if description.downcase == name.strip.downcase
+    tags        = tool.get_all_tags
     versions    = tool.tool_configs
                       .to_a
                       .select { |tc| tc.bourreau_id.present?  }
@@ -51,9 +53,13 @@
     end
   %>
   <tr>
-    <td><%= overlay_description((name + "\n" + description).strip) %></td>
+    <td>
+      <%= name %>
+      <%= closable_overlay_content_link(" &#8505; ".html_safe, name, description) %>
+    </td>
     <td><%= versions %></td>
-    <td><%= access %></td>
+    <td><%= tags.join(", ") %></td>
+    <td class="no_wrap"><%= access %></td>
   </tr>
 <% end %>
 

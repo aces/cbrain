@@ -85,7 +85,7 @@ class SitesController < ApplicationController
     new_site_attr = site_params
 
     original_user_ids    = @site.user_ids
-    original_manager_ids = @site.managers.raw_first_column(&:id)
+    original_manager_ids = @site.managers.ids
     original_group_ids   = @site.group_ids
 
     commit_name = extract_params_key([ :update_users, :update_groups ])
@@ -111,9 +111,9 @@ class SitesController < ApplicationController
     respond_to do |format|
       if @site.update_attributes_with_logging(new_site_attr, current_user)
         @site.reload
-        @site.addlog_object_list_updated("Users",    User,  original_user_ids,    @site.user_ids,                        current_user, :login)
-        @site.addlog_object_list_updated("Managers", User,  original_manager_ids, @site.managers.raw_first_column(&:id), current_user, :login)
-        @site.addlog_object_list_updated("Groups",   Group, original_group_ids,   @site.group_ids,                       current_user)
+        @site.addlog_object_list_updated("Users",    User,  original_user_ids,    @site.user_ids,     current_user, :login)
+        @site.addlog_object_list_updated("Managers", User,  original_manager_ids, @site.managers.ids, current_user, :login)
+        @site.addlog_object_list_updated("Groups",   Group, original_group_ids,   @site.group_ids,    current_user)
         flash[:notice] = 'Site was successfully updated.'
         format.html { redirect_to(@site) }
         format.xml  { head :ok }

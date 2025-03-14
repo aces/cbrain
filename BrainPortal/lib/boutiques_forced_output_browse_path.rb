@@ -20,6 +20,28 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# This module will attempt to force an output file
+# created by the boutiques integrator to be stored
+# with a "browse_path" under the target destination
+# DataProvider, if possible. e.g.
+#
+#    "custom": {
+#        "cbrain:integrator_modules": {
+#            "BoutiquesForcedOutputBrowsePath" : {
+#              "supertool_output_dir":  "derivatives/supertool",
+#              "supertool_html_report": "reports/[VERSION]/supertool",
+#            },
+#        }
+#    }
+#
+# The keys are IDs of the output-files section of the descriptor,
+# and the values are relative paths on the target result DP.
+# The relative paths can contain templated values that will be
+# substituted when the results are saved.
+#
+# If the target DP doesn't have browse_path capabilities, the
+# browse path will be set to nil and a warning will be added
+# to the task's log.
 module BoutiquesForcedOutputBrowsePath
 
   # Note: to access the revision info of the module,
@@ -72,11 +94,28 @@ module BoutiquesForcedOutputBrowsePath
     end
     name, type  = super # the standard names and types; the name will be replaced
     descriptor  = descriptor_for_save_results
-    config      = descriptor.custom_module_info('BoutiquesForcedOutputBrowsePath')
+    config      = descriptor.custom_module_info('BoutiquesForcedOutputBrowsePath') || {}
     browse_path = config[output.id]  # "a/b/c"
     return [ name, type ] if browse_path.blank? # no configured browse_path for this output
+    browse_path = apply_value_keys(browse_path) # replaces [XYZ] strings with values from params
     combined    = (Pathname.new(browse_path) + name).to_s # "a/b/c/name"
     [ combined, type ]
+  end
+
+  # Returns a modified version of browse_path where the
+  # substrings [XYZ] are replaced by the value-keys of
+  # the invoke structure.
+  def apply_value_keys(browse_path)
+    descriptor = self.descriptor_for_save_results
+
+    # Prepare the substitution hash
+    substitutions_by_token  = descriptor.build_substitutions_by_tokens_hash(
+                                JSON.parse(File.read(self.invoke_json_basename))
+                              )
+
+    new_browse_path = descriptor.apply_substitutions(browse_path, substitutions_by_token)
+
+    new_browse_path
   end
 
 end

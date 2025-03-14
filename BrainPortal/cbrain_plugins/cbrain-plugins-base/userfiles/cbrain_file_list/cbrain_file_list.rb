@@ -267,6 +267,28 @@ class CbrainFileList < CSVFile
     csv_file
   end
 
+  # This is like CbrainFileList.create!() but you must
+  # also provide :userfiles among the attributes; these
+  # userfiles will be stored as the content of the created
+  # CbrainFileList.
+  def self.create_with_userfiles!(attributes)
+    userfiles = attributes[:userfiles] || cb_error("Need some userfiles for CbrainFileList")
+    attlist   = attributes.reject { |k,v| k.to_s == 'userfiles' }
+    cbfile    = self.create!(attlist)
+    cbfile.set_userfiles(userfiles)
+    cbfile
+  end
+
+  # Replace the content of the CbrainFileList with a new
+  # CbrainFileList representing +userfiles+. The content
+  # of the CSV will be immediately uploaded to the provider.
+  def set_userfiles(userfiles)
+    flush_internal_caches()
+    csv = self.class.create_csv_file_from_userfiles(userfiles)
+    self.cache_writehandle { |fh| fh.write csv }
+    self
+  end
+
   private
 
   # Can be redefine in sub class

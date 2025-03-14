@@ -46,7 +46,7 @@ class MessagesController < ApplicationController
     @unread_count = @view_scope.where(:user_id => current_user.id, :read => false).count
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
-    @messages = @scope.pagination.apply(@view_scope)
+    @messages = @scope.pagination.apply(@view_scope, api_request?)
 
     scope_to_session(@scope)
 

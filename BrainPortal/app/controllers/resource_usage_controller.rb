@@ -56,7 +56,7 @@ class ResourceUsageController < ApplicationController
     @view_scope = @scope.apply(@base_scope)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 15 })
-    @resource_usages = @scope.pagination.apply(@view_scope) # funky plural here
+    @resource_usages = @scope.pagination.apply(@view_scope, api_request?) # funky plural here
 
     @total_plus      = @view_scope.where("resource_usage.value > 0").sum(:value)
     @total_minus     = @view_scope.where("resource_usage.value < 0").sum(:value)

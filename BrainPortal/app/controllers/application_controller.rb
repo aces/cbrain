@@ -45,7 +45,9 @@ class ApplicationController < ActionController::Base
   helper_method :start_page_path
 
   # These will be executed in order
+  before_action :check_for_banned_ip
   before_action :check_account_validity
+  before_action :count_background_activities
   before_action :prepare_messages
   before_action :adjust_system_time_zone
   before_action :adjust_remote_ip_and_host
@@ -121,23 +123,23 @@ class ApplicationController < ActionController::Base
   def check_account_validity #:nodoc:
     return false unless current_user
     return true  if     params[:controller] == "sessions"
-    return false unless check_mandatory_globus_id_linkage()
+    return false unless check_mandatory_oidc_id_linkage()
     return false unless check_password_reset()
     return false unless check_license_agreements()
     return true
   end
 
   # Check to see if the user HAS to link their account to
-  # a globus identity. If that's the case and not yet done,
+  # an OpenID identity provider. If that's the case and not yet done,
   # redirects to the page that provides the user with the
   # buttons and explanations.
-  def check_mandatory_globus_id_linkage #:nodoc:
-    return true if ! user_must_link_to_globus?(current_user)
-    return true if   user_has_link_to_globus?(current_user)
+  def check_mandatory_oidc_id_linkage #:nodoc:
+    return true if ! user_must_link_to_oidc?(current_user)
+    return true if   user_has_link_to_oidc?(current_user)
     respond_to do |format|
-      format.html { redirect_to :controller => :sessions, :action => :mandatory_globus }
-      format.json { render :status => 403, :json => { "error" => "This account must first be linked to a Globus identity" } }
-      format.xml  { render :status => 403, :xml  => { "error" => "This account must first be linked to a Globus identity" } }
+      format.html { redirect_to :controller => :sessions, :action => :mandatory_oidc }
+      format.json { render :status => 403, :json => { "error" => "This account must first be linked to an OpenID identity provider" } }
+      format.xml  { render :status => 403, :xml  => { "error" => "This account must first be linked to an OpenID identity provider" } }
     end
     return false
   end
@@ -182,15 +184,12 @@ class ApplicationController < ActionController::Base
   #
   # The message looks like
   #
-  #  "User: tsmith on instance C4044 from example.com (256.0.0.9) using FireChrome 99.9"
+  #  "User: tsmith from example.com (256.0.0.9) using FireChrome 99.9"
   def log_user_info #:nodoc:
     reqenv = request.env || {}
 
     # Short username for the message
     login  = current_user ? current_user.login : "(none)"
-
-    # Find out the instance name
-    instname = CBRAIN::Instance_Name rescue "(?)"
 
     # Get host and IP from session (when logged in)
     from_ip   = cbrain_session[:guessed_remote_ip].presence
@@ -202,7 +201,7 @@ class ApplicationController < ActionController::Base
 
     # Create final message
     from  = (from_host.present? && from_host != from_ip) ? "#{from_host} (#{from_ip})" : from_ip
-    mess  = "User: #{login} on instance #{instname} from #{from} using #{brow} #{b_ver}"
+    mess  = "User: #{login} from #{from} using #{brow} #{b_ver}"
     Rails.logger.info mess
     true
   rescue => ex
@@ -295,6 +294,21 @@ class ApplicationController < ActionController::Base
   ########################################################################
   # CBRAIN Messaging System Filters
   ########################################################################
+
+  # Count the number of active BackgroundActivities
+  def count_background_activities #:nodoc:
+    return unless current_user
+    return if     request.format.blank? || request.xhr?
+    return unless request.format.to_sym == :html
+    @count_background_activities_in_progress =
+      BackgroundActivity.where(
+        :status  => 'InProgress',
+        :user_id => current_user.id,
+      ).count
+    @count_tasks_in_progress =
+      CbrainTask.active.where( :user_id => current_user.id ).count
+    true
+  end
 
   # Find new messages and prepare them to be displayed at the top of the page.
   def prepare_messages #:nodoc:
@@ -400,6 +414,17 @@ class ApplicationController < ActionController::Base
       context.define_singleton_method(:current_user) { options[:define_current_user] }
     end
     context.instance_eval(&block)
+  end
+
+  # If the IP address connecting to us was banned in the past,
+  # we just completely stop all activity right there with code 401
+  def check_for_banned_ip
+    req_ip = cbrain_request_remote_ip
+    is_banned = BannedIps.banned_ip?(req_ip)
+    return true if ! is_banned
+    Rails.logger.info "Requests from IP '#{req_ip}' are banned"
+    head :unauthorized
+    return false
   end
 
 end

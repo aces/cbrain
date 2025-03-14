@@ -126,42 +126,51 @@ class SyncStatus < ApplicationRecord
     unless userfile_id
       return yield
     end
+    prettyfile = "'#{userfile.name}' (##{userfile_id})" # for messages
 
     state  = self.get_or_create_status(userfile_id)
     puts "SYNC: ToCache: #{state.pretty} Enter" if DebugMessages
 
-    # Wait until no other local client is copying the file's content
-    # in one direction or the other.
-    allok = repeat_every_formax_untilblock(CheckInterval,CheckMaxWait) do
-      state.reload
-      state.invalidate_old_status
-      puts "SYNC: ToCache: #{state.pretty} Check" if DebugMessages
-      state.status !~ /^To/  # no ToProvider or ToCache
-    end
-    puts "SYNC: ToCache: #{state.pretty} Proceed" if DebugMessages
+    # This loops attempts to wait for and then lock out other
+    # processes on the same server.
+    2.times do
 
-    if ! allok # means timeout occurred
-      oldstate = state.status
-      #state.status_transition(oldstate, "ProvNewer") # do our best; not needed?
-      raise "Sync error: timeout waiting for file '#{userfile_id}' " +
-            "in '#{oldstate}' for operation 'ToCache'."
-    end
+      # Wait until no other local client is copying the file's content
+      # in one direction or the other.
+      allok = repeat_every_formax_untilblock(CheckInterval,CheckMaxWait) do
+        state.reload
+        state.invalidate_old_status
+        puts "SYNC: ToCache: #{state.pretty} Check" if DebugMessages
+        state.status !~ /^To/  # no ToProvider or ToCache
+      end
+      puts "SYNC: ToCache: #{state.pretty} Proceed" if DebugMessages
 
-    # No need to do anything if the data is already in sync!
-    if state.status == "InSync"
-      state.update_attributes( :accessed_at => Time.now )
-      return true
-    end
+      if ! allok # means timeout occurred
+        oldstate = state.status
+        raise "Sync error: timeout waiting for #{prettyfile} in '#{oldstate}' for operation 'ToCache'."
+      end
 
-    if state.status == "Corrupted"
-      raise "Sync error: file '#{userfile_id}' marked 'Corrupted' " +
-            "for operation 'ToCache'."
-    end
+      # No need to do anything if the data is already in sync!
+      if state.status == "InSync"
+        state.update_attributes( :accessed_at => Time.now )
+        return true
+      end
 
-    # Adjust state to let all other processes know what
-    # WE want to do now. This will lock out other clients.
-    state.status_transition!(state.status, "ToCache") # if we fail here, race condition
+      # This can be set by invalidate_old_status above
+      if state.status == "Corrupted"
+        raise "Sync error: #{prettyfile} marked 'Corrupted' for operation 'ToCache'."
+      end
+
+      # Adjust state to let all other processes know what
+      # WE want to do now. This will lock out other clients.
+      break if state.status_transition(state.status, "ToCache") # if we fail here, race condition
+
+    end # loop 2 times
+
     puts "SYNC: ToCache: #{state.pretty} Update" if DebugMessages
+    if state.status != 'ToCache'
+      raise "Sync error: #{prettyfile} cannot be fetched after two attempts. Status=#{state.status}"
+    end
 
     # Wait until all other clients out there are done
     # transferring content to the DP side. We don't care
@@ -175,8 +184,7 @@ class SyncStatus < ApplicationRecord
 
     if ! allok # means timeout occurred
       state.status_transition("ToCache", "ProvNewer") # checked OK
-      raise "Sync error: timeout waiting for other clients for " +
-            "file '#{userfile_id}' for operation 'ToCache'."
+      raise "Sync error: timeout waiting for other clients for #{prettyfile} for operation 'ToCache'."
     end
 
     # Now, perform the sync_to_cache operation.
@@ -212,7 +220,7 @@ class SyncStatus < ApplicationRecord
   # Once ready, the block will be executed
   # and the status of the local cache will be
   # marked as 'InSync'.
-  def self.ready_to_copy_to_dp(userfile)
+  def self.ready_to_copy_to_dp(userfile, final_status = 'InSync')
 
     # For brand new files, the userfile_id is nil,
     # so we simply skip the sync mechanism altogether.
@@ -220,37 +228,46 @@ class SyncStatus < ApplicationRecord
     unless userfile_id
       return yield
     end
+    prettyfile = "'#{userfile.name}' (##{userfile_id})" # for messages
 
     state  = self.get_or_create_status(userfile_id)
     puts "SYNC: ToProv: #{state.pretty} Enter" if DebugMessages
 
-    # Wait until no other local client is copying the file's content
-    # in one direction or the other.
-    allok = repeat_every_formax_untilblock(CheckInterval,CheckMaxWait) do
-      state.reload
-      state.invalidate_old_status
-      puts "SYNC: ToProv: #{state.pretty} Check" if DebugMessages
-      state.status !~ /^To/  # no ToProvider or ToCache
-    end
-    puts "SYNC: ToProv: #{state.pretty} Proceed" if DebugMessages
+    # This loops attempts to wait for and then lock out other
+    # processes on the same server.
+    2.times do
 
-    if ! allok # means timeout occurred
-      oldstate = state.status
-      #state.status_transition(oldstate, "CacheNewer") # do our best; not needed?
-      raise "Sync error: timeout waiting for file '#{userfile_id}' " +
-            "in '#{oldstate}' for operation 'ToProvider'."
-    end
+      # Wait until no other local client is copying the file's content
+      # in one direction or the other.
+      allok = repeat_every_formax_untilblock(CheckInterval,CheckMaxWait) do
+        state.reload
+        state.invalidate_old_status
+        puts "SYNC: ToProv: #{state.pretty} Check" if DebugMessages
+        state.status !~ /^To/  # no ToProvider or ToCache
+      end
+      puts "SYNC: ToProv: #{state.pretty} Proceed" if DebugMessages
 
-    # No need to do anything if the data is already in sync!
-    if state.status == "InSync"
-      state.update_attributes( :accessed_at => Time.now )
-      return true
-    end
+      if ! allok # means timeout occurred
+        oldstate = state.status
+        raise "Sync error: timeout waiting for #{prettyfile} in '#{oldstate}' for operation 'ToProvider'."
+      end
 
-    # Adjust state to let all other processes know what
-    # WE want to do now. This will lock out other clients.
-    state.status_transition!(state.status, "ToProvider") # if we fail, race condition
+      # No need to do anything if the data is already in sync!
+      if state.status == "InSync"
+        state.update_attributes( :accessed_at => Time.now )
+        return true
+      end
+
+      # Adjust state to let all other processes know what
+      # WE want to do now. This will lock out other clients.
+      break if state.status_transition(state.status, "ToProvider") # if we fail, race condition
+
+    end # loop 2 times
+
     puts "SYNC: ToProv: #{state.pretty} Update" if DebugMessages
+    if state.status != 'ToProvider'
+      raise "Sync error: #{prettyfile} cannot be uploaded after two attempts. Status=#{state.status}"
+    end
 
     # Wait until all other clients out there are done
     # transferring content to/from the provider, one way or the other.
@@ -263,8 +280,7 @@ class SyncStatus < ApplicationRecord
 
     if ! allok # means timeout occurred
       state.status_transition("ToProvider", "CacheNewer") # checked OK
-      raise "Sync error: timeout waiting for other clients for " +
-            "file '#{userfile_id}' for operation 'ToProvider'."
+      raise "Sync error: timeout waiting for other clients for #{prettyfile} for operation 'ToProvider'."
     end
 
     # Now, perform the ToProvider operation.
@@ -283,7 +299,7 @@ class SyncStatus < ApplicationRecord
 
       # AFTER successful provider-modifying operation
       lambda do |implstatus|
-        state.status_transition("ToProvider", "InSync") # checked OK
+        state.status_transition("ToProvider", final_status) # checked OK
         state.update_attributes( :accessed_at => Time.now, :synced_at => Time.now )
         puts "SYNC: ToProv: #{state.pretty} Finish" if DebugMessages
         implstatus
@@ -318,33 +334,43 @@ class SyncStatus < ApplicationRecord
     unless userfile_id
       return yield
     end
+    prettyfile = "'#{userfile.name}' (##{userfile_id})" # for messages
 
     state  = self.get_or_create_status(userfile_id)
     puts "SYNC: ModCache: #{state.pretty} Enter" if DebugMessages
 
-    # Wait until no other local client is copying the file's content
-    # in one direction or the other.
-    allok = repeat_every_formax_untilblock(CheckInterval,CheckMaxWait) do
-      state.reload
-      state.invalidate_old_status
-      puts "SYNC: ModCache: #{state.pretty} Check" if DebugMessages
-      state.status !~ /^To/  # no ToProvider or ToCache
-    end
-    puts "SYNC: ModCache: #{state.pretty} Proceed" if DebugMessages
+    # This loops attempts to wait for and then lock out other
+    # processes on the same server.
+    2.times do
 
-    if ! allok # means timeout occurred
-      oldstate = state.status
-      raise "Sync error: timeout waiting for file '#{userfile_id}' " +
-            "in '#{oldstate}' for operation 'ModifyCache'."
-    end
+      # Wait until no other local client is copying the file's content
+      # in one direction or the other.
+      allok = repeat_every_formax_untilblock(CheckInterval,CheckMaxWait) do
+        state.reload
+        state.invalidate_old_status
+        puts "SYNC: ModCache: #{state.pretty} Check" if DebugMessages
+        state.status !~ /^To/  # no ToProvider or ToCache
+      end
+      puts "SYNC: ModCache: #{state.pretty} Proceed" if DebugMessages
 
-    # Adjust state to let all other processes know that
-    # we want to modify the cache. "ToCache" is not exactly
-    # true, as we are not copying from the DP, but it will
-    # still lock out other processes trying to start data
-    # operations, which is what we want.
-    state.status_transition!(state.status, "ToCache") # if we fail, race condition
+      if ! allok # means timeout occurred
+        oldstate = state.status
+        raise "Sync error: timeout waiting for #{prettyfile} in '#{oldstate}' for operation 'ModifyCache'."
+      end
+
+      # Adjust state to let all other processes know that
+      # we want to modify the cache. "ToCache" is not exactly
+      # true, as we are not copying from the DP, but it will
+      # still lock out other processes trying to start data
+      # operations, which is what we want.
+      break if state.status_transition(state.status, "ToCache") # if we fail, race condition
+
+    end # loop 2 times
+
     puts "SYNC: ModCache: #{state.pretty} Update" if DebugMessages
+    if state.status != 'ToCache'
+      raise "Sync error: cache for #{prettyfile} cannot be updated after two attempts. Status=#{state.status}"
+    end
 
     # Now, perform the ModifyCache operation
     self.wrap_block(
@@ -390,34 +416,43 @@ class SyncStatus < ApplicationRecord
     unless userfile_id
       return yield
     end
+    prettyfile = "'#{userfile.name}' (##{userfile_id})" # for messages
 
     state  = self.get_or_create_status(userfile_id)
     puts "SYNC: ModProv: #{state.pretty} Entering" if DebugMessages
 
-    # Wait until no other local client is copying the file's content
-    # in one direction or the other.
-    allok = repeat_every_formax_untilblock(CheckInterval,CheckMaxWait) do
-      state.reload
-      state.invalidate_old_status
-      puts "SYNC: ModProv: #{state.pretty} Check" if DebugMessages
-      state.status !~ /^To/  # no ToProvider or ToCache
-    end
-    puts "SYNC: ModProv: #{state.pretty} Proceed" if DebugMessages
+    # This loops attempts to wait for and then lock out other
+    # processes on the same server.
+    2.times do
 
-    if ! allok # means timeout occurred
-      oldstate = state.status
-      #state.status_transition(oldstate, "CacheNewer") # do our best; not needed?
-      raise "Sync error: timeout waiting for file '#{userfile_id}' " +
-            "in '#{oldstate}' for operation 'ModifyProvider'."
-    end
+      # Wait until no other local client is copying the file's content
+      # in one direction or the other.
+      allok = repeat_every_formax_untilblock(CheckInterval,CheckMaxWait) do
+        state.reload
+        state.invalidate_old_status
+        puts "SYNC: ModProv: #{state.pretty} Check" if DebugMessages
+        state.status !~ /^To/  # no ToProvider or ToCache
+      end
+      puts "SYNC: ModProv: #{state.pretty} Proceed" if DebugMessages
 
-    # Adjust state to let all other processes know that
-    # we want to modify the provider side. "ToProvider" is not
-    # exactly true, as we are not copying to the DP, but it will
-    # still lock out other processes trying to start data
-    # operations, which is what we want.
-    state.status_transition!(state.status, "ToProvider") # if we fail, race condition
+      if ! allok # means timeout occurred
+        oldstate = state.status
+        raise "Sync error: timeout waiting for #{prettyfile} in '#{oldstate}' for operation 'ModifyProvider'."
+      end
+
+      # Adjust state to let all other processes know that
+      # we want to modify the provider side. "ToProvider" is not
+      # exactly true, as we are not copying to the DP, but it will
+      # still lock out other processes trying to start data
+      # operations, which is what we want.
+      break if state.status_transition(state.status, "ToProvider") # if we fail, race condition
+
+    end # loop 2 times
+
     puts "SYNC: ModProv: #{state.pretty} Update" if DebugMessages
+    if state.status != 'ToProvider'
+      raise "Sync error: provider content for #{prettyfile} cannot be modified after two attempts. Status=#{state.status}"
+    end
 
     # Wait until all other clients out there are done
     # transferring content to/from the provider, one way or the other.
@@ -429,8 +464,7 @@ class SyncStatus < ApplicationRecord
     end
 
     if ! allok # means timeout occurred
-      raise "Sync error: timeout waiting for other clients for " +
-            "file '#{userfile_id}' for operation 'ModifyProvider'."
+      raise "Sync error: timeout waiting for other clients for #{prettyfile} for operation 'ModifyProvider'."
     end
 
     # Now, perform the ModifyProvider operation.
@@ -479,11 +513,13 @@ class SyncStatus < ApplicationRecord
   def invalidate_old_status
 
     # "InSync" state is too old for current RemoteResource
-    myself = RemoteResource.current_resource
-    expire = myself.cache_trust_expire # in seconds before now
-    expire = nil          if expire && expire < 3600 # we don't accept thresholds less than one hour
-    expire = 2.years.to_i if expire && expire > 2.years.to_i
-    if expire and self.status == "InSync" && self.synced_at < Time.now - expire
+    if @expire.nil? # this value is global for the current APP (Bourreau or Portal)
+      myself  = RemoteResource.current_resource
+      @expire = myself.cache_trust_expire || 0 # in seconds before now
+      @expire = 0            if @expire < 3600 # we don't accept thresholds less than one hour
+      @expire = 2.years.to_i if @expire > 2.years.to_i
+    end
+    if @expire > 0 and self.status == "InSync" && self.synced_at < Time.now - @expire
       puts "SYNC: Invalid: #{self.pretty} InSync Is Too Old" if DebugMessages
       self.status_transition(self.status, "ProvNewer")
       return
@@ -504,7 +540,7 @@ class SyncStatus < ApplicationRecord
   end
 
   # This method changes the status attribute
-  # in the current task object to +to_state+ but
+  # in the current sync_status object to +to_state+ but
   # also makes sure the current value is +from_state+ .
   # The change is performed in a transaction where
   # the record is locked, to ensure the transition is

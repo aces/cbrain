@@ -1,0 +1,394 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2024
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+
+<% title 'Schedule Maintenance Activity' %>
+
+<h2>Schedule Maintenance Activity</h2>
+
+<%= error_messages_for @bac, :object_name => "activity" %>
+
+<% @bac.options ||= {} %>
+<%= hidden_field_tag 'background_activity[options][dummy]','val' %>
+
+<%= form_for @bac, :as => :background_activity, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+
+  <div class="generalbox">
+
+    <%-
+      ##############################
+      # USER
+      ##############################
+    %>
+
+    <p><%= f.label :user_id, "User" %><br>
+    <%= user_select("background_activity[user_id]", :selector => @bac.user_id.to_s) %>
+
+    <%-
+      ##############################
+      # SERVER
+      ##############################
+    %>
+
+    <p><%= f.label :remote_resource_id, "Portal or Execution Server" %><br>
+    <%= bourreau_select("background_activity[remote_resource_id]", {
+       :bourreaux => RemoteResource.all.order(:name).to_a,
+       :selector => @bac.remote_resource_id.to_s } ) %>
+
+    <%-
+      ##############################
+      # START DATE AND TIME
+      ##############################
+    %>
+
+    <p><%= f.label :start_date, "Initial Start Date" %><br>
+    <%= text_field_tag :start_date, @start_date, :class => "datepicker" %>
+
+    <%= select_tag :start_hour,
+        options_for_select(
+          #[['(Start hour)','']] +
+          (0..23).map { |i| sprintf("%2.2d",i) },
+          :selected => @start_hour
+        ),
+        { 'style' => 'width: 5em' }
+    %>H
+    <%= select_tag :start_min,
+        options_for_select(
+          #[['(Start minutes)','']] +
+          (0..59).step(5).map { |i| sprintf("%2.2d",i) },
+          :selected => @start_min
+        ),
+        { 'style' => 'width: 5em' }
+    %>M
+
+    <%= label_tag :start_now do %>
+      ( Or <%= check_box_tag :start_now, "1", @start_now == "1" %> right away )
+    <% end %>
+
+    <%-
+      ##############################
+      # REPEAT
+      ##############################
+    %>
+
+    <p><%= label_tag :repeat, "Repeat Frequency" %><br>
+    <%= select_tag :repeat,
+        options_for_select( [
+          # hardcoded for the moment
+          [ "(How often and when to repeat)", ""         ],
+          [ "One Shot"         ,            'one_shot'   ],
+          [ "Every 30 minutes" ,            'start+30'   ],
+          [ "Every hour"       ,            'start+60'   ],
+          [ "Every 12 hours"   ,            'start+720'  ],
+          [ "Every 24 hours"   ,            'start+1440' ],
+          [ "Tomorrow and everyday at..." , 'tomorrow@'  ],
+          [ "Mondays at..."    ,            'monday@'    ],
+          [ "Tuesdays at..."   ,            'tuesday@'   ],
+          [ "Wednesdays at..." ,            'wednesday@' ],
+          [ "Thursdays at..."  ,            'thursday@'  ],
+          [ "Fridays at..."    ,            'friday@'    ],
+          [ "Saturdays at..."  ,            'saturday@'  ],
+          [ "Sundays at..."    ,            'sunday@'    ],
+        ], :selected => @repeat )
+    %>
+    (For <strong>at...</strong>:
+    <%= select_tag :repeat_hour,
+        options_for_select(
+          #[['(Select hour for "at...")','']] +
+          (0..23).map { |i| sprintf("%2.2d",i) },
+          :selected => @repeat_hour
+        ),
+        { 'style' => 'width: 5em' }
+    %>H
+    <%= select_tag :repeat_min,
+        options_for_select(
+          #[['(Select minutes for "at...")','']] +
+          (0..59).step(5).map { |i| sprintf("%2.2d",i) },
+          :selected => @repeat_min
+        ),
+        { 'style' => 'width: 5em' }
+    %>M)
+    <p>
+
+    <%-
+      ##############################
+      # BAC: MOVE FILES
+      ##############################
+    %>
+
+    <fieldset>
+      <legend>
+        <%= f.radio_button :type, 'BackgroundActivity::MoveFile' %>
+        <%= f.label        :type, 'Move', :value => 'BackgroundActivity::MoveFile' %>
+        or
+        <%= f.radio_button :type, 'BackgroundActivity::CopyFile' %>
+        <%= f.label        :type, 'Copy', :value => 'BackgroundActivity::CopyFile' %>
+        Files
+      </legend>
+      Remember to select a <strong>file</strong> custom filter in the Dynamic Items section below.
+      <p>
+      To: <%= data_provider_select 'move_file_dp_id', { :selector => @move_file_dp_id.to_s }, :include_blank => '(Select a Data Provider)' %>
+      <p>
+      Crush files at destination if they exist: <%= check_box_tag :move_crush, '1', @move_crush %>
+    </fieldset>
+
+    <%-
+      ##############################
+      # BAC: REMOVE TASK WORKDIR
+      ##############################
+    %>
+
+    <fieldset>
+      <legend>
+        <%= f.radio_button :type, 'BackgroundActivity::RemoveTaskWorkdir' %>
+        <%= f.label        :type, 'Remove Task Workdirs', :value => 'BackgroundActivity::RemoveTaskWorkdir' %>
+      </legend>
+      Remember to select a <strong>task</strong> custom filter in the Dynamic Items section below.
+    </fieldset>
+
+    <%-
+      ##############################
+      # BAC: ARCHIVE TASK WORKDIR
+      ##############################
+    %>
+
+    <fieldset>
+      <legend>
+        <%= f.radio_button :type, 'BackgroundActivity::ArchiveTaskWorkdir' %>
+        <%= f.label        :type, 'Archive Task Workdirs', :value => 'BackgroundActivity::ArchiveTaskWorkdir' %>
+      </legend>
+      Remember to select a <strong>task</strong> custom filter in the Dynamic Items section below.
+      <p>
+      To: <%= data_provider_select 'archive_task_dp_id', { :selector => @archive_task_dp_id.to_s }, :include_blank => '(Select a Data Provider)' %><br>
+      <small>(Leave blank to archive directly in the work directories)</small>
+    </fieldset>
+
+    <%-
+      ##############################
+      # BAC: COMPRESS FILES
+      ##############################
+    %>
+
+    <fieldset>
+      <legend>
+        <%= f.radio_button :type, 'BackgroundActivity::CompressFile' %>
+        <%= f.label        :type, 'Compress', :value => 'BackgroundActivity::CompressFile' %>
+        or
+        <%= f.radio_button :type, 'BackgroundActivity::UncompressFile' %>
+        <%= f.label        :type, 'Uncompress', :value => 'BackgroundActivity::UncompressFile' %>
+        Files
+      </legend>
+      Remember to select a <strong>file</strong> custom filter in the Dynamic Items section below.
+    </fieldset>
+
+    <%-
+      ##############################
+      # BAC: FILTER SELECTIONS
+      ##############################
+    %>
+
+    <fieldset>
+      <legend>Dynamic Items Selection: Files or Tasks</legend>
+      These two selection boxes allow you to specify one of your custom filters,
+      either for files or for tasks.
+      <p>
+      For activities that involve <strong>files</strong>:
+      <p>
+      <%= label_tag      'background_activity[options][userfile_custom_filter_id]', "File Custom Filter:" %>
+      <%= select_tag     'background_activity[options][userfile_custom_filter_id]',
+          options_for_select(
+            [["(Select one of your filters)",""]] + UserfileCustomFilter.where(:user_id => current_user.id).order(:name).pluck(:name,:id),
+            :selected => @bac.options[:userfile_custom_filter_id].to_s
+          )
+      %>
+      <p>
+      For activities that involve <strong>tasks</strong>:
+      <p>
+      <%= label_tag      'background_activity[options][task_custom_filter_id]', "Task Custom Filter:" %>
+      <%= select_tag     'background_activity[options][task_custom_filter_id]',
+          options_for_select(
+            [["(Select one of your filters)",""]] + TaskCustomFilter.where(:user_id => current_user.id).order(:name).pluck(:name,:id),
+            :selected => @bac.options[:task_custom_filter_id].to_s
+          )
+      %>
+    </fieldset>
+
+    <%-
+      ##############################
+      # BAC: CLEAN CACHE
+      ##############################
+    %>
+
+    <fieldset>
+      <legend>
+        <%= f.radio_button :type, 'BackgroundActivity::CleanCache' %>
+        <%= f.label        :type, 'Clean DataProvider Caches', :value => 'BackgroundActivity::CleanCache' %>
+      </legend>
+
+      <table class="simple">
+
+        <tr>
+          <td>
+            <%= label_tag      'background_activity[options][days_older]', "Files last accessed at least:" %>
+          </td>
+          <td>
+            <%= text_field_tag 'background_activity[options][days_older]', @bac.options[:days_older], :size => 3 %> days ago
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <%= label_tag      'background_activity[options][with_user_ids][]', "Belonging to users:" %>
+          </td>
+          <td>
+            <%= user_select("background_activity[options][with_user_ids][]", { :selector => @bac.options[:with_user_ids] }, :multiple => true ) %>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <%= label_tag      'background_activity[options][without_user_ids][]', "But not to users:" %>
+          </td>
+          <td>
+            <%= user_select("background_activity[options][without_user_ids][]", { :selector => @bac.options[:without_user_ids] }, :multiple => true ) %>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <%= label_tag      'background_activity[options][with_types][]', "Of type:" %>
+          </td>
+          <td>
+            <%= userfile_type_select("background_activity[options][with_types][]", { :selector => @bac.options[:with_types] }, :multiple => true ) %>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <%= label_tag      'background_activity[options][without_types][]', "But not type:" %>
+          </td>
+          <td>
+            <%= userfile_type_select("background_activity[options][without_types][]", { :selector => @bac.options[:without_types] }, :multiple => true ) %>
+          </td>
+        </tr>
+
+      </table>
+    </fieldset>
+
+    <%-
+      ##############################
+      # BAC: ERASE OLD BACS
+      ##############################
+    %>
+
+    <fieldset>
+      <legend>
+        <%= f.radio_button :type, 'BackgroundActivity::EraseBackgroundActivities' %>
+        <%= f.label        :type, 'Erase Background Activities', :value => 'BackgroundActivity::EraseBackgroundActivities' %>
+      </legend>
+
+      <table class="simple">
+
+        <tr>
+          <td>
+            <%= label_tag      'background_activity[options][days_older]', "Finished activities older than:" %>
+          </td>
+          <td>
+            <%= text_field_tag 'background_activity[options][days_older]', @bac.options[:days_older], :size => 3 %> days ago
+          </td>
+        </tr>
+
+      </table>
+    </fieldset>
+
+    <%-
+      ##############################
+      # BAC: TEST DP CONNECTIVITY
+      ##############################
+    %>
+
+    <fieldset>
+      <legend>
+        <%= f.radio_button :type, 'BackgroundActivity::VerifyDataProvider' %>
+        <%= f.label        :type, 'Verify DataProvider Connectivity', :value => 'BackgroundActivity::VerifyDataProvider' %>
+      </legend>
+      <% sys_dps  = DataProvider.where.not(
+           :type => [ 'UserkeyFlatDirSshDataProvider', 'S3FlatDataProvider','ScratchDataProvider' ])
+         user_dps = DataProvider.where(
+           :type => [ 'UserkeyFlatDirSshDataProvider', 'S3FlatDataProvider' ])
+      %>
+      System Data Providers:
+      <%= data_provider_select 'verify_dp_ids[]',
+          { :data_providers => sys_dps, :selector => @bac.items&.map(&:to_s) },
+          :include_blank => '(Select Data Providers)', :multiple => true
+      %>
+      <p>
+      User Data Providers:
+      <%  #=  Old select box, doesn't provide info about owners
+          # data_provider_select 'verify_dp_ids[]',
+          # { :data_providers => user_dps, :selector => @bac.items&.map(&:to_s) },
+          # :include_blank => '(Select Data Providers)', :multiple => true
+      %>
+      <%= select_tag 'verify_dp_ids[]',
+          options_for_select(
+            [["(Select Data Providers)",""]] +
+            user_dps.map { |dp| [ "#{dp.name} (#{dp.user.login})", dp.id ] },
+            :selected => @bac.items&.map(&:to_s),
+          ),
+          :multiple => true
+      %>
+    </fieldset>
+
+    <%-
+      ##############################
+      # BAC: TEST/DEBUG ACTIVITY
+      ##############################
+    %>
+
+    <fieldset>
+      <legend>
+        <%= f.radio_button :type, 'BackgroundActivity::RandomActivity' %>
+        <%= f.label        :type, 'Fake Activity Tests', :value => 'BackgroundActivity::RandomActivity' %>
+      </legend>
+      <%= label_tag      'background_activity[options][mintime]', "Minimum seconds:" %>
+      <%= text_field_tag 'background_activity[options][mintime]', @bac.options[:mintime], :size => 3 %>
+      <%= label_tag      'background_activity[options][maxtime]', "Maximum seconds:" %>
+      <%= text_field_tag 'background_activity[options][maxtime]', @bac.options[:maxtime], :size => 3 %>
+      <p>
+      <%= label_tag      'background_activity[options][count_ok]', "Number of OKs:" %>
+      <%= text_field_tag 'background_activity[options][count_ok]', @bac.options[:count_ok], :size => 3 %>
+      <%= label_tag      'background_activity[options][count_fail]', "Number of FAILs:" %>
+      <%= text_field_tag 'background_activity[options][count_fail]', @bac.options[:count_fail], :size => 3 %>
+      <%= label_tag      'background_activity[options][count_exc]', "Number of EXCs:" %>
+      <%= text_field_tag 'background_activity[options][count_exc]', @bac.options[:count_exc], :size => 3 %>
+    </fieldset>
+
+  </div>
+
+  <p>
+
+  <%= submit_tag 'Schedule new activity' %>
+
+<% end %>
+

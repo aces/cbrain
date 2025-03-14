@@ -113,7 +113,7 @@ class ScirLsf < Scir
         self.command == "/bin/bash" && self.arg.size == 1
       raise "Error: stdin not supported" if self.stdin
 
-      script = self.wd + '/' +self.arg[0]
+      script = self.wd + '/' + self.arg[0]
       stdout = self.stdout.sub(':', '') if self.stdout
       stderr = self.stderr.sub(':', '') if self.stderr
 

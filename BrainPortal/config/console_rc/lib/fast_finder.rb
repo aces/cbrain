@@ -183,6 +183,13 @@ end
 ========================================================
 Feature: fast finder for anything
 ========================================================
-  Activate with: fff 'string' ; fff id
+  fff 'string'
+  fff id
+
+  Will search files, users, projects etc and assign
+  instance variables in the console with everything it
+  finds. Single letter (e.g. @u) if a single result is
+  found, double letters (e.g. @uu) if multiple results
+  are found.
 FEATURES
 

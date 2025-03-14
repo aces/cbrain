@@ -63,7 +63,8 @@ module BoutiquesPostProcessingCleaner
 
     # Get the cleaning paths patterns from the descriptor
     descriptor = self.descriptor_for_save_results
-    patterns   = descriptor.custom_module_info('BoutiquesPostProcessingCleaner')
+    patterns   = descriptor.custom_module_info('BoutiquesPostProcessingCleaner') || []
+    return true if patterns.blank? # nothing else to do and super already worked fine
 
     # Prepare the substitution hash
     substitutions_by_token  = descriptor.build_substitutions_by_tokens_hash(

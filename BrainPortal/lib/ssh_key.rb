@@ -39,7 +39,7 @@ class SshKey
   CONFIG = { #:nodoc:
     :ssh_keys_dir     => (Rails.root rescue nil) ? "#{Rails.root.to_s}/user_keys" : "/not/yet/configured",
     :exec_ssh_keygen  => `bash -c "type -p ssh-keygen"`.strip,
-    :ssh_keygen_type  => "rsa",
+    :ssh_keygen_type  => "ed25519",
     :debug            => false,
   }
 
@@ -124,7 +124,7 @@ class SshKey
     raise RuntimeError.new("Public file for SSH Key '#{@name}' does not exist.")  unless
       File.exists?(pub_path)  && File.size(pub_path)  > 50
     raise RuntimeError.new("Private file for SSH Key '#{@name}' does not exist.") unless
-      File.exists?(priv_path) && File.size(priv_path) > 1000
+      File.exists?(priv_path) && File.size(priv_path) > 300
     true
   end
 

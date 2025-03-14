@@ -39,17 +39,20 @@ end
 #   cu id
 #   cu /regex/
 def cu(user=:show)
-  return $_current_user if user == :show
+  if user == :show
+    puts "Current user is: #{$_current_user.try(:login) || "(nil)"}"
+    return $_current_user
+  end
   if user.nil? || user.is_a?(User)
     $_current_user = user
   elsif user.is_a?(Numeric) || (user.is_a?(String) && user =~ /\A\d+\z/)
     $_current_user = User.find(user)
-  elsif user.is_a?(String)
+  elsif user.is_a?(String) || user.is_a?(Symbol)
     $_current_user = User.where([ "(login like ?) OR (full_name like ?)", "%#{user}%", "%#{user}%" ]).first
   elsif user.is_a?(Regexp)
     $_current_user = User.all.detect { |u| (u.login =~ user) || (u.full_name =~ user) }
   else
-    raise "Need a ID, User object, regex, or a string."
+    raise "Need an ID, User object, regex, symbol or a string that represents a user."
   end
   puts "Current user is now: #{$_current_user.try(:login) || "(nil)"}"
 end
@@ -60,8 +63,12 @@ end
 #   cp 'name'
 #   cp id
 #   cp /regex/
+#   cp nil
 def cp(group='show me')
-  return $_current_project if group == 'show me'
+  if group == 'show me' # the fake default value
+    puts "The current project is: #{$_current_project.try(:name) || "(unset, meaning ALL projects)"}"
+    return $_current_project
+  end
   if group.nil? || group.is_a?(Group)
     $_current_project = group
   elsif group.is_a?(Numeric) || (group.is_a?(String) && group =~ /\A\d+\z/)
@@ -71,7 +78,7 @@ def cp(group='show me')
   elsif group.is_a?(String)
     $_current_project = Group.where([ "name like ?", "%#{group}%" ]).first
   else
-    raise "Need a ID, Group object, regex or a string."
+    raise "Need a ID, Group object, regex, symbol or a string that represents a group."
   end
   puts "Current project is now: #{$_current_project.try(:name) || "(nil)"}"
 end

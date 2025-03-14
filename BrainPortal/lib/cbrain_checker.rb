@@ -57,9 +57,10 @@ class CbrainChecker
 
 
   # Runs the checks that are in the check_to_run array
-  def self.check(checks_to_run)
+  def self.check(checks_to_run, options={})
 
-    checks = checks_to_run == :all ? self.all : checks_to_run
+    checks  = checks_to_run == :all ? self.all : checks_to_run
+    checks -= options[:except] if options[:except].present?
 
     checks.each do |check|
       begin
@@ -68,7 +69,7 @@ class CbrainChecker
         puts "\n"
         puts "CBRAIN initial check failed: #{check}"
         puts failed_check.message
-        puts failed_check.backtrace.join("\n")
+        puts failed_check.backtrace.select { |m| m.to_s.include?(Rails.root.to_s) }.join("\n")
         raise SystemExit.new("CBRAIN process failed initial checks.")
       end
     end

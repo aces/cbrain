@@ -33,7 +33,7 @@ class BourreauxController < ApplicationController
   api_available :except  => :row_data
 
   before_action :login_required
-  before_action :manager_role_required, :except  => [:index, :show, :row_data, :load_info, :rr_disk_usage, :cleanup_caches, :rr_access, :rr_access_dp, :update, :start, :stop]
+  before_action :manager_role_required, :except  => [:index, :show, :row_data, :load_info, :rr_disk_usage, :cleanup_caches, :rr_access, :rr_access_dp]
 
   def index #:nodoc:
     @scope = scope_from_session
@@ -433,8 +433,8 @@ class BourreauxController < ApplicationController
     user_ids    = params[:user_ids] || nil
 
     available_users = current_user.available_users
-    user_ids        = user_ids ? available_users.where(:id => user_ids).raw_first_column(:id) :
-                                 available_users.raw_first_column(:id)
+    user_ids        = user_ids ? available_users.where(:id => user_ids).ids :
+                                 available_users.ids
 
     raise "Bad params"              if bourreau_id.blank? || user_ids.blank?
     bourreau    = Bourreau.find(bourreau_id.to_i)
@@ -547,7 +547,7 @@ class BourreauxController < ApplicationController
       userids = userlist.keys.each { |uid| uid.to_s }.join(",")  # "uid,uid,uid"
       flash[:notice] += "\n" unless flash[:notice].blank?
       begin
-        remote_resource.send_command_clean_cache(userids,typeslist,cleanup_older.seconds.ago,cleanup_younger.seconds.ago)
+        remote_resource.send_command_clean_cache(current_user.id,userids,typeslist,cleanup_older.seconds.ago,cleanup_younger.seconds.ago)
         flash[:notice] += "Sending cleanup command to #{remote_resource.name}."
       rescue
         flash[:notice] += "Could not contact #{remote_resource.name}."
@@ -610,6 +610,59 @@ class BourreauxController < ApplicationController
 
   end
 
+  # API method to copy files from one DP to another via a bourreau;
+  # unlike the file_copy method, this method will select which bourreau
+  # to use dynamically, based on the ones that have the less activity already
+  # scheduled. The set of bourreaux to consider can be given by providing a
+  # set of bourreau_ids or a set of bourreau_group_ids in parameter (the
+  # default is to consider all currently online bourreaux)
+  def dispatcher_file_copy #:nodoc:
+    userfile_ids       = params[:userfile_ids]
+    data_provider_id   = params[:data_provider_id]
+    bourreau_ids       = Array(params[:bourreau_ids])  # optional
+    bourreau_group_ids = Array(params[:bourreau_group_ids]) # optional
+    bypass_cache       = params[:bypass_cache].present?
+    patterns           = params[:sync_select_patterns].presence # optional
+    unregister         = params[:unregister_after_copy].present?
+
+    # Find files and destination DP
+    data_provider      = DataProvider.find(data_provider_id)
+    userfile_ids       = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read)
+                          .where(:id => userfile_ids).pluck(:id)
+
+    # Validate things
+    cb_error "DataProvider not available" if data_provider.read_only || !data_provider.can_be_accessed_by?(current_user)
+    cb_error "No files selected"          if userfile_ids.empty?
+
+    # Select potential bourreaux
+    bourreaux = Bourreau.where(:online => true)
+    bourreaux = bourreaux.where(:id => bourreau_ids)             if bourreau_ids.present?
+    bourreaux = bourreaux.where(:group_id => bourreau_group_ids) if bourreau_group_ids.present?
+    bourreaux = bourreaux.to_a.select { |b| b.can_be_accessed_by?(current_user) }
+    cb_error "No bourreaux available" if bourreaux.empty?
+
+    # Select one best bourreau
+    bids = bourreaux.map(&:id)
+    active_counts = BackgroundActivity
+      .where(:remote_resource_id => bids, :status => 'InProgress')
+      .group(:remote_resource_id)
+      .count
+    bids.each { |bid| active_counts[bid] ||= 0 } # adds 0 to all missing counts
+    min_count = active_counts.map { |bid,count| count }.min
+    selected_bids = active_counts.map { |bid,count| bid if count == min_count }.compact
+    selected_bid  = selected_bids.shuffle.first
+
+    # Create the copy request as a BackgroundActivity object
+    bac_klass = unregister ? BackgroundActivity::CopyFileAndUnregister : BackgroundActivity::CopyFile
+    bac = bac_klass.setup!(
+      current_user.id, userfile_ids, selected_bid, data_provider_id,
+      :bypass_cache         => bypass_cache,
+      :sync_select_patterns => Array(patterns).presence,
+    )
+    bac.update_column(:retry_count, 3) if bac.id # hardcoded for the moment
+
+    render :json => { :status => "ok", :userfile_ids => userfile_ids, :background_activity_id => bac.id }
+  end
 
   private
 

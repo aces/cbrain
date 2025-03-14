@@ -67,14 +67,14 @@ class BoutiquesClusterTask < ClusterTask
   ##############################
 
   def self.properties #:nodoc:
-    {
-      :can_submit_new_tasks => false, # TODO this is a class method, no access to descriptor
-    }
+    { } # No default class-level properties!
   end
 
   def setup #:nodoc:
     descriptor = self.descriptor_for_setup
-    self.addlog(descriptor.file_revision_info.format("%f rev. %s %a %d"))
+
+    self.addlog(Revision_info.format("%f rev. %s %a %d"))
+    self.addlog(self.boutiques_descriptor.file_revision_info.format("%f rev. %s %a %d"))
 
     descriptor.file_inputs.each do |input|
       userfile_id = invoke_params[input.id]
@@ -96,6 +96,21 @@ class BoutiquesClusterTask < ClusterTask
     end
 
     true
+  end
+
+  # narrows down local dp paths only to the most relevant, to be used at setup
+  def local_dp_storage_paths
+    return super & input_file_dps.select{ |dp| dp.is_fast_syncing? }.pluck(:remote_dir)
+  end
+
+  # retrieve (distinct) data providers that host the task's input files
+  def input_file_dps
+    file_ids = descriptor_for_setup.file_inputs.map do |input|
+      invoke_params[input.id]
+    end
+    return DataProvider.joins(:userfiles)
+                       .where(userfiles: { id: file_ids })
+                       .distinct
   end
 
   def cluster_commands #:nodoc:
@@ -137,10 +152,10 @@ class BoutiquesClusterTask < ClusterTask
     end
 
     # Write down the file with the boutiques descriptor itself
-    boutiques_json_basename = ".boutiques.#{self.run_id}.json"
     File.open(boutiques_json_basename, "w") do |fh|
       cleaned_desc = descriptor.dup
-      cleaned_desc.delete("groups") if cleaned_desc.groups.size == 0 # bosh is picky
+      cleaned_desc.delete("groups")      if cleaned_desc.groups.blank?         # bosh is picky
+      cleaned_desc.delete("error-codes") if cleaned_desc["error-codes"].blank? # and stupid
       fh.write JSON.pretty_generate(cleaned_desc)
       fh.write "\n"
     end
@@ -152,7 +167,11 @@ class BoutiquesClusterTask < ClusterTask
           #{boutiques_json_basename.bash_escape}
       SIMULATE
       simulate_com.gsub!("\n"," ")
-      simulout = IO.popen(simulate_com) { |fh| fh.read }
+      begin
+         simulout = IO.popen(simulate_com) { |fh| fh.read }
+      rescue => ex
+         cb_error "The 'bosh exec simulate' command failed: #{ex.class} #{ex.message}"
+      end
       simul_status = $? # a Process::Status object
       if ! simul_status.success?
         cb_error "The 'bosh exec simulate' command failed with return code #{simul_status.exitstatus}"
@@ -185,6 +204,9 @@ class BoutiquesClusterTask < ClusterTask
 
   def save_results #:nodoc:
     descriptor = self.descriptor_for_save_results
+
+    self.addlog(Revision_info.format("%f rev. %s %a %d"))
+
     custom     = descriptor.custom || {} # 'custom' is not packaged as an object, just a hash
 
     # Verifications of proper exit status
@@ -203,6 +225,10 @@ class BoutiquesClusterTask < ClusterTask
         cb_error "Exit status file #{exit_status_filename()} has unexpected content"
       end
       status = out.strip.to_i
+      descriptor.error_codes ||= []
+      descriptor.error_codes.each do |err|  # note, 0 code is supported by boutiques
+        self.addlog err['description'] if err['code'] == status
+      end
       if exit_status_means_failure?(status)
         self.addlog "Command failed, exit status #{status}"
         return false
@@ -243,6 +269,7 @@ class BoutiquesClusterTask < ClusterTask
         if ! path_is_in_workdir?(path) # this also checks the existence
           self.addlog("Output file is missing or outside of task work directory: #{path}")
           all_ok = false
+          next
         end
 
         # Get name and filetype
@@ -253,8 +280,9 @@ class BoutiquesClusterTask < ClusterTask
         userfile_class = SingleFile     if File.file?(path)      && !(userfile_class <= SingleFile)
         userfile_class = FileCollection if File.directory?(path) && !(userfile_class <= FileCollection)
 
-        # Save the file (possible overwrite if race condition)
+        # Save the file
         outfile = safe_userfile_find_or_new(userfile_class, :name => name)
+        new_out = outfile.new_record?
 
         unless outfile.save
           messages = outfile.errors.full_messages.join("; ")
@@ -265,17 +293,22 @@ class BoutiquesClusterTask < ClusterTask
         end
 
         # Transfer content to DataProvider
+        self.addlog("Created result file '#{name}' (ID #{outfile.id})") if   new_out
+        self.addlog("Reused result file '#{name}' (ID #{outfile.id})")  if ! new_out
+        self.addlog("Uploading content to #{outfile.data_provider.type} '#{outfile.data_provider.name}' (ID #{outfile.data_provider_id})")
         outfile.cache_copy_from_local_file(path)
+        self.addlog("Content uploaded")
+
+        # Record ID of output file in task's params
         params["_cbrain_output_#{output.id}"] ||= []
         params["_cbrain_output_#{output.id}"]  |= [ outfile.id ]
-        self.addlog("Saved result file #{name}")
 
         # Add provenance logs
         all_file_input_ids = descriptor.file_inputs.map do |input|
           invoke_params[input.id]
         end.compact.uniq
         parent_userfiles = Userfile.where(:id => all_file_input_ids).to_a
-        self.addlog_to_userfiles_these_created_these(parent_userfiles, [outfile]) if parent_userfiles.present?
+        self.addlog_to_userfiles_these_created_these(parent_userfiles, [outfile], "", 2) if parent_userfiles.present?
 
         # If there is only one input file, we move the output under it
         if parent_userfiles.size == 1
@@ -303,7 +336,7 @@ class BoutiquesClusterTask < ClusterTask
         self.addlog "Attempting to update input '#{userfile.name}' on DataProvider '#{userfile.data_provider.name}'"
         userfile.cache_is_newer
         userfile.sync_to_provider
-        self.addlog_to_userfiles_processed(userfile, "(content modified in place)")
+        self.addlog_to_userfiles_processed(userfile, "(content modified in place)", 1)
       end
     end
 
@@ -331,7 +364,8 @@ class BoutiquesClusterTask < ClusterTask
     desc   = descriptor_for_save_results
     custom = desc.custom || {} # 'custom' is not packaged as an object, just a hash
     idlist = custom['cbrain:no-run-id-for-outputs'].presence # list of IDs where no run id inserted
-    no_run_id = true if idlist && idlist.include?(output.id)
+    # We allow no_run_id only if the dest DP is MultiLevel, presumably the output goes to "a/b/c/basename_without_id"
+    no_run_id = true if idlist && idlist.include?(output.id) && self.results_data_provider.has_browse_path_capabilities?
 
     # Get basename, use it to guess the class
     name = File.basename(pathname)
@@ -356,9 +390,28 @@ class BoutiquesClusterTask < ClusterTask
     if custom['cbrain:walltime-estimate'].present?
       return custom['cbrain:walltime-estimate'].seconds
     end
-    if descriptor.suggested_resources.present? &&
-       descriptor.suggested_resources['walltime-estimate'].present?
-       return descriptor.suggested_resources['walltime-estimate'].seconds
+    if descriptor.suggested_resources.present? && descriptor.suggested_resources['walltime-estimate'].present?
+      return descriptor.suggested_resources['walltime-estimate'].seconds
+    end
+    nil
+  end
+
+  # Conservative maximal memory estimate for the job.
+  # This value should be somewhat larger than the largest
+  # expected memory use without being overly excessive; it
+  # will be submitted along with the job to the cluster
+  # management system for scheduling purposes. The units
+  # are megabytes.
+  def job_memory_estimate
+    descriptor = self.descriptor_for_cluster_commands
+    custom     = descriptor.custom || {} # 'custom' is not packaged as an object, just a hash
+    if custom['cbrain:memory-estimate'].present?
+      return custom['cbrain:memory-estimate'].to_i # in megabytes
+    end
+    if descriptor.suggested_resources.present? && descriptor.suggested_resources['ram'].present?
+      gigs = descriptor.suggested_resources['ram'].to_f
+      megs = gigs * 1024
+      return megs.truncate
     end
     nil
   end
@@ -404,6 +457,12 @@ class BoutiquesClusterTask < ClusterTask
     ".invoke.#{self.run_id}.json"
   end
 
+  # Returns the basename of the JSON file
+  # that holds the boutiques descriptor for bosh.
+  def boutiques_json_basename
+    ".boutiques.#{self.run_id}.json"
+  end
+
   # Return true or false depending on if
   # the number +status+ returned by the command
   # indicates a failure. By default, anything
@@ -416,16 +475,6 @@ class BoutiquesClusterTask < ClusterTask
 
   def invoke_params
     self.params[:invoke] ||= {}
-  end
-
-  # This determines if the task expects to only read its input files,
-  # or modify them, and return respectively :read or :write (the default).
-  # The symbol can be passed to methods such as Userfile.find_accessible_by_user().
-  # Depending on the value, more or less files are allowed to be processed.
-  # When the value is :read, it means we only need file for input and not
-  # for output.
-  def file_access_symbol
-    @_file_access ||= (self.class.properties[:readonly_input_files].present? || self.tool_config.try(:inputs_readonly) ? :read : :write)
   end
 
 end

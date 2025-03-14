@@ -247,19 +247,13 @@ RSpec.describe UserfilesController, :type => :controller do
         allow(controller).to    receive(:current_user).and_return(admin)
         allow(mock_userfile).to receive(:local_sync_status).and_return(mock_status)
         allow(Userfile).to      receive(:find_accessible_by_user).and_return([mock_userfile])
-        allow(CBRAIN).to        receive(:spawn_with_active_records).and_yield
       end
 
       it "should sync the file to the cache if it is in a valid state" do
-        expect(mock_userfile).to receive(:sync_to_cache)
+        expect(BackgroundActivity::SyncFile).to receive(:setup!)
         get :sync_multiple, params: {file_ids: [1]}
       end
 
-      it "should not sync the file to the cache if it is not in a valid state" do
-        allow(mock_status).to receive_message_chain(:status).and_return("InSync")
-        expect(mock_userfile).not_to receive(:sync_to_cache)
-        get :sync_multiple, params: {file_ids: [1]}
-      end
     end
 
 
@@ -513,7 +507,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
       it "should update tags when requested" do
         tag = create(:tag, :userfiles => [admin_userfile], :user => admin)
-        allow(admin).to receive_message_chain(:available_tags, :raw_first_column).and_return([tag.id])
+        allow(admin).to receive_message_chain(:available_tags, :ids).and_return([tag.id])
         post :update_multiple, params: {file_ids: [user_userfile.id], tags: [tag.id]}
         expect(user_userfile.tags).to match_array([tag])
       end
@@ -702,13 +696,12 @@ RSpec.describe UserfilesController, :type => :controller do
         allow(admin).to         receive(:license_agreement_set).and_return([])
         allow(admin).to         receive(:unsigned_license_agreements).and_return([])
         allow(DataProvider).to  receive_message_chain(:find_all_accessible_by_user, :where, :first).and_return(mock_model(DataProvider).as_null_object)
-        allow(CBRAIN).to        receive(:spawn_with_active_records).and_yield
         allow(Userfile).to      receive(:find_accessible_by_user).and_return(mock_userfile)
-        allow(mock_userfile).to receive(:provider_move_to_otherprovider)
-        allow(mock_userfile).to receive(:provider_copy_to_otherprovider)
+        allow(BackgroundActivity::CopyFile).to receive(:setup!).and_return(nil)
+        allow(BackgroundActivity::MoveFile).to receive(:setup!).and_return(nil)
       end
 
-      context "when the other data povider is not found" do
+      context "when the other data provider is not found" do
         before(:each) do
           allow(DataProvider).to receive_message_chain(:find_all_accessible_by_user, :where, :first).and_return(nil)
         end
@@ -724,45 +717,32 @@ RSpec.describe UserfilesController, :type => :controller do
         end
       end
 
+
       context "when moving a file" do
 
         it "should check if the user has owner access" do
-          expect(mock_userfile).to receive(:has_owner_access?)
+          expect(Userfile).to receive_message_chain(:find, :has_owner_access?)
           post :change_provider, params: {:file_ids => [1], :move => true, :data_provider_id_for_mv_cp => data_provider.id}
         end
 
         it "should attempt to move the file if the user has owner access" do
-          allow(mock_userfile).to receive(:has_owner_access?).and_return(true)
-          expect(mock_userfile).to receive(:provider_move_to_otherprovider)
+          allow(Userfile).to receive_message_chain(:find, :has_owner_access?).and_return(true)
+          expect(BackgroundActivity::MoveFile).to receive(:setup!)
           post :change_provider, params: {:file_ids => [1], :move => true, :data_provider_id_for_mv_cp => data_provider.id}
         end
 
-        it "should not attempt to move the file if the user does not have owner access" do
-          allow(mock_userfile).to receive(:has_owner_access?).and_return(false)
-          expect(mock_userfile).not_to receive(:provider_move_to_otherprovider)
-          post :change_provider, params: {:file_ids => [1], :move => true, :data_provider_id_for_mv_cp => data_provider.id}
+      end
+
+      context "when copying a file" do
+        it "should attempt to copy the file when requested" do
+          expect(BackgroundActivity::CopyFile).to receive(:setup!)
+          post :change_provider, params: {:file_ids => [1], :copy => true, :data_provider_id_for_mv_cp => data_provider.id}
         end
-      end
-
-      it "should attempt to copy the file when requested" do
-        expect(mock_userfile).to receive(:provider_copy_to_otherprovider)
-        post :change_provider, params: {:file_ids => [1], :copy => true, :data_provider_id_for_mv_cp => data_provider.id}
-      end
-
-      it "should send message about successes" do
-        allow(mock_userfile).to receive(:provider_copy_to_otherprovider).and_return(true)
-        expect(Message).to receive(:send_message).with(anything, hash_including(:message_type  => :notice))
-        post :change_provider, params: {:file_ids => [1], :copy => true, :data_provider_id_for_mv_cp => data_provider.id}
-      end
-
-      it "should send message about failures" do
-        allow(mock_userfile).to receive(:provider_copy_to_otherprovider).and_return(false)
-        expect(Message).to receive(:send_message).with(anything, hash_including(:message_type  => :error))
-        post :change_provider, params: {:file_ids => [1], :copy => true, :data_provider_id_for_mv_cp => data_provider.id}
       end
 
       it "should display a flash message" do
-        post :change_provider, params: {:file_ids => [1], :data_provider_id_for_mv_cp => data_provider.id}
+        allow(Userfile).to receive_message_chain(:find, :has_owner_access?).and_return(true)
+        post :change_provider, params: {:file_ids => [1], :move => true, :data_provider_id_for_mv_cp => data_provider.id}
         expect(flash[:notice]).to match(/Your files are being .+ in the background/)
       end
 
@@ -777,25 +757,25 @@ RSpec.describe UserfilesController, :type => :controller do
       before(:each) do
         session[:session_id] = 'session_id'
         allow(controller).to    receive(:current_user).and_return(admin)
-        allow(CBRAIN).to        receive(:spawn_with_active_records).and_yield
       end
 
       it "should display error message if userfiles is not accessible by user" do
         allow(controller).to    receive(:current_user).and_return(user)
-        delete :delete_files, params: {:file_ids => [admin_userfile.id]}
+        delete :delete_files, params: {:file_ids => [user_userfile.id, admin_userfile.id]}
         expect(flash[:error]).to match("not have acces")
       end
 
       it "should destroy the userfiles" do
         allow(Userfile).to receive(:find).and_return(admin_userfile)
-        expect(admin_userfile).to receive(:destroy)
+        expect(BackgroundActivity::DestroyFile).to receive(:setup!)
         delete :delete_files, params: {:file_ids => [admin_userfile.id]}
       end
 
       it "should announce that files are being deleted in the background" do
         allow(mock_userfile).to receive_message_chain(:data_provider, :is_browsable?).and_return(false)
         allow(mock_userfile).to receive_message_chain(:data_provider, :meta, :[], :blank?).and_return(false)
-        delete :delete_files, params: {:file_ids => [1]}
+        allow(BackgroundActivity::DestroyFile).to receive(:setup!).and_return(nil)
+        delete :delete_files, params: {:file_ids => [admin_userfile.id]}
         expect(flash[:notice]).to match("deleted in background")
       end
 
@@ -834,7 +814,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
         it "should redirect to the index" do
           get :download, params: {:file_ids => [1], :specified_filename => "not_valid"}
-          expect(response).to redirect_to(:action => :index, :format => :html)
+          expect(response).to redirect_to(:action => :index)
         end
       end
 
@@ -855,7 +835,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
         it "should redirect to the index" do
           get :download, params: {:file_ids => [1]}
-          expect(response).to redirect_to(:action => :index, :format => :html)
+          expect(response).to redirect_to(:action => :index)
         end
       end
 
@@ -938,15 +918,12 @@ RSpec.describe UserfilesController, :type => :controller do
 
 
       context "when compressing" do
-        before(:each) do
-          allow(CBRAIN).to     receive(:spawn_with_active_records).and_yield
-        end
 
         it "should call gzip_content method" do
           data_provider           = DataProvider.find(user_userfile.data_provider_id)
           data_provider.read_only = false
           data_provider.save
-          expect(Process).to receive(:setproctitle).with(/GzipFile ID=#{user_userfile.id}/) # Ah! what a test!
+          expect(BackgroundActivity::CompressFile).to receive(:setup!)
           post :compress, params: {:file_ids => [user_userfile.id]}
         end
 

@@ -40,6 +40,8 @@ end
 ========================================================
 Feature: print ActiveRecordLog of some objects
 ========================================================
-  Activate with: plog obj [, obj , ...]
+  plog obj [, obj , ...]
+
+  If an object has an internal log, shows that log.
 FEATURES
 

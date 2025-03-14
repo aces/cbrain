@@ -212,7 +212,9 @@ class BourreauWorker < Worker
       user_max_tasks = @rr.meta["task_limit_user_#{user_id}".to_sym]
       user_max_tasks = @rr.meta[:task_limit_user_default] if user_max_tasks.blank?
       user_max_tasks = user_max_tasks.to_i # nil, "" and "0" means unlimited
-      user_tasks     = by_user[user_id].shuffle # go through tasks in random order
+      # Go through tasks in random order, but with non-New states having higher priority
+      user_tasks     = (by_user[user_id].select { |t| t.status == 'New' }).shuffle +
+                       (by_user[user_id].select { |t| t.status != 'New' }).shuffle  # tasks are pop()ed
 
       # Loop for each task
       while user_tasks.size > 0
@@ -264,7 +266,7 @@ class BourreauWorker < Worker
   # *On* *CPU* and *On* *CPU* to *Data* *Ready* based on
   # the activity on the cluster, but no code is run for
   # these transitions.
-  def process_task(task) # when entering this methods task is a partial object, with only a few attributes
+  def process_task(task) # when entering this method, +task+ is a partial object, with only a few attributes
 
     notification_needed = true # set to false later, in the case of restarts and recovers
 
@@ -273,21 +275,14 @@ class BourreauWorker < Worker
     initial_status      = task.status
     initial_change_time = task.updated_at
 
-    worker_log.debug "--- Got #{task.bname_tid} in state #{initial_status}"
+    worker_log.debug "--- Got #{task.tname_tid} in state #{initial_status}"
 
     unless task.status =~ /^(Recover|Restart)/
       task.update_status
       new_status = task.status
 
-      worker_log.debug "Updated #{task.bname_tid} to state #{new_status}"
-
-      # Mechanism for tasks to submit other tasks: tasks that are active
-      # may submit new tasks dynamically provided that they have the :can_submit_new_tasks
-      # property.
-      if task.class.properties[:can_submit_new_tasks].present?
-        task.submit_subtasks_from_json
-      end
-
+      worker_log.debug "Updated #{task.tname_tid} to state #{new_status}"
+            
       return if initial_status == 'On CPU' && new_status == 'On CPU'; # nothing else to do
 
       # Record bourreau delay time for Queued -> On CPU
@@ -323,17 +318,17 @@ class BourreauWorker < Worker
           # We need to raise an exception if we cannot successfully
           # transition ourselves.
           task.status_transition!("New","Setting Up")
-          worker_log.debug "Start   #{task.bname_tid}"
+          worker_log.info  "Setup   #{task.tname_tid}"
           task.addlog_current_resource_revision
           task.addlog_context(self,"#{self.pretty_name}")
           task.setup_and_submit_job # New -> Queued|Failed To Setup
-          worker_log.info  "Submitted: #{task.bname_tid}"
-          worker_log.debug "     -> #{task.bname_tid} to state #{task.status}"
+          worker_log.info "Submitted: #{task.tname_tid} as #{task.cluster_jobid}"
+          worker_log.debug "     -> #{task.tname_tid} to state #{task.status}"
           task.meta[:last_delay_new_to_queued] = (Time.now - initial_change_time).to_i
         elsif action == :wait
-          worker_log.debug "     -> #{task.bname_tid} unfulfilled Setup prerequisites."
+          worker_log.debug "     -> #{task.tname_tid} unfulfilled Setup prerequisites."
         else # action == :fail
-          worker_log.debug "     -> #{task.bname_tid} failed Setup prerequisites."
+          worker_log.debug "     -> #{task.tname_tid} failed Setup prerequisites."
           task.status_transition(task.status, "Failed Setup Prerequisites")
           task.addlog_context(self,"#{self.pretty_name} detected failed Setup prerequisites")
           task.save
@@ -349,16 +344,16 @@ class BourreauWorker < Worker
           # We need to raise an exception if we cannot successfully
           # transition ourselves.
           task.status_transition!("Data Ready","Post Processing")
-          worker_log.debug "PostPro #{task.bname_tid}"
+          worker_log.debug "PostPro #{task.tname_tid}"
           task.addlog_current_resource_revision
           task.addlog_context(self,"#{self.pretty_name}")
           task.post_process # Data Ready -> Completed|Failed To PostProcess|Failed On Cluster
-          worker_log.info  "PostProcess: #{task.bname_tid}"
-          worker_log.debug "     -> #{task.bname_tid} to state #{task.status}"
+          worker_log.info  "PostProcess: #{task.tname_tid}"
+          worker_log.debug "     -> #{task.tname_tid} to state #{task.status}"
         elsif action == :wait
-          worker_log.debug "     -> #{task.bname_tid} unfulfilled PostProcessing prerequisites."
+          worker_log.debug "     -> #{task.tname_tid} unfulfilled PostProcessing prerequisites."
         else # action == :fail
-          worker_log.debug "     -> #{task.bname_tid} failed PostProcessing prerequisites."
+          worker_log.debug "     -> #{task.tname_tid} failed PostProcessing prerequisites."
           task.status_transition(task.status, "Failed PostProcess Prerequisites")
           task.addlog_context(self,"#{self.pretty_name} detected failed PostProcessing prerequisites")
           task.save
@@ -503,7 +498,7 @@ class BourreauWorker < Worker
                              :message_type  => :notice,
                              :header        => "Task #{task.name} Completed Successfully",
                              :description   => "Oh great!",
-                             :variable_text => "[[#{task.bname_tid}][/tasks/#{task.id}]]"
+                             :variable_text => "[[#{task.fullname}][/tasks/#{task.id}]]"
                             )
       elsif task.status =~ /^Failed/
         Message.send_message(task.user,
@@ -512,7 +507,7 @@ class BourreauWorker < Worker
                              :description   => "Sorry about that. Check the task's log.\n" +
                                                "Consider using the 'Recovery' button to try the task again, in case\n" +
                                                "it's just a system error: CBRAIN will do its best to fix it.",
-                             :variable_text => "[[#{task.bname_tid}][/tasks/#{task.id}]]"
+                             :variable_text => "[[#{task.fullname}][/tasks/#{task.id}]]"
                             )
       end
     end
@@ -521,17 +516,17 @@ class BourreauWorker < Worker
   # setup_and_submit_job() or post_process(); it's allowed, it means
   # some other worker has beaten us to the punch. So we just ignore it.
   rescue CbrainTransitionException => te
-    worker_log.debug "Transition Exception: task '#{task.bname_tid}' FROM='#{te.from_state}' TO='#{te.to_state}' FOUND='#{te.found_state}'"
+    worker_log.debug "Transition Exception: task '#{task.tname_tid}' FROM='#{te.from_state}' TO='#{te.to_state}' FOUND='#{te.found_state}'"
     return
 
   # Our task might have disappeared. Rare.
   # This is most likely during the reload() at the top of the method.
   rescue ActiveRecord::RecordNotFound => gone_ex
     if gone_ex.message["#{task.class}"] && gone_ex.message =~ /=#{task.id}\b/ # our own task?
-      worker_log.debug "Task '#{task.bname_tid}' has disappeared. Skipping."
+      worker_log.debug "Task '#{task.tname_tid}' has disappeared. Skipping."
       return # nothing else to do
     else
-      worker_log.fatal "Some object has disappeared while processing task '#{task.bname_tid}': #{gone_ex.class.to_s} #{gone_ex.message}\n" + gone_ex.backtrace[0..10].join("\n")
+      worker_log.fatal "Some object has disappeared while processing task '#{task.tname_tid}': #{gone_ex.class.to_s} #{gone_ex.message}\n" + gone_ex.backtrace[0..10].join("\n")
       raise gone_ex # something ELSE than a task disappeared?
     end
 
@@ -540,7 +535,7 @@ class BourreauWorker < Worker
   # so if an exception went through anyway, it's a CODING BUG
   # in this worker's logic.
   rescue => e
-    worker_log.fatal "Exception processing task #{task.bname_tid}: #{e.class.to_s} #{e.message}\n" + e.backtrace[0..10].join("\n")
+    worker_log.fatal "Exception processing task #{task.tname_tid}: #{e.class.to_s} #{e.message}\n" + e.backtrace[0..10].join("\n")
     raise e
 
   end # process_task which is way too long.
@@ -554,7 +549,7 @@ class BourreauWorker < Worker
       task.mark_as_failed_in_ruby rescue nil
       if task.status != orig_status
         task.addlog("Worker detects that task is too old and stuck at '#{orig_status}'; status reset to '#{task.status}'")
-        worker_log.info "Stuck: #{task.bname_tid} from #{orig_status} to state #{task.status}"
+        worker_log.info "Stuck: #{task.tname_tid} from #{orig_status} to state #{task.status}"
       end
     end
   end

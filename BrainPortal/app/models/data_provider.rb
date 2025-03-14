@@ -123,6 +123,8 @@ require 'file_info'
 # * is_fast_syncing?
 # * allow_file_owner_change?
 # * content_storage_shared_between_users?
+# * has_browse_path_capabilities?
+# * can_upload_directly_from_path?
 #
 # == Access restriction methods:
 #
@@ -133,6 +135,7 @@ require 'file_info'
 #
 # * sync_to_cache(userfile)
 # * sync_to_provider(userfile)
+# * sync_to_provider(userfile, alternate_source_path=nil) # when direct uploads is implemented
 #
 # Note that both of these are also present in the Userfile model.
 #
@@ -159,9 +162,11 @@ require 'file_info'
 # * provider_readhandle(userfile, rel_path)
 # * provider_full_path(userfile)
 # * provider_list_all(user=nil,browse_path=nil)
+# * provider_upload_from_local_file(userfile, localpath)
 #
-# Note that all of these except for provider_list_all() are
-# also present in the Userfile model.
+# Note that all of these except for provider_list_all() and
+# provider_upload_from_local_file are also present in
+# the Userfile model.
 #
 # = Aditional notes
 #
@@ -183,6 +188,7 @@ require 'file_info'
 # * impl_is_alive?
 # * impl_sync_to_cache(userfile)
 # * impl_sync_to_provider(userfile)
+# * impl_sync_to_provider(userfile, alternate_source_path) # when supporting direct uploads
 # * impl_provider_erase(userfile)
 # * impl_provider_rename(userfile,newname)
 # * impl_provider_list_all(user=nil,browse_path=nil)
@@ -243,6 +249,8 @@ class DataProvider < ApplicationRecord
   belongs_to              :user
   belongs_to              :group
   has_many                :userfiles, :dependent => :restrict_with_exception
+
+  after_save              :adjust_read_only
 
   # Resource usage is kept forever even if data provider is destroyed.
   has_many                :resource_usage
@@ -349,6 +357,17 @@ class DataProvider < ApplicationRecord
     false
   end
 
+  # Returns true if the implementation of the Data Provider
+  # supports uploading to the data provider side directly
+  # from an arbitrary path (a special implementation)
+  # instead of the standard way (only from the cache).
+  #
+  # The default value is to autodetect if the implementation
+  # of the provider has a impl_sync_to_provider method with
+  # two arguments.
+  def can_upload_directly_from_path?
+    self.method(:impl_sync_to_provider).arity == -2
+  end
 
 
   #################################################################
@@ -369,14 +388,21 @@ class DataProvider < ApplicationRecord
 
   # Synchronizes the content of +userfile+ from the
   # local cache back to the provider.
-  def sync_to_provider(userfile)
+  def sync_to_provider(userfile, alternate_source_path=nil)
     cb_error "Error: provider #{self.name} is offline."        unless self.online?
     cb_error "Error: provider #{self.name} is read_only."      if     self.read_only?
     cb_error "Error: provider #{self.name} is not syncable."   if     self.not_syncable?
     cb_error "Error: file #{userfile.name} is immutable."      if     userfile.immutable?
     rr_allowed_syncing!("synchronize content to")
-    SyncStatus.ready_to_copy_to_dp(userfile) do
-      impl_sync_to_provider(userfile)
+    if alternate_source_path.to_s.present? && ! self.can_upload_directly_from_path?
+      cb_error "Provider #{self.name} does not support direct uploads."
+    end
+    final_status = 'InSync'
+    final_status = 'ProvNewer' if alternate_source_path.to_s.present? && self.can_upload_directly_from_path?
+    SyncStatus.ready_to_copy_to_dp(userfile, final_status) do
+      final_status == 'ProvNewer' ? # same test as the 'if' two lines above
+        impl_sync_to_provider(userfile, alternate_source_path) :
+        impl_sync_to_provider(userfile)
     end
   end
 
@@ -611,6 +637,7 @@ class DataProvider < ApplicationRecord
       if userfile.is_a? FileCollection
         if directory == :all
           entries = Dir.glob(userfile.name + "/**/*")
+          #entries = Dir.glob(userfile.name + "/**/*", File::FNM_DOTMATCH).reject { |p| p.ends_with?("/.") || p.ends_with?("/..")}
         else
           directory = "." if directory == :top
           base_dir = Pathname.new(userfile.name) + directory
@@ -812,10 +839,20 @@ class DataProvider < ApplicationRecord
   # Copy a +userfile+ from the current provider to +otherprovider+.
   # Returns the new userfile if data was actually copied, true if
   # no copy was necessary, and false if anything was amiss.
-  # Options supported are :name, :user_id, :group_id which are
-  # going to be used for the new file, and :crush_destination
-  # that needs to be true if the destination file already exists
-  # and you want to proceed with the copy anyway.
+  #
+  # Options supported are:
+  #
+  #   :name, :user_id, :group_id
+  #      which are going to be used for the new file
+  #
+  #   :crush_destination
+  #      that needs to be true if the destination file already
+  #      exists and you want to proceed with the copy anyway.
+  #
+  #   :bypass_cache
+  #      can be set to true if (and only if) the destination
+  #      +otherprovider+ supports directly uploads; the flag will
+  #      be silently ignored and caching will be used otherwise.
   def provider_copy_to_otherprovider(userfile, otherprovider, options = {})
     cb_error "Error: provider #{self.name} is offline."            unless self.online?
     cb_error "Error: provider #{otherprovider.name} is offline."   unless otherprovider.online?
@@ -828,6 +865,8 @@ class DataProvider < ApplicationRecord
     new_user_id  = options[:user_id]  || userfile.user_id
     new_group_id = options[:group_id] || userfile.group_id
     crush        = options[:crush_destination]
+    bypass_cache = options[:bypass_cache].present?
+    bypass_cache = false if ! otherprovider.can_upload_directly_from_path?
 
     return true  if     self.id == otherprovider.id
     return false unless Userfile.is_legal_filename?(new_name)
@@ -859,6 +898,8 @@ class DataProvider < ApplicationRecord
     newfile.created_at       = Time.now      unless target_exists
     newfile.updated_at       = Time.now
     newfile.immutable        = false
+    # Check if DP has_browse_path_capabilities? if not, set browse_path to nil
+    newfile.browse_path     = nil if !otherprovider.has_browse_path_capabilities?
     newfile.save
 
     # Trigger callbacks for tracking size changes
@@ -871,11 +912,16 @@ class DataProvider < ApplicationRecord
 
     # Copy content to other provider
     begin
-      otherprovider.cache_copy_from_local_file(newfile,currentcache)
+      if ! bypass_cache # the most common, standard process
+        otherprovider.cache_copy_from_local_file(newfile,currentcache)
+      else # special optimization: bypass the local copy to cache
+        otherprovider.provider_upload_from_local_file(newfile,currentcache)
+      end
     rescue => ex
+      # Clean up spurious DB entry
+      (newfile.unregister rescue nil) if ! target_exists
       #todo add log information?
       raise ex
-      #return false
     end
 
     # Copy log
@@ -890,6 +936,26 @@ class DataProvider < ApplicationRecord
     end
 
     return newfile
+  end
+
+  # This method allows the client of the provider to
+  # upload the content of an arbitrary local file or directory.
+  # This mechanism only works if the data provider class
+  # supports the two-argument version of sync_to_provider().
+  # This capability can be checked with can_upload_directly_from_path?
+  def provider_upload_from_local_file(userfile, localpath)
+    localpath = localpath.to_s # in case we get a Pathname
+    cb_error "Error: provider #{self.name} is offline."                                   unless self.online?
+    cb_error "Error: provider #{self.name} is read_only."                                 if     self.read_only?
+    cb_error "Error: file does not exist: '#{localpath}'."                                unless File.exists?(localpath)
+    cb_error "Error: file #{userfile.name} is immutable."                                 if     userfile.immutable?
+    cb_error "Error: incompatible directory '#{localpath}' given for a SingleFile."       if
+        userfile.is_a?(SingleFile)     && File.directory?(localpath)
+    cb_error "Error: incompatible normal file '#{localpath}' given for a FileCollection." if
+        userfile.is_a?(FileCollection) && File.file?(localpath)
+    # Special two arguments version of sync_to_provdier. This will also
+    # validate that the provider can_upload_directly_to_path?
+    sync_to_provider(userfile, localpath)
   end
 
   # This method provides a way for a client of the provider
@@ -1023,27 +1089,14 @@ class DataProvider < ApplicationRecord
 
   # Checks whether DP is alive, but hits the cache first if it's good
   def is_alive_with_caching?
-    if self.alive_cached_valid?
-      return self.meta[:alive_cached]
-    else
-      # real check, cache result
-      alive = self.is_alive?
-      self.meta[:alive_cached] = alive
-      self.meta[:alive_cached_time] = Time.now.to_i
-      return alive
+    Rails.cache.fetch("dp_is_alive_#{self.id}", expires_in: 60.seconds) do
+      self.is_alive? rescue false
     end
   end
 
   # This method checks whether cache is still good, lasts 1 minute
   def alive_cached_valid?
-    valid = (Time.now.to_i - self.meta[:alive_cached_time] <= 60)
-    # Check that the alive cache is actually a boolean
-    if !(self.meta[:alive_cached] == true || self.meta[:alive_cached] == false)
-      valid = false
-    end
-    valid
-  rescue
-    false
+    ! Rails.cache.read("dp_is_alive_#{self.id}").nil?
   end
 
   # Override the default for_api() method so that the resulting
@@ -1080,6 +1133,21 @@ class DataProvider < ApplicationRecord
     return true if User.where(:id => self.user_id).first.is_a?(AdminUser)
     self.errors.add(:user_id, 'must be an administrator')
     return false
+  end
+
+  # An after_save callback. If the class redefines read_only? in
+  # a way that is different from the value in the column in the
+  # database, then we adjust the database entry accordingly. This
+  # is so queries in the DB will match the intended value of the attribute.
+  # Note that we don't do the same check for 'read_only' and there is
+  # still a possibility a programmer will create a subclass
+  # where the two values are inconsistent.
+  def adjust_read_only #:nodoc:
+    ro = self.read_only || self.read_only? # better be safe
+    if ! self.class.where(:id => self.id, :read_only => ro).exists?
+      self.update_column(:read_only, ro)
+    end
+    true
   end
 
   #################################################################
@@ -1290,67 +1358,6 @@ class DataProvider < ApplicationRecord
 
   def self.rsync_ignore_patterns #:nodoc:
     @ig_patterns ||= RemoteResource.current_resource.dp_ignore_patterns || []
-  end
-
-  # This method removes from the cache all files
-  # and directories that are spurious (that is, do not
-  # correspond to actual userfiles in the DB). Unless
-  # +do_id+ is true, no files are actually erased.
-  # Always returns an array of strings for the subpaths that
-  # are/were superfluous, each like "01/23/45".
-  # This whole process can take some time, and is mostly used
-  # only once, at boot time.
-  def self.cleanup_leftover_cache_files(do_it=false, options={})
-    rr_id = RemoteResource.current_resource.id
-    Dir.chdir(self.cache_rootdir) do
-      dirlist = []
-
-      # The find command below has been tested on Linux and Mac OS X
-      # It MUST generate exactly three levels deep so it can properly
-      # infer the original file ID !
-      IO.popen("find . -mindepth 3 -maxdepth 3 -type d -print","r") { |fh| dirlist = fh.readlines rescue [] }
-      uids2path = {} # this is the main list of what to delete (preliminary)
-      dirlist.each do |path|  # path should be  "./01/23/45\n"
-        next unless path =~ /\A\.\/(\d+)\/(\d+)\/(\d+)\s*\z/ # make sure
-        idstring = Regexp.last_match[1..3].join("")
-        uids2path[idstring.to_i] = path.strip.sub(/\A\.\//,"") #  12345 => "01/23/45"
-      end
-
-      # Might as well clean spurious SyncStatus entries too.
-      # These are the ones that say something's in the cache,
-      # yet we couldn't find any files on disk.
-      supposedly_in_cache      = SyncStatus.where( :remote_resource_id => rr_id, :status => [ 'InSync', 'CacheNewer' ] )
-      supposedly_in_cache_uids = supposedly_in_cache.raw_first_column(:userfile_id)
-      not_in_cache_uids        = supposedly_in_cache_uids - uids2path.keys
-      supposedly_in_cache.where( :userfile_id => not_in_cache_uids ).destroy_all
-
-      return [] if uids2path.empty?
-
-      # We wipe from the cache some dirs for which no
-      # userfile exists, or dirs for which the userfile exist
-      # but has no known synchronization status.
-      all_uids        = Userfile.where({}).raw_first_column(:id)
-      all_synced_uids = SyncStatus.where( :remote_resource_id => rr_id ).raw_first_column(:userfile_id)
-      keep_cache_uids = all_uids & all_synced_uids & uids2path.keys
-      keep_cache_uids.each { |id| uids2path.delete(id) } # prune the list: leave only the paths to delete!
-
-      return [] if uids2path.empty?
-
-      # Erase entries on disk!
-      if do_it
-        maybe_spurious_parents={}
-        uids2path.keys.sort.each_with_index do |id,i|  # 12345
-          path = uids2path[id]                         # "01/23/45"
-          Process.setproctitle "Cache Spurious PATH=#{path} #{i+1}/#{uids2path.size}" if options[:update_dollar_zero]
-          system("chmod","-R","u+rwX",path)   # uppercase X affects only directories
-          FileUtils.remove_entry(path, true) rescue true
-          maybe_spurious_parents[path.sub(/\/\d+\z/,"")]      = 1  # "01/23"
-          maybe_spurious_parents[path.sub(/\/\d+\/\d+\z/,"")] = 1  # "01"
-        end
-        maybe_spurious_parents.keys.sort { |a,b| b <=> a }.each { |parent| Dir.rmdir(parent) rescue true }
-      end
-      return uids2path.values
-    end
   end
 
 

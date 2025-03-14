@@ -55,7 +55,6 @@ class ExceptionLog < ApplicationRecord
                           }
     e.session            = session.to_hash
     e.request_headers    = hdrs
-    e.instance_name      = CBRAIN::Instance_Name rescue "(?)"
     e.revision_no        = CBRAIN::CBRAIN_StartTime_Revision
     e.save
 

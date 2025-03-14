@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#Controller for the User resource.
+# Controller for the User resource.
 class NhUsersController < NeurohubApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -39,7 +39,11 @@ class NhUsersController < NeurohubApplicationController
   end
 
   def myaccount #:nodoc:
-    @user=current_user
+    @user            = current_user
+    # Array of enabled OIDC providers configurations
+    @oidc_configs    = OidcConfig.all
+    # Hash of OIDC uris with the OIDC name as key
+    @oidc_uris       = generate_oidc_login_uri(@oidc_configs, "nh_route_please")
     @orcid_canonical = orcid_canonize(@user.meta[:orcid])
     render :show
   end
@@ -54,13 +58,16 @@ class NhUsersController < NeurohubApplicationController
 
     @orcid_canonical = orcid_canonize(@user.meta[:orcid])
     @orcid_uri       = orcid_login_uri() # set to nil if orcid not configured by admin
-    @globus_uri      = globus_login_uri(nh_globus_url) # set to nil if globus not configured by admin
+    # Array of enabled OIDC providers configurations
+    @oidc_configs    = OidcConfig.all
+    # Hash of OIDC uris with the OIDC name as key
+    @oidc_uris       = generate_oidc_login_uri(@oidc_configs, "nh_route_please")
   end
 
   def change_password #:nodoc:
     @user = current_user
-    if user_must_link_to_globus?(@user)
-       cb_error "Your account can only authenticate with Globus identities.", :redirect => { :action => :myaccount }
+    if user_must_link_to_oidc?(@user)
+       cb_error "Your account can only authenticate with OpenID identities.", :redirect => { :action => :myaccount }
     end
   end
 
@@ -80,9 +87,9 @@ class NhUsersController < NeurohubApplicationController
     attr_to_update.delete(:zenodo_sandbox_token) if attr_to_update[:zenodo_sandbox_token].blank?
     attr_to_update.delete(:zenodo_main_token)    if attr_to_update[:zenodo_main_token].blank?
 
-    # Do not update password if user must use globus
-    if user_must_link_to_globus?(@user)
-      flash[:error] = "You cannot change the password for your account." if attr_to_update[:password].present?
+    # Do not update password if user must use globus (or other oidc)
+    if user_must_link_to_oidc?(@user) && attr_to_update[:password].present?
+      flash[:error] = "You cannot change the password for your account because you should use OpenID." if attr_to_update[:password].present?
       attr_to_update.delete(:password)
       attr_to_update.delete(:password_confirmation)
     end

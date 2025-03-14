@@ -54,6 +54,11 @@ def acttasks(tasks = CbrainTask.active.all)
       result
     end
 
+    # Remove column c_types if it's empty everywhere
+    if list1.all? { |struct| struct[:c_types].blank? }
+      list1.each  { |struct| struct.delete(:c_types) }
+    end
+
     # Remove duplicates from list1 and count them
     seen={}
     list2 = list1.select { |r| seen[r] ||= 0 ; seen[r] += 1 ; seen[r] == 1 }
@@ -104,9 +109,8 @@ end
 ========================================================
 Feature: Reports
 ========================================================
-  In the console simply type:
-    trans    : report of active transfers between resources and DP
-    acttasks : active tasks
-    last [n] : last connected users (n = limit, default 20)
+  trans    : report of active transfers between resources and DP
+  acttasks : report active tasks
+  last [n] : last connected users (n = limit, default 20)
 FEATURES
 

@@ -85,18 +85,22 @@ class SshDataProvider < DataProvider
     # As of rsync 3.1.2, rsync does the escaping of the remote path properly itself
     source_escaped = remotefull.to_s.bash_escape if self.class.local_rsync_protects_args?
 
+    # Adds special --include and --exclude to select files by pattern.
+    # Danger, lots of caveats here! Not a standard procedure within CBRAIN apps.
+    in_ex_clude_opt = rsync_select_pattern_options(userfile.sync_select_patterns) if userfile.is_a?(FileCollection)
+
     # It's IMPORTANT that the source be specified with a bare ':' in front.
-    text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} :#{source_escaped}#{sourceslash} #{shell_escape(localfull)} 2>&1")
-    cb_error "Error syncing userfile to local cache, rsync returned:\n#{text}" unless text.blank?
+    text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{in_ex_clude_opt} :#{source_escaped}#{sourceslash} #{shell_escape(localfull)} 2>&1")
+    cb_error "Error syncing userfile ##{userfile.id} to local cache, rsync returned:\n#{text}" unless text.blank?
     unless File.exist?(localfull)
-      cb_error "Error syncing userfile to local cache: no destination file found after rsync?\n" +
+      cb_error "Error syncing userfile ##{userfile.id} to local cache: no destination file found after rsync?\n" +
                "Make sure you are running rsync 3.0.6 or greater!"
     end
     true
   end
 
-  def impl_sync_to_provider(userfile) #:nodoc:
-    localfull   = cache_full_path(userfile)
+  def impl_sync_to_provider(userfile, alternate_source_path=nil) #:nodoc:
+    localfull   = alternate_source_path.to_s.presence || cache_full_path(userfile)
     remotefull  = provider_full_path(userfile)
     cb_error "Error: file #{localfull} does not exist in local cache!" unless File.exist?(localfull)
 
@@ -108,12 +112,16 @@ class SshDataProvider < DataProvider
     # As of rsync 3.1.2, rsync does the escaping of the remote path properly itself
     dest_escaped = remotefull.to_s.bash_escape if self.class.local_rsync_protects_args?
 
+    # Adds special --include and --exclude to select files by pattern.
+    # Danger, lots of caveats here! Not a standard procedure within CBRAIN apps.
+    in_ex_clude_opt = rsync_select_pattern_options(userfile.sync_select_patterns) if userfile.is_a?(FileCollection)
+
     # It's IMPORTANT that the destination be specified with a bare ':' in front.
-    text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{dest_escaped} 2>&1")
+    text = bash_this("#{rsync} -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{in_ex_clude_opt} #{shell_escape(localfull)}#{sourceslash} :#{dest_escaped} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
-    cb_error "Error syncing userfile to data provider, rsync returned:\n#{text}" unless text.blank?
+    cb_error "Error syncing userfile ##{userfile.id} to data provider, rsync returned:\n#{text}" unless text.blank?
     unless self.provider_file_exists?(userfile).to_s =~ /file|dir/
-      cb_error "Error syncing userfile to data provider: no destination file found after rsync?\n" +
+      cb_error "Error syncing userfile ##{userfile.id} to data provider: no destination file found after rsync?\n" +
                "Make sure you are running rsync 3.0.6 or greater!\n"
     end
     true
@@ -160,7 +168,7 @@ class SshDataProvider < DataProvider
       begin
         sftp.rename!(oldpath,newpath)
         return true
-      rescue => ex
+      rescue
         return false
       end
     end
@@ -180,7 +188,7 @@ class SshDataProvider < DataProvider
   end
 
   # Allows us to browse a remote directory that changes based on the user.
-  def browse_remote_dir(user=nil) #:nodoc:
+  def browse_remote_dir(user=nil, browse_path=nil) #:nodoc:
     self.remote_dir
   end
 
@@ -202,6 +210,7 @@ class SshDataProvider < DataProvider
       if userfile.is_a? FileCollection
         if directory == :all
           entries = sftp.dir.glob(provider_full_path(userfile).to_s, "**/*")
+          #entries = sftp.dir.glob(provider_full_path(userfile).to_s, "**/*", File::FNM_DOTMATCH)
         else
           directory = "." if directory == :top
           base_dir = "/" + directory + "/"
@@ -297,7 +306,67 @@ class SshDataProvider < DataProvider
     super(issue)
   end
 
+  # Checks connection and other common problems.
+  # Raises exception DataProviderTestConnectionError if connection is down or
+  # common config issues detected. Returns true if everything is OK.
+  def check_connection!
+    err_message = self.find_connection_issues
+    raise DataProviderTestConnectionError.new(err_message) if err_message.present?
+    true
+  end
+
   protected
+
+  # Verifies the configuration and returns a string with a descriptive
+  # error message if something is wrong.
+  def find_connection_issues
+    master  = self.master # This is a handler for the connection, not persistent.
+    tmpfile = "/tmp/dp_check.#{Process.pid}.#{rand(1000000)}" # prefix for .out and .err capture files
+
+    # Check #1: the SSH connection can be established
+    if ! master.is_alive?
+      return "Cannot establish the SSH connection. Check the configuration: username, hostname, port are valid, and SSH key is installed."
+    end
+
+    # Check #2: we can run "true" on the remote site and get no output
+    status = master.remote_shell_command_reader("true",
+                                                :stdin  => "/dev/null",
+                                                :stdout => "#{tmpfile}.out",
+                                                :stderr => "#{tmpfile}.err"
+    )
+    stdout = File.read("#{tmpfile}.out") rescue "Error capturing stdout"
+    stderr = File.read("#{tmpfile}.err") rescue "Error capturing stderr"
+    if stdout.size != 0
+      stdout.strip! if stdout.present? # just to make it pretty while still reporting whitespace-only strings
+      return "Remote shell is not clean: got some bytes on stdout: '#{stdout}'"
+    end
+    if stderr.size != 0
+      stderr.strip! if stdout.present?
+      return "Remote shell is not clean: got some bytes on stderr: '#{stderr}'"
+    end
+    if !status
+      return "Got non-zero return code when trying to run 'true' on remote side."
+    end
+
+    # Check #3: the remote directory exists
+    master.remote_shell_command_reader "test -d #{self.remote_dir.bash_escape} && echo DIR-OK", :stdout => "#{tmpfile}.out"
+    out = File.read("#{tmpfile}.out")
+    if out != "DIR-OK\n"
+      return "The remote directory doesn't seem to exist."
+    end
+
+    # Check #4: the remote directory is readable
+    master.remote_shell_command_reader "test -r #{self.remote_dir.bash_escape} && test -x #{self.remote_dir.bash_escape} && echo DIR-READ", :stdout => "#{tmpfile}.out"
+    out = File.read("#{tmpfile}.out")
+    if out != "DIR-READ\n"
+      return "The remote directory doesn't seem to be readable"
+    end
+
+    return nil # No error messages means all is OK
+  ensure
+    File.unlink("#{tmpfile}.out") rescue nil
+    File.unlink("#{tmpfile}.err") rescue nil
+  end
 
   # Returns a list of all files in remote directory +dirname+, with all their
   # associated metadata; size, permissions, access times, owner, group, etc.

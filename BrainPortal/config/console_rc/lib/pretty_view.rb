@@ -48,7 +48,8 @@ end
 
 # Make sure the classes are loaded
 [ Userfile, CbrainTask, User, Group, DataProvider, RemoteResource,
-  RemoteResourceInfo, Site, Tool, ToolConfig, Bourreau, DiskQuota, DataUsage ]
+  RemoteResourceInfo, Site, Tool, ToolConfig, Bourreau, DiskQuota, DataUsage,
+  BackgroundActivity ]
 # Note that it's important to load PortalTask and/or ClusterTask too, because of its own pre-loading of subclasses.
 PortalTask.nil? rescue true
 ClusterTask.nil? rescue true
@@ -400,12 +401,40 @@ DataUsage #%d
   end
 end
 
+class BackgroundActivity
+  def pretview
+    report = <<-VIEW
+%s #%d (%s)
+  Owner:    %d (%s)
+  Resource: %d (%s)
+  NumItems: %d
+  NumOK:    %d
+  NumBAD:   %d
+  Updated:  %s
+  StartAt:  %s
+  Repeat:   %s
+    VIEW
+    sprintf report,
+      self.class.to_s.demodulize, self.id, self.status,
+      self.user_id, self.user.login,
+      self.remote_resource_id, self.remote_resource.name,
+      self.items.size,
+      self.num_successes, self.num_failures,
+      ConsoleCtx.send(:pretty_past_date,updated_at),
+      self.start_at.presence || '(None)',
+      self.repeat
+  end
+end
 
 
 (CbrainConsoleFeatures ||= []) << <<FEATURES
 ========================================================
 Feature: Pretty View for some objects
 ========================================================
-  Activate with: pv obj [, obj , ...]
+  pv obj [, obj , ...]
+
+  If an object responds to 'pretview', show that view.
+  Currently implemented: User, CbrainTask, Group, and
+  about a dozen other common CBRAIN models.
 FEATURES
 

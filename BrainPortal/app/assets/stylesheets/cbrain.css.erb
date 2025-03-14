@@ -3,7 +3,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2023
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -560,6 +560,11 @@ h1.warning {
   white-space: normal;
 }
 
+.long_paragraphs {
+  max-width: 80em;
+  white-space: normal;
+}
+
 .field_explanation {
   font-size: 0.8em;
   line-height: 1.5em;
@@ -804,6 +809,10 @@ pre {
   line-height: 1.3em;
   border: 0.2em solid black;
   padding: 0.4em;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  text-align: left;
+  table-layout: fixed;
 }
 
 .script_preview {
@@ -1101,8 +1110,16 @@ pre {
   color: #05A3D6;
 }
 
+.selected a.active_bac {
+  color: red;
+}
+
 .unselected a {
   color: white;
+}
+
+.unselected a.active_bac {
+  color: yellow;
 }
 
 #active_project_div {
@@ -1138,18 +1155,16 @@ pre {
   float: left;
   text-align: center;
   text-decoration: none;
-  color: white;
   padding: 0.4em;
   margin: 2em ;
   width: 18em;
   height: 9em;
-  border: 0.4em gray solid;
+  border: 0.5em black solid;
   border-radius: 1em;
   cursor: pointer;
 }
 
-.project_button h4{
-  color: white;
+.project_button h4 {
   font-weight: bold;
   border-bottom: none;
   margin-bottom: 0;
@@ -1163,11 +1178,22 @@ pre {
 
 .project_button_bottom_link {
   font-size: 10px;
-  color: white;
   font-weight: bold;
   text-decoration: none;
   position: absolute;
   bottom: 1px;
+}
+
+.project_user_count {
+  color: #660000;
+}
+
+.project_files_count {
+  color: #006600;
+}
+
+.project_tasks_count {
+  color: #000066;
 }
 
 .project_button_description {
@@ -1180,48 +1206,30 @@ pre {
 }
 
 .project_edit_button {
-  left: 5px;
+  left: 1em;
 }
 
 .project_delete_button {
-  right: 5px;
+  right: 1em;
 }
 
-.system_project_point     { color:      #d41c1c; }
-.system_project           { background: #d41c1c; }
-.system_project:active    { background: #d41c1c; }
+.everyone_project         { background: #bbbbbb; }
+.everyone_project:active  { background: #bbbbbb; }
 
-.everyone_project_point   { color:      #af0b0b; }
-.everyone_project         { background: #af0b0b; }
-.everyone_project:active  { background: #af0b0b; }
+.site_project             { background: #dbf7cc; }
+.site_project:active      { background: #dbf7cc; }
 
-.site_project_point       { color:      #8c0953; }
-.site_project             { background: #8c0953; }
-.site_project:active      { background: #8c0953; }
+.user_project             { background: #bbbbbb; }
+.user_project:active      { background: #bbbbbb; }
 
-.user_project_point       { color:      #500d75; }
-.user_project             { background: #500d75; }
-.user_project:active      { background: #500d75; }
+.shared_project           { background: #A5D1DF; }
+.shared_project:active    { background: #A5D1DF; }
 
-.shared_project_point     { color:      #00bf09; }
-.shared_project           { background: #00bf09; }
-.shared_project:active    { background: #00bf09; }
+.public_project           { background: #fdcece; }
+.public_project:active    { background: #fdcece; }
 
-.public_project_point     { color:      #9e5400; }
-.public_project           { background: #9e5400; }
-.public_project:active    { background: #9e5400; }
-
-.personal_project_point   { color:      #008686; }
-.personal_project         { background: #008686; }
-.personal_project:active  { background: #008686; }
-
-.invisible_project_point  { color:      #2b97c1; }
-.invisible_project        { background: #2b97c1; }
-.invisible_project:active { background: #2b97c1; }
-
-.empty_project_point      { color:      #d7ca0a; }
-.empty_project            { background: #d7ca0a; }
-.empty_project:active     { background: #d7ca0a; }
+.private_project          { background: #eeeeee; }
+.private_project:active   { background: #eeeeee; }
 
 .giant {
   margin-top: 0.3em;
@@ -1801,6 +1809,7 @@ th.center_align_heading {
 }
 
 .tsk-sw-hdr,
+.tsk-sw-sub-hdr,
 .tsk-sw-name,
 .tsk-sw-val {
   background: inherit;
@@ -1816,6 +1825,14 @@ th.center_align_heading {
   text-align: left;
 }
 
+.tsk-sw-sub-hdr {
+  font-family: sans-serif;
+  font-size: 0.9em;
+  font-weight: bold;
+  text-align: left;
+  text-decoration: underline;
+}
+
 .tsk-sw-name {
   padding-right: 40px;
 }
@@ -1823,6 +1840,11 @@ th.center_align_heading {
 .tsk-sw-param > tr > .tsk-sw-hdr {
   padding-top: 5px;
 }
+
+.tsk-sw-param > tr > .tsk-sw-sub-hdr {
+  padding-top: 5px;
+}
+
 
 .tsk-sw-param > tr > .tsk-sw-val {
   font-family: monospace;
@@ -2302,6 +2324,123 @@ img {
 }
 
 /* % ######################################################### */
+/* % Background Activity Index */
+/* % ######################################################### */
+
+/* reset progress bar defaults */
+#bac_form progress {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* progress bar styles */
+.background_activity_progress {
+  height: 1.3em;
+  width: 100%;
+  min-width: 20em;
+  background-color: #dbdbdb;
+  border: 0.3em solid black;
+  border-radius: 1em;
+}
+
+/* chrome only */
+.background_activity_progress::-webkit-progress-bar {
+  background-color: #dbdbdb;
+  border-radius: 1em;
+}
+
+/* chrome only */
+.background_activity_progress::-webkit-progress-value {
+  border-radius: 1em;
+}
+
+/* COLORS FOR STATIC (FINAL) states */
+
+.bac_all_ok::-moz-progress-bar {
+  background-color: #0d0;
+}
+
+.bac_all_ok::-webkit-progress-value {
+  background-color: #0d0;
+}
+
+.bac_mixed::-moz-progress-bar {
+  background-color: #dd0;
+}
+
+.bac_mixed::-webkit-progress-value {
+  background-color: #dd0;
+}
+
+.bac_all_fail::-moz-progress-bar {
+  background-color: #d00;
+}
+
+.bac_all_fail::-webkit-progress-value {
+  background-color: #d00;
+}
+
+/* ANIMATED COLORS FOR IN_PROGRESS */
+
+@keyframes progress-green-glowing {
+    0% { background-color: #0d0; }
+   25% { background-color: #090; }
+   50% { background-color: #050; }
+   75% { background-color: #090; }
+  100% { background-color: #0d0; }
+}
+
+@keyframes progress-yellow-glowing {
+    0% { background-color: #dd0; }
+   25% { background-color: #990; }
+   50% { background-color: #550; }
+   75% { background-color: #990; }
+  100% { background-color: #dd0; }
+}
+
+@keyframes progress-red-glowing {
+    0% { background-color: #d00; }
+   25% { background-color: #900; }
+   50% { background-color: #500; }
+   75% { background-color: #900; }
+  100% { background-color: #d00; }
+}
+
+@keyframes progress-grey-glowing {
+    0% { border-color: #eee; }
+   25% { border-color: #999; }
+   50% { border-color: #444; }
+   75% { border-color: #999; }
+  100% { border-color: #eee; }
+}
+
+.bac_InProgress[value] {
+  animation: progress-grey-glowing 3503ms infinite;
+}
+
+.bac_InProgress.bac_all_ok::-moz-progress-bar {
+  animation: progress-green-glowing 3503ms infinite;
+}
+.bac_InProgress.bac_all_ok::-webkit-progress-value {
+  animation: progress-green-glowing 3503ms infinite;
+}
+
+.bac_InProgress.bac_mixed::-moz-progress-bar {
+  animation: progress-yellow-glowing 3503ms infinite;
+}
+.bac_InProgress.bac_mixed::-webkit-progress-value {
+  animation: progress-yellow-glowing 3503ms infinite;
+}
+
+.bac_InProgress.bac_all_fail::-moz-progress-bar {
+  animation: progress-red-glowing 3503ms infinite;
+}
+.bac_InProgress.bac_all_fail::-webkit-progress-value {
+  animation: progress-red-glowing 3503ms infinite;
+}
+
+/* % ######################################################### */
 /* % Message Index */
 /* % ######################################################### */
 
@@ -2460,6 +2599,9 @@ img {
   color: black;
   padding: 5px;
   border: 1px solid black;
+  max-width: 42em;
+  word-wrap: break-word;
+  white-space: normal;
 }
 
 .white_bg {

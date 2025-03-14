@@ -1,0 +1,1 @@
+../../BrainPortal/lib/boutiques_input_copier.rb

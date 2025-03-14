@@ -27,7 +27,7 @@ module RequestHelpers
 
   def self.included(includer) #:nodoc:
     includer.class_eval do
-      helper_method :cbrain_request_remote_ip
+      helper_method :cbrain_request_remote_ip, :ban_ip
     end
   end
 
@@ -48,6 +48,22 @@ module RequestHelpers
     env_ip      = reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
     @_remote_ip = Regexp.last_match[1] if ((env_ip || "") =~ /(\d+\.\d+\.\d+\.\d+)/) # sometimes we get several IPs with commas
     @_remote_ip
+  end
+
+  # A controller method can instantaneously add the
+  # current client to the list of banned IP addresses;
+  # this method also sets the return code to 401, as
+  # will all future requests from that client. See
+  # also the ApplicationController method +check_for_banned_ip+
+  def ban_ip(message)
+    req_ip = cbrain_request_remote_ip
+    Rails.logger.info("Banning IP #{req_ip}: #{message}")
+    if req_ip != '127.0.0.1' # need to check for IPv6 too eventually
+      BannedIps.ban_ip(req_ip)
+      system("#{Rails.root}/vendor/cbrain/bin/ban_ip", req_ip.to_s)
+    end
+    head :unauthorized
+    false
   end
 
 end

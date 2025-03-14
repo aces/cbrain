@@ -3,7 +3,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2022
+# Copyright (C) 2008-2024
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -22,7 +22,7 @@
 #
 -%>
 
-<% title 'Mandatory Globus Link', "" %>
+<% title 'Mandatory OpenID provider Link', "" %>
 
 <div class="nh_content">
 
@@ -30,8 +30,8 @@
 
     <div class="card-item heading">
       <div class="card-heading">
-        <p class="text-lg">Mandatory Globus Link</p>
-        <p class="text-md">Before continuing, your account must be linked to a Globus identity provider.</p>
+        <p class="text-lg">Mandatory OpenID provider Link</p>
+        <p class="text-md">Before continuing, your account must be linked to a OpenID identity provider.</p>
       </div>
     </div>
 
@@ -41,8 +41,8 @@
           <p class="card-label">Explanations</p>
           <p class="card-text">
             When you click on the button below, your browser will be redirected
-            to a Globus login page; from there you can choose one of the
-            globus-supported identity providers. This will in turn redirect you
+            to a OpenID login page; from there you can choose one of the
+            OpenID-supported identity providers. This will in turn redirect you
             to the provider's own login page. Once you've successfully authenticated
             there, your browser will be redirected back here to finalize
             the link with your NeuroHub account.
@@ -54,15 +54,20 @@
     <div class="card-row">
       <div class="card-item">
         <div>
+
           <p class="card-label">The identity providers that are allowed for your NeuroHub account are:</p>
-          <% @allowed_provs.each do |provname| %>
-            <% provname = '(Any Globus identity provider)' if provname == '*' %>
+          <% @allowed_prov_names.each do |provname| %>
+            <% provname = '(Any OpenID identity provider)' if provname == '*' %>
             <p class="card-text">&bull; <%= provname %></p>
           <% end %>
-          <p class="btn-solid globus bg-warning-bg">
-            <%= link_to 'Link your NeuroHub account to Globus', @globus_uri, :class => '' %>
-          </p>
-        </div>
+
+          <% @oidc_configs.each do |oidc| %>
+            <p class="card-text">
+              <%= link_to "Login with #{oidc.name}", @oidc_uris[oidc.name], :class => 'btn-solid globus bg-warning-bg' %></br>
+            </p>
+          <% end %>
+
+          </div>
       </div>
     </div>
 
@@ -70,12 +75,17 @@
       <div class="card-item">
         <div>
           <p class="card-text">
-            If you already are logged in on Globus using a different identity provider, your
+            If you already are logged with an OpenID provider using a different identity provider, your
             might want to log out first. This can be accomplished by the button below:
           </p>
-          <p class="btn-solid globus bg-warning-bg">
-            <%= link_to 'Logout from all Globus identities', @globus_logout, :class => '' %>
-          </p>
+
+          <% @oidc_configs.each do |oidc| %>
+            <p class="btn-solid globus bg-warning-bg">
+              <%= link_to "Logout from #{oidc.name}", oidc.logout_uri, :class => '' %>
+            </p>
+            </br>
+          <% end %>
+
         </div>
       </div>
     </div>

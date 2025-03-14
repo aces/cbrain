@@ -28,6 +28,8 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
   include RestartableTask
   include RecoverableTask
 
+  SYNC_LIMIT_PER_DP=50.gigabytes # max allowed syncing size per distinct DP
+
   def setup #:nodoc:
     params       = self.params
     ids          = params[:interface_userfile_ids]
@@ -49,7 +51,8 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
     dps = DataProvider.where(:id => dp_counts.keys).to_a
     dps.each do |dp|
       next if dp.is_fast_syncing?
-      self.addlog("Error: DataProvider '#{dp.name}' is not a local storage.")
+      next if dp_sizes[dp.id] < SYNC_LIMIT_PER_DP
+      self.addlog("Error: DataProvider '#{dp.name}' is not a local storage and more than the limit #{SYNC_LIMIT_PER_DP} bytes would be cached.")
       ok = false
     end
     return false if ! ok
@@ -97,6 +100,7 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
     # Error and warning helpers
     error_examples = {}
     error_counts   = {}
+    total_extracted = 0
 
     log_it = ->(message,pat,userfile,extpath) {
       extpath &&= extpath.sub((userfile.cache_full_path.parent.to_s+"/"),"")
@@ -180,11 +184,14 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
             return false
           end
 
+          total_extracted += 1
+
         end # each globbed file
       end # each pattern
     end # each FileCollection
 
     self.addlog "Finished extracting from #{file_cols.count} inputs"
+    self.addlog "Number of files extracted: #{total_extracted}"
 
     # Log warnings and errors
     if error_examples.present?
@@ -194,6 +201,12 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
       count   = error_counts[message]
       example = error_examples[message]
       self.addlog "#{count}x : #{message}; Example: #{example}"
+    end
+
+    # Check we have at least one thing to save
+    if total_extracted == 0
+      self.addlog "No files were extracted. This is probably an error."
+      return false # failed on cluster
     end
 
     # Save final output

@@ -37,7 +37,7 @@
 
     <%= link_to_if(current_user.present?, image_tag(logo, :id => "header_logo").html_safe , start_page_path) %>
 
-    <% if current_user && (params[:controller] == "userfiles" || params[:controller] == "tasks") %>
+    <% if current_user && page_is?("userfiles#","tasks#") %>
       <span>-</span>
       <%= hover_dropdown(link_to(current_project.try(:name) || "All", current_project ? group_path(current_project) : groups_path), :dropdown_class => "project_select_dropdown") do %>
           <div class="title">Quick Project Switcher</div>
@@ -60,7 +60,7 @@
 
   <%= image_tag "ajax-loader.gif", :style => "display:none", :id => "loading_image" %>
 
-  <% if current_user && ! (params[:controller] == 'portal' && params[:action] == 'search') %>
+  <% if current_user && page_is_not?("portal#search") %>
     <div id="cbsearch">
       <%= form_tag search_path, :method => :get do %>
         <%= text_field_tag :search, nil, :placeholder => 'Search for anything' %>
@@ -71,12 +71,24 @@
   <% if current_user %>
     <div id="main-menu" class="main_menu_left">
        <ul>
-         <% if !current_user.has_role?(:normal_user) || (cbrain_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
+         <% if cbrain_session[:active_group_id].blank? && page_is_not?("groups#index","portal#show_license") %>
+           <li class="unselected">
+             <%= link_to '(Click here to select a Project and access Files and Tasks)', groups_path, :class => 'active_bac' %>
+           </li>
+         <% end %>
+         <% if !current_user.has_role?(:normal_user) || (cbrain_session[:active_group_id] && page_is_not?("groups#index")) %>
            <li <%= set_selected(params[:controller], :userfiles) %>>
              <%= link_to 'Files', userfiles_path %>
            </li>
            <li <%= set_selected(params[:controller], :tasks) %>>
-             <%= link_to 'Tasks', :controller => :tasks, :action => :index %>
+             <%=
+               label = 'Tasks'; label_class = ""
+               if @count_tasks_in_progress.present? && @count_tasks_in_progress > 0
+                 label += " (#{@count_tasks_in_progress})"
+                 label_class = "active_bac"
+               end
+               link_to label, tasks_path, :class => label_class
+             %>
            </li>
          <% end %>
          <% unless current_user.has_role?(:normal_user) %>
@@ -113,7 +125,28 @@
              <%= link_to 'Exceptions', exception_logs_path %>
            </li>
            <li <%= set_selected(params[:controller], :signups) %>>
-             <%= link_to 'Signups', signups_path %>
+             <%=
+               label = 'Signups'; label_class = ""
+               signup_waiting = Signup.where(:hidden => false, :approved_at => nil, :confirmed => true).count
+               if signup_waiting > 0
+                 label += " (#{signup_waiting})"
+                 label_class = "active_bac"
+               end
+               link_to label, signups_path, :class => label_class
+             %>
+           </li>
+         <% end %>
+
+         <% if !current_user.has_role?(:normal_user) || (cbrain_session[:active_group_id] && page_is_not?("groups#index")) %>
+           <li <%= set_selected(params[:controller], :background_activities) %>>
+             <%=
+               label = 'Ongoing'; label_class = ""
+               if @count_background_activities_in_progress.present? && @count_background_activities_in_progress > 0
+                 label += " (#{@count_background_activities_in_progress})"
+                 label_class = "active_bac"
+               end
+               link_to label, background_activities_path, :class => label_class
+             %>
            </li>
          <% end %>
 

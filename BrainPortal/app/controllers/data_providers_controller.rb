@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2023
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -28,11 +28,12 @@ class DataProvidersController < ApplicationController
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   api_available :only => [ :index, :show, :is_alive,
-                           :browse, :register, :unregister, :delete ]
+                           :browse, :register, :unregister, :delete,
+                           :create_personal, :check_personal, :destroy]
 
   before_action :login_required
   before_action :manager_role_required, :only => [:new, :create]
-  before_action :admin_role_required,   :only => [:report, :repair]
+  before_action :admin_role_required,   :only => [:new, :create, :report, :repair]
 
   def index #:nodoc:
     @scope = scope_from_session
@@ -61,7 +62,6 @@ class DataProvidersController < ApplicationController
   def show  #:nodoc:
     data_provider_id = params[:id]
     @provider        = DataProvider.find(data_provider_id)
-
     cb_notice "Provider not accessible by current user." unless @provider.can_be_accessed_by?(current_user)
 
     respond_to do |format|
@@ -86,8 +86,8 @@ class DataProvidersController < ApplicationController
     @typelist = get_type_list
   end
 
-  def create #:nodoc:
-    @provider = DataProvider.sti_new(data_provider_params)
+  def create  #:nodoc:
+    @provider            = DataProvider.sti_new(data_provider_params)
     @provider.user_id  ||= current_user.id # disabled field in form DOES NOT send value!
     @provider.group_id ||= current_assignable_group.id
 
@@ -97,8 +97,8 @@ class DataProvidersController < ApplicationController
       flash[:notice] = "Provider successfully created."
       respond_to do |format|
         format.html { redirect_to :action => :index, :format => :html}
-        format.xml  { render :xml   => @provider }
-        format.json { render :json  => @provider }
+        format.xml  { render :xml   => @provider.for_api }
+        format.json { render :json  => @provider.for_api }
       end
     else
       @typelist = get_type_list
@@ -107,6 +107,53 @@ class DataProvidersController < ApplicationController
         format.xml  { render :xml  => @provider.errors, :status => :unprocessable_entity }
         format.json { render :json => @provider.errors, :status => :unprocessable_entity }
       end
+    end
+  end
+
+  def new_personal #:nodoc:
+    provider_group_id = current_assignable_group.id
+    @provider         = UserkeyFlatDirSshDataProvider.new( :user_id   => current_user.id,
+                                                           :group_id  => provider_group_id,
+                                                           :online    => true,
+                                                           :read_only => false,
+                                                         )
+    @groups           = current_user.assignable_groups
+  end
+
+  # Can be create by normal user,
+  # only UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider
+  def create_personal
+    @provider = DataProvider.new(base_provider_params).class_update
+    @provider.update_attributes(userkey_provider_params) if @provider.is_a?(UserkeyFlatDirSshDataProvider)
+    @provider.update_attributes(s3_provider_params)      if @provider.is_a?(S3FlatDataProvider)
+
+    authorized_type     = [UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider]
+    @provider.errors.add(:type, "is not allowed") unless authorized_type.include?(@provider.type)
+
+    # Fix some attributes
+    @provider.user_id  = current_user.id
+    @provider.group_id = current_user.own_group.id unless
+      current_user.assignable_group_ids.include?(@provider.group_id)
+    @provider.online   = true
+
+    if ! @provider.save
+      @groups = current_user.assignable_groups
+      respond_to do |format|
+        format.html { render :action => :new_personal}
+        format.json { render :json   => @provider.errors,  :status => :unprocessable_entity }
+      end
+      return
+    end
+
+    @provider.addlog_context(self, "Created by #{current_user.login}")
+    @provider.meta[:browse_gid] = current_user.own_group.id
+    flash[:notice] = "Provider successfully created. Please click the Test Configuration button."\
+      " This will run tests on the current storage configuration. Note that if these tests fail,"\
+      " the storage will be marked 'offline'."
+
+    respond_to do |format|
+      format.html { redirect_to :action => :show, :id => @provider.id}
+      format.json { render      :json   => @provider.for_api }
     end
   end
 
@@ -125,35 +172,29 @@ class DataProvidersController < ApplicationController
        return
     end
 
-    new_data_provider_attr = data_provider_params
+    # hacking prevention
+    # this guaranties that users do not change group to something
+    group_id = params[:group_id]
+    current_user.assignable_group_ids.find(group_id) if ! current_user.has_role?(:admin_user)
+
+    new_data_provider_attr = data_provider_params(@provider)
     new_data_provider_attr.delete :type # Type cannot be updated once it is set.
 
     # Fields that stay the same if the form provides a blank entry:
     new_data_provider_attr.delete :cloud_storage_client_token if new_data_provider_attr[:cloud_storage_client_token].blank?
 
-    if @provider.update_attributes_with_logging(new_data_provider_attr, current_user,
-         %w(
-           remote_user remote_host remote_port remote_dir
-           not_syncable cloud_storage_client_identifier cloud_storage_client_token
-           cloud_storage_client_bucket_name cloud_storage_client_path_start
-           cloud_storage_endpoint cloud_storage_region
-           datalad_repository_url datalad_relative_path
-           containerized_path
-         )
-      )
+    if @provider.update_attributes_with_logging(new_data_provider_attr, current_user, @provider.attributes.keys)
       meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/\Adp_no_copy_\d+\z|\Arr_no_sync_\d+\z/)
       add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid] + meta_flags_for_restrictions)
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
         format.html { redirect_to :action => :show }
-        format.xml  { render :xml   => @provider }
-        format.json { render :json  => @provider }
+        format.json { render :json  =>  @provider }
       end
     else
       @provider.reload
       respond_to do |format|
         format.html { render :action => 'show' }
-        format.xml  { render :xml    => @provider.errors, :status  => :unprocessable_entity }
         format.json { render :json   => @provider.errors, :status  => :unprocessable_entity }
       end
     end
@@ -207,8 +248,8 @@ class DataProvidersController < ApplicationController
     user_ids        = params[:user_ids] || nil
 
     available_users = current_user.available_users
-    user_ids        = user_ids ? available_users.where(:id => user_ids).raw_first_column(:id) :
-                                 available_users.raw_first_column(:id)
+    user_ids        = user_ids ? available_users.where(:id => user_ids).ids :
+                                 available_users.ids
 
     raise "Bad params"              if dataprovider_id.blank? || user_ids.blank?
     dataprovider    = DataProvider.find(dataprovider_id.to_i)
@@ -314,7 +355,7 @@ class DataProvidersController < ApplicationController
       # [ base, size, type, mtime ]
       @fileinfolist = BrowseProviderFileCaching.get_recent_provider_list_all(@provider, @as_user, @browse_path, params[:refresh])
     rescue => e
-      flash[:error] = 'Cannot get list of files. Maybe the remote directory doesn\'t exist or is locked?' #emacs fails to parse this properly so I switched to single quotes.
+      flash[:error] = "Cannot get list of files. Maybe the remote directory does not exist or is locked?"
       Message.send_internal_error_message(User.find_by_login('admin'), "Browse DP exception", e, params) rescue nil
       respond_to do |format|
         format.html { redirect_to :action => :index }
@@ -351,7 +392,7 @@ class DataProvidersController < ApplicationController
     @fileinfolist = @scope.apply(@fileinfolist)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
-    @files = @scope.pagination.apply(@fileinfolist)
+    @files = @scope.pagination.apply(@fileinfolist, api_request?)
 
     scope_to_session(@scope)
 
@@ -402,7 +443,7 @@ class DataProvidersController < ApplicationController
     # Is there an automatic copy/move operation to do afterwards?
     post_action = :copy if params[:auto_do] == "COPY"
     post_action = :move if params[:auto_do] == "MOVE"
-    target_dp   = DataProvider.find_accessible_by_user(params[:other_data_provider_id], current_user) rescue nil
+    target_dp   = post_action && DataProvider.find_accessible_by_user(params[:other_data_provider_id], current_user) rescue nil
     if post_action && ! target_dp
       flash[:error] = "Missing destination data provider for copy or move."
       respond_to do |format|
@@ -420,10 +461,6 @@ class DataProvidersController < ApplicationController
       .map { |v| [$2, $1] if v.match(/\A(\w+)-(\S+)\z/) }
       .compact
       .to_h
-
-    # Known userfile types, used to validate the values extracted above
-    valid_types = Userfile.descendants
-      .map(&:name)
 
     # The new file(s)'s default project is the currently active project, if
     # available.
@@ -443,127 +480,34 @@ class DataProvidersController < ApplicationController
     flash[:notice] += "Important note! Since you were browsing as user '#{@as_user.login}', the files will be registered as belonging to that user instead of you!\n" if
       @as_user != current_user
 
-    # Register the given userfiles in background.
-    userfiles = userfiles_from_basenames(@provider, @as_user, params[:basenames], @browse_path)
-    userfiles_count = userfiles.count # Avoids a cute race condition
+    # Compare given basenames with existing files
+    base2uf = userfiles_from_basenames(@provider, @as_user, params[:basenames], @browse_path)
 
-    registered, already_registered = [], []
-    succeeded, failed = [], {}
+    # Prepare the BackgroundActivity list of items
+    items = base2uf
+      .reject { |basename,userfile| userfile.present? } # skip already registered
+      .map    { |basename,_       | filetypes[basename] + '-' + basename } # "TextFile-abc.txt"
 
-    CBRAIN.spawn_with_active_records_if(
-      [:html, :js].include?(request.format.to_sym),
-      current_user,
-      "Register files DP=#{@provider.id}"
-    ) do
-      userfiles.keys.shuffle.each_with_index_and_size do |basename,idx,size|
-        Process.setproctitle "Register DP=#{@provider.id} NAME=#{basename} #{idx+1}/#{size}"
-        begin
-          # Is the file already registered?
-          if userfiles[basename].present?
-            already_registered << userfiles[basename]
-            (failed["Already registered"] ||= []) << basename
-            next
-          end
-
-          # Determine the filetype of the new file
-          subtype = filetypes[basename] || "SingleFile"
-          unless valid_types.include?(subtype)
-            (failed["Unknown type #{subtype}"] ||= []) << basename
-            next
-          end
-
-          # Create the new userfile
-          userfile = subtype.constantize.new(
-            :name             => basename,
-            :user_id          => @as_user.id,
-            :group_id         => group_id,
-            :data_provider_id => @provider.id,
-            :browse_path      => @browse_path, # nil => top, or nil => N/A, depends on DP
-          )
-
-          # And save it
-          if userfile.save
-            userfile.addlog_context(self, "Registered on DataProvider '#{@provider.name}' as '#{userfile.browse_name}' by #{current_user.login}.")
-            registered << (userfiles[basename] = userfile)
-            succeeded << basename
-          else
-            (failed["Unspecified error"] ||= []) << "#{userfile.name} : #{userfile.errors.full_messages.join(", ")}"
-          end
-
-        rescue => e
-          (failed[e.message] ||= []) << basename
-        end
-      end
-
-      # If files actually got registered, clear the browsing cache
-      BrowseProviderFileCaching.clear_cache(@provider, @as_user, @browse_path) if
-        succeeded.present? && [:html, :js].include?(request.format.to_sym)
-
-      # No need to move or copy? Just set the file sizes and exit.
-      unless post_action
-        registered.each_with_index_and_size do |userfile,idx,size|
-          Process.setproctitle "SetSize ID=#{userfile.id} #{idx+1}/#{size}      "
-          userfile.set_size rescue true
-        end
-        generic_notice_messages('register', succeeded, failed)
-        next
-      end
-
-      # Notify user of registration successes and failures.
-      generic_notice_messages('register', succeeded, failed,
-        "Files will now be #{post_action == :move ? 'moved' : 'copied'} in background.")
-
-      # Prepare to copy/move the files to the new DP
-      succeeded, failed = [], {}
-
-      # Will some of the file names collide?
-      collisions = Userfile
-        .where(
-          :name             => registered.map(&:name),
-          :user_id          => @as_user.id,
-          :data_provider_id => target_dp.id
-        )
-        .pluck('userfiles.name')
-
-      userfiles = registered.reject { |r| collisions.include?(r.name) }
-      if collisions.present?
-        failed["Filename collision"] ||= []
-        failed["Filename collision"]  += collisions
-      end
-
-      # Copy/move each file
-      userfiles.shuffle.each_with_index do |userfile, ix|
-        Process.setproctitle "#{post_action.to_s.humanize} registered files ID=#{userfile.id} #{ix + 1}/#{userfiles.size}"
-
-        begin
-          case post_action
-          when :move
-            userfile.provider_move_to_otherprovider(target_dp)
-
-          when :copy
-            new = userfile.provider_copy_to_otherprovider(target_dp)
-            userfile.delete rescue true # Not destroy(), as the contents must be kept.
-            userfile.destroy_log rescue true
-            userfile = new
-          end
-
-          userfile.set_size!
-          succeeded << userfile
-        rescue => e
-          (failed[e.message] ||= []) << userfile
-        end
-      end
-
-      mangled_action = (post_action == :move ? 'mov' : 'copy') # most work with 'ing' appended
-      generic_notice_messages(mangled_action, succeeded, failed)
-    end
+    # Pick the type of registration operation; with or without MOVE or COPY
+    bac_klass = BackgroundActivity::RegisterFile
+    bac_klass = BackgroundActivity::RegisterAndMoveFile if post_action == :move
+    bac_klass = BackgroundActivity::RegisterAndCopyFile if post_action == :copy
+    bac = bac_klass.setup!( # all three classes have this helper
+      current_user.id, items.shuffle, RemoteResource.current_resource.id,
+      @provider.id, @browse_path, group_id, @as_user.id, target_dp&.id # for plain register, target_dp is ignored and is always nil
+    ) if items.size > 0
 
     # Generate a complete response matching the old API
-    flash[:notice] += "Registering #{userfiles_count} userfile(s) in background.\n"
-    api_response = generate_register_response.merge({
-      :newly_registered_userfiles      => registered.for_api,
+    flash[:notice] += "Registering #{items.size} userfile(s) in background.\n"
+    already_registered = base2uf
+      .select { |basename,userfile| userfile.present? }
+      .map    { |_       ,userfile| userfile          }
+    api_response = generate_register_response.merge(
+      :newly_registered_userfiles      => [], # we don't have that list anymore, it's done in background
       :previously_registered_userfiles => already_registered.for_api,
-    })
+      :background_activity_id          => bac&.id,
+      :background_activity_items_size  => items.size,
+    )
 
     respond_to do |format|
       format.html { redirect_to :action => :browse }
@@ -572,10 +516,10 @@ class DataProvidersController < ApplicationController
     end
   end
 
-  # Unregister (and optionally delete) a list of files (+basenames+) from a given
-  # CBRAIN data provider (parameter +id+). This action accepts 2 optional parameters;
-  # +as_user_id+ to unregister as a given user rather than as the current user, and
-  # +delete+, if files are to be deleted once unregistered.
+  # Unregister a list of files (+basenames+) from the given data provider.
+  # The content of the files will not be affected.
+  # This action accepts an optional parameter
+  # +as_user_id+ to unregister as a given user rather than as the current user.
   # Note that unregistration will happen in background for HTML & JS requests.
   def unregister
     # Extract key parameters & make sure the provider is browsable
@@ -592,58 +536,29 @@ class DataProvidersController < ApplicationController
       return
     end
 
-    flash[:notice] ||= ''
+    # Compare given basenames with existing files
+    base2uf = userfiles_from_basenames(@provider, @as_user, params[:basenames], @browse_path)
 
-    # Unregister the given userfiles in background.
-    userfiles = userfiles_from_basenames(@provider, @as_user, params[:basenames], @browse_path)
-    succeeded, failed = [], {}
-    erasing = params[:delete].present?
+    # Prepare the BackgroundActivity list of items
+    items = base2uf
+      .map { |basename,userfile| userfile.presence }
+      .compact
+      .select { |userfile| userfile.has_owner_access?(current_user) }
+      .map(&:id)
 
-    CBRAIN.spawn_with_active_records_if(
-      [:html, :js].include?(request.format.to_sym),
-      current_user,
-      "Unregister files DP=#{@provider.id}"
-    ) do
-      userfiles.reject { |b,u| u.blank? }.to_a.shuffle.each_with_index_and_size do |base_uf,idx,size|
-        basename, userfile = *base_uf  # pair of values
-        Process.setproctitle "Unregister DP=#{@provider.id} ID=#{userfile.id} #{idx+1}/#{size}"
-        begin
-          # Make sure the current user can unregister the file
-          unless userfile.has_owner_access?(current_user)
-            (failed["Insufficient permissions"] ||= []) << basename
-            next
-          end
-
-          # Userfile.delete will not delete the contents, but destroy will
-          if erasing
-            result = userfile.destroy
-          else
-            # Since the .delete operation doesn't trigger callbacks,
-            # we invoke the resource tracker method explicitely
-            userfile.send :track_resource_usage_destroy # private method
-            result = userfile.delete
-          end
-          userfile.destroy_all_meta_data rescue true
-          userfile.destroy_log           rescue true
-
-          (result ? succeeded : (failed["Unspecified error"] ||= [])) << basename
-        rescue => e
-          (failed[e.message] ||= []) << basename
-        end
-      end
-
-      # If files actually got erased, clear the browsing cache
-      BrowseProviderFileCaching.clear_cache(@provider, @as_user, @browse_path) if
-        erasing && succeeded.present? && [:html, :js].include?(request.format.to_sym)
-
-      generic_notice_messages('unregister', succeeded, failed)
-    end
+    # Create the BAC that will handle the unregistration of files
+    bac = BackgroundActivity::UnregisterFile.setup!(
+      current_user.id, items.shuffle, RemoteResource.current_resource.id,
+    ) if items.size > 0
 
     # Generate a complete response matching the old API
-    flash[:notice] += "Unregistering #{userfiles.size} userfile(s) in background.\n"
+    flash[:notice] = "Unregistering #{items.size} userfile(s) in background.\n"
 
-    api_response = generate_register_response
-    api_response[erasing ? :num_erased : :num_unregistered] = succeeded.size
+    api_response = generate_register_response.merge(
+      :num_unregistered                => items.size,
+      :background_activity_id          => bac&.id,
+      :background_activity_items_size  => items.size,
+    )
 
     respond_to do |format|
       format.html { redirect_to :action => :browse }
@@ -653,10 +568,10 @@ class DataProvidersController < ApplicationController
   end
 
   # Delete a list of files (+basenames+) from a given CBRAIN data provider
-  # (parameter +id+). This action differs from +unregister+ (with +delete+
-  # option) by not requiring the files to be registered in CBRAIN. As with
-  # +register+ and +unregister+, a +as_user_id+ parameter is supported and
-  # the deletion occurs in background.
+  # (parameter +id+). This action differs from +unregister+ by not requiring
+  # the files to be registered in CBRAIN. The content of the files will
+  # always be destroyed. As with +register+ and +unregister+,
+  # a +as_user_id+ parameter is supported and the deletion occurs in background.
   def delete
     # Extract key parameters & make sure the provider is browsable
     @provider    = DataProvider.find_accessible_by_user(params[:id], current_user)
@@ -672,64 +587,42 @@ class DataProvidersController < ApplicationController
       return
     end
 
-    flash[:notice] ||= ''
+    # Compare given basenames with existing files
+    base2uf = userfiles_from_basenames(@provider, @as_user, params[:basenames], @browse_path)
 
-    # Erase the given userfiles in background.
-    userfiles = userfiles_from_basenames(@provider, @as_user, params[:basenames], @browse_path)
-    succeeded, failed = [], {}
+    exist_files = base2uf
+      .map    { |basename,userfile| userfile.presence }
+      .compact
+      .select { |userfile| userfile.has_owner_access?(current_user) }
+      .map(&:id).uniq
 
-    CBRAIN.spawn_with_active_records_if(
-      [:html, :js].include?(request.format.to_sym),
-      current_user,
-      "Delete files DP=#{@provider.id}"
-    ) do
-      userfiles.to_a.shuffle.each_with_index_and_size do |base_uf,idx,size|
-        basename, userfile = *base_uf  # pair of values
-        label = userfile.present? ? "ID=#{userfile.id}" : "NAME=#{basename}"
-        Process.setproctitle "Delete DP=#{@provider.id} #{label} #{idx+1}/#{size}"
-        begin
-          # Is the userfile registered?
-          if userfile.present?
-            # Make sure the current user can delete the file
-            unless userfile.has_owner_access?(current_user)
-              (failed["Insufficient permissions"] ||= []) << basename
-              next
-            end
+    unreg_basenames = base2uf
+      .select { |basename,userfile| userfile.blank? }
+      .map    { |basename,_       | basename        }
+      .uniq
 
-            result = userfile.destroy
+    # Destroy files that are registered
+    bac_reg = BackgroundActivity::DestroyFile.setup!(
+      current_user.id, exist_files.shuffle, RemoteResource.current_resource.id
+    ) if exist_files.present?
 
-          # Otherwise, create a temporary userfile for provider_erase
-          else
-            # FileCollection's deletion handling should support both regular files and directories
-            temporary = FileCollection.new(
-              :name          => basename,
-              :data_provider => @provider,
-              :user_id       => @as_user.id,
-              :browse_path   => @browse_path,
-              :group_id      => current_user.own_group.id
-            ).fake_record!
-
-            result = @provider.provider_erase(temporary)
-          end
-
-          (result ? succeeded : (failed["Unspecified error"] ||= [])) << basename
-        rescue => e
-          (failed[e.message] ||= []) << basename
-        end
-      end
-
-      # If files actually got erased, clear the browsing cache
-      BrowseProviderFileCaching.clear_cache(@provider, @as_user, @browse_path) if
-        succeeded.present? && [:html, :js].include?(request.format.to_sym)
-
-      generic_notice_messages('delet', succeeded, failed)
-    end
+    # Destroy files that are unregistered
+    bac_unreg = BackgroundActivity::DestroyUnregisteredFile.setup!(
+      current_user.id, unreg_basenames.shuffle, RemoteResource.current_resource.id,
+      @provider.id, @browse_path
+    ) if unreg_basenames.present?
 
     # Generate a complete response matching the old API
-    flash[:notice] += "Deleting #{userfiles.count} userfile(s) in background.\n"
-    api_response = generate_register_response.merge({
-      :num_erased => succeeded.size
-    })
+    flash[:notice]  = ""
+    flash[:notice] += "Deleting #{exist_files.count} userfile(s) in background.\n"              if exist_files.present?
+    flash[:notice] += "Deleting #{unreg_basenames.count} unregistered file(s) in background.\n" if unreg_basenames.present?
+    flash[:error]   = "No files selected, or that can be deleted." if exist_files.empty? && unreg_basenames.empty?
+    api_response = generate_register_response.merge(
+      :num_erased       => exist_files.size,
+      :num_unregistered => unreg_basenames.size,
+      :background_activity_destroy_file_id  => bac_reg&.id,
+      :background_activity_destroy_unregistered_file_id => bac_unreg&.id,
+    )
 
     respond_to do |format|
       format.html { redirect_to :action => :browse }
@@ -819,9 +712,59 @@ class DataProvidersController < ApplicationController
     end
   end
 
+  # This action checks that the remote side of a Ssh DataProvider is
+  # accessible using SSH. Regretfully, does not guaranty that connection is possible.
+  # If check fails it raises an exception of class DataProviderTestConnectionError
+  def check_personal
+    id = params[:id]
+    @provider = DataProvider.find(id)
+    unless @provider.has_owner_access?(current_user)
+      flash[:error] = "You cannot check a provider that you do not own."
+      respond_to do |format|
+        format.html { redirect_to :action => :show }
+        format.xml  { head        :forbidden }
+        format.json { head        :forbidden }
+      end
+      return
+    end
+
+    unless @provider.is_a? SshDataProvider
+      flash[:error] = "Presently, detailed check is only available to ssh providers."
+      respond_to do |format|
+        format.html { redirect_to :action => :show }
+        format.xml  { head        :forbidden }
+        format.json { head        :forbidden }
+      end
+      return
+    end
+
+    # Do active checks of the connection. Will
+    # raise DataProviderTestConnectionError if anything is wrong.
+    @provider.check_connection!
+
+    # Ok, all is well.
+    @provider.update_column(:online, true)
+    flash[:notice] = "The configuration was tested and seems to be operational."
+
+    respond_to do |format|
+      format.html { redirect_to :action => :show }
+      format.json { render      :json   => 'ok'  }
+    end
+
+  rescue DataProviderTestConnectionError => ex
+    flash[:error]  = ex.message
+    flash[:error] += "\nThis storage is marked as 'offline' until this test pass."
+    @provider.update_column(:online, false)
+
+    respond_to do |format|
+      format.html { redirect_to :action => :show }
+      format.json { render      :json   => 'not ok' }
+    end
+  end
+
   private
 
-  def data_provider_params #:nodoc:
+  def data_provider_params(for_data_provider=nil) #:nodoc:
     if current_user.has_role?(:admin_user)
       params.require_as_params(:data_provider).permit(
         :name, :user_id, :group_id, :remote_user, :remote_host, :alternate_host,
@@ -836,17 +779,15 @@ class DataProvidersController < ApplicationController
         :license_agreements,
         :containerized_path
       )
-    else
-      # Normal users are not allowed to change
-      # some parameters that would allow them to access things
-      # they don't control.
+    elsif for_data_provider.is_a?(UserkeyFlatDirSshDataProvider)
       params.require_as_params(:data_provider).permit(
-        :name, :description, :group_id, :time_zone,
-        :alternate_host,
+        :name, :description, :group_id,
+        :remote_user, :remote_host, :remote_port, :remote_dir,
         :online, :read_only, :not_syncable,
-        :datalad_repository_url, :datalad_relative_path,
-        :license_agreements,
-        :containerized_path
+      )
+    else # place for future expansion; be careful to not introduce security bugs
+      params.require_as_params(:data_provider).permit(
+        :description,
       )
     end
   end
@@ -855,6 +796,8 @@ class DataProvidersController < ApplicationController
     data_provider_list = [ "FlatDirSshDataProvider" ]
     if check_role(:site_manager) || check_role(:admin_user)
       data_provider_list = DataProvider.descendants.map(&:name)
+      data_provider_list.delete(UserkeyFlatDirSshDataProvider.name) # this type is for regular users
+                                                                    # not for admins
     end
     grouped_options = data_provider_list.to_a.hashed_partitions { |name| name.constantize.pretty_category_name }
     grouped_options.delete(nil) # data providers that can not be on this list return a category name of nil, so we remove them
@@ -922,47 +865,6 @@ class DataProvidersController < ApplicationController
     Array(basenames).map { |name| [name, userfiles[name]] }.to_h
   end
 
-  # Send generic success/failure notice messages for +operation+,
-  # given the list of failures (+failed+) and successes (+succeeded+).
-  #
-  # Note that +operation+ is solely used to formulate the message, and 'ing'
-  # is tackled at the end. This method is also purely meant to be used for
-  # register/unregister/delete and assumes to be working with lists
-  # of Userfiles or file names.
-  def generic_notice_messages(operation, succeeded, failed, additional_ok_text = "") #:nodoc:
-    return unless succeeded.present? || failed.present?
-
-    if succeeded.present?
-      # *_message_sender only works on record-like objects
-      ok_message = "Finished #{operation}ing file(s)\n" + additional_ok_text
-      if succeeded.first.class.respond_to?(:pretty_type)
-        notice_message_sender(ok_message, succeeded)
-      else
-        Message.send_message(current_user,
-          :message_type  => :notice,
-          :header        => ok_message,
-          :variable_text => "For #{view_pluralize(succeeded.count, 'file')}"
-        )
-      end
-    end
-
-    if failed.present?
-      if failed.first.last.first.class.respond_to?(:pretty_type)
-        error_message_sender("Error when #{operation}ing file(s)", failed)
-      else
-        report = failed.map do |message, values|
-          ["For #{view_pluralize(values.size, 'file')}, #{message}:", values.sort.map { |v| "[#{v}]" }]
-        end
-
-        Message.send_message(current_user,
-          :message_type  => :error,
-          :header        => "Error when #{operation}ing file(s)",
-          :variable_text => report.flatten.join("\n")
-        )
-      end
-    end
-  end
-
   # Generate a complete API response from a register-like action
   # following the old format. Mainly used to avoid duplication
   # in register/unregister/delete.
@@ -972,10 +874,38 @@ class DataProvidersController < ApplicationController
       :error                           => flash[:error],
       :newly_registered_userfiles      => [],
       :previously_registered_userfiles => [],
-      :userfiles_in_transit            => [],
       :num_unregistered                => 0,
       :num_erased                      => 0,
+      :background_activity_id          => nil,
+      :background_activity_items_size  => 0,
+      :background_activity_destroy_file_id  => nil,
+      :background_activity_destroy_unregistered_file_id => nil,
     }
   end
 
+  def base_provider_params #:nodoc:
+    params.require_as_params(:data_provider).permit(common_params_list)
+  end
+
+  def userkey_provider_params #:nodoc:
+    params.require_as_params(:data_provider).permit(userkey_params_list)
+  end
+
+  def s3_provider_params #:nodoc:
+    params.require_as_params(:data_provider).permit(s3_params_list)
+  end
+
+  def common_params_list #:nodoc:
+    [:name, :description, :group_id, :type]
+  end
+
+  def userkey_params_list #:nodoc:
+    [:remote_user, :remote_host, :remote_port, :remote_dir]
+  end
+
+  def s3_params_list #:nodoc:
+    [ :cloud_storage_client_identifier, :cloud_storage_client_token,
+      :cloud_storage_client_bucket_name, :cloud_storage_client_path_start,
+      :cloud_storage_endpoint, :cloud_storage_region]
+  end
 end

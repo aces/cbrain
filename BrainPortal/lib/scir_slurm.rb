@@ -173,15 +173,16 @@ class ScirSlurm < Scir
       raise "Error: stdin not supported" if self.stdin
 
       command  = "sbatch "
-      command += "-p #{shell_escape(self.queue)} "          unless self.queue.blank?
+      command += "-p #{shell_escape(self.queue)} "          if self.queue.present?
       command += "--no-requeue "
-      command += "-D #{shell_escape(self.wd)} "             if self.wd
-      command += "--job-name=#{shell_escape(self.name)} "   if self.name
-      command += "--output=#{shell_escape(self.stdout.sub(/\A:/,""))} "   if self.stdout
-      command += "--error=#{shell_escape(self.stderr.sub(/\A:/,""))} "    if self.stderr
-      command += "#{Scir.cbrain_config[:extra_qsub_args]} " unless Scir.cbrain_config[:extra_qsub_args].blank?
-      command += "--time=#{(self.walltime.to_i+60) / 60} "  unless self.walltime.blank?
-      command += "#{self.tc_extra_qsub_args} "              unless self.tc_extra_qsub_args.blank?
+      command += "-D #{shell_escape(self.wd)} "             if self.wd.present?
+      command += "--job-name=#{shell_escape(self.name)} "   if self.name.present?
+      command += "--output=#{shell_escape(self.stdout.sub(/\A:/,""))} "   if self.stdout.present?
+      command += "--error=#{shell_escape(self.stderr.sub(/\A:/,""))} "    if self.stderr.present?
+      command += "#{Scir.cbrain_config[:extra_qsub_args]} " if Scir.cbrain_config[:extra_qsub_args].present?
+      command += "--time=#{(self.walltime.to_i+60) / 60} "  if self.walltime.present?
+      command += "--mem=#{self.memory}m "                   if self.memory.present?
+      command += "#{self.tc_extra_qsub_args} "              if self.tc_extra_qsub_args.present?
       command += "#{shell_escape(self.arg[0])} "
       command += " 2>&1"
 

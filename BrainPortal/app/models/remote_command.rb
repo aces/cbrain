@@ -58,23 +58,9 @@ class RemoteCommand < RestrictedHash
     # Auth token of the current remote resource (for security)
     :receiver_token,
 
-    # -------- ALTER TASKS PARAMETERS --------
-
-    # Tasks affected, as a string of comma-separated task IDs.
-    # Used by the command 'alter_tasks' and 'get_task_outputs'.
-    :task_ids,
-
-    # A new task status for the tasks affected by 'alter_tasks'
-    # Must be one of 'Suspended', "On Hold', 'Queued', 'Recover', etc.
-    # Only some statuses are valid, and these only when the tasks
-    # are already in some particular states. See process_command_alter_tasks().
-    :new_task_status,
-    :new_bourreau_id,  # for when new_task_status is 'Duplicate'
-    :archive_data_provider_id, # when new_task_status is 'ArchiveWorkdirAsFile'
-
     # -------- GET TASK OUTPUTS PARAMETERS --------
 
-    # For these, :task_ids is expected to contain a single ID
+    :task_id,
     :run_number,      # supplied by queryier
     :stdout_lim,      # number of lines to return
     :stderr_lim,      # number of lines to return
@@ -112,6 +98,7 @@ class RemoteCommand < RestrictedHash
 
     :ssh_key_pub, :ssh_key_priv, # when installing new ssh key
 
+
     # -------- ERROR TRACES --------
 
     :exception_class,      # filled by receiver if an exception occured
@@ -125,14 +112,8 @@ class RemoteCommand < RestrictedHash
     report  = "\n"
     report += "RemoteCommand: #{self.command}\n"
     report += "  Status: #{command_execution_status}\n"
-    if self.command.to_s =~ /alter_tasks|get_task_outputs/
-      report += "  Task-IDs: #{self.task_ids}\n"
-    end
-    if self.command.to_s == 'alter_tasks'
-      report += "  New-Task_Status: #{self.new_task_status}\n"
-      report += "  New-Bourreau-ID: #{self.new_bourreau_id}\n"
-      report += "  Archive-DataProvider-ID: #{self.archive_data_provider_id}\n"
-    elsif self.command.to_s == 'get_task_outputs'
+    if self.command.to_s == 'get_task_outputs'
+      report += "  Task-ID: #{self.task_id}\n"
       report += "  Run-Number: #{self.run_number}\n"
       report += "  Cluster-Stdout: #{(self.cluster_stdout || "").size} bytes\n"
       report += "  Cluster-Stderr: #{(self.cluster_stderr || "").size} bytes\n"

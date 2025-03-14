@@ -79,7 +79,7 @@ module UserfilesHelper
 
   # Generates links to pretty file content for files inside FileCollections.
   # Generates a download link if no viewer code can be found for the files.
-  def data_link(file_name, userfile)
+  def data_link(file_name, userfile, replace_div_id="sub_viewer_filecollection_cbrain")
     full_path_name  = Pathname.new(userfile.cache_full_path.dirname + file_name)
 
     display_name  = full_path_name.basename.to_s
@@ -87,9 +87,12 @@ module UserfilesHelper
 
     file_lstat = full_path_name.lstat  # lstat doesn't follow symlinks, so we can tell if it is one
 
-    return h(display_name) unless file_lstat.file?
+    # return if userfile class is a FileCollection and file is not a file (i.e. a directory)
+    return h(display_name) if userfile.is_a?(FileCollection) && !file_lstat.file?
 
-    matched_class = SingleFile.descendants.unshift(SingleFile).find { |c| file_name =~ c.file_name_pattern }
+    matched_class   = SingleFile.descendants.unshift(SingleFile).find { |c| file_name =~ c.file_name_pattern }
+    matched_class ||= userfile.class if userfile.is_a?(SingleFile)
+
     viewer        = matched_class.class_viewers.first.partial rescue nil
 
     if matched_class && viewer
@@ -100,7 +103,7 @@ module UserfilesHelper
                                              :viewer                => viewer,
                                              :viewer_userfile_class => matched_class
                                              ),
-            :replace => "sub_viewer_filecollection_cbrain",
+            :replace => replace_div_id,
           }
         ) do
           ("<span class=\"sub_viewable_link\">"+display_name+"</span>").html_safe

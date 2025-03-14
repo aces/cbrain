@@ -42,17 +42,19 @@
     :class      => [ :resource_list ],
     :render     => false,
     :order_map  => {
-      :owner        => { :a => 'users.login',               :j =>  User                                },
-      :project      => { :a => 'groups.name',               :j =>  Group                               },
-      :server       => { :a => 'remote_resources.name',     :j => [Bourreau,   'id', 'bourreau_id']    },
-      :version      => { :a => 'tool_configs.version_name', :j => [ToolConfig, 'id', 'tool_config_id'] },
-      :workdir_size => { :a => 'cluster_workdir_size'                                                  },
+      :owner                    => { :a => 'users.login',               :j =>  User                                           },
+      :project                  => { :a => 'groups.name',               :j =>  Group                                          },
+      :server                   => { :a => 'remote_resources.name',     :j => [Bourreau,    'id', 'bourreau_id']              },
+      :version                  => { :a => 'tool_configs.version_name', :j => [ToolConfig,  'id', 'tool_config_id']           },
+      :results_data_provider    => { :a => 'data_providers.name',       :j => [DataProvider,'id', 'results_data_provider_id'] },
+      :workdir_size             => { :a => 'cluster_workdir_size'                                                             },
     },
     :filter_map => {
-      :owner   => { :a => 'user_id'        },
-      :project => { :a => 'group_id'       },
-      :server  => { :a => 'bourreau_id'    },
-      :version => { :a => 'tool_config_id' },
+      :owner                    => { :a => 'user_id'                  },
+      :project                  => { :a => 'group_id'                 },
+      :server                   => { :a => 'bourreau_id'              },
+      :version                  => { :a => 'tool_config_id'           },
+      :results_data_provider    => { :a => 'results_data_provider_id'         },
     }
   ) do |t|
 %>
@@ -250,7 +252,7 @@
         <%= colored_archived_status(as) %>
         <% if task.cluster_workdir_size.present? %>
           <%= colored_pretty_size(task.cluster_workdir_size, :blank => '') %>
-        <% elsif as == :userfile && ar_file_size = Userfile.where(:id => task.workdir_archive_userfile_id).raw_first_column(:size)[0] %>
+        <% elsif as == :userfile && ar_file_size = Userfile.where(:id => task.workdir_archive_userfile_id).pluck(:size)[0] %>
           (<%= colored_pretty_size(ar_file_size, :blank => '') %>)
         <% end %>
       <% end %>
@@ -258,6 +260,22 @@
       <%= colored_pretty_size(CbrainTask.real_tasks.where(:batch_id => id).sum(:cluster_workdir_size)) %>
     <% end %>
   <% end %>
+
+  <%
+    t.column("Results On", :results_data_provider,
+      :sortable => true,
+      :filters  => scoped_filters_for(
+        @base_scope, @custom_scope, :results_data_provider_id,
+        scope: @scope,
+        label: 'data_providers.name',
+        association: [DataProvider, 'id', 'results_data_provider_id']
+      )
+    ) do |type,id,count,task|
+      @_did_to_data_provider_cache                                ||= {}
+      @_did_to_data_provider_cache[task.results_data_provider_id] ||= task.results_data_provider
+      link_to_data_provider_if_accessible(@_did_to_data_provider_cache[task.results_data_provider_id]) unless type == :loaded_batch
+    end
+  %>
 
   <%
     t.column("Time Submitted", :created_at,
@@ -285,6 +303,7 @@
       end
     end
   %>
+
 <% end %>
 
 <%-

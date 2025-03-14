@@ -335,11 +335,6 @@ describe CbrainTask do
       expect(cb_diagnostic.getlog).to match(/Total of 1 changes observed./)
     end
 
-    it "should add 'No changes' if !(numchange > 0)  " do
-      cb_diagnostic.log_params_changes({:key1 => "val1"},{:key1 => "val1"})
-      expect(cb_diagnostic.getlog).to match(/No changes to params observed./)
-    end
-
   end
 
 

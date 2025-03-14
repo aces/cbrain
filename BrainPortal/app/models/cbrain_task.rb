@@ -95,13 +95,23 @@ class CbrainTask < ApplicationRecord
                            value = CbrainTask::PROCESSING_STATUS # code-running states in standard path
                          when :failed
                            value = CbrainTask::FAILED_STATUS
+                         when :ruby
+                           value = CbrainTask::RUBY_STATUS
                          else
                            value = s
                          end
-                         where(:status => value)
+                         where("cbrain_tasks.status" => value)
                        }
 
-  scope :active, lambda { status( :active ) }
+  scope :active,         -> { status( :active ) }
+  scope :failed,         -> { status( :failed ) }
+  scope :failed_setup,   -> { where( "cbrain_tasks.status" => 'Failed To Setup'       ) }
+  scope :failed_cluster, -> { where( "cbrain_tasks.status" => 'Failed On Cluster'     ) }
+  scope :failed_post,    -> { where( "cbrain_tasks.status" => 'Failed To PostProcess' ) }
+  scope :setting_up,     -> { where( "cbrain_tasks.status" => 'Setting Up'            ) }
+  scope :on_cpu,         -> { where( "cbrain_tasks.status" => 'On CPU'                ) }
+  scope :post_proc,      -> { where( "cbrain_tasks.status" => 'Post Processing'       ) }
+  scope :completed,      -> { where( "cbrain_tasks.status" => 'Completed'             ) }
 
   scope :real_tasks,
         -> { where( "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" ) }
@@ -382,6 +392,16 @@ class CbrainTask < ApplicationRecord
     header
   end
 
+  # This determines if the task expects to only read its input files,
+  # or modify them, and return respectively :read or :write (the default).
+  # The symbol can be passed to methods such as Userfile.find_accessible_by_user().
+  # Depending on the value, more or less files are allowed to be processed.
+  # When the value is :read, it means we only need file for input and not
+  # for output.
+  def file_access_symbol
+    @_file_access ||= (self.class.properties[:readonly_input_files].present? || self.tool_config.try(:inputs_readonly) ? :read : :write)
+  end
+
 
 
   ##################################################################
@@ -595,8 +615,6 @@ class CbrainTask < ApplicationRecord
     end
     if numchanges > 0
       self.addlog("Total of #{numchanges} changes observed.")
-    else
-      self.addlog("No changes to params observed.")
     end
   end
 
@@ -868,6 +886,40 @@ class CbrainTask < ApplicationRecord
 
 
   ##################################################################
+  # Duplication Support Methods
+  ##################################################################
+
+  def duplicate!(new_bourreau=self.bourreau, new_tool_config=nil)
+
+    # If on the same Bourreau, we use the same TC
+    new_tool_config ||= self.tool_config if new_bourreau.id == self.bourreau_id
+    # Find a compatible TC on other bourreaux
+    new_tool_config ||= self.tool_config
+      .find_latest_compatible_for_user_on_bourreau!(
+         self.user, new_bourreau,
+      )
+
+    # Create the new object
+    task = self.class.new(self.attributes) # a kind of DUP!
+    task.id                          = nil
+    task.status                      = "Duplicated"
+    task.tool_config_id              = new_tool_config.id
+    task.bourreau_id                 = new_bourreau.id
+    task.run_number                  = 0
+    task.cluster_jobid               = nil
+    task.cluster_workdir             = nil
+    task.cluster_workdir_size        = nil
+    task.workdir_archived            = false
+    task.workdir_archive_userfile_id = nil
+    task.zenodo_deposit_id           = nil
+    task.zenodo_doi                  = nil
+    task.addlog("Duplicated from task '#{self.bname_tid}'.")
+    task.save!
+  end
+
+
+
+  ##################################################################
   # Output Renaming Helper Methods
   ##################################################################
 
@@ -990,6 +1042,32 @@ class CbrainTask < ApplicationRecord
     true
   end
 
+
+
+  ##################################################################
+  # API support methods
+  ##################################################################
+
+  # Override the default for_api() method so that the resulting
+  # list of attributes also contains some more pseudo-attributes
+  # implemented as attr_accessor :
+  #
+  #   cluster_stdout
+  #   cluster_stderr
+  #   script_text
+  def for_api
+    orig = super.dup
+    # The reason for this ugly set of assignments is that we can't
+    # have the keys with null values in some of the test suites, and
+    # for backwards compatibility too.
+    orig['cluster_stdout'] = self.cluster_stdout if self.cluster_stdout.present?
+    orig['cluster_stderr'] = self.cluster_stderr if self.cluster_stderr.present?
+    orig['script_text']    = self.script_text    if self.script_text.present?
+    orig
+  end
+
+
+
   # Returns a structure with miscellaneous info about the task;
   # only really useful for a task that has completed.
   # Anything that can be captured that is not already in
@@ -1085,10 +1163,8 @@ class CbrainTask < ApplicationRecord
     [ CBRAIN::TasksPlugins_Dir, CBRAIN::TaskDescriptorsPlugins_Dir ].each do |dir|
       Dir.chdir(dir) do
         Dir.glob("*.rb").each do |rubyfile|
-          next if [
-            'cbrain_task_class_loader.rb',
-            'cbrain_task_descriptor_loader.rb'
-          ].include?(rubyfile)
+          next if rubyfile == 'cbrain_task_class_loader.rb'      # skip that
+          next if rubyfile == 'cbrain_task_descriptor_loader.rb' # skip that
 
           model = rubyfile.sub(/.rb\z/, '')
           require_dependency "#{dir}/#{model}.rb" unless

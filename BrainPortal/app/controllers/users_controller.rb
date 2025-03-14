@@ -29,10 +29,11 @@ class UsersController < ApplicationController
 
   include GlobusHelpers
 
-  api_available :only => [ :index, :create, :show, :destroy, :update]
+  api_available :only => [ :index, :create, :show, :destroy, :update, :create_user_session, :push_keys]
 
   before_action :login_required,        :except => [:request_password, :send_password]
   before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password, :push_keys, :new_token]
+  before_action :admin_role_required,   :only =>   [:create_user_session]
 
   def index #:nodoc:
     @scope = scope_from_session
@@ -48,7 +49,7 @@ class UsersController < ApplicationController
     @users = @view_scope = @scope.apply(@base_scope)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 50 })
-    @users = @scope.pagination.apply(@view_scope)
+    @users = @scope.pagination.apply(@view_scope, api_request?)
 
     # Precompute file, task and locked/unlocked counts.
     @users_file_counts    = Userfile.where(:user_id => @view_scope).group(:user_id).count
@@ -90,7 +91,10 @@ class UsersController < ApplicationController
       .where( "updated_at > ?", SessionHelpers::SESSION_API_TOKEN_VALIDITY.ago )
       .order(:updated_at)
 
-    @globus_uri = globus_login_uri(globus_url)
+    # Array of enabled OIDC providers configurations
+    @oidc_configs = OidcConfig.all
+    # Hash of OIDC uris with the OIDC name as key
+    @oidc_uris    = generate_oidc_login_uri(@oidc_configs)
 
     respond_to do |format|
       format.html # show.html.erb
@@ -98,7 +102,8 @@ class UsersController < ApplicationController
         render :xml  => @user.for_api_xml
       end
       format.json do
-        render :json => @user.for_api
+        # Append the SSH key to the JSON response if it exists
+        render :json => @user.for_api.merge("public_key" => @ssh_key.try(:public_key))
       end
     end
   end
@@ -192,8 +197,8 @@ class UsersController < ApplicationController
     if ! edit_permission?(@user)
        cb_error "You don't have permission to view this page.", :redirect => start_page_path
     end
-    if user_must_link_to_globus?(@user)
-       cb_error "Your account can only authenticate with Globus identities.", :redirect => user_path(current_user)
+    if user_must_link_to_oidc?(@user)
+      cb_error "Your account can only authenticate with an OpenID identities providers.", :redirect => user_path(current_user)
     end
   end
 
@@ -215,7 +220,7 @@ class UsersController < ApplicationController
     end
 
     if new_user_attr[:password].present?
-      if user_must_link_to_globus?(@user)
+      if user_must_link_to_oidc?(@user)
         new_user_attr.delete(:password)
         new_user_attr.delete(:password_confirmation)
       end
@@ -262,7 +267,7 @@ class UsersController < ApplicationController
 
     @user = @user.class_update
 
-    success = false; 
+    success = false;
     if @user.save_with_logging(current_user, %w( full_name login email role city country account_locked ) )
       @user = User.find(@user.id) # fully reload with new class if needed
       @user.addlog_object_list_updated("Groups", Group, original_group_ids, @user.group_ids, current_user)
@@ -273,15 +278,15 @@ class UsersController < ApplicationController
       changed_ap_ids = remove_ap_ids + added_ap_ids
       changed_ap_ids.each do |id|
         ap                  = AccessProfile.find(id)
-        ap_user_ids         = ap.user_ids 
+        ap_user_ids         = ap.user_ids
         initial_ap_user_ids = added_ap_ids.include?(id) ? ap_user_ids - [@user.id] : ap_user_ids + [@user.id]
         ap.addlog_object_list_updated("Users", User, initial_ap_user_ids, ap_user_ids,  current_user, :login)
       end
       success = true;
-    end 
+    end
 
     respond_to do |format|
-      if success 
+      if success
         flash[:notice] = "User #{@user.login} was successfully updated."
         format.html  { redirect_to :action => :show }
         format.xml   { render :xml  => @user.for_api }
@@ -328,6 +333,31 @@ class UsersController < ApplicationController
     end
   end
 
+  # API-only action for admin users only
+  def create_user_session #:nodoc:
+    for_user_id = params[:id]
+    for_user    = User.find(for_user_id)
+
+    new_user_session = LargeSessionInfo.new(
+      user_id:    for_user_id,
+      session_id: SecureRandom.hex,
+      active: true,
+      data: {
+        guessed_remote_host: cbrain_session[:guessed_remote_host],
+        guessed_remote_ip: cbrain_session[:guessed_remote_ip],
+        api: true
+      }
+    )
+    new_user_session.save!
+
+    new_session_info = {
+      cbrain_api_token: new_user_session.session_id,
+      user_id:          for_user_id
+    }
+
+    render :json => new_session_info
+  end
+
   def switch #:nodoc:
     if current_user.has_role? :admin_user
       @user = User.find(params[:id])
@@ -356,6 +386,16 @@ class UsersController < ApplicationController
     @user = User.where( :login  => params[:login], :email  => params[:email] ).first
 
     if @user
+      if user_must_link_to_oidc?(@user)
+        contact = RemoteResource.current_resource.support_email.presence || User.admin.email.presence || "the support staff"
+        wipe_user_password_after_oidc_link("password-rest", @user)  # for legacy or erroneously set users
+        flash[:error] = "Your account can only authenticate with OpenID identities. Thus you are not allowed to use or reset password. Please contact #{contact} for help."
+        respond_to do |format|
+          format.html { redirect_to login_path }
+          format.any { head :unauthorized }
+        end
+        return
+      end
       if @user.account_locked?
         contact = RemoteResource.current_resource.support_email.presence || User.admin.email.presence || "the support staff"
         flash[:error] = "This account is locked, please write to #{contact} to get this account unlocked."
@@ -388,35 +428,51 @@ class UsersController < ApplicationController
   end
 
   def push_keys #:nodoc:
-    @user = User.where(:id => params[:id]).first
-    cb_error "You don't have permission to update this user.", :redirect => start_page_path unless edit_permission?(@user)
+    @user = User.find(params[:id])
+    cb_error "You don't have permission to update this user.", :redirect => user_path(@user) unless edit_permission?(@user)
 
-    push_bids = params[:push_keys_to].presence
-    cb_notice "No servers selected.", :redirect => user_path(@user) if push_bids.blank?
-    ssh_key   = @user.ssh_key rescue nil
-    cb_notice "No user SSH key exists yet.", :redirect => :show if ! ssh_key
+    push_bids        = params[:push_keys_to].presence
+    bourreau_to_push = Bourreau.find_all_accessible_by_user(@user).where(:id => push_bids).to_a
+    ssh_key          = @user.ssh_key rescue nil
 
+    cb_error "No servers selected (or accessible by user).", :redirect => user_path(@user) if bourreau_to_push.empty?
+    cb_error "No user SSH key exists yet.",                  :redirect => user_path(@user) if ! ssh_key
+
+    # Get ssh key pair
     pub_key  = ssh_key.public_key
     priv_key = ssh_key.send(:private_key, "I Know What I Am Doing")
 
-    flash[:notice] = ""
-    flash[:error]  = ""
-    bourreau_to_push = Bourreau.find_all_accessible_by_user(@user).where(:id => push_bids).to_a
+    ok_list    = []
+    error_list = []
+
     bourreau_to_push.each do |bourreau|
       command          = RemoteCommand.new(:command           => 'push_ssh_keys',
                                            :requester_user_id => @user.id,
                                            :ssh_key_pub       => pub_key,
                                            :ssh_key_priv      => priv_key,
                                           )
-      answer = bourreau.send_command(command)
-      if answer.command_execution_status == 'OK'
-        flash[:notice] += "Pushed user SSH key to #{bourreau.name}.\n"
+
+      answer = bourreau.send_command(command) rescue nil
+      if answer&.command_execution_status == 'OK'
+        ok_list << bourreau.name
       else
-        flash[:error]  += "Could not push SSH key to #{bourreau.name}.\n"
+        error_list << bourreau.name
       end
     end
 
-    redirect_to :action => :show
+    respond_to do |format|
+      format.html do
+        flash[:notice] = "Pushed user SSH keys to: #{ok_list.join(', ')}"            if ok_list.present?
+        flash[:error]  = "Failed to push user SSH keys to: #{error_list.join(', ')}" if error_list.present?
+        redirect_to user_path(@user)
+      end
+
+      format.json do
+        status = :ok
+        status = :unprocessable_entity if error_list.present?
+        render :json => { :pushed => ok_list, :failed => error_list }, :status => status
+      end
+    end
   end
 
   # POST /users/new_token

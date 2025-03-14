@@ -52,10 +52,13 @@ if program_name =~ /console/
     puts "C> \t         environment variable 'CBRAIN_SKIP_VALIDATIONS' to '1'.\n"
     CbrainSystemChecks.check(:all)
     BourreauSystemChecks.check([
-      :a050_ensure_proper_cluster_management_layer_is_loaded, :z000_ensure_we_have_a_forwarded_ssh_agent,
+      :a000_ensure_models_are_preloaded,
+      :a005_ensure_boutiques_descriptors_are_loaded,
+      :a050_ensure_proper_cluster_management_layer_is_loaded,
+      :z000_ensure_we_have_a_forwarded_ssh_agent,
     ])
   end
-  Process.setproctitle "CBRAIN Console #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}"
+  Process.setproctitle "CBRAIN Console #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name}"
 
 # ----- SERVER -----
 elsif program_name =~ /server|puma/ # normal server mode
@@ -65,7 +68,7 @@ elsif program_name =~ /server|puma/ # normal server mode
   # Note, because the puma server insists on renaming its process,
   # the assignment below is also performed whenever a :show
   # action is sent to the controls controller.
-  Process.setproctitle "CBRAIN Server #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}"
+  Process.setproctitle "CBRAIN Server #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name}"
 
 # ----- RSPEC TESTS -----
 elsif program_name =~ /rspec/ # test suite

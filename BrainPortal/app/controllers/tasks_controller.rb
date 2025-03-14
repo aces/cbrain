@@ -70,7 +70,7 @@ class TasksController < ApplicationController
       end
       @tasks.compact!
     else
-      @tasks = @scope.pagination.apply(@view_scope).to_a
+      @tasks = @scope.pagination.apply(@view_scope, api_request?).to_a
       if ! api_request?
         @tasks.map! do |task|
           { :batch => task.batch_id, :first => task, :count => 1 }
@@ -143,6 +143,7 @@ class TasksController < ApplicationController
     if ((! api_request?) || params[:get_task_outputs]) && @task.full_cluster_workdir.present? && ! @task.workdir_archived?
       begin
         @task.capture_job_out_err(@run_number,@stdout_lim,@stderr_lim) # PortalTask method: sends command to bourreau to get info
+        @task.script_text = nil unless current_user.has_role?(:admin_user)
       rescue Errno::EADDRNOTAVAIL, # all sorts of things can go wrong here
              Errno::ECONNREFUSED,
              Errno::ECONNRESET,
@@ -280,9 +281,17 @@ class TasksController < ApplicationController
       end
     end
 
+    # Warn about archived files
+    archived_files = @files.select { |f| f.is_a?(FileCollection) && f.archived? }
+    if archived_files.present?
+        flash.now[:notice] ||= ""
+        flash.now[:notice]  += "\nWarning: some of the files you selected are currently archived. This is probably not how you want to process them. Consider unarchiving them before launching this task. Archived files: #{archived_files.map(&:name).join(", ")}"
+    end
+
     # Print message of the tool config was 'guessed'
     if autoconfig
-      flash.now[:notice] = "We have automatically chosen the latest version and execution server for this tool (version #{@tool_config.version_name} on #{@task.bourreau.name}), please double-check this configuration."
+      flash.now[:notice] ||= ""
+      flash.now[:notice]  += "\nWe have automatically chosen the latest version and execution server for this tool (version #{@tool_config.version_name} on #{@task.bourreau.name}), please double-check this configuration."
       #@task.errors.add(:tool_config_id, "was chosen for you, make sure this is what you want.")
     end
 
@@ -378,11 +387,11 @@ class TasksController < ApplicationController
     # because of the large history of old tasks that don't have
     # the attribute set.
     if @task.results_data_provider_id.blank? || @task.results_data_provider.blank?
-      @task.errors[:results_data_provider_id] = 'must be provided'
+      @task.errors.add(:results_data_provider_id, 'must be provided')
     end
 
     if @tool_config && @tool_config.bourreau.present? && ! @tool_config.bourreau.online?
-      @task.errors[:tool_config_id] = 'is on an Execution Server that is currently offline'
+      @task.errors.add(:tool_config_id, 'is on an Execution Server that is currently offline')
     end
 
     unless @task.errors.empty? && @task.valid?
@@ -512,7 +521,7 @@ class TasksController < ApplicationController
     task_ids   = Array(params[:tasklist]  || [])
     batch_ids  = Array(params[:batch_ids] || [])
     batch_ids << nil if batch_ids.delete('nil')
-    task_ids  += filtered_scope(CbrainTask.where(:batch_id => batch_ids)).select('cbrain_tasks.id').raw_first_column
+    task_ids  += filtered_scope(CbrainTask.where(:batch_id => batch_ids)).pluck('cbrain_tasks.id')
     task_ids   = task_ids.map(&:to_i).uniq
 
     commit_name = extract_params_key([ :update_user_id, :update_group_id, :update_results_data_provider_id, :update_tool_config_id ])
@@ -666,49 +675,55 @@ class TasksController < ApplicationController
   # [*Resume*] Release task from <tt>Suspended</tt> status (i.e. continue processing).
   # [*Terminate*] Kill the task, while maintaining its temporary files and its entry in the database.
   # [*Delete*] Kill the task, delete the temporary files and remove its entry in the database.
+  # [*Archive*] Archive the content of task work folder
   def operation
     @scope = scope_from_session('tasks#index')
 
+    # Validate the presence of operation
     operation  = params[:operation]
-    tasklist   = params[:tasklist]  || []
-    tasklist   = [ tasklist ]  unless tasklist.is_a?(Array)
-    batch_ids  = params[:batch_ids] || []
-    batch_ids  = [ batch_ids ] unless batch_ids.is_a?(Array)
-    batch_ids << nil if batch_ids.delete('nil')
-    tasklist  += filtered_scope(CbrainTask.where(:batch_id => batch_ids)).raw_first_column("cbrain_tasks.id")
-    tasklist   = tasklist.map(&:to_i).uniq
-    tasklist   = current_user.available_tasks.where(:id => tasklist).pluck(:id)
-
-    flash[:error]  ||= ""
-    flash[:notice] ||= ""
-
-    if operation.nil? || operation.empty?
-      flash[:notice] += "Task list has been refreshed.\n"
-      redirect_to :action => :index
+    if operation.nil? || operation.empty? || (! operation.is_a?(String))
+      flash[:notice] = "Task list has been refreshed."
+      respond_to do |format|
+        format.html { redirect_to :action => :index }
+        format.json { render :json => { :message => 'No operation selected' } }
+      end
       return
     end
 
+    # Create/filter/parse/validate the list of tasks
+    tasklist   = Array(params[:tasklist]).compact
+    batch_ids  = Array(params[:batch_ids]).compact
+    tasklist  += filtered_scope(CbrainTask.where(:batch_id => batch_ids)).pluck("cbrain_tasks.id") if batch_ids.present?
+    tasklist   = tasklist.map(&:to_i).uniq
+    tasklist   = current_user.available_tasks.where(:id => tasklist).pluck(:id)
+    tasklist   = CbrainTask
+      .where(:id => tasklist)
+      .to_a
+      .map { |task| task.id if task.has_owner_access?(current_user) }
+      .compact
+
     if tasklist.empty?
-      flash[:error] += "No task selected?.\n"
-      redirect_to :action => :index
+      flash[:error] = "No tasks selected?"
+      respond_to do |format|
+        format.html { redirect_to :action => :index }
+        format.json { render :json => { :message => 'No tasks selected' } }
+      end
       return
     end
 
     # Some security validations
-    new_bourreau_id = params[:dup_bourreau_id].presence # for 'duplicate' operation
+    dup_bourreau_id = params[:dup_bourreau_id].presence # for 'duplicate' operation
     archive_dp_id   = params[:archive_dp_id].presence   # for 'archive as file' operation
-    new_bourreau_id = nil unless new_bourreau_id && Bourreau.find_all_accessible_by_user(current_user).where(:id => new_bourreau_id).exists?
+    dup_bourreau_id = nil unless dup_bourreau_id && Bourreau.find_all_accessible_by_user(current_user).where(:id => dup_bourreau_id).exists?
     archive_dp_id   = nil unless archive_dp_id   && DataProvider.find_all_accessible_by_user(current_user).where(:id => archive_dp_id).exists?
-
-    # Decide in which conditions we spawn a background job to send
-    # the operation to the tasks...
-    do_in_spawn  = tasklist.size > 5
+    nozip           = params[:nozip].present?  && current_user.has_role?(:admin_user) # for archiving without compression, admin only
 
     # This does the actual work and returns info about the
     # successes and failures.
-    results = apply_operation(operation, tasklist, do_in_spawn,
-      :dup_bourreau_id => new_bourreau_id,
+    results = apply_operation(operation.downcase, tasklist,
+      :dup_bourreau_id => dup_bourreau_id,
       :archive_dp_id   => archive_dp_id,
+      :nozip           => nozip
     )
 
     # Prepare counters for how many tasks affected.
@@ -716,21 +731,18 @@ class TasksController < ApplicationController
     success_list = results[:success_list]
     failed_list  = results[:failed_list]
 
-    if do_in_spawn
-      flash[:notice] += "The tasks are being notified in background."
-    else
-      failure_size  = 0
-      failed_list.each_value  { |v| failure_size += v.size }
-      skipped_size  = 0
-      skipped_list.each_value { |v| skipped_size += v.size }
-      flash[:notice] += "Number of tasks notified: #{success_list.size} OK, #{skipped_size} skipped, #{failure_size} failed.\n"
-    end
+    failure_size  = 0
+    failed_list.each_value  { |v| failure_size += v.size }
+    skipped_size  = 0
+    skipped_list.each_value { |v| skipped_size += v.size }
+    flash[:notice]  = "Number of tasks notified: #{success_list.size} OK, #{skipped_size} skipped, #{failure_size} failed.\n"
+    flash[:notice] += "See also the Ongoing tab for tracking the progress of these changes.\n" if results[:bac_ids].present?
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
       format.js   { redirect_to :action => :index }
-      format.json { head :ok }
-      format.xml  { head :ok }
+      format.json { render :json => results }
+      format.xml  { render :xml  => results }
     end
   end # method 'operation'
 
@@ -742,31 +754,50 @@ class TasksController < ApplicationController
   # or duplicated.
   #
   # Returns a simple hash with some list for successes, failures and
-  # skipped operations (only meaningful when do_in_spawn is false).
-  def apply_operation(operation, taskids, do_in_spawn = false, options = {})
+  # skipped operations
+  def apply_operation(operation, taskids, options = {})
 
     # Some other parameters
-    new_bourreau_id = options[:dup_bourreau_id] # for 'duplicate' operation
+    dup_bourreau_id = options[:dup_bourreau_id] # for 'duplicate' operation
     archive_dp_id   = options[:archive_dp_id]   # for 'archive as file' operation
+    nozip           = options[:nozip]           # for 'archive as file' and 'archive' operation
 
     # Prepare counters for how many tasks affected.
     skipped_list = {}
     success_list = []
     failed_list  = {}
 
-    # This block will either run in background or not depending
-    # on do_in_spawn
-    CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending #{operation} to tasks") do
+    # Background Activity lookup table
+    operation_to_bac = {
+      "terminate"    => BackgroundActivity::TerminateTask,
+      "archive"      => BackgroundActivity::ArchiveTaskWorkdir,
+      "archive_file" => BackgroundActivity::ArchiveTaskWorkdir,
+      "unarchive"    => BackgroundActivity::UnarchiveTaskWorkdir,
+      "zap_wd"       => BackgroundActivity::RemoveTaskWorkdir,
+      "save_wd"      => BackgroundActivity::SaveTaskWorkdir,
+      "hold"         => BackgroundActivity::HoldTask,
+      "release"      => BackgroundActivity::ReleaseTask,
+      "suspend"      => BackgroundActivity::SuspendTask,
+      "resume"       => BackgroundActivity::ResumeTask,
+      "duplicate"    => BackgroundActivity::DuplicateTask,
+      "recover"      => BackgroundActivity::RecoverTask,
+      "restart_setup"       => BackgroundActivity::RestartTask,
+      "restart_cluster"     => BackgroundActivity::RestartTask,
+      "restart_postprocess" => BackgroundActivity::RestartTask,
+    }
+
+    # The weird new indentation starting here is because a 'spawn' wrapping block was removed.
 
       tasks = CbrainTask.where(:id => taskids).to_a
+      bacs  = [] # for reporting back through API
 
       # Go through tasks, grouped by bourreau
       grouped_tasks = tasks.group_by(&:bourreau_id)
       grouped_tasks.each do |pair_bid_tasklist|
         bid       = pair_bid_tasklist[0]
         btasklist = pair_bid_tasklist[1]
-        bourreau  = Bourreau.find(bid)
         begin
+
           # MASS DELETE
           if operation == 'delete'
             # Two sublists, to optimize the delete
@@ -775,56 +806,56 @@ class TasksController < ApplicationController
             can_be_just_deleted.each do |t|
               begin
                 t.destroy
-                success_list << t
+                success_list << t.id
               rescue => e
                 failed_list[e.message] ||= []
-                failed_list[e.message] << t
+                failed_list[e.message] << t.id
               end
             end
-            bourreau.send_command_alter_tasks(must_remote_delete,'Destroy') if must_remote_delete.present? # TODO parse returned command object?
-            success_list += must_remote_delete
+            bac=BackgroundActivity::DestroyTask.local_new(current_user.id, must_remote_delete.map(&:id),bid)
+            # The .save below will just be ignored if the items list is empty
+            bac.save
+            bacs << bac if bac.id
+            success_list += must_remote_delete.map(&:id)
             next
           end
+
           # MASS NEW STATUS
           new_status  = PortalTask::OperationToNewStatus[operation] # from HTML form keyword to Task object keyword
           oktasks = btasklist.select do |t|
-            cur_status  = t.status
-            allowed_new = PortalTask::AllowedOperations[cur_status] || []
-            new_status && allowed_new.include?(new_status)
+            PortalTask::AllowedOperationsHash[[t.status,new_status]]
           end
           if oktasks.size > 0
-            bourreau.send_command_alter_tasks(oktasks, new_status,
-                                               { :requester_user_id        => current_user.id,
-                                                 :new_bourreau_id          => new_bourreau_id,
-                                                 :archive_data_provider_id => archive_dp_id
-                                               }
-                                              ) # TODO parse returned command object?
-            success_list += oktasks
+            bac_klass = operation_to_bac[operation]
+            cb_error "Cannot find BackgroundActivity class required for '#{operation}'" if ! bac_klass
+
+            bac = bac_klass.local_new(current_user.id, oktasks.map(&:id), bid, {})
+            bac.options[:nozip]                    = nozip           if nozip && operation =~ /^archive(_file)?$/
+            bac.options[:archive_data_provider_id] = archive_dp_id   if operation == 'archive_file'
+            bac.options[:dup_bourreau_id]          = dup_bourreau_id if operation == 'duplicate'
+            bac.options[:atwhat]                   = 'Setup'         if operation == 'restart_setup'
+            bac.options[:atwhat]                   = 'Cluster'       if operation == 'restart_cluster'
+            bac.options[:atwhat]                   = 'PostProcess'   if operation == 'restart_postprocess'
+            bac.save
+            bacs << bac if bac.id
           end
+          success_list += oktasks.map(&:id)
           skippedtasks = btasklist - oktasks
-          skipped_list["Tasks have incompatible states"] = skippedtasks if skippedtasks.present?
+          skipped_list["Tasks have incompatible states"] = skippedtasks.map(&:id) if skippedtasks.present?
         rescue => e
           failed_list[e.message] ||= []
-          failed_list[e.message]  += btasklist
+          failed_list[e.message]  += btasklist.map(&:id)
         end
       end # foreach bourreaux' tasklist
 
-      if do_in_spawn
-        if skipped_list.present?
-          error_message_sender("Task skipped when sending '#{operation}' to your tasks.",skipped_list)
-        end
-        if failed_list.present?
-          error_message_sender("Error when sending '#{operation}' to your tasks.",failed_list)
-        end
-      end
-
-    end # SPAWN
+    # End of weird indentation
 
     # This may contain nothing at all if all work was done in background...
     results =  {
       :skipped_list => skipped_list,
       :success_list => success_list,
       :failed_list  => failed_list,
+      :bac_ids      => bacs.map(&:id),
     }
 
     return results
@@ -1494,12 +1525,14 @@ class TasksController < ApplicationController
   end
 
   # This method handle the logic of loading and saving presets.
+  # It's terrible old code.
   def handle_preset_actions #:nodoc:
     commit_name  = extract_params_key([ :load_preset, :delete_preset, :save_preset ], :whatewer)
 
     if commit_name == :load_preset
       preset_id = params[:load_preset_id] # used for delete too
       if (! preset_id.blank?) && preset = CbrainTask.where(:id => preset_id, :status => [ 'Preset', 'SitePreset' ]).first
+        flash[:notice] += "Loaded preset '#{preset.short_description}'.\n"
         old_params = @task.params.clone
         @task.params         = preset.params
         @task.description    = @task.description || ""
@@ -1509,10 +1542,13 @@ class TasksController < ApplicationController
           @task.group = preset.group
         end
         if preset.tool_config && preset.tool_config.can_be_accessed_by?(current_user) && (@task.new_record? || preset.tool_config.bourreau_id == @task.bourreau_id)
-          @task.tool_config = preset.tool_config
+          if preset.tool_config.bourreau.online?
+            @task.tool_config = preset.tool_config
+          else
+            flash[:error] += "Warning: the preset's version of the tool is on an Execution server that is currently offline. Double-check the version you really need."
+          end
         end
         @task.bourreau = @task.tool_config.bourreau if @task.tool_config
-        flash[:notice] += "Loaded preset '#{preset.short_description}'.\n"
       else
         flash[:notice] += "No preset selected, so parameters are unchanged.\n"
       end

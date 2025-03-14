@@ -20,6 +20,88 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# A module that provides loading and validaton of Boutiques descriptors.
+#
+# See also the Boutiques repository: https://github.com/boutiques/boutiques
+#
+# The modules provides one main Ruby class, BoutiquesSupport::BoutiquesDescriptor,
+# and several smaller data classes representing components of a descriptor.
+# These classes are subclasses of RestrictedHash, a type of Hash class that
+# only recognize a select set of keys and raise an exception when other keys
+# are used.
+#
+# Methods of BoutiquesSupport::BoutiquesDescriptor (which inherits from RestrictedHash)
+#
+# Creation methods:
+#
+#   desc = BoutiquesSupport::BoutiquesDescriptor.new()     # a blank descriptor
+#   desc = BoutiquesSupport::BoutiquesDescriptor.new(hash) # filled from a hash
+#   desc = BoutiquesSupport::BoutiquesDescriptor.new_from_string(jsontext)
+#   desc = BoutiquesSupport::BoutiquesDescriptor.new_from_file(path_to_json)
+#
+# Accessor methods:
+#
+# Note that when an attribute name contains a dash (-) then the corresponding
+# method name is written with an underscore (_).
+#
+#   desc.name = 'SuperTool'  # set the name
+#   toolname  = desc.name    # gets the name
+#   ver       = desc.tool_version  # gets 'tool-version'
+#   inputs    = desc.inputs  # array of BoutiquesSupport::Input objects
+#   custom    = desc.custom  # 'custom' object within descriptor
+#
+# The same conventions apply to Boutiques::Input, Boutiques::OutputFile
+# and Boutiques::Group. See the schema of a Boutiques descriptor for the
+# list of allowed attributes in each object.
+#
+# Other utility methods are documented in the source code but might not
+# appear in RDOC-generated documentation. Among these, many are
+# used by the BoutiquesTask integrator.
+#
+#   # Returns the name of the tool NNNN, appropriate to use as
+#   # a class name as BoutiquesTask::NNNN
+#   desc.name_as_ruby_class
+#
+#   # Returns all tags as a flat array
+#   desc.flat_tag_list
+#
+#   # Finds a specific BoutiquesSupport:Input by ID
+#   desc.input_by_id(inputid)
+#
+#   # Subset of the list of inputs with just the optional ones
+#   desc.optional_inputs
+#
+#   # Subset of the list of inputs with just the mandatory ones
+#   desc.required_inputs
+#
+#   # Subset of the list of inputs with just the multi-valued ones
+#   desc.list_inputs
+#
+#   # Subset of the list of inputs with just the File inputs
+#   desc.file_inputs
+#
+#   # List of File inputs that are optional
+#   desc.optional_file_inputs
+#
+#   # List of File inputs that are mandatory
+#   desc.required_file_inputs
+#
+#   # Returns the entry for a custom Boutiques integration module
+#   desc.custom_module_info(modulename)
+#
+#   # Utility for building a replacement hash for the inputs based on
+#   # the values in invoke_structure
+#   desc.build_substitutions_by_tokens_hash(invoke_structure)
+#
+#   # Utility to perform the subsitutions of tokens in a string
+#   desc.apply_substitutions(string, substitutions_by_tokens, to_strip=[])
+#
+#   # Returns a new descriptor with the attributes in a canonical beautiful order
+#   desc.pretty_ordered
+#
+#   # Generates a JSON with nice spacing
+#   desc.super_pretty_json
+#
 module BoutiquesSupport
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -49,7 +131,7 @@ module BoutiquesSupport
   # The following assignement is pretty much like
   #   class BoutiquesDescriptor < RestrictedHash
   # except we have a closure and we can access the variables
-  # initialize above (top_prop_names etc).
+  # initialized above (top_prop_names etc).
   BoutiquesDescriptor = Class.new(RestrictedHash) do |klass|
 
     allowed_keys top_prop_names # 'name', 'author' etc
@@ -69,13 +151,13 @@ module BoutiquesSupport
 
     def initialize(hash={})
       super(hash)
-      # The following re-assignment transforms hashed into subobjects (like OutputFile etc)
+      # The following re-assignments transforms hashes into subobjects (like OutputFile etc)
       # as a side-effect. This is accomplished by the methods later in this class.
       self.inputs            = self.inputs          || []
       self.output_files      = self.output_files    || []
       self.groups            = self.groups          || []
       self.custom            = self.custom          || {}
-      self.container_image &&= self.container_image # we need to to remain nil if already nil
+      self.container_image &&= self.container_image # we need it to remain nil if already nil
       self
     end
 
@@ -210,6 +292,7 @@ module BoutiquesSupport
       self.inputs.map do |input|
         next nil if input.value_key.blank?
         value = invoke_structure[input.id]
+        value = input.default_value if value.nil?
         next nil if value.nil?
         [ input.value_key, value ]
       end.compact.to_h
@@ -233,6 +316,172 @@ module BoutiquesSupport
       end
       newstring
     end
+
+    PRETTY_ORDER_TOP = %w(
+      name
+      tool-version
+      author
+      description
+      url
+      descriptor-url
+      online-platform-urls
+      doi
+      tool-doi
+      shell
+      command-line
+      schema-version
+      container-image
+      inputs
+      groups
+      output-files
+      error-codes
+      suggested-resources
+      tags
+      tests
+      custom
+    )
+    PRETTY_ORDER_INPUT = %w(
+      id
+      name
+      description
+      type
+      optional
+      integer
+      minimum
+      exclusive-minimum
+      maximum
+      exclusive-maximum
+      list
+      list-separator
+      min-list-entries
+      max-list-entries
+      default-value
+      command-line-flag
+      command-line-flag-separator
+      value-key
+      value-choices
+      value-disables
+      disables-inputs
+      requires-inputs
+    )
+    PRETTY_ORDER_OUTPUT = %w(
+      id
+      name
+      description
+      optional
+      list
+      command-line-flag
+      value-key
+      path-template
+      path-template-stripped-extensions
+    )
+    PRETTY_ORDER_GROUP = %w(
+      id
+      name
+      description
+      all-or-none
+      one-is-required
+      members
+    )
+
+    # Returns a dup() of the current descriptor, but with
+    # the fields re-ordered so as to create a 'pretty'
+    # layout when printed out (as JSON, YAML etc).
+    #
+    # The order puts things like the name, description, command
+    # version number etc near the top, then then inputs, the
+    # groups, the outputs, and the custom sections.
+    def pretty_ordered
+      ordered  = Hash.new # we use a plain hash to hold the newly ordered elems.
+      selfcopy = self.dup
+      PRETTY_ORDER_TOP.each { |k| ordered[k] = selfcopy.delete(k).dup if selfcopy.has_key?(k) }
+      selfcopy.each { |k,v| puts "Top miss: #{k}" ; ordered[k] = v.dup }
+      final = self.class.new(ordered)
+
+      # Order fields in each input
+      final.inputs = final.inputs.map do |input|
+        ordered  = Hash.new
+        selfcopy = input.dup
+        PRETTY_ORDER_INPUT.each { |k| ordered[k] = selfcopy.delete(k).dup if selfcopy.has_key?(k) }
+        selfcopy.each { |k,v| puts "Inp miss: #{k}" ; ordered[k] = v.dup }
+        input.class.new(ordered)
+      end
+
+      # Order fields in each output-file
+      final.output_files = final.output_files.map do |output|
+        ordered  = Hash.new
+        selfcopy = output.dup
+        PRETTY_ORDER_OUTPUT.each { |k| ordered[k] = selfcopy.delete(k).dup if selfcopy.has_key?(k) }
+        selfcopy.each { |k,v| puts "Out miss: #{k}" ; ordered[k] = v.dup }
+        output.class.new(ordered)
+      end
+
+      # Order fields in each group
+      final.groups = final.groups.map do |group|
+        ordered  = Hash.new
+        selfcopy = group.dup
+        PRETTY_ORDER_GROUP.each { |k| ordered[k] = selfcopy.delete(k).dup if selfcopy.has_key?(k) }
+        selfcopy.each { |k,v| puts "Group miss: #{k}" ; ordered[k] = v.dup }
+        group.class.new(ordered)
+      end
+
+      final
+    end
+
+    # Returns a JSON text version of the descriptor but with
+    # the fields aligned with pretty whitespaces, e.g.
+    # instead of
+    #
+    #   "name": "megatool",
+    #   "tool-version": "3.14.15926",
+    #   "url": "https://example.com",
+    #
+    # we get
+    #
+    #   "name":         "megatool",
+    #   "tool-version": "3.14.15926",
+    #   "url":          "https://example.com",
+    def super_pretty_json
+
+      # Internally, the alignment is made by padding property names with '|'
+      # and then stripping them out of the normal JSON generated.
+      pad_keys = ->(hash,length) do
+        hash.transform_keys! { |k| k.to_s.size >= length ? k : k + ('|' * (length-k.size) ) }
+      end
+      maxkeylength = ->(hash) { hash.keys.map(&:to_s).map(&:size).max }
+
+      # Returns a modified hash with keys all padded with '|'
+      max_pad_keys = ->(hash) do
+        copy = HashWithIndifferentAccess.new.merge(hash.dup)
+        max  = maxkeylength.(copy)
+        pad_keys.(copy,max)
+        copy
+      end
+
+      final  = HashWithIndifferentAccess.new.merge(self.dup)
+
+      final['inputs'].map!       { |input|  max_pad_keys.(input)  }
+      final['output-files'].map! { |output| max_pad_keys.(output) } if final['output-files'].present?
+      final['groups'].map!       { |group|  max_pad_keys.(group)  } if final['groups'].present?
+      final.delete('groups') if final['groups'].blank?
+
+      final['container-image'] &&= max_pad_keys.(final['container-image'])
+      final['custom']          &&= max_pad_keys.(final['custom'])
+
+      final = max_pad_keys.(final)
+
+      json_with_bars = JSON.pretty_generate(final)
+      new_json = json_with_bars
+        .gsub( /\|+": / ) do |bars|
+          spaces = bars.size - 3; '": ' + (' ' * spaces)
+        end
+
+      new_json
+    end
+
+    #------------------------------------------------------
+    # Aditional methods for the sub-objects of a descriptor
+    #------------------------------------------------------
 
     class Input
 
