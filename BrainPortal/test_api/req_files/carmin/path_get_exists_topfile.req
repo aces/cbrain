@@ -1,1 +1,0 @@
-GET /path/topfile.txt?NTOK&action=exists */* NoRubyClient
