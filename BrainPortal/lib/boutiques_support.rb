@@ -279,7 +279,7 @@ module BoutiquesSupport
     # data for it stored under the "custom"['cbrain:integrator_modules']
     # entry of the descriptor.
     def custom_module_info(modulename)
-      self.custom['cbrain:integrator_modules'][modulename]
+      (self.custom['cbrain:integrator_modules'] || {})[modulename]
     end
 
     # This method pushes a small string (usually
