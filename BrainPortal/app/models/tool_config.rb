@@ -420,7 +420,7 @@ class ToolConfig < ApplicationRecord
       else
         cb_error "Invalid '#{knd}:#{id_or_name}' overlay."
       end
-    end.flatten.reduce(&:merge)
+    end.flatten.reduce(&:merge) || []
   end
 
   # Returns an array of the data providers that are
