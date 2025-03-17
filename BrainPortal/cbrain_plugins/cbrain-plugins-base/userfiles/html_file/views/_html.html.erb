@@ -23,8 +23,17 @@
 %>
 
 
-
-<%= link_to h("Open in a separate tab"), url_for(:controller  => :userfiles, :id  => @userfile.id, :action  => :display, :viewer => :html, :content_viewer => "on", :file_name => @userfile.name), :target => "_blank" if params[:action] == "show" %>
+<%= link_to(
+      h("Open in a separate tab"),
+            url_for(
+              :controller  => :userfiles,
+              :id  => @userfile.id,
+              :action  => :display,
+              :viewer => :html,
+              :content_viewer => "on",
+              :file_name => @userfile.name),
+            :target => "_blank"
+    ) if params[:action] == "show" %>
 
 <iframe sandbox
     src="<%= stream_userfile_path(@userfile, :disposition => 'inline')%>"
@@ -33,8 +42,13 @@
  >
     HTML Viewer
 </iframe>
-HTML was sandboxed and filtered for greter safety
-<%= link_to h("Show as is in a separate tab, without any safety filters"), stream_userfile_path(@userfile, :disposition => 'inline'), :target => "_blank" %>
+HTML was sandboxed and filtered for your safety.
+<%= link_to(
+      h("Show as is in a separate tab, without any safety filters"),
+      stream_userfile_path(@userfile, :disposition => 'inline'),
+      :target => "_blank"
+    )
+%>
 
 
 
