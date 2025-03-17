@@ -790,14 +790,14 @@
       tool_tip.hide();
     });
 
-    // add a copy to buffer button for copy-text classes
-    // supports multiline but
+
+    // Adds copy to buffer button to all the element of class 'copy-text'.
 
     if (navigator.clipboard) {
       $(".copy-text").each(function () {
         let $this = $(this);
 
-        // Get text with line breaks preserved (best effort)
+        // Keep line breaks
         let text = $this.html()
             .replace(/<br\s*\/?>/g, "\n")
             .replace(/<\/p>\s*<p>/g, "\n")
