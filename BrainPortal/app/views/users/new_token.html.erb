@@ -28,9 +28,9 @@
 
 We have just generated a new API token for you.
 <p>
-<div>
-  <code id="api_token" class="copy-text" ><%= @new_token %></code>
-</div>
+  <code class="copy-text"><%= @new_token %>
+    <%= copy_to_clipboard_button(@new_token) %>
+  </code>
 <p>
 
 If you are a developer and want to automate working

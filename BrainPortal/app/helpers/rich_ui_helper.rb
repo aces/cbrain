@@ -336,6 +336,39 @@ module RichUiHelper
     return html
   end
 
+  # Create copy to clipboard button
+  # On click on this button a text `txt` is copied to the clipboard.
+  # Default label for the button is text 'copy', followed by svg icon for copying
+  # In the case of successful copying a tooltip like message 'Copied!' rather than an alert
+  #
+  # Options:
+  # [:label] a button label. Defaults to 'copy' followed by a copy icon
+  # [:message] feedback message. Default to 'Copied!'.  #
+  # All other options are treated as HTML attributes of the button
+  def copy_to_clipboard_button(txt, options={})
+    ok_msg   = options.delete(:message)
+    ok_msg ||= 'Copied!'
+    label    = options.delete(:label)
+    label  ||= 'copy
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+      xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
+      <rect x="4" y="4" width="14" height="14" rx="2" ry="2"
+      fill="#d1d5da" stroke="#6a737d" stroke-width="1.25"/>
+      <rect x="7" y="7" width="14" height="14" rx="2" ry="2"
+      fill="#d1d5da" stroke="#6a737d" stroke-width="1.25"/>
+      </svg>'
+
+    options['class']         = options['class'].to_s + " copy_button"
+    options['data-copy-txt'] = txt
+
+    tooltip = '<span class="copy-tooltip">' + ok_msg + '</span>'
+
+    atts = options.to_html_attributes
+    html = '<button class="copy-button"' + "#{atts}>" + label  + tooltip + '</button>'
+    html.html_safe
+  end
+
+
   # Create an element that will toggle between hiding and showing another element.
   # The appearance/disappearance can also be animated.
   def show_hide_toggle(text, target, options = {})

@@ -791,53 +791,28 @@
     });
 
 
-    // Adds copy to buffer button to all the element of class 'copy-text'.
+    // Adds copy to clipboard (aka buffer) on a click to all elements of 'copy-text' class.
+    // The text to copy is passed via data-copy-txt attribute
+    // to be used with copy_to_clipboard_button template helper
 
     if (navigator.clipboard) {
-      $(".copy-text").each(function () {
+      $(".copy-button").each(function () {
         let $this = $(this);
 
-        // Keep line breaks
-        let text = $this.html()
-            .replace(/<br\s*\/?>/g, "\n")
-            .replace(/<\/p>\s*<p>/g, "\n")
-            .replace(/<\/div>\s*<div>/g, "\n")
-            .replace(/<\/?[^>]+(>|$)/g, "")
-            .trim();
+        let text = $this.data('copy-txt');
 
-        if ($this.find(".copy-button").length === 0) {
-          let copyBtn = $(`
-                    <button class="copy-button">                    
-                        copy 
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" 
-                             xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
-                            <rect x="4" y="4" width="14" height="14" rx="2" ry="2" 
-                                  fill="#d1d5da" stroke="#6a737d" stroke-width="1.25"/>
-                            <rect x="7" y="7" width="14" height="14" rx="2" ry="2" 
-                                  fill="#d1d5da" stroke="#6a737d" stroke-width="1.25"/>
-                        </svg>
-                    </button>
-                `);
+        // tooltip-like span for feedback
+        let tooltip = $this.find(".copy-tooltip");
 
-          // Attach tooltip for feedback
-          let tooltip = $('<span class="copy-tooltip">Copied!</span>');
-          $this.css("position", "relative");
-          $this.append(tooltip);
-
-          // Attach the button
-          $this.append(copyBtn);
-
-          copyBtn.on("click", function (event) {
-            event.stopPropagation(); // Allow normal text selection
-            navigator.clipboard.writeText(text).then(() => {
-              console.log("Copied");
-              tooltip.css("opacity", "1");
-              setTimeout(() => tooltip.css("opacity", "0"), 1500);
-            }).catch(err => console.error("Copy failed", err));
+        $this.on("click", function (event) {
+          // event.stopPropagation();
+          navigator.clipboard.writeText(text).then(() => {
+            tooltip.css("opacity", "1");
+            setTimeout(() => tooltip.css("opacity", "0"), 1500)
           });
-        }
+        });
       });
-    }
+    };
 
 
     /////////////////////////////////////////////////////////////////////
