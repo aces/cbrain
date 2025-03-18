@@ -359,7 +359,7 @@ module RichUiHelper
       </svg>'
 
     options['class']         = options['class'].to_s + " copy_button"
-    options['data-copy-txt'] = txt
+    options['data-clipboard'] = txt
 
     tooltip = '<span class="copy-tooltip">' + ok_msg + '</span>'
 
