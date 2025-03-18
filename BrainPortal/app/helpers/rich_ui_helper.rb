@@ -349,13 +349,14 @@ module RichUiHelper
     ok_msg   = options.delete(:message)
     ok_msg ||= 'Copied!'
     label    = options.delete(:label)
-    label  ||= 'copy
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-      xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
-      <rect x="4" y="4" width="14" height="14" rx="2" ry="2"
-      fill="#d1d5da" stroke="#6a737d" stroke-width="1.25"/>
-      <rect x="7" y="7" width="14" height="14" rx="2" ry="2"
-      fill="#d1d5da" stroke="#6a737d" stroke-width="1.25"/>
+    label  ||= 'copy' +
+      '<svg
+        width="12" height="12" viewBox="0 0 24 24" fill="none"
+        xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
+        <rect x="4" y="4" width="14" height="14" rx="2" ry="2"
+        fill="#d1d5da" stroke="#6a737d" stroke-width="1.25"/>
+        <rect x="7" y="7" width="14" height="14" rx="2" ry="2"
+        fill="#d1d5da" stroke="#6a737d" stroke-width="1.25"/>
       </svg>'
 
     options['class']         = options['class'].to_s + " copy_button"
