@@ -232,7 +232,12 @@
 
        <% end %>
 
-       <%= tb.tab("Raw") do %>
+       <%= tb.tab("Parameters in YAML") do %>
+         <p class="medium_paragraphs">
+           This shows only the scientific parameters associated with
+           this task. See the description in the last panel for more
+           information.
+         </p>
          <% yamltext = @task.params.to_yaml(
                          :root        => "Params", # no longer supported
                          :indentation => 4,
@@ -241,6 +246,56 @@
          %>
          <pre><%= yamltext %></pre>
        <% end %>
+
+       <%= tb.tab("Parameters in JSON") do %>
+         <p class="medium_paragraphs">
+           This shows only the scientific parameters associated with
+           this task. See the description in the last panel for more
+           information.
+         <% jsontext = JSON.pretty_generate(@task.params) %>
+         <pre><%= jsontext %></pre>
+       <% end %>
+
+       <%= tb.tab("Full Task Object in JSON") do %>
+         <p class="medium_paragraphs">
+           This structure shows the minimal amount of information needed
+           to create a CBRAIN task similar to this one, using the CBRAIN API.
+           This is provided to help developers working with the API. The top
+           level contains the IDs of the CBRAIN resources needed for the task
+           (e.g. the group (project) ID, the user's ID, the version of the
+           tool etc). These are the values you see at the top of the page in
+           the <em>Info</em> section.
+         </p>
+         <p class="medium_paragraphs">
+           The information under <strong>"params"</strong> is exactly what
+           is shown in the previous tab. It generally contains the scientific
+           parameters for the tool, where file names are replaced by the IDs
+           of files registered within CBRAIN.
+         </p>
+         <p class="medium_paragraphs">
+           For tools integrated with
+           <a href="https://github.com/boutiques/boutiques" target="_blank">Boutiques</a>,
+           the <strong>"params"</strong> structure will contain a substructure called
+           <strong>"invoke"</strong> where most of the scientific parameters are
+           relocated. This structure should match exactly the invoke structure that
+           the Boutiques program <em>bosh</em> expect, but again with filenames
+           replaced by CBRAIN file IDs.
+         </p>
+         <p class="medium_paragraphs">
+           Note that some keys and values are added to these structures during or
+           at the end of processing and are not required at the time the task is
+           submitted.
+         </p>
+         <% obj_atts = @task.attributes.with_indifferent_access
+              .slice(
+                :user_id, :group_id, :bourreau_id, :tool_config_id, :results_data_provider_id,
+                :description, :params
+              )
+         %>
+         <% jsontext = JSON.pretty_generate(obj_atts) %>
+         <pre><%= jsontext %></pre>
+       <% end %>
+
      <% end %>
   </fieldset>
 
