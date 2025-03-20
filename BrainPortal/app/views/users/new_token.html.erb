@@ -3,7 +3,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2020
+# Copyright (C) 2008-2024
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -28,8 +28,9 @@
 
 We have just generated a new API token for you.
 <p>
-<pre><%= @new_token %></pre>
+  <code class="copy-text"><%= @new_token %><%= copy_to_clipboard_button(@new_token) %></code>
 <p>
+
 If you are a developer and want to automate working
 with CBRAIN or NeuroHub, this token will be needed
 to access the APIs.
