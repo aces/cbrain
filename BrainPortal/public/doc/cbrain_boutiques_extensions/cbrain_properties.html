@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>TABLE OF CBRAIN SPECIFIC BOUTIQUES CUSTOM PROPERTIES</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        pre {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+The standard Boutiques properties set does not cover all the need for CBRAIN
+thus we introduce a number of custom properties, which can be added to the
+"custom" section of a Boutiques descriptor, to fine-tune the way CBRAIN
+interpret the descriptor. For example,
+
+<pre>
+    "custom":{
+        "cbrain:readonly-input-files":true,
+        "cbrain:author":"Erik Lee <leex6144@umn.edu>",
+        "cbrain:allow_empty_strings":[
+            "derivatives_prefix"
+        ],
+        "cbrain:no-run-id-for-outputs":[
+            "OutputDirectory"
+        ],
+        "cbrain:integrator_modules":{
+            "BoutiquesFileTypeVerifier":{
+                "SubjectDirectory":[
+                    "BidsSubject"
+                ]
+            },
+            "BoutiquesFileNameMatcher":{
+                "SubjectDirectory":"^sub-[a-zA-Z0-9_]+$"
+            },
+            "BoutiquesOutputFileTypeSetter":{
+                "OutputDirectory":"MADEOutput"
+            },
+            "BoutiquesForcedOutputBrowsePath":{
+                "OutputDirectory":"[DERIVATIVES_PREFIX]made"
+            },
+            "BoutiquesBidsSingleSubjectMaker":"SubjectDirectory",
+            "BoutiquesBidsSubjectFileSelector":{
+                "SubjectDirectory":"all_to_keep"
+            }
+        }
+    }
+</pre>
+
+
+<table>
+    <tr>
+        <th>JSON Fragment</th>
+        <th>Description</th>
+    </tr>
+
+    <tr>
+        <td>
+      <pre>
+"cbrain:author":
+  "Full Name &lt;email@address&gt;"
+      </pre>
+        </td>
+        <td>
+            Author(s) of boutiques descriptor
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+      <pre>
+"cbrain:can-submit-new-tasks":
+  true
+      </pre>
+        </td>
+        <td>
+            Allows forking sub-task(s). To submit a subtask, a task must create a ".new-task-*.json" JSON file at the root of its work directory
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+      <pre>
+"cbrain:ignore_outputs":
+  [
+    output_id_1,
+    output_id_2,
+    output_id_3,
+    ...
+  ]
+      </pre>
+        </td>
+        <td>
+            The listed outputs will not be saved.
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+      <pre>
+"cbrain:save_back_inputs":
+  [
+    id_1,
+    id_2,
+    id_3,
+    ...
+  ]
+      </pre>
+        </td>
+        <td>
+            Saves back listed inputs to the dataprovider (mutates the original inputs)
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+      <pre>
+"cbrain:readonly-input-files":
+  true
+      </pre>
+        </td>
+        <td>
+            Indicates that the tool cannot modify inputs
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+      <pre>
+"cbrain:alters-input-files":
+  true
+      </pre>
+        </td>
+        <td>
+            Indicates that this task may alter its input files
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+      <pre>
+"cbrain:no-run-id-for-outputs":
+  [
+    id_1,
+    id_2,
+    id_3,
+    ...
+  ]
+      </pre>
+        </td>
+        <td>
+            Lists output IDs where no run id is inserted. Prevents the usual practice of adding a run id to output file names. Only allowed for MultiLevel data-providers with "browse path" capability. With this option, new results can overwrite old files.
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+      <pre>
+"cbrain:allow_empty_strings":
+  [input_id]
+      </pre>
+        </td>
+        <td>
+            Allow an empty string as a valid input
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+      <pre>
+"cbrain:boutiques_bosh_exec_mode":
+  "launch"
+      </pre>
+        </td>
+        <td>
+            Experimental. The default implied value is 'simulate'. In the mode 'simulate', at the moment of creating the tool's script in `cluster_commands()`, the output of 'bosh exec simulate' will be substituted in the script to generate the tool's command. In the mode 'launch', an actual 'bosh exec launch' command will be put in the script instead.
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+      <pre>
+"cbrain:inherits-from-class":
+  "MyClassName"
+      </pre>
+        </td>
+        <td>
+            An advanced feature for seasoned CBRAIN experts only. That allows overwriting the standard task behavior with a custom class.
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+      <pre>
+"cbrain:integrator_modules":
+  {
+    "BoutiquesModuleOne":
+       { module-specific-parameters },
+    "BoutiquesModuleTwo":
+       { module-specific-parameters }
+  }
+      </pre>
+        </td>
+        <td>
+            Works only for the most recent Boutiques integration method. All the modules are defined in the lib folder of CBRAIN codebase or a plugin. Thus documentation for all the module-based sub-properties can be auto-generated with the `rdoc` utility.
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+      <pre>
+"cbrain:ignore-exit-status":
+  true
+      </pre>
+        </td>
+        <td>
+            Deprecated. Considers the task successful even if the wrong exit status is present. For the case where the tool has wrong exit codes (deprecated, being superseded by a module-based property).
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+      <pre>
+"cbrain:walltime-estimate":
+  value_in_seconds
+      </pre>
+        </td>
+        <td>
+            Deprecated since walltime was added to Boutiques resources sections.
+        </td>
+    </tr>
+
+</table>
+
+</body>
+</html>
