@@ -109,17 +109,12 @@ module BoutiquesSupport
   # Descriptor schema
   SCHEMA_FILE = "#{Rails.root.to_s}/lib/cbrain_task_generators/schemas/boutiques.schema.json"
 
-  # Read schema, extract some name lists
+  # Read schema, store it in the module.
   @schema = JSON.parse(File.read(SCHEMA_FILE))
 
-  # Out of the schema, extract list of properties that we will use
-  # to restrict our objects.
-  top_prop_names    = @schema['properties'].keys
-  input_prop_names  = @schema['properties']['inputs']['items']['properties'].keys
-  output_prop_names = @schema['properties']['output-files']['items']['properties'].keys
-  group_prop_names  = @schema['properties']['groups']['items']['properties'].keys
-  cont_prop_names   = @schema['properties']['container-image']['allOf'][1]['oneOf'][0]['properties'].keys
-
+  # Utility method to compare a json structure to the Boutiques schema and
+  # make sure it matches the specification. Returns an array of error objects,
+  # or an empty array if everything is OK.
   def self.validate(json)
     JSON::Validator.fully_validate(
       @schema,
@@ -128,19 +123,34 @@ module BoutiquesSupport
     )
   end
 
-  # The following assignement is pretty much like
-  #   class BoutiquesDescriptor < RestrictedHash
-  # except we have a closure and we can access the variables
-  # initialized above (top_prop_names etc).
-  BoutiquesDescriptor = Class.new(RestrictedHash) do |klass|
+  # Out of the schema, extract some lists of properties that we will use
+  # to restrict our objects.
+  top_prop_names    = @schema['properties'].keys
+  input_prop_names  = @schema['properties']['inputs']['items']['properties'].keys
+  output_prop_names = @schema['properties']['output-files']['items']['properties'].keys
+  group_prop_names  = @schema['properties']['groups']['items']['properties'].keys
+  cont_prop_names   = @schema['properties']['container-image']['allOf'][1]['oneOf'][0]['properties'].keys
 
-    allowed_keys top_prop_names # 'name', 'author' etc
+  # Predefine a bunch of classes that act as data holders for
+  # the different levels of the Boutiques descriptor.
+
+  class BoutiquesDescriptor                 < RestrictedHash ; end
+  class BoutiquesDescriptor::Input          < RestrictedHash ; end
+  class BoutiquesDescriptor::OutputFile     < RestrictedHash ; end
+  class BoutiquesDescriptor::Group          < RestrictedHash ; end
+  class BoutiquesDescriptor::ContainerImage < RestrictedHash ; end
+
+  # Now for each of them, configure what keys they are allowed to hold
+  BoutiquesDescriptor                 .allowed_keys = top_prop_names
+  BoutiquesDescriptor::Input          .allowed_keys = input_prop_names
+  BoutiquesDescriptor::OutputFile     .allowed_keys = output_prop_names
+  BoutiquesDescriptor::Group          .allowed_keys = group_prop_names
+  BoutiquesDescriptor::ContainerImage .allowed_keys = cont_prop_names
+
+  # Main class for representing a Boutiques Descriptor
+  class BoutiquesDescriptor
+
     attr_accessor :from_file    # not a hash attribute; a file name, for info
-
-    Input          = Class.new(RestrictedHash) { allowed_keys input_prop_names  }
-    OutputFile     = Class.new(RestrictedHash) { allowed_keys output_prop_names }
-    Group          = Class.new(RestrictedHash) { allowed_keys group_prop_names  }
-    ContainerImage = Class.new(RestrictedHash) { allowed_keys cont_prop_names   }
 
     # Adds a comparison operator to these subobjects so that
     # they can be sorted.
