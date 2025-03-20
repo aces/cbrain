@@ -1360,6 +1360,25 @@ class DataProvider < ApplicationRecord
     @ig_patterns ||= RemoteResource.current_resource.dp_ignore_patterns || []
   end
 
+  # Updates the time stamp for important auxiliary directories and files
+  # as workaround for HPC file deletion policies.
+  #
+  # Some Bourreaux systems are configured with disk allocations where files older than N days are erased automatically.
+  # To prevent such system from deleting the top-level directories for the DP_Cache, and some cbrain-specific files,
+  # the boot process should touch them to reset their timestamps.
+  #
+  # - the +DataProvider+ cache dir
+  # - the +DP_Cache_Key.md5+ and
+  # - +DP_Cache_Rev.id+ located in that cache dir
+  def self.system_touch
+    myself       = RemoteResource.current_resource
+    cache_dir    = myself.dp_cache_dir
+    dp_cache_id  = File.join cache_dir, DataProvider::DP_CACHE_ID_FILE
+    dp_cache_md5 = File.join cache_dir, DataProvider::DP_CACHE_MD5_FILE
+
+    FileUtils.touch [cache_dir, dp_cache_id, dp_cache_md5], verbose: true, nocreate: true
+  end
+
 
 
   #################################################################
@@ -1622,4 +1641,3 @@ class DataProvider < ApplicationRecord
   end
 
 end
-
