@@ -42,9 +42,10 @@
  >
     HTML Viewer
 </iframe>
-HTML was sandboxed and filtered for your safety.
+This HTML document was sandboxed and filtered for greater safety.
+If you trust the content of the file, we can
 <%= link_to(
-      h("Show as is in a separate tab, without any safety filters"),
+      h("show as is in a separate tab without display it in a separate tab without sandboxing."),
       stream_userfile_path(@userfile, :disposition => 'inline'),
       :target => "_blank"
     )
