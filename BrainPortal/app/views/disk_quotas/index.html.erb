@@ -27,7 +27,26 @@
 <% if current_user.has_role? :admin_user %>
   <div class="menu_bar">
     <%= link_to "Exceeded Quotas Report", report_disk_quotas_path(), :class => :button %>
-    <%= link_to "New Quota Entry",        new_disk_quota_path(),     :class => :button %>
+    <%= link_to "Exceeding and Close to Quotas", report_almost_disk_quotas_path(), :class => :button %>
+    <%= link_to "New Quota Entry", new_disk_quota_path(),     :class => :button %>
+
+    <% user_list = current_user.available_users.sort_by(&:login) %>
+    <% if user_list.size > 1 && current_user.has_role?(:admin_user) %>
+      <div class="disk_quota_user_select">
+        View as
+          <%=
+            ajax_onchange_select(:as_user_id,
+                                 disk_quotas_path,
+                                 options_for_select(
+                                   user_list.collect { |u| [ u.login, u.id.to_s ] },
+                                   @as_user.id.to_s
+                                 ),
+                               :datatype => 'script'
+             )
+           %>
+        </div>
+
+    <% end %>
   </div>
 <% end %>
 
