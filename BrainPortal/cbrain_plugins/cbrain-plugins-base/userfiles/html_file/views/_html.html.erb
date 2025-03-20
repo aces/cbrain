@@ -22,8 +22,8 @@
 #
 %>
 
-
-<%= link_to(
+<% if params[:action] == "show" %>
+  <%= link_to(
       h("Open in a separate tab"),
             url_for(
               :controller  => :userfiles,
@@ -33,7 +33,8 @@
               :content_viewer => "on",
               :file_name => @userfile.name),
             :target => "_blank"
-    ) if params[:action] == "show" %>
+    ) %>
+<% end %>
 
 <iframe sandbox
     src="<%= stream_userfile_path(@userfile, :disposition => 'inline')%>"
@@ -43,9 +44,9 @@
     HTML Viewer
 </iframe>
 This HTML document was sandboxed and filtered for greater safety.
-If you trust the content of the file, we can
+If you trust the content of the file, you can
 <%= link_to(
-      h("show as is in a separate tab without display it in a separate tab without sandboxing."),
+      h("open it as is in a separate tab without sandboxing."),
       stream_userfile_path(@userfile, :disposition => 'inline'),
       :target => "_blank"
     )
