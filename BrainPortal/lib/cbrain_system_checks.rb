@@ -314,6 +314,24 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
     end
   end
 
+  # prevents archiving or deleting of administrative files and top directories related to
+  # cache ( gridshare touching is performed by a Bourreau system check method )
+  def self.a060_ensure_top_cache_dir_will_not_be_deleted #:nodoc:
+
+    #-----------------------------------------------------------------------------
+    puts "C> Updating DataProvider cache administrative files and directories"
+    #-----------------------------------------------------------------------------
+
+    cache_root = DataProvider.cache_rootdir rescue nil
+    # Need to perform a `to_s` due to a strange behaviour of `blank?`
+    # on `Pathname` (if a content of a `Pathname` is empty it will return true)
+    if cache_root.to_s.blank?
+      puts "C> \t- SKIPPING! No cache root directory yet configured!"
+      return
+    end
+
+    DataProvider.system_touch
+  end
 
 
   def self.a080_ensure_set_starttime_revision #:nodoc:
