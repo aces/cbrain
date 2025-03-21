@@ -1376,7 +1376,7 @@ class DataProvider < ApplicationRecord
     dp_cache_id  = File.join cache_dir, DataProvider::DP_CACHE_ID_FILE
     dp_cache_md5 = File.join cache_dir, DataProvider::DP_CACHE_MD5_FILE
 
-    FileUtils.touch [cache_dir, dp_cache_id, dp_cache_md5], verbose: true, nocreate: true
+    FileUtils.touch([cache_dir, dp_cache_id, dp_cache_md5], verbose: true, nocreate: true)
   end
 
 
