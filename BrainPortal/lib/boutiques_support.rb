@@ -134,30 +134,24 @@ module BoutiquesSupport
   # Predefine a bunch of classes that act as data holders for
   # the different levels of the Boutiques descriptor.
 
-  class BoutiquesDescriptor                 < RestrictedHash ; end
-  class BoutiquesDescriptor::Input          < RestrictedHash ; end
-  class BoutiquesDescriptor::OutputFile     < RestrictedHash ; end
-  class BoutiquesDescriptor::Group          < RestrictedHash ; end
-  class BoutiquesDescriptor::ContainerImage < RestrictedHash ; end
+  class BoutiquesDescriptor < RestrictedHash ; end
+  class Input               < RestrictedHash ; end
+  class OutputFile          < RestrictedHash ; end
+  class Group               < RestrictedHash ; end
+  class ContainerImage      < RestrictedHash ; end
 
   # Now for each of them, configure what keys they are allowed to hold
-  BoutiquesDescriptor                 .allowed_keys = top_prop_names
-  BoutiquesDescriptor::Input          .allowed_keys = input_prop_names
-  BoutiquesDescriptor::OutputFile     .allowed_keys = output_prop_names
-  BoutiquesDescriptor::Group          .allowed_keys = group_prop_names
-  BoutiquesDescriptor::ContainerImage .allowed_keys = cont_prop_names
+  BoutiquesDescriptor .allowed_keys = top_prop_names
+  Input               .allowed_keys = input_prop_names
+  OutputFile          .allowed_keys = output_prop_names
+  Group               .allowed_keys = group_prop_names
+  ContainerImage      .allowed_keys = cont_prop_names
 
   # Main class for representing a Boutiques Descriptor
   class BoutiquesDescriptor
 
     attr_accessor :from_file    # not a hash attribute; a file name, for info
 
-    # Adds a comparison operator to these subobjects so that
-    # they can be sorted.
-    # See also Hash.resorted in the CBRAIN core extensions.
-    [ Input, OutputFile, Group ].each do |klass|
-      klass.send(:define_method, :'<=>') { |other| self.id <=> other.id }
-    end
 
     def initialize(hash={})
       super(hash)
@@ -203,19 +197,19 @@ module BoutiquesSupport
     # of more useful objects (Input, OutputFile, etc)
 
     def inputs=(array) #:nodoc:
-      super( array.map { |elem| Input.new(elem) } )
+      super( array.map { |elem| BoutiquesSupport::Input.new(elem) } )
     end
 
     def output_files=(array) #:nodoc:
-      super( array.map { |elem| OutputFile.new(elem) } )
+      super( array.map { |elem| BoutiquesSupport::OutputFile.new(elem) } )
     end
 
     def groups=(array) #:nodoc:
-      super( array.map { |elem| Group.new(elem) } )
+      super( array.map { |elem| BoutiquesSupport::Group.new(elem) } )
     end
 
     def container_image=(obj) #:nodoc:
-      super( ContainerImage.new(obj) )
+      super( BoutiquesSupport::ContainerImage.new(obj) )
     end
 
     # ------------------------------
@@ -509,6 +503,13 @@ module BoutiquesSupport
     #------------------------------------------------------
     # Aditional methods for the sub-objects of a descriptor
     #------------------------------------------------------
+
+    # Adds a comparison operator to these subobjects so that
+    # they can be sorted.
+    # See also Hash.resorted in the CBRAIN core extensions.
+    [ Input, OutputFile, Group ].each do |klass|
+      klass.send(:define_method, :'<=>') { |other| self.id <=> other.id }
+    end
 
     class Input
 
