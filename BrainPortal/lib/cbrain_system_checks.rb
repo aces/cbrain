@@ -314,9 +314,9 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
     end
   end
 
-  # prevents archiving/delete of important adminstrative files and top directories (related to
-  # cache and gridshare)
-  def self.a060_ensure_system_files_will_not_be_deleted #:nodoc:
+  # prevents archiving or deleting of administrative files and top directories related to
+  # cache ( gridshare touching is performed by a Bourreau system check method )
+  def self.a060_ensure_top_cache_dir_will_not_be_deleted #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Updating DataProvider cache administrative files and directories"
