@@ -297,7 +297,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     puts "C> Making sure the grid share directory has a symlink to the data provider cache..."
     #----------------------------------------------------------------------------
 
-    FileUtils.touch([gridshare_dir, cache_dir], verbose: true, nocreate: true)
+    FileUtils.touch(gridshare_dir, verbose: true, nocreate: true)
 
     # update timestamp for the symbolic link rather than the folder it points to
     # --no-dereference works on most major os, otherwise link recreated below
