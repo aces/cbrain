@@ -289,18 +289,17 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     myself        = RemoteResource.current_resource
     gridshare_dir = myself.cms_shared_dir
     cache_dir     = myself.dp_cache_dir
-
     sym_path      = "#{gridshare_dir}/#{DataProvider::DP_CACHE_SYML}"
-￼
+
     return unless Dir.exists?(gridshare_dir) && Dir.exists?(cache_dir)
 
     #----------------------------------------------------------------------------
     puts "C> Making sure the grid share directory has a symlink to the data provider cache..."
     #----------------------------------------------------------------------------
 
-    FileUtils.touch(gridshare_dir, verbose: true, nocreate: true)
+    FileUtils.touch([gridshare_dir, cache_dir], verbose: true, nocreate: true)
 
-￼   # update timestamp for a softlink rather than the folder it points to
+    # update timestamp for the symbolic link rather than the folder it points to
     # --no-dereference works on most major os, otherwise link recreated below
     link_updated = system("touch", "--no-dereference", sym_path)
 
