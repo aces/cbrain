@@ -297,6 +297,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     puts "C> Making sure the grid share directory has a symlink to the data provider cache..."
     #----------------------------------------------------------------------------
 
+    # update the work directory timestamp to counter cluster deletion policies
     FileUtils.touch(gridshare_dir, verbose: true, nocreate: true)
 
     # update timestamp for the symbolic link rather than the folder it points to
