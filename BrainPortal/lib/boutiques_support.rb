@@ -500,42 +500,42 @@ module BoutiquesSupport
       new_json
     end
 
-    #------------------------------------------------------
-    # Aditional methods for the sub-objects of a descriptor
-    #------------------------------------------------------
+  end  # class BoutiquesSupport::BoutiquesDescriptor
 
-    # Adds a comparison operator to these subobjects so that
-    # they can be sorted.
-    # See also Hash.resorted in the CBRAIN core extensions.
-    [ Input, OutputFile, Group ].each do |klass|
-      klass.send(:define_method, :'<=>') { |other| self.id <=> other.id }
-    end
+  #------------------------------------------------------
+  # Aditional methods for the sub-objects of a descriptor
+  #------------------------------------------------------
 
-    class Input
-
-      # This method return the parameter name for the input.
-      # We put all input Boutiques parameters under a 'invoke' substructure.
-      # E.g. for a input with ID 'abcd' in a task, we'll find the value
-      # in task.params['invoke']['abcd'] and the parameter name is thus
-      # "invoke[abcd]"
-      def cb_invoke_name(force_list = nil)
-        if (self.list && force_list.nil?) || force_list == true
-          "invoke[#{self.id}][]"
-        else # self.list is false, or force_list is false
-          "invoke[#{self.id}]"
-        end
-      end
-
-      def cb_invoke_html_name(force_list = nil)
-        cb_invoke_name(force_list).to_la
-      end
-
-      def cb_invoke_html_id(force_list = nil)
-        cb_invoke_html_name(force_list).to_la_id
-      end
-
-    end
-
+  # Adds a comparison operator to these subobjects so that
+  # they can be sorted.
+  # See also Hash.resorted in the CBRAIN core extensions.
+  [ Input, OutputFile, Group ].each do |klass|
+    klass.send(:define_method, :'<=>') { |other| self.id <=> other.id }
   end
+
+  class Input
+
+    # This method return the parameter name for the input.
+    # We put all input Boutiques parameters under a 'invoke' substructure.
+    # E.g. for a input with ID 'abcd' in a task, we'll find the value
+    # in task.params['invoke']['abcd'] and the parameter name is thus
+    # "invoke[abcd]"
+    def cb_invoke_name(force_list = nil)
+      if (self.list && force_list.nil?) || force_list == true
+        "invoke[#{self.id}][]"
+      else # self.list is false, or force_list is false
+        "invoke[#{self.id}]"
+      end
+    end
+
+    def cb_invoke_html_name(force_list = nil)
+      cb_invoke_name(force_list).to_la
+    end
+
+    def cb_invoke_html_id(force_list = nil)
+      cb_invoke_html_name(force_list).to_la_id
+    end
+
+  end # class BoutiquesSupport::Input
 
 end
