@@ -44,10 +44,10 @@
      </p>
 
      <p>
-     To users of project: <%= group_select(:group_id,
+     To users of project: <%= group_select(:destination_group_id,
            {
              :groups  => current_user.assignable_groups.order(:name),
-             :selector => @group_id, # :group_id is not an attribute of Message.
+             :selector => @group_id, # destination_group_id is not an attribute of Message
            },
            { :include_blank => true }
            )

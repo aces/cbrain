@@ -44,8 +44,8 @@
       ] %>
     </p>
 
-    <% # group_id is not the attribute of the Message object %>
-    <%= hidden_field_tag :group_id, current_user.own_group.id %>
+    <% # destination_group_id is not the attribute of the Message object %>
+    <%= hidden_field_tag :destination_group_id, current_user.own_group.id %>
 
     <p>
       <%= f.label :header %><br />
