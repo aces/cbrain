@@ -206,7 +206,7 @@ class ToolConfigsController < ApplicationController
            @tool_config.container_image_userfile_id = other_tc.container_image_userfile_id
            @tool_config.container_exec_args         = other_tc.container_exec_args.presence
            @tool_config.container_index_location    = other_tc.container_index_location
-           @tool_config.singularity_overlays_specs  = other_tc.singularity_overlays_specs
+           @tool_config.apptainer_overlays_specs    = other_tc.apptainer_overlays_specs
            @tool_config.extra_qsub_args             = other_tc.extra_qsub_args
            @tool_config.cloud_disk_image            = other_tc.cloud_disk_image
            @tool_config.cloud_vm_user               = other_tc.cloud_vm_user
@@ -243,7 +243,7 @@ class ToolConfigsController < ApplicationController
              container_image_userfile_id containerhub_image_name
              container_engine container_index_location container_exec_args
              inputs_readonly
-             singularity_overlays_specs singularity_use_short_workdir
+             apptainer_overlays_specs apptainer_use_short_workdir
              boutiques_descriptor_path
            )
         )
@@ -318,8 +318,8 @@ class ToolConfigsController < ApplicationController
       :version_name, :description, :tool_id, :bourreau_id, :env_array, :script_prologue, :script_epilogue,
       :group_id, :ncpus, :container_image_userfile_id, :containerhub_image_name, :container_index_location,
       :inputs_readonly,
-      :container_engine, :extra_qsub_args, :singularity_overlays_specs, :container_exec_args,
-      :singularity_use_short_workdir,
+      :container_engine, :extra_qsub_args, :apptainer_overlays_specs, :container_exec_args,
+      :apptainer_use_short_workdir,
       :boutiques_descriptor_path,
       # The configuration of a tool in a VM managed by a
       # ScirCloud Bourreau is defined by the following

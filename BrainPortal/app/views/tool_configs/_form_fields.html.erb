@@ -194,10 +194,10 @@
     <% t.edit_cell(:container_index_location, :header => "Index of the container image") do |f| %>
       <%= f.text_field :container_index_location %>
       <div class="field_explanation">
-        The index (url) of the container image in which the docker or singularity container is
+        The index (url) of the container image in which the docker or Apptainer/Singularity container is
         accessible through.
         Examples for Docker are: quay.io, index.docker.io (default).
-        Examples for Singularity are: docker:&sol;&sol;, shub:&sol;&sol; (default).
+        Examples for Apptainer are: docker://, shub:// (default).
       </div>
     <% end %>
 
@@ -219,11 +219,11 @@
       </div>
     <% end %>
 
-    <% t.edit_cell(:singularity_overlays_specs, :header => "Singularity Overlays", :show_width => 2, :content => full_description(@tool_config.singularity_overlays_specs)) do |f| %>
-      <%= f.text_area :singularity_overlays_specs, :rows => 6, :cols => 120 %>
+    <% t.edit_cell(:apptainer_overlays_specs, :header => "Apptainer/Singularity Overlays", :show_width => 2, :content => full_description(@tool_config.apptainer_overlays_specs)) do |f| %>
+      <%= f.text_area :apptainer_overlays_specs, :rows => 6, :cols => 120 %>
         <div class="wide_field_explanation">
         This field can contain one or several specifications for data overlays
-        to be included when the task is started with Singularity.
+        to be included when the task is started with Apptainer (formerly known as Singularity).
         A specification can be either
         a full path (e.g. <em>file:/a/b/data.squashfs</em>),
         a path with a pattern (e.g. <em>file:/a/b/data*.squashfs</em>),
@@ -237,18 +237,18 @@
         </div>
     <% end %>
 
-    <% t.edit_cell(:container_exec_args, :header => "Misc Singularity Options", :show_width => 2) do |f| %>
+    <% t.edit_cell(:container_exec_args, :header => "Misc Apptainter Options", :show_width => 2) do |f| %>
       <%= f.text_field :container_exec_args, :size => 60 %>
       <div class="field_explanation">
-        This field can contain singularity exec command options. Please use appropriate quotation or escaping
+        This field can contain apptainer/singularity exec command options. Please use appropriate quotation or escaping
         For example, <em>--cleanenv --env MYPATH='/My Documents'</em>.
       </div>
     <% end %>
 
-    <% t.boolean_edit_cell('tool_config[singularity_use_short_workdir]',
-         (@tool_config.singularity_use_short_workdir ? "1" : "0"),
+    <% t.boolean_edit_cell('tool_config[apptainer_use_short_workdir]',
+         (@tool_config.apptainer_overlays_specs ? "1" : "0"),
          "1", "0",
-         :header => "Use short workdirs inside Singularity")
+         :header => "Use short workdirs inside Apptainer")
     %>
 
   <% end %>
