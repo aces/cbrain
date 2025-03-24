@@ -38,20 +38,15 @@
 
 <iframe sandbox
     src="<%= stream_userfile_path(@userfile, :disposition => 'inline')%>"
-    class="bigiframe"
-    style="width:100%; height: 100%;"
+    class="full-frame"
  >
     HTML Viewer
 </iframe>
 This HTML document was sandboxed and filtered for greater safety.
 If you trust the content of the file, you can
 <%= link_to(
-      h("open it as is in a separate tab without sandboxing."),
+      h("open it without sandboxing"),
       stream_userfile_path(@userfile, :disposition => 'inline'),
       :target => "_blank"
     )
-%>
-
-
-
-
+%>, in a separate tab.
