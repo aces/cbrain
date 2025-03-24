@@ -49,7 +49,7 @@ class InvitationsController < ApplicationController
   def create #:nodoc:
     @group          = Group.find(params[:group_id])
     user_ids        = (params[:user_ids] || []).map(&:to_i)
-    already_sent_to = Invitation.where(sender_id: current_user.id, active: true, user_id: user_ids, group_id: @group.id).all.map(&:user_id)
+    already_sent_to = Invitation.where(sender_id: current_user.id, active: true, user_id: user_ids, invitation_group_id: @group.id).all.map(&:user_id)
     rejected_ids    = user_ids & already_sent_to
 
     if user_ids.empty?

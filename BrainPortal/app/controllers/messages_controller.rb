@@ -59,7 +59,7 @@ class MessagesController < ApplicationController
 
   def new #:nodoc:
     @message  = Message.new # blank object for new() form.
-    @invitation_group_id = nil         # for new() form
+    @group_id = nil         # for new() form
 
     if params[:for_dashboard]
       @message.message_type = (params[:for_dashboard].to_s =~ /neurohub/i ? 'neurohub_dashboard' : 'cbrain_dashboard')
@@ -75,10 +75,10 @@ class MessagesController < ApplicationController
   # In CBRAIN, only an admin can create new messages.
   def create #:nodoc:
     @message  = Message.new(message_params)
-    @group_id = params[:destination_group_id] # destination; this is NOT the invitation_group_id IN the message object!
+    @group_id = params[:group_id] # destination; this is NOT the group_id IN the message object!
 
     if @message.message_type == 'cbrain_dashboard' || @message.message_type == 'neurohub_dashboard'
-      @message.invitation_group_id = current_user.own_group.id # these notifications always belong to the admin who created them
+      @group_id = current_user.own_group.id # these notifications always belong to the admin who created them
     end
 
     date = params[:expiry_date] || ""
@@ -176,8 +176,6 @@ class MessagesController < ApplicationController
   private
 
   def message_params
-    params.require(:message).permit(:header, :description, :variable_text, :message_type, 
-                                  :read, :user_id, :expiry, :last_sent, :critical, 
-                                  :display, :send_email, :invitation_group_id, :sender_id)
+    params.require(:message).permit(:header, :description, :variable_text, :message_type, :read, :user_id, :expiry, :last_sent, :critical, :display, :send_email, :group_id, :sender_id)
   end
 end
