@@ -80,11 +80,11 @@ class Bourreau < RemoteResource
   alias docker_present docker_present? #:nodoc:
 
 
-  def singularity_present? #:nodoc:
-    singularity_executable_name.present?
+  def apptainer_present? #:nodoc:
+    apptainer_executable_name.present?
   end
 
-  alias singularity_present singularity_present? #:nodoc:
+  alias apptainer_present apptainer_present? #:nodoc:
 
 
 

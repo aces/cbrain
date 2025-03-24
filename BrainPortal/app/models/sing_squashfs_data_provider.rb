@@ -22,8 +22,8 @@
 
 # This class implements a Data Provider which fetches
 # files out of one or several SquashFS files. The
-# implementation requires Singularity 3.2 or better to
-# be installed on the host, as well as a singularity
+# implementation requires Apptainer 1.1 or better to
+# be installed on the host, as well as an Apptainer
 # container image that contains the basic Linux
 # commands and the 'rsync' command too.
 class SingSquashfsDataProvider < SshDataProvider
@@ -35,14 +35,14 @@ class SingSquashfsDataProvider < SshDataProvider
   # be forever, really.
   BROWSE_CACHE_EXPIRATION = 6.months #:nodoc:
 
-  # This is the basename of the singularity image
+  # This is the basename of the Apptainer image
   # we use to access the squashfs filesystems; we
   # expect this image to be installed in the same
   # directory that contain them. Its minimum
   # requirements are that 1) basic UNIX commands
   # exist on it 2) the rsync command is installed
   # in it too.
-  SINGULARITY_IMAGE_BASENAME = 'sing_squashfs.simg'
+  APPTAINER_IMAGE_BASENAME = 'sing_squashfs.simg'
 
   # We use this to point to the directory INSIDE the container
   # were the root of the data is stored
@@ -77,37 +77,48 @@ class SingSquashfsDataProvider < SshDataProvider
     false
   end
 
+  # Check we have Apptainer 1.1 or better
+  def apptainer_executable_name
+    return @_tool if @_tool # cached name of executable
+
+    remote_cmd = "( apptainer --version 2>/dev/null || singularity --version 2>/dev/null )"
+    # Apptainer is preferable so it comes first in the command
+    # also works if an old Singularity and uptodate Apptainer
+    # todo loop over list of several candidate executables
+    text       = self.remote_bash_this(remote_cmd)
+    cb_error "Can't find apptainer version number on remote host" unless text =~ /^((singularity|apptainer) version )?(\d+)\.(\d+)/
+    _, _, @_tool, major, minor = Regexp.last_match.to_a
+    major = major.to_i
+    minor = minor.to_i
+    if @_tool == 'singularity'
+      cb_error "Singularity version number on remote host is less than 3.7" if major  < 3 || (major == 3 && minor < 7)
+    else # tool == 'apptainer'
+      cb_error "Apptainer version number on remote host is less than 1.1"   if major  < 1 || (major == 1 && minor < 1)
+    end
+
+    return @_tool
+
+  end
+
+
+
   # Raise an exception with a message indicating what is wrong with the config.
   # This method is not part of the official method API
   def check_remote_config! #:nodoc:
-    # Check we have one singularity image file
-    remote_cmd  = "cd #{self.remote_dir.bash_escape};test -f #{SINGULARITY_IMAGE_BASENAME} && echo OK-Exists"
+    # Check we have one Apptainer image file
+    remote_cmd  = "cd #{self.remote_dir.bash_escape};test -f #{APPTAINER_IMAGE_BASENAME} && echo OK-Exists"
     text        = self.remote_bash_this(remote_cmd)
     # The following check will also make sure the remote shell is clean!
-    cb_error "No installed singularity image #{SINGULARITY_IMAGE_BASENAME}, or remote shell is unclean" unless text =~ /\AOK-Exists\s*\z/
+    cb_error "No installed Apptainer image #{APPTAINER_IMAGE_BASENAME}, or remote shell is unclean" unless text =~ /\AOK-Exists\s*\z/
 
     # Check we have at least one .squashfs file in the remote_dir
     sq_files = get_squashfs_basenames
     cb_error "No .squashfs files found" unless sq_files.present?
-
-    # Check we have singularity version 3.2 or better
-    remote_cmd = "(singularity --version 2>/dev/null || apptainer --version 2>/dev/null)"
-    text       = self.remote_bash_this(remote_cmd)
-    cb_error "Can't find singularity version number on remote host" unless text =~ /^((singularity|apptainer) version )?(\d+)\.(\d+)/
-    _, _, tool, major, minor = Regexp.last_match.to_a
-    major = major.to_i
-    minor = minor.to_i
-    if tool == 'singularity'
-      cb_error "singularity version number on remote host is less than 3.7" if major  < 3 || (major == 3 && minor < 7)
-    else # tool == 'apptainer'
-      cb_error "apptainer version number on remote host is less than 1.1"   if major  < 1 || (major == 1 && minor < 1)
-    end
-
     # Check that inside the container
     all_sq_files = @sq_files
     @sq_files    = [ @sq_files.first ] # To speed up check, use only the first squashfs file
     checkdir     = "test -d #{self.containerized_path.bash_escape} && echo OK-Exists"
-    text         = remote_in_sing_bash_this(checkdir)
+    text         = remote_in_apptainer_bash_this(checkdir)
     @sq_files    = all_sq_files # return it to proper full list
     cb_error "No path '#{self.containerized_path}' inside container" unless text =~ /\AOK-Exists\s*\z/
 
@@ -158,7 +169,7 @@ class SingSquashfsDataProvider < SshDataProvider
     file_infos = Rails.cache.fetch(cache_key, :expires_in => BROWSE_CACHE_EXPIRATION) do
       sourcedir  = Pathname.new(self.containerized_path)
       sourcedir += browse_path if browse_path.present?
-      text = remote_in_sing_stat_all(sourcedir.to_s, "." ,true)
+      text = remote_in_apptainer_stat_all(sourcedir.to_s, "." ,true)
       stat_reports_to_fileinfos(text)
     end
 
@@ -190,7 +201,7 @@ class SingSquashfsDataProvider < SshDataProvider
     type_opt   = allowed_types == [ :regular   ] ? "f" :
                  allowed_types == [ :directory ] ? "d" :
                  nil # we can still filter for other combinations on Ruby side
-    text       = remote_in_sing_stat_all(basedir, subdir, one_level, type_opt)
+    text       = remote_in_apptainer_stat_all(basedir, subdir, one_level, type_opt)
     file_infos = stat_reports_to_fileinfos(text)
 
     # Apply more complex filters if necessary
@@ -245,7 +256,7 @@ class SingSquashfsDataProvider < SshDataProvider
   public
 
   # Returns the full paths to the overlays
-  def singularity_overlays_full_paths #:nodoc:
+  def apptainer_overlays_full_paths #:nodoc:
     self.get_squashfs_basenames.map do |basename|
       Pathname.new(self.remote_dir) + basename
     end.map(&:to_s)
@@ -256,7 +267,7 @@ class SingSquashfsDataProvider < SshDataProvider
   # Returns true if we have to use 'ssh' to
   # connect to the remote server. Returns false
   # when we can optimize requests by running
-  # singularity locally. The local situation is
+  # Apptainer locally. The local situation is
   # detected pretty much like in the Smart DP
   # module: if the hostname is the same as *remote_host*
   # or *alternate_host*, and if the *remote_dir* exists
@@ -271,7 +282,7 @@ class SingSquashfsDataProvider < SshDataProvider
                     .map(&:presence)
                     .compact
 
-    # Or test is biased so that we try local only if we have a local dir
+    # Our test is biased so that we try local only if we have a local dir
     # and the hostname match.
     if dp_hostnames.include?(Socket.gethostname) && File.directory?(self.remote_dir)
       @provider_is_remote = false
@@ -296,14 +307,14 @@ class SingSquashfsDataProvider < SshDataProvider
     @sq_files
   end
 
-  def singularity_exec_prefix #:nodoc:
+  def apptainer_exec_prefix #:nodoc:
     sq_files     = get_squashfs_basenames
     overlay_opts = sq_files.map { |f| "--overlay=#{f.bash_escape}:ro" }.join(" ")
-    "cd #{self.remote_dir.bash_escape} && singularity -s exec #{overlay_opts} #{SINGULARITY_IMAGE_BASENAME}"
+    "cd #{self.remote_dir.bash_escape} && #{apptainer_executable_name} -s exec #{overlay_opts} #{APPTAINER_IMAGE_BASENAME}"
   end
 
   def remote_rsync_command #:nodoc:
-    "#{singularity_exec_prefix} rsync"
+    "#{apptainer_exec_prefix} rsync"
   end
 
   # Builds a prefix for a +rsync+ command, such as
@@ -325,12 +336,12 @@ class SingSquashfsDataProvider < SshDataProvider
     rsync
   end
 
-  def remote_in_sing_bash_this(com) #:nodoc:
-    newcom = "#{singularity_exec_prefix} bash -c #{com.bash_escape}"
+  def remote_in_apptainer_bash_this(com) #:nodoc:
+    newcom = "#{apptainer_exec_prefix} bash -c #{com.bash_escape}"
     remote_bash_this(newcom)
   end
 
-  def remote_in_sing_stat_all(basedir, subdir, one_level = true, find_type = nil) #:nodoc:
+  def remote_in_apptainer_stat_all(basedir, subdir, one_level = true, find_type = nil) #:nodoc:
     max_depth   = one_level ? "-maxdepth 1"        : ""
     type_opt    = find_type ? "-type #{find_type}" : ""
     # Linux 'stat' command formats:
@@ -346,7 +357,7 @@ class SingSquashfsDataProvider < SshDataProvider
     # Linux 'find' command format:
     find_format = "E=%y,%m,%s,%U,%u,%G,%g,%A@,%T@,%C@,%p\\n"
     com = "cd #{basedir.to_s.bash_escape} && find #{subdir.to_s.bash_escape} #{max_depth} #{type_opt} -printf \"#{find_format}\""
-    remote_in_sing_bash_this(com)
+    remote_in_apptainer_bash_this(com)
   end
 
   # Given a text file report such as this:

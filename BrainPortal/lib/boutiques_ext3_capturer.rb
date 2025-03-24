@@ -22,7 +22,7 @@
 
 # This module adds automatic setting up of mounted
 # ext3 filesystem as subdirectories of a task, provided
-# the tool works in Singularity/Apptainer.
+# the tool works in Apptainer.
 # It is the exact equivalent of adding an ext3 overlay
 # configuration entry in the task's tool config.
 #
