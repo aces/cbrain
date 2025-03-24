@@ -22,7 +22,7 @@
 #
 %>
 
-<% if params[:action] == "show" %>
+<% if page_is?('#show') %>
   <%= link_to(
       h("Open in a separate tab"),
             url_for(
