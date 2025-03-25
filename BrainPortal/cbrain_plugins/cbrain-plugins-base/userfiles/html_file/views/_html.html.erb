@@ -36,21 +36,17 @@
     ) %>
 <% end %>
 <br>
-<iframe sandbox
+The HTML document previewed in the frame below is not part of CBRAIN. <em> You should <strong>not</strong> open it or
+interact with it unless you fully trust it. </em> Scripts, forms, and external links are disabled.
+<br>
+<iframe sandbox="allow-same-origin"
     src="<%= stream_userfile_path(@userfile, :disposition => 'inline')%>"
     class="full-frame"
-    <% if page_is?('#display') # workaround to use more width in a new tab %>
+    <% if page_is?('#display') # workaround to wide frame in a new tab %>
       style="height: 100%; width: 100%;"
     <% end %>
  >
     HTML Viewer
 </iframe>
 <br>
-This HTML document was sandboxed and filtered for greater safety.
-If you trust the content of the file, you can
-<%= link_to(
-      "open it without sandboxing",
-      stream_userfile_path(@userfile, :disposition => 'inline'),
-      :target => "_blank"
-    )
-%>, in a separate tab.
+
