@@ -3,7 +3,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2023
+# Copyright (C) 2008-2025
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -24,7 +24,7 @@
 
 <% if page_is?('#show') %>
   <%= link_to(
-      h("Open in a separate tab"),
+      "Open in a separate tab",
             url_for(
               :controller  => :userfiles,
               :id  => @userfile.id,
@@ -35,17 +35,21 @@
             :target => "_blank"
     ) %>
 <% end %>
-
+<br>
 <iframe sandbox
     src="<%= stream_userfile_path(@userfile, :disposition => 'inline')%>"
     class="full-frame"
+    <% if page_is?('#display') # workaround to use more width in a new tab %>
+      style="height: 100%; width: 100%;"
+    <% end %>
  >
     HTML Viewer
 </iframe>
+<br>
 This HTML document was sandboxed and filtered for greater safety.
 If you trust the content of the file, you can
 <%= link_to(
-      h("open it without sandboxing"),
+      "open it without sandboxing",
       stream_userfile_path(@userfile, :disposition => 'inline'),
       :target => "_blank"
     )
