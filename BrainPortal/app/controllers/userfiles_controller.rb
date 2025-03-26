@@ -40,7 +40,7 @@ class UserfilesController < ApplicationController
   around_action :permission_check, :only => [
       :download, :update_multiple, :delete_files,
       :create_collection, :change_provider, :quality_control,
-      :export_file_list
+      :export_file_list, :create_virtual_collection
   ]
 
   MAX_DOWNLOAD_MEGABYTES = 400
@@ -1017,6 +1017,15 @@ class UserfilesController < ApplicationController
       return
     end
 
+    virtual_files = FileCollection.where(id: filelist, type: ['CivetVirtualStudy', 'VirtualFileCollection']).to_a
+
+    if virtual_files.present?
+      virtual_files  = Userfile.find_accessible_by_user(virtual_files.pluck(:id), current_user, :access_requested  => :read)
+      flash[:error] = "Collections of Virtual Collection are not allowed. Exclude #{virtual_files.map(&:name).to_sentence} " if virtual_files
+      redirect_to :action => :index, :format =>  request.format.to_sym
+      return
+    end
+
     collection = FileCollection.new(
       :user_id          => current_user.id,
       :group_id         => file_group,
@@ -1053,6 +1062,84 @@ class UserfilesController < ApplicationController
 
     flash[:notice] = "Collection #{collection.name} is being created in background."
     redirect_to :action => :index
+
+  end
+
+  # Create a virtual collection from the selected files.
+  def create_virtual_collection #:nodoc:
+    filelist         = params[:file_ids].uniq || []
+    data_provider_id = params[:data_provider_id_for_collection]
+    collection_name  = params[:collection_name]
+    file_group       = current_assignable_group.id
+
+    if data_provider_id.blank?
+      flash[:error] = "No data provider selected.\n"
+      redirect_to :action => :index
+      return
+    end
+
+    # Handle collection name
+    if collection_name.blank?
+      suffix = Time.now.to_i
+      while Userfile.where(:user_id => current_user.id, :name => "VirtualCollection-#{suffix}").first.present?
+        suffix += 1
+      end
+      collection_name = "VirtualCollection-#{suffix}"
+    end
+
+    if ! Userfile.is_legal_filename?(collection_name)
+      flash[:error] = "Error: collection name '#{collection_name}' is not acceptable (illegal characters?)."
+      redirect_to :action => :index, :format =>  request.format.to_sym
+      return
+    end
+
+    # Check if the collection name chosen by the user already exists for this user on the data_provider
+    if current_user.userfiles.exists?(:name => collection_name, :data_provider_id => data_provider_id)
+      flash[:error] = "Error: collection with name '#{collection_name}' already exists."
+      redirect_to :action => :index, :format =>  request.format.to_sym
+      return
+    end
+
+    userfiles = Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read)
+
+    # todo double check how 0 is possible, bad files should cause exception
+    if userfiles.count == 0
+      flash[:error] = "Error: Inaccessible files selected."
+      redirect_to :action => :index, :format =>  request.format.to_sym
+      return
+    end
+
+    collection = VirtualFileCollection.new(
+      :user_id          => current_user.id,
+      :group_id         => file_group,
+      :data_provider_id => data_provider_id,
+      :name             => collection_name
+    )
+
+    collection.save!
+    collection.cache_prepare
+    coldir = collection.cache_full_path
+    Dir.mkdir(coldir)
+
+    collection.set_virtual_file_collection(userfiles)
+
+    # Save the content and DB model
+
+    collection.sync_to_provider
+    collection.save
+    collection.set_size
+
+    # Find the files
+    userfiles = Userfile
+                  .find_all_accessible_by_user(current_user, :access_requested => :read)
+                  .where(:id => filelist).all.to_a
+
+    if userfiles.empty?
+      flash[:error] = "You need to select some files first."
+      redirect_to(:action => :index)
+      return
+    end
+    redirect_to(:controller => :userfiles, :action => :show, :id => collection.id)
 
   end
 
@@ -1235,7 +1322,82 @@ class UserfilesController < ApplicationController
     end
   end
 
-  #Extract a file from a collection and register it separately
+  # Extract files from a virtual collection and register them separately
+  # in the database.
+  def extract_from_virtual_collection #:nodoc:
+    success = failure = 0
+
+    unless params[:collection_files] && params[:collection_files].size > 0
+      flash[:notice] = "No files selected for extraction"
+      redirect_to :action  => :show
+      return
+    end
+
+    collection_ids_file_pairs = params[:collection_files].map {|x| x.split('#', 2)}
+    collections_file_names    = collection_ids_file_pairs.group_by { |first, _| first }
+    # add the object to hash and validate provider access, while keeping primitive keys
+
+    # todo - add option to specify target data_provider
+    collections_file_names.each do |collection_id, obj_file_list|
+      collection = FileCollection.find_accessible_by_user(collection_id, current_user, :access_requested  => :read)
+      obj_file_list.each { |pair| pair[0] = collection }
+      data_provider      = collection.data_provider
+      if data_provider.read_only?
+        flash[:error] = "Unfortunately file #{obj_filelist.second.first} of collection #{collection.name} is located on a not writable DataProvider #{data_provider.name}, so we can't extract its internal files."
+        redirect_to :action => :show
+        return
+      end
+    end
+
+    results = collections_file_names.map do |collection_id, collection_file_pairs|
+      collection      = collection_file_pairs.first.first
+      data_provider   = collection.data_provider
+      collection_path = collection.cache_full_path
+      collection_file_pairs.map do |_, file|       # Extract each file
+        # Validations; make sure "file" is a path inside the collection
+        rel_path = Pathname.new(file)
+        next :not_relative unless rel_path.relative?
+        full_path = collection_path.parent + rel_path
+        full_path = File.realpath(full_path.to_s) rescue nil
+        next :not_resolve unless full_path
+        next :is_symlink  if     File.symlink?(full_path.to_s)
+        next :not_file    unless File.file?(full_path.to_s)
+        next :outside_col unless full_path.start_with? collection_path.to_s
+        basename  = rel_path.basename.to_s
+        file_type = Userfile.suggested_file_type(basename) || SingleFile
+        userfile = file_type.new(
+          :name             => basename,
+          :user_id          => current_user.id,
+          :group_id         => collection.group_id,
+          :data_provider_id => data_provider.id
+        )
+        Dir.chdir(collection_path.parent) do
+          next :cannot_save_userfile unless userfile.save
+          userfile.addlog("Extracted from collection '#{collection.name}'.")
+          begin
+            userfile.cache_copy_from_local_file(full_path.to_s)
+            next :ok
+          rescue
+            userfile.data_provider_id = nil # nullifying will skip the provider_erase() in the destroy()
+            userfile.destroy
+            next :exception_copy
+          end
+        end
+      end
+    end
+    success = results.flatten.count { |x| x == :ok }
+    failure = results.flatten.size - success
+    if success > 0
+      flash[:notice] = "#{success} files were successfully extracted."
+    end
+    if failure > 0
+      flash[:error] =  "#{failure} files could not be extracted."
+    end
+    redirect_to :action  => :index
+  end
+
+
+  #Extract files from a collection and register it separately
   #in the database.
   def extract_from_collection #:nodoc:
     success = failure = 0
