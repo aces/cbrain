@@ -1206,6 +1206,19 @@ class DataProvider < ApplicationRecord
     end
   end
 
+  # This method updates timestamps of the +DataProvider+ cache dir +DP_Cache+, its md5 token +DP_Cache_Key.md5+ and
+  # revision info  +DP_Cache_Rev.id+.
+  # Some systems are configured with disk allocations where files older than N days are erased automatically.
+  # So CBRAIN reset timestamps of few administrative files or dir using the touch command.
+  def self.touch_cache_md5
+    myself       = RemoteResource.current_resource
+    cache_dir    = myself.dp_cache_dir
+    dp_cache_id  = File.join cache_dir, DataProvider::DP_CACHE_ID_FILE
+    dp_cache_md5 = File.join cache_dir, DataProvider::DP_CACHE_MD5_FILE
+
+    FileUtils.touch([cache_dir, dp_cache_id, dp_cache_md5], verbose: true, nocreate: true)
+  end
+
   # This method returns the revision DateTime of the last time
   # the caching system was initialized. If the revision
   # number is unknown, then a string value of "Unknown" is returned
@@ -1358,22 +1371,6 @@ class DataProvider < ApplicationRecord
 
   def self.rsync_ignore_patterns #:nodoc:
     @ig_patterns ||= RemoteResource.current_resource.dp_ignore_patterns || []
-  end
-
-  # Some Bourreaux systems are configured with disk allocations where files older than N days are erased automatically.
-  # To prevent such system from deleting the top-level directories for the DP_Cache, and some cbrain-specific files,
-  # the system can reset their timestamps using the touch command.
-  #
-  # - the +DataProvider+ cache dir
-  # - the +DP_Cache_Key.md5+ and
-  # - +DP_Cache_Rev.id+ located in that cache dir
-  def self.system_touch
-    myself       = RemoteResource.current_resource
-    cache_dir    = myself.dp_cache_dir
-    dp_cache_id  = File.join cache_dir, DataProvider::DP_CACHE_ID_FILE
-    dp_cache_md5 = File.join cache_dir, DataProvider::DP_CACHE_MD5_FILE
-
-    FileUtils.touch([cache_dir, dp_cache_id, dp_cache_md5], verbose: true, nocreate: true)
   end
 
 

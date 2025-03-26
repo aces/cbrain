@@ -330,7 +330,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
       return
     end
 
-    DataProvider.system_touch
+    DataProvider.touch_cache_md5
   end
 
 
