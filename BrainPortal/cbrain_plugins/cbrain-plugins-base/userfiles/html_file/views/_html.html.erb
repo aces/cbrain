@@ -21,18 +21,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 %>
-
+<%= params[:action] %>
 <% if page_is?('#show') %>
   <%= link_to(
       "Open in a separate tab",
-            url_for(
-              :controller  => :userfiles,
-              :id  => @userfile.id,
-              :action  => :display,
-              :viewer => :html,
-              :content_viewer => "on",
-              :file_name => @userfile.name),
-            :target => "_blank"
+      display_userfile_url(@userfile,
+        :viewer         => :html,
+        :content_viewer => "on",
+        :file_name      => @userfile.name
+      ),
+      :target => "_blank"
     ) %>
 <% end %>
 <br>
