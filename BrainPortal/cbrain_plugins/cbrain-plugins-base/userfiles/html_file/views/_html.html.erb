@@ -21,14 +21,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 %>
-<%= params[:action] %>
-<% if page_is?('#show') %>
+
+<% if params[:new_tab].blank? # show only on userfile page %>
   <%= link_to(
       "Open in a separate tab",
       display_userfile_url(@userfile,
         :viewer         => :html,
         :content_viewer => "on",
-        :file_name      => @userfile.name
+        :file_name      => @userfile.name,
+        :new_tab        => "yes"
       ),
       :target => "_blank"
     ) %>
@@ -40,11 +41,11 @@ interact with it unless you fully trust it. </em> Scripts, forms, and external l
 <iframe sandbox="allow-same-origin"
     src="<%= stream_userfile_path(@userfile, :disposition => 'inline')%>"
     class="full-frame"
-    <% if page_is?('#display') # workaround to wide frame in a new tab %>
+    <% if params[:new_tab].present? # workaround to wide frame in a new tab %>
       style="height: 100%; width: 100%;"
     <% end %>
  >
     HTML Viewer
 </iframe>
-<br>
+
 
