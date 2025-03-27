@@ -289,6 +289,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     myself        = RemoteResource.current_resource
     gridshare_dir = myself.cms_shared_dir
     cache_dir     = myself.dp_cache_dir
+    sym_path      = "#{gridshare_dir}/#{DataProvider::DP_CACHE_SYML}"
 
     return unless Dir.exists?(gridshare_dir) && Dir.exists?(cache_dir)
 
@@ -296,8 +297,16 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     puts "C> Making sure the grid share directory has a symlink to the data provider cache..."
     #----------------------------------------------------------------------------
 
-    sym_path = "#{gridshare_dir}/#{DataProvider::DP_CACHE_SYML}"
-    return if File.symlink?(sym_path) && File.realpath(sym_path) == File.realpath(cache_dir)
+    # update the work directory timestamp to counter cluster deletion policies
+    FileUtils.touch(gridshare_dir, verbose: true, nocreate: true)
+
+    if  File.symlink?(sym_path) && File.realpath(sym_path) == File.realpath(cache_dir)
+      # touch -h updates the timestamp of the symlink itself not the file it point to
+      # it works on major modern Linux and MacOS, but might have problems with older OS,
+      # such as Big Sur
+      system("touch", "-h", sym_path)
+      return
+    end
 
     File.unlink(sym_path) if File.exists?(sym_path)
     File.symlink(cache_dir, sym_path)
