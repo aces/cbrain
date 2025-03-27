@@ -28,7 +28,11 @@
 
 We have just generated a new API token for you.
 <p>
-  <code class="copy-text"><%= @new_token %><%= copy_to_clipboard_button(@new_token) %></code>
+  <code class="copy-text"><%= @new_token %><%= copy_to_clipboard_button(
+                                                 @new_token,
+                                                 label: "copy",
+                                                 title: "Click this button to copy the token into clipboard")
+  %></code>
 <p>
 
 If you are a developer and want to automate working
@@ -55,6 +59,10 @@ for more information.
   <li>
     If a subsequent connection comes from any other IP address at any time,
     the token will immediately be invalidated.
+  </li>
+  <li>
+    To copy the token to your clipboard, simply click the copy button located to the right of the token. The token will be saved to your clipboard.
+    Please do not forget to paste and save the token. You will not be able to see it again.
   </li>
 </ul>
 

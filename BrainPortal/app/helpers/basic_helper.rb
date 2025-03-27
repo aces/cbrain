@@ -80,6 +80,24 @@ module BasicHelper
     ('&nbsp' * 4 * (level.presence || 0) + '&#x21b3;').html_safe
   end
 
+  # Produces clipboard icon, currently used for copy to clipboard button
+  def clipboard_icon
+    "<span>&#128203;</span>"
+  end
+
+  # Creates a simple svg icon for copy (a square upon another square),
+  # akin to Unicode copy symbol but a bit cleaner
+  def copy_icon
+    '<svg
+        width="12" height="12" viewBox="0 0 24 24" fill="none"
+        xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
+        <rect x="4" y="4" width="14" height="14" rx="2" ry="2"
+        fill="#d1d5da" stroke="#6a737d" stroke-width="1.25"/>
+        <rect x="7" y="7" width="14" height="14" rx="2" ry="2"
+        fill="#d1d5da" stroke="#6a737d" stroke-width="1.25"/>'
+        "\n</svg>"
+  end
+
   # Renders 1234567 as 1,234,567
   def number_with_commas(number)
     s = number.to_s
