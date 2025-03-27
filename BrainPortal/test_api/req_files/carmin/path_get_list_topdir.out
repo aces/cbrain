@@ -1,2 +1,0 @@
-200 application/json :\d{7}\d+
-[{"platformPath":"file1.txt","lastModificationDate":111111111,"isDirectory":false,"size":7},{"platformPath":"subdir","lastModificationDate":111111111,"isDirectory":true,"size":null}]
