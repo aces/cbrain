@@ -300,11 +300,13 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     # update the work directory timestamp to counter cluster deletion policies
     FileUtils.touch(gridshare_dir, verbose: true, nocreate: true)
 
-    # update timestamp for the symbolic link rather than the folder it points to
-    # --no-dereference works on most major os, otherwise link recreated below
-    link_updated = system("touch", "--no-dereference", sym_path)
-
-    return if link_updated && File.symlink?(sym_path) && File.realpath(sym_path) == File.realpath(cache_dir)
+    if  File.symlink?(sym_path) && File.realpath(sym_path) == File.realpath(cache_dir)
+      # touch -h updates the timestamp of the symlink itself not the file it point to
+      # it works on major modern Linux and MacOS, but might have problems with older OS,
+      # such as Big Sur
+      system("touch", "-h", sym_path)
+      return
+    end
 
     File.unlink(sym_path) if File.exists?(sym_path)
     File.symlink(cache_dir, sym_path)
