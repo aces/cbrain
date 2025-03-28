@@ -167,9 +167,8 @@
       <strong>Your current time:</strong> <%= to_localtime(Time.now, :datetime) %><BR>
     </p>
     <p>
-      <% available_tool_names = current_user.available_tools.pluck(:name) & @tool_names  # exclude background or not configured tools  %>
-      <strong> Tools available to you (<%= available_tool_names.count  %> out of <%= @tool_names.count %>, <%= link_to 'full list of all tools here', available_path %>):</strong><br/>
-      <%= array_to_table(available_tool_names.sort, :table_class => 'simple', :cols => 4) %>
+      <strong> Tools available to you (<%= @available_tool_names.count  %> out of <%= @tool_names.count %>, <%= link_to 'full list of all tools here', available_path %>):</strong><br/>
+      <%= array_to_table(@available_tool_names.sort, :table_class => 'simple', :cols => 4) %>
     </p>
     <p>
        <strong>Projects you belong to:</strong>  <%= array_to_table(@groups, :table_class => 'simple', :cols => 4) { |g,r,c| link_to_group_if_accessible(g) } %>
