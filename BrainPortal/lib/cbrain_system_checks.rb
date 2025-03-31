@@ -277,6 +277,10 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
       File.chmod(0700,cache_root)
     end
 
+    # Touch the cache directory in case it's on a filesystem where
+    # entries are deleted after a certain amount of time (e.g. shared clusters).
+    system "touch #{cache_root.to_s.bash_escape} #{cache_root.to_s.bash_escape}/*"
+
     #-----------------------------------------------------------------------------
     puts "C> Checking to see if Data Provider cache needs cleaning up..."
     #-----------------------------------------------------------------------------

@@ -297,7 +297,10 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     #----------------------------------------------------------------------------
 
     sym_path = "#{gridshare_dir}/#{DataProvider::DP_CACHE_SYML}"
-    return if File.symlink?(sym_path) && File.realpath(sym_path) == File.realpath(cache_dir)
+    if File.symlink?(sym_path) && File.realpath(sym_path) == File.realpath(cache_dir)
+      system "touch", "-h", sym_path.to_s, gridshare_dir.to_s
+      return
+    end
 
     File.unlink(sym_path) if File.exists?(sym_path)
     File.symlink(cache_dir, sym_path)
