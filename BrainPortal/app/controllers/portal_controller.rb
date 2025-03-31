@@ -56,6 +56,8 @@ class PortalController < ApplicationController
       .pluck('name')
       .sort
 
+    @available_tool_names = @tool_names & current_user.available_tools.pluck(:name)
+
     @dashboard_messages = Message
       .where(:message_type => 'cbrain_dashboard')
       .order("created_at desc")
