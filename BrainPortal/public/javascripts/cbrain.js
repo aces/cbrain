@@ -791,9 +791,9 @@
     });
 
 
-    // Adds copy to clipboard (aka buffer) on a click to all elements of 'copy-text' class.
-    // The text to copy is passed via data-clipboard attribute
-    // to be used with copy_to_clipboard_button template helper
+    // Adds copy to clipboard (aka buffer) on a click to all elements of +copy-button+ class.
+    // The text to copy is passed via +data-clipboard+ attribute
+    // used it with +copy_to_clipboard_button+ template helper
 
     if (navigator.clipboard) {
       $(".copy-button").each(function () {

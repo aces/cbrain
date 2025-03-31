@@ -343,14 +343,14 @@ module RichUiHelper
   #
   # The available +options+ are:
   # [:label] a button label. Defaults to 'copy'
-  # [:prefix] a prefix to label, defaults to the clipboard icon
+  # [:prefix] a prefix to label, defaults to the +clipboard_icon+ (unicode), svg copy icon is also available
   # [:message] feedback message. Default to 'Copied!'.
   # All other options are treated as HTML attributes of the button
   def copy_to_clipboard_button(txt, options={})
     options  = options.dup
     ok_msg   = options.delete(:message)
     ok_msg ||= 'Copied!'
-    prefix ||= clipboard_icon #
+    prefix ||= clipboard_icon
     label    = options.delete(:label) || 'copy to clipboard'
 
     options['class']          = "copy-button #{options['class']}".strip
