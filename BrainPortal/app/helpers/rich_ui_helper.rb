@@ -347,16 +347,18 @@ module RichUiHelper
   # [:message] feedback message. Default to 'Copied!'.
   # All other options are treated as HTML attributes of the button
   def copy_to_clipboard_button(txt, options={})
-    options  = options.dup
-    ok_msg   = options.delete(:message)
-    ok_msg ||= 'Copied!'
-    prefix ||= clipboard_icon
-    label    = options.delete(:label) || 'copy to clipboard'
+    options   = options.dup
+    message   = options.delete(:message)
+    message ||= 'Copied!'
+    prefix    = options.delete(:prefix)
+    prefix  ||= clipboard_icon
+    label     = options.delete(:label)
+    label   ||= 'copy to clipboard'
 
     options['class']          = "copy-button #{options['class']}".strip
     options['data-clipboard'] = txt
 
-    ok_tip = '<span class="copy-tooltip">' + ok_msg + '</span>'
+    ok_tip = '<span class="copy-tooltip">' + message + '</span>'
 
     atts = options.to_html_attributes
     html = "<button #{atts}>#{prefix}#{label}#{ok_tip}</button>"
