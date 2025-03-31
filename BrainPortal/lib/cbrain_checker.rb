@@ -82,16 +82,11 @@ class CbrainChecker
   # already loaded objects; on mild issues (forgot run rake install etc...)
   # in developer env gives warning but fails execution in production or test environment
   def self.validate_sti(query)
-
     table = query&.table_name || 'a table'
-
-    #----------------------------------------------------------------------------
-    puts "C> Checking STI column of #{table} ..."
-    #----------------------------------------------------------------------------
-
-    level    = Rails.env.development? ? 'Warning' : 'Error'
+    level = Rails.env.development? ? 'Warning' : 'Error'
+    puts  "C> \t - Checking table #{table}"
     messages = query.distinct.pluck(:type).map do |name|
-      "C> \t- #{level}: Invalid STI type: " + name unless name.safe_constantize
+      "C> \t\t #{level}: Invalid STI type: #{name || '(blank value)'}" unless name.present? && name.safe_constantize
     end.compact
     puts messages
     raise "Invalid types in the STI column of #{table}" unless messages.empty? || level == "Warning"

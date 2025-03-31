@@ -287,8 +287,23 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.z020_ensure_task_sti_enabled #:nodoc:
-    validate_sti(CbrainTask)
+  def self.z040_ensure_sti_enabled #:nodoc:
+
+    #----------------------------------------------------------------------------
+    puts "C> Checking Single Table Inheritance classes"
+    #----------------------------------------------------------------------------
+
+    [
+      CbrainTask,
+      CustomFilter,
+      User,
+      RemoteResource,
+      DataProvider,
+      BackgroundActivity,
+      ResourceUsage,
+      Invitation,  # todo, fix messages table to get rid on nil in type field
+    # DiskQuota    # todo add quotas, when is STI enabled
+    ].each { |cls| validate_sti(cls) }
   end
 
 end
