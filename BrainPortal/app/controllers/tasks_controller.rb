@@ -800,9 +800,15 @@ class TasksController < ApplicationController
 
           # MASS DELETE
           if operation == 'delete'
-            # Two sublists, to optimize the delete
-            can_be_just_deleted = btasklist.select { |t| t.cluster_workdir.blank? }
-            must_remote_delete  = btasklist - can_be_just_deleted
+
+            # Three sublists, to optimize the delete
+            can_be_just_deleted = btasklist
+              .select { |t| t.cluster_workdir.blank? && t.workdir_archive_userfile_id.blank? }
+            have_archive_local_delete = btasklist
+              .select { |t| t.cluster_workdir.blank? && t.workdir_archive_userfile_id.present? }
+            must_remote_delete = btasklist - can_be_just_deleted - have_archive_local_delete
+
+            # Local delete of tasks with no workdirs and no archives
             can_be_just_deleted.each do |t|
               begin
                 t.destroy
@@ -812,11 +818,19 @@ class TasksController < ApplicationController
                 failed_list[e.message] << t.id
               end
             end
+
+            # Local deletion of tasks with no workdirs but with archives
+            bac=BackgroundActivity::DestroyTaskWithoutWorkdir.local_new(current_user.id, have_archive_local_delete.map(&:id))
+            bac.save # The .save will just be ignored if the items list is empty
+            bacs << bac if bac.id
+            success_list += have_archive_local_delete.map(&:id)
+
+            # Remote deletion of tasks with workdirs
             bac=BackgroundActivity::DestroyTask.local_new(current_user.id, must_remote_delete.map(&:id),bid)
-            # The .save below will just be ignored if the items list is empty
-            bac.save
+            bac.save # The .save will just be ignored if the items list is empty
             bacs << bac if bac.id
             success_list += must_remote_delete.map(&:id)
+
             next
           end
 
