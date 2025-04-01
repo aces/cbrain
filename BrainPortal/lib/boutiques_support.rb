@@ -182,7 +182,7 @@ module BoutiquesSupport
 
     def reload_if_file_timestamp_changed()
       filepath = self.from_file
-      return self if filepath.blank? || File.mtime(filepath) == self.mtime_of_file
+      return self if filepath.blank? || (File.mtime(filepath) - self.mtime_of_file ).abs < 1
       self.class.new_from_file(filepath)
     end
 
