@@ -36,15 +36,29 @@
     ) %>
 <% end %>
 <br>
-The HTML document previewed in the frame below is not part of CBRAIN. <em> You should <strong>not</strong> open it or
+The HTML document previewed in the frame below is not part of CBRAIN. <em> You should <strong>not</strong> browse  or
 interact with it unless you fully trust it. </em> Forms and external links are disabled.
 <br>
-<iframe sandbox="allow-scripts allow-same-origin"
-    src="<%= stream_userfile_path(@userfile, :disposition => 'inline')%>"
-    class="full-frame"
+
+<% if params[:new_tab].blank? %>
+     <div class="trust-file-btn"> <%= link_to 'Open in the frame below', "#" %></div>
+<% end %>
+<br>
+
+
+</div>
+<div class="iframe-container">
+  <iframe sandbox="allow-scripts allow-same-origin"
+    data-frame-url="<%= stream_userfile_path(@userfile, :disposition => 'inline') %>"
+    <% if params[:new_tab].present? %>
+      src="<%= stream_userfile_path(@userfile, :disposition => 'inline') %>"
+    <% end %>
+    data-ids="<%= "#{@userfile.id}-#{@userfile.user.id}" %>"
+    class="full-frame html-viewer"
     <% if params[:new_tab].present? # workaround to wide frame in a new tab %>
       style="height: 100%; width: 100%;"
     <% end %>
  >
     HTML Viewer
-</iframe>
+  </iframe>
+</div>
