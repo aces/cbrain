@@ -26,10 +26,11 @@
   <%= link_to(
       "Open in a separate tab",
       display_userfile_url(@userfile,
-        :viewer         => :html,
-        :content_viewer => "on",
-        :file_name      => @userfile.name,
-        :new_tab        => "yes"
+        :viewer                => :html,
+        :content_viewer        => "on",
+        :file_name             => @userfile.name,
+        :viewer_userfile_class => "HtmlFile",
+        :new_tab               => "yes"
       ),
       :target => "_blank"
     ) %>
