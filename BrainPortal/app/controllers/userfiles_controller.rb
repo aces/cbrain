@@ -245,7 +245,18 @@ class UserfilesController < ApplicationController
 
     # If it's a SingleFile
     if @userfile.is_a?(SingleFile)
-      file_path = nil # we ignore whatever params we get for a SingleFile
+      # This check here is not perfect but it handles the case where
+      # a single file, e.g. HTML, triggers somehow the fetching of
+      # another 'contained' file (e.g. an IMG tag) that obviously doesn't
+      # exist. We allow single files to stream themselves
+      # with file_path being the file's own name, of course.
+      # Because of the fact file_path may or may not contain
+      # an extension, we compare with the current @userfile name
+      # using starts_with?().
+      if file_path.present? && ! @userfile.name.starts_with?(file_path)
+        head :not_found
+        return
+      end
       path = @userfile.cache_full_path.to_s
     else # If it's a FileCollection
       path  = (@userfile.cache_full_path.parent + file_path).to_s

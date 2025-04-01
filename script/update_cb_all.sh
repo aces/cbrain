@@ -127,7 +127,8 @@ function Step {
 
 function runcapture {
   eval "$@" >/tmp/capt.cb_up.$$ 2>&1
-  if test $? -gt 0 ; then
+  evalstatus=$?
+  if test $evalstatus -gt 0 ; then
     echo ""
     #echo -e "\e[31;1mError running command: \e[35;1m$@\e[33;1m"
     printf "${printf_red}Error running command: ${printf_magenta}%s${printf_red}\n" "$*"
@@ -136,7 +137,7 @@ function runcapture {
     #echo -e "\e[0m"
     printf "${printf_none}\n"
     rm -f /tmp/capt.cb_up.$$
-    exit $?
+    exit $evalstatus
   fi
   test -n "$verbose" && cat /tmp/capt.cb_up.$$
   rm -f /tmp/capt.cb_up.$$
