@@ -631,7 +631,9 @@ class ToolConfig < ApplicationRecord
 
   def boutiques_descriptor
     path = boutiques_descriptor_path.presence
-    return self.class.registered_boutiques_descriptor(self.tool.name, self.version_name) if ! path
+    if ! path
+      return self.class.registered_boutiques_descriptor(self.tool.name, self.version_name)
+    end
 
     if @_descriptor_
       @_descriptor_       = @_descriptor_.reload_if_file_timestamp_changed
