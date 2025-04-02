@@ -153,6 +153,7 @@ module BoutiquesSupport
     attr_accessor :from_file    # not a hash attribute; a file name, for info
     attr_accessor :mtime_of_file # not a hash attribute, a file timestamp, for caching
 
+
     def initialize(hash={})
       super(hash)
       # The following re-assignments transforms hashes into subobjects (like OutputFile etc)
