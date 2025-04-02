@@ -625,7 +625,7 @@ class ToolConfig < ApplicationRecord
   def self.registered_boutiques_descriptor(tool_name, tool_version) #:nodoc:
     @_descriptors_ ||= {}
     key = [ tool_name, tool_version ] # two strings
-    @_descriptors_[key] &&= @_descriptors_[key].try :reload_if_file_timestamp_changed  # try to support old style boutiques
+    @_descriptors_[key] = @_descriptors_[key]&.reload_if_file_timestamp_changed
     @_descriptors_[key]
   end
 
@@ -634,8 +634,9 @@ class ToolConfig < ApplicationRecord
     return self.class.registered_boutiques_descriptor(self.tool.name, self.version_name) if ! path
 
     if @_descriptor_
-      @_descriptor_     &&= @_descriptor_.try :reload_if_file_timestamp_changed
+      @_descriptor_       = @_descriptor_.reload_if_file_timestamp_changed
       key                 = [ self.tool.name, self.version_name ] # two strings
+      @_descriptors_    ||= {}
       @_descriptors_[key] = @_descriptor_
       return @_descriptor_
     end
