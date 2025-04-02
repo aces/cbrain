@@ -259,7 +259,7 @@ module SchemaTaskGenerator
       return if container_engine.blank?  # Singularity or Docker
       return if container_image.blank?   # Container name or url
                 container_engine.capitalize!
-      return if container_engine == ("Singularity" || "Apptainer") && !resource.apptainer_present?
+      return if ( container_engine == "Singularity" || container_engine == "Apptainer") && !resource.apptainer_present?
       return if container_engine == "Docker"      && (!resource.docker_present? && !resource.apptainer_present?)
 
       # If Docker engine isn't present use Apptainer
