@@ -95,7 +95,41 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.a030_ensure_we_can_load_oidc_config
+  def self.a025_check_single_table_inheritance_types #:nodoc:
+
+    #-----------------------------------------------------------------------------
+    puts "C> Checking 'type' columns for single table inheritance..."
+    #-----------------------------------------------------------------------------
+
+    myself      = RemoteResource.current_resource
+    err_or_warn = Rails.env == 'production' ? 'Error' : 'Warning'
+    errcount    = 0
+
+    [
+      Userfile,
+      (myself.is_a?(Bourreau)? myself.cbrain_tasks : CbrainTask),
+      CustomFilter,
+      User,
+      RemoteResource,
+      DataProvider,
+      BackgroundActivity,
+      ResourceUsage,
+      Invitation,
+    ].each do |query|
+      badtypes = query.distinct(:type).pluck(:type).compact
+        .reject { |type| type.safe_constantize }
+      next if badtypes.empty?
+      puts "C> \t- #{err_or_warn}: Bad type values in table '#{query.table_name}': #{badtypes.join(', ')}"
+      errcount += 1
+    end
+
+    raise "Single table inheritance check failed for #{errcount} tables" if Rails.env == 'production' && errcount > 0
+
+  end
+
+
+
+  def self.a030_ensure_we_can_load_oidc_config #:nodoc:
 
       #----------------------------------------------------------------------------
       puts "C> Loading OIDC configuration, if any..."

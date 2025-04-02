@@ -55,6 +55,39 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
 
 
+  def self.a025_check_single_table_inheritance_types #:nodoc:
+
+    #-----------------------------------------------------------------------------
+    puts "C> Checking 'type' columns for single table inheritance..."
+    #-----------------------------------------------------------------------------
+
+    myself      = RemoteResource.current_resource
+    err_or_warn = Rails.env == 'production' ? 'Error' : 'Warning'
+    errcount    = 0
+
+    [
+      Userfile,
+      (myself.is_a?(Bourreau) ? CbrainTask.where(:bourreau_id => myself.id) : CbrainTask),
+      CustomFilter,
+      User,
+      RemoteResource,
+      DataProvider,
+      BackgroundActivity,
+      ResourceUsage,
+    ].each do |query|
+      badtypes = query.distinct(:type).pluck(:type).compact
+        .reject { |type| type.safe_constantize }
+      next if badtypes.empty?
+      puts "C> \t- #{err_or_warn}: Bad type values in table '#{query.table_name}': #{badtypes.join(', ')}"
+      errcount += 1
+    end
+
+    raise "Single table inheritance check failed for #{errcount} tables" if Rails.env == 'production' && errcount > 0
+
+  end
+
+
+
   def self.a050_ensure_proper_cluster_management_layer_is_loaded #:nodoc:
 
     #-----------------------------------------------------------------------------
@@ -311,7 +344,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.a110_ensure_task_class_git_commits_cached
+  def self.a110_ensure_task_class_git_commits_cached #:nodoc:
 
     #----------------------------------------------------------------------------
     puts "C> Ensuring git commits for tasks classes are pre-cached..."
