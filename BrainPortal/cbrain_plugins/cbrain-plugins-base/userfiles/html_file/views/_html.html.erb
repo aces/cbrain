@@ -53,6 +53,7 @@ interact with it unless you fully trust it. </em> Forms and external links are d
     <% if params[:new_tab].present? %>
       src="<%= stream_userfile_path(@userfile, :disposition => 'inline') %>"
     <% end %>
+    <%# todo drop caching trust with ids? %>
     data-ids="<%= "#{@userfile.id}-#{@userfile.user.id}" %>"
     class="full-frame html-viewer"
     <% if params[:new_tab].present? # workaround to wide frame in a new tab %>

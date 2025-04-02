@@ -769,7 +769,8 @@
 
     });
 
-    // confirm button for html viewer iframe
+    // todo delete this one or preceditng confirm button for html viewer iframe
+    // this one caches trust info in local storage
     $('.trust-file-btn').each(function() {
       let trustBtn = $(this);
       let fileIds = trustBtn.data('ids');
@@ -790,7 +791,7 @@
 
         // Click event for trusting the file
         trustBtn.click(function() {
-          localStorage.setItem(trustKey, "true"); // Save trust for file id todo expire in 3 h?
+          localStorage.setItem(trustKey, "true"); // Save trust for file/owner id todo expire in 3 h?
           iframe.attr('src', fileUrl);
           $(this).hide();
           iframeContainer.show();
