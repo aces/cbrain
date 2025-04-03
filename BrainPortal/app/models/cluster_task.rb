@@ -433,7 +433,7 @@ class ClusterTask < CbrainTask
     userfile = Userfile.find(userfile) unless userfile.is_a?(Userfile)
 
     # Detect if we're trying to access a userfile content that is
-    # containerized in a singularity overlay.
+    # containerized in an Apptainer overlay.
     is_local = nil
     if self.tool_config
            .data_providers_with_overlays
@@ -441,7 +441,7 @@ class ClusterTask < CbrainTask
            .include? userfile.data_provider_id
       userfile_path = Pathname.new(userfile.provider_full_path) # path inside container
       is_local      = true
-      self.addlog("Input file '#{userfile.name}' is on a local Singularity overlay")
+      self.addlog("Input file '#{userfile.name}' is on a local Apptainer overlay")
     else
       userfile.sync_to_cache
       userfile_path  = Pathname.new(userfile.cache_full_path)
@@ -627,10 +627,10 @@ class ClusterTask < CbrainTask
 
     # Build script
     script  = ""
-    # flag to guaranty propagation of env variables to the singularity/apptainer
+    # flag to guaranty propagation of env variables to the Apptainer
     # as far I know only needed to reverse effect of --cleanenv option, and otherwise all vars are copied to the container
     # yet potentially more cases may be identified
-    propagate = self.use_singularity?
+    propagate = self.use_apptainer?
     # Add prologues in specialization order
     script += bourreau_glob_config.to_bash_prologue propagate if bourreau_glob_config
     script += tool_glob_config.to_bash_prologue     propagate if tool_glob_config
@@ -1790,14 +1790,14 @@ class ClusterTask < CbrainTask
     # Joined version of all the lines in the scientific script
     command_script = commands.join("\n")
 
-    # In case of Docker or Singularity, we rewrite the scientific script inside
+    # In case of Docker or Apptainer, we rewrite the scientific script inside
     # yet another wrapper script.
     if self.use_docker?
       command_script = wrap_new_HOME(command_script, self.full_cluster_workdir)
       command_script = self.docker_commands(command_script)
-    elsif self.use_singularity?
-      load_singularity_image
-      command_script = self.singularity_commands(command_script) # note: invokes wrap_new_HOME itself
+    elsif self.use_apptainer?
+      load_apptainer_image
+      command_script = self.apptainer_commands(command_script) # note: invokes wrap_new_HOME itself
     else
       command_script = wrap_new_HOME(command_script, self.full_cluster_workdir)
     end
@@ -1812,9 +1812,9 @@ class ClusterTask < CbrainTask
 # by ClusterTask
 #   #{ClusterTask.revision_info.to_s}
 
-#{bourreau_glob_config ? bourreau_glob_config.to_bash_prologue(self.use_singularity?) : ""}
-#{tool_glob_config     ? tool_glob_config.to_bash_prologue(self.use_singularity?)     : ""}
-#{tool_config          ? tool_config.to_bash_prologue(self.use_singularity?)          : ""}
+#{bourreau_glob_config ? bourreau_glob_config.to_bash_prologue(self.use_apptainer?) : ""}
+#{tool_glob_config     ? tool_glob_config.to_bash_prologue(self.use_apptainer?)     : ""}
+#{tool_config          ? tool_config.to_bash_prologue(self.use_apptainer?)          : ""}
 #{self.supplemental_cbrain_tool_config_init}
 
 # CbrainTask '#{self.name}' commands section
@@ -1861,9 +1861,9 @@ date '+CBRAIN Task Starting At %s : %F %T' 1>&2
 # Record runtime environment
 bash #{Rails.root.to_s.bash_escape}/vendor/cbrain/bin/runtime_info.sh > #{runtime_info_basename}
 
-# With apptainer/singularity jobs, we sometimes get an error booting the container,
+# With Apptainer jobs, we sometimes get an error booting the container,
 # so we try up to five times.
-for singularity_attempts in 1 2 3 4 5 ; do  # note: the number 5 is used a bit below in an 'if'
+for apptainer_attempts in 1 2 3 4 5 ; do  # note: the number 5 is used a bit below in an 'if'
   SECONDS=0 # this is a special bash variable, see the doc
 
   # stdout and stderr captured below will be re-substituted in
@@ -1873,20 +1873,20 @@ for singularity_attempts in 1 2 3 4 5 ; do  # note: the number 5 is used a bit b
 
   test $status -eq 0 && break # all is good
 
-  # Detect failed boot of singularity container
+  # Detect failed boot of apptainer container
   if ! grep -i 'FATAL.*container.*creation.*failed' #{science_stderr_basename} >/dev/null ; then
     break # move on, for any other error or even non zero successes
   fi
 
   # Detect that final attempt to boot failed
-  if test $singularity_attempts -eq 5 ; then
+  if test $apptainer_attempts -eq 5 ; then
     echo "Apptainer container boot attempts all failed, giving up."
     status=99 # why not
     break
   fi
 
   # Cleanup and try again
-  echo "Apptainer boot attempt number $singularity_attempts failed, trying again."
+  echo "Apptainer boot attempt number $apptainer_attempts failed, trying again."
   grep -v -i 'FATAL.*container.*creation.*failed' < #{science_stderr_basename} > #{science_stderr_basename}.clean
   mv -f #{science_stderr_basename}.clean #{science_stderr_basename}
 done
@@ -2327,34 +2327,34 @@ docker_image_name=#{full_image_name.bash_escape}
 
 
   ##################################################################
-  # Singularity support methods
+  # Apptainer support methods
   ##################################################################
 
-  # Returns true if the task's ToolConfig is configured to point to a singularity image
+  # Returns true if the task's ToolConfig is configured to point to a Apptainer image
   # for the task's processing.
-  def use_singularity?
-    return self.tool_config.use_singularity?
+  def use_apptainer?
+    return self.tool_config.use_apptainer?
   end
 
-  # Return the 'singularity' command to be used for the task; this is fetched
-  # from the Bourreau's own attribute. Default: "singularity".
-  def singularity_executable_name
-    return self.bourreau.singularity_executable_name.presence || "singularity"
+  # Return the 'apptainer' command to be used for the task; this is fetched
+  # from the Bourreau's own attribute. Default: "apptainer".
+  def apptainer_executable_name
+    return self.bourreau.apptainer_executable_name.presence || "apptainer"
   end
 
   # Returns true if the admin has configured this option in the
   # task's ToolConfig attributes.
-  def use_singularity_short_workdir?
-    self.tool_config.singularity_use_short_workdir
+  def use_apptainer_short_workdir?
+    self.tool_config.apptainer_use_short_workdir
   end
 
   # Returns the command line(s) associated with the task, wrapped in
-  # a Singularity call if a Singularity image has to be used. +command_script+
+  # a Apptainer call if a Apptainer image has to be used. +command_script+
   # is the raw scientific bash script.
-  def singularity_commands(command_script)
+  def apptainer_commands(command_script)
 
-    # Basename of the singularity wrapper script
-    singularity_wrapper_basename = ".singularity.#{self.run_id}.sh"
+    # Basename of the apptainer wrapper script
+    apptainer_wrapper_basename = ".apptainer.#{self.run_id}.sh"
 
     # Values we substitute in our script:
     # Numbers in (paren) correspond to the comment
@@ -2363,9 +2363,9 @@ docker_image_name=#{full_image_name.bash_escape}
     # (7) The path to the task's work directory
     task_workdir   = self.full_cluster_workdir # a string
     short_workdir  = "/T#{self.id}" # only used in short workdir mode
-    effect_workdir = use_singularity_short_workdir? ? short_workdir : task_workdir
+    effect_workdir = use_apptainer_short_workdir? ? short_workdir : task_workdir
 
-    # (1) additional singularity execution command options defined in ToolConfig
+    # (1) additional Apptainer execution command options defined in ToolConfig
     container_exec_args = self.tool_config.container_exec_args.presence
 
     # (2) The root of the DataProvider cache
@@ -2401,7 +2401,7 @@ docker_image_name=#{full_image_name.bash_escape}
     # Some of them might be patterns (e.g. /a/b/data*.squashfs) that need to
     # be resolved locally.
     # This will be a string "--overlay=path:ro --overlay=path:ro" etc.
-    overlay_paths = self.tool_config.singularity_overlays_full_paths.map do |path, knd|
+    overlay_paths = self.tool_config.apptainer_overlays_full_paths.map do |path, knd|
       paths = Dir.glob(path) # assume no glob expression in overlay files
       cb_error "Can't find any local file matching overlay '#{path}'" if paths.blank?
       paths.each do |f|
@@ -2416,8 +2416,8 @@ docker_image_name=#{full_image_name.bash_escape}
     # Wrap new HOME environment
     command_script = wrap_new_HOME(command_script, effect_workdir)
 
-    # Set singularity command
-    singularity_commands = <<-SINGULARITY_COMMANDS
+    # Set apptainer command
+    apptainer_commands = <<-APPTAINER_COMMANDS
 
 # Note to developers:
 # During a standard CBRAIN task, this script is invoked with no arguments
@@ -2427,26 +2427,26 @@ docker_image_name=#{full_image_name.bash_escape}
 
 # These two variables control the mode switching at the end of the script.
 mode="exec"
-sing_basename=./#{singularity_wrapper_basename.bash_escape} # note: the ./ is necessary
+apptainer_basename=./#{apptainer_wrapper_basename.bash_escape} # note: the ./ is necessary
 
 # In 'shell' mode we replace them with other things.
 if test $# -eq 1 -a "X$1" = "Xshell" ; then
   mode="shell"
-  sing_basename=""
+  apptainer_basename=""
 fi
 
-# Build a local wrapper script to run in a singularity container
-cat << \"SINGULARITYJOB\" > #{singularity_wrapper_basename.bash_escape}
+# Build a local wrapper script to run in a apptainer container
+cat << \"APPTAINERJOB\" > #{apptainer_wrapper_basename.bash_escape}
 #!/bin/bash
 
-# Singularity wrapper script created automatically for #{self.class.to_s}
+# Apptainer wrapper script created automatically for #{self.class.to_s}
 #   #{self.class.revision_info.to_s}
 # by ClusterTask
 #   #{ClusterTask.revision_info.to_s}
 
 # CBRAIN internal consistency test 1: must run under proper UID
 if test "$UID" -ne "#{Process.uid}" ; then
-  echo "Singularity internal script running with wrong UID (expected UID=#{Process.uid})"
+  echo "Apptainer internal script running with wrong UID (expected UID=#{Process.uid})"
   echo "Runtime IDs: `id`"
   exit 2
 fi
@@ -2482,7 +2482,7 @@ cd #{effect_workdir.bash_escape} || exit 2
 
 # CBRAIN internal consistency test 6: all mounted ext3 filesystems should be
 # on a device different from the task's workdir. Otherwise something went
-# wrong with the mounts. Singularity or Apptainer can sometimes do that
+# wrong with the mounts. Apptainer can sometimes do that
 # if the command is improperly built (order of mounts args etc).
 workdir_devid=$(stat -c %d .)  # dev number of task workdir
 for mount in #{capture_basenames.map(&:bash_escape).join(" ")} ; do
@@ -2500,12 +2500,12 @@ done
 # Scientific commands start here
 
 #{command_script}
-SINGULARITYJOB
+APPTAINERJOB
 
 # Make sure it is executable
-chmod 755 #{singularity_wrapper_basename.bash_escape}
+chmod 755 #{apptainer_wrapper_basename.bash_escape}
 
-# Invoke Singularity with our wrapper script above.
+# Invoke Apptainer with our wrapper script above.
 # Tricks used here:
 # 1) we supply (if any) additional options for the exec command
 # 2) we mount the local data provider cache root directory
@@ -2515,8 +2515,8 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
 # 4) we mount each (if any) of the root directories for local data providers
 # 5) we mount (if any) other fixed file system overlays
 # 6) we mount (if any) capture ext3 filesystems
-# 7) with -H we set the task's work directory as the singularity $HOME directory
-#{singularity_executable_name}                  \\
+# 7) with -H we set the task's work directory as the apptainer $HOME directory
+#{apptainer_executable_name}                  \\
     $mode                                       \\
     #{container_exec_args}                      \\
     -B #{cache_dir.bash_escape}                 \\
@@ -2528,11 +2528,11 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
     #{esc_capture_mounts}                       \\
     -H #{effect_workdir.bash_escape}            \\
     #{container_image_name.bash_escape}         \\
-    $sing_basename
+    $apptainer_basename
 
-    SINGULARITY_COMMANDS
+    APPTAINER_COMMANDS
 
-    return singularity_commands
+    return apptainer_commands
   end
 
 
@@ -2616,7 +2616,7 @@ bash -c "exit $_cbrain_status_"
 
 
   ##################################################################
-  # Singularity load
+  # Apptainer load
   ##################################################################
 
   private
@@ -2628,56 +2628,56 @@ bash -c "exit $_cbrain_status_"
     ".container-#{self.id}.img"
   end
 
- # Load the singularity image either from a repository or from a CBRAIN file
-  def load_singularity_image #:nodoc:
+ # Load the Apptainer image either from a repository or from a CBRAIN file
+  def load_apptainer_image #:nodoc:
     if self.tool_config.container_image
-      load_singularity_image_from_userfile
+      load_apptainer_image_from_userfile
     elsif self.tool_config.containerhub_image_name
-      load_singularity_image_from_repo
+      load_apptainer_image_from_repo
     else
-      cb_error "Cannot find source for singularity image..."
+      cb_error "Cannot find source for Apptainer image..."
     end
   end
 
   # Create a link to our image; the image is a registered CBRAIN file
-  def load_singularity_image_from_userfile #:nodoc:
-    singularity_image = self.tool_config.container_image
-    self.addlog("Syncing the singularity image '#{singularity_image.name}'")
+  def load_apptainer_image_from_userfile #:nodoc:
+    apptainer_image = self.tool_config.container_image
+    self.addlog("Syncing the Apptainer image '#{apptainer_image.name}'")
 
     # Sync the userfile content
-    singularity_image.sync_to_cache
+    apptainer_image.sync_to_cache
 
     # Create the symlink to the cached image.
-    cachename = singularity_image.cache_full_path
+    cachename = apptainer_image.cache_full_path
     image_name = container_image_name
     safe_symlink(cachename,image_name)
   end
 
-  # Perform the singularity build; the image will be cached
+  # Perform the Apptainer build; the image will be cached
   # as a special, hidden userfile on the ScratchDataProvider.
-  def load_singularity_image_from_repo #:nodoc:
-    singularity_image_name     = self.tool_config.containerhub_image_name
-    singularity_index_location = self.tool_config.container_index_location.presence || "shub://"
+  def load_apptainer_image_from_repo #:nodoc:
+    apptainer_image_name     = self.tool_config.containerhub_image_name
+    apptainer_index_location = self.tool_config.container_index_location.presence || "shub://"
 
-    self.addlog("Building singularity image '#{singularity_image_name}'")
+    self.addlog("Building Apptainer image '#{apptainer_image_name}'")
 
     # Find or create the userfile holding the image content.
-    scratch_name     = "Singularity-build-" + singularity_image_name.gsub(/[^a-z0-9_\.\-]+/i,"_") # must respect userfile convention.
+    scratch_name     = "Apptainer-build-" + apptainer_image_name.gsub(/[^a-z0-9_\.\-]+/i,"_") # must respect userfile convention.
     scratch_name.sub!(/(\.img)?$/i, ".img")
     scratch_userfile = SingularityImage.find_or_create_as_scratch(:name => scratch_name) do |cache_path|
       # Optimization: if another find_or_create_as_scratch has already beaten us to the punch
       # and dowloaded the file, just skip this block altogether. The way SyncStatus works, several
       # of these blocks can be scheduled to run, but only one will execute at at any given time.
       next if File.exists?(cache_path.to_s) && File.size(cache_path.to_s) > 0
-      # Run singularity build command
-      out, err = tool_config_system("umask 000; #{singularity_executable_name} build #{cache_path.to_s.bash_escape} #{singularity_index_location.bash_escape}#{singularity_image_name.bash_escape}")
+      # Run Apptainer build command
+      out, err = tool_config_system("umask 000; #{apptainer_executable_name} build #{cache_path.to_s.bash_escape} #{apptainer_index_location.bash_escape}#{apptainer_image_name.bash_escape}")
       # Check that all is OK; if not we store the captured outputs for investigation
       if ! File.exists?(cache_path.to_s) || File.size(cache_path.to_s) < 500.kilobytes
-        capfile = "singularity_build_traces-#{self.run_id}.txt"
+        capfile = "apptainer_build_traces-#{self.run_id}.txt"
         File.open(capfile,"w") do |fh|
           fh.write("=== Stdout ===\n#{out}\n=== Stderr ===\n#{err}\n=== ====== ===\n")
         end
-        cb_error "Cannot build singularity image. Captured outputs are in #{capfile}"
+        cb_error "Cannot build apptainer image. Captured outputs are in #{capfile}"
       end
     end
 
