@@ -45,7 +45,6 @@ class SingularityImage < FilesystemImage
     self.class.has_apptainer_support?
   end
 
-  # caches apptainer_executable_name (which does not change that often)
   def self.apptainer_executable  #:nodoc:
     @_executable ||= RemoteResource.current_resource.apptainer_executable_name.presence || "apptainer"
   end
