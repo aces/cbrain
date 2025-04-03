@@ -1,2 +1,0 @@
-200 application/json :\d{8}\d+
-{"platformPath":"file1.txt","lastModificationDate":1562274221,"isDirectory":false,"size":7}
