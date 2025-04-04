@@ -1,0 +1,42 @@
+
+<%-
+  #
+  # NeuroHub Project
+  #
+  # Copyright (C) 2020
+  # The Royal Institution for the Advancement of Learning
+  # McGill University
+  #
+  # This program is free software: you can redistribute it and/or modify
+  # it under the terms of the GNU General Public License as published by
+  # the Free Software Foundation, either version 3 of the License, or
+  # (at your option) any later version.
+  #
+  # This program is distributed in the hope that it will be useful,
+  # but WITHOUT ANY WARRANTY; without even the implied warranty of
+  # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  # GNU General Public License for more details.
+  #
+  # You should have received a copy of the GNU General Public License
+  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  #
+-%>
+
+  <div class="card-item">
+    <p class="card-label">Carefully read this license agreement.</p>
+    <pre class="card-text license-text"><%= @license_text %></pre>
+    <% if @is_signed %>
+      <% if @is_author %>
+        <div class="status success"><%= nh_icon_checkmark %>As the author of the license you have implicitely signed this agreement.</div>
+      <% else %>
+        <div class="status success"><%= nh_icon_checkmark %>You have already signed this license agreement. </div>
+      <% end %>
+    <% end %>
+    <% if !@is_signed %>
+      <div class="status error"><%= nh_icon_error %> This license agreement is not yet signed. </div>
+      <div class="d-flex">
+        <%= check_box_tag :license_check, 1, nil, :class => "my-2" %>
+        <%= label_tag(:license_check,"By clicking here, I agree with all the conditions above.", :class=>"ml-2  card-label") %>
+      </div>
+    <% end %>
+  </div>
