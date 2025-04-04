@@ -1289,13 +1289,13 @@ class ClusterTask < CbrainTask
 
      if stdoutfile && File.exist?(stdoutfile)
        io = IO.popen("tail -#{stdout_lim} #{stdoutfile.to_s.bash_escape}","r")
-       self.cluster_stdout = io.read
+       self.cluster_stdout = io.read.gsub(/\e\[[0-9;]*[a-zA-Z]/, '')  
        io.close
      end
 
      if stderrfile && File.exist?(stderrfile)
        io = IO.popen("tail -#{stderr_lim} #{stderrfile.to_s.bash_escape}","r")
-       self.cluster_stderr = io.read
+       self.cluster_stderr = io.read.gsub(/\e\[[0-9;]*[a-zA-Z]/, '') 
        io.close
      end
 
