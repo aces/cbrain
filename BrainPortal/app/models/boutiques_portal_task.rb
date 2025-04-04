@@ -74,7 +74,12 @@ class BoutiquesPortalTask < PortalTask
 
   # Return true if the descriptor have only one mandatory input
   def have_a_single_mandatory_input_file?(descriptor)
-    descriptor.file_inputs.select{|i| i.optional == false }.size == 1
+    descriptor.file_inputs.count{|i| ! i.optional } == 1
+  end
+
+  # Return true if descriptor contain at least one file list
+  def have_file_input_list?(descriptor)
+    descriptor.file_inputs.count{|i| i.list } != 0
   end
 
 
@@ -126,7 +131,7 @@ class BoutiquesPortalTask < PortalTask
     end
 
     # Verify the number of files selected in case of a single mandatory file input or descriptor without a file input list
-    if ((!have_a_single_mandatory_input_file?(descriptor) && !have_file_input_list) && num_in_files > num_needed_inputs + num_opt_inputs)
+    if ((!have_a_single_mandatory_input_file?(descriptor) && !have_file_input_list?(descriptor)) && num_in_files > num_needed_inputs + num_opt_inputs)
       message = "This task requires #{num_needed_inputs} mandatory file(s) and #{num_opt_inputs} optional file(s)\n" +
         input_infos
       cb_error message
@@ -805,7 +810,8 @@ class BoutiquesPortalTask < PortalTask
 
   # Return id of the uniq mandatory file
   def uniq_mandatory_input_file_id
-    self.descriptor_for_after_form.file_inputs.select{|i| i.optional == false }.first.id
+    mandatory_file_inputs = self.descriptor_for_after_form.file_inputs.select{|i| ! i.optional }
+    mandatory_file_inputs.count == 1 ? mandatory_file_inputs.first.id : ""
   end
 
   # Return true if no file input is a list
