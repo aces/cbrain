@@ -721,7 +721,10 @@ class DataProvider < ApplicationRecord
                           :user_id => userfile.user_id,
                         )
                         .first
-    return false if target_exists
+    if target_exists
+      userfile.errors.add(:name, "already exists. Please choose a different name.")
+      return false
+    end
     cache_erase(userfile)
     SyncStatus.ready_to_modify_dp(userfile) do
       if impl_provider_rename(userfile,newname.to_s)
