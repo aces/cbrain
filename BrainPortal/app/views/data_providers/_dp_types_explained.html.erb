@@ -114,12 +114,12 @@ acts like a FlatDataProvider.
 
 <p>
 
-<strong>ApptainerSquashfsDataProvider</strong> This class connects to a set of
+<strong>SingSquashfsDataProvider</strong> This class connects to a set of
 one or several squashfs files (all named with <em>.squashfs</em> extensions) through
-a Apptainer container handler. The requirements are:<br>
+a Apptainer (Sigularity container handler. The requirements are:<br>
 <ul>
   <li>that all the squashfs files are in the <em>Physical Data Location</em>,
-  <li>the Apptainer image is also there and named <em><%= ApptainerSquashfsDataProvider::APPTAINER_IMAGE_BASENAME %></em>,
+  <li>the Apptainer image is also there and named <em><%= SingSquashfsDataProvider::APPTAINER_IMAGE_BASENAME %></em>,
   <li>that this image contains a basic Linux system with at least <em>rsync</em> installed in it,
   <li>and that the path to the data root inside the container must be provided in the <em>Containerized Data Path</em> under the <em>Containerized Storage Configuration</em> section.
 </ul>
