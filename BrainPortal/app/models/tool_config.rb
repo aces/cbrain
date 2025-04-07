@@ -195,10 +195,10 @@ class ToolConfig < ApplicationRecord
 
   # Generates a partial BASH script that initializes environment
   # variables and is followed a the script prologue stored in the
-  # object. For singularity prologues, special prefixes are added to
+  # object. For Apptainer prologues, special prefixes are added to
   # variable names to ensure they will be propagated to the container
   # even in presence of --cleanenv parameteres and such
-  def to_bash_prologue(singularity=false)
+  def to_bash_prologue(apptainer=false)
     tool     = self.tool
     bourreau = self.bourreau
     group    = self.group
@@ -239,15 +239,14 @@ class ToolConfig < ApplicationRecord
     ENV_HEADER
     script += vars_to_export_script
 
-    if singularity
+    if apptainer
       script += <<-ENV_HEADER
 #---------------------------------------------------
 # Ensuring that environment variables are propagated:#{env.size == 0 ? " (NONE DEFINED)" : ""}
 #---------------------------------------------------
 
       ENV_HEADER
-      script += vars_to_export_script("SINGULARITYENV_")
-      script += vars_to_export_script("APPTAINERENV_")  #  SINGULARITYENV is to be depricated
+      script += vars_to_export_script("APPTAINERENV_")
 
     end
     script += "\n" if env.size > 0
@@ -341,9 +340,10 @@ class ToolConfig < ApplicationRecord
      end
   end
 
-  # true if singularity image is defined
-  def use_singularity?
-    return self.container_engine == "Singularity" &&
+  # true if Apptainer image is defined
+  def use_apptainer?
+    return (self.container_engine == "Singularity" ||     # Currently Boutiques keeps singularity only
+            self.container_engine == "Apptainer") &&    # Singularity will be probably deprecated by Boutiques soon
         ( self.containerhub_image_name.present? ||
             self.container_image_userfile_id.present? )
   end
@@ -381,7 +381,7 @@ class ToolConfig < ApplicationRecord
     self.tool.cbrain_task_class
   end
 
-  # Returns a hash of full paths to the Singularity overlay files that
+  # Returns a hash of full paths to the Apptainer overlay files that
   # need to be mounted along with explanation of their origin.
   # Some of paths might
   # be patterns and will need to be resolved at run time. The dsl is
@@ -393,7 +393,7 @@ class ToolConfig < ApplicationRecord
   #         userfile:1234
   #      # A ext3 capture filesystem, will NOT be returned here as an overlay
   #         ext3capture:basename=12G
-  def singularity_overlays_full_paths
+  def apptainer_overlays_full_paths
     specs = parsed_overlay_specs
     specs.map do |knd, id_or_name|
 
@@ -401,7 +401,7 @@ class ToolConfig < ApplicationRecord
       when 'dp'
         dp = DataProvider.where_id_or_name(id_or_name).first
         cb_error "Can't find DataProvider #{id_or_name} for fetching overlays" if ! dp
-        dp_ovs = dp.singularity_overlays_full_paths rescue nil
+        dp_ovs = dp.apptainer_overlays_full_paths rescue nil
         cb_error "DataProvider #{id_or_name} does not have any overlays configured." if dp_ovs.blank?
         dp_ovs.map do |dp_path|
           { dp_path => "Data Provider" }
@@ -424,7 +424,7 @@ class ToolConfig < ApplicationRecord
   end
 
   # Returns an array of the data providers that are
-  # specified in the attribute singularity_overlays_specs,
+  # specified in the attribute apptainer_overlays_specs,
   # ignoring all other overlay specs for normal files.
   def data_providers_with_overlays
     return @_data_providers_with_overlays_ if @_data_providers_with_overlays_
@@ -452,7 +452,7 @@ class ToolConfig < ApplicationRecord
   # Validate some rules for container_engine, container_image_userfile_id, containerhub_image_name
   def validate_container_rules #:nodoc:
     # Should only have one container_engine of particular type
-    available_engine = ["Singularity","Docker"]
+    available_engine = ["Apptainer","Singularity","Docker"]
     if self.container_engine.present? && available_engine.exclude?(self.container_engine)
       errors[:container_engine] = "is not valid"
     end
@@ -470,9 +470,9 @@ class ToolConfig < ApplicationRecord
       errors[:container_engine] = "a container hub image name or a container image userfile ID should be set when the container engine is set"
     end
 
-    if self.container_engine.present? && self.container_engine == "Singularity"
+    if self.container_engine.present? && (self.container_engine == "Apptainer" ||  self.container_engine == "Singularity")
       if self.container_index_location.present? && self.container_index_location !~ /\A[a-z0-9]+\:\/\/\z/i
-        errors[:container_index_location] = "is invalid for container engine Singularity. Should end in '://'."
+        errors[:container_index_location] = "is invalid for container engine Apptainer. Should end in '://'."
       end
     elsif self.container_engine.present? && self.container_engine == "Docker"
       if self.container_index_location.present? && self.container_index_location !~ /\A[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}\z/i
@@ -484,7 +484,7 @@ class ToolConfig < ApplicationRecord
 
   # breaks down overlay spec onto a list of overlays
   def parsed_overlay_specs
-    specs = self.singularity_overlays_specs
+    specs = self.apptainer_overlays_specs
     return [] if specs.blank?
     lines = specs.split(/^#.*|\s+#.*|\n/) # split on lines and drop comments
     lines.map(&:presence).compact.map do |spec|
@@ -513,24 +513,24 @@ class ToolConfig < ApplicationRecord
       case kind # different validations rules for file, userfile and dp specs
       when 'file' # full path specification for a local file, e.g. "file:/myfiles/c.sqs"
         if id_or_name !~ /^\/\S+\.(sqs|sqfs|squashfs)$/
-          self.errors.add(:singularity_overlays_specs,
+          self.errors.add(:apptainer_overlays_specs,
             " contains invalid #{kind} named '#{id_or_name}'. It should be a full path that ends in .squashfs, .sqs or .sqfs")
         end
 
       when 'userfile' # db-registered file spec, e.g. "userfile:42"
         if id_or_name !~ /\A\d+\z/
-          self.errors.add(:singularity_overlays_specs,
+          self.errors.add(:apptainer_overlays_specs,
             %{" contains invalid userfile id '#{id_or_name}'. The userfile id should be an integer number."}
           )
         else
           userfile = SingleFile.where(:id => id_or_name).first
         end
         if ! userfile
-          self.errors.add(:singularity_overlays_specs,
+          self.errors.add(:apptainer_overlays_specs,
             %{" contains invalid userfile id '#{id_or_name}'. The file with id '#{id_or_name}' is not found."}
           )
         elsif userfile.name.to_s !~ /\.(sqs|sqfs|squashfs)$/
-          self.errors.add(:singularity_overlays_specs,
+          self.errors.add(:apptainer_overlays_specs,
           " contains invalid userfile with id '#{id_or_name}' and name '#{userfile.name}'. File name should end in .squashfs, .sqs or .sqfs")
           # todo maybe or/and check file type?
         end
@@ -538,20 +538,20 @@ class ToolConfig < ApplicationRecord
       when 'dp' # DataProvider specs: "dp:name" or "dp:ID"
         dp = DataProvider.where_id_or_name(id_or_name).first
         if !dp
-          self.errors.add(:singularity_overlays_specs, "contains invalid DP '#{id_or_name}' (no such DP)")
+          self.errors.add(:apptainer_overlays_specs, "contains invalid DP '#{id_or_name}' (no such DP)")
         elsif ! dp.is_a?(SingSquashfsDataProvider)
-          self.errors.add(:singularity_overlays_specs, "DataProvider '#{id_or_name}' is not a SingSquashfsDataProvider")
+          self.errors.add(:apptainer_overlays_specs, "DataProvider '#{id_or_name}' is not a SingSquashfsDataProvider")
         end
 
       when 'ext3capture' # ext3 filesystem as a basename with an initial size
         # The basename is limited to letters, digits, numbers and dashes; the =SIZE suffix must end with G or M
         if id_or_name !~ /\A\w[\w\.-]+=([1-9]\d*)[mg]\z/i
-          self.errors.add(:singularity_overlays_specs, "contains invalid ext3capture specification (must be like ext3capture:basename=1g or 2m etc)")
+          self.errors.add(:apptainer_overlays_specs, "contains invalid ext3capture specification (must be like ext3capture:basename=1g or 2m etc)")
         end
 
       else
         # Other errors
-        self.errors.add(:singularity_overlays_specs, "contains invalid specification '#{kind}:#{id_or_name}'")
+        self.errors.add(:apptainer_overlays_specs, "contains invalid specification '#{kind}:#{id_or_name}'")
       end
     end
 
@@ -662,7 +662,7 @@ class ToolConfig < ApplicationRecord
     container_engine = container_info['type'].presence.try(:capitalize)
     container_engine = "Singularity" if (container_engine == "Docker" &&
                                          !bourreau.docker_present?    &&
-                                          bourreau.singularity_present?
+                                          bourreau.apptainer_present?
                                         )
     container_index  = container_info['index'].presence
     container_index  = 'docker://' if container_index == 'index.docker.io' # old convention

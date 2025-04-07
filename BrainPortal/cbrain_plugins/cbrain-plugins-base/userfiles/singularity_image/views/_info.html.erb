@@ -27,21 +27,21 @@
 
 <h5>Image Inspect</h5>
 
-<pre><%= cat.("singularity inspect #{path}") %></pre>
+<pre><%= cat.("#{SingularityImage.apptainer_executable} inspect #{path}") %></pre>
 
 <h5>SIF Header</h5>
 
-<pre><%= cat.("singularity sif header #{path}") %></pre>
+<pre><%= cat.("#{SingularityImage.apptainer_executable} sif header #{path}") %></pre>
 
 <h5>SIF List</h5>
 
-<pre><%= text = cat.("singularity sif list #{path}") %></pre>
+<pre><%= text = cat.("#{SingularityImage.apptainer_executable} sif list #{path}") %></pre>
 
 <h5>SIF Items</h5>
 
 <% text.split(/\n/).map { |line| line[/^(\d+)/] }.compact.each do |id| %>
 
-  <pre><%= cat.("singularity sif info #{id} #{path}") %></pre><p>
+  <pre><%= cat.("#{SingularityImage.apptainer_executable} sif info #{id} #{path}") %></pre><p>
 
 <% end %>
 

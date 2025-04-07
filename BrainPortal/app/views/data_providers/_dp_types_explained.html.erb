@@ -116,10 +116,10 @@ acts like a FlatDataProvider.
 
 <strong>SingSquashfsDataProvider</strong> This class connects to a set of
 one or several squashfs files (all named with <em>.squashfs</em> extensions) through
-a Singularity container handler. The requirements are:<br>
+a Apptainer (Singularity) container handler. The requirements are:<br>
 <ul>
   <li>that all the squashfs files are in the <em>Physical Data Location</em>,
-  <li>the Singularity image is also there and named <em><%= SingSquashfsDataProvider::SINGULARITY_IMAGE_BASENAME %></em>,
+  <li>the Apptainer image is also there and named <em><%= SingSquashfsDataProvider::APPTAINER_IMAGE_BASENAME %></em>,
   <li>that this image contains a basic Linux system with at least <em>rsync</em> installed in it,
   <li>and that the path to the data root inside the container must be provided in the <em>Containerized Data Path</em> under the <em>Containerized Storage Configuration</em> section.
 </ul>

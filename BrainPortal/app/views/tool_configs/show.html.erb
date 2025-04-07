@@ -69,9 +69,9 @@
 
     <pre class="script_preview">
 
-<%= @bourreau_glob_config.to_bash_prologue @tool_local_config&.use_singularity? if @bourreau_glob_config %>
-<%= @tool_glob_config.to_bash_prologue     @tool_local_config&.use_singularity? if @tool_glob_config     %>
-<%= @tool_local_config.to_bash_prologue    @tool_local_config&.use_singularity? if @tool_local_config    %>
+<%= @bourreau_glob_config.to_bash_prologue @tool_local_config&.use_apptainer? if @bourreau_glob_config %>
+<%= @tool_glob_config.to_bash_prologue     @tool_local_config&.use_apptainer? if @tool_glob_config     %>
+<%= @tool_local_config.to_bash_prologue    @tool_local_config&.use_apptainer? if @tool_local_config    %>
 ##########################################
 #### [Wrapped commands would be here] ####
 ##########################################

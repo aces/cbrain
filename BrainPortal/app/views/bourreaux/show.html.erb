@@ -457,9 +457,9 @@
            <div class="field_explanation">Name of the Docker executable available on the machines where tasks will run. It should always be set if Docker is present.</div>
         <% end %>
         <!-- Singularity -->
-        <% t.edit_cell :singularity_executable_name, :header => "Singularity executable" do |f| %>
-          <%= f.text_field :singularity_executable_name, :size => 60 %><br/>
-           <div class="field_explanation">Name of the Singularity executable available on the machines where tasks will run. It should always be set if Singularity is present.</div>
+        <% t.edit_cell :apptainer_executable_name, :header => "Apptainer executable" do |f| %>
+          <%= f.text_field :apptainer_executable_name, :size => 60 %><br/>
+           <div class="field_explanation">Name of the Apptainer or Singularity executable available on the machines where tasks will run. It should always be set if Singularity is present.</div>
         <% end %>
       <% end %>
     <% end %>

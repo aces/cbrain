@@ -32,28 +32,32 @@ class SingularityImage < FilesystemImage
   end
 
   def is_viewable? #:nodoc:
-    if ! self.has_singularity_support?
-      return [ "The local portal doesn't support inspecting Singularity images." ]
+    if ! self.has_apptainer_support?
+      return [ "The local portal doesn't support inspecting Apptainer (Singularity) images." ]
     elsif ! self.is_locally_synced?
-      return [ "Singularity image file not yet synchronized" ]
+      return [ "Apptainer (Singularity) image file not yet synchronized" ]
     else
       true
     end
   end
 
-  def has_singularity_support? #:nodoc:
-    self.class.has_singularity_support?
+  def has_apptainer_support? #:nodoc:
+    self.class.has_apptainer_support?
   end
 
-  # Detects if the system has the 'singularity' command.
+  def self.apptainer_executable  #:nodoc:
+    @_executable ||= RemoteResource.current_resource.apptainer_executable_name.presence || "apptainer"
+  end
+
+  # Detects if the system has the Apptainer command.
+  # Singularity command is still supported on best effort basis
   # Caches the result in the class so it won't need to
   # be detected again after the first time, for the life
   # of the current process.
-  def self.has_singularity_support? #:nodoc:
-    return @_has_singularity_support if ! @_has_singularity_support.nil?
-    out = IO.popen("bash -c 'type -p singularity'","r") { |f| f.read }
-    @_has_singularity_support = out.present?
+  def self.has_apptainer_support? #:nodoc:
+    return @_has_apptainer_support if ! @_has_apptainer_support.nil?
+    out = IO.popen("bash -c 'type -p #{apptainer_executable}'","r") { |f| f.read }
+    @_has_apptainer_support = out.present?
   end
 
 end
-
