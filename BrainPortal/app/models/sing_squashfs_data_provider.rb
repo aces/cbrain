@@ -86,7 +86,7 @@ class SingSquashfsDataProvider < SshDataProvider
     # also works if an old Singularity and uptodate Apptainer
     # todo loop over list of several candidate executables
     text       = self.remote_bash_this(remote_cmd)
-    cb_error "Can't find apptainer version number on remote host" unless text =~ /^((singularity|apptainer) version )?(\d+)\.(\d+)/
+    cb_error "Can't find Apptainer version number on remote host" unless text =~ /^((singularity|apptainer) version )?(\d+)\.(\d+)/
     _, _, @_tool, major, minor = Regexp.last_match.to_a
     major = major.to_i
     minor = minor.to_i

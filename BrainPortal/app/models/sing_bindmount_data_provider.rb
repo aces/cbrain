@@ -118,7 +118,7 @@ class SingBindmountDataProvider < SshDataProvider
     remote_cmd  = "cd #{self.real_remote_dir.to_s.bash_escape} && test -f #{APPTAINER_IMAGE_BASENAME} && echo OK-Exists"
     text        = self.remote_bash_this(remote_cmd)
     # The following check will also make sure the remote shell is clean!
-    cb_error "No installed apptainer image #{APPTAINER_IMAGE_BASENAME}, or remote shell is unclean" unless text =~ /\AOK-Exists\s*\z/
+    cb_error "No installed Apptainer image #{APPTAINER_IMAGE_BASENAME}, or remote shell is unclean" unless text =~ /\AOK-Exists\s*\z/
 
     # Check we have the remote filesystem file
     remote_cmd  = "test -f #{self.remote_dir.to_s.bash_escape} && echo OK-Exists"
@@ -127,14 +127,14 @@ class SingBindmountDataProvider < SshDataProvider
     # Check we have Apptainer 1.1 or better
     remote_cmd = "(singularity --version 2>/dev/null || apptainer --version 2>/dev/null)"
     text       = self.remote_bash_this(remote_cmd)
-    cb_error "Can't find apptainer version number on remote host" unless text =~ /^((singularity|apptainer) version )?(\d+)\.(\d+)/
+    cb_error "Can't find Apptainer version number on remote host" unless text =~ /^((singularity|apptainer) version )?(\d+)\.(\d+)/
     _, _, tool, major, minor = Regexp.last_match.to_a
     major = major.to_i
     minor = minor.to_i
     if tool == 'singularity'
       cb_error "singularity version number on remote host is less than 3.7" if major  < 3 || (major == 3 && minor < 7)
     else # tool == 'apptainer'
-      cb_error "apptainer version number on remote host is less than 1.1"   if major  < 1 || (major == 1 && minor < 1)
+      cb_error "Apptainer version number on remote host is less than 1.1"   if major  < 1 || (major == 1 && minor < 1)
     end
 
     # Check that inside the container, the containerized path exists
