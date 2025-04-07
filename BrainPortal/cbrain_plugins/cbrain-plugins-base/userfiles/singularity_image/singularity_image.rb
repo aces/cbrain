@@ -33,7 +33,7 @@ class SingularityImage < FilesystemImage
 
   def is_viewable? #:nodoc:
     if ! self.has_apptainer_support?
-      return [ "The local portal doesn't support inspecting Apptainer (aka Singularity) images." ]
+      return [ "The local portal doesn't support inspecting Apptainer (Singularity) images." ]
     elsif ! self.is_locally_synced?
       return [ "Apptainer (Singularity) image file not yet synchronized" ]
     else

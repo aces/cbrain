@@ -1873,7 +1873,7 @@ for apptainer_attempts in 1 2 3 4 5 ; do  # note: the number 5 is used a bit bel
 
   test $status -eq 0 && break # all is good
 
-  # Detect failed boot of apptainer container
+  # Detect failed boot of Apptainer container
   if ! grep -i 'FATAL.*container.*creation.*failed' #{science_stderr_basename} >/dev/null ; then
     break # move on, for any other error or even non zero successes
   fi
@@ -2353,7 +2353,7 @@ docker_image_name=#{full_image_name.bash_escape}
   # is the raw scientific bash script.
   def apptainer_commands(command_script)
 
-    # Basename of the apptainer wrapper script
+    # Basename of the Apptainer wrapper script
     apptainer_wrapper_basename = ".apptainer.#{self.run_id}.sh"
 
     # Values we substitute in our script:
@@ -2416,7 +2416,7 @@ docker_image_name=#{full_image_name.bash_escape}
     # Wrap new HOME environment
     command_script = wrap_new_HOME(command_script, effect_workdir)
 
-    # Set apptainer command
+    # Set Apptainer command
     apptainer_commands = <<-APPTAINER_COMMANDS
 
 # Note to developers:
@@ -2435,7 +2435,7 @@ if test $# -eq 1 -a "X$1" = "Xshell" ; then
   apptainer_basename=""
 fi
 
-# Build a local wrapper script to run in a apptainer container
+# Build a local wrapper script to run in an Apptainer container
 cat << \"APPTAINERJOB\" > #{apptainer_wrapper_basename.bash_escape}
 #!/bin/bash
 
@@ -2515,7 +2515,7 @@ chmod 755 #{apptainer_wrapper_basename.bash_escape}
 # 4) we mount each (if any) of the root directories for local data providers
 # 5) we mount (if any) other fixed file system overlays
 # 6) we mount (if any) capture ext3 filesystems
-# 7) with -H we set the task's work directory as the apptainer $HOME directory
+# 7) with -H we set the task's work directory as the Apptainer $HOME directory
 #{apptainer_executable_name}                  \\
     $mode                                       \\
     #{container_exec_args}                      \\
@@ -2677,7 +2677,7 @@ bash -c "exit $_cbrain_status_"
         File.open(capfile,"w") do |fh|
           fh.write("=== Stdout ===\n#{out}\n=== Stderr ===\n#{err}\n=== ====== ===\n")
         end
-        cb_error "Cannot build apptainer image. Captured outputs are in #{capfile}"
+        cb_error "Cannot build Apptainer image. Captured outputs are in #{capfile}"
       end
     end
 
