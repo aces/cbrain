@@ -28,11 +28,12 @@
 
 We have just generated a new API token for you.
 <p>
-  <code class="copy-text"><%= @new_token %><%= copy_to_clipboard_button(
-                                                 @new_token,
-                                                 label: "copy",
-                                                 title: "Click this button to copy the API token to the clipboard")
-  %></code>
+  <code class="copy-text"><%= @new_token %></code>
+  <%= copy_to_clipboard_button(
+     @new_token,
+     label: "copy",
+     title: "Click this button to copy the API token to the clipboard")
+  %>
 <p>
 
 If you are a developer and want to automate working
