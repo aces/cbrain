@@ -74,3 +74,12 @@ a BackgroundActiviutyWorker process running).
   fbac.rb : tests some BACs related to files
   rbac.rb : tests some BACs related to registration of files on browsable DPs
 
+4- tst_quota.rb
+
+This file can be loaded in a test environment to check the behavior of
+the CpuQuota framework; it will pick the first NormalUser and Bourreau
+configured, create dummy usage objects for them (one for the week, one
+for the month, and one for the year) and then iterate through a list
+of test cases for five CpuQuota objects. It's not super readable,
+but it was only needed during development.
+
