@@ -40,19 +40,24 @@ The HTML document previewed in the frame below is not part of CBRAIN. <em> You s
 interact with it unless you fully trust it. </em> Forms and external links are disabled.
 <br>
 
-<% if params[:new_tab].blank? %>
-     <div class="trust-file-btn"> <%= link_to 'Open in the frame below', "#" %></div>
+<%# -- for other user's files ask confirmation %>
+<% if params[:new_tab].blank? && current_user.id != @userfile.user_id %>
+   <div class="trust-file-btn"> <%= link_to 'Browse this file in the frame below', "#iframe-container" %></div>
 <% end %>
 <br>
 
-
 </div>
-<div class="iframe-container">
+<div class="iframe-container" id="iframe-container">
   <iframe sandbox="allow-scripts allow-same-origin"
     data-frame-url="<%= stream_userfile_path(@userfile, :disposition => 'inline') %>"
-    <% if params[:new_tab].present? %>
+    <% unless params[:new_tab].blank? && current_user.id != @userfile.user_id %>
+
+
       src="<%= stream_userfile_path(@userfile, :disposition => 'inline') %>"
+
     <% end %>
+    class="full-frame html-viewer"
+
     <%# todo drop caching trust with ids? %>
     data-ids="<%= "#{@userfile.id}-#{@userfile.user.id}" %>"
     class="full-frame html-viewer"
