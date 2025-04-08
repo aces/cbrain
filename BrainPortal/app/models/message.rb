@@ -75,7 +75,7 @@ class Message < ApplicationRecord
     expiry       = options[:expiry]        || options["expiry"]
     critical     = options[:critical]      || options["critical"]      || false
     send_email   = options[:send_email]    || options["send_email"]    || false
-    group_id     = options[:group_id]      || options["group_id"]      # For invitation messages only.
+    group_id     = options[:invitation_group_id] || options["invitation_group_id"]
     sender_id    = options[:sender_id]     || options["sender_id"]
 
     # Affects how 'destination' is interpreted. Default: exclude locked users.

@@ -6,4 +6,4 @@ class RenameMessageGroupIdToInvitationGroupId < ActiveRecord::Migration[5.0]
   def down
     rename_column :messages, :invitation_group_id, :group_id
   end
-end 
+end
