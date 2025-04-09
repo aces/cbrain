@@ -66,7 +66,6 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     errcount    = 0
 
     [
-      Userfile,
       (myself.is_a?(Bourreau) ? CbrainTask.where(:bourreau_id => myself.id) : CbrainTask),
       CustomFilter,
       User,
