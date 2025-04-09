@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2023
+# Copyright (C) 2008-2025
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -20,19 +20,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Helper methods for Disk Quota views.
-module DiskQuotasHelper
-
-  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-
-  # Returns a DiskQuota max_bytes in pretty form: 'None allowed' in red, or '126 MB' etc (colored)
-  def pretty_quota_max_bytes(quota)
-    quota.none_allowed? ? red_if(true, 'None allowed') : colored_pretty_size(quota.max_bytes)
+class SetTypeForDiskQuotas < ActiveRecord::Migration[5.0]
+  def up
+    Quota.where(:type => nil)
+         .where.not(:data_provider_id => nil)
+         .update_all(:type => 'DiskQuota')
   end
 
-  # Returns a DiskQuota max_files in pretty form: 'None allowed' in red, or just a number
-  def pretty_quota_max_files(quota)
-    quota.none_allowed? ? red_if(true, 'None allowed') : number_with_commas(quota.max_files)
+  def down
+    true
   end
-
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20250213205048) do
+ActiveRecord::Schema.define(version: 20250402175130) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -157,15 +157,6 @@ ActiveRecord::Schema.define(version: 20250213205048) do
     t.datetime "updated_at",                       null: false
   end
 
-  create_table "disk_quotas", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
-    t.integer  "user_id"
-    t.integer  "data_provider_id"
-    t.decimal  "max_bytes",        precision: 24
-    t.decimal  "max_files",        precision: 24
-    t.datetime "created_at",                      null: false
-    t.datetime "updated_at",                      null: false
-  end
-
   create_table "exception_logs", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "exception_class"
     t.string   "request_controller"
@@ -265,6 +256,21 @@ ActiveRecord::Schema.define(version: 20250213205048) do
     t.index ["ar_id", "ar_table_name"], name: "index_meta_data_store_on_ar_id_and_ar_table_name", using: :btree
     t.index ["ar_table_name", "meta_key"], name: "index_meta_data_store_on_ar_table_name_and_meta_key", using: :btree
     t.index ["meta_key"], name: "index_meta_data_store_on_meta_key", using: :btree
+  end
+
+  create_table "quotas", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
+    t.string   "type"
+    t.integer  "user_id"
+    t.integer  "group_id"
+    t.integer  "data_provider_id"
+    t.decimal  "max_bytes",          precision: 24
+    t.decimal  "max_files",          precision: 24
+    t.integer  "remote_resource_id"
+    t.integer  "max_cpu_past_week"
+    t.integer  "max_cpu_past_month"
+    t.integer  "max_cpu_ever"
+    t.datetime "created_at",                        null: false
+    t.datetime "updated_at",                        null: false
   end
 
   create_table "remote_resources", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|

@@ -1,0 +1,138 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2025
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%=
+  render(:partial => 'shared/active_filters', :locals  => {
+    :scope => @scope,
+    :model => CpuQuota
+  })
+%>
+
+<div class="pagination">
+  <span class="page_links">
+    (<%= pluralize @quotas.total_entries, "CPU quota configurations" %>)
+  </span>
+</div>
+
+<%=
+  dynamic_scoped_table(@quotas,
+    :id    => 'cpu_quotas_table',
+    :class => [ :resource_list ],
+    :scope => @scope,
+    :order_map       => {
+      :user          => { :a => 'users.login',           :j =>  User         },
+      :data_provider => { :a => 'data_providers.name',   :j =>  DataProvider },
+    },
+    :filter_map => {
+      :user          => { :a => 'user_id'          },
+      :data_provider => { :a => 'data_provider_id' },
+    },
+  ) do |t|
+%>
+  <%
+    t.pagination
+
+    t.column("User", :user,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, User)
+    ) do |cq|
+      if ! cq.is_for_user?
+        html_colorize("(Default for all users)", 'orange')
+      else
+        link_to_user_if_accessible(cq.user)
+      end
+    end
+
+    t.column("Project", :group,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, Group)
+    ) { |cq| link_to_group_if_accessible(cq.group) }
+
+    t.column("Execution Server", :remote_resource,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, RemoteResource)
+    ) do |cq|
+      if ! cq.is_for_resource?
+        html_colorize("(Default for all servers)", 'orange')
+      else
+        link_to_bourreau_if_accessible(cq.remote_resource)
+      end
+    end
+
+    t.column("Max Weekly CPU", :max_cpu_past_week,
+      :sortable => true,
+    ) { |cq| pretty_quota_cputime(cq.max_cpu_past_week) }
+
+    t.column("Max Monthly CPU", :max_cpu_past_month,
+      :sortable => true,
+    ) { |cq| pretty_quota_cputime(cq.max_cpu_past_month) }
+
+    t.column("Max CPU Total", :max_cpu_ever,
+      :sortable => true,
+    ) { |cq| pretty_quota_cputime(cq.max_cpu_ever) }
+
+    # This column is a bit misleading: it shows the CURRENT USER's resources for all
+    # quota records that are DP-wide, and the AFFECTED USER'S resources for the user-specific quotas.
+    t.column("My Usage") do |cq|
+      if ! cq.is_for_resource?
+        html_colorize("(Varies by server)","orange")
+      else
+        what = cq.exceeded?(cq.user_id == 0 ? current_user.id : cq.user_id, cq.remote_resource_id)
+        if what.nil?
+          html_colorize("OK","green") +
+          " (#{pretty_quota_current_cpu_usage(cq)})"
+        else
+          what = :total if what == :ever # ugh
+          html_colorize("Exceeded: #{what.to_s.humanize}","red") +
+          " (#{pretty_quota_current_cpu_usage(cq)})"
+        end
+      end
+    end
+
+    t.column("Details") do |cq|
+      index_count_filter('Table', :resource_usage,
+          {
+            :type               => 'CputimeResourceUsageForCbrainTask',
+            :user_id            => (cq.is_for_user?     ? cq.user_id            : current_user.id),
+            :remote_resource_id => (cq.is_for_resource? ? cq.remote_resource_id : nil),
+          },
+          :show_zeros => true)
+    end
+
+    if current_user.has_role? :admin_user
+
+      t.column("Operations") do |cq|
+        ( link_to("Show/Edit", quota_path(cq), :class => "action_link") +
+          " " +
+          link_to("Delete",    quota_path(cq), :class => "action_link",
+              :data   => { :confirm => "Are you sure you want to delete this quota entry?" },
+              :method => :delete)
+        )
+      end
+
+    end
+
+  %>
+
+<% end %>

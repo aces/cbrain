@@ -1,0 +1,120 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2025
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title @quota.new_record? ? 'Create CPU Quota' : 'Edit CPU Quota' %>
+
+<%= error_messages_for @quota %>
+
+<div class="menu_bar">
+
+  <%= link_to "CPU Quotas Table", quotas_path(:mode => :cpu), :class => :button %>
+
+  <% if ! @quota.new_record? %>
+
+    <%= link_to 'New CPU Quota',
+        new_quota_path(:mode => :cpu), :class => :button %>
+
+  <% end %>
+
+</div>
+
+
+
+<%= show_table(@quota, :as => :quota, :header => "CPU Quota Record",
+                       :edit_condition => check_role(:admin_user)) do |t| %>
+  <%= hidden_field_tag :mode, 'cpu' %>
+
+  <% t.cell("User", :show_width => 2) do %>
+    <% if @quota.new_record? %>
+      <%= user_select("quota[user_id]", { :selector => @quota.user_id, :include_blank => '(Default For All Users)' }) %>
+      <div class="field_explanation">
+         You can leave the user field blank and instead specify a project, below.
+         You can also leave them both blank.
+      </div>
+    <% else %>
+      <%= @quota.is_for_user? ?
+          link_to_user_if_accessible(@quota.user) :
+          html_colorize("(Default for all users)", 'orange') %>
+    <% end %>
+  <% end %>
+
+  <% t.cell("Project", :show_width => 2) do %>
+    <% if @quota.new_record? %>
+      <%= group_select("quota[group_id]", { :selector => @quota.group_id, :include_blank => '(Any Project)' }) %>
+      <div class="field_explanation">
+         Instead of specifying a user, above, you can select a project, and the quota
+         will apply to all users of that project. User and Project are mutually exclusive
+         in a CPU quota. You can also leave them both blank.
+      </div>
+    <% else %>
+      <%= @quota.is_for_group? ?
+          link_to_group_if_accessible(@quota.group) :
+          html_colorize("(Any Project)", 'orange') %>
+    <% end %>
+  <% end %>
+
+  <% t.cell("Execution Server", :show_width => 2) do %>
+    <% if @quota.new_record? %>
+      <%= bourreau_select("quota[remote_resource_id]", { :selector => @quota.remote_resource_id, :include_blank => '(Any Execution Server)' }) %>
+      <div class="field_explanation">
+         You can leave this blank, but then you must provider either a user or a project, above.
+      </div>
+    <% else %>
+      <%= @quota.is_for_resource? ?
+          link_to_bourreau_if_accessible(@quota.remote_resource) :
+          html_colorize("(Any Execution Server)", 'orange') %>
+    <% end %>
+  <% end %>
+
+  <% t.edit_cell(:max_cpu_past_week, :show_width => 2, :header => "Max CPU time past week", :content => pretty_quota_cputime(@quota.max_cpu_past_week)) do |f| %>
+    <%= f.text_field :max_cpu_past_week, :size => 12 %>
+    <div class="field_explanation">
+       The limit CPU time is in seconds; when entering a new value,
+       you can use a unit as a suffix, such as in
+       <em>3.5h</em> (hours), <em>7d</em> (days), <em>4w</em> (weeks),
+       <em>3m</em> (months) and <em>1y</em> (years).
+       There are no suffixes for seconds and minutes.
+       A value of <em>0</em> means no time is allowed at all.
+    </div>
+  <% end %>
+
+  <% t.edit_cell(:max_cpu_past_month, :show_width => 2, :header => "Max CPU time past month", :content => pretty_quota_cputime(@quota.max_cpu_past_month)) do |f| %>
+    <%= f.text_field :max_cpu_past_month, :size => 12 %>
+    <div class="field_explanation">
+       See the explanations for Max CPU time past week.
+    </div>
+  <% end %>
+
+  <% t.edit_cell(:max_cpu_ever, :show_width => 2, :header => "Max CPU time in total", :content => pretty_quota_cputime(@quota.max_cpu_ever)) do |f| %>
+    <%= f.text_field :max_cpu_ever, :size => 12 %>
+    <div class="field_explanation">
+       See the explanations for Max CPU time past week.
+    </div>
+  <% end %>
+
+<% end %>
+
+<P>
+<%= render :partial => "layouts/log_report", :locals  => { :log  => @quota.getlog, :title => 'CPU Quota Record Log' } %>
+

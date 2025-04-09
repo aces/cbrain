@@ -57,7 +57,7 @@
               ), :class  => "button"
   %>
 
-  <%= link_to "Disk Quotas", disk_quotas_path(), :class => :button %>
+  <%= link_to "Disk Quotas", quotas_path(:mode => :disk), :class => :button %>
 
   <%= help_button("data_providers/info") %>
 </div>

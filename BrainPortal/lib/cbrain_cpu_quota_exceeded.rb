@@ -1,9 +1,8 @@
 
-<%-
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2022
+# Copyright (C) 2008-2025
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -20,18 +19,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<% title 'Disk Quotas Configurations' %>
+# Use this exception class for notification
+# of CPU quota exceeded.
+class CbrainCpuQuotaExceeded < CbrainError
 
-<% if current_user.has_role? :admin_user %>
-  <div class="menu_bar">
-    <%= link_to "Exceeded Quotas Report", report_disk_quotas_path(), :class => :button %>
-    <%= link_to "New Quota Entry",        new_disk_quota_path(),     :class => :button %>
-  </div>
-<% end %>
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-<div id="disk_quotas_table" class="index_block">
-  <%= render :partial => 'disk_quotas_table' %>
-</div>
+  def initialize(user_id, remote_resource_id)
+    message =
+      "CPU Quota Exceeded" +
+      " for user '#{User.find(user_id).login}'" +
+      " on execution server '#{RemoteResource.find(remote_resource_id).name}'"
+    super(message)
+
+    self
+  end
+
+end
 

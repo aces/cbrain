@@ -50,7 +50,7 @@
       <% if current_user.has_role?(:normal_user) %>
         <%= hover_dropdown("Resources", :dropdown_class => "resource_header") do %>
           <%= link_to 'Data Providers', data_providers_path %><BR>
-          <%= link_to 'Disk Quotas', disk_quotas_path %><BR>
+          <%= link_to 'Quotas', quotas_path %><BR>
           <%= link_to 'Servers', bourreaux_path %><BR>
           <%= link_to 'Tools', tools_path %><BR>
           <%= link_to 'Tool Versions', tool_configs_path %><BR>

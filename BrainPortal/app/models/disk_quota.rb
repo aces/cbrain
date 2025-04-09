@@ -37,7 +37,7 @@
 #
 # A quota record can be configuered with -1,-1, which prevents
 # a user from creating any file at all on a DP.
-class DiskQuota < ApplicationRecord
+class DiskQuota < Quota
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
@@ -46,6 +46,7 @@ class DiskQuota < ApplicationRecord
   validates_presence_of :max_bytes
   validates_presence_of :max_files
   validate              :limits_are_reasonable
+  before_save           :nullify_cpu_quota_atts
 
   belongs_to :user,          :optional => true # the value can be 0 but not nil
   belongs_to :data_provider, :optional => false
@@ -56,12 +57,16 @@ class DiskQuota < ApplicationRecord
 
   attr_reader :cursize, :curfiles # values are filled when performing a check
 
-  def is_for_dp? #:nodoc:
-    self.user_id == 0
-  end
-
   def is_for_user? #:nodoc:
     self.user_id != 0
+  end
+
+  def is_for_resource? #:nodoc:
+    true # disk quotas are always linked to a DP
+  end
+
+  def is_for_group? #:nodoc:
+    false # disk quotas don't support groups, cpu quotas do
   end
 
   def none_allowed? #:nodoc:
@@ -166,6 +171,13 @@ class DiskQuota < ApplicationRecord
     self.errors.add(:max_bytes, "must be -1, 0 or > 0") if self.max_bytes < -1
     self.errors.add(:max_files, "must be -1, 0 or > 0") if self.max_files < -1
     self.errors.add(:base,      "when using -1, both limits must be set to -1") if self.max_bytes == -1 || self.max_files == -1
+  end
+
+  # These attributes are only for CpuQuota
+  def nullify_cpu_quota_atts #:nodoc:
+    self.remote_resource_id = nil
+    self.group_id           = nil
+    true
   end
 
 end

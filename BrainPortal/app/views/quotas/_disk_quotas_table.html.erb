@@ -31,12 +31,12 @@
 
 <div class="pagination">
   <span class="page_links">
-    (<%= pluralize @disk_quotas.total_entries, "disk quota configurations" %>)
+    (<%= pluralize @quotas.total_entries, "disk quota configurations" %>)
   </span>
 </div>
 
 <%=
-  dynamic_scoped_table(@disk_quotas,
+  dynamic_scoped_table(@quotas,
     :id    => 'disk_quotas_table',
     :class => [ :resource_list ],
     :scope => @scope,
@@ -57,7 +57,7 @@
       :sortable => true,
       :filters  => default_filters_for(@base_scope, User)
     ) do |dq|
-      if dq.is_for_dp?
+      if ! dq.is_for_user?
         html_colorize("(Default for all users)", 'orange')
       else
         link_to_user_if_accessible(dq.user)
@@ -106,9 +106,9 @@
     if current_user.has_role? :admin_user
 
       t.column("Operations") do |dq|
-        ( link_to("Show/Edit", disk_quota_path(dq), :class => "action_link") +
+        ( link_to("Show/Edit", quota_path(dq), :class => "action_link") +
           " " +
-          link_to("Delete",    disk_quota_path(dq), :class => "action_link",
+          link_to("Delete",    quota_path(dq), :class => "action_link",
               :data   => { :confirm => "Are you sure you want to delete this quota entry?" },
               :method => :delete)
         )
