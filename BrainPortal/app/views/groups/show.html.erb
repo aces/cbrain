@@ -141,7 +141,7 @@
 
   <%
     group_members  = @group.users
-    open_invites   = Invitation.where(sender_id: current_user.id, group_id: @group.id, active: true).to_a
+    open_invites   = Invitation.where(sender_id: current_user.id, invitation_group_id: @group.id, active: true).to_a
   %>
 
   <%= show_table(@group, :as => :group, :header => 'Members', :edit_condition => @group.can_be_edited_by?(current_user) && (!current_user.has_role?(:normal_user) || group_members.count > 1 || open_invites.count > 0 )) do |t| %>
