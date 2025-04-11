@@ -479,6 +479,10 @@ class RemoteResource < ApplicationRecord
     @git_tag   = CbrainFileRevision.cbrain_head_tag
     @git_tag ||= "C-#{@git_commit}" # default
 
+    bac_worker_pool  = WorkerPool.find_pool(BackgroundActivityWorker)
+    bac_workers      = bac_worker_pool.workers
+    bac_worker_pids  = bac_workers.map(&:pid).join(",")
+
     info = RemoteResourceInfo.new(
 
       # Rails application info
@@ -493,6 +497,9 @@ class RemoteResource < ApplicationRecord
       :host_uname         => @host_uname,
       :host_uptime        => host_uptime,
       :rails_time_zone    => time_zone_name,
+
+      # BackgroundActivityWorkers info
+      :bac_worker_pids    => bac_worker_pids,
 
       # Source control info
       :revision           => @git_tag,                          # 'live' value
@@ -512,12 +519,19 @@ class RemoteResource < ApplicationRecord
   # generate.
   def self.remote_resource_ping
     rr                      = RemoteResource.current_resource
+
+    bac_worker_pool         = WorkerPool.find_pool(BackgroundActivityWorker)
+    bac_workers             = bac_worker_pool.workers
+    bac_worker_pids         = bac_workers.map(&:pid).join(",")
+
     info                    = RemoteResourceInfo.new
     info.id                 = rr.id
     info.name               = rr.name
     info.starttime_revision = CBRAIN::CBRAIN_StartTime_Revision
     info.uptime             = Time.now.localtime - CBRAIN::Startup_LocalTime
     info.environment        = Rails.env
+    info.bac_worker_pids    = bac_worker_pids
+
     info
   end
 
@@ -713,13 +727,30 @@ class RemoteResource < ApplicationRecord
     send_command(command)
   end
 
-
   # Utility method to send a +wakeup_workers+ command to a
   # RemoteResource, whether local or not.
   # Maybe this should be more specific to Bourreaux.
   def send_command_wakeup_workers
     command = RemoteCommand.new(
       :command     => 'wakeup_workers'
+    )
+    send_command(command)
+  end
+
+  # Utility method to send a +start_bac_workers+ command to a
+  # RemoteResource, whether local or not.
+  def send_command_start_bac_workers
+    command = RemoteCommand.new(
+      :command     => 'start_bac_workers'
+    )
+    send_command(command)
+  end
+
+  # Utility method to send a +stop_bac_workers+ command to a
+  # RemoteResource, whether local or not.
+  def send_command_stop_bac_workers
+    command = RemoteCommand.new(
+      :command     => 'stop_bac_workers'
     )
     send_command(command)
   end
@@ -759,12 +790,12 @@ class RemoteResource < ApplicationRecord
   # Process a RemoteCommand object on the current RemoteResource
   def self.process_command(command)
 
-    cb_error "Command object doesn't have a command." unless command.command
+    cb_error "Command object doesn't have a command." unless command.command.present?
 
     myself = RemoteResource.current_resource
 
     # Check that I'm the proper receiver
-    receiver_token = command.receiver_token || "-nope-"
+    receiver_token = command.receiver_token.presence || "-nope-"
     if myself.auth_token != receiver_token
       Message.send_message( User.find_by_login('admin'),
         { :message_type  => :error,
@@ -776,7 +807,7 @@ class RemoteResource < ApplicationRecord
     end
 
     # Check that the sender is legitimate
-    sender_token   = command.sender_token || "-nope-"
+    sender_token   = command.sender_token.presence || "-nope-"
     sender = RemoteResource.valid_token?(sender_token)
     if !sender
       Message.send_message( User.find_by_login('admin'),
@@ -789,7 +820,8 @@ class RemoteResource < ApplicationRecord
     end
 
     #puts "RemoteResource Processing Command: #{command.inspect}"
-    self.send("process_command_#{command.command}", command)
+    ok = self.send("process_command_#{command.command}", command)
+    command.command_execution_status ||= (ok.present? ? "OK" : "FAILED")
 
   end
 
@@ -918,6 +950,44 @@ class RemoteResource < ApplicationRecord
     user.meta["ssh_key_install_date_#{myself.id}"] = Time.now
 
     true
+  end
+
+  # Starts BackgroundActivityWorker processes.
+  def self.process_command_start_bac_workers(command)
+    myself = RemoteResource.current_resource
+
+    num_workers = myself.activity_workers_instances
+
+    cb_error "Cannot start BAC workers: improper number of instances to start in config (must be 0..20)." unless
+       num_workers && num_workers >= 0 && num_workers < 21
+
+    worker_name = myself.class.to_s + 'Activity'
+    baclogger = Log4r::Logger[worker_name]
+    unless baclogger
+      baclogger = Log4r::Logger.new(worker_name)
+      baclogger.add(Log4r::RollingFileOutputter.new('background_activity_outputter',
+                    :filename  => "#{Rails.root}/log/#{worker_name}.combined..log",
+                    :formatter => Log4r::PatternFormatter.new(:pattern => "%d %l %m"),
+                    :maxsize   => 1000000, :trunc => 600000))
+      baclogger.level = Log4r::INFO
+    end
+
+    worker_pool = WorkerPool.create_or_find_pool(BackgroundActivityWorker,
+       num_workers, # number of instances
+       { :name           => worker_name,
+         :check_interval => 5,
+         :worker_log     => baclogger,
+       }
+    )
+
+    true
+  end
+
+  # Stops BackgroundActivityWorker processes.
+  def self.process_command_stop_bac_workers(command)
+    myself = RemoteResource.current_resource
+    worker_pool = WorkerPool.find_pool(BackgroundActivityWorker)
+    worker_pool.stop_workers
   end
 
   # Helper method to prepend 'source cbrain_bashrc;' to shell command.

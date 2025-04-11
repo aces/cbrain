@@ -39,6 +39,7 @@ class BackgroundActivityWorker < Worker
   end
 
   def main_process_is_alive?
+    return true if @myself.is_a?(BrainPortal) # On a portal, we don't care
     return true if is_proxy_alive?
     worker_log.info "#{@myself.name} process has exited, so I'm quitting too. So long!"
     self.stop_me

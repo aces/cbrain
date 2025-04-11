@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20250213205048) do
+ActiveRecord::Schema.define(version: 20250408185309) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -298,6 +298,7 @@ ActiveRecord::Schema.define(version: 20250213205048) do
     t.integer  "workers_chk_time"
     t.string   "workers_log_to"
     t.integer  "workers_verbose"
+    t.integer  "activity_workers_instances",                default: 1,     null: false
     t.string   "help_url"
     t.integer  "rr_timeout"
     t.string   "proxied_host"

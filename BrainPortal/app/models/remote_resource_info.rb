@@ -76,6 +76,9 @@ class RemoteResourceInfo < RestrictedHash
      :worker_lc_rev,
      :worker_lc_date,
 
+     # BackgroundActivityWorker information
+     :bac_worker_pids,
+
    ]
 
    # Returns a dummy record filled with
