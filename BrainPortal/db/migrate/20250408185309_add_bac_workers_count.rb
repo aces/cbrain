@@ -1,3 +1,4 @@
+
 #
 # CBRAIN Project
 #
@@ -16,5 +17,15 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program. If not, see https://www.gnu.org/licenses
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+
+class AddBacWorkersCount < ActiveRecord::Migration[5.0]
+  def up
+    add_column :remote_resources, :activity_workers_instances, :integer, :null => false, :default => 1, :after => :workers_verbose
+  end
+
+  def down
+    remove_column :remote_resources, :activity_workers_instances
+  end
+end

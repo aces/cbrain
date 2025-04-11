@@ -89,11 +89,7 @@ class ControlsController < ApplicationController
     @@command_counter += 1
     command = RemoteCommand.new(params[:control]) # a HASH
     command.id = "#{@@command_counter}-#{Process.pid}-#{Time.now.to_i}" # not useful right now.
-    if process_command(command)
-      command.command_execution_status = "OK"
-    else
-      command.command_execution_status = "FAILED"
-    end
+    process_command(command)
     respond_to do |format|
       format.html { head :method_not_allowed }
       format.xml do
@@ -121,8 +117,6 @@ class ControlsController < ApplicationController
 
     myself = RemoteResource.current_resource
     myself.class.process_command(command)
-
-    return true
 
   rescue => exception
     myself ||= RemoteResource.current_resource
