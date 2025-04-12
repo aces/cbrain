@@ -378,7 +378,7 @@ class QuotasController < ApplicationController
       user_gids = current_user.group_ids
       scope = scope.where(
         :user_id            => [ 0, current_user.id ],
-        :remote_resource_id => rr_ids,
+        :remote_resource_id => [ 0 ] + rr_ids,
         :group_id           => [ 0 ] + user_gids,
       )
     end
