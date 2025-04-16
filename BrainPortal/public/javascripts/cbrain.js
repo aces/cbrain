@@ -765,8 +765,7 @@
       let iframeContainer = $("body").find('.iframe-container');
       iframe.attr('src', iframe.data('frame-url'));
       trustBtn.hide();
-      iframeContainer.show();
-
+      iframeContainer.show();  // css trumps html
     });
 
     // todo delete this one or preceditng confirm button for html viewer iframe
@@ -797,6 +796,16 @@
           iframeContainer.show();
         });
       }
+    });
+
+    // show html on click only
+    $(document).delegate(".trust-file-btn", "click", function (event) {
+      let trustBtn = $("body").find(".trust-file-btn");
+      let iframe = $("body").find('.html-viewer');
+      let iframeContainer = $("body").find('.iframe-container');
+      iframe.attr('src', iframe.data('frame-url'));
+      trustBtn.hide();
+      iframeContainer.show();
     });
 
 

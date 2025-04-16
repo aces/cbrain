@@ -36,25 +36,27 @@
     ) %>
 <% end %>
 <br>
-The HTML document previewed in the frame below is not part of CBRAIN. <em> You should <strong>not</strong> browse  or
-interact with it unless you fully trust it. </em> Forms and external links are disabled.
+This HTML document is not part of CBRAIN. <em> You should <strong>not</strong> view or
+interact with it unless you fully trust it. </em> (Forms and external links are disabled.)
 <br>
 
 <%# -- for other user's files ask confirmation %>
-<% if params[:new_tab].blank? && current_user.id != @userfile.user_id %>
-   <div class="trust-file-btn"> <%= link_to 'Browse this file in the frame below', "#iframe-container" %></div>
+<% hide_frame = params[:new_tab].blank? && current_user.id != @userfile.user_id %>
+<% if hide_frame %>
+   <div class="trust-file-btn"> <%= link_to 'Show this HTML file below anyway', "#iframe-container" %></div>
 <% end %>
 <br>
 
 </div>
-<div class="iframe-container" id="iframe-container">
+<div class="iframe-container" id="iframe-container"
+  <% if hide_frame %>
+    hidden
+  <% end %>
+ >
   <iframe sandbox="allow-scripts allow-same-origin"
     data-frame-url="<%= stream_userfile_path(@userfile, :disposition => 'inline') %>"
-    <% unless params[:new_tab].blank? && current_user.id != @userfile.user_id %>
-
-
+    <% unless hide_frame %>
       src="<%= stream_userfile_path(@userfile, :disposition => 'inline') %>"
-
     <% end %>
     class="full-frame html-viewer"
 
