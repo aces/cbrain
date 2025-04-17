@@ -183,7 +183,7 @@ module SshDataProviderBase
     patarray = patarray.map { |x| x.to_s.sub(/\A\/*/,"/") }
 
     # Build all possible unique prefixes for all patterns
-    patcomponents = patarray.map do |pattern|  "/abc/def/*file*" # (any number of levels, but must be UNDER the name of the file collection
+    patcomponents = patarray.map do |pattern|  # "/abc/def/*file*" (any number of levels, but must be UNDER the name of the file collection
       prefixes = Pathname.new(pattern).descend.to_a   # /, /abc, /abc/def, /abc/def/*file*
       prefixes.shift
       final = prefixes.pop
