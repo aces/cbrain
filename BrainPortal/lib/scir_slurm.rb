@@ -182,6 +182,7 @@ class ScirSlurm < Scir
       command += "#{Scir.cbrain_config[:extra_qsub_args]} " if Scir.cbrain_config[:extra_qsub_args].present?
       command += "--time=#{(self.walltime.to_i+60) / 60} "  if self.walltime.present?
       command += "--mem=#{self.memory}m "                   if self.memory.present?
+      command += "-c #{self.ncores} "                       if self.ncores.present?
       command += "#{self.tc_extra_qsub_args} "              if self.tc_extra_qsub_args.present?
       command += "#{shell_escape(self.arg[0])} "
       command += " 2>&1"
