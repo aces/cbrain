@@ -85,10 +85,12 @@ class InteractiveBourreauControl
         idx         = c+r*numcols
         next if idx >= @bourreaux.size
         bourreau    = @bourreaux[idx]
+        name        = bourreau.name
         color       = bourreau.online?         ? 2 : 1  # ANSI 1=red, 2=green, 4=blue
         reverse     = @selected[bourreau.id]   ? 7 : 0  # 7=reversevideo, 0=normal
-        padded_name = sprintf("%-#{max_size}s",bourreau.name)
-        col_name    = "\e[#{reverse};3#{color}m" + padded_name + "\e[0m"
+        is_port     = @bourreaux[idx].is_a?(BrainPortal) ? ";4;5" : ""  # underline + blink
+        padding     = " " * (max_size - name.size)
+        col_name    = "\e[#{reverse};3#{color}#{is_port}m" + name + "\e[0m" + padding
         printf " %3d=%s ",
           bourreau.id,
           col_name

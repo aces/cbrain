@@ -106,8 +106,7 @@ class Bourreau < RemoteResource
 
     self.online = true
 
-    self.zap_info_cache(:info)
-    self.zap_info_cache(:ping)
+    self.zap_info_cache
 
     unless self.has_remote_control_info?
       self.operation_messages = "Not configured for remote control: missing user/host."
@@ -162,8 +161,7 @@ class Bourreau < RemoteResource
     return false unless RemoteResource.current_resource.is_a?(BrainPortal)
     return false unless self.start_tunnels  # tunnels must be STARTed in order to STOP the Bourreau!
 
-    self.zap_info_cache(:info)
-    self.zap_info_cache(:ping)
+    self.zap_info_cache
 
     stop_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; script/cbrain_remote_ctl stop"
     confirm = self.read_from_remote_shell_command(stop_command) {|io| io.read}

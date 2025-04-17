@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20250408185309) do
+ActiveRecord::Schema.define(version: 20250417170914) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -284,7 +284,6 @@ ActiveRecord::Schema.define(version: 20250408185309) do
     t.string   "cache_md5"
     t.boolean  "portal_locked",                             default: false, null: false
     t.integer  "cache_trust_expire",                        default: 0
-    t.datetime "time_of_death"
     t.string   "time_zone"
     t.string   "site_url_prefix"
     t.string   "nh_site_url_prefix"

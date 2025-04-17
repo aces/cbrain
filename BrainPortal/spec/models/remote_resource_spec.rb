@@ -293,11 +293,6 @@ describe RemoteResource do
       it "should return true" do
         expect(remote_resource.is_alive?).to be true
       end
-      it "should set the time of death to nil" do
-        remote_resource.update_attributes(:time_of_death => Time.now)
-        remote_resource.is_alive?
-        expect(remote_resource.time_of_death).to be_nil
-      end
     end
     context "with an invalid info object" do
       before(:each) do
@@ -305,25 +300,6 @@ describe RemoteResource do
       end
       it "should return false" do
         expect(remote_resource.is_alive?).to be_falsey
-      end
-      it "should set the time of death if it is not set" do
-        remote_resource.is_alive?
-        expect(remote_resource.time_of_death).not_to be_nil
-      end
-      it "should set to offline if current time of death is whithin last minute" do
-        remote_resource.update_attributes(:time_of_death  => 30.seconds.ago)
-        remote_resource.is_alive?
-        expect(remote_resource.online).to be false
-      end
-      it "should reset the time of death flag if it's too old" do
-        remote_resource.update_attributes(:time_of_death  => 1.day.ago)
-        remote_resource.is_alive?
-        expect(remote_resource.time_of_death-Time.now).to be < 1.minute
-      end
-      it "should leave the provider online if the previous time of death flag is too old" do
-        remote_resource.update_attributes(:time_of_death  => 1.day.ago)
-        remote_resource.is_alive?
-        expect(remote_resource.online).to be true
       end
     end
 

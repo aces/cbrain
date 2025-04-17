@@ -408,20 +408,13 @@ class RemoteResource < ApplicationRecord
     what = what.presence.try(:to_sym) || :ping
     self.reload
     return false if self.online == false
-    info_struct = self.remote_resource_info(what) # what is 'info' or 'ping'
-    @info = info_struct if what == :info
+    info_struct = Rails.cache.fetch(cache_key_for(what), :expires_in => 30.seconds) do
+      self.remote_resource_info(what) # what is 'info' or 'ping'
+    end
+    @info = info_struct if what == :info # caching within rails action
     @ping = info_struct if what == :ping
-    if info_struct.name != "???"
-      self.update_attributes( :time_of_death => nil ) if self.time_of_death
-      return true
-    end
-    self.update_attributes( :time_of_death => Time.now ) unless self.time_of_death
-    if self.time_of_death < 2.minutes.ago
-      self.update_attributes( :time_of_death => Time.now )
-    elsif self.time_of_death >= 2.minutes.ago && self.time_of_death < 10.seconds.ago
-      self.update_attributes( :online => false )
-    end
-    return false
+    return true if info_struct.name != "???"
+    false
   rescue
     false
   end
@@ -592,6 +585,18 @@ class RemoteResource < ApplicationRecord
     info
   end
 
+  def info_cache_key #:nodoc:
+    "info-rr#{self.id}"
+  end
+
+  def ping_cache_key #:nodoc:
+    "ping-rr#{self.id}"
+  end
+
+  def cache_key_for(what) #:nodoc:
+    what == :ping ? ping_cache_key : info_cache_key
+  end
+
   # Returns and cache a record of run-time information about the resource.
   # This is the main entry point for querying a RemoteResource, along
   # with is_alive?
@@ -603,58 +608,42 @@ class RemoteResource < ApplicationRecord
     end
     # The ping struct is a subset of info, so return info if cached
     return @info if @info # caching within Rails action
-    @info = self.info_cached?(:info) # caching between Rails actions, in meta data store
+    @info = Rails.cache.fetch(info_cache_key)
     return @info if @info
     if what == :ping # see if we cached just the ping info
       return @ping if @ping # caching within Rails action
-      @ping = self.info_cached?(:ping) # caching between Rails actions, in meta data store
+      @ping = Rails.cache.fetch(ping_cache_key)
       return @ping if @ping
     end
-    running = self.is_alive?(what) # this updates @info or @ping as a side-effect
+    running = self.is_alive?(what) # this updates the rails cache and @info or @ping as a side-effect
     if running
       if what == :info
-        (self.meta[:info_cache]             = @info       ) rescue nil # save from rare race conditions
-        (self.meta[:info_cache_last_update] = Time.now.utc) rescue nil
         return @info
       else
-        (self.meta[:ping_cache]             = @ping       ) rescue nil # save from rare race condition
-        (self.meta[:ping_cache_last_update] = Time.now.utc) rescue nil
         return @ping
       end
     end
-    self.zap_info_cache(what)
+    self.zap_info_cache
     dummy = RemoteResourceInfo.dummy_record
-    @info = dummy if what == :info
-    @ping = dummy if what == :ping
-    return what == :info ? @info : @ping
+    @info = dummy
+    @ping = dummy
+    return @info
   end
 
   # Returns the info record for the resource if it is cached and
   # recent enough (less than a minute old), returns nil otherwise.
   def info_cached?(what = :info)
-    date_key = "#{what}_cache_last_update".to_sym
-    info_key = "#{what}_cache".to_sym
-    last_meta_cached = self.meta[date_key] || 1.year.ago
-    if last_meta_cached > 1.minute.ago
-      info = self.meta[info_key] # caching between Rails actions
-      if info
-        rri = RemoteResourceInfo.new(info) # caching within a single Rails action
-        @info = rri if what == :info
-        @ping = rri if what == :ping
-        return what == :info ? @info : @ping
-      end
-    end
+    Rails.cache.fetch(cache_key_for(what))
+  end
+
+  # Zaps the cache
+  def zap_info_cache
+    @ping = nil
+    @info = nil
+    Rails.cache.delete(ping_cache_key)
+    Rails.cache.delete(info_cache_key)
     nil
   end
-
-  # Zaps the cache in DB
-  def zap_info_cache(what = :info)
-    @info = nil if what == :info
-    @ping = nil if what == :ping
-    info_key = "#{what}_cache".to_sym
-    self.meta[info_key] = nil # zaps cache in DB
-  end
-
 
 
 
@@ -740,6 +729,8 @@ class RemoteResource < ApplicationRecord
   # Utility method to send a +start_bac_workers+ command to a
   # RemoteResource, whether local or not.
   def send_command_start_bac_workers
+    cb_error "Background Activity workers cannot be started for a BrainPortal other than the current one" if
+      self.is_a?(BrainPortal) && self.id != RemoteResource.current_resource.id
     command = RemoteCommand.new(
       :command     => 'start_bac_workers'
     )
@@ -749,6 +740,8 @@ class RemoteResource < ApplicationRecord
   # Utility method to send a +stop_bac_workers+ command to a
   # RemoteResource, whether local or not.
   def send_command_stop_bac_workers
+    cb_error "Background Activity workers cannot be stopped for a BrainPortal other than the current one" if
+      self.is_a?(BrainPortal) && self.id != RemoteResource.current_resource.id
     command = RemoteCommand.new(
       :command     => 'stop_bac_workers'
     )
@@ -972,7 +965,7 @@ class RemoteResource < ApplicationRecord
       baclogger.level = Log4r::INFO
     end
 
-    worker_pool = WorkerPool.create_or_find_pool(BackgroundActivityWorker,
+    WorkerPool.create_or_find_pool(BackgroundActivityWorker,
        num_workers, # number of instances
        { :name           => worker_name,
          :check_interval => 5,
@@ -985,7 +978,6 @@ class RemoteResource < ApplicationRecord
 
   # Stops BackgroundActivityWorker processes.
   def self.process_command_stop_bac_workers(command)
-    myself = RemoteResource.current_resource
     worker_pool = WorkerPool.find_pool(BackgroundActivityWorker)
     worker_pool.stop_workers
   end

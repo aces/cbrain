@@ -22,6 +22,7 @@
 #
 -%>
 
+
 <%
   table = dynamic_scoped_table(@bourreaux,
     :id         => "bourreaux_table",
@@ -47,6 +48,8 @@
     end
 
     t.row { |r| { :html => { 'data-info-url' => row_data_bourreau_path(r) } } unless loaded.(r) }
+
+    t.selectable("remote_resource_ids[]")
 
     t.column("Server Type", :type,
       :sortable => true,
@@ -94,35 +97,7 @@
 
     t.column("Online?", :online,
       :sortable => true
-    ) { |r| red_if(! r.online, "Yes", "Offline") }
-
-    t.column("Uptime", :uptime, &(lambda do |r|
-      info = r.info(:ping) if loaded.(r)
-      return html_colorize("(...)", "magenta") unless info
-      return red_if(r.online?, "-", "Down!")   if info.name == '???'
-
-      html_tool_tip(
-        pretty_elapsed(info.uptime.to_i, :num_components => 2, :short => true),
-        :offset_x => 50
-      ) do
-        "Since #{to_localtime(info.uptime.to_i.seconds.ago, :datetime)}" +
-        "(for #{pretty_elapsed(info.uptime.to_i)})"
-      end
-    end))
-
-    t.column("Workers", :workers, &(lambda do |r|
-      return '-' unless r.is_a?(Bourreau) && r.online?
-
-      info = r.info(:ping) if loaded.(r)
-      return html_colorize("(...)", "magenta") unless info
-
-      if info.worker_pids == '???'
-        html_colorize("Stopped", "red")
-      else
-        nworkers = info.worker_pids.count(',') + 1
-        red_if(nworkers != r.workers_instances, "Running (x #{nworkers})", nil, :color2 => "orange")
-      end
-    end))
+    ) { |r| red_if(! r.online?, "Yes", "Offline") }
 
     t.column("Tasks", :tasks, &(lambda do |r|
       return unless r.is_a?(Bourreau)
@@ -188,21 +163,21 @@
         r.is_a?(Bourreau) && ! r.external_status_page_url.blank?
     end
 
-    t.column("Start/Stop", :start_stop, &(lambda do |r|
-      return unless r.is_a?(Bourreau) && r.has_owner_access?(current_user)
-
-      if ! r.has_remote_control_info?
-        html_colorize("(Missing SSH control info)")
-      else
-        link_to('Start', start_bourreau_path(r), :class => 'action_link', :method  => :post) +
-        '&nbsp;&nbsp;&nbsp;'.html_safe +
-        link_to('Stop',  stop_bourreau_path(r),  :class => 'action_link', :method  => :post)
-      end
-    end))
+#    t.column("Start/Stop", :start_stop, &(lambda do |r|
+#      return unless r.is_a?(Bourreau) && r.has_owner_access?(current_user)
+#
+#      if ! r.has_remote_control_info?
+#        html_colorize("(Missing SSH control info)")
+#      else
+#        link_to('Start', start_bourreau_path(r), :class => 'action_link', :method  => :post) +
+#        '&nbsp;&nbsp;&nbsp;'.html_safe +
+#        link_to('Stop',  stop_bourreau_path(r),  :class => 'action_link', :method  => :post)
+#      end
+#    end))
 
     if current_user.has_role?(:admin_user)
-      t.column("Access", :access) do |r|
-        link_to("Access?", {
+      t.column("Tools", :tools) do |r|
+        link_to("(Versions)", {
           :controller  => :tool_configs,
           :action      => :index,
           :bourreau_id => r.id,
@@ -210,11 +185,80 @@
           r.is_a?(Bourreau)
       end
     end
+
+    if current_user.has_role?(:admin_user)
+      t.column("Control Tunnel", :tunnel, &(lambda do |r|
+        return "-" unless r.is_a?(Bourreau)
+        #return "-" unless r.online?
+        master = r.ssh_master
+        if r.online?
+          red_if(! master.quick_is_alive?, "Open", "DEAD!")
+        else
+          master.quick_is_alive? ? "Open" : "-"
+        end
+      end))
+    end
+
+    t.column("Uptime", :uptime, &(lambda do |r|
+      info = r.info(:ping) if loaded.(r)
+      return html_colorize("(...)", "magenta") unless info
+      return red_if(r.online?, "-", "Down!")   if info.name == '???'
+
+      html_tool_tip(
+        pretty_elapsed(info.uptime.to_i, :num_components => 2, :short => true),
+        :offset_x => 50
+      ) do
+        "Since #{to_localtime(info.uptime.to_i.seconds.ago, :datetime)}" +
+        "(for #{pretty_elapsed(info.uptime.to_i)})"
+      end
+    end))
+
+    if current_user.has_role?(:admin_user)
+      t.column("Task Workers", :task_workers, &(lambda do |r|
+        return "-" unless r.is_a?(Bourreau)
+        return "-" unless r.online?
+        info = r.info(:ping) if loaded.(r)
+        nworkers = 0
+        if info && info.worker_pids.present? && info.worker_pids != '???'
+          nworkers   = info.worker_pids.count(',') + 1
+        end
+        exp_workers  = r.workers_instances
+        proc_workers = r.cbrain_tasks.status(:ruby).count
+
+        mess  = "Workers: #{nworkers || '?'}/#{exp_workers} "
+        mess += "(#{proc_workers} processing) " if proc_workers > 0
+        if nworkers.to_s != exp_workers.to_s
+          html_colorize(mess, "red")
+        else
+          red_if(proc_workers > 0, mess, nil, :color2 => "orange")
+        end
+      end))
+
+      t.column("Activity Workers", :bac_workers, &(lambda do |r|
+        return "-" unless r.online?
+        info = r.info(:ping) if loaded.(r)
+        nbacworkers = 0
+        if info && info.bac_worker_pids.present? && info.bac_worker_pids != '???'
+          nbacworkers  = info.bac_worker_pids.count(',') + 1
+        end
+        exp_bacworkers   = r.activity_workers_instances
+        proc_bac_workers = BackgroundActivity.where(:remote_resource_id => r.id).locked.count
+
+        mess  = "Workers: #{nbacworkers || '?'}/#{exp_bacworkers} "
+        mess += "(#{proc_bac_workers} processing) " if proc_bac_workers > 0
+        if nbacworkers.to_s != exp_bacworkers.to_s
+          html_colorize(mess, "red")
+        else
+          red_if(proc_bac_workers > 0, mess, nil, :color2 => "orange")
+        end
+      end))
+    end
+
   %>
 <% end %>
 
 <% if @row_fetch %>
-  <%= table.render :row, @bourreaux.to_a %>
+    <%= table.render :row, @bourreaux.to_a %>
 <% else %>
   <div class="menu_bar">
     <% if check_role(:site_manager) || check_role(:admin_user) %>
@@ -240,6 +284,148 @@
                 :datatype  => 'script', :class  => "button"
     %>
 
+
+    <% if check_role(:admin_user) %>
+
+      <%= button_with_dropdown_menu("Start Services") do %>
+        <p class="dropmenu_info">
+          These buttons start the different layers of services required to
+          boot an Execution Server. They are listed in the same order as they
+          need to be started. The first three buttons
+          only apply to Execution Servers, while <strong>Start Activity Workers</strong>
+          applies to both Execution Servers and Portals.
+        </p>
+        <p class="dropmenu_info">
+          Refer the the last four columns of the table to find out what service
+          are currently operational. The four buttons in this pannel map
+          to them in the same order.
+        </p>
+        <p class="dropmenu_info">
+          Also note that your browser blocks while these requests are being processed;
+          be patient and check your browser's progress bar. Do not perform long operations
+          on multiple Execution Servers to avoid timeouts.
+        </p>
+        <hr>
+        <div class="centered">
+          <p class="dropmenu_info">
+            The tunnel is the main communication channel between the Portal
+            and the remote server where the Execution Server is configured. It is
+            necessary for the Execution Server and the Task Workers. Starting the
+            tunnel will mark the Execution Server as "online" in the database.
+            Note that you can also start the tunnel with the "Start Execution Server"
+            button. Consider starting just the tunnel as a way to verify that the network
+            parameters are valid (e.g. to check hostnames, ports, firewalls, etc).
+          </p>
+          <%= external_submit_button "1. Start Tunnels",       "bourreau_form",
+              :class => 'button',
+              :name  => 'operation',
+              :value => 'start_tunnels'
+          %>
+          <p class="dropmenu_info">
+            The Execution Server requires the tunnel, above. Note that as convenience
+            feature, if the tunnel is not started, starting the Execution Server will also
+            start the tunnel first.
+          </p>
+          <%= external_submit_button "2. Start Execution Server",     "bourreau_form",
+              :class => 'button',
+              :name  => 'operation',
+              :value => 'start_bourreaux'
+          %>
+          <p class="dropmenu_info">
+            Task workers require a Tunnel and the Execution Server to be up.
+          </p>
+          <%= external_submit_button "3a. Start Task Workers", "bourreau_form",
+              :class => 'button',
+              :name  => 'operation',
+              :value => 'start_task_workers'
+          %>
+          <p class="dropmenu_info">
+            Activity workers are the only service that can be started or stopped
+            on Portals too. For a Portal, they don't require any of the other layers
+            above. On an Execution Server, the require the Tunnel and the Execution Server.
+          </p>
+          <%= external_submit_button "3b. Start Activity Workers",  "bourreau_form",
+              :class => 'button',
+              :name  => 'operation',
+              :value => 'start_bac_workers'
+          %>
+        </div>
+      <% end %>
+
+      <%= button_with_dropdown_menu("Stop Services") do %>
+        <p class="dropmenu_info">
+          These buttons stop the different layers of services associated with
+          an Execution Server. They are listed in the same order as they
+          need to be stopped. The last three buttons
+          only apply to Execution Servers, while <strong>Stop Activity Workers</strong>
+          applies to both Execution Servers and Portals.
+        </p>
+        <p class="dropmenu_info">
+          Refer the the last four columns of the table to find out what service
+          are currently operational. The four buttons in this pannel map
+          to them in <em>reverse order</em> (right to left).
+        </p>
+        <p class="dropmenu_info">
+          Note that stopping the Workers (any type) is an action that ask
+          them to shut down gracefully. If they are processing something, they will finish it
+          first. The last two columns of the table indicate if they are currently busy
+          with the word <%= html_colorize("processing in orange text","orange") %>.
+          In some cases it can take a long time for the workers to stop. Refreshing this
+          page will tell you when they are stopped, but remember that the page's content
+          is normally only updated once every 30 seconds.
+        </p>
+        <p class="dropmenu_info">
+          Also note that your browser blocks while these requests are being processed;
+          be patient and check your browser's progress bar. Do not perform long operations
+          on multiple Execution Servers to avoid timeouts.
+        </p>
+        <hr>
+        <p class="centered">
+          <p class="dropmenu_info">
+            Activity Workers can run on both Portals and Execution Servers. Stopping them
+            will send them a signal to finish their current processing actions and then exit.
+          </p>
+          <%= external_submit_button "1a. Stop Activity Workers",  "bourreau_form",
+              :class => 'button',
+              :name  => 'operation',
+              :value => 'stop_bac_workers',
+              :data  => { :confirm => "Are you sure you want to stop the Activity Workers? They will finish what they are doing first." }
+          %>
+          <p class="dropmenu_info">
+            Stopping Task Workers will send them a signal to finish what they are doing
+            and then exit. This can take some time.
+          </p>
+          <%= external_submit_button "1b. Stop Task Workers", "bourreau_form",
+              :class => 'button',
+              :name  => 'operation',
+              :value => 'stop_task_workers',
+              :data  => { :confirm => "Are you sure you want to stop the Task Workers? They will finish what they are doing first." }
+          %>
+          <p class="dropmenu_info">
+            Stopping an Execution Server will also stop the Task Workers <strong>and</strong> Activity Workers running on it.
+            Make sure they are not actively <%= html_colorize("processing","orange") %> something.
+          </p>
+          <%= external_submit_button "2. Stop Bourreaux",     "bourreau_form",
+              :class => 'button',
+              :name  => 'operation',
+              :value => 'stop_bourreaux',
+              :data  => { :confirm => "Are you sure? Note that workers will also shut down once they are done, if they are still active." }
+          %>
+          <p class="dropmenu_info">
+            Remember that is it <%= html_colorize("not safe","red") %> to stop Tunnels if
+            any of the Workers are currently <%= html_colorize("processing","orange") %> something.
+          </p>
+          <%= external_submit_button "3. Stop Tunnels",       "bourreau_form",
+              :class => 'button',
+              :name  => 'operation',
+              :value => 'stop_tunnels',
+              :data  => { :confirm => "Make sure Bourreaux, Task Workers and Activity workers are all stopped!" }
+          %>
+        </p>
+      <% end %>
+
+    <% end %>
+
     <%= overlay_ajax_link "Help", "/doc/server/view_server.html", :class  => "button" %>
   </div>
 
@@ -254,5 +440,8 @@
     <%= javascript_include_tag 'cbrain/bourreaux/fetch_row' %>
   <% end %>
 
-  <%= table.render %>
+  <%= form_tag({ :controller => :bourreaux, :action => :operation }, :method => :post, :id => "bourreau_form") do %>
+    <%= table.render %>
+  <% end %>
+
 <% end %>

@@ -110,6 +110,7 @@ Rails.application.routes.draw do
       post 'cleanup_caches'
       get  'rr_access_dp'
       post 'dispatcher_file_copy'
+      post 'operation'
     end
   end
 

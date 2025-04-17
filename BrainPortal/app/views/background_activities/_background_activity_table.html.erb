@@ -24,13 +24,13 @@
 
 <div class="menu_bar">
   <%= show_hide_toggle "About", ".bac_explanations", :class => 'button', :slide_effect => true, :slide_duration => 'fast'  %>
-  <%= external_submit_button "Cancel Activities", "bac_form", :class  => "button", :confirm  => "Are you sure you want to cancel the selected background activities?" %>
+  <%= external_submit_button "Cancel Activities", "bac_form", :class  => "button", :name => 'operation', :value => 'cancel', :data => { :confirm  => "Are you sure you want to cancel the selected background activities?" } %>
   <% if current_user.has_role? :admin_user %>
-    <%= external_submit_button "Suspend Activities", "bac_form", :class  => "button", :confirm  => "Are you sure you want to suspend the selected background activities?" %>
-    <%= external_submit_button "Unsuspend Activities", "bac_form", :class  => "button", :confirm  => "Are you sure you want to reactivate the selected background activities?" %>
-    <%= external_submit_button "Destroy Activities", "bac_form", :class  => "button", :confirm  => "Are you sure you want to destroy the selected background activities?" %>
-    <%= external_submit_button "Activate Now!", "bac_form", :class  => "button", :confirm  => "Are you sure you want to activate the selected background activities?" %>
-    <%= external_submit_button "Retry Failed", "bac_form", :class  => "button", :confirm  => "Are you sure you want to retry the failed items of the selected background activities?" %>
+    <%= external_submit_button "Suspend Activities", "bac_form", :class  => "button", :name => 'operation', :value => 'suspend', :confirm  => "Are you sure you want to suspend the selected background activities?" %>
+    <%= external_submit_button "Unsuspend Activities", "bac_form", :class  => "button", :name => 'operation', :value => 'unsuspend', :confirm  => "Are you sure you want to reactivate the selected background activities?" %>
+    <%= external_submit_button "Destroy Activities", "bac_form", :class  => "button", :name => 'operation', :value => 'destroy', :confirm  => "Are you sure you want to destroy the selected background activities?" %>
+    <%= external_submit_button "Activate Now!", "bac_form", :class  => "button", :name => 'operation', :value => 'activate', :confirm  => "Are you sure you want to activate the selected background activities?" %>
+    <%= external_submit_button "Retry Failed", "bac_form", :class  => "button", :name => 'operation', :value => 'retry', :confirm  => "Are you sure you want to retry the failed items of the selected background activities?" %>
     <%= link_to "Create New Scheduled Activity", new_background_activity_path, :class => "button" %>
     <%= scope_filter_link("Hide Scheduled", "background_activities#index", :replace,
           [ { :a => :status, :o => 'in', :v => %w( InProgress Completed PartiallyCompleted Failed InternalError Cancelled Suspended ) } ],

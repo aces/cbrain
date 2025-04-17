@@ -34,6 +34,7 @@ class BourreauxController < ApplicationController
 
   before_action :login_required
   before_action :manager_role_required, :except  => [:index, :show, :row_data, :load_info, :rr_disk_usage, :cleanup_caches, :rr_access, :rr_access_dp]
+  before_action :admin_role_required,   :only    => [ :create, :operation ]
 
   def index #:nodoc:
     @scope = scope_from_session
@@ -371,6 +372,96 @@ class BourreauxController < ApplicationController
     end
   end
 
+  # Starts and stop services; this is a newer, more granular interface than the
+  # old 'start/stop' actions above.
+  def operation #:nodoc:
+    bids   = Array(params[:remote_resource_ids])
+    action = params[:operation].presence || "no_op"
+
+    flash[:error] = flash[:notice] = ""
+
+    # TODO: Find some way to make this asynchronous so we don't block the rails thread?
+    bids.each do |bid|
+      begin
+        bourreau = RemoteResource.where(:id => bid).first # could be a BrainPortal too
+        bourreau.zap_info_cache
+        operation_start_tunnels     (bourreau) if action == 'start_tunnels'
+        operation_start_bourreaux   (bourreau) if action == 'start_bourreaux'
+        operation_start_task_workers(bourreau) if action == 'start_task_workers'
+        operation_start_bac_workers (bourreau) if action == 'start_bac_workers'
+        operation_stop_tunnels      (bourreau) if action == 'stop_tunnels'
+        operation_stop_bourreaux    (bourreau) if action == 'stop_bourreaux'
+        operation_stop_task_workers (bourreau) if action == 'stop_task_workers'
+        operation_stop_bac_workers  (bourreau) if action == 'stop_bac_workers'
+        flash[:notice] += "#{bourreau.name}: Success for '#{action.humanize}'\n"
+      rescue CbrainException => ex
+        flash[:error] += "#{bourreau.name}: Failure for '#{action.humanize}': #{ex.message}\n"
+      rescue => ex
+        flash[:error] += "#{bourreau.name}: Exception for '#{action.humanize}': #{ex.class}: #{ex.message}\n"
+      end
+    end
+
+    flash[:error] += "Nothing selected, so no operation performed.\n" if bids.empty?
+    redirect_to :action => :index
+  end
+
+  protected
+
+  def operation_start_tunnels(bourreau) #:nodoc:
+    cb_error "Operation not allowed for a Portal." unless bourreau.is_a?(Bourreau)
+    bourreau.update_column(:online, true)
+    res = bourreau.start_tunnels
+    cb_error "Could not start master SSH connection and tunnels." unless res
+  end
+
+  def operation_start_bourreaux(bourreau) #:nodoc:
+    cb_error "Operation not allowed for a Portal." unless bourreau.is_a?(Bourreau)
+    started_ok = bourreau.start
+    #alive_ok   = started_ok && sleep(1) && bourreau.is_alive?(:ping)
+    cb_error "Could not start Bourreau.\n" + bourreau.operation_messages.to_s unless started_ok
+  end
+
+  def operation_start_task_workers(bourreau) #:nodoc:
+    cb_error "Operation not allowed for a Portal." unless bourreau.is_a?(Bourreau)
+    res = bourreau.send_command_start_workers
+    workers_ok = true if res && res[:command_execution_status] == "OK"
+    cb_error "Could not start TASK workers." unless workers_ok
+  end
+
+  def operation_start_bac_workers(bourreau) #:nodoc:
+    # This is allowed for a Portal, but only the current one
+    res = bourreau.send_command_start_bac_workers
+    workers_ok = true if res && res[:command_execution_status] == "OK"
+    cb_error "Could not start BAC workers." unless workers_ok
+  end
+
+  def operation_stop_tunnels(bourreau) #:nodoc:
+    cb_error "Operation not allowed for a Portal." unless bourreau.is_a?(Bourreau)
+    tunstop = bourreau.stop_tunnels
+    cb_error "Could not stop tunnels." unless tunstop
+    bourreau.update_column(:online, false)
+  end
+
+  def operation_stop_bourreaux(bourreau) #:nodoc:
+    cb_error "Operation not allowed for a Portal." unless bourreau.is_a?(Bourreau)
+    boustop = bourreau.stop
+    cb_error "Could not stop Bourreau." unless boustop
+  end
+
+  def operation_stop_task_workers(bourreau) #:nodoc:
+    cb_error "Operation not allowed for a Portal." unless bourreau.is_a?(Bourreau)
+    res = bourreau.send_command_stop_workers
+    workers_ok = true if res && res[:command_execution_status] == "OK"
+    cb_error "Could not stop TASK workers." unless workers_ok
+  end
+
+  def operation_stop_bac_workers(bourreau) #:nodoc:
+    # This is allowed for a Portal, but only the current one
+    res = bourreau.send_command_stop_bac_workers
+    workers_ok = true if res && res[:command_execution_status] == "OK"
+    cb_error "Could not stop BAC workers." unless workers_ok
+  end
+
   # Define disk usage of remote ressource,
   # with date filtering if wanted.
   def rr_disk_usage
@@ -677,7 +768,8 @@ class BourreauxController < ApplicationController
       :workers_chk_time, :workers_log_to, :workers_verbose, :help_url, :rr_timeout, :proxied_host,
       :spaced_dp_ignore_patterns, :support_email, :system_from_email, :external_status_page_url,
       :docker_executable_name, :docker_present, :singularity_executable_name, :singularity_present,
-      :small_logo, :large_logo, :license_agreements
+      :small_logo, :large_logo, :license_agreements,
+      :activity_workers_instances
     )
   end
 
