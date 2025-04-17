@@ -280,7 +280,7 @@ describe RemoteResource do
     let(:info_object) {double("info_object")}
 
     before(:each) do
-      allow(remote_resource).to receive(:remote_resource_info).and_return(info_object)
+      allow(Rails.cache).to receive(:fetch).and_return(info_object)
     end
     it "should return false if offline" do
       remote_resource.update_attributes(:online =>  false)
