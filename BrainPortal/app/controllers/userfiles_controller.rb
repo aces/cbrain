@@ -456,13 +456,11 @@ class UserfilesController < ApplicationController
   # established trust in a file or all the other files of a collection for the duration of the session
   # used to render html userfiles or collection elements
   def trust
-
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
     cbrain_session['trust_userfiles'] ||= []
     unless cbrain_session['trust_userfiles'].include?(@userfile.id)
       cbrain_session['trust_userfiles'] << @userfile.id
     end
-
     respond_to do |format|
       format.js  { render js: "" }  # no need to do anything as of now
     end
