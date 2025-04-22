@@ -168,6 +168,12 @@ class ClusterTask < CbrainTask
     nil
   end
 
+  # Returns a number of cores needed for the job; nil means to not
+  # ask for anything particular.
+  def job_number_of_cores
+    nil
+  end
+
 
 
   ##################################################################
@@ -1924,6 +1930,7 @@ exit $status
     job.name     = self.tname_tid  # "#{self.name}-#{self.id}" # some clusters want all names to be different!
     job.walltime = self.job_walltime_estimate
     job.memory   = self.job_memory_estimate
+    job.ncores   = self.job_number_of_cores
     job.task_id  = self.id
 
     # Note: all extra_qsub_args defined in the tool_configs (bourreau, tool and bourreau/tool)
