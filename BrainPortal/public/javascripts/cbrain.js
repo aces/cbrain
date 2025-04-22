@@ -759,7 +759,7 @@
       form.submit();
     });
 
-    $(document).delegate(".trust-file-btn", "click", function (event) {
+    $(document).on("click", ".trust-file-btn",  function (event) {
       let trustBtn = $("body").find(".trust-file-btn");
       let iframe = $("body").find('.html-viewer');
       let iframeContainer = $("body").find('.iframe-container');
@@ -768,45 +768,8 @@
       iframeContainer.show();  // css trumps html
     });
 
-    // todo delete this one or preceditng confirm button for html viewer iframe
-    // this one caches trust info in local storage
-    $('.trust-file-btn').each(function() {
-      let trustBtn = $(this);
-      let fileIds = trustBtn.data('ids');
-      let iframe = trustBtn.closest('iframe').find('.html-viewer');
-      let iframeContainer = trustBtn.closest('div').find('.iframe-container');
 
-      // If there's a valid fileId, proceed
-      if (fileIds) {
-        const trustKey = "trusted_file_" + fileIds;
-        const fileUrl = iframe.data('frame-url');
 
-        // Check if trust is already saved
-        if (localStorage.getItem(trustKey) === "true") {
-          iframe.attr('src', fileUrl);
-          trustBtn.hide();
-          iframeContainer.show();
-        }
-
-        // Click event for trusting the file
-        trustBtn.click(function() {
-          localStorage.setItem(trustKey, "true"); // Save trust for file/owner id todo expire in 3 h?
-          iframe.attr('src', fileUrl);
-          $(this).hide();
-          iframeContainer.show();
-        });
-      }
-    });
-
-    // show html on click only
-    $(document).delegate(".trust-file-btn", "click", function (event) {
-      let trustBtn = $("body").find(".trust-file-btn");
-      let iframe = $("body").find('.html-viewer');
-      let iframeContainer = $("body").find('.iframe-container');
-      iframe.attr('src', iframe.data('frame-url'));
-      trustBtn.hide();
-      iframeContainer.show();
-    });
 
 
     //html_tool_tip_code based on xstooltip provided by
