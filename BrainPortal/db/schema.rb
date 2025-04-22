@@ -238,7 +238,7 @@ ActiveRecord::Schema.define(version: 20250402175130) do
     t.datetime "last_sent"
     t.boolean  "critical",                    default: false, null: false
     t.boolean  "display",                     default: false, null: false
-    t.integer  "group_id"
+    t.integer  "invitation_group_id"
     t.string   "type"
     t.boolean  "active"
     t.integer  "sender_id"

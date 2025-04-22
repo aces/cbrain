@@ -26,7 +26,7 @@ class Invitation < Message
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  belongs_to    :group
+  belongs_to    :group, foreign_key: :invitation_group_id
 
   before_create :make_active
 
@@ -37,7 +37,7 @@ class Invitation < Message
     self.send_message(users,
       :message_type => "notice",
       :header       =>  "You've been invited by #{sender.full_name} to join project #{group.name}",
-      :group_id     =>  group.id,
+      :invitation_group_id => group.id,
       :send_email   =>  true,
       :sender_id    =>  sender.id,
       :description  =>  <<-EMAIL_BODY # this is only shown in the emails, see add_description() below

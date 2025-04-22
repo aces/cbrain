@@ -3,7 +3,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2020
+# Copyright (C) 2008-2024
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -28,8 +28,14 @@
 
 We have just generated a new API token for you.
 <p>
-<pre><%= @new_token %></pre>
+  <code class="copy-text"><%= @new_token %></code>
+  <%= copy_to_clipboard_button(
+     @new_token,
+     label: "copy",
+     title: "Click this button to copy the API token to the clipboard")
+  %>
 <p>
+
 If you are a developer and want to automate working
 with CBRAIN or NeuroHub, this token will be needed
 to access the APIs.
@@ -37,7 +43,7 @@ to access the APIs.
 Refer to the CBRAIN API documentation
 for more information.
 <p>
-<strong>A note about this token</strong>:
+<strong>A few notes about this token</strong>:
 
 <% pretty_how_long = SessionHelpers::SESSION_API_TOKEN_VALIDITY.inspect %>
 <ul>
@@ -54,6 +60,10 @@ for more information.
   <li>
     If a subsequent connection comes from any other IP address at any time,
     the token will immediately be invalidated.
+  </li>
+  <li>
+    To copy the token to your clipboard, simply click the copy button located to the right of the token. The token will be saved to your clipboard.
+    Please do not forget to paste and save the token. You will not be able to see it again.
   </li>
 </ul>
 

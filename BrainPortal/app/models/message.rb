@@ -33,6 +33,7 @@ class Message < ApplicationRecord
 
   belongs_to :user
   belongs_to :sender, :class_name => "User", :optional => true
+  belongs_to :invitation_group, :class_name => "Group", :optional => true
 
   attr_accessor :send_email
 
@@ -74,7 +75,7 @@ class Message < ApplicationRecord
     expiry       = options[:expiry]        || options["expiry"]
     critical     = options[:critical]      || options["critical"]      || false
     send_email   = options[:send_email]    || options["send_email"]    || false
-    group_id     = options[:group_id]      || options["group_id"]
+    group_id     = options[:invitation_group_id] || options["invitation_group_id"]
     sender_id    = options[:sender_id]     || options["sender_id"]
 
     # Affects how 'destination' is interpreted. Default: exclude locked users.
@@ -104,15 +105,15 @@ class Message < ApplicationRecord
                :critical     => critical
              ).first ||
              self.new(
-               :user_id      => user.id,
-               :message_type => type,
-               :header       => header,
-               :description  => description,
-               :expiry       => expiry,
-               :read         => false,
-               :critical     => critical,
-               :group_id     => group_id,
-               :sender_id    => sender_id
+               :user_id            => user.id,
+               :message_type      => type,
+               :header            => header,
+               :description       => description,
+               :expiry            => expiry,
+               :read              => false,
+               :critical          => critical,
+               :invitation_group_id => group_id,  # For invitation messages only
+               :sender_id         => sender_id
              )
 
       # If the message is a pure repeat of an existing message,
