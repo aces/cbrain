@@ -181,6 +181,7 @@
           :controller  => :tool_configs,
           :action      => :index,
           :bourreau_id => r.id,
+          :_simple_filters => 1,
         }, :class => 'action_link') if
           r.is_a?(Bourreau)
       end
