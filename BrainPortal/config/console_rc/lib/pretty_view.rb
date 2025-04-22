@@ -48,7 +48,7 @@ end
 
 # Make sure the classes are loaded
 [ Userfile, CbrainTask, User, Group, DataProvider, RemoteResource,
-  RemoteResourceInfo, Site, Tool, ToolConfig, Bourreau, DiskQuota, DataUsage,
+  RemoteResourceInfo, Site, Tool, ToolConfig, Bourreau, DiskQuota, CpuQuota, DataUsage,
   BackgroundActivity ]
 # Note that it's important to load PortalTask and/or ClusterTask too, because of its own pre-loading of subclasses.
 PortalTask.nil? rescue true
@@ -368,6 +368,32 @@ DiskQuota #%d
       data_provider_id, data_provider.try(:name),
       self.max_bytes, ConsoleCtx.send(:pretty_size, self.max_bytes),
       self.max_files,
+      ConsoleCtx.send(:pretty_past_date,created_at),
+      ConsoleCtx.send(:pretty_past_date,updated_at)
+  end
+end
+
+class CpuQuota
+  def pretview
+    report = <<-VIEW
+CpuQuota #%d
+  Owner:    %d (%s)
+  Group:    %d (%s)
+  Exec:     %d (%s)
+  MaxWeek:  %s
+  MaxMonth: %s
+  MaxEver:  %s
+  Created:  %s
+  Updated:  %s
+    VIEW
+    sprintf report,
+      self.id,
+      user_id, (user_id == 0 ? "All users of group" : user.login),
+      group_id, (group_id == 0 ? "Specified user" : Group.where(:id => group_id).first.try(:name)),
+      remote_resource_id, (remote_resource_id == 0 ? "Any exec" : RemoteResource.where(:id => remote_resource_id).first.try(:name)),
+      ConsoleCtx.send(:pretty_elapsed, self.max_cpu_past_week || 0, :num_components => 2),
+      ConsoleCtx.send(:pretty_elapsed, self.max_cpu_past_month || 0, :num_components => 2),
+      ConsoleCtx.send(:pretty_elapsed, self.max_cpu_ever || 0, :num_components => 2),
       ConsoleCtx.send(:pretty_past_date,created_at),
       ConsoleCtx.send(:pretty_past_date,updated_at)
   end
