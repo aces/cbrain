@@ -264,7 +264,7 @@ module DynamicFormHelper
 
     options["data-associated-form"] = form_id
 
-    submit_tag(name, options)
+    button_tag(name, options.merge(:form => form_id, :type => 'text'))
   end
 
   # Creates a disabled checkbox, which will be checked if

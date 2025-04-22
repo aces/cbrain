@@ -56,8 +56,12 @@ class InteractiveBourreauControl
   # We maintain the state of the interactive session in a bunch of
   # instance variables.
   def initialize(bourreaux_list = Bourreau.order(:id).all, term_width = nil)
-    @bourreaux = bourreaux_list
-    @width     = term_width
+    @myself     = RemoteResource.current_resource # normally, in the console, a BrainPortal
+    @bourreaux  = bourreaux_list.to_a
+    @bourreaux |= [ @myself ] # add the current BrainPortal
+    @bourreaux.sort!   { |x,y| x.id <=> y.id }
+    @bourreaux.reject! { |b| b.meta[:ibc_hide] }
+    @width      = term_width
     if term_width.blank? || term_width.to_i < 1
       _,numcols = Reline.get_screen_size rescue [25,120]
       @width          = numcols
@@ -81,10 +85,12 @@ class InteractiveBourreauControl
         idx         = c+r*numcols
         next if idx >= @bourreaux.size
         bourreau    = @bourreaux[idx]
+        name        = bourreau.name
         color       = bourreau.online?         ? 2 : 1  # ANSI 1=red, 2=green, 4=blue
         reverse     = @selected[bourreau.id]   ? 7 : 0  # 7=reversevideo, 0=normal
-        padded_name = sprintf("%-#{max_size}s",bourreau.name)
-        col_name    = "\e[#{reverse};3#{color}m" + padded_name + "\e[0m"
+        is_port     = @bourreaux[idx].is_a?(BrainPortal) ? ";4;5" : ""  # underline + blink
+        padding     = " " * (max_size - name.size)
+        col_name    = "\e[#{reverse};3#{color}#{is_port}m" + name + "\e[0m" + padding
         printf " %3d=%s ",
           bourreau.id,
           col_name
@@ -147,7 +153,7 @@ Operations Mode : #{
   def process_user_letter(letter) #:nodoc:
 
     # Validate the user input
-    if letter !~ /^([haombwiptukygsrczqxj]|\d+|exit|quit)$/
+    if letter !~ /^([haombwiptukygsrczqxjfdn]|\d+|exit|quit)$/
       puts "Unknown command: #{letter} (ignored)"
       return false
     end
@@ -163,15 +169,24 @@ Operations Mode : #{
       * Start/Stop remote services (added to queue)
 
         B = starts bourreaux
-        W = starts workers
-        T = stops workers
-        U = stops workers and waits to make sure
         K = stops bourreaux (using shell commands)
-        J = stops workers and bourreaux (using command control
+
+        W = starts task workers
+        T = stops task workers
+        U = stops task workers and waits to make sure
+
+        F = starts BAC workers
+        D = stops BAC workers
+        N = stops BAC workers and waits to make sure
+
+        J = stops all workers and bourreaux (using command control
             messages; use this only if you're sure no workers
             are active and the SSH masters are opened)
-        Y = cycle: stop workers and bourreaux then
-            start bourreaux and workers (replace operation queue)
+
+        Y = cycle: stop task workers, BAC workers and bourreaux
+            then restarts them all (replace operation queue)
+            Synonym to "U N K B W". Note that starting a Bourreau
+            also starts its BAC workers.
 
       * Queue Control
 
@@ -197,6 +212,25 @@ Operations Mode : #{
 
          2 12 b w g
 
+      * About The Portal
+
+      Among the list of Bourreau, a single entry for the current
+      Portal will also be added. None of the commands to start or
+      stop bourreaux and task workers work for the BrainPortal.
+      Only BACWorkers operations are allowed. Also, the commands
+      don't actually contact any running BrainPortal servers, it
+      connects to the console's own process itself instead. That
+      means the information returned by 'info' and 'ping' is just
+      information about the console.
+
+      * Hiding Bourreaux
+
+      You can hide any of the bourreaux by adding a meta data
+      entry 'ibc_hide' to them, e.g. in the console:
+
+          Bourreau.find(342).meta[:ibc_hide] = true
+
+      and they won't show up in the 'ibc' session.
       Menu
       return false
     end
@@ -234,18 +268,21 @@ Operations Mode : #{
 
     # Cycle
     if letter == "y"
-      @operations = "StopWorkersAndWait StopBourreaux StartBourreaux StartWorkers"
+      @operations = "StopWorkersAndWait StopBACWorkersAndWait StopBourreaux StartBourreaux StartWorkers"
       return false
     end
 
     # Operation queue commands
-    if letter =~ /^[bwtkuj]$/
+    if letter =~ /^[bwtkujfdn]$/
       @operations += " " if @operations.present?
       @operations += "StartBourreaux"     if letter == "b"
-      @operations += "StartWorkers"       if letter == "w"
       @operations += "StopBourreaux"      if letter == "k"
+      @operations += "StartWorkers"       if letter == "w"
       @operations += "StopWorkers"        if letter == "t"
       @operations += "StopWorkersAndWait" if letter == "u"
+      @operations += "StartBACWorkers"    if letter == "f"
+      @operations += "StopBACWorkers"     if letter == "d"
+      @operations += "StopBACWorkersAndWait" if letter == "n"
       @operations += "StopAllByCommand"   if letter == "j"
       return false
     end
@@ -261,13 +298,18 @@ Operations Mode : #{
 
       bourreau_list = @bourreaux.select { |b| @selected[b.id] }
       if bourreau_list.empty?
-        puts "\nWell, no Bourreaux are selected. So nothing done."
+        puts "\n\e[33mWell, no Bourreaux are selected. So nothing done.\e[0m"
         return false
       end
 
       op_list       = @operations.split(/\W+/).map(&:presence).compact
       if op_list.empty?
-        puts "\nWell, no operations are queued. So nothing done."
+        puts "\n\e[33mWell, no operations are queued. So nothing done.\e[0m"
+        return false
+      end
+
+      if bourreau_list.any? { |b| b.is_a?(BrainPortal) } && op_list.any? { |x| x !~ /BACWorker/i }
+        puts "\n\e[31mIf the BrainPortal is selected, only BACWorker operations are allowed.\e[0m"
         return false
       end
 
@@ -293,7 +335,7 @@ Operations Mode : #{
             res, mess = apply_operation(op, bou)
             res.nil? # just to silence a warning with ruby -c
             # If stopping workers fail for any reason, we skip all other actions for this bourreau
-            break if op =~ /StopWorkers/ && mess.present? && mess =~ /still active/i
+            break if op =~ /Stop.*Workers/ && mess.present? && mess =~ /still active/i
           end
         end
       end
@@ -317,18 +359,21 @@ Operations Mode : #{
           end
         else
           uptime     = info[:uptime];      uptime     = nil if uptime     == '???'
-          numworkers = info[:worker_pids]; numworkers = nil if numworkers == '???'
           gitrev     = info[:starttime_revision]
+          numworkers = info[:worker_pids]; numworkers = nil if numworkers == '???'
           numworkers = (numworkers || "").split(",").count
+          numBACw    = info[:bac_worker_pids]; numBACw = nil if numBACw   == '???'
+          numBACw    = (numBACw    || "").split(",").count
           expworkers = bou.workers_instances || 0
+          expBACw    = bou.activity_workers_instances || 0
           uptime     = uptime.to_i if uptime;
           uptime   &&= ConsoleCtx.send(:pretty_elapsed, uptime, :num_components => 2)
           uptime   &&= "up for #{uptime}"
           uptime   ||= "DOWN"
-          acttasks   = bou.cbrain_tasks.active.count
+          acttasks   = bou.cbrain_tasks.active.count rescue 0
           acttasks   = nil if acttasks == 0
           acttasks &&= " \e[36m(#{acttasks} active tasks)\e[0m" # CYAN
-          rubtasks   = bou.cbrain_tasks.status(:ruby).count
+          rubtasks   = bou.cbrain_tasks.status(:ruby).count rescue 0
           rubtasks   = nil if rubtasks == 0
           rubtasks &&= " \e[35m(#{rubtasks} in Ruby stages)\e[0m" # MAGENTA
           bactasks   = bou.background_activities.where(:status => 'InProgress').count
@@ -336,10 +381,14 @@ Operations Mode : #{
           bactasks &&= " \e[34m(#{bactasks} active BACs)\e[0m" # BLUE
           color_on   = color_off = nil
           color_on   = "\e[31m" if uptime == 'DOWN'          # RED    for down bourreaux
-          color_on ||= "\e[33m" if numworkers != expworkers  # YELLOW for missing workers
+          color_on ||= "\e[33m" if numworkers != expworkers || numBACw != expBACw  # YELLOW for missing workers
           color_on ||= "\e[32m"                              # GREEN  when everything ok
           color_off  = "\e[0m"  if color_on
-          printf "#{color_on}%#{max_size}s rev %-9.9s %s, %d/%d workers#{color_off}#{acttasks}#{rubtasks}#{bactasks}\n", bou.name, gitrev, uptime, numworkers, expworkers
+          if bou.is_a?(Bourreau)
+            printf "#{color_on}%#{max_size}s rev %-9.9s %s, %d/%d workers, %d/%d BAC workers#{color_off}#{acttasks}#{rubtasks}#{bactasks}\n", bou.name, gitrev, uptime, numworkers, expworkers, numBACw, expBACw
+          else
+            printf "#{color_on}%#{max_size}s rev %-9.9s %s, %d/%d BAC workers#{color_off}#{bactasks}\n", bou.name, gitrev, uptime, numBACw, expBACw
+          end
         end
       end
       return true
@@ -383,7 +432,7 @@ Operations Mode : #{
   end
 
   def apply_operation(op, bou) #:nodoc:
-    printf "... %18s %-15s : ", op, bou.name
+    printf "... %21s %-15s : ", op, bou.name
     res,mess = [ false, "Unknown Operation #{op}" ]
     res,mess = start_bourreau(bou)        if op == "StartBourreaux"
     res,mess = start_workers(bou)         if op == "StartWorkers"
@@ -391,6 +440,9 @@ Operations Mode : #{
     res,mess = stop_workers(bou)          if op == "StopWorkers"
     res,mess = stop_workers_and_wait(bou) if op == "StopWorkersAndWait"
     res,mess = stop_all_by_command(bou)   if op == "StopAllByCommand"
+    res,mess = start_bac_workers(bou)     if op == "StartBACWorkers"
+    res,mess = stop_bac_workers(bou)      if op == "StopBACWorkers"
+    res,mess = stop_bac_workers_and_wait(bou) if op == "StopBACWorkersAndWait"
     printf "%s\n", mess == nil ? "(nil)" : mess
     [ res, mess ]
   rescue IRB::Abort => ex
@@ -424,6 +476,46 @@ Operations Mode : #{
     end
     print " " * 30 + "\b" * 30
     [ output.blank? , output.blank? ? "OK" : "Workers still active" ] # message text used to abort sequence, see earlier in code
+  end
+
+  def start_bac_workers(b)
+    r=b.send_command_start_bac_workers rescue "(Exc)"
+    r=r.command_execution_status if r.is_a?(RemoteCommand)
+    [ r == 'OK', r ]
+  end
+
+  def stop_bac_workers(b)
+    r=b.send_command_stop_bac_workers rescue "(Exc)"
+    r=r.command_execution_status if r.is_a?(RemoteCommand)
+    [ r == 'OK', r ]
+  end
+
+  def stop_bac_workers_and_wait(b)
+    stop_ok, stop_mes = stop_bac_workers(b)
+    return [ stop_ok, stop_mes ] if ! stop_ok # if we didn't even get an OK from stop action
+    sleep 1
+    # busy loop to wait for BAC workers to stop
+    ntimes = 20 ; delay = 15  # total 5 minutes max
+    num_active = "Unknown0"
+    ntimes.times do |i|
+      mess = " (Wait #{i+1}/#{ntimes})"
+      print mess + ( "\b" * mess.size )
+      info = b.remote_resource_info(:ping) rescue nil
+      break if info.nil?
+      #info = info.with_indifferent_access
+      num_active = info[:bac_worker_pids].presence || "0"
+      num_active = "0" if num_active == '???' # nils are transformed as that
+      break if num_active == "0"
+      break if num_active !~ /\A\d+/
+      num_active = num_active.split(',').size.to_s
+      break if num_active == "0"
+      delay.times { |d| print [ '-', '\\', '|', '/' ][d % 4], "\b" ; sleep 1 }
+    end
+    print " " * 30 + "\b" * 30
+    ok     = num_active == "0"
+    mess   = "OK" if ok
+    mess ||= "#{num_active} BAC workers still active" # message text used to abort sequence, see earlier in code
+    [ ok , mess ]
   end
 
   def stop_bourreau(b) #:nodoc:

@@ -118,14 +118,13 @@ class BackgroundActivitiesController < ApplicationController
 
   # POST /background_activities/operation
   def operation #:nodoc:
-    # It's quite stupid but we detect the type of operation
-    # based on the value returned by the submit button
-    op      = :cancel!             if params[:commit] =~ /cancel/i
-    op      = :suspend!            if params[:commit] =~ /\bsuspend/i
-    op      = :unsuspend!          if params[:commit] =~ /unsuspend/i
-    op      = :destroy             if params[:commit] =~ /destroy/i
-    op      = :activate!           if params[:commit] =~ /activate/i
-    op      = :force_single_retry  if params[:commit] =~ /retry/i
+    op      = :cancel!             if params[:operation] == 'cancel'
+    op      = :suspend!            if params[:operation] == 'suspend'
+    op      = :unsuspend!          if params[:operation] == 'unsuspend'
+    op      = :destroy             if params[:operation] == 'destroy'
+    op      = :activate!           if params[:operation] == 'activate'
+    op      = :force_single_retry  if params[:operation] == 'retry'
+    cb_error "Unknown operation" if op.blank?
     bac_ids = Array(params[:bac_ids])
     bacs = BackgroundActivity.where(:id => bac_ids)
     bacs = bacs.where(:user_id => current_user.id) if ! current_user.has_role? :admin_user

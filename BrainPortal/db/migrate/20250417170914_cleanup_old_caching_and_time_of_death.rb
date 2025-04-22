@@ -1,3 +1,4 @@
+
 #
 # CBRAIN Project
 #
@@ -18,3 +19,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see https://www.gnu.org/licenses
 #
+
+class CleanupOldCachingAndTimeOfDeath < ActiveRecord::Migration[5.0]
+
+  def up
+    remove_column :remote_resources, :time_of_death
+    RemoteResource.all.each do |rr|
+      rr.meta[:ping_cache]             = nil
+      rr.meta[:info_cache]             = nil
+      rr.meta[:ping_cache_last_update] = nil
+      rr.meta[:info_cache_last_update] = nil
+    end
+  end
+
+  def down
+    add_column :remote_resources, :time_of_death, :datetime
+  end
+
+end

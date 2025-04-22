@@ -51,7 +51,7 @@ class BackgroundActivity::RandomActivity < BackgroundActivity
 
   # Utility to build the items array with a random set of tests.
   def setup(mintime=1.seconds, maxtime=5.seconds, num_successes = 100,num_failures = 0, num_exceptions = 0)
-    diff   = maxtime-mintime
+    diff   = maxtime-mintime ; diff = 1 if diff < 1
     todos  = num_successes.times.map  { (mintime+rand(diff)).to_s + "-ok"   }
     todos += num_failures.times.map   { (mintime+rand(diff)).to_s + "-fail" }
     todos += num_exceptions.times.map { (mintime+rand(diff)).to_s + "-exc"  }
