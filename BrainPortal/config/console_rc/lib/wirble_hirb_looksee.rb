@@ -55,13 +55,19 @@ extend Hirb::Console
                         ),
   'AccessProfile'  => %i( id name
                         ),
-  'ResourceUsage'  => %i( id type value remote_resource_name userfile_name cbrain_task_type user_login
+  'ResourceUsage'  => %i( id type value user_login remote_resource_name userfile_name cbrain_task_type
+                        ),
+  'SpaceResourceUsage'  => %i( id type value user_login userfile_type userfile_name data_provider_name
+                        ),
+  'TimeResourceUsage'  => %i( id type value user_login tool_name tool_config_version_name remote_resource_name
                         ),
   'MetaDataStore'  => %i( id ar_id ar_table_name meta_key meta_value
                         ),
   'Signup'         => %i( id first last email position institution confirmed approved_by user_id
                         ),
   'DiskQuota'      => %i( id user_id data_provider_id max_bytes max_files
+                        ),
+  'CpuQuota'      => %i( id user_id group_id remote_resource_id max_cpu_past_week max_cpu_past_month max_cpu_ever
                         ),
   'DataUsage'      => %i( id user_id group_id yearmonth
                           views_count       views_numfiles
@@ -77,8 +83,8 @@ extend Hirb::Console
   fields = fields.dup
   klass  = klassname.constantize rescue nil
   next unless klass # e.g. in irb instead of Rails console
-  fields << :created_at if klass.attribute_names.include?('created_at') && ! [ 'DataUsage' ].include?(klassname)
-  fields << :updated_at if klass.attribute_names.include?('updated_at') && ! [ 'DataUsage' ].include?(klassname)
+  fields << :created_at if klass.attribute_names.include?('created_at') && ! [ 'DataUsage', 'DiskQuota', 'CpuQuota' ].include?(klassname)
+  fields << :updated_at if klass.attribute_names.include?('updated_at') && ! [ 'DataUsage', 'DiskQuota', 'CpuQuota' ].include?(klassname)
   Hirb::Formatter.dynamic_config[klassname] = {
     :class     => Hirb::Helpers::AutoTable,
     :ancestor  => true,

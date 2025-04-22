@@ -416,6 +416,16 @@ class BoutiquesClusterTask < ClusterTask
     nil
   end
 
+  # Returns a number of cores needed for the job; nil means to not
+  # ask for anything particular.
+  def job_number_of_cores
+    descriptor = self.descriptor_for_cluster_commands
+    if descriptor.suggested_resources.present? && descriptor.suggested_resources['cpu-cores'].present?
+      return descriptor.suggested_resources['cpu-cores'].to_i
+    end
+    nil
+  end
+
   #########################################################
   # Local utility methods
   #########################################################

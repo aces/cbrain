@@ -70,7 +70,7 @@ class NhInvitationsController < NeurohubApplicationController
     end
 
     # Which invitations are pending?
-    already_sent_to = Invitation.where(active: true, user_id: user_ids, group_id: @nh_project.id).pluck(:user_id)
+    already_sent_to = Invitation.where(active: true, user_id: user_ids, invitation_group_id: @nh_project.id).pluck(:user_id)
     rejected_ids    = user_ids & already_sent_to
     if rejected_ids.present?
       already_logins = User.where(:id => rejected_ids).pluck(:login).join(", ")
