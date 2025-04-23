@@ -279,9 +279,9 @@ module RichUiHelper
   #   +size+: maximum height and width of the overlay
   #
   def closable_overlay_content_link(link_text, title, description="", size="50em", options = {})
-    return "" if description.blank?
+    return link_text if description.blank?
 
-    link = overlay_content_link(link_text, :enclosing_element => "span") do
+    link = overlay_content_link(link_text, options.merge(:enclosing_element => "span")) do
       html = "<div style='overflow: auto; max-height: #{size}; max-width: #{size};'>" +
       "<h1>#{h(title)}</h1><hr/>" +
       "<p>#{h(description)}</p>" +
