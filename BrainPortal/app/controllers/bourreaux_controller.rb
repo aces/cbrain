@@ -405,7 +405,7 @@ class BourreauxController < ApplicationController
     redirect_to :action => :index
   end
 
-  protected
+  private
 
   def operation_start_tunnels(bourreau) #:nodoc:
     cb_error "Operation not allowed for a Portal." unless bourreau.is_a?(Bourreau)
@@ -461,6 +461,8 @@ class BourreauxController < ApplicationController
     workers_ok = true if res && res[:command_execution_status] == "OK"
     cb_error "Could not stop BAC workers." unless workers_ok
   end
+
+  public
 
   # Define disk usage of remote ressource,
   # with date filtering if wanted.
