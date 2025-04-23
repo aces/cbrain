@@ -367,7 +367,7 @@ Operations Mode : #{
           expworkers = bou.workers_instances || 0
           expBACw    = bou.activity_workers_instances || 0
           uptime     = uptime.to_i if uptime;
-          uptime   &&= ConsoleCtx.send(:pretty_elapsed, uptime, :num_components => 2)
+          uptime   &&= ConsoleCtx.send(:pretty_elapsed, uptime, :num_components => 2, :short => true)
           uptime   &&= "up for #{uptime}"
           uptime   ||= "DOWN"
           acttasks   = bou.cbrain_tasks.active.count rescue 0
