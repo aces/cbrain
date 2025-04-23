@@ -251,6 +251,14 @@ class GroupsController < ApplicationController
     if changed
       remove_group_filters_for_files_and_tasks
       trigger_unselect_of_all_persistent_files
+
+      if current_project
+        scope_name = 'userfiles#index'
+        userfiles_scope = scope_from_session(scope_name)
+        userfiles_scope.custom[:view_all] = true if current_project.public?
+        userfiles_scope.custom[:view_all] = true if current_project.creator_id != current_user.id
+        scope_to_session(userfiles_scope, scope_name)
+      end
     end
 
     if api_request?
