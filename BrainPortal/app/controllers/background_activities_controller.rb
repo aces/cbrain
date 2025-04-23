@@ -86,6 +86,7 @@ class BackgroundActivitiesController < ApplicationController
     add_options_for_clean_cache        if @bac.is_a?(BackgroundActivity::CleanCache)
     add_options_for_erase_bacs         if @bac.is_a?(BackgroundActivity::EraseBackgroundActivities)
     add_options_for_verify_dps         if @bac.is_a?(BackgroundActivity::VerifyDataProvider)
+    add_options_for_ruby_runner        if @bac.is_a?(BackgroundActivity::RubyRunner)
 
     if (@bac.errors.present?) || (! @bac.valid?) || (! @bac.save)
       render :action => :new
@@ -166,6 +167,13 @@ class BackgroundActivitiesController < ApplicationController
     )
     @bac.errors.add(:base, "Test activity doesn't have any items?") if @bac.items.size == 0
     @bac.options = opt.to_h # just for form persistency; these values aren't used in the BAC
+  end
+
+  def add_options_for_ruby_runner
+    opt = params_options.permit( :prepare_dynamic_items, :process, :before_first_item, :after_last_item )
+    @bac.options = opt.to_h # just for form persistency; these values aren't used in the BAC
+    @bac.errors.add(:base, "prepare_dynamic_items() is blank") if @bac.options[:prepare_dynamic_items].blank?
+    @bac.errors.add(:base, "process() is blank")               if @bac.options[:process].blank?
   end
 
   # This code makes a bunch of verification so that the ID
