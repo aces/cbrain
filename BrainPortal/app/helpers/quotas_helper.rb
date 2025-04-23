@@ -37,9 +37,11 @@ module QuotasHelper
 
   # Show a time used, with two components, e.g.
   # "14 seconds", "2 hours and 20 minutes", "5 months and 2 days"
-  def pretty_quota_cputime(time)
+  # When as_limit is true, it will return the
+  # string "none allowed" if the value is 0.
+  def pretty_quota_cputime(time, as_limit = false)
     return "(Unknown)" if time.blank?
-    return red_if(true, 'None allowed') if time <= 0
+    return red_if(true, 'None allowed') if time <= 0 && as_limit
     return pretty_elapsed(time, :num_components => 2)
   end
 

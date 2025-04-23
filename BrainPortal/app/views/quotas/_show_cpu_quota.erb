@@ -87,7 +87,7 @@
     <% end %>
   <% end %>
 
-  <% t.edit_cell(:max_cpu_past_week, :show_width => 2, :header => "Max CPU time past week", :content => pretty_quota_cputime(@quota.max_cpu_past_week)) do |f| %>
+  <% t.edit_cell(:max_cpu_past_week, :show_width => 2, :header => "Max CPU time past week", :content => pretty_quota_cputime(@quota.max_cpu_past_week,true)) do |f| %>
     <%= f.text_field :max_cpu_past_week, :size => 12 %>
     <div class="field_explanation">
        The limit CPU time is in seconds; when entering a new value,
@@ -99,14 +99,14 @@
     </div>
   <% end %>
 
-  <% t.edit_cell(:max_cpu_past_month, :show_width => 2, :header => "Max CPU time past month", :content => pretty_quota_cputime(@quota.max_cpu_past_month)) do |f| %>
+  <% t.edit_cell(:max_cpu_past_month, :show_width => 2, :header => "Max CPU time past month", :content => pretty_quota_cputime(@quota.max_cpu_past_month,true)) do |f| %>
     <%= f.text_field :max_cpu_past_month, :size => 12 %>
     <div class="field_explanation">
        See the explanations for Max CPU time past week.
     </div>
   <% end %>
 
-  <% t.edit_cell(:max_cpu_ever, :show_width => 2, :header => "Max CPU time in total", :content => pretty_quota_cputime(@quota.max_cpu_ever)) do |f| %>
+  <% t.edit_cell(:max_cpu_ever, :show_width => 2, :header => "Max CPU time in total", :content => pretty_quota_cputime(@quota.max_cpu_ever,true)) do |f| %>
     <%= f.text_field :max_cpu_ever, :size => 12 %>
     <div class="field_explanation">
        See the explanations for Max CPU time past week.

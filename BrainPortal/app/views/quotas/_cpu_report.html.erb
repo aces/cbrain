@@ -61,12 +61,12 @@
   <tr>
     <td <%= user_class %>><%= link_to_user_if_accessible(user_id) %></td>
     <td <%= res_class %>><%= link_to_bourreau_if_accessible(bourreau_id) %></td>
-    <td <%= week_class %>><%= pretty_quota_cputime(quota.cpu_past_week) %></td>
-    <td><%= pretty_quota_cputime(quota.max_cpu_past_week) %></td>
-    <td <%= month_class %>><%= pretty_quota_cputime(quota.cpu_past_month) %></td>
-    <td><%= pretty_quota_cputime(quota.max_cpu_past_month) %></td>
-    <td <%= ever_class %>><%= pretty_quota_cputime(quota.cpu_ever) %></td>
-    <td><%= pretty_quota_cputime(quota.max_cpu_ever) %></td>
+    <td <%= week_class %>><%= pretty_quota_cputime(quota.cpu_past_week,false) %></td>
+    <td><%= pretty_quota_cputime(quota.max_cpu_past_week,true) %></td>
+    <td <%= month_class %>><%= pretty_quota_cputime(quota.cpu_past_month,false) %></td>
+    <td><%= pretty_quota_cputime(quota.max_cpu_past_month,true) %></td>
+    <td <%= ever_class %>><%= pretty_quota_cputime(quota.cpu_ever,false) %></td>
+    <td><%= pretty_quota_cputime(quota.max_cpu_ever,true) %></td>
     <td>
         <% if situation =~ /week/i %>
           Past week CPU exceeded

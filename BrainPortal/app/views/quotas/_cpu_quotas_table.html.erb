@@ -82,15 +82,15 @@
 
     t.column("Max Weekly CPU", :max_cpu_past_week,
       :sortable => true,
-    ) { |cq| pretty_quota_cputime(cq.max_cpu_past_week) }
+    ) { |cq| pretty_quota_cputime(cq.max_cpu_past_week, true) }
 
     t.column("Max Monthly CPU", :max_cpu_past_month,
       :sortable => true,
-    ) { |cq| pretty_quota_cputime(cq.max_cpu_past_month) }
+    ) { |cq| pretty_quota_cputime(cq.max_cpu_past_month, true) }
 
     t.column("Max CPU Total", :max_cpu_ever,
       :sortable => true,
-    ) { |cq| pretty_quota_cputime(cq.max_cpu_ever) }
+    ) { |cq| pretty_quota_cputime(cq.max_cpu_ever, true) }
 
     # This column is a bit misleading: it shows the CURRENT USER's resources for all
     # quota records that are DP-wide, and the AFFECTED USER'S resources for the user-specific quotas.
