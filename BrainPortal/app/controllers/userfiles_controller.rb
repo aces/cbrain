@@ -444,9 +444,11 @@ class UserfilesController < ApplicationController
   # used to render html userfiles or collection elements
   def trust_creator
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
-    cbrain_session['trust_user_files'] ||= []
-    unless cbrain_session['trust_user_files'].include?(@userfile.user_id)
-      cbrain_session['trust_user_files'] << @userfile.user_id
+    cbrain_session[:trust_user_files] ||= []
+    unless cbrain_session[:trust_user_files].include?(@userfile.user_id)
+      ids = cbrain_session[:trust_user_files] # in place modification does not work well with session
+      ids.shift if ids.length > 99  # limit to 100 ids, session storage is limited
+      cbrain_session[:trust_userfiles] = ids << @userfile.user_id
     end
     respond_to do |format|
       format.js  { render js: "" }  # no need to do anything as of now
@@ -456,10 +458,14 @@ class UserfilesController < ApplicationController
   # established trust in a file or all the other files of a collection for the duration of the session
   # used to render html userfiles or collection elements
   def trust
+
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
-    cbrain_session['trust_userfiles'] ||= []
-    unless cbrain_session['trust_userfiles'].include?(@userfile.id)
-      cbrain_session['trust_userfiles'] << @userfile.id
+    cbrain_session[:trust_userfiles] ||= []
+    unless cbrain_session[:trust_userfiles].include?(@userfile.id)
+      ids = cbrain_session[:trust_userfiles]
+      ids << @userfile.id
+      ids.shift if ids.length > 199  # limit to 200 file ids, session size is limited
+      cbrain_session[:trust_userfiles] = ids # in place does not work well within a session
     end
     respond_to do |format|
       format.js  { render js: "" }  # no need to do anything as of now
