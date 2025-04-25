@@ -88,7 +88,7 @@ class InteractiveBourreauControl
         name        = bourreau.name
         color       = bourreau.online?         ? 2 : 1  # ANSI 1=red, 2=green, 4=blue
         reverse     = @selected[bourreau.id]   ? 7 : 0  # 7=reversevideo, 0=normal
-        is_port     = @bourreaux[idx].is_a?(BrainPortal) ? ";4;5" : ""  # underline + blink
+        is_port     = @bourreaux[idx].is_a?(BrainPortal) ? ";4" : ""  # underline
         padding     = " " * (max_size - name.size)
         col_name    = "\e[#{reverse};3#{color}#{is_port}m" + name + "\e[0m" + padding
         printf " %3d=%s ",
@@ -379,15 +379,18 @@ Operations Mode : #{
           bactasks   = bou.background_activities.where(:status => 'InProgress').count
           bactasks   = nil if bactasks == 0
           bactasks &&= " \e[34m(#{bactasks} active BACs)\e[0m" # BLUE
+          procbacs   = bou.background_activities.locked.count
+          procbacs   = nil if procbacs == 0
+          procbacs &&= " \e[33m(#{procbacs} processing BACs)\e[0m" # YELLOW
           color_on   = color_off = nil
           color_on   = "\e[31m" if uptime == 'DOWN'          # RED    for down bourreaux
           color_on ||= "\e[33m" if numworkers != expworkers || numBACw != expBACw  # YELLOW for missing workers
           color_on ||= "\e[32m"                              # GREEN  when everything ok
           color_off  = "\e[0m"  if color_on
           if bou.is_a?(Bourreau)
-            printf "#{color_on}%#{max_size}s rev %-9.9s %s, %d/%d workers, %d/%d BAC workers#{color_off}#{acttasks}#{rubtasks}#{bactasks}\n", bou.name, gitrev, uptime, numworkers, expworkers, numBACw, expBACw
+            printf "#{color_on}%#{max_size}s rev %-9.9s %s, %d/%d workers, %d/%d BAC workers#{color_off}#{acttasks}#{rubtasks}#{bactasks}#{procbacs}\n", bou.name, gitrev, uptime, numworkers, expworkers, numBACw, expBACw
           else
-            printf "#{color_on}%#{max_size}s rev %-9.9s %s, %d/%d BAC workers#{color_off}#{bactasks}\n", bou.name, gitrev, uptime, numBACw, expBACw
+            printf "#{color_on}%#{max_size}s rev %-9.9s %s, %d/%d BAC workers#{color_off}#{bactasks}#{procbacs}\n", bou.name, gitrev, uptime, numBACw, expBACw
           end
         end
       end
