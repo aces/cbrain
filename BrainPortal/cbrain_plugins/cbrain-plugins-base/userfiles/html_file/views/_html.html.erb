@@ -42,10 +42,10 @@ This HTML document is not part of CBRAIN. <em> You should <strong>not</strong> v
 <% end %>
 <br>
 
-<%# -- for other user's files ask confirmation %>
+<%# -- for other user's files ask confirmation, unless user of files is marked as trusted %>
 <% hide_frame   = params[:new_tab].blank? && current_user.id != @userfile.user_id %>
-<% hide_frame &&= ! cbrain_session['trust_user_files']&.include?(@userfile.user_id) %>
-<% hide_frame &&= ! cbrain_session['trust_userfiles']&.include?(@userfile.id) %>
+<% hide_frame &&= ! cbrain_session[:trust_user_files]&.include?(@userfile.user_id) %>
+<% hide_frame &&= ! cbrain_session[:trust_userfiles]&.include?(@userfile.id) %>
 <% if hide_frame %>
    <div class="trust-file-btn">
 
@@ -56,7 +56,7 @@ This HTML document is not part of CBRAIN. <em> You should <strong>not</strong> v
      %>
      show them without warnings during this session
    </div>
-   <div>
+   <div class="trust-file-btn">
 
      <%= link_to "Show just this userfile",
                  trust_userfile_path(@userfile),

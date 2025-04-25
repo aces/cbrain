@@ -759,18 +759,15 @@
       form.submit();
     });
 
-    $(document).on("click", ".trust-file-btn",  function (event) {
-      let trustBtn = $("body").find(".trust-file-btn");
+    // show HMTL file in a frame after user indicates trust (to that file or file owner)
+    $(document).on("ajax:success", ".trust-file-btn",  function (event) {
+      let trustBtn = $(".trust-file-btn");
       let iframe = $("body").find('.html-viewer');
       let iframeContainer = $("body").find('.iframe-container');
       iframe.attr('src', iframe.data('frame-url'));
       trustBtn.hide();
       iframeContainer.show();  // css trumps html
     });
-
-
-
-
 
     //html_tool_tip_code based on xstooltip provided by
     //http://www.texsoft.it/index.php?%20m=sw.js.htmltooltip&c=software&l=it
