@@ -5,7 +5,7 @@
     "author":         "Pierre Rioux <pierre.rioux@mcgill.ca>",
     "description":    "An administrative utility to help build configure a tool based on another tool. Also supports building the Apptainer image associated with the configuration.",
     "descriptor-url": "https://github.com/aces/cbrain/blob/master/BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task_descriptors/tool_configurator.json",
-    "command-line": "true This command is only used when building the Apptainer container image [BASE_TC_ID] [TC_ID] [COPY_GROUP_ID] [COPY_QSUB] [COPY_ENV] [COPY_BASH] [COPY_OVERLAYS]; ( if test [DOCKER_SOURCE] = 'docker-daemon' ; then docker pull [DOCKER_NAME] || exit 22 ; fi ; apptainer build [APPTAINER_IMAGE_NAME] [DOCKER_SOURCE]://[DOCKER_NAME] )",
+    "command-line": "true This command is only used when building the Apptainer container image [OLD_TC_ID] [NEW_TC_ID] [COPY_GROUP_ID] [COPY_QSUB] [COPY_ENV] [COPY_BASH] [COPY_OVERLAYS]; ( if test [DOCKER_SOURCE] = 'docker-daemon' ; then docker pull [DOCKER_NAME] || exit 22 ; fi ; apptainer build [APPTAINER_IMAGE_NAME] [DOCKER_SOURCE]://[DOCKER_NAME] )",
     "inputs": [
 
 
@@ -17,7 +17,7 @@
             "description":       "The ToolConfig to configure (called 'NEW' in the rest of the form)",
             "optional":          false,
             "list":              false,
-            "value-key":         "[TC_ID]",
+            "value-key":         "[NEW_TC_ID]",
             "value-choices":     [
                "choices", "adjusted", "dynamically", "by", "boutiques_tool_configurator_handler.rb"
             ]
@@ -42,9 +42,10 @@
             "id":                "copy_group_id",
             "type":              "Flag",
             "description":       "Copy the project ID",
-            "optional":          false,
+            "optional":          true,
             "list":              false,
             "default-value":     true,
+            "command-line-flag": "-copy_group_id",
             "value-key":         "[COPY_GROUP_ID]"
         },
         {
@@ -52,9 +53,10 @@
             "id":                "copy_qsub",
             "type":              "Flag",
             "description":       "Copy the extra qsub options",
-            "optional":          false,
+            "optional":          true,
             "list":              false,
             "default-value":     true,
+            "command-line-flag": "-copy_qsub",
             "value-key":         "[COPY_QSUB]"
         },
         {
@@ -62,9 +64,10 @@
             "id":                "copy_env",
             "type":              "Flag",
             "description":       "Copy the environment variables",
-            "optional":          false,
+            "optional":          true,
             "list":              false,
             "default-value":     true,
+            "command-line-flag": "-copy_group_id",
             "value-key":         "[COPY_ENV]"
         },
         {
@@ -72,9 +75,10 @@
             "id":                "copy_bash",
             "type":              "Flag",
             "description":       "Copy the bash prologues and epilogues",
-            "optional":          false,
+            "optional":          true,
             "list":              false,
             "default-value":     true,
+            "command-line-flag": "-copy_bash",
             "value-key":         "[COPY_BASH]"
         },
         {
@@ -82,9 +86,10 @@
             "id":                "copy_overlays",
             "type":              "Flag",
             "description":       "Copy the settings for Apptainer overlays, options (including short workdirs)",
-            "optional":          false,
+            "optional":          true,
             "list":              false,
             "default-value":     true,
+            "command-line-flag": "-copy_overlays",
             "value-key":         "[COPY_OVERLAYS]"
         },
 

@@ -48,5 +48,17 @@ class BoutiquesToolConfiguratorHandler
       .sub(/_+$/,"") + ".sif"
   end
 
+  # NOTE: Modifies the desc !
+  def fix_value_choices_for_tool_configs(desc) #:nodoc:
+    old_tc = selected_old_tool_config
+    new_tc = selected_new_tool_config
+    if old_tc
+      desc.input_by_id('old_tool_config_id').value_choices = [ self.invoke_params[:old_tool_config_id].to_s ]
+    end
+    if new_tc
+      desc.input_by_id('new_tool_config_id').value_choices = [ self.invoke_params[:new_tool_config_id].to_s ]
+    end
+  end
+
 end
 

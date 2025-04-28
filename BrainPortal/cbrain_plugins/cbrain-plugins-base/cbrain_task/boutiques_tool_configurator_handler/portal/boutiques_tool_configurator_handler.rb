@@ -49,14 +49,7 @@ class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
 
   def descriptor_for_after_form
     desc = super.dup
-    old_tc = selected_old_tool_config
-    new_tc = selected_new_tool_config
-    if old_tc
-      desc.input_by_id('old_tool_config_id').value_choices = [ self.invoke_params[:old_tool_config_id] ]
-    end
-    if new_tc
-      desc.input_by_id('new_tool_config_id').value_choices = [ self.invoke_params[:new_tool_config_id] ]
-    end
+    fix_value_choices_for_tool_configs(desc)
     desc
   end
 
@@ -246,32 +239,7 @@ class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
     [ self ] # go to cluster for real build
   end
 
-  def save_results
-    return false unless super
-
-    id_of_sif = self.params[:_cbrain_output_apptainer_sif_name]
-    siffile   = ApptainerImage.find(id_of_sif)
-    new_tc    = selected_new_tool_config
-
-    self.addlog "Configuring NEW ToolConfig #{new_tc.bourreau.name}/#{new_tc.tool.name} #{new_tc.version_name} (ID ##{new_tc.id})"
-
-    new_tc.container_image_userfile_id = siffile.id
-    new_tc.containerhub_image_name     = nil
-    new_tc.container_engine            = "Singularity"
-    new_tc.container_index_location    = nil
-
-    new_tc.save_with_logging(self.user,
-      %i(
-        container_image_userfile_id
-        containerhub_image_name
-        container_engine
-        container_index_location
-      )
-    )
-
-    self.addlog "ToolConfig SIF Image: #{siffile.name} (ID ##{id_of_sif})"
-    true
-  end
+  protected
 
   # NOTE: Modifies the desc !
   def fill_tool_configs_arrays(desc, which, tool_id = nil) #:nodoc:
@@ -307,7 +275,7 @@ class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
   end
 
   # NOTE: Modifies the desc !
-  def add_all_input_notes(descriptor)
+  def add_all_input_notes(descriptor) #:nodoc:
     old_tc              = selected_old_tool_config
     new_tc              = selected_new_tool_config
     old_tc = nil if old_tc&.id == new_tc&.id
