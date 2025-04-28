@@ -361,16 +361,16 @@ class BoutiquesClusterTask < ClusterTask
   def name_and_type_for_output_file(output, pathname)
 
     # Find descriptor for options; warning, we get the one for save_results
-    desc   = descriptor_for_save_results
-    custom = desc.custom || {} # 'custom' is not packaged as an object, just a hash
-    idlist = custom['cbrain:no-run-id-for-outputs'].presence # list of IDs where no run id inserted
-    # We allow no_run_id only if the dest DP is MultiLevel, presumably the output goes to "a/b/c/basename_without_id"
-    no_run_id = true if idlist && idlist.include?(output.id) && self.results_data_provider.has_browse_path_capabilities?
+    desc      = descriptor_for_save_results
+    custom    = desc.custom || {} # 'custom' is not packaged as an object, just a hash
+    idlist    = custom['cbrain:no-run-id-for-outputs'].presence # list of IDs where no run id inserted
+    no_run_id = true if idlist && idlist.include?(output.id)
 
     # Get basename, use it to guess the class
-    name = File.basename(pathname)
-    userfile_class   = Userfile.suggested_file_type(name)
-    userfile_class ||= ( File.directory?(pathname) ? FileCollection : SingleFile )
+    name             = File.basename(pathname)
+    lookupclass      = File.directory?(pathname) ? FileCollection : SingleFile
+    userfile_class   = lookupclass.suggested_file_type(name)
+    userfile_class ||= lookupclass
 
     # Add a run ID to the file name, to make sure the file doesn't exist.
     if ! no_run_id

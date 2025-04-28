@@ -38,8 +38,10 @@ class BoutiquesToolConfiguratorHandler < BoutiquesClusterTask
 
     id_of_sif = self.params[:_cbrain_output_apptainer_sif_name].last
     siffile   = ApptainerImage.find(id_of_sif)
-    new_tc    = selected_new_tool_config
+    siffile.update_column(:immutable, true) # why not while we're here
+    siffile.update_column(:group_writable, false)
 
+    new_tc = selected_new_tool_config
     self.addlog "Configuring NEW ToolConfig #{new_tc.bourreau.name}/#{new_tc.tool.name} #{new_tc.version_name} (ID ##{new_tc.id})"
 
     new_tc.container_image_userfile_id = siffile.id

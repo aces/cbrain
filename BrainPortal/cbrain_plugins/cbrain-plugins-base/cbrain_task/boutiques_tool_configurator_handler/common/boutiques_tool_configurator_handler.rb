@@ -42,7 +42,7 @@ class BoutiquesToolConfiguratorHandler
   # Transforms e.g. docker://org/prog:1.2 into "org_prog_1_2.sif"
   def docker_name_to_sif_name(docker_name)
     docker_name
-      .sub(/^(docker:)?(\/*)/,"")
+      .sub(/^(docker:)?(\/*)/i,"")
       .gsub(/\W+/,"_")
       .sub(/^_+/,"")
       .sub(/_+$/,"") + ".sif"

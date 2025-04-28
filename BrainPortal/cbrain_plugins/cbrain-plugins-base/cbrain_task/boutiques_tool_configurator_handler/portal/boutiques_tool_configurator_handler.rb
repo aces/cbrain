@@ -88,19 +88,19 @@ class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
     end
 
     # What the user selected to do in the 'build' group
-    selected_build = self.invoke_params['docker_source']
+    selected_build = self.invoke_params['build_mode']
 
     # Extract the first two values in the select box:
     #   "(Do not build..."
     #   "(Use existing..."
     do_not_build, use_old_image =
-      self.boutiques_descriptor.input_by_id('docker_source').value_choices[0..1]
+      self.boutiques_descriptor.input_by_id('build_mode').value_choices[0..1]
 
     if current_file
       if selected_build != do_not_build
         self.errors.add(:base, "(Not an error) The current NEW tool config already has an Apptainer image, so the build form was reset to 'Do Not Build'")
       end
-      self.invoke_params['docker_source']  = do_not_build
+      self.invoke_params['build_mode']     = do_not_build
       self.invoke_params['docker_name']    = nil
       self.invoke_params['apptainer_name'] = nil
       return super
@@ -109,7 +109,7 @@ class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
     if selected_build == use_old_image
       if ! old_file
         self.errors.add(:base, "The OLD ToolConfig does not have an Apptainer image configured. Resetting the build options.")
-        self.invoke_params['docker_source']  = do_not_build
+        self.invoke_params['build_mode'] = do_not_build
       end
       self.invoke_params['docker_name']    = nil
       self.invoke_params['apptainer_name'] = nil
@@ -130,35 +130,37 @@ class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
 
     old_tc = selected_old_tool_config
     new_tc = selected_new_tool_config
-    return message if old_tc.blank? || new_tc.blank? # framework will provide messages
+    return message if old_tc.blank? || new_tc.blank? # framework will provide other messages about the TCs
 
     descriptor = descriptor_for_after_form
 
-    selected_build = self.invoke_params['docker_source']
+    selected_build = self.invoke_params['build_mode']
 
     # Extract the first two values in the select box:
     #   "(Use existing..."
     use_old_image =
-      descriptor.input_by_id('docker_source').value_choices[1]
+      descriptor.input_by_id('build_mode').value_choices[1]
 
     if selected_build == use_old_image
-      params_errors.add(:docker_source, "requires a OLD ToolConfig with an Apptainer image already configured") if
+      params_errors.add(:build_mode, "requires a OLD ToolConfig with an Apptainer image already configured") if
         old_tc.container_image.blank?
     end
 
     if selected_build.to_s =~ /\Adocker/ # docker, docker-daemon
       dname = invoke_params[:docker_name].presence.to_s
       aname = invoke_params[:apptainer_name].presence.to_s
-      params_errors.add(:docker_name,    "is missing") if dname.blank?
-      params_errors.add(:apptainer_name, "is missing") if aname.blank?
-      params_errors.add(:docker_name,    "is not correct") if dname !~ /\A[a-z]\w+\/[a-z]\w*:[\w\.]+\z/
-      params_errors.add(:apptainer_name, "is not correct") if ! Userfile.is_legal_filename?(aname) || aname !~ /\.sif\z/
+      params_errors.add(:docker_name,    "is missing or incorrect") if dname !~ /\A[a-z]\w+\/[a-z][\w\-]*:\w[\w\-\.]*\z/
+      params_errors.add(:apptainer_name, "is missing or incorrect") if ! Userfile.is_legal_filename?(aname) || aname !~ /\.sif\z/
+      dp     = self.results_data_provider
+      user   = self.user
+      target = dp && user && dp.userfiles.where(:user_id => user.id, :name => aname).first
+      if target
+        params_errors.add(:apptainer_name, "there is already a file named '#{aname}' belonging to user '#{user.login}' on '#{dp.name}'")
+      end
     end
 
-    errors.add(:base, "Check messages") if params_errors.present?
-
     # Perform the copy of all attributes if there are no errors
-    if errors.empty?
+    if errors.empty? && params_errors.empty?
       copy_attributes
       if selected_build.to_s !~ /\Adocker/ # if not build was asked, we want ot return to the form
         errors.add(:base, "(Not an error) Attributes (if any) have been copied to the NEW ToolConfig; please verify them.")
@@ -204,8 +206,8 @@ class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
       new_tc.container_exec_args           = old_tc.container_exec_args
     end
 
-    selected_build = self.invoke_params['docker_source']
-    use_old_image  = descriptor.input_by_id('docker_source').value_choices[1]
+    selected_build = self.invoke_params['build_mode']
+    use_old_image  = descriptor.input_by_id('build_mode').value_choices[1]
 
     if selected_build == use_old_image
       new_tc.container_image_userfile_id = old_tc.container_image_userfile_id
@@ -234,7 +236,7 @@ class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
   end
 
   def final_task_list
-    selected_build = self.invoke_params['docker_source']
+    selected_build = self.invoke_params['build_mode'].to_s
     return [] if selected_build !~ /^docker/ # zap array, don't build
     [ self ] # go to cluster for real build
   end
