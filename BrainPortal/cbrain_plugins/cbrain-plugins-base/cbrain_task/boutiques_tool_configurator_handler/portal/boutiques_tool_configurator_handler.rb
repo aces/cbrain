@@ -155,7 +155,7 @@ class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
       user   = self.user
       target = dp && user && dp.userfiles.where(:user_id => user.id, :name => aname).first
       if target
-        params_errors.add(:apptainer_name, "there is already a file named '#{aname}' belonging to user '#{user.login}' on '#{dp.name}'")
+        params_errors.add(:apptainer_name, "conflicts with an existing file with the same name, belonging to user '#{user.login}' on '#{dp.name}'")
       end
     end
 

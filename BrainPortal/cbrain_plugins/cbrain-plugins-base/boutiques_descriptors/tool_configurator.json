@@ -131,8 +131,8 @@
     ],
     "groups": [
       { "id":          "tool_configs",
-        "name":        "ToolConfig to configure",
-        "description": "Select two ToolConfigs: the first is the one to configure, and the second optional one contains information to copy. Note: refreshing the form resets the settings for the other groups of parameters below.",
+        "name":        "ToolConfigs Selection",
+        "description": "What TC to configure, and what other TC to use to import values (if any)",
         "members": [
           "new_tool_config_id",
           "old_tool_config_id"
