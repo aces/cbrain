@@ -36,7 +36,7 @@ class BoutiquesToolConfiguratorHandler < BoutiquesClusterTask
   def save_results
     return false unless super
 
-    id_of_sif = self.params[:_cbrain_output_apptainer_sif_name]
+    id_of_sif = self.params[:_cbrain_output_apptainer_sif_name].last
     siffile   = ApptainerImage.find(id_of_sif)
     new_tc    = selected_new_tool_config
 
