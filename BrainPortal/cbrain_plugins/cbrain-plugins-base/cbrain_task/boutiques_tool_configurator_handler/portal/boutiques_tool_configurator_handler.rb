@@ -69,7 +69,7 @@ class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
       end
     end
 
-    if (old_tc && new_tc)
+    if (old_tc && new_tc && old_tc.id != new_tc.id)
       change.(:copy_group_id, (old_tc.group_id != new_tc.group_id), "the flag to copy the project ID")
       change.(:copy_qsub,     old_tc.extra_qsub_args.present?,      "the flag to copy the extra QSUB args")
       change.(:copy_env,      old_tc.env_array.present?,            "the flag to copy the environment variables")
@@ -80,6 +80,14 @@ class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
           (old_tc.singularity_use_short_workdir? != new_tc.singularity_use_short_workdir?)
          ),
          "the flag to copy miscellaneous Apptainer options")
+    end
+    if (old_tc && new_tc && old_tc.id == new_tc.id)
+      invoke_params[:copy_group_id] = "0"
+      invoke_params[:copy_qsub]     = "0"
+      invoke_params[:copy_env]      = "0"
+      invoke_params[:copy_bash]     = "0"
+      invoke_params[:copy_overlays] = "0"
+      self.errors.add(:base, "(Not an error) Since both selected ToolConfigs are the same, all COPY options have been turned off.")
     end
 
     docker_name  = new_tc&.containerhub_image_name.presence
