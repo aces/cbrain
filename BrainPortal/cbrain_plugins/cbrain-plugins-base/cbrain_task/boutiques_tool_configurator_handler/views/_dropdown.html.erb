@@ -1,0 +1,77 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2021
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+# Generate a drop-down list for a set of +options+ (value, label pairs) with
+# HTML id +id+ and name +name+.
+# +none_msg+ corresponds to the text displayed if +options+ is empty and
+# +optional+ indicates if the parameter is optional (or not)
+#
+#  This partial receives these locals:
+#
+#    id
+#    name
+#    options # just like HTML options for select
+#    optional
+#    default
+#    value
+#    none_msg
+%>
+
+
+<% if (
+     id.blank? ||
+       (
+       id.to_s != BoutiquesSupport::Input.cb_invoke_name('new_tool_config_id').to_la_id &&
+       id.to_s != BoutiquesSupport::Input.cb_invoke_name('old_tool_config_id').to_la_id
+       )
+     )
+%>
+
+  <% # This is invoking the standard partial exactly as-is %>
+
+  <%= render :partial => task_partial(:dropdown, 'BoutiquesTask'), :locals => {
+        :id          => id,
+        :name        => name,
+        :options     => options,
+        :optional    => optional,
+        :default     => default,
+        :value       => value,
+        :none_msg    => none_msg,
+      }
+  %>
+
+<% else %>
+
+<% other = name =~ /old_tool/ ? 'NEW' : 'OLD' %>
+<% tool_configs = ToolConfig.where(:id => options.map(&:first)).to_a.presence %>
+<%= tool_config_select(name, { :tool_configs => tool_configs, :repeat_toolnames => true, :selector => value, :allow_offline => true, :include_blank => "All, or filter by tool selected in '#{other}'" }, {}) %>
+
+<%= submit_tag 'Refresh', :class => 'button' %>
+
+<% if value && tc=ToolConfig.where(:id => value).first %>
+  <%= link_to "(Preview and edit #{tc.bourreau.name}/#{tc.tool.name} #{tc.version_name} in a separate tab)", tool_config_path(tc.id), :target => '_blank', :class => 'button' %>
+<% end %>
+
+<% end %>

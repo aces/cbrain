@@ -515,25 +515,54 @@ module BoutiquesSupport
 
   class Input
 
-    # This method return the parameter name for the input.
+    attr_accessor :cbrain_input_notes # array of bulletpoints to show in form
+
+    # When dup'ing, also copy the special cbrain_input_notes
+    def dup #:nodoc:
+      copy = super
+      copy.cbrain_input_notes = self.cbrain_input_notes
+      copy
+    end
+
+    # This method return the parameter name for an input identified
+    # by input_id.
     # We put all input Boutiques parameters under a 'invoke' substructure.
     # E.g. for a input with ID 'abcd' in a task, we'll find the value
     # in task.params['invoke']['abcd'] and the parameter name is thus
-    # "invoke[abcd]"
+    # "invoke[abcd]". The as_list option appends "[]" to the name
+    # to make it an array parameter.
+    def self.cb_invoke_name(input_id, as_list = nil)
+      return "invoke[#{input_id}][]" if as_list
+      return "invoke[#{input_id}]"
+    end
+
+    def self.cb_invoke_html_name(input_id, force_list = nil)
+      self.cb_invoke_name(input_id, force_list).to_la
+    end
+
+    def self.cb_invoke_html_id(input_id, force_list = nil)
+      self.cb_invoke_name(input_id, force_list).to_la_id
+    end
+
+    # Returns the parameter name of the input; this just
+    # invokes the class method of the same name,
+    # passing it the ID of the Input object.
+    #
+    # If force_list is nil, the input's "list" flag
+    # will determine if we return a name for an array
+    # parameter. If set to true or false, it will force
+    # it one way or the other, ignoring the value of "list".
     def cb_invoke_name(force_list = nil)
-      if (self.list && force_list.nil?) || force_list == true
-        "invoke[#{self.id}][]"
-      else # self.list is false, or force_list is false
-        "invoke[#{self.id}]"
-      end
+      as_list = (self.list && force_list.nil?) || force_list == true
+      self.class.cb_invoke_name(self.id, as_list)
     end
 
     def cb_invoke_html_name(force_list = nil)
-      cb_invoke_name(force_list).to_la
+      self.class.cb_invoke_html_name(self.id, force_list)
     end
 
     def cb_invoke_html_id(force_list = nil)
-      cb_invoke_html_name(force_list).to_la_id
+      self.class.cb_invoke_html_id(self.id, force_list)
     end
 
   end # class BoutiquesSupport::Input

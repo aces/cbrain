@@ -287,6 +287,7 @@ module SelectBoxHelper
   # [tool_configs] the array of ToolConfig objects used to build the select box. Defaults to all tool configs
   #                  accessible by the current_user.
   # [allow_offline] by default the offline tc will be disabled. If this option is set to true the tc will be selectable
+  # [repeat_toolnames] the name of the tool will be repeated in each entry in the selection box, in front of the version name
   #
   # The selection box will partition the ToolConfig objects by 'categories', where there
   # are three such categories:
@@ -299,6 +300,7 @@ module SelectBoxHelper
     options       = { :selector => options } unless options.is_a?(Hash)
     selector      = options[:selector]
     allow_offline = options[:allow_offline] == true ? true : false
+    repeat_toolnames = options[:repeat_toolnames].present?
 
     if selector.respond_to?(:tool_config_id)
       selected = selector.tool_config_id.to_s
@@ -365,7 +367,8 @@ module SelectBoxHelper
 
         pairlist = []
         tool_tool_configs.each do |tc|
-          desc     = tc.version_name || tc.short_description
+          desc     = "#{tool.name} #{tc.version_name.presence || "ID=#{tc.id}"}" if   repeat_toolnames
+          desc     = (tc.version_name || tc.short_description)                   if ! repeat_toolnames
           tc_pair  = !b_is_online && !allow_offline ? [ desc, tc.id.to_s, {:disabled => "true"} ] : [ desc, tc.id.to_s ]
           pairlist << tc_pair
         end
