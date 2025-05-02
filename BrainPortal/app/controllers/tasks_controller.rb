@@ -1485,7 +1485,10 @@ class TasksController < ApplicationController
       # Send a start worker command to each affected bourreau
       bourreau_ids = tasklist.map(&:bourreau_id)
       bourreau_ids.uniq.each do |bourreau_id|
-        Bourreau.find(bourreau_id).send_command_start_workers rescue true
+        # Neat trick to not spam the start command more often than once per 2 minutes.
+        Rails.cache.fetch("start_workers_on_bourreau_#{bourreau_id}", :expires_in => 2.minutes) do
+          Bourreau.find(bourreau_id).send_command_start_workers rescue true
+        end
       end
 
       if spawn_messages.present?

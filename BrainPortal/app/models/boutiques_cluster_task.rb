@@ -309,6 +309,7 @@ class BoutiquesClusterTask < ClusterTask
         end.compact.uniq
         parent_userfiles = Userfile.where(:id => all_file_input_ids).to_a
         self.addlog_to_userfiles_these_created_these(parent_userfiles, [outfile], "", 2) if parent_userfiles.present?
+        self.addlog_to_userfiles_created(outfile, "", 2) if parent_userfiles.blank?
 
         # If there is only one input file, we move the output under it
         if parent_userfiles.size == 1
