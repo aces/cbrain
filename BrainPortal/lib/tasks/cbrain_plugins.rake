@@ -6,7 +6,7 @@
 namespace :cbrain do
   namespace :plugins do
 
-    verbose = false # TODO make a command-line param?
+    verbose = ENV['CBRAIN_RAKE_VERBOSE'].present? # TODO make a command-line param?
 
     # Unfortunately we don't have access to cbrain.rb where some useful constants are defined in the
     # CBRAIN class, such as CBRAIN::TasksPlugins_Dir ; if we ever change where plugins are stored, we
@@ -14,6 +14,7 @@ namespace :cbrain do
     plugins_dir             = Rails.root            + "cbrain_plugins"
     installed_plugins_dir   = plugins_dir           + "installed-plugins"
     userfiles_plugins_dir   = installed_plugins_dir + "userfiles"
+    views_plugins_dir       = installed_plugins_dir + "views"
     tasks_plugins_dir       = installed_plugins_dir + "cbrain_task"
     descriptors_plugins_dir = installed_plugins_dir + "cbrain_task_descriptors"
     boutiques_plugins_dir   = installed_plugins_dir + "boutiques_descriptors"
@@ -83,12 +84,12 @@ namespace :cbrain do
           Dir.chdir(package) do
 
             # Setup a single unit (userfiles, tasks or descriptors)
-            setup = lambda do |glob, name, directory, condition: nil, after: nil|
-              files = Dir.glob(glob)
-              files.select!(&condition) if condition
-              puts "Found #{files.size} #{name}(s) to set up..." if verbose
-              files.each do |u_slash_f|
-                plugin           = Pathname.new(u_slash_f).basename.to_s
+            setup = lambda do |glob, name, directory, condition: nil, linkname: nil, after: nil|
+              entries = Dir.glob(glob)
+              entries.select!(&condition) if condition
+              puts "Found #{entries.size} #{name}(s) to set up..." if verbose
+              entries.each do |u_slash_f|
+                plugin           = linkname ? linkname.(u_slash_f) : Pathname.new(u_slash_f).basename.to_s
                 symlink_location = directory   + plugin
                 plugin_location  = plugins_dir + package + u_slash_f
                 symlink_value    = plugin_location.relative_path_from(symlink_location.parent)
@@ -132,40 +133,48 @@ namespace :cbrain do
             end
 
             # Setup each userfile plugin
-            setup.('userfiles/*', 'userfile', userfiles_plugins_dir,
-              condition: lambda { |f| File.directory?(f) }
-            )
             erase_dead_symlinks.('userfile', userfiles_plugins_dir)
+            setup.('userfiles/*/*.rb', 'userfile', userfiles_plugins_dir,
+              condition: lambda { |f| File.file?(f) }
+            )
+
+            # Setup the views of each userfile
+            if Rails.root.to_s =~ /\/BrainPortal$/ # not needed on Bourreaux
+              erase_dead_symlinks.('views', views_plugins_dir)
+              setup.('userfiles/*/views', 'views', views_plugins_dir,
+                linkname: lambda { |f| Pathname.new(f).parent.basename.to_s }
+              )
+            end
 
             # Setup each cbrain_task plugin
+            erase_dead_symlinks.('task', tasks_plugins_dir)
             setup.('cbrain_task/*', 'task', tasks_plugins_dir,
               condition: lambda { |f| File.directory?(f) },
               after: lambda do |symlink_location|
                 File.symlink "cbrain_task_class_loader.rb", "#{symlink_location}.rb"
               end
             )
-            erase_dead_symlinks.('task', tasks_plugins_dir)
 
             # Setup each cbrain_task descriptor plugin
+            erase_dead_symlinks.('descriptor', descriptors_plugins_dir)
             setup.('cbrain_task_descriptors/*', 'descriptor', descriptors_plugins_dir,
               condition: lambda { |f| File.extname(f) == '.json' },
               after: lambda do |symlink_location|
                 File.symlink "cbrain_task_descriptor_loader.rb", "#{symlink_location.sub(/.json$/, '.rb')}"
               end
             )
-            erase_dead_symlinks.('descriptor', descriptors_plugins_dir)
 
             # Setup each boutiques descriptor plugin (new integrator)
+            erase_dead_symlinks.('boutiques', boutiques_plugins_dir)
             setup.('boutiques_descriptors/*', 'boutiques', boutiques_plugins_dir,
               condition: lambda { |f| File.extname(f) == '.json' },
             )
-            erase_dead_symlinks.('boutiques', boutiques_plugins_dir)
 
             # Setup each ruby lib file
+            erase_dead_symlinks.('lib', lib_plugins_dir)
             setup.('lib/*', 'lib', lib_plugins_dir,
               condition: lambda { |f| File.extname(f) == '.rb' },
             )
-            erase_dead_symlinks.('lib', lib_plugins_dir)
 
           end # chdir package
         end # each package
@@ -190,20 +199,26 @@ namespace :cbrain do
       puts "Adjusting paths to public assets for tasks and userfiles..." if verbose
 
       Dir.chdir(public_userfiles) do
-        userfiles_public_dirs = Dir.glob(userfiles_plugins_dir + "*/views/public")
+        userfiles_public_dirs = Dir.glob(views_plugins_dir + "*/public")
         if userfiles_public_dirs.empty?
           puts "No public assets made available by any userfiles." if verbose
         else
           puts "Found #{userfiles_public_dirs.size} userfile(s) with public assets to set up..." if verbose
         end
 
-        userfiles_public_dirs.each do |fullpath| # "/a/b/rails/cbrain_plugins/installed-plugins/userfiles/text_file/views/public"
-          relpath  = Pathname.new(fullpath).relative_path_from(public_tasks) # ../(...)/cbrain_plugins/installed-plugins/userfiles/text_file/views/public
-          filename = relpath.parent.parent.basename # "text_file"
-          if File.exists?(filename)
-            puts "-> Assets for userfile already set up: '#{filename}'." if verbose
-            logger.('AssetSymlinkIsOk','(installed)','userfile',filename) if verbose
-            next
+        userfiles_public_dirs.each do |fullpath| # "/a/b/rails/cbrain_plugins/installed-plugins/views/text_file/public"
+          relpath  = Pathname.new(fullpath).relative_path_from(public_userfiles) # ../(...)/cbrain_plugins/installed-plugins/views/text_file/public
+          filename = relpath.parent.basename # "text_file"
+          if File.exists?(filename) || File.symlink?(filename)
+            if File.symlink?(filename) && (File.readlink(filename) == relpath.to_s)
+              puts "-> Assets for userfile already set up: '#{filename}'." if verbose
+              logger.('AssetSymlinkIsOk','(installed)','userfile',filename) if verbose
+              next
+            else
+              puts "-> Something is in the way for assets for userfile: '#{filename}'." if verbose
+              logger.('AssetSymlinkBad','(installed)','userfile',filename) if verbose
+              File.unlink(filename) rescue true # let's try to cleanup.. if that fails, and exception will happen later during symlink
+            end
           end
           puts "-> Creating assets symbolic link for userfile '#{filename}'." if verbose
           logger.('MakeAssetSymlink','(installed)','userfile',filename)
@@ -222,10 +237,16 @@ namespace :cbrain do
         tasks_public_dirs.each do |fullpath| # "/a/b/rails/cbrain_plugins/installed-plugins/cbrain_tasks/diagnostics/views/public"
           relpath  = Pathname.new(fullpath).relative_path_from(public_tasks) # ../(...)/cbrain_plugins/cbrain_tasks/diagnostics/views/public
           taskname = relpath.parent.parent.basename # "diagnostics"
-          if File.exists?(taskname)
-            puts "-> Assets for task already set up: '#{taskname}'." if verbose
-            logger.('AssetSymlinkIsOk','(installed)','task',taskname) if verbose
-            next
+          if File.exists?(taskname) || File.symlink?(taskname)
+            if File.symlink?(taskname) && (File.readlink(taskname) == relpath.to_s)
+              puts "-> Assets for task already set up: '#{taskname}'." if verbose
+              logger.('AssetSymlinkIsOk','(installed)','task',taskname) if verbose
+              next
+            else
+              puts "-> Something is in the way for assets for tasks: '#{taskname}'." if verbose
+              logger.('AssetSymlinkBad','(installed)','task',taskname) if verbose
+              File.unlink(taskname) rescue true # let's try to cleanup.. if that fails, and exception will happen later during symlink
+            end
           end
           puts "-> Creating assets symbolic link for task '#{taskname}'." if verbose
           logger.('MakeAssetSymlink','(installed)','task',taskname)
@@ -299,6 +320,7 @@ namespace :cbrain do
       end
 
       erase.('userfile',   userfiles_plugins_dir)
+      erase.('views',      views_plugins_dir)
       erase.('task',       tasks_plugins_dir)
       erase.('descriptor', descriptors_plugins_dir)
       erase.('boutiques',  boutiques_plugins_dir)
