@@ -1,1 +1,0 @@
-PUT /executions/3/kill?NTOK application/json NoRubyClient
