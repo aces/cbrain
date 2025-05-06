@@ -1536,7 +1536,7 @@ class TasksController < ApplicationController
     @tool_configs.reject! do |tc|
       tc.bourreau_id.blank? ||
       ! valid_bourreau_ids[tc.bourreau_id] ||
-      ! tc.can_be_accessed_by?(@task.user)
+      ! tc.can_be_accessed_by?(current_user)
     end
 
   end
