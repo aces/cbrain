@@ -181,6 +181,11 @@ module BoutiquesSupport
       obj
     end
 
+    # Refreshes the descriptor from the file if the file has changed.
+    # Returns self if the file has not changed, or a new descriptor
+    # if the file has changed. This is useful for quickly updating the descriptor(s)
+    # for small corrections or updates. Presently it is used only for the
+    # boutiques present in boutiques-descriptor subdirectories.
     def reload_if_file_timestamp_changed
       filepath = self.from_file
       return self if filepath.blank? || (File.mtime(filepath) - self.mtime_of_file ).abs < 1
