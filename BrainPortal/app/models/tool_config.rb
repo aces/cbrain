@@ -629,20 +629,15 @@ class ToolConfig < ApplicationRecord
     @_descriptors_[key]
   end
 
+  # This method returns a +BoutiquesDescriptor+ object associated with the
+  # with tool config either from cache, or if a specific path given from the corresponding file
+  # is specified from that file
   def boutiques_descriptor
     path = boutiques_descriptor_path.presence
     if ! path
       return self.class.registered_boutiques_descriptor(self.tool.name, self.version_name)
     end
-
-    if @_descriptor_
-      @_descriptor_       = @_descriptor_.reload_if_file_timestamp_changed
-      key                 = [ self.tool.name, self.version_name ] # two strings
-      @_descriptors_    ||= {}
-      @_descriptors_[key] = @_descriptor_
-      return @_descriptor_
-    end
-
+    return @_descriptor_ if @_descriptor_
     path = Pathname.new(path)
     path = Pathname.new(CBRAIN::BoutiquesDescriptorsPlugins_Dir) + path if path.relative?
     @_descriptor_ = BoutiquesSupport::BoutiquesDescriptor.new_from_file(path)
