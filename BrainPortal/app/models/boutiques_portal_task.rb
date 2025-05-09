@@ -113,14 +113,13 @@ class BoutiquesPortalTask < PortalTask
         "#{iname} #{ioptional}\n"
       }.join("")
 
-    if num_in_files < num_needed_inputs || num_in_files > num_needed_inputs+num_opt_inputs
+    # return "Warning: you selected more files than this task requires, so you won't be able to assign them all."
+    # Not available in case of descriptor qualified to launch multiple task
+    if !descriptor.qualified_to_launch_multiple_tasks? && (num_in_files < num_needed_inputs || num_in_files > num_needed_inputs+num_opt_inputs)
       message = "This task requires #{num_needed_inputs} mandatory file(s) and #{num_opt_inputs} optional file(s)\n" +
         input_infos
       cb_error message
     end
-
-    #return "Warning: you selected more files than this task requires, so you won't be able to assign them all." if
-    #  num_needed_inputs > num_needed_inputs+num_opt_inputs
 
     ""
   end
@@ -137,6 +136,13 @@ class BoutiquesPortalTask < PortalTask
 
     # Required parameters
     descriptor.required_inputs.each do |input|
+      # skip if the input is the sole mandatory file and if
+      # the task is qualified to launch multiple tasks
+      # only if no params was provide
+      next if descriptor.qualified_to_launch_multiple_tasks? &&
+              descriptor.sole_mandatory_file_input == input  &&
+              !invoke_params[input.id].present?
+
       sanitize_param(input)
     end
 
@@ -291,7 +297,7 @@ class BoutiquesPortalTask < PortalTask
     #
     # then we will generate 7 tasks in total.
     # --------------------------------------
-    if descriptor.file_inputs.size == 1
+    if descriptor.file_inputs.size == 1 || descriptor.qualified_to_launch_multiple_tasks?
       input = descriptor.file_inputs.first
 
       fillTask = lambda do |userfile,tsk,extra_params=nil|
@@ -304,8 +310,17 @@ class BoutiquesPortalTask < PortalTask
         tsk
       end
 
-      original_userfiles_ids = self.params[:interface_userfile_ids].dup
+
+      if descriptor.qualified_to_launch_multiple_tasks? && self.invoke_params[descriptor.sole_mandatory_file_input.id].present?
+        original_userfiles_ids = Array(self.invoke_params[descriptor.sole_mandatory_file_input.id].dup)
+      elsif descriptor.qualified_to_launch_multiple_tasks? && !self.invoke_params[descriptor.sole_mandatory_file_input.id].present?
+        original_userfiles_ids = ids_for_uniq_mandatory_file(descriptor)
+      else
+        original_userfiles_ids = self.params[:interface_userfile_ids].dup
+      end
+
       self.params[:interface_userfile_ids] = [] # zap it; we'll re-introduce each userfile.id as needed
+
       tasklist = original_userfiles_ids.map do |userfile_id|
         f = Userfile.find_accessible_by_user( userfile_id, self.user, :access_requested => file_access_symbol() )
 
@@ -772,6 +787,15 @@ class BoutiquesPortalTask < PortalTask
   end
 
   private
+
+  # Return remaining file ids for the unique mandatory file descriptor input
+  def ids_for_uniq_mandatory_file(descriptor)
+    used_file_ids   = []
+    descriptor.file_inputs.select{|x| x.optional == true }.map(&:id).each do |input_id|
+      used_file_ids += (Array(self.invoke_params[input_id]))
+    end
+    (self.params["interface_userfile_ids"] || []) - used_file_ids.flatten
+  end
 
   # Prepare an array with revision information of
   # all the Boutiques integrator modules used by the
