@@ -800,9 +800,15 @@ class TasksController < ApplicationController
 
           # MASS DELETE
           if operation == 'delete'
-            # Two sublists, to optimize the delete
-            can_be_just_deleted = btasklist.select { |t| t.cluster_workdir.blank? }
-            must_remote_delete  = btasklist - can_be_just_deleted
+
+            # Three sublists, to optimize the delete
+            can_be_just_deleted = btasklist
+              .select { |t| t.cluster_workdir.blank? && t.workdir_archive_userfile_id.blank? }
+            have_archive_local_delete = btasklist
+              .select { |t| t.cluster_workdir.blank? && t.workdir_archive_userfile_id.present? }
+            must_remote_delete = btasklist - can_be_just_deleted - have_archive_local_delete
+
+            # Local delete of tasks with no workdirs and no archives
             can_be_just_deleted.each do |t|
               begin
                 t.destroy
@@ -812,11 +818,19 @@ class TasksController < ApplicationController
                 failed_list[e.message] << t.id
               end
             end
+
+            # Local deletion of tasks with no workdirs but with archives
+            bac=BackgroundActivity::DestroyTaskWithoutWorkdir.local_new(current_user.id, have_archive_local_delete.map(&:id))
+            bac.save # The .save will just be ignored if the items list is empty
+            bacs << bac if bac.id
+            success_list += have_archive_local_delete.map(&:id)
+
+            # Remote deletion of tasks with workdirs
             bac=BackgroundActivity::DestroyTask.local_new(current_user.id, must_remote_delete.map(&:id),bid)
-            # The .save below will just be ignored if the items list is empty
-            bac.save
+            bac.save # The .save will just be ignored if the items list is empty
             bacs << bac if bac.id
             success_list += must_remote_delete.map(&:id)
+
             next
           end
 
@@ -1471,7 +1485,10 @@ class TasksController < ApplicationController
       # Send a start worker command to each affected bourreau
       bourreau_ids = tasklist.map(&:bourreau_id)
       bourreau_ids.uniq.each do |bourreau_id|
-        Bourreau.find(bourreau_id).send_command_start_workers rescue true
+        # Neat trick to not spam the start command more often than once per 2 minutes.
+        Rails.cache.fetch("start_workers_on_bourreau_#{bourreau_id}", :expires_in => 2.minutes) do
+          Bourreau.find(bourreau_id).send_command_start_workers rescue true
+        end
       end
 
       if spawn_messages.present?
@@ -1519,7 +1536,7 @@ class TasksController < ApplicationController
     @tool_configs.reject! do |tc|
       tc.bourreau_id.blank? ||
       ! valid_bourreau_ids[tc.bourreau_id] ||
-      ! tc.can_be_accessed_by?(@task.user)
+      ! tc.can_be_accessed_by?(current_user)
     end
 
   end

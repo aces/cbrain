@@ -384,6 +384,56 @@
       <%= text_field_tag 'background_activity[options][count_exc]', @bac.options[:count_exc], :size => 3 %>
     </fieldset>
 
+    <%-
+      ##############################
+      # BAC: RUBY RUNNER (ADMIN ONLYYYYYYYY!)
+      ##############################
+    %>
+
+    <fieldset>
+      <legend>
+        <%= f.radio_button :type, 'BackgroundActivity::RubyRunner' %>
+        <%= f.label        :type, 'Arbitrary Ruby Code Runner', :value => 'BackgroundActivity::RubyRunner' %>
+      </legend>
+
+      This activity type is only for experienced CBRAIN system developers
+      who understands the <strong>BackgroundActivity</strong> framework.
+      <p>
+
+      <%= label_tag      'background_activity[options][prepare_dynamic_items]' do %>
+        prepare_dynamic_items() : Mandatory. Must set the list of items with self.items=[] .
+      <% end %>
+      <br>
+      <%= text_area_tag 'background_activity[options][prepare_dynamic_items]',
+          (@bac.options[:prepare_dynamic_items].presence || "self.items=[]"), :rows => 2, :cols => 120 %>
+      <p>
+
+      <%= label_tag      'background_activity[options][before_first_item]' do %>
+        before_first_item() : Optional.
+      <% end %>
+      <br>
+      <%= text_area_tag 'background_activity[options][before_first_item]',
+          @bac.options[:before_first_item] || "true", :rows => 1, :cols => 120 %>
+      <p>
+
+      <%= label_tag      'background_activity[options][process]' do %>
+        process() : Mandatory. Must return [ ok, message ]
+      <% end %>
+      <br>
+      <%= text_area_tag 'background_activity[options][process]',
+          (@bac.options[:process] || "return [ true, nil ] if item == 3\nreturn [ false, \"Error: not odd\" ]"),
+          :rows => 5, :cols => 120 %>
+      <p>
+
+      <%= label_tag      'background_activity[options][after_last_item]' do %>
+        after_last_item() : Optional.
+      <% end %>
+      <br>
+      <%= text_area_tag 'background_activity[options][after_last_item]',
+          @bac.options[:after_last_item] || "true", :rows => 1, :cols => 120 %>
+
+    </fieldset>
+
   </div>
 
   <p>

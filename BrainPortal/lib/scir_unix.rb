@@ -124,6 +124,8 @@ class ScirUnix < Scir
 
   class JobTemplate < Scir::JobTemplate #:nodoc:
 
+    SYSTEM_HAS_TIMEOUT = `type -p timeout`.present?
+
     # NOTE: We use a custom 'run' method in the Session, instead of Scir's version.
     def qsub_command #:nodoc:
       raise "Error, this class only handle 'command' as /bin/bash and a single script in 'arg'" unless
@@ -136,8 +138,11 @@ class ScirUnix < Scir
       stdout.sub!(/\A:/,"") if stdout
       stderr.sub!(/\A:/,"") if stderr
 
+      walltime = self.walltime.presence
+
       command = ""
       command += "cd #{shell_escape(self.wd)} || exit 20;"  if self.wd
+      command += "timeout #{walltime}s " if SYSTEM_HAS_TIMEOUT && walltime
       command += "/bin/bash #{shell_escape(self.arg[0])}"
       command += "  > #{shell_escape(stdout)}"
       command += " 2> #{shell_escape(stderr)}"              if stderr

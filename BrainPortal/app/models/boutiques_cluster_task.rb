@@ -309,6 +309,7 @@ class BoutiquesClusterTask < ClusterTask
         end.compact.uniq
         parent_userfiles = Userfile.where(:id => all_file_input_ids).to_a
         self.addlog_to_userfiles_these_created_these(parent_userfiles, [outfile], "", 2) if parent_userfiles.present?
+        self.addlog_to_userfiles_created(outfile, "", 2) if parent_userfiles.blank?
 
         # If there is only one input file, we move the output under it
         if parent_userfiles.size == 1
@@ -361,16 +362,16 @@ class BoutiquesClusterTask < ClusterTask
   def name_and_type_for_output_file(output, pathname)
 
     # Find descriptor for options; warning, we get the one for save_results
-    desc   = descriptor_for_save_results
-    custom = desc.custom || {} # 'custom' is not packaged as an object, just a hash
-    idlist = custom['cbrain:no-run-id-for-outputs'].presence # list of IDs where no run id inserted
-    # We allow no_run_id only if the dest DP is MultiLevel, presumably the output goes to "a/b/c/basename_without_id"
-    no_run_id = true if idlist && idlist.include?(output.id) && self.results_data_provider.has_browse_path_capabilities?
+    desc      = descriptor_for_save_results
+    custom    = desc.custom || {} # 'custom' is not packaged as an object, just a hash
+    idlist    = custom['cbrain:no-run-id-for-outputs'].presence # list of IDs where no run id inserted
+    no_run_id = true if idlist && idlist.include?(output.id)
 
     # Get basename, use it to guess the class
-    name = File.basename(pathname)
-    userfile_class   = Userfile.suggested_file_type(name)
-    userfile_class ||= ( File.directory?(pathname) ? FileCollection : SingleFile )
+    name             = File.basename(pathname)
+    lookupclass      = File.directory?(pathname) ? FileCollection : SingleFile
+    userfile_class   = lookupclass.suggested_file_type(name)
+    userfile_class ||= lookupclass
 
     # Add a run ID to the file name, to make sure the file doesn't exist.
     if ! no_run_id
@@ -412,6 +413,16 @@ class BoutiquesClusterTask < ClusterTask
       gigs = descriptor.suggested_resources['ram'].to_f
       megs = gigs * 1024
       return megs.truncate
+    end
+    nil
+  end
+
+  # Returns a number of cores needed for the job; nil means to not
+  # ask for anything particular.
+  def job_number_of_cores
+    descriptor = self.descriptor_for_cluster_commands
+    if descriptor.suggested_resources.present? && descriptor.suggested_resources['cpu-cores'].present?
+      return descriptor.suggested_resources['cpu-cores'].to_i
     end
     nil
   end

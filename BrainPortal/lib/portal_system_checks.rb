@@ -95,7 +95,41 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.a030_ensure_we_can_load_oidc_config
+  def self.a025_check_single_table_inheritance_types #:nodoc:
+
+    #-----------------------------------------------------------------------------
+    puts "C> Checking 'type' columns for single table inheritance..."
+    #-----------------------------------------------------------------------------
+
+    myself      = RemoteResource.current_resource
+    err_or_warn = Rails.env == 'production' ? 'Error' : 'Warning'
+    errcount    = 0
+
+    [
+      Userfile,
+      (myself.is_a?(Bourreau)? myself.cbrain_tasks : CbrainTask),
+      CustomFilter,
+      User,
+      RemoteResource,
+      DataProvider,
+      BackgroundActivity,
+      ResourceUsage,
+      Invitation,
+    ].each do |query|
+      badtypes = query.distinct(:type).pluck(:type).compact
+        .reject { |type| type.safe_constantize }
+      next if badtypes.empty?
+      puts "C> \t- #{err_or_warn}: Bad type values in table '#{query.table_name}': #{badtypes.join(', ')}"
+      errcount += 1
+    end
+
+    raise "Single table inheritance check failed for #{errcount} tables" if Rails.env == 'production' && errcount > 0
+
+  end
+
+
+
+  def self.a030_ensure_we_can_load_oidc_config #:nodoc:
 
       #----------------------------------------------------------------------------
       puts "C> Loading OIDC configuration, if any..."
@@ -253,7 +287,7 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
   def self.z020_start_background_activity_workers #:nodoc:
 
     #----------------------------------------------------------------------------
-    puts "C> Starting Background Activity Worker..."
+    puts "C> Starting Background Activity Workers..."
     #----------------------------------------------------------------------------
 
     if ENV['CBRAIN_NO_BACKGROUND_ACTIVITY_WORKER'].present? || Rails.env == 'test'
@@ -261,27 +295,8 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
       return
     end
 
-    worker_name = 'PortalActivity'
-    num_workers = ::Rails.env == 'production' ? 3 : 1
-
-    baclogger = Log4r::Logger[worker_name]
-    unless baclogger
-      baclogger = Log4r::Logger.new(worker_name)
-      baclogger.add(Log4r::RollingFileOutputter.new('background_activity_outputter',
-                    :filename  => "#{Rails.root}/log/#{worker_name}.combined..log",
-                    :formatter => Log4r::PatternFormatter.new(:pattern => "%d %l %m"),
-                    :maxsize   => 1000000, :trunc => 600000))
-      baclogger.level = Log4r::INFO
-    end
-
-    worker_pool = WorkerPool.create_or_find_pool(BackgroundActivityWorker,
-       num_workers, # number of instances
-       { :name           => worker_name,
-         :check_interval => 5,
-         :worker_log     => baclogger,
-       }
-    )
-    puts "C> \t- Started: PID=#{worker_pool.workers.map(&:pid).join(", ")}"
+    myself = RemoteResource.current_resource
+    myself.send_command_start_bac_workers # will be a local message, not network
 
   end
 

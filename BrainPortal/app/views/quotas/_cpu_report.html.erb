@@ -1,0 +1,98 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2025
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title "Exceeded CPU Quotas" %>
+
+<div class="menu_bar">
+  <%= link_to "Back To CPU Quotas",  quotas_path(:mode => :cpu), :class => :button %>
+</div>
+
+<p>
+
+<table>
+  <tr>
+    <th>User</th>
+    <th>Execution Server</th>
+    <th>Usage Past Week</th>
+    <th>Limit Past Week</th>
+    <th>Usage Past Month</th>
+    <th>Limit Past Month</th>
+    <th>Usage All Time</th>
+    <th>Limit All Time</th>
+    <th>Situation</th>
+    <th>Details</th>
+    <th>Quota record</th>
+  <tr>
+
+<% @uid_bid_and_quota.each do |user_id,bourreau_id,quota| %>
+  <%
+    # the following next statement should never get triggered, unless
+    # at some point I enhance the controller code to show 'nearly exceeded' quotas
+    # and then we should remove it.
+  %>
+  <% situation = quota.exceeded?(user_id,bourreau_id) %>
+  <% next unless situation.present? %>
+  <% user_class  = quota.is_for_user?        ? 'class="quota_user_quota_highlight"'.html_safe : "" %>
+  <% res_class   = quota.is_for_resource?    ? 'class="quota_resource_quota_highlight"'.html_safe   : "" %>
+  <% week_class  = situation.to_s =~ /week/  ? 'class="quota_exceeded"'.html_safe : "" %>
+  <% month_class = situation.to_s =~ /month/ ? 'class="quota_exceeded"'.html_safe : "" %>
+  <% ever_class  = situation.to_s =~ /ever/  ? 'class="quota_exceeded"'.html_safe : "" %>
+  <tr>
+    <td <%= user_class %>><%= link_to_user_if_accessible(user_id) %></td>
+    <td <%= res_class %>><%= link_to_bourreau_if_accessible(bourreau_id) %></td>
+    <td <%= week_class %>><%= pretty_quota_cputime(quota.cpu_past_week,false) %></td>
+    <td><%= pretty_quota_cputime(quota.max_cpu_past_week,true) %></td>
+    <td <%= month_class %>><%= pretty_quota_cputime(quota.cpu_past_month,false) %></td>
+    <td><%= pretty_quota_cputime(quota.max_cpu_past_month,true) %></td>
+    <td <%= ever_class %>><%= pretty_quota_cputime(quota.cpu_ever,false) %></td>
+    <td><%= pretty_quota_cputime(quota.max_cpu_ever,true) %></td>
+    <td>
+        <% if situation =~ /week/i %>
+          Past week CPU exceeded
+        <% elsif situation =~ /month/i %>
+          Past month CPU exceeded
+        <% elsif situation =~ /ever/i %>
+          Total lifetime CPU exceeded
+        <% else %>
+          (Unknown)
+        <% end %>
+    </td>
+    <td>
+      <%= index_count_filter('Table', :resource_usage,
+          {
+            :type               => 'CputimeResourceUsageForCbrainTask',
+            :user_id            => user_id,
+            :remote_resource_id => bourreau_id,
+          },
+          :show_zeros => true)
+      %>
+    </td>
+    <td>
+      <%= link_to("Show/Edit CPU Quota", quota_path(quota), :class => "action_link") %>
+    </td>
+  </tr>
+<% end %>
+
+</table>
+

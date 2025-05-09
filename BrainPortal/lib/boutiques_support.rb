@@ -109,17 +109,12 @@ module BoutiquesSupport
   # Descriptor schema
   SCHEMA_FILE = "#{Rails.root.to_s}/lib/cbrain_task_generators/schemas/boutiques.schema.json"
 
-  # Read schema, extract some name lists
+  # Read schema, store it in the module.
   @schema = JSON.parse(File.read(SCHEMA_FILE))
 
-  # Out of the schema, extract list of properties that we will use
-  # to restrict our objects.
-  top_prop_names    = @schema['properties'].keys
-  input_prop_names  = @schema['properties']['inputs']['items']['properties'].keys
-  output_prop_names = @schema['properties']['output-files']['items']['properties'].keys
-  group_prop_names  = @schema['properties']['groups']['items']['properties'].keys
-  cont_prop_names   = @schema['properties']['container-image']['allOf'][1]['oneOf'][0]['properties'].keys
-
+  # Utility method to compare a json structure to the Boutiques schema and
+  # make sure it matches the specification. Returns an array of error objects,
+  # or an empty array if everything is OK.
   def self.validate(json)
     JSON::Validator.fully_validate(
       @schema,
@@ -128,26 +123,35 @@ module BoutiquesSupport
     )
   end
 
-  # The following assignement is pretty much like
-  #   class BoutiquesDescriptor < RestrictedHash
-  # except we have a closure and we can access the variables
-  # initialized above (top_prop_names etc).
-  BoutiquesDescriptor = Class.new(RestrictedHash) do |klass|
+  # Out of the schema, extract some lists of properties that we will use
+  # to restrict our objects.
+  top_prop_names    = @schema['properties'].keys
+  input_prop_names  = @schema['properties']['inputs']['items']['properties'].keys
+  output_prop_names = @schema['properties']['output-files']['items']['properties'].keys
+  group_prop_names  = @schema['properties']['groups']['items']['properties'].keys
+  cont_prop_names   = @schema['properties']['container-image']['allOf'][1]['oneOf'][0]['properties'].keys
 
-    allowed_keys top_prop_names # 'name', 'author' etc
+  # Predefine a bunch of classes that act as data holders for
+  # the different levels of the Boutiques descriptor.
+
+  class BoutiquesDescriptor < RestrictedHash ; end
+  class Input               < RestrictedHash ; end
+  class OutputFile          < RestrictedHash ; end
+  class Group               < RestrictedHash ; end
+  class ContainerImage      < RestrictedHash ; end
+
+  # Now for each of them, configure what keys they are allowed to hold
+  BoutiquesDescriptor .allowed_keys = top_prop_names
+  Input               .allowed_keys = input_prop_names
+  OutputFile          .allowed_keys = output_prop_names
+  Group               .allowed_keys = group_prop_names
+  ContainerImage      .allowed_keys = cont_prop_names
+
+  # Main class for representing a Boutiques Descriptor
+  class BoutiquesDescriptor
+
     attr_accessor :from_file    # not a hash attribute; a file name, for info
 
-    Input          = Class.new(RestrictedHash) { allowed_keys input_prop_names  }
-    OutputFile     = Class.new(RestrictedHash) { allowed_keys output_prop_names }
-    Group          = Class.new(RestrictedHash) { allowed_keys group_prop_names  }
-    ContainerImage = Class.new(RestrictedHash) { allowed_keys cont_prop_names   }
-
-    # Adds a comparison operator to these subobjects so that
-    # they can be sorted.
-    # See also Hash.resorted in the CBRAIN core extensions.
-    [ Input, OutputFile, Group ].each do |klass|
-      klass.send(:define_method, :'<=>') { |other| self.id <=> other.id }
-    end
 
     def initialize(hash={})
       super(hash)
@@ -193,19 +197,19 @@ module BoutiquesSupport
     # of more useful objects (Input, OutputFile, etc)
 
     def inputs=(array) #:nodoc:
-      super( array.map { |elem| Input.new(elem) } )
+      super( array.map { |elem| BoutiquesSupport::Input.new(elem) } )
     end
 
     def output_files=(array) #:nodoc:
-      super( array.map { |elem| OutputFile.new(elem) } )
+      super( array.map { |elem| BoutiquesSupport::OutputFile.new(elem) } )
     end
 
     def groups=(array) #:nodoc:
-      super( array.map { |elem| Group.new(elem) } )
+      super( array.map { |elem| BoutiquesSupport::Group.new(elem) } )
     end
 
     def container_image=(obj) #:nodoc:
-      super( ContainerImage.new(obj) )
+      super( BoutiquesSupport::ContainerImage.new(obj) )
     end
 
     # ------------------------------
@@ -279,7 +283,24 @@ module BoutiquesSupport
     # data for it stored under the "custom"['cbrain:integrator_modules']
     # entry of the descriptor.
     def custom_module_info(modulename)
-      self.custom['cbrain:integrator_modules'][modulename]
+      (self.custom['cbrain:integrator_modules'] || {})[modulename]
+    end
+
+    # This method pushes a small string (usually
+    # a single line of text) that will appear as
+    # a note at the top of a parameter form. If
+    # the note is already present, the method will
+    # do nothing. Returns the current list of notes
+    # as an array.
+    #
+    # Careful, this method mutates the descriptor.
+    def add_cbrain_input_note(one_line_note)
+      self.custom ||= {}
+      notes = self.custom['cbrain:input_notes'] ||= []
+      if ! notes.include?(one_line_note)
+        notes << one_line_note
+      end
+      notes
     end
 
     # Given an invoke structure (like required by bosh, where
@@ -479,35 +500,71 @@ module BoutiquesSupport
       new_json
     end
 
-    #------------------------------------------------------
-    # Aditional methods for the sub-objects of a descriptor
-    #------------------------------------------------------
+  end  # class BoutiquesSupport::BoutiquesDescriptor
 
-    class Input
+  #------------------------------------------------------
+  # Aditional methods for the sub-objects of a descriptor
+  #------------------------------------------------------
 
-      # This method return the parameter name for the input.
-      # We put all input Boutiques parameters under a 'invoke' substructure.
-      # E.g. for a input with ID 'abcd' in a task, we'll find the value
-      # in task.params['invoke']['abcd'] and the parameter name is thus
-      # "invoke[abcd]"
-      def cb_invoke_name(force_list = nil)
-        if (self.list && force_list.nil?) || force_list == true
-          "invoke[#{self.id}][]"
-        else # self.list is false, or force_list is false
-          "invoke[#{self.id}]"
-        end
-      end
+  # Adds a comparison operator to these subobjects so that
+  # they can be sorted.
+  # See also Hash.resorted in the CBRAIN core extensions.
+  [ Input, OutputFile, Group ].each do |klass|
+    klass.send(:define_method, :'<=>') { |other| self.id <=> other.id }
+  end
 
-      def cb_invoke_html_name(force_list = nil)
-        cb_invoke_name(force_list).to_la
-      end
+  class Input
 
-      def cb_invoke_html_id(force_list = nil)
-        cb_invoke_html_name(force_list).to_la_id
-      end
+    attr_accessor :cbrain_input_notes # array of bulletpoints to show in form
 
+    # When dup'ing, also copy the special cbrain_input_notes
+    def dup #:nodoc:
+      copy = super
+      copy.cbrain_input_notes = self.cbrain_input_notes
+      copy
     end
 
-  end
+    # This method return the parameter name for an input identified
+    # by input_id.
+    # We put all input Boutiques parameters under a 'invoke' substructure.
+    # E.g. for a input with ID 'abcd' in a task, we'll find the value
+    # in task.params['invoke']['abcd'] and the parameter name is thus
+    # "invoke[abcd]". The as_list option appends "[]" to the name
+    # to make it an array parameter.
+    def self.cb_invoke_name(input_id, as_list = nil)
+      return "invoke[#{input_id}][]" if as_list
+      return "invoke[#{input_id}]"
+    end
+
+    def self.cb_invoke_html_name(input_id, force_list = nil)
+      self.cb_invoke_name(input_id, force_list).to_la
+    end
+
+    def self.cb_invoke_html_id(input_id, force_list = nil)
+      self.cb_invoke_name(input_id, force_list).to_la_id
+    end
+
+    # Returns the parameter name of the input; this just
+    # invokes the class method of the same name,
+    # passing it the ID of the Input object.
+    #
+    # If force_list is nil, the input's "list" flag
+    # will determine if we return a name for an array
+    # parameter. If set to true or false, it will force
+    # it one way or the other, ignoring the value of "list".
+    def cb_invoke_name(force_list = nil)
+      as_list = (self.list && force_list.nil?) || force_list == true
+      self.class.cb_invoke_name(self.id, as_list)
+    end
+
+    def cb_invoke_html_name(force_list = nil)
+      self.class.cb_invoke_html_name(self.id, force_list)
+    end
+
+    def cb_invoke_html_id(force_list = nil)
+      self.class.cb_invoke_html_id(self.id, force_list)
+    end
+
+  end # class BoutiquesSupport::Input
 
 end

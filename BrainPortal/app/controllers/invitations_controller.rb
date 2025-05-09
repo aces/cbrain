@@ -40,7 +40,7 @@ class InvitationsController < ApplicationController
        return
     end
 
-    already_sent_to = Invitation.where(sender_id: current_user.id, active: true, group_id: @group.id).all.map(&:user_id)
+    already_sent_to = Invitation.where(sender_id: current_user.id, active: true, invitation_group_id: @group.id).all.map(&:user_id)
     @users = current_user.visible_users.where("users.id NOT IN (?)", @group.users.map(&:id) | already_sent_to)
     render :partial => "new"
   end
@@ -49,7 +49,7 @@ class InvitationsController < ApplicationController
   def create #:nodoc:
     @group          = Group.find(params[:group_id])
     user_ids        = (params[:user_ids] || []).map(&:to_i)
-    already_sent_to = Invitation.where(sender_id: current_user.id, active: true, user_id: user_ids, group_id: @group.id).all.map(&:user_id)
+    already_sent_to = Invitation.where(sender_id: current_user.id, active: true, user_id: user_ids, invitation_group_id: @group.id).all.map(&:user_id)
     rejected_ids    = user_ids & already_sent_to
 
     if user_ids.empty?

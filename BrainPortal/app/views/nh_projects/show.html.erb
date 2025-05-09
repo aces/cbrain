@@ -62,7 +62,7 @@
     <%
       group_members  = @nh_project.users   || []
       group_editors  = @nh_project.editors || []
-      open_invites   = Invitation.where(sender_id: current_user.id, group_id: @nh_project.id, active: true)
+      open_invites   = Invitation.where(sender_id: current_user.id, invitation_group_id: @nh_project.id, active: true)
     %>
 
       <div class="card-row header">

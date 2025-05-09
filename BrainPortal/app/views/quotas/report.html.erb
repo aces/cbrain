@@ -3,7 +3,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2025
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -22,6 +22,11 @@
 #
 -%>
 
-<%= render :partial  => "shared/flash_update" %>
-jQuery("#disk_quotas_table").html(<%= html_for_js(render(:partial => 'disk_quotas_table')) %>).trigger("new_content")
+<% if @mode == :disk %>
+  <%= render :partial => 'disk_report' %>
+<% end %>
+
+<% if @mode == :cpu %>
+  <%= render :partial => 'cpu_report' %>
+<% end %>
 

@@ -35,7 +35,7 @@
 <%
 # Yes, the next test is hardcoded with the generated HTML id for the input
 %>
-<% if id.blank? || id.to_s != 'cbrain_task_BRA_params_KET__BRA_cbrain_task_KET__BRA_params_KET__BRA_invoke_KET__BRA__bdm_json_descriptor_KET_' %>
+<% if id.blank? || id.to_s != BoutiquesSupport::Input.cb_invoke_html_id('_bdm_json_descriptor') %>
 
   <% # This is invoking the standard partial exactly as-is %>
 

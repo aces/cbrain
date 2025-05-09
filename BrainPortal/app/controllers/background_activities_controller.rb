@@ -86,6 +86,7 @@ class BackgroundActivitiesController < ApplicationController
     add_options_for_clean_cache        if @bac.is_a?(BackgroundActivity::CleanCache)
     add_options_for_erase_bacs         if @bac.is_a?(BackgroundActivity::EraseBackgroundActivities)
     add_options_for_verify_dps         if @bac.is_a?(BackgroundActivity::VerifyDataProvider)
+    add_options_for_ruby_runner        if @bac.is_a?(BackgroundActivity::RubyRunner)
 
     if (@bac.errors.present?) || (! @bac.valid?) || (! @bac.save)
       render :action => :new
@@ -118,14 +119,13 @@ class BackgroundActivitiesController < ApplicationController
 
   # POST /background_activities/operation
   def operation #:nodoc:
-    # It's quite stupid but we detect the type of operation
-    # based on the value returned by the submit button
-    op      = :cancel!             if params[:commit] =~ /cancel/i
-    op      = :suspend!            if params[:commit] =~ /\bsuspend/i
-    op      = :unsuspend!          if params[:commit] =~ /unsuspend/i
-    op      = :destroy             if params[:commit] =~ /destroy/i
-    op      = :activate!           if params[:commit] =~ /activate/i
-    op      = :force_single_retry  if params[:commit] =~ /retry/i
+    op      = :cancel!             if params[:operation] == 'cancel'
+    op      = :suspend!            if params[:operation] == 'suspend'
+    op      = :unsuspend!          if params[:operation] == 'unsuspend'
+    op      = :destroy             if params[:operation] == 'destroy'
+    op      = :activate!           if params[:operation] == 'activate'
+    op      = :force_single_retry  if params[:operation] == 'retry'
+    cb_error "Unknown operation" if op.blank?
     bac_ids = Array(params[:bac_ids])
     bacs = BackgroundActivity.where(:id => bac_ids)
     bacs = bacs.where(:user_id => current_user.id) if ! current_user.has_role? :admin_user
@@ -167,6 +167,13 @@ class BackgroundActivitiesController < ApplicationController
     )
     @bac.errors.add(:base, "Test activity doesn't have any items?") if @bac.items.size == 0
     @bac.options = opt.to_h # just for form persistency; these values aren't used in the BAC
+  end
+
+  def add_options_for_ruby_runner
+    opt = params_options.permit( :prepare_dynamic_items, :process, :before_first_item, :after_last_item )
+    @bac.options = opt.to_h # just for form persistency; these values aren't used in the BAC
+    @bac.errors.add(:base, "prepare_dynamic_items() is blank") if @bac.options[:prepare_dynamic_items].blank?
+    @bac.errors.add(:base, "process() is blank")               if @bac.options[:process].blank?
   end
 
   # This code makes a bunch of verification so that the ID

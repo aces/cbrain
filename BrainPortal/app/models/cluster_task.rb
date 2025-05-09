@@ -21,7 +21,7 @@
 #
 
 #Abstract model representing a job running on a cluster. This is the core class for
-#launching GridEngine/PBS/MOAB/UNIX jobs (etc) using Scir.
+#launching Slurm/GridEngine/PBS/MOAB/UNIX jobs (etc) using Scir.
 #
 #=Attributes:
 #[<b>user_id</b>] The id of the user who requested this task.
@@ -165,6 +165,12 @@ class ClusterTask < CbrainTask
   # The value should be a number, in units of megabytes.
   # The value returned by default here is nil.
   def job_memory_estimate
+    nil
+  end
+
+  # Returns a number of cores needed for the job; nil means to not
+  # ask for anything particular.
+  def job_number_of_cores
     nil
   end
 
@@ -1289,13 +1295,13 @@ class ClusterTask < CbrainTask
 
      if stdoutfile && File.exist?(stdoutfile)
        io = IO.popen("tail -#{stdout_lim} #{stdoutfile.to_s.bash_escape}","r")
-       self.cluster_stdout = io.read
+       self.cluster_stdout = io.read.gsub(/\e\[[0-9;]*[a-zA-Z]/, '')  
        io.close
      end
 
      if stderrfile && File.exist?(stderrfile)
        io = IO.popen("tail -#{stderr_lim} #{stderrfile.to_s.bash_escape}","r")
-       self.cluster_stderr = io.read
+       self.cluster_stderr = io.read.gsub(/\e\[[0-9;]*[a-zA-Z]/, '') 
        io.close
      end
 
@@ -1924,6 +1930,7 @@ exit $status
     job.name     = self.tname_tid  # "#{self.name}-#{self.id}" # some clusters want all names to be different!
     job.walltime = self.job_walltime_estimate
     job.memory   = self.job_memory_estimate
+    job.ncores   = self.job_number_of_cores
     job.task_id  = self.id
 
     # Note: all extra_qsub_args defined in the tool_configs (bourreau, tool and bourreau/tool)
@@ -1970,6 +1977,8 @@ exit $status
         self.cluster_jobid = jobid
         self.status_transition(self.status, "Queued")
         self.addlog("Queued as job ID '#{jobid}'.")
+        self.addlog("Job walltime is #{job.walltime}s.") if job.walltime.present?
+        self.addlog("Additional cluster params are '#{job.tc_extra_qsub_args}'.") if job.tc_extra_qsub_args.present?
       rescue NoVmAvailableError => ex
         # When the task is executed in a VM, it may not be submitted
         # right away when no VMs are available. In such a case, method

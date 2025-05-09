@@ -1,2 +1,2 @@
-200 application/json bac_ids":\[\d+
+200 application/json bac_ids":\[[\d,]+
 {"skipped_list":{},"success_list":[5,6],"failed_list":{},"bac_ids":[93]}

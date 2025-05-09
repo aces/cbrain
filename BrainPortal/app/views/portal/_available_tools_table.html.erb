@@ -54,8 +54,7 @@
   %>
   <tr>
     <td>
-      <%= name %>
-      <%= closable_overlay_content_link(" &#8505; ".html_safe, name, description) %>
+      <%= closable_overlay_content_link(name, name, description, "50em", :class => 'action_link') %>
     </td>
     <td><%= versions %></td>
     <td><%= tags.join(", ") %></td>

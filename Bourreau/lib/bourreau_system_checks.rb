@@ -55,6 +55,38 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
 
 
+  def self.a025_check_single_table_inheritance_types #:nodoc:
+
+    #-----------------------------------------------------------------------------
+    puts "C> Checking 'type' columns for single table inheritance..."
+    #-----------------------------------------------------------------------------
+
+    myself      = RemoteResource.current_resource
+    err_or_warn = Rails.env == 'production' ? 'Error' : 'Warning'
+    errcount    = 0
+
+    [
+      (myself.is_a?(Bourreau) ? CbrainTask.where(:bourreau_id => myself.id) : CbrainTask),
+      CustomFilter,
+      User,
+      RemoteResource,
+      DataProvider,
+      BackgroundActivity,
+      ResourceUsage,
+    ].each do |query|
+      badtypes = query.distinct(:type).pluck(:type).compact
+        .reject { |type| type.safe_constantize }
+      next if badtypes.empty?
+      puts "C> \t- #{err_or_warn}: Bad type values in table '#{query.table_name}': #{badtypes.join(', ')}"
+      errcount += 1
+    end
+
+    raise "Single table inheritance check failed for #{errcount} tables" if Rails.env == 'production' && errcount > 0
+
+  end
+
+
+
   def self.a050_ensure_proper_cluster_management_layer_is_loaded #:nodoc:
 
     #-----------------------------------------------------------------------------
@@ -297,7 +329,10 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     #----------------------------------------------------------------------------
 
     sym_path = "#{gridshare_dir}/#{DataProvider::DP_CACHE_SYML}"
-    return if File.symlink?(sym_path) && File.realpath(sym_path) == File.realpath(cache_dir)
+    if File.symlink?(sym_path) && File.realpath(sym_path) == File.realpath(cache_dir)
+      system "touch", "-h", sym_path.to_s, gridshare_dir.to_s
+      return
+    end
 
     File.unlink(sym_path) if File.exists?(sym_path)
     File.symlink(cache_dir, sym_path)
@@ -308,7 +343,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.a110_ensure_task_class_git_commits_cached
+  def self.a110_ensure_task_class_git_commits_cached #:nodoc:
 
     #----------------------------------------------------------------------------
     puts "C> Ensuring git commits for tasks classes are pre-cached..."
@@ -383,27 +418,8 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
       return
     end
 
-    worker_name = 'BourreauActivity'
-    num_workers = 1 # hardcoded, usually that's enough for a Bourreau
-
-    baclogger = Log4r::Logger[worker_name]
-    unless baclogger
-      baclogger = Log4r::Logger.new(worker_name)
-      baclogger.add(Log4r::RollingFileOutputter.new('background_activity_outputter',
-                    :filename  => "#{Rails.root}/log/#{worker_name}.combined..log",
-                    :formatter => Log4r::PatternFormatter.new(:pattern => "%d %l %m"),
-                    :maxsize   => 1000000, :trunc => 600000))
-      baclogger.level = Log4r::INFO
-    end
-
-    worker_pool = WorkerPool.create_or_find_pool(BackgroundActivityWorker,
-       num_workers, # number of instances
-       { :name           => worker_name,
-         :check_interval => 15,
-         :worker_log     => baclogger,
-       }
-    )
-    puts "C> \t- Started: PID=#{worker_pool.workers.map(&:pid).join(", ")}"
+    myself = RemoteResource.current_resource
+    myself.send_command_start_bac_workers # will be a local message, not network
 
   end
 

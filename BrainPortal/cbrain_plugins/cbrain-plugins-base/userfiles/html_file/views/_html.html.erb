@@ -1,0 +1,50 @@
+
+<%
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2025
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+%>
+
+<% if params[:new_tab].blank? # show only on userfile page %>
+  <%= link_to(
+      "Open in a separate tab",
+      display_userfile_url(@userfile,
+        :viewer                => :html,
+        :content_viewer        => "on",
+        :file_name             => @userfile.name,
+        :viewer_userfile_class => "HtmlFile",
+        :new_tab               => "yes"
+      ),
+      :target => "_blank"
+    ) %>
+<% end %>
+<br>
+The HTML document previewed in the frame below is not part of CBRAIN. <em> You should <strong>not</strong> open it or
+interact with it unless you fully trust it. </em> Forms and external links are disabled.
+<br>
+<iframe sandbox="allow-scripts allow-same-origin"
+    src="<%= stream_userfile_path(@userfile, :disposition => 'inline')%>"
+    class="full-frame"
+    <% if params[:new_tab].present? # workaround to wide frame in a new tab %>
+      style="height: 100%; width: 100%;"
+    <% end %>
+ >
+    HTML Viewer
+</iframe>

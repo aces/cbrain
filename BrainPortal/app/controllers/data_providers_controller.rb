@@ -439,6 +439,7 @@ class DataProvidersController < ApplicationController
     end
 
     flash[:notice] ||= ''
+    flash[:error]  ||= ''
 
     # Is there an automatic copy/move operation to do afterwards?
     post_action = :copy if params[:auto_do] == "COPY"
@@ -486,7 +487,12 @@ class DataProvidersController < ApplicationController
     # Prepare the BackgroundActivity list of items
     items = base2uf
       .reject { |basename,userfile| userfile.present? } # skip already registered
+      .reject { |basename,_       | filetypes[basename].blank? }  # missing type info in POST
       .map    { |basename,_       | filetypes[basename] + '-' + basename } # "TextFile-abc.txt"
+
+    # Just warn about missing filetypes
+    missingtypes = base2uf.keys.select { |basename| filetypes[basename].blank? }.join(", ")
+    flash[:error] += "Ignoring these file names because no types were provided for them: #{missingtypes}" if missingtypes.present?
 
     # Pick the type of registration operation; with or without MOVE or COPY
     bac_klass = BackgroundActivity::RegisterFile

@@ -296,6 +296,9 @@ class UsersController < ApplicationController
           if new_user_attr[:password]
             render action: "change_password"
           else
+            # Needed when rendering the 'show' form again.
+            @oidc_configs = OidcConfig.all
+            @oidc_uris    = generate_oidc_login_uri(@oidc_configs)
             render action: "show"
           end
         end

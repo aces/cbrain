@@ -1,6 +1,6 @@
 <% if object.errors.any? %>
   <% 
-    object_name    ||= object.class.to_s.underscore.humanize.downcase
+    object_name    ||= object.class.to_s.demodulize.underscore.humanize.downcase
     header_message ||= "#{pluralize(object.errors.count, "error")} prohibited this #{object_name} from being saved:"
     message        ||= "There were problems with the following fields:"
     html_options   ||= {}

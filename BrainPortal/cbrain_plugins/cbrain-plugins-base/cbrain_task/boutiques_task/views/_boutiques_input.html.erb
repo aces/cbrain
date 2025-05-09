@@ -119,4 +119,15 @@
       }
   %>
 
+  <%# Notes specific to the input: not part of the Boutiques spec. %>
+  <%- input_notes = Array(input.cbrain_input_notes) -%>
+  <%- if input_notes.any? -%>
+      <ul>
+        <%- input_notes.each do |note| -%>
+          <li><%= note.html_safe %></li>
+        <%- end -%>
+      </ul>
+      <p>
+  <%- end -%>
+
 </li>

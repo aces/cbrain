@@ -113,12 +113,9 @@ class GroupsController < ApplicationController
     end
 
     # Final list of user IDs must intersect with list of available users for current user
-    @group.user_ids |= [ current_user.id ] unless current_user.has_role?(:admin_user)
-    unless @group.user_ids.blank?
-      @group.user_ids &= current_user.available_users.map(&:id)
-    end
-
     @group.creator_id = current_user.id
+    @group.user_ids |= [ @group.creator_id ] # which is current_user
+    @group.user_ids &= current_user.available_users.map(&:id)
 
     respond_to do |format|
       if @group.save
@@ -254,6 +251,14 @@ class GroupsController < ApplicationController
     if changed
       remove_group_filters_for_files_and_tasks
       trigger_unselect_of_all_persistent_files
+
+      if current_project
+        scope_name = 'userfiles#index'
+        userfiles_scope = scope_from_session(scope_name)
+        userfiles_scope.custom[:view_all] = true if current_project.public?
+        userfiles_scope.custom[:view_all] = true if current_project.creator_id != current_user.id
+        scope_to_session(userfiles_scope, scope_name)
+      end
     end
 
     if api_request?

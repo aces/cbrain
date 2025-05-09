@@ -684,6 +684,11 @@ a {
   border: 1px solid #E4E4E4;
 }
 
+.full-frame {
+  width: 100%;
+  min-height: 50vh;
+}
+
 
 
 /* % ######################################################### */
@@ -2769,19 +2774,19 @@ img {
 /* % Disk Quota Styles */
 /* % ######################################################### */
 
-.disk_quota_user_quota_highlight {
+.quota_user_quota_highlight {
   background-color: #ffd; /* light yellow */
 }
 
-.disk_quota_dp_quota_highlight {
+.quota_resource_quota_highlight { /* used for DPs and remote_resources */
   background-color: #ffd; /* light yellow */
 }
 
-.disk_quota_exceed_bytes {
-  background-color: #fdd; /* light pink */
+.quota_resource_group_highlight {
+  background-color: #ffd; /* light yellow */
 }
 
-.disk_quota_exceed_files {
+.quota_exceeded {
   background-color: #fdd; /* light pink */
 }
 
@@ -2792,6 +2797,44 @@ img {
 .report_fix_attributes td select {
   width: 100%;
   resize: both;
+}
+
+
+/* % ######################################################### */
+/* % Copy Button and Confirmation Message Styles a */
+/* % ######################################################### */
+
+.copy-button {
+    color: #484848;
+    border-radius: 4px;
+    border: 2px solid #6a737d;
+    background-color: #e0e0e0;
+    padding: 0.6em;
+    position: relative;
+}
+
+.copy-text {
+    border: 0.15em;
+    border-color: #0471B4;
+    border-style: solid;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    padding: 1em;
+    border-radius: 5px;
+    background-color: #f5f5f5;
+}
+
+.copy-tooltip {
+    position: absolute;
+    top: 30px;
+    right: 1px;
+    background: #333;
+    color: white;
+    padding: 0.5em;
+    border-radius: 4px;
+    opacity: 0;
+    transition: opacity 1.0s;
+    pointer-events: none;
 }
 
 /* % ######################################################### */
