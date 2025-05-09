@@ -33,6 +33,6 @@ class HtmlFile < TextFile
 
   def self.pretty_type #:nodoc:
     "HTML File"
-  end  
+  end
   
 end
