@@ -72,16 +72,6 @@ class BoutiquesPortalTask < PortalTask
     self.boutiques_descriptor
   end
 
-  # Return true if the descriptor have only one mandatory input
-  def have_a_single_mandatory_input_file?(descriptor)
-    descriptor.file_inputs.count{|i| ! i.optional } == 1
-  end
-
-  # Return true if descriptor contain at least one file list
-  def have_file_input_list?(descriptor)
-    descriptor.file_inputs.count{|i| i.list } != 0
-  end
-
 
 
   ##############################
@@ -123,15 +113,9 @@ class BoutiquesPortalTask < PortalTask
         "#{iname} #{ioptional}\n"
       }.join("")
 
-    # Not enough files selected
-    if (num_in_files < num_needed_inputs)
-      message = "This task requires #{num_needed_inputs} mandatory file(s) and #{num_opt_inputs} optional file(s)\n" +
-        input_infos
-      cb_error message
-    end
-
-    # Verify the number of files selected in case of a single mandatory file input or descriptor without a file input list
-    if ((!have_a_single_mandatory_input_file?(descriptor) && !have_file_input_list?(descriptor)) && num_in_files > num_needed_inputs + num_opt_inputs)
+    # return "Warning: you selected more files than this task requires, so you won't be able to assign them all."
+    # Not available in case of descriptor qualified to launch multiple task
+    if !descriptor.qualified_to_launch_multiple_tasks? && (num_in_files < num_needed_inputs || num_in_files > num_needed_inputs+num_opt_inputs)
       message = "This task requires #{num_needed_inputs} mandatory file(s) and #{num_opt_inputs} optional file(s)\n" +
         input_infos
       cb_error message
@@ -152,6 +136,13 @@ class BoutiquesPortalTask < PortalTask
 
     # Required parameters
     descriptor.required_inputs.each do |input|
+      # skip if the input is the sole mandatory file and if
+      # the task is qualified to launch multiple tasks
+      # only if no params was provide
+      next if descriptor.qualified_to_launch_multiple_tasks? &&
+              descriptor.sole_mandatory_file_input == input  &&
+              !invoke_params[input.id].present?
+
       sanitize_param(input)
     end
 
@@ -306,16 +297,8 @@ class BoutiquesPortalTask < PortalTask
     #
     # then we will generate 7 tasks in total.
     # --------------------------------------
-    if descriptor.file_inputs.size == 1 || have_a_single_mandatory_input_file?(descriptor)
-
-      # When only one file input
-      if have_a_single_mandatory_input_file?(descriptor)
-        input                  = descriptor.input_by_id(uniq_mandatory_input_file_id)
-        original_userfiles_ids = self.invoke_params[input.id]
-      elsif descriptor.file_inputs.size == 1
-        input                  = descriptor.file_inputs.first
-        original_userfiles_ids = self.params[:interface_userfile_ids].dup
-      end
+    if descriptor.file_inputs.size == 1 || descriptor.qualified_to_launch_multiple_tasks?
+      input = descriptor.file_inputs.first
 
       fillTask = lambda do |userfile,tsk,extra_params=nil|
         tsk.params[:interface_userfile_ids] |= [ userfile.id.to_s ]
@@ -325,6 +308,15 @@ class BoutiquesPortalTask < PortalTask
         tsk.invoke_params.merge!(extra_params.slice(*valid_input_keys)) if extra_params
         tsk.description.strip!
         tsk
+      end
+
+
+      if descriptor.qualified_to_launch_multiple_tasks? && self.invoke_params[descriptor.sole_mandatory_file_input.id].present?
+        original_userfiles_ids = Array(self.invoke_params[descriptor.sole_mandatory_file_input.id].dup)
+      elsif descriptor.qualified_to_launch_multiple_tasks? && !self.invoke_params[descriptor.sole_mandatory_file_input.id].present?
+        original_userfiles_ids = ids_for_uniq_mandatory_file(descriptor)
+      else
+        original_userfiles_ids = self.params[:interface_userfile_ids].dup
       end
 
       self.params[:interface_userfile_ids] = [] # zap it; we'll re-introduce each userfile.id as needed
@@ -448,8 +440,6 @@ class BoutiquesPortalTask < PortalTask
   def cbcsv_files(descriptor = self.descriptor_for_after_form)
     descriptor.file_inputs.map do |input|
         next if isInactive(input)
-        # In case of a single mandatory input file it will be treated later
-        next if uniq_mandatory_input_file_id == input.id
         userfile_id = invoke_params[input.id]
         next if userfile_id.blank?
         userfile = Userfile.find_accessible_by_user(userfile_id, self.user, :access_requested => file_access_symbol())
@@ -540,17 +530,11 @@ class BoutiquesPortalTask < PortalTask
     # same name.
     @taken_files ||= Set.new
 
-    values = invoke_params[name]
-
-    # Extract remaining file ids if the single mandatory file field is empty
-    values = ids_for_uniq_mandatory_file(descriptor, invoke_params) if have_a_single_mandatory_input_file?(descriptor) &&
-                                                                       uniq_mandatory_input_file_id == name            &&
-                                                                       values.blank?
-
     # Fetch the parameter and convert to an Enumerable if required
+    values = invoke_params[name]
     values = [values] unless values.is_a?(Enumerable)
 
-    # Params path used for error messages
+    # Paramspath used for error messages
     invokename = input.cb_invoke_name
 
     # Validate and convert each value
@@ -612,11 +596,7 @@ class BoutiquesPortalTask < PortalTask
     end
 
     # Store the value back
-    if uniq_mandatory_input_file_id == name
-      invoke_params[name] = values
-    else
-      invoke_params[name] = values.first unless invoke_params[name].is_a?(Enumerable)
-    end
+    invoke_params[name] = values.first unless invoke_params[name].is_a?(Enumerable)
   end
 
   def check_enum_param(input)
@@ -808,22 +788,11 @@ class BoutiquesPortalTask < PortalTask
 
   private
 
-  # Return id of the uniq mandatory file
-  def uniq_mandatory_input_file_id
-    mandatory_file_inputs = self.descriptor_for_after_form.file_inputs.select{|i| ! i.optional }
-    mandatory_file_inputs.count == 1 ? mandatory_file_inputs.first.id : ""
-  end
-
-  # Return true if no file input is a list
-  def have_a_file_input_list?(descriptor)
-    descriptor.file_inputs.select{|i| i.list == true }.size == 0
-  end
-
   # Return remaining file ids for the unique mandatory file descriptor input
-  def ids_for_uniq_mandatory_file(descriptor, invoke_params)
+  def ids_for_uniq_mandatory_file(descriptor)
     used_file_ids   = []
     descriptor.file_inputs.select{|x| x.optional == true }.map(&:id).each do |input_id|
-      used_file_ids += (Array(invoke_params[input_id]))
+      used_file_ids += (Array(self.invoke_params[input_id]))
     end
     (self.params["interface_userfile_ids"] || []) - used_file_ids.flatten
   end

@@ -78,23 +78,22 @@
 
   <%# File input dropdown %>
   <%- elsif type == :file -%>
-    <%-
-      if @task.have_a_single_mandatory_input_file?(@descriptor) &&
-        !input.optional
-    -%>
-      <span class="tsk-prm-desc"><b>Note:</b> The tool require only one mandatory input file. If this field is left empty, one task will be launched by selected remaining files (not selected for other parameters).</span>
-      <br/>
-    <%-  end -%>
-    <%= render :partial => task_partial(:dropdown), :locals =>
-          { :id        => input.cb_invoke_html_id(false), # false disable list input's '[]'
-            :name      => input.cb_invoke_html_name(false), # false disable list input's '[]'
-            :options   => interface_files.map { |userfile|  [ userfile.id, userfile.browse_name ] },
-            :optional  => opt,
-            :default   => interface_files.count == 1 ? interface_files.first.id.to_s : nil,
-            :value     => value,
-            :none_msg  => '(Nothing to select)', # not used
-          }
-    %>
+      <%-
+        if @descriptor.qualified_to_launch_multiple_tasks? && @descriptor.sole_mandatory_file_input == input
+      -%>
+        <span class="tsk-prm-desc"><b>Note:</b> This tool requires only one mandatory input file. If this field is left empty, a separate task will be launched for each of the remaining unselected files.</span>
+        <br/>
+      <%-  end -%>
+      <%= render :partial => task_partial(:dropdown), :locals =>
+            { :id        => input.cb_invoke_html_id(false), # false disable list input's '[]'
+              :name      => input.cb_invoke_html_name(false), # false disable list input's '[]'
+              :options   => interface_files.map { |userfile|  [ userfile.id, userfile.browse_name ] },
+              :optional  => opt,
+              :default   => interface_files.count == 1 ? interface_files.first.id.to_s : nil,
+              :value     => value,
+              :none_msg  => '(Nothing to select)', # not used
+            }
+      %>
 
   <%# Strings and numbers %>
   <%- elsif type == :string || type == :number %>
@@ -118,16 +117,5 @@
         :desc          => desc,
       }
   %>
-
-  <%# Notes specific to the input: not part of the Boutiques spec. %>
-  <%- input_notes = Array(input.cbrain_input_notes) -%>
-  <%- if input_notes.any? -%>
-      <ul>
-        <%- input_notes.each do |note| -%>
-          <li><%= note.html_safe %></li>
-        <%- end -%>
-      </ul>
-      <p>
-  <%- end -%>
 
 </li>
