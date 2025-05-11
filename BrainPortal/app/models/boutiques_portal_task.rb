@@ -310,10 +310,12 @@ class BoutiquesPortalTask < PortalTask
         tsk
       end
 
+      original_userfiles_ids = self.params[:interface_userfile_ids].dup
 
-      if descriptor.qualified_to_launch_multiple_tasks? && self.invoke_params[descriptor.sole_mandatory_file_input.id].present?
-        original_userfiles_ids = Array(self.invoke_params[descriptor.sole_mandatory_file_input.id].dup)
-      elsif descriptor.qualified_to_launch_multiple_tasks? && !self.invoke_params[descriptor.sole_mandatory_file_input.id].present?
+      sole_mandatory_file_input_id = self.invoke_params[descriptor.sole_mandatory_file_input.id]
+      if descriptor.qualified_to_launch_multiple_tasks? && sole_mandatory_file_input_id.present?
+        original_userfiles_ids = Array(sole_mandatory_file_input_id.dup)
+      elsif descriptor.qualified_to_launch_multiple_tasks? && !sole_mandatory_file_input_id.present?
         original_userfiles_ids = ids_for_uniq_mandatory_file(descriptor)
       else
         original_userfiles_ids = self.params[:interface_userfile_ids].dup
@@ -788,13 +790,13 @@ class BoutiquesPortalTask < PortalTask
 
   private
 
-  # Return remaining file ids for the unique mandatory file descriptor input
+  # Return remaining file ids for the uniq mandatory file descriptor input
   def ids_for_uniq_mandatory_file(descriptor)
-    used_file_ids   = []
-    descriptor.file_inputs.select{|x| x.optional == true }.map(&:id).each do |input_id|
-      used_file_ids += (Array(self.invoke_params[input_id]))
-    end
-    (self.params["interface_userfile_ids"] || []) - used_file_ids.flatten
+    used_file_ids = descriptor.optional_file_inputs.map do |input|
+      Array(self.invoke_params[input.id])
+    end.flatten
+
+    (self.params["interface_userfile_ids"] || []) - used_file_ids
   end
 
   # Prepare an array with revision information of
