@@ -322,7 +322,6 @@ class BoutiquesPortalTask < PortalTask
       end
 
       self.params[:interface_userfile_ids] = [] # zap it; we'll re-introduce each userfile.id as needed
-
       tasklist = original_userfiles_ids.map do |userfile_id|
         f = Userfile.find_accessible_by_user( userfile_id, self.user, :access_requested => file_access_symbol() )
 
