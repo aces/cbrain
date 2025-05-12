@@ -44,6 +44,13 @@ class DeleteAmazonScirData < ActiveRecord::Migration[5.0]
     Bourreau.where(id: amazon_bourreau_ids).delete_all
 
     puts "Deleted #{tasks_count} tasks, #{tool_configs_count} tool configs, and #{amazon_bourreau_ids.size} bourreaux."
+
+    # deleting template tasks etc...
+    vm_tasks = CbrainTask.where(type: 'CbrainTask::StartVM')
+    if vm_tasks.count > 0
+      puts "Found #{vm_tasks.count} CbrainTaks::StartVM tasks. Deleting..."
+      vm_tasks.delete_all
+    end
   end
 
   def down
