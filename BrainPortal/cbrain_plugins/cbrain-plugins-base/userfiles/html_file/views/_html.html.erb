@@ -30,14 +30,15 @@ This HTML document is not part of CBRAIN. <em> You should <strong>not</strong> v
   <%= link_to(
         "Open in a separate tab",
         display_userfile_url(@userfile,
-                             :viewer => :html,
-                             :content_viewer => "on",
-                             :file_name => @userfile.name,
-                             :viewer_userfile_class => "HtmlFile",
-                             :new_tab => "yes"
+          :viewer                => :html,
+          :content_viewer        => "on",
+          :file_name             => @userfile.name,
+          :viewer_userfile_class => "HtmlFile",
+          :new_tab => "yes"
         ),
         :target => "_blank"
-      ) %>
+      )
+  %>
 <% end %>
 <br>
 
@@ -67,22 +68,21 @@ This HTML document is not part of CBRAIN. <em> You should <strong>not</strong> v
 <br>
 
 <div class="iframe-container" id="iframe-container"
-     <% if hide_frame %>
-        hidden
-     <% end %>
-     >
+    <% if hide_frame %>
+      hidden
+    <% end %>
+>
   <iframe sandbox="allow-scripts allow-same-origin"
-          data-frame-url="<%= stream_userfile_path(@userfile, :disposition => 'inline') %>"
-          <% unless hide_frame %>
-            src="<%= stream_userfile_path(@userfile, :disposition => 'inline') %>"
-          <% end %>
-          class="full-frame html-viewer"
-          class="full-frame html-viewer"
-          <% if params[:new_tab].present?
-               # workaround to wide frame in a new tab %>
-            style="height: 100%; width: 100%;"
-          <% end %>
-          >
+      data-frame-url="<%= stream_userfile_path(@userfile, :disposition => 'inline') %>"
+      <% unless hide_frame %>
+        src="<%= stream_userfile_path(@userfile, :disposition => 'inline') %>"
+      <% end %>
+        class="full-frame html-viewer"
+      <% if params[:new_tab].present?
+        # workaround to wide frame in a new tab %>
+        style="height: 100%; width: 100%;"
+      <% end %>
+  >
     HTML Viewer
   </iframe>
 </div>
