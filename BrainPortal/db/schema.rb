@@ -11,7 +11,7 @@
 # It's strongly recommended that you check this file into your version control system.
 
 
-ActiveRecord::Schema.define(version: 20250512120001) do
+ActiveRecord::Schema.define(version: 20250512122948) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name",        null: false
