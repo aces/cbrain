@@ -1295,13 +1295,13 @@ class ClusterTask < CbrainTask
 
      if stdoutfile && File.exist?(stdoutfile)
        io = IO.popen("tail -#{stdout_lim} #{stdoutfile.to_s.bash_escape}","r")
-       self.cluster_stdout = io.read.gsub(/\e\[[0-9;]*[a-zA-Z]/, '')  
+       self.cluster_stdout = io.read.gsub(/\e\[[0-9;]*[a-zA-Z]/, '')
        io.close
      end
 
      if stderrfile && File.exist?(stderrfile)
        io = IO.popen("tail -#{stderr_lim} #{stderrfile.to_s.bash_escape}","r")
-       self.cluster_stderr = io.read.gsub(/\e\[[0-9;]*[a-zA-Z]/, '') 
+       self.cluster_stderr = io.read.gsub(/\e\[[0-9;]*[a-zA-Z]/, '')
        io.close
      end
 
@@ -1972,38 +1972,14 @@ exit $status
       # Queue the job on the cluster and return true, at this point
       # it's not our 'job' to figure out if it worked or not.
       self.addlog("Cluster command: #{job.qsub_command}") if self.user.has_role? :admin_user
-      begin
-        jobid              = scir_session.run(job)
-        self.cluster_jobid = jobid
-        self.status_transition(self.status, "Queued")
-        self.addlog("Queued as job ID '#{jobid}'.")
-        self.addlog("Job walltime is #{job.walltime}s.") if job.walltime.present?
-        self.addlog("Additional cluster params are '#{job.tc_extra_qsub_args}'.") if job.tc_extra_qsub_args.present?
-      rescue NoVmAvailableError => ex
-        # When the task is executed in a VM, it may not be submitted
-        # right away when no VMs are available. In such a case, method
-        # scir_cloud.run will raise an exception. We need to mask this
-        # exception and put the task back to status "New" so that
-        # submission will be attempted again by the Bourreau later
-        # on. VMs may become available for the task when other tasks
-        # complete or new VMs are started. Exceptions that are not of
-        # class NoVMAvailableError will not be rescued.
-        addlog(ex.message)
-        addlog("Putting task back to status \"New\".")
-        # This is unfortunate but we have to move back to status 'New'
-        # to give a chance to the task to be submitted again when
-        # there are VMs available. It shouldn't be too annoying
-        # though, since caches will avoid useless file transfers. To
-        # avoid this status transition, a new status could be
-        # introduced between "Setting Up" and "Queued"
-        # (e.g. "Scheduling"). That would require some more
-        # modifications in the bourreau worker logic though, so that
-        # tasks in status "Scheduling" are also picked up.
-        self.status_transition(self.status,"New")
-      end
+      jobid              = scir_session.run(job)
+      self.cluster_jobid = jobid
+      self.status_transition(self.status, "Queued")
+      self.addlog("Queued as job ID '#{jobid}'.")
+      self.addlog("Job walltime is #{job.walltime}s.") if job.walltime.present?
+      self.addlog("Additional cluster params are '#{job.tc_extra_qsub_args}'.") if job.tc_extra_qsub_args.present?
     end
     self.save
-
     return true
   end
 

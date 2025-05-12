@@ -298,13 +298,6 @@ class ToolConfig < ApplicationRecord
     return false if self.containerhub_image_name.present?
     return false if self.container_image_userfile_id.present?
     return false if self.container_engine.present?
-    return false if self.cloud_disk_image.present?
-    return false if self.cloud_vm_user.present?
-    return false if self.cloud_ssh_key_pair.present?
-    return false if self.cloud_instance_type.present?
-    return false if self.cloud_job_slots.present?
-    return false if self.cloud_vm_boot_timeout.present?
-    return false if self.cloud_vm_ssh_tunnel_port.present?
     return false if (self.env_array || []).any?(&:present?)
     text = self.script_prologue.to_s + "\n" + self.script_epilogue.to_s
     return true if text.blank?

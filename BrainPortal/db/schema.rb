@@ -11,7 +11,7 @@
 # It's strongly recommended that you check this file into your version control system.
 
 
-ActiveRecord::Schema.define(version: 20250417170914) do
+ActiveRecord::Schema.define(version: 20250512120001) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -454,13 +454,6 @@ ActiveRecord::Schema.define(version: 20250417170914) do
     t.index ["userfile_id"], name: "index_tags_userfiles_on_userfile_id", using: :btree
   end
 
-  create_table "task_vm_allocations", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
-    t.integer  "vm_id"
-    t.integer  "task_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "tool_configs", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "version_name"
     t.text     "description",                   limit: 65535
@@ -474,13 +467,6 @@ ActiveRecord::Schema.define(version: 20250417170914) do
     t.integer  "group_id"
     t.integer  "ncpus"
     t.string   "extra_qsub_args"
-    t.string   "cloud_disk_image"
-    t.string   "cloud_vm_user"
-    t.string   "cloud_ssh_key_pair"
-    t.string   "cloud_instance_type"
-    t.integer  "cloud_job_slots"
-    t.integer  "cloud_vm_boot_timeout"
-    t.integer  "cloud_vm_ssh_tunnel_port"
     t.integer  "container_image_userfile_id"
     t.string   "containerhub_image_name"
     t.string   "container_engine"

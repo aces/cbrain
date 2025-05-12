@@ -320,15 +320,7 @@ class ToolConfigsController < ApplicationController
       :inputs_readonly,
       :container_engine, :extra_qsub_args, :singularity_overlays_specs, :container_exec_args,
       :singularity_use_short_workdir,
-      :boutiques_descriptor_path,
-      # The configuration of a tool in a VM managed by a
-      # ScirCloud Bourreau is defined by the following
-      # parameters which specify the disk image where the
-      # tool is installed (including its ssh connection
-      # properties) and the type of instance (thus RAM and
-      # CPU requirements) to use.
-      :cloud_disk_image, :cloud_vm_user, :cloud_ssh_key_pair, :cloud_instance_type,
-      :cloud_job_slots, :cloud_vm_boot_timeout, :cloud_vm_ssh_tunnel_port
+      :boutiques_descriptor_path
     )
   end
 
