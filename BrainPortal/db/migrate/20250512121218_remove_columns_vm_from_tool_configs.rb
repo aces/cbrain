@@ -1,9 +1,8 @@
 
-<%-
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2025
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -18,31 +17,17 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<strong>Disk image: </strong>
-  <%= params[:disk_image] %>
-<br/>
-<strong>VM boot timeout (s):</strong>
-   <%= params[:vm_boot_timeout] %>
-<br/>
-<strong>VM job slots:</strong>
-   <%= params[:job_slots] %>
-<br/>
-<strong>VM status:</strong>
-   <span style="color: blue"><%= params[:vm_status] %></span>
-<br/>
-<strong>Local IP:</strong>
-   <%= params[:vm_local_ip] %>
-<br/>
-<strong>SSH port:</strong>
-   <%= params[:vm_ssh_tunnel_port] %>
-<br/>
-<strong>Tag:</strong>
-   <%= params[:tag] %>
-<br/>
-
-
-
+class RemoveColumnsVmFromToolConfigs < ActiveRecord::Migration[5.0]
+  def change
+    remove_column :tool_configs, :cloud_disk_image, :string
+    remove_column :tool_configs, :cloud_vm_user, :string
+    remove_column :tool_configs, :cloud_ssh_key_pair, :string
+    remove_column :tool_configs, :cloud_instance_type, :string
+    remove_column :tool_configs, :cloud_job_slots, :integer
+    remove_column :tool_configs, :cloud_vm_boot_timeout, :integer
+    remove_column :tool_configs, :cloud_vm_ssh_tunnel_port, :integer
+  end
+end
