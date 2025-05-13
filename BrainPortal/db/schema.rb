@@ -11,7 +11,7 @@
 # It's strongly recommended that you check this file into your version control system.
 
 
-ActiveRecord::Schema.define(version: 20250513170914) do
+ActiveRecord::Schema.define(version: 20250417170914) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -485,8 +485,8 @@ ActiveRecord::Schema.define(version: 20250513170914) do
     t.string   "containerhub_image_name"
     t.string   "container_engine"
     t.string   "container_index_location"
-    t.text     "apptainer_overlays_specs",      limit: 65535
-    t.boolean  "apptainer_use_short_workdir",                 default: false, null: false
+    t.text     "apptainer_overlays_specs",    limit: 65535
+    t.boolean  "apptainer_use_short_workdir"
     t.string   "container_exec_args"
     t.boolean  "inputs_readonly",                             default: false
     t.string   "boutiques_descriptor_path"

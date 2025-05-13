@@ -470,7 +470,7 @@ class ToolConfig < ApplicationRecord
       errors[:container_engine] = "a container hub image name or a container image userfile ID should be set when the container engine is set"
     end
 
-    if self.container_engine.present? && (self.container_engine == "Apptainer" ||  self.container_engine == "Singularity")
+    if self.container_engine.present? && (self.container_engine == "Apptainer" || self.container_engine == "Singularity")
       if self.container_index_location.present? && self.container_index_location !~ /\A[a-z0-9]+\:\/\/\z/i
         errors[:container_index_location] = "is invalid for container engine Apptainer. Should end in '://'."
       end

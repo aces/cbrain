@@ -75,9 +75,9 @@ class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
       change.(:copy_env,      old_tc.env_array.present?,            "the flag to copy the environment variables")
       change.(:copy_bash,     (old_tc.script_prologue.present? || old_tc.script_epilogue.present?),  "the flag to copy the bash prologue and epilogue")
       change.(:copy_overlays,
-         (old_tc.singularity_overlays_specs.present? ||
+         (old_tc.apptainer_overlays_specs.present? ||
           old_tc.container_exec_args.present? ||
-          (old_tc.singularity_use_short_workdir? != new_tc.singularity_use_short_workdir?)
+          (old_tc.apptainer_use_short_workdir? != new_tc.apptainer_use_short_workdir?)
          ),
          "the flag to copy miscellaneous Apptainer options")
     end
@@ -209,8 +209,8 @@ class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
       new_tc.script_epilogue = old_tc.script_epilogue
     end
     if bool.(invoke_params[:copy_overlays])
-      new_tc.singularity_overlays_specs    = old_tc.singularity_overlays_specs
-      new_tc.singularity_use_short_workdir = old_tc.singularity_use_short_workdir
+      new_tc.apptainer_overlays_specs    = old_tc.apptainer_overlays_specs
+      new_tc.apptainer_use_short_workdir = old_tc.apptainer_use_short_workdir
       new_tc.container_exec_args           = old_tc.container_exec_args
     end
 
@@ -231,8 +231,8 @@ class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
           env_array
             script_prologue
             script_epilogue
-          singularity_overlays_specs
-          singularity_use_short_workdir
+          apptainer_overlays_specs
+          apptainer_use_short_workdir
           container_exec_args
             container_image_userfile_id
             containerhub_image_name
@@ -337,11 +337,11 @@ class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
 
     cp_ovrl = descriptor.input_by_id('copy_overlays')
     cp_ovrl.cbrain_input_notes = []
-    cp_ovrl.cbrain_input_notes << "OLD ToolConfig has overlays" if old_tc&.singularity_overlays_specs.present?
-    cp_ovrl.cbrain_input_notes << "OLD ToolConfig uses short workdirs" if old_tc&.singularity_use_short_workdir?
+    cp_ovrl.cbrain_input_notes << "OLD ToolConfig has overlays" if old_tc&.apptainer_overlays_specs.present?
+    cp_ovrl.cbrain_input_notes << "OLD ToolConfig uses short workdirs" if old_tc&.apptainer_use_short_workdir?
     cp_ovrl.cbrain_input_notes << "OLD ToolConfig uses special container options" if old_tc&.container_exec_args.present?
-    cp_ovrl.cbrain_input_notes << "NEW ToolConfig has overlays" if new_tc&.singularity_overlays_specs.present?
-    cp_ovrl.cbrain_input_notes << "NEW ToolConfig uses short workdirs" if new_tc&.singularity_use_short_workdir?
+    cp_ovrl.cbrain_input_notes << "NEW ToolConfig has overlays" if new_tc&.apptainer_overlays_specs.present?
+    cp_ovrl.cbrain_input_notes << "NEW ToolConfig uses short workdirs" if new_tc&.apptainer_use_short_workdir?
     cp_ovrl.cbrain_input_notes << "NEW ToolConfig uses special container options" if new_tc&.container_exec_args.present?
 
   end

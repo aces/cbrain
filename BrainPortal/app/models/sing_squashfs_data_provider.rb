@@ -83,7 +83,7 @@ class SingSquashfsDataProvider < SshDataProvider
 
     remote_cmd = "( apptainer --version 2>/dev/null || singularity --version 2>/dev/null )"
     # Apptainer is preferable so it comes first in the command
-    # also works if an old Singularity and uptodate Apptainer
+    # also works if an old Singularity
     # todo loop over list of several candidate executables
     text       = self.remote_bash_this(remote_cmd)
     cb_error "Can't find Apptainer version number on remote host" unless text =~ /^((singularity|apptainer) version )?(\d+)\.(\d+)/
