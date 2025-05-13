@@ -784,19 +784,15 @@ class BoutiquesPortalTask < PortalTask
   # Return remaining file ids for the uniq mandatory file descriptor input
   def ids_for_uniq_mandatory_file(descriptor)
     sole_mandatory_file_input = descriptor.sole_mandatory_file_input
-    userfile_id               = sole_mandatory_file_input && self.invoke_params[sole_mandatory_file_input.id]
+    userfile_id               = self.invoke_params[sole_mandatory_file_input.id] if sole_mandatory_file_input
 
-    mandatory_file_ids = []
-    if userfile_id.present?
-      mandatory_file_ids = Array(userfile_id)
-    else
-      used_file_ids = descriptor.optional_file_inputs.map do |input|
+    return Array(userfile_id) if userfile_id.present?
+
+    used_file_ids = descriptor.optional_file_inputs.map do |input|
         Array(self.invoke_params[input.id])
       end.flatten
-      mandatory_file_ids = (self.params["interface_userfile_ids"] || []) - used_file_ids
-    end
 
-    return mandatory_file_ids
+    (self.params["interface_userfile_ids"] || []) - used_file_ids
   end
 
   # Prepare an array with revision information of
