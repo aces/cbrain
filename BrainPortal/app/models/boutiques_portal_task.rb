@@ -310,16 +310,8 @@ class BoutiquesPortalTask < PortalTask
         tsk
       end
 
-      original_userfiles_ids = self.params[:interface_userfile_ids].dup
-
-      sole_mandatory_file_input_id = self.invoke_params[descriptor.sole_mandatory_file_input.id]
-      if descriptor.qualified_to_launch_multiple_tasks? && sole_mandatory_file_input_id.present?
-        original_userfiles_ids = Array(sole_mandatory_file_input_id.dup)
-      elsif descriptor.qualified_to_launch_multiple_tasks? && !sole_mandatory_file_input_id.present?
-        original_userfiles_ids = ids_for_uniq_mandatory_file(descriptor)
-      else
-        original_userfiles_ids = self.params[:interface_userfile_ids].dup
-      end
+      original_userfiles_ids = descriptor.qualified_to_launch_multiple_tasks? ? ids_for_uniq_mandatory_file(descriptor) :
+                                                                                self.params[:interface_userfile_ids].dup
 
       self.params[:interface_userfile_ids] = [] # zap it; we'll re-introduce each userfile.id as needed
       tasklist = original_userfiles_ids.map do |userfile_id|
@@ -791,11 +783,20 @@ class BoutiquesPortalTask < PortalTask
 
   # Return remaining file ids for the uniq mandatory file descriptor input
   def ids_for_uniq_mandatory_file(descriptor)
-    used_file_ids = descriptor.optional_file_inputs.map do |input|
-      Array(self.invoke_params[input.id])
-    end.flatten
+    sole_mandatory_file_input = descriptor.sole_mandatory_file_input
+    userfile_id               = sole_mandatory_file_input && self.invoke_params[sole_mandatory_file_input.id]
 
-    (self.params["interface_userfile_ids"] || []) - used_file_ids
+    mandatory_file_ids = []
+    if userfile_id.present?
+      mandatory_file_ids = Array(userfile_id)
+    else
+      used_file_ids = descriptor.optional_file_inputs.map do |input|
+        Array(self.invoke_params[input.id])
+      end.flatten
+      mandatory_file_ids = (self.params["interface_userfile_ids"] || []) - used_file_ids
+    end
+
+    return mandatory_file_ids
   end
 
   # Prepare an array with revision information of
