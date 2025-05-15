@@ -310,11 +310,17 @@ class BoutiquesPortalTask < PortalTask
         tsk
       end
 
-      original_userfiles_ids = descriptor.qualified_to_launch_multiple_tasks? ? ids_for_uniq_mandatory_file(descriptor) :
-                                                                                self.params[:interface_userfile_ids].dup
+      # Prepare the file IDs that will generate the list of tasks.
+      task_array_userfiles_ids = self.params[:interface_userfile_ids].dup
+      # In the case of a descriptor with a single mandatory file left blank,
+      # we prepare the list out of the unassigned files
+      task_array_userfiles_ids = ids_for_uniq_mandatory_file(descriptor) if descriptor.qualified_to_launch_multiple_tasks?
 
-      self.params[:interface_userfile_ids] = [] # zap it; we'll re-introduce each userfile.id as needed
-      tasklist = original_userfiles_ids.map do |userfile_id|
+      # Prune the list of files in this field; we will re-introdice the files of the task array
+      # one by one in each task object later on.
+      self.params[:interface_userfile_ids] = self.params[:interface_userfile_ids] - task_array_userfiles_ids
+
+      tasklist = task_array_userfiles_ids.map do |userfile_id|
         f = Userfile.find_accessible_by_user( userfile_id, self.user, :access_requested => file_access_symbol() )
 
         # One task for that file
@@ -789,8 +795,8 @@ class BoutiquesPortalTask < PortalTask
     return Array(userfile_id) if userfile_id.present?
 
     used_file_ids = descriptor.optional_file_inputs.map do |input|
-        Array(self.invoke_params[input.id])
-      end.flatten
+      Array(self.invoke_params[input.id])
+    end.flatten
 
     (self.params["interface_userfile_ids"] || []) - used_file_ids
   end

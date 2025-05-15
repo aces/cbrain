@@ -264,6 +264,25 @@ module BoutiquesSupport
       file_inputs.select { |x| ! x.optional }
     end
 
+    # Return list of mandatory files inputs
+    def mandatory_file_inputs
+      file_inputs.reject { |input| input.optional }
+    end
+
+    # Return the unique mandatory file input, if any;
+    # if there are not exactly one mandatory file input,
+    # returns nil
+    def sole_mandatory_file_input
+      all = mandatory_file_inputs
+      all.size == 1 ? all[0] : nil
+    end
+
+    # Returns true if the descriptor has a single mandatory
+    # file input, and that input is NOT a 'list'.
+    def qualified_to_launch_multiple_tasks?
+      sole_mandatory_file_input && !sole_mandatory_file_input.list
+    end
+
     # Returns a CbrainFileRevision object for the
     # JSON file for the descriptor.
     #
@@ -499,26 +518,6 @@ module BoutiquesSupport
 
       new_json
     end
-
-    #------------------------------------------------------
-    # Additional methods to handle multiple tasks launching
-    #------------------------------------------------------
-
-    # Return list of mandatory files inputs
-    def mandatory_file_inputs
-      file_inputs.reject { |input| input.optional }
-    end
-
-    # Return the uniq mandatory file
-    def sole_mandatory_file_input
-      all = mandatory_file_inputs
-      all.size == 1 ? all[0] : nil
-    end
-
-    def qualified_to_launch_multiple_tasks?
-      sole_mandatory_file_input && !sole_mandatory_file_input.list
-    end
-
 
   end  # class BoutiquesSupport::BoutiquesDescriptor
 

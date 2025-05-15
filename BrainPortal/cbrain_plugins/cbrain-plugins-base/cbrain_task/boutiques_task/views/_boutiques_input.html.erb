@@ -79,7 +79,7 @@
   <%# File input dropdown %>
   <%- elsif type == :file -%>
       <%-
-        if @descriptor.qualified_to_launch_multiple_tasks? && @descriptor.sole_mandatory_file_input == input
+        if @descriptor.qualified_to_launch_multiple_tasks? && @descriptor.sole_mandatory_file_input.id == input.id
       -%>
         <span class="tsk-prm-desc"><b>Note:</b> This tool requires only one mandatory input file. If this field is left empty, a separate task will be launched for each of the remaining unselected files.</span>
         <br/>
