@@ -558,11 +558,13 @@ module BoutiquesSupport
     end
 
     def cb_invoke_html_name(force_list = nil)
-      self.class.cb_invoke_html_name(self.id, force_list)
+      as_list = (self.list && force_list.nil?) || force_list == true
+      self.class.cb_invoke_html_name(self.id, as_list)
     end
 
     def cb_invoke_html_id(force_list = nil)
-      self.class.cb_invoke_html_id(self.id, force_list)
+      as_list = (self.list && force_list.nil?) || force_list == true
+      self.class.cb_invoke_html_id(self.id, as_list)
     end
 
   end # class BoutiquesSupport::Input
