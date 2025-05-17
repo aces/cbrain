@@ -17,8 +17,8 @@ module CbrainRailsPortal
     config.eager_load_paths += Dir["#{config.root}/lib"]
     config.eager_load_paths += Dir["#{config.root}/lib/cbrain_task_generators"]
 
-    # CBRAIN Plugins load paths: add directories for each Userfile model
-    config.eager_load_paths += Dir[ "#{config.root}/cbrain_plugins/installed-plugins/userfiles/*" ]
+    # CBRAIN Plugins load paths: where userfiles defined by plugins are located (as links)
+    config.eager_load_paths += Dir[ "#{config.root}/cbrain_plugins/installed-plugins/userfiles" ]
 
     # CBRAIN Plugins load paths: add lib directory for standalone Ruby files
     config.eager_load_paths += Dir["#{config.root}/cbrain_plugins/installed-plugins/lib"]
