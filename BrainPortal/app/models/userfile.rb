@@ -1188,25 +1188,5 @@ class Userfile < ApplicationRecord
     true
   end
 
-
-
-  ##################################################################
-  # BOOT-TIME Support
-  ##################################################################
-
-  public
-
-  # Patch: pre-load all model files for the subclasses
-  def self.preload_subclasses
-    Dir.chdir(CBRAIN::UserfilesPlugins_Dir) do
-      Dir.glob("*.rb") do |model_file|
-        model = model_file.sub(/\.rb$/,"").classify
-        next if Object.const_defined? model # already loaded? Skip.
-        #puts_blue "Loading Userfile subclass #{model} from #{model_file} ..."
-        require_dependency "#{CBRAIN::UserfilesPlugins_Dir}/#{model_file}"
-      end
-    end
-  end
-
 end
 

@@ -36,10 +36,8 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
   def self.a000_ensure_models_are_preloaded #:nodoc:
     # There's a piece of code at the end of each of these models
     # which forces the pre-load of all their subclasses.
-    Userfile.nil?
     ClusterTask.nil? # not PortalTask, which is only on the BrainPortal rails app
     BackgroundActivity.nil?
-    Userfile.preload_subclasses
     ClusterTask.preload_subclasses
     BackgroundActivity.preload_subclasses
   end
