@@ -58,7 +58,11 @@
       :filters  => default_filters_for(@base_scope, User)
     ) do |cq|
       if ! cq.is_for_user?
-        html_colorize("(Default for all users)", 'orange')
+        if cq.is_for_group?
+          html_colorize("(For all users in project)", 'orange')
+        else
+          html_colorize("(Default for all users)", 'orange')
+        end
       else
         link_to_user_if_accessible(cq.user)
       end

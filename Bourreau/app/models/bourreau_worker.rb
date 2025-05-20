@@ -241,6 +241,7 @@ class BourreauWorker < Worker
 
         # Alright, move the task along its lifecycle
         task = user_tasks.pop
+        next if task.status == 'New' && local_cpu_quota_exceeded?(user_id) # will also create a Message if none exist
         timezone = ActiveSupport::TimeZone[task.user.time_zone] rescue Time.zone
         Time.use_zone(timezone) do
           process_task(task) # this can take a long time...
@@ -282,7 +283,7 @@ class BourreauWorker < Worker
       new_status = task.status
 
       worker_log.debug "Updated #{task.tname_tid} to state #{new_status}"
-            
+
       return if initial_status == 'On CPU' && new_status == 'On CPU'; # nothing else to do
 
       # Record bourreau delay time for Queued -> On CPU
@@ -552,6 +553,39 @@ class BourreauWorker < Worker
         worker_log.info "Stuck: #{task.tname_tid} from #{orig_status} to state #{task.status}"
       end
     end
+  end
+
+  # Returns true if the user's CPU quota is currently exceeded
+  def local_cpu_quota_exceeded?(user_id) # will also create a Message if none exist
+    keyword = CpuQuota.cached_exceeded?(user_id, @rr_id)
+    return false unless keyword # no quota exceeded
+    # Try to find a Message, and if none exist, create one
+    header = "CPU quota exceeded on #{@rr.name}"
+    if keyword == :week
+      header = "Weekly " + header
+      description = "Your CPU quota for the past week is currently exceeded."
+    elsif keyword == :month
+      header = "Monthly " + header
+      description = "Your CPU quota for the past month is currently exceeded."
+    else # keyword == :ever
+      header = "Total " + header
+      description = "Your total CPU quota is exceeded. You need to contact the CBRAIN administrators to run more tasks."
+    end
+    description += "\nTasks will stay in state 'New' until this is fixed."
+    description += "\nYou can check your CPU quotas at [[this page][/quotas?mode=cpu]]."
+    atts = {
+      :header       => header,
+      :description  => description,
+      :message_type => 'system',
+      :user_id      => user_id,
+      :critical     => true,
+    }
+    mes = Message.where(atts).last
+    if (! mes) || (mes.updated_at < 1.day.ago)
+      count = CbrainTask.where(:bourreau_id => @rr_id, :user_id => user_id, :status => 'New').count
+      Message.send_message(User.find(user_id), atts.merge(:variable_text => "Number of tasks blocked: #{count}"))
+    end
+    return true # means quota is exceeded
   end
 
 end

@@ -148,6 +148,14 @@ class CpuQuota < Quota
     return nil
   end
 
+  # This invokes self.exceeded?() but caches the value for a full hour
+  # because checking a quota can be expensive.
+  def self.cached_exceeded?(user_id, remote_resource_id)
+    Rails.cache.fetch("cpu_cache_exceeded_uid=#{user_id}_rrid=#{remote_resource_id}", :expires_in => 1.hour) do
+      self.exceeded?(user_id, remote_resource_id)
+    end
+  end
+
   # Same as the 'exceeded?' but raises an  exception if the quota is exceeded.
   # Possible exceptions are WeeklyCpuQuotaExceeded, MonthlyCpuQuotaExceeded and
   # CbrainCpuQuotaExceeded.
