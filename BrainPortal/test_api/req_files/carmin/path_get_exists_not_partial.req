@@ -1,1 +1,0 @@
-GET /path/topdir/subdir/nosuchfile.png?NTOK&action=exists */* NoRubyClient
