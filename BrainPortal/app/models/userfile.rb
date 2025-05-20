@@ -860,7 +860,7 @@ class Userfile < ApplicationRecord
   #
   # Returns a Pathname object.
   def self.view_path(partial_name=nil)
-    base = Pathname.new(CBRAIN::UserfilesPlugins_Dir) + self.to_s.underscore + "views"
+    base = Pathname.new(CBRAIN::ViewsPlugins_Dir) + self.to_s.underscore
     return base if partial_name.to_s.blank?
     partial_name = Pathname.new(partial_name.to_s).cleanpath
     raise "View partial path outside of userfile plugin." if partial_name.absolute? || partial_name.to_s =~ /\A\.\./
@@ -1186,28 +1186,6 @@ class Userfile < ApplicationRecord
   def check_exceeded_quota!
     DiskQuota.exceeded!(self.user_id, self.data_provider_id)
     true
-  end
-
-
-
-  ##################################################################
-  # BOOT-TIME Support
-  ##################################################################
-
-  public
-
-  # Patch: pre-load all model files for the subclasses
-  def self.preload_subclasses
-    Dir.chdir(CBRAIN::UserfilesPlugins_Dir) do
-      Dir.glob("*").select { |dir| File.directory?(dir) }.each do |model_dir|
-        model_file = "#{model_dir}/#{model_dir}.rb"  # e.g.  "mp3_file/mp3_file.rb" for class Mp3File
-        next unless File.file?(model_file)
-        model = model_dir.classify
-        next if Object.const_defined? model # already loaded? Skip.
-        #puts_blue "Loading Userfile subclass #{model} from #{model_file} ..."
-        require_dependency "#{CBRAIN::UserfilesPlugins_Dir}/#{model_file}"
-      end
-    end
   end
 
 end

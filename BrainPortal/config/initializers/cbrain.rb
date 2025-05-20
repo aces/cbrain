@@ -47,6 +47,7 @@ class CBRAIN
   Plugins_Dir                     = "#{Rails.root.to_s}/cbrain_plugins"
   UserfilesPlugins_Dir            = "#{Plugins_Dir}/installed-plugins/userfiles"
   TasksPlugins_Dir                = "#{Plugins_Dir}/installed-plugins/cbrain_task" # singular; historical
+  ViewsPlugins_Dir                = "#{Plugins_Dir}/installed-plugins/views"
 
   # Original integrator
   TaskDescriptorsPlugins_Dir      = "#{Plugins_Dir}/installed-plugins/cbrain_task_descriptors"
