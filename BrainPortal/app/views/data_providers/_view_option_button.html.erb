@@ -22,10 +22,10 @@
 #
 -%>
 
-<%= button_with_dropdown_menu("View Options") do %>
-  <div class="view_options">
-    <% user_list = current_user.available_users.sort_by(&:login) %>
-    <% if user_list.size > 1 %>
+<% user_list = current_user.available_users.sort_by(&:login) %>
+<% if user_list.size > 1 %>
+  <%= button_with_dropdown_menu("View Options") do %>
+    <div class="view_options">
       Browse as another user:
       <%=
         ajax_onchange_select(:as_user_id,
@@ -37,16 +37,7 @@
           :datatype => 'script'
         )
       %>
-      <br/>
-    <% end %>
-
-    <%=
-      ajax_link('Refresh list of files',
-        browse_data_provider_path(:refresh => true),
-        :datatype => 'script'
-      )
-    %>
-    <br/>
-  </div>
+    </div>
+  <% end %>
 <% end %>
 
