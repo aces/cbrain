@@ -51,10 +51,12 @@ class HdfFile < SingleFile
     system("bash","-c","which h5ls >/dev/null 2>&1")
   end
 
-  def is_compressed?
+  def is_compressed? #:nodoc:
     self.name =~ /\.(gz|z|bz2)\z/i
   end
 
+  # Return the message that will be render
+  # in place of the viewer if the file is compressed.
   def compressed_error
     ["The file is compressed, so it cannot be viewed."]
   end
