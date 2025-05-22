@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2025
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -20,10 +20,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Exception raised when no VM is available to execute a task
-class NoVmAvailableError < StandardError
+class DropTaskVmAllocations < ActiveRecord::Migration[5.0]
+  def up
+    drop_table :task_vm_allocations
+  end
 
-  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-
+  def down
+    create_table :task_vm_allocations do |t|
+      t.integer :vm_id
+      t.integer :task_id
+      t.timestamps
+    end
+  end
 end
-
