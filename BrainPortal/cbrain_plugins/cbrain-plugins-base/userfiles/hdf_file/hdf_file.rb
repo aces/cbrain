@@ -26,10 +26,14 @@ class HdfFile < SingleFile
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   has_viewer :name => 'HDF stat', :partial => :hdf_stat, :if =>
-                Proc.new { |u| u.class.has_h5stat? && u.is_locally_synced? }
+                Proc.new { |u| u.class.has_h5stat?  &&
+                               u.is_locally_synced? &&
+                             (!u.is_compressed? || u.compressed_error) }
 
   has_viewer :name => 'HDF ls', :partial => :hdf_ls, :if =>
-                Proc.new { |u| u.class.has_h5ls? && u.is_locally_synced? }
+                Proc.new { |u| u.class.has_h5stat?  &&
+                               u.is_locally_synced? &&
+                             (!u.is_compressed? || u.compressed_error) }
 
   def self.file_name_pattern #:nodoc:
     /\.(hdf|hdf4|hdf5|he4|he5|h4|h5)\z/i
@@ -47,4 +51,13 @@ class HdfFile < SingleFile
     system("bash","-c","which h5ls >/dev/null 2>&1")
   end
 
+  def is_compressed?
+    self.name =~ /\.(gz|z|bz2)\z/i
+  end
+
+  def compressed_error
+    ["The file is compressed, so it cannot be viewed."]
+  end
+
 end
+
