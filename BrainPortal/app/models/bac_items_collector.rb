@@ -113,7 +113,6 @@ class BacItemsCollector
   #
   # Returns the number of items currently in the collector's memory.
   def add_items(items)
-    @bac ||= self.make_new_empty_bac
     new_items = Array(items)
 
     while @bac.items.size + new_items.size >= @max_items
