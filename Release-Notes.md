@@ -1,6 +1,300 @@
 
 ## CBRAIN/NeuroHub Release Notes
 
+#### Version 7.0.0 Released 2025-05-26
+
+It has been two years since the previous release, and enough
+significant architectural changes and overall improvements have
+accumulated that we decided to bump the version number to 7.0!
+
+There are hundreds of small bug fixes and small changes that are
+not even mentioned in the lists below.
+
+###### User support and user interface changes:
+
+* A bunch of layout and appearance improvements.
+* All code that depended on the label of the buttons pressed
+  was changed to make it work independently of those labels. Makes
+  it easier on users with translation engines in their browsers.
+* When users save task parameter presets, the description is also
+  saved and restored when the preset it reloaded.
+* Users can now create their own private SSH DataProvider with a
+  private key owned by CBRAIN.
+* Users can also create their own S3 DataProviders.
+* The QC panels have better viewers.
+* Users can create projects and make them 'public'.
+* The main Projects page has been re-organized with tabs.
+* The public-facing 'available' page was redesigned.
+* The Tasks index page now show a column for the DP where results
+  are saved.
+* Users are warned if they try to launch tasks on archived/compressed
+  files.
+* Users can track actions they perform in background. See the entry
+  for BackgroundActivity below.
+* Some pages have a 'Copy to clipboard' button (e.g. for tokens).
+* ANSI sequences are stipped from task STDOUT, STDERR outputs before
+  being shown.
+* When a user switches to a public project, the "show all files"
+  option is automatically turned on.
+* Users can launch task arrays by leaving blank one mandatory file
+  input for the tool, and having selected a bunch of other files,
+  these files will be used to generate all the tasks, one per file.
+* The SimpleFileExtractor task now allows users up to 50GB of
+  data caching before refusing to work.
+* When users edit a task and change the parameters, a better log entry
+  is created to document those changes.
+
+###### New Userfile models:
+
+These models are part of the core CBRAIN distributions. Many other
+models were added in science-specific plugins, but these are in
+other GitHub repositories.
+
+* ApptainerImage
+* SquashfsFile
+* HtmlFile (with viewer)
+* SVGs can be viewed (as ImageFile)
+* HdfFile
+
+###### API improvements:
+
+* Syncing or marking-as-newer is now available as JSON requests.
+* An admin can create API tokens for another user.
+* A user can request their personal public key.
+* Many asynchronous operations now return BackgroundActivity object
+  IDs.
+* A user can query these BackgroundActivity objects.
+* A new API call, dispatcher_file_copy, can launch CopyFile BACs.
+* Users can obtain a task's captured STDOUT and STDERR files.
+* Users can view the JSON structure of a CbrainTask object in the
+  interface, making it easier to write code to submit such tasks
+  with the API.
+
+###### Administrative functions or configuration changes:
+
+* Running tasks can be configured with capture mountpoints that
+  mount one or several EXT3 filesystem-in-a-file.
+* Tasks integrated with Boutiques can be configued for these EXT3
+  mounts using a new module, BoutiquesExt3Capturer.
+* DiskQuotas are enforced when users try to copy or move files from
+  one DataProvider to another.
+* Revision numbers of custom Boutiques modules are now always logged.
+* Owners of DataProviders are validated better to avoid a situation
+  where an admin somehow gives too many privileges to a normal user.
+* Tasks containerized in Apptainer can have their internal paths
+  shortened to "/T12345" internally through bindmounts.
+* A new DataProvider type, SquashifierEnCbrainSshDataProvider,
+  automatically runs mksquashfs and unsquashfs on FileCollections. On
+  the provider side, the files are kept squashified at all times.
+* Another new DataProvider type, MultilevelSingSquashfsDataProvider,
+  was added. It's the same as SingSquashfsDataProvider but with
+  browse_path support.
+* Yet two more DataProvider types: MultiLevelLocalDataProvider
+  and the smart version, MultiLevelSmartDataProvider.
+* CbrainTasks that are in states involving restarts and recovery
+  are handled before other tasks (in order to free up resources,
+  if possible).
+* The main SSH key used by the system was changed from RSA to ed25519.
+* User's individual SSH keys are now also ed25519.
+* The 'update_cb_all.sh' script was improved.
+* An internal IP ban list was added; it can be configured to execute
+  an external script so that the system can also ban packets.
+* Some special BackgroundActivities (see below) are specific to
+  administrative tasks, including scheduling regular cleanups,
+  archiving, or even running arbitrary Ruby commands (danger!).
+* An admin can configure small bash scripts to be run at boot time
+  for both the Portal or Bourreau; nice place to check things, and
+  when these script fail, the boot process is stopped.
+* OIDC subsystem. The old Globus-specific codebase was re-engineered
+  to be a more generic, configurable OIDC. Sysadmins need to configure
+  the new file 'oidc.yml.erb' in the config folder.
+* A GoogleCloud SCIR connector was added, so that an admin can
+  deploy a Bourreau on GoogleCloud. It requires a lot of manual
+  configuration on the cloud side, though.
+* Admins can configure some projects to have HTML links in their
+  descriptions.
+* Admins can decide not to compress the archives of task workdirectories.
+* Destroying tasks has been improved, with the case where a Bourreau's
+  BackgroundActivity worker is requested to do it only for tasks that
+  still have a work directory.
+* Some new checks are performed at boot time, especially to validate
+  the 'type' column of tables using single table inheritance. The
+  Portal or Bourreau will refuse to boot if a spurious type entry
+  is found. Can be fixed with a Rails console (might require
+  CBRAIN_SKIP_VALIDATIONS).
+* A new CpuQuota framework was implemented. It is based on the same DB
+  table as the existing DiskQuota system. Admins can configure quotas
+  for three time windows: the past week, the past month, and ever.
+  Quotas can apply to individual Bourreaux, individual users, or
+  groups of users.
+* A new ToolConfigurator panel has been added. It is implemented
+  as a task, and helps facilitate the configuration of a ToolConfig.
+  When configuring a new ToolConfig, the admin can select a previous
+  version for the same tool, and copy its attributes. The
+  ToolConfigurator can launch a "apptainer build" step on a Bourreaux
+  that is equipped with Docker and Apptainer, to build the SIF image
+  of the new ToolConfig.
+* The way plugins are integrated into CBRAIN was improved such that
+  the symlinks to all the userfile models are now placed together in
+  a single directory, instead of in a bunch of subdirectories.
+  Requires a "rake cbrain:plugins:clean:all" once, then a "rake
+  cbrain:plugins:install:all".
+* All the extensions to the Rails console have been documented much
+  better within the console itself. Type 'cbhelp' to see it.
+* Users forced to authenticate with an OIDC server can no longer reset
+  their password (duh).
+* An admin can configure special notes that show up in the form to launch
+  a task by adding a field in the 'custom' section of a descriptor. Code
+  can do so by invoking a new helper method.
+
+###### BackgroundActivity subsystem:
+
+This is a new subsystem that can execute 'operations' independently
+of the Portal or the Bourreaux on a list of 'items'.  Portals and
+Bourreaux both start asynchronous workers to handle these, and these
+workers connect to the database and check every 5 seconds if there
+is something to do.
+
+The different operations are implemented as distinct subclasses of
+the core BackgroundActivity class (e.g. BackgroundActivity::CopyFile).
+
+The system is rich in features: the BACs have their own state
+diagram, BACs can be scheduled in advance, the list of items can
+be fixed or generated at start time, the success/failure of each
+item is recorded, and and admin can pause/resume the activities.
+BAC that are completely failed or partially failed can be retried,
+and only the failed items are retried.
+
+Users see a simplified version of all their activities, admins have
+a more complete view of everything.
+
+Most operations that users triggered with the interface have been
+re-engineered to launch BackgroundActivities instead.
+
+The 'ibc' command-line client has been extended to allow the admin
+to start or stop these workers (aka BAC workers), just like it is
+possible for the standard task workers (aka BourreauWorkers).
+
+A utility class BacItemsCollector was also created to help developers
+schedule multiple BAC objects out of any code that produces the
+list of items dynamically, given each BAC object has a limit to the
+their number of items.
+
+The current list of supported BACs are:
+
+* ArchiveTaskWorkdir
+* CheckMissingWorkdir
+* CleanCache
+* CompressFile
+* CopyFile
+* CopyFileAndUnregister
+* DestroyFile
+* DestroyTask
+* DestroyTaskWithoutWorkdir
+* DestroyUnregisteredFile
+* DuplicateTask
+* EraseBackgroundActivities
+* FileOnProviderIsNewer
+* HoldTask
+* MoveFile
+* RandomActivity
+* RecoverTask
+* RegisterAndCopyFile
+* RegisterAndMoveFile
+* RegisterFile
+* ReleaseTask
+* RemoveTaskWorkdir
+* RestartTask
+* ResumeTask
+* RubyRunner
+* SaveTaskWorkdir
+* SuspendTask
+* SyncFile
+* TerminateTask
+* UnarchiveTaskWorkdir
+* UncompressFile
+* UnregisterFile
+* UpdateTaskWorkdirSize
+* VerifyDataProvider
+* WipeOldCache
+
+###### New Boutiques custom modules:
+
+These new modules can be included in the JSON file for Boutiques
+descriptiors, in the custom section, and provide methods that
+override the task integration framework. They provide new special
+capabilities outside of the core Boutiques integration system.
+
+* BoutiquesExt3Capturer
+* BoutiquesSaveStdOutStdErr
+* BoutiquesCollectionBasenamesListMaker
+* BoutiquesTaskLogsCopier
+* BoutiquesInputValueFixer
+* BoutiquesInputRegexChecker
+* BoutiquesInputCopier
+* BoutiquesFileNameVerifier
+* BoutiquesDirMaker
+
+###### Code refactoring or code improvement changes:
+
+* Bourreaux will now pre-load in advance the git version numbers
+  of the CbrainTask classes, so that the Workers started later will
+  have them all in memory persistently, instead of invoking 'git
+  describe' over and over.
+* Better recording of the actual return code of the commands of
+  CbrainTasks, even within the many layers of wrappers that CBRAIN
+  create.
+* Fixed a long-standing rare race condition bug involving syncing
+  files.
+* The internal Boutiques JSON generators were extended to add pretty
+  outputs, and the BoutiquesDescriptorMaker task can call them,
+  allowing users to generate nice JSON.
+* Fixed a S3 sync_to_cache problem involving empty subdirectories.
+* Added special handling code for Apptainer containers that take a
+  long time to setup (e.g. on slow or heavily loaded machines).
+* Added configurable CORS.
+* The DataProvider class now has a new optional 'direct-upload'
+  mechanism, allowing a programmer to send files to a destination
+  without first copying it in the local CBRAIN cache. Support exist
+  for SSH and S3 DPs.
+* The DataProvider class has support for copying subsets of directory
+  trees. Only available for SSH and S3 DPs.
+* The BoutiquesInputSubdirMaker (a modules that existed in the
+  previous release) can now install files as physical copies.
+* Boutiques tasks that have a descriptor with a 'suggested-resources'
+  structure with 'walltime-estimate', 'ram' or 'cpu-cores' now see
+  these values propagated to the submitted task (but, SLURM only).
+* We no longer use a lockfile for the AgentLocker subprocess.
+* If a Boutiques descriptor contains an error code message table,
+  those messages are logged, as needed.
+* Internally, invitations to join a project contained an attribute
+  "group_id" for the project, but that was confusing and it was renamed
+  "invitation_group_id".
+
+###### Deprecations and code removal
+
+* Removed all CARMIN API stuff.
+* Removed all the old code that implemented an ExecutionServer based
+  on launching virtual machines. It was experimental, clumsy code.
+  We do have a replacement in the new ScirGcloud class, in a way.
+* The old Boutiques integrator that was based on templates is no
+  longer supported; the new Boutiques integrator is the only one
+  that will get improved and supported.
+* A special API endpoint to copy files existed for a period of
+  time, and was then deleted. The current release has no trace of it.
+* Many old 'time-of-death' counters have been removed (for DPs and Bourreaux).
+* We removed the old AlterTask message that the Portal would send
+  to the Bourreaux to trigger operations on tasks. The BackgroundActivity
+  framework handle all these operations now.
+* Some old data-fixing or validation code related to how the CBRAIN
+  system evolved in its first few years have been removed.
+* We removed the old subsystem that allowed running cluster jobs
+  to submit new jobs using small JSON files that were monitored by
+  the BourreauWorkers.
+* Some old ApplicationRecord utilities written by us in the early days,
+  raw-first-column() and raw-rows() (true names have underscores, darn
+  it markdown) were replaced by the modern equivalent, pluck().
+
 #### Version 6.3.0 Released 2023-01-26
 
 (Nearly a full year since the previous release! The diff is 19,773 lines long!)
