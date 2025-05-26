@@ -217,19 +217,21 @@ class SignupsController < ApplicationController
   # [ signup, status, message, backtrace ]
   # where +signup+ is a Signup object.
   def multi_action #:nodoc:
-    if params[:commit] =~ /Login/i
+    operation = params[:operation] || 'unknown'
+
+    if operation =~ /fix_login/i
       return fix_login_multi
     end
 
-    if params[:commit] =~ /Resend/i
+    if operation =~ /reconfirm/i
       return resend_conf_multi
     end
 
-    if params[:commit] =~ /Delete/i
+    if operation =~ /delete/i
       return delete_multi
     end
 
-    if params[:commit] =~ /Toggle/i
+    if operation =~ /toggle/i
       return toggle_multi
     end
 

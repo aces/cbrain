@@ -22,7 +22,6 @@
 #
 -%>
 
-<%= form_tag( { :action => :multi_action }, :method => :post) do %>
 
   <div class="menu-bar">
     <%= link_to "New Request", new_signup_path, :class => "button" %>
@@ -32,10 +31,10 @@
        # to select which multi action to perform. Change them at both places.
     %>
 
-    <%= submit_tag "Delete",                :class => "button", :data => { :confirm =>  'Delete the selected signup requests?' } %>
-    <%= submit_tag "Adjust Login",          :class => "button" %>
-    <%= submit_tag "Resend Confirm Email",  :class => "button" %>
-    <%= submit_tag "Toggle Hidden",         :class => "button" %>
+    <%= external_submit_button "Delete",                'signups_table_form', :class => "button", :name => 'operation', :value => 'delete', :data => { :confirm =>  'Delete the selected signup requests?' } %>
+    <%= external_submit_button "Adjust Login",          'signups_table_form', :class => "button", :name => 'operation', :value => 'fix_login' %>
+    <%= external_submit_button "Resend Confirm Email",  'signups_table_form', :class => "button", :name => 'operation', :value => 'reconfirm' %>
+    <%= external_submit_button "Toggle Hidden",         'signups_table_form', :class => "button", :name => 'operation', :value => 'toggle_hidden' %>
 
     <% if @scope.custom[:view_hidden] %>
       <%= link_to "Hide Hidden Records", signups_path(:view_hidden => false), :class => "button" %>
@@ -51,7 +50,9 @@
     %>
   </div>
 
-  <hr>
+  <p>
+
+<%= form_tag( { :action => :multi_action }, :id => 'signups_table_form', :method => :post) do %>
 
   <%=
     render(:partial => 'shared/active_filters', :locals  => {
