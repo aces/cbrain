@@ -10,8 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-
-ActiveRecord::Schema.define(version: 20250512122948) do
+ActiveRecord::Schema.define(version: 20250526170331) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -228,17 +227,17 @@ ActiveRecord::Schema.define(version: 20250512122948) do
 
   create_table "messages", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "header"
-    t.text     "description",   limit: 65535
-    t.text     "variable_text", limit: 65535
+    t.text     "description",         limit: 65535
+    t.text     "variable_text",       limit: 65535
     t.string   "message_type"
-    t.boolean  "read",                        default: false, null: false
+    t.boolean  "read",                              default: false, null: false
     t.integer  "user_id"
     t.datetime "expiry"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.datetime "last_sent"
-    t.boolean  "critical",                    default: false, null: false
-    t.boolean  "display",                     default: false, null: false
+    t.boolean  "critical",                          default: false, null: false
+    t.boolean  "display",                           default: false, null: false
     t.integer  "invitation_group_id"
     t.string   "type"
     t.boolean  "active"
