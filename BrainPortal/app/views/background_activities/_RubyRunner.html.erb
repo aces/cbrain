@@ -1,0 +1,14 @@
+
+
+<fieldset>
+  <legend>Ruby Code</legend>
+
+  <% sections = %w( prepare_dynamic_items before_first_item process after_last_item ) %>
+
+  <% sections.each do |methodname| %>
+    <h5><%= methodname %>()</h5>
+    <pre class="script_preview"><code><%= @bac.options[methodname] %></code></pre>
+    <p>
+  <% end %>
+</fieldset>
+

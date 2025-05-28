@@ -42,7 +42,12 @@ class BackgroundActivitiesController < ApplicationController
     @bac   = BackgroundActivity.all
     @bac   = @bac.where(:user_id => current_user.id) if ! current_user.has_role?(:admin_user)
     @bac   = @bac.find(bac_id)
-    render :json => @bac.for_api
+
+    respond_to do |format|
+      format.html if current_user.has_role?(AdminUser) # show.html.erb
+      format.json { render :json => @bac.for_api }
+      format.any  { head :unauthorized }
+    end
   end
 
   # Admin only, HTML only

@@ -1,0 +1,116 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2025
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title @bac.pretty_name %>
+
+<%= show_table(@bac, :as => :background_activity, :header => "Background Activity") do |t| %>
+
+  <% t.cell("Type") do %>
+    <%= @bac.class.to_s.demodulize %>
+  <% end %>
+
+  <% t.cell("Status") do %>
+    <%= @bac.status %>
+  <% end %>
+
+  <% t.cell("User") do %>
+    <%= link_to_user_if_accessible(@bac.user) %>
+  <% end %>
+
+  <% t.cell("Execution Server") do %>
+    <%= link_to_bourreau_if_accessible(@bac.remote_resource) %>
+  <% end %>
+
+  <% t.cell("Total Number Of Items") do %>
+    <%= if @bac.is_configured_for_dynamic_items?
+          "(Dynamic items list)"
+        elsif @bac.items.size == 0
+          "(None ?)"
+        else
+          @bac.items.size
+        end
+    %>
+  <% end %>
+
+  <% t.cell("Number Of Successes") do %>
+    <%= if @bac.is_configured_for_dynamic_items?
+          "-"
+        elsif @bac.num_successes == 0
+          "0 (None)"
+        elsif @bac.items.size == @bac.num_successes
+          "#{@bac.num_successes} (All of them)"
+        else
+          @bac.num_successes
+        end
+    %>
+  <% end %>
+
+  <% t.cell("Number Of Items Processed") do %>
+    <%= if @bac.is_configured_for_dynamic_items?
+          "-"
+        elsif @bac.current_item == 0
+          "0 (None yet!)"
+        elsif @bac.items.size == @bac.current_item
+          "#{@bac.current_item} (All of them)"
+        else
+          @bac.current_item
+        end
+    %>
+  <% end %>
+
+  <% t.cell("Number Of Failures") do %>
+    <%= if @bac.is_configured_for_dynamic_items?
+          "-"
+        elsif @bac.num_failures == 0
+          "0 (None)"
+        elsif @bac.items.size == @bac.num_failures
+          "#{@bac.num_failures} (All of them)"
+        else
+          @bac.num_failures
+        end
+    %>
+  <% end %>
+
+<% end %>
+
+<% if (!@bac.is_configured_for_dynamic_items? && @bac.items.size > 0) %>
+
+<fieldset>
+  <legend>Items</legend>
+  <% bad_hash      = @bac.failed_items.index_by(&:itself) %>
+  <% num_processed = @bac.current_item %>
+  <%= array_to_table(@bac.items.each_with_index.to_a, :table_class => 'xsimple', :cols => 10) do |(item,i),r,c| %>
+    <%= i %> :
+    <%= if i > num_processed
+          item.to_s
+        else
+          red_if(bad_hash[item],item,nil, :color1 => 'green', :color2 => 'red')
+        end
+    %>
+  <% end %>
+</fieldset>
+
+<% end %>
+
+<%= (render :partial => "background_activities/#{@bac.class.to_s.demodulize}") rescue nil %>

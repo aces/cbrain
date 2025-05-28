@@ -228,6 +228,14 @@
       <% end %>
     <% end %>
 
+    <%
+      if current_user.has_role? :admin_user
+        t.column("Show", :show) do |bac|
+          link_to("Show", background_activity_path(bac), :class => 'action_link')
+        end
+      end
+    %>
+
   <% end %>
 
 <% end %>
