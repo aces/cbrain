@@ -170,10 +170,13 @@ module BoutiquesInputCopier
 
       self.addlog("#{basename}: Copy input for '#{userfile_name}' in task work directory")
 
-      # Remove the userfile from the working directory
+      # Remove the symbolic link to the userfile's cache from the working directory
       File.delete(userfile_name)
 
-      rsync_cmd = "rsync -a -L --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{userfile_cache_full_path.to_s.bash_escape} #{self.full_cluster_workdir.to_s.bash_escape} 2>&1"
+      # Based on type, needed for rsync
+      need_slash    = userfile.is_a?(SingleFile) ? "" : "/"
+
+      rsync_cmd = "rsync -a --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{userfile_cache_full_path.to_s.bash_escape}#{need_slash} #{self.full_cluster_workdir.to_s.bash_escape}/#{userfile_name.bash_escape} 2>&1"
       # self.addlog("Running: #{rsync_cmd}")
       rsyncout  = bash_this(rsync_cmd)
 
