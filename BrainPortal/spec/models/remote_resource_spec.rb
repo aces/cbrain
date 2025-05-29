@@ -369,30 +369,6 @@ describe RemoteResource do
       expect(remote_resource.info).to eq(RemoteResourceInfo.dummy_record)
     end
   end
-  describe "#send_command_clean_cache" do
-    let(:userfile_list) { [1,2,3] }
-    let(:older_than)    { 1 }
-    let(:younger_than)  { 2 }
-    let(:types)         { [ "TextFile" ] }
-    before(:each) do
-      allow(RemoteCommand).to receive(:new)
-      allow(remote_resource).to receive(:send_command)
-    end
-    it "should raise an exception if older_than is not a number or time" do
-      expect{ remote_resource.send_command_clean_cache(nil, userfile_list, types, nil, younger_than) }.to raise_error(CbrainError)
-    end
-    it "should raise an exception if younger_than is not a number or time" do
-      expect{ remote_resource.send_command_clean_cache(nil, userfile_list, types,  older_than, nil) }.to raise_error(CbrainError)
-    end
-    it "should create a new clean_cache RemoteCommand" do
-      expect(RemoteCommand).to receive(:new).with hash_including(:command => "clean_cache")
-      remote_resource.send_command_clean_cache(nil, userfile_list, types, older_than, younger_than)
-    end
-    it "should send the command" do
-      expect(remote_resource).to receive(:send_command)
-      remote_resource.send_command_clean_cache(nil, userfile_list, types, older_than, younger_than)
-    end
-  end
   describe "#send_command_start_workers" do
     it "should create a new start_workers RemoteCommand" do
       allow(remote_resource).to receive(:send_command)
