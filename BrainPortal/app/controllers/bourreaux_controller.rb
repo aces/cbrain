@@ -573,6 +573,13 @@ class BourreauxController < ApplicationController
   def cleanup_caches
     flash[:notice] ||= ""
 
+    # Time:     Present ............................................................ Past
+    # In Words: now .......... older_limit ..... younger_limit ................. long ago
+    # Num Secs: 0 secs ago ................. < ........................ infinite secs ago
+    # Vars:     ............. cleanup_older  < cleanup_younger ..........................
+    #
+    #                          |---- files to be deleted ----|
+
     # First param is cleanup_older, which is the number
     # of second before NOW at which point files OLDER than
     # that become eligible for elimination
@@ -630,17 +637,37 @@ class BourreauxController < ApplicationController
       rrid_to_userids[remote_resource_id][user_id] = true
     end
 
-    # Send the cleanup message
+    # Loop through each remote resource, and create the BACs for cleanup
     rrid_to_userids.each_key do |rrid|
       remote_resource = RemoteResource.find(rrid)
       userlist = rrid_to_userids[rrid]  # uid => true, uid => true ...
-      userids = userlist.keys.each { |uid| uid.to_s }.join(",")  # "uid,uid,uid"
-      flash[:notice] += "\n" unless flash[:notice].blank?
-      begin
-        remote_resource.send_command_clean_cache(current_user.id,userids,typeslist,cleanup_older.seconds.ago,cleanup_younger.seconds.ago)
-        flash[:notice] += "Sending cleanup command to #{remote_resource.name}."
-      rescue
-        flash[:notice] += "Could not contact #{remote_resource.name}."
+      userids  = userlist.keys
+
+      # Identify what to clean
+      syncs = SyncStatus.where( :remote_resource_id => rrid)
+      syncs = syncs.where([ "sync_status.accessed_at < ?", cleanup_older.seconds.ago])
+      syncs = syncs.where([ "sync_status.accessed_at > ?", cleanup_younger.seconds.ago])
+      syncs = syncs.joins(:userfile)                            if userids.present? || typeslist.present?
+      syncs = syncs.where( 'userfiles.user_id' => userids )     if userids.present?
+      syncs = syncs.where( 'userfiles.type'    => typeslist )   if typeslist.present?
+      userfile_ids = syncs.pluck(:userfile_id)
+
+      col = BacItemsCollector.new(
+        BackgroundActivity::CleanCache.new(
+          :user_id            => current_user.id,
+          :remote_resource_id => rrid,
+          :status             => 'InProgress',
+        ),
+        500,
+      )
+
+      # Let the collector create one or several BACs
+      col.add_items(userfile_ids)
+      col.flush
+
+      if col.submitted_bac_ids.present?
+        flash[:notice] += "\n" unless flash[:notice].blank?
+        flash[:notice] += "Creating CleanCache background operation request for #{remote_resource.name}."
       end
     end
 

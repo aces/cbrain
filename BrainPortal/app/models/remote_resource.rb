@@ -651,36 +651,6 @@ class RemoteResource < ApplicationRecord
   # Utility Shortcuts To Send Commands
   ############################################################################
 
-  # Utility method to send a clean_cache command to a
-  # RemoteResource, whether local or not.
-  def send_command_clean_cache(userid,userlist,typelist,older_than,younger_than)
-    if older_than.is_a?(Integer)
-       time_older = older_than.seconds.ago
-    elsif older_than.is_a?(Time)
-       time_older = older_than
-    else
-       cb_error "Invalid older_than time offset for clean_cache command."
-    end
-    if younger_than.is_a?(Integer)
-       time_younger = younger_than.seconds.ago
-    elsif younger_than.is_a?(Time)
-       time_younger = younger_than
-    else
-       cb_error "Invalid younger_than offset for clean_cache command."
-    end
-    userlist = [ userlist ] unless userlist.is_a?(Array)
-    useridlist = userlist.map { |u| u.is_a?(User) ? u.id.to_s : u.to_s }.join(",")
-    command = RemoteCommand.new(
-      :requester_user_id => userid,
-      :command     => 'clean_cache',
-      :user_ids    => useridlist,
-      :types       => Array(typelist).join(","),
-      :before_date => time_older,
-      :after_date  => time_younger
-    )
-    send_command(command)
-  end
-
   # Utility method to send a +check_data_providers+ command to a
   # RemoteResource, whether local or not. dp_ids should be
   # an array of Data Provider IDs. The command
@@ -870,48 +840,6 @@ class RemoteResource < ApplicationRecord
       rr.meta[:data_provider_statuses]             = dp_stats
       rr.meta[:data_provider_statuses_last_update] = Time.now
     end
-    true
-  end
-
-  # Clean the cached files of a list of users, for files
-  # last accessed before the +before_date+ ; the task
-  # is started in background, as it can be long.
-  def self.process_command_clean_cache(command)
-
-    myself = RemoteResource.current_resource
-
-    user_id     = command.requester_user_id || AdminUser.first.id
-    user_ids    = command.user_ids.presence
-    before_date = command.before_date.presence
-    after_date  = command.after_date.presence
-    types       = command.types.presence
-
-    user_id_list = user_ids ? user_ids.split(",") : nil
-    types_list   = types    ? types.split(",")    : nil
-
-    # Identify what to clean
-    syncs = SyncStatus.where( :remote_resource_id => RemoteResource.current_resource.id )
-    syncs = syncs.where([ "sync_status.accessed_at < ?", before_date])          if before_date
-    syncs = syncs.where([ "sync_status.accessed_at > ?", after_date])           if after_date
-    syncs = syncs.joins(:userfile)                                              if user_id_list || types_list
-    syncs = syncs.where( 'userfiles.user_id' => user_id_list )                  if user_id_list
-    syncs = syncs.where( 'userfiles.type'    => types_list )                    if types_list
-    userfile_ids = syncs.pluck(:userfile_id)
-
-    # Create the collector object
-    col = BacItemsCollector.new(
-      BackgroundActivity::CleanCache.new(
-        :user_id            => user_id,
-        :remote_resource_id => myself.id,
-        :status             => 'InProgress',
-      ),
-      500,
-    )
-
-    # Let the collector create one or several BACs
-    col.add_items(userfile_ids)
-    col.flush
-
     true
   end
 

@@ -43,7 +43,7 @@ class RemoteCommand < RestrictedHash
     # An ID, usually assigned by the receiver.
     :id,
 
-    # Command keyword, one of 'clean_cache', 'stop_workers', 'start_workers',
+    # Command keyword, one of 'stop_workers', 'start_workers',
     # etc. On the receiving end, the method "process_command_#{:command}"
     # will be executed with the current command object.
     :command,
@@ -68,23 +68,6 @@ class RemoteCommand < RestrictedHash
     :cluster_stderr,  # filled by receiver
     :script_text,     # filled by receiver
     :runtime_info,    # filled by receiver
-
-    # -------- CLEAN CACHE PARAMETERS --------
-
-    # Which users are 'involved' in the command; only used for clean_cache
-    # right now. Numeric ids as string. "3,4,5" or "all".
-    :user_ids,
-
-    # Not really used right now
-    :group_ids,
-
-    # Userfile types, single string with commas.
-    :types,
-
-    # Date of effect; for clean_cache it means cleans files older than this..
-    :before_date,  # Time object
-    # ... but younger than this are erased.
-    :after_date,   # Time object
 
     # -------- CHECK DATA PROVIDERS PARAMETERS --------
 
@@ -118,12 +101,6 @@ class RemoteCommand < RestrictedHash
       report += "  Cluster-Stdout: #{(self.cluster_stdout || "").size} bytes\n"
       report += "  Cluster-Stderr: #{(self.cluster_stderr || "").size} bytes\n"
       report += "  Script-Text: #{(self.script_text || "").size} bytes\n"
-    elsif self.command.to_s == 'clean_cache'
-      report += "  User-IDs: #{self.user_ids}\n"
-      report += "  Group-IDs: #{self.group_ids}\n"
-      report += "  Types: #{self.types}\n"
-      report += "  Before-Date: #{self.before_date}\n"
-      report += "  After-Date: #{self.after_date}\n"
     elsif self.command.to_s == 'check_data_providers'
       report += "  Data-Provider-IDs: #{(self.data_provider_ids || []).join(", ")}\n"
     end
