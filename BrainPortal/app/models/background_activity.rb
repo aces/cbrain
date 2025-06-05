@@ -814,7 +814,8 @@ class BackgroundActivity < ApplicationRecord
 
   # before_save callback, adds options={} if options is nil
   def add_empty_options #:nodoc:
-    self.options = {} if self.options.nil?
+    self.options  = {} if self.options.nil?
+    self.messages = [] if self.messages.nil?
     true
   end
 
