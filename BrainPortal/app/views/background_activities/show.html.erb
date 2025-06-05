@@ -102,7 +102,7 @@
   <% num_processed = @bac.current_item %>
   <%= array_to_table(@bac.items.each_with_index.to_a, :table_class => 'xsimple', :cols => 10) do |(item,i),r,c| %>
     <%= i %> :
-    <%= if i > num_processed
+    <%= if i >= num_processed
           item.to_s
         else
           red_if(bad_hash[item],item,nil, :color1 => 'green', :color2 => 'red')

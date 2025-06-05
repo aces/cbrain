@@ -389,7 +389,7 @@ class BackgroundActivity < ApplicationRecord
   # value.
   def selected_items_from_messages_matching(regex)
     myitems = self.items
-    messages.each_with_index.map do |mess,idx|
+    (messages || []).each_with_index.map do |mess,idx|
       next myitems[idx] if regex.nil? && mess.nil?
       next nil          if regex.nil?
       next myitems[idx] if mess.to_s.match?(regex)

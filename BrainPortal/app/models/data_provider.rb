@@ -650,10 +650,11 @@ class DataProvider < ApplicationRecord
                   'uid',  'gid',  'owner', 'group',
                   'atime', 'ctime', 'mtime' ]
       entries.each do |file_name|
+        next if is_excluded?(file_name)
+
         entry = File.lstat(file_name)
         type = entry.ftype.to_sym
         next unless types.include?(type)
-        next if is_excluded?(file_name)
 
         fileinfo               = FileInfo.new
         fileinfo.name          = file_name
