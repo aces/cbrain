@@ -304,9 +304,9 @@ class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
     dn = descriptor.input_by_id('docker_name')
     dn.cbrain_input_notes = []
     dn.cbrain_input_notes << "The OLD descriptor currently has '#{old_btq_docker_name}'" if old_btq_docker_name
-    dn.cbrain_input_notes << "The OLD ToolConfig currently has '#{old_docker_name}'" if old_docker_name
+    dn.cbrain_input_notes << "The OLD ToolConfig currently has '#{old_docker_name}'"     if old_docker_name
     dn.cbrain_input_notes << "The NEW descriptor currently has '#{new_btq_docker_name}'" if new_btq_docker_name
-    dn.cbrain_input_notes << "The NEW ToolConfig currently has '#{new_docker_name}'" if new_docker_name
+    dn.cbrain_input_notes << "The NEW ToolConfig currently has '#{new_docker_name}'"     if new_docker_name
 
     an = descriptor.input_by_id('apptainer_name')
     an.cbrain_input_notes = []
@@ -316,7 +316,7 @@ class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
     cp_proj = descriptor.input_by_id('copy_group_id')
     cp_proj.cbrain_input_notes = []
     cp_proj.cbrain_input_notes << "Project of OLD ToolConfig: #{old_tc.group.name} (ID ##{old_tc.group.id})" if old_tc
-    cp_proj.cbrain_input_notes << "Project of NEW ToolConfig: #{new_tc.group.name} (ID ##{new_tc.group.id})" if old_tc
+    cp_proj.cbrain_input_notes << "Project of NEW ToolConfig: #{new_tc.group.name} (ID ##{new_tc.group.id})" if new_tc
 
     cp_qsub = descriptor.input_by_id('copy_qsub')
     cp_qsub.cbrain_input_notes = []
@@ -337,11 +337,11 @@ class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
 
     cp_ovrl = descriptor.input_by_id('copy_overlays')
     cp_ovrl.cbrain_input_notes = []
-    cp_ovrl.cbrain_input_notes << "OLD ToolConfig has overlays" if old_tc&.singularity_overlays_specs.present?
-    cp_ovrl.cbrain_input_notes << "OLD ToolConfig uses short workdirs" if old_tc&.singularity_use_short_workdir?
+    cp_ovrl.cbrain_input_notes << "OLD ToolConfig has overlays"                   if old_tc&.singularity_overlays_specs.present?
+    cp_ovrl.cbrain_input_notes << "OLD ToolConfig uses short workdirs"            if old_tc&.singularity_use_short_workdir?
     cp_ovrl.cbrain_input_notes << "OLD ToolConfig uses special container options" if old_tc&.container_exec_args.present?
-    cp_ovrl.cbrain_input_notes << "NEW ToolConfig has overlays" if new_tc&.singularity_overlays_specs.present?
-    cp_ovrl.cbrain_input_notes << "NEW ToolConfig uses short workdirs" if new_tc&.singularity_use_short_workdir?
+    cp_ovrl.cbrain_input_notes << "NEW ToolConfig has overlays"                   if new_tc&.singularity_overlays_specs.present?
+    cp_ovrl.cbrain_input_notes << "NEW ToolConfig uses short workdirs"            if new_tc&.singularity_use_short_workdir?
     cp_ovrl.cbrain_input_notes << "NEW ToolConfig uses special container options" if new_tc&.container_exec_args.present?
 
   end
