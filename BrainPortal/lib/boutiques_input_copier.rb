@@ -181,7 +181,7 @@ module BoutiquesInputCopier
       rsyncout  = bash_this(rsync_cmd)
 
       unless rsyncout.blank?
-        File.rm_rf(userfile_name) if File.exist?(userfile_name)
+        FileUtils.rm_rf(userfile_name) if File.exist?(userfile_name)
         cb_error "Failed to copy '#{userfile.name}'; rsync reported: #{rsyncout}"
       end
     end
