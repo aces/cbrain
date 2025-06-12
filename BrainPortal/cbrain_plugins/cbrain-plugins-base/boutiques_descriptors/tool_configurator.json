@@ -216,7 +216,13 @@
         "cbrain:integrator_modules": {
           "BoutiquesOutputFileTypeSetter": {
             "apptainer_sif_name": "ApptainerImage"
-          }
+          },
+          "BoutiquesOutputCacheCleaner": [
+             "apptainer_sif_name"
+          ],
+          "BoutiquesPostProcessingCleaner": [
+             "[APPTAINER_IMAGE_NAME]"
+          ]
         }
     }
 }
