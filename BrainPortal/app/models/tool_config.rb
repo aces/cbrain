@@ -591,9 +591,13 @@ class ToolConfig < ApplicationRecord
   def self.registered_boutiques_descriptor(tool_name, tool_version) #:nodoc:
     @_descriptors_ ||= {}
     key = [ tool_name, tool_version ] # two strings
+    @_descriptors_[key] = @_descriptors_[key]&.reload_if_file_timestamp_changed
     @_descriptors_[key]
   end
 
+  # This method returns a +BoutiquesDescriptor+ object associated with the
+  # with tool config either from cache, or if a specific path given from the corresponding file
+  # is specified from that file
   def boutiques_descriptor
     path = boutiques_descriptor_path.presence
     if ! path
