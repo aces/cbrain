@@ -46,5 +46,15 @@
     </div>
   <% end %>
 
+  <% if tb.object.new_record? %>
+    <script>
+      $(function() {
+        requestAnimationFrame(() => {
+          $('.inline_edit_field_link').trigger('click');
+        });
+      });
+    </script>
+  <% end %>
+
 </fieldset>
 
