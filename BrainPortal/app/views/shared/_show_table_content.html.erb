@@ -48,7 +48,7 @@
 
 </fieldset>
 
-<% if tb.object.new_record? %>
+<% if tb.object && tb.object.respond_to?(:new_record?) &&  tb.object.new_record? %>
   <script type="application/javascript">
     $(function() {
       requestAnimationFrame(() => {
