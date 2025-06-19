@@ -48,3 +48,12 @@
 
 </fieldset>
 
+<% if tb.object && tb.object.respond_to?(:new_record?) &&  tb.object.new_record? %>
+  <script type="application/javascript">
+    $(function() {
+      requestAnimationFrame(() => {
+        $('.inline_edit_field_link').trigger('click');
+      });
+    });
+  </script>
+<% end %>
