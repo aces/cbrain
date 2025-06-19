@@ -1,5 +1,5 @@
 
-<fieldset>
+<fieldset id="<%= tb.uniq_id || 0 %>" >
 
   <legend><%= tb.header %>
     <% if tb.editable? %>
@@ -52,7 +52,8 @@
   <script type="application/javascript">
     $(function() {
       requestAnimationFrame(() => {
-        $('.inline_edit_field_link').trigger('click');
+        var $fieldset = $('#<%= tb.uniq_id %>');
+      $fieldset.find('.inline_edit_field_link').trigger('click');
       });
     });
   </script>

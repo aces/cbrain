@@ -40,8 +40,8 @@
 <div class="display_inline_block" style="min-width: 50%">
 
 <%= show_table_context(@access_profile) do |cf| %>
-
-  <%= show_table(@access_profile, :form_helper => cf, :edit_condition => check_role(:admin_user)) do |t| %>
+  <% table_index = 0 %>
+  <%= show_table(@access_profile, :form_helper => cf, :edit_condition => check_role(:admin_user), :uniq_id => table_index) do |t| %>
 
     <% t.edit_cell(:name, :content => access_profile_label(@access_profile), :show_width => 2) do |f| %>
       <%= f.text_field :name, :class => "cb_colorpick_bg_target" %>
@@ -61,9 +61,10 @@
 
   <% end %>
 
-  <% myusers = @access_profile.users.all.sort_by(&:login) %>
 
-  <%= show_table(@access_profile, :form_helper => cf, :edit_condition => check_role(:admin_user), :header =>  @access_profile.new_record? ? 'Project Membership' : 'Projects In This Profile') do |t| %>
+  <% myusers = @access_profile.users.all.sort_by(&:login) %>
+  <% table_index += 1 %>
+  <%= show_table(@access_profile, :form_helper => cf, :edit_condition => check_role(:admin_user), :header =>  @access_profile.new_record? ? 'Project Membership' : 'Projects In This Profile', :uniq_id => table_index) do |t| %>
     <% group_names = (@access_profile.groups.sort_by(&:name).map { |g| link_to_group_if_accessible(g) }.join(", ").html_safe.presence) || "(None)" %>
     <% t.edit_cell(:group_ids, :show_width => 2, :no_header => "Projects", :td_options => { :class => "wrap" }, :content => group_names) do %>
 
@@ -88,7 +89,8 @@
   <% end %>
 
   <% if !@access_profile.new_record? %>
-    <%= show_table(@access_profile, :form_helper => cf, :edit_condition => check_role(:admin_user), :header => 'Users With This Profile') do |t| %>
+    <% table_index += 1 %>
+    <%= show_table(@access_profile, :form_helper => cf, :edit_condition => check_role(:admin_user), :header => 'Users With This Profile', :uniq_id => table_index) do |t| %>
 
       <% if myusers.present? && myusers.count > 0 %>
         <% user_names = (array_to_table(myusers.map { |u| link_to_user_if_accessible(u) }, :table_class => 'simple', :cols => 12).html_safe) %>
