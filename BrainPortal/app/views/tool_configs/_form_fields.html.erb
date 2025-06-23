@@ -31,7 +31,8 @@
 
   <% if @tool_config.tool_id && @tool_config.bourreau_id %>
 
-    <%= show_table(@tool_config, :form_helper => cf, :header => "Version configuration info",
+    <% table_index = 0 %>
+    <%= show_table(@tool_config, :form_helper => cf, :header => "Version configuration info", uniq_id: 'ff_' + table_index.to_s,
                                  :edit_condition => check_role(:admin_user)) do |t| %>
 
       <% t.edit_cell(:version_name, :header => "Version") do |f| %>
@@ -103,9 +104,8 @@
   <% end %>
 
 
-
-  <%= show_table(@tool_config, :form_helper => cf, :header => "Execution Server Control", :edit_condition => check_role(:admin_user)) do |t| %>
-
+  <% table_index += 1 %>
+  <%= show_table(@tool_config, :form_helper => cf, :header => "Execution Server Control", uniq_id: 'ff_' + table_index.to_s, :edit_condition => check_role(:admin_user)) do |t| %>
     <% t.edit_cell(:extra_qsub_args, :header => "Extra 'qsub' options", :show_width => 2) do |f| %>
       <%= f.text_field :extra_qsub_args, :size => 80 %>
       <div class="wide_field_explanation">
@@ -116,10 +116,9 @@
   <% end %>
 
 
-
-  <%= show_table(@tool_config, :form_helper => cf, :header => "Environment variables",
+  <% table_index += 1 %>
+  <%= show_table(@tool_config, :form_helper => cf, :header => "Environment variables", uniq_id: 'ff_' + table_index.to_s,
                                :edit_condition => check_role(:admin_user)) do |t| %>
-
     <% t.row do %>
       In the generated script, the values shown here will be placed in double quotes automatically.
     <% end %>
@@ -146,8 +145,10 @@
 
 
 
-  <%= show_table @tool_config, :form_helper => cf, :header => "BASH initialization prologue",
-                 :edit_condition => check_role(:admin_user) do |t| %>
+  <% table_index += 1 %>
+
+  <%= show_table @tool_config, :form_helper => cf, :header => "BASH initialization prologue", :uniq_id => 'ff_' + table_index.to_s,
+                               :edit_condition => check_role(:admin_user) do |t| %>
 
     <% t.edit_cell(:script_prologue, :content => full_description(@tool_config.script_prologue),
                    :no_header => true) do |f| %>
@@ -165,9 +166,10 @@
   <% end %>
 
 
+  <% table_index += 1 %>
 
-  <%= show_table @tool_config, :form_helper => cf, :header => "BASH initialization epilogue",
-                 :edit_condition => check_role(:admin_user) do |t| %>
+  <%= show_table @tool_config, :form_helper => cf, :header => "BASH initialization epilogue", :uniq_id => 'ff_' + table_index.to_s,
+                               :edit_condition => check_role(:admin_user) do |t| %>
 
     <% t.edit_cell(:script_epilogue, :content => full_description(@tool_config.script_epilogue),
                    :no_header => true) do |f| %>
@@ -185,8 +187,9 @@
   <% end %>
 
 
-
-  <%= show_table(@tool_config, :form_helper => cf, :header => "Container", :edit_condition => check_role(:admin_user)) do |t| %>
+  <% table_index += 1 %>
+  <%= show_table(@tool_config, :form_helper => cf, :header => "Container", :uniq_id => 'ff_' + table_index.to_s,
+                               :edit_condition => check_role(:admin_user)) do |t| %>
     <% t.edit_cell(:container_engine, :header => "Container engine") do |f| %>
       <%= f.select :container_engine, [["None", ''], ['Docker', 'Docker'], ['Singularity', 'Singularity']], :title => 'Container type' %>
     <% end %>

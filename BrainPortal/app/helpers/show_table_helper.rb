@@ -89,7 +89,7 @@ module ShowTableHelper
       @url             = options[:url].presence
       @method          = options[:method].presence || ((object.is_a?(ApplicationRecord) && object.new_record?) ? :post : :put)
       @as              = options[:as].presence || @object.class.to_s.underscore
-      @uniq_id         = options[:uniq_id].presence || undefined
+      @uniq_id         = options[:uniq_id].presence || "ff_0"
 
       # Safety check to prevent devs from mixing up forms and objects
       if @form_helper && @form_helper.object != @object
