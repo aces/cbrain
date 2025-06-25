@@ -475,6 +475,7 @@ class RemoteResource < ApplicationRecord
     bac_worker_pool  = WorkerPool.find_pool(BackgroundActivityWorker)
     bac_workers      = bac_worker_pool.workers
     bac_worker_pids  = bac_workers.map(&:pid).join(",")
+    exp_bac_workers  = myself.activity_workers_instances || 0
 
     info = RemoteResourceInfo.new(
 
@@ -493,6 +494,7 @@ class RemoteResource < ApplicationRecord
 
       # BackgroundActivityWorkers info
       :bac_worker_pids    => bac_worker_pids,
+      :bac_workers_expected => exp_bac_workers,
 
       # Source control info
       :revision           => @git_tag,                          # 'live' value
@@ -516,6 +518,7 @@ class RemoteResource < ApplicationRecord
     bac_worker_pool         = WorkerPool.find_pool(BackgroundActivityWorker)
     bac_workers             = bac_worker_pool.workers
     bac_worker_pids         = bac_workers.map(&:pid).join(",")
+    exp_bac_workers         = rr.activity_workers_instances || 0
 
     info                    = RemoteResourceInfo.new
     info.id                 = rr.id
@@ -524,6 +527,7 @@ class RemoteResource < ApplicationRecord
     info.uptime             = Time.now.localtime - CBRAIN::Startup_LocalTime
     info.environment        = Rails.env
     info.bac_worker_pids    = bac_worker_pids
+    info.bac_workers_expected = exp_bac_workers
 
     info
   end

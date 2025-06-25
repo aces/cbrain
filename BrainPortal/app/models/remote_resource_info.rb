@@ -78,6 +78,7 @@ class RemoteResourceInfo < RestrictedHash
 
      # BackgroundActivityWorker information
      :bac_worker_pids,
+     :bac_workers_expected,
 
    ]
 
