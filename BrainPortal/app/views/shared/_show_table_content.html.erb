@@ -1,9 +1,11 @@
 
-<fieldset <%= 'class="open_on_display"' if tb.is_for_new_record? %> >
+<fieldset>
 
   <legend><%= tb.header %>
     <% if tb.editable? %>
-      <span class="show_table_edit">(<%= link_to "Edit", "#", :class => "show_table_edit_link inline_edit_field_link" %>)</span>
+      <% class_name  = "show_table_edit_link inline_edit_field_link" %>
+      <% class_name += " open_on_display" if tb.is_for_new_record? %>
+      <span class="show_table_edit">(<%= link_to "Edit", "#", :class => class_name %>)</span>
     <% end %>
   </legend>
 
@@ -47,3 +49,4 @@
   <% end %>
 
 </fieldset>
+

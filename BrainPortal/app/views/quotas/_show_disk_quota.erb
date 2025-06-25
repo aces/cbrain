@@ -39,7 +39,7 @@
 
     <% if @quota.is_for_resource? %>
       <%= link_to 'New Quota With Same Provider',
-          new_quota_path(:mode => :disk, :data_provider_id => @quota.data_provider_id, :user_id => -1), :class => :button %>
+          new_quota_path(:mode => :disk, :data_provider_id => @quota.data_provider_id), :class => :button %>
     <% end %>
 
   <% end %>
@@ -67,7 +67,7 @@
     <div class="field_explanation">
        Sizes are in bytes; when entering a new value,
        you can use a unit as a suffix, such as in <em>2.3 kb</em> and <em>10 G</em>.
-       A value of <em>0</em> means no files allowed at all.
+       A value of <em>-1</em> means no files allowed at all.
     </div>
   <% end %>
 
@@ -82,7 +82,7 @@
   <% t.edit_cell(:max_files, :header => "Max Number Of Files", :content => pretty_quota_max_files(@quota)) do |f| %>
     <%= f.text_field :max_files, :size => 12 %>
     <div class="field_explanation">
-       A value of <em>0</em> means no files allowed at all.
+       A value of <em>-1</em> means no files allowed at all.
     </div>
   <% end %>
 

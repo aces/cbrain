@@ -35,7 +35,7 @@
 # which puts limit to the sum(size) and sum(num_files)
 # of all the userfiles owned by a user on a specific DP.
 #
-# A quota record can be configuered with 0, 0, which prevents
+# A quota record can be configuered with -1,-1, which prevents
 # a user from creating any file at all on a DP.
 class DiskQuota < Quota
 
@@ -70,7 +70,7 @@ class DiskQuota < Quota
   end
 
   def none_allowed? #:nodoc:
-    self.max_files == 0
+    self.max_files == -1
   end
 
   # Returns true if currently, the user specified by +user_id+
@@ -148,9 +148,13 @@ class DiskQuota < Quota
 
   # Checks that both limits have proper values.
   # 1) Both values are >= 0 : all OK
-  # 2) max_bytes == 0 and max_files == 0 : locked quota
+  # 2) max_bytes == -1 and max_files == -1 : locked quota (no other negative numbers are allowed)
   #
-  # A DP-wode quota of (0,0) will prevent ALL users from creating files on a DP
+  # Note that a value of 0 will still allow a user to create ONE userfile entry,
+  # because quota failures happen only after the quota is exceeded. That's
+  # why a value of -1 exists, it prevents any files from being created.
+  #
+  # A DP-wode quota of (-1,-1) will prevent ALL users from creating files on a DP
   # (similar than having the DP set to read-only) but you can give special privileges
   # to individual users by creating user-specific quota records.
   def limits_are_reasonable
@@ -159,14 +163,14 @@ class DiskQuota < Quota
     return false if self.max_bytes.blank? || self.max_files.blank?
 
     # All quotas are OK with this rule
-    return true if (self.max_bytes > 0 && self.max_files > 0)
-    # Only 0 in both fields is allowed if using negative numbers
-    return true if (self.max_bytes == 0 && self.max_files == 0)
+    return true if (self.max_bytes >= 0 && self.max_files >= 0)
+    # Only -1 in both fields is allowed if using negative numbers
+    return true if (self.max_bytes == -1 && self.max_files == -1)
 
     # Log errors
-    self.errors.add(:max_bytes, "must be 0 or > 0") if self.max_bytes < 0
-    self.errors.add(:max_files, "must be 0 or > 0") if self.max_files < 0
-    self.errors.add(:base,      "when using 0, both limits must be set to 0") if self.max_bytes == 0 || self.max_files == 0
+    self.errors.add(:max_bytes, "must be -1, 0 or > 0") if self.max_bytes < -1
+    self.errors.add(:max_files, "must be -1, 0 or > 0") if self.max_files < -1
+    self.errors.add(:base,      "when using -1, both limits must be set to -1") if self.max_bytes == -1 || self.max_files == -1
   end
 
   # These attributes are only for CpuQuota
