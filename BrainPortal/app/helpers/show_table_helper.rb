@@ -57,7 +57,6 @@ module ShowTableHelper
     attr_reader   :method
     attr_reader   :header
     attr_reader   :as
-    attr_reader   :uniq_id # used to generate unique IDs for the form and its fields
     attr_reader   :object
     attr_accessor :form_helper # can be set externally
 
@@ -89,7 +88,6 @@ module ShowTableHelper
       @url             = options[:url].presence
       @method          = options[:method].presence || ((object.is_a?(ApplicationRecord) && object.new_record?) ? :post : :put)
       @as              = options[:as].presence || @object.class.to_s.underscore
-      @uniq_id         = options[:uniq_id].presence || "ff_0"
 
       # Safety check to prevent devs from mixing up forms and objects
       if @form_helper && @form_helper.object != @object
@@ -98,6 +96,12 @@ module ShowTableHelper
 
       # Template code
       @block           = options[:block]
+    end
+
+    def is_for_new_record? #:nodoc:
+      self.object &&
+      self.object.respond_to?(:new_record?) &&
+      self.object.new_record?
     end
 
     def invoke_block #:nodoc:

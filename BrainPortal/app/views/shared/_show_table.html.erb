@@ -18,11 +18,10 @@
   %>
   <% if tb.editable? && ! tb.form_helper %>
     <%= form_for(tb.object,
-          :url     => tb.url,
-          :method  => tb.method,
-          :as      => tb.as,
-          :uniq_id => tb.uniq_id,
-          :html    => { :id => "edit_#{tb.as}_#{tb.header}".gsub(/\W+/,"_") },
+          :url    => tb.url,
+          :method => tb.method,
+          :as     => tb.as,
+          :html   => { :id => "edit_#{tb.as}_#{tb.header}".gsub(/\W+/,"_") },
         ) do |f| %>
       <% tb.form_helper = f %>
       <% tb.invoke_block %>

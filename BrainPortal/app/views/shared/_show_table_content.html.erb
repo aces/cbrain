@@ -1,5 +1,5 @@
 
-<fieldset id="<%= tb.uniq_id || 0 %>" >
+<fieldset <%= 'class="open_on_display"' if tb.is_for_new_record? %> >
 
   <legend><%= tb.header %>
     <% if tb.editable? %>
@@ -47,14 +47,3 @@
   <% end %>
 
 </fieldset>
-
-<% if tb.object && tb.object.respond_to?(:new_record?) &&  tb.object.new_record? %>
-  <script type="application/javascript">
-    $(function() {
-      requestAnimationFrame(() => {
-        var $fieldset = $('#<%= tb.uniq_id || "ff_0" %>');
-        $fieldset.find('.inline_edit_field_link').trigger('click');
-      });
-    });
-  </script>
-<% end %>

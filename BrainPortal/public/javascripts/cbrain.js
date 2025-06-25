@@ -234,6 +234,14 @@
 
     });
 
+    //Open form that have class set to open_on_display
+    //meaning that it is a new record.
+    $('.open_on_display').each( function() {
+      requestAnimationFrame(() => {
+        $(this).trigger('click');
+      });
+    });
+
     //Turns the element into a button looking thing
     loaded_element.find(".button").each( function() {
       $(this).button();

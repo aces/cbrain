@@ -81,7 +81,7 @@
     # quota records that are DP-wide, and the AFFECTED USER'S resources for the user-specific quotas.
     t.column("My Usage") do |dq|
       what = dq.exceeded?(dq.user_id == 0 ? current_user.id : dq.user_id)
-      what = nil if dq.cursize.zero? && dq.curfiles.zero? # happens for dq with -1,-1
+      what = nil if dq.cursize.zero? && dq.curfiles.zero? # happens for dq with 0,0
       if what.nil?
         html_colorize("OK","green") +
         " (#{colored_pretty_size(dq.cursize)} and #{number_with_commas(dq.curfiles)} files)".html_safe
