@@ -98,6 +98,12 @@ module ShowTableHelper
       @block           = options[:block]
     end
 
+    def is_for_new_record? #:nodoc:
+      self.object &&
+      self.object.respond_to?(:new_record?) &&
+      self.object.new_record?
+    end
+
     def invoke_block #:nodoc:
       @block.call(self)               if @block.arity == 1
       @block.call(self, @form_helper) if @block.arity == 2 # in case we want the helper in the main block
