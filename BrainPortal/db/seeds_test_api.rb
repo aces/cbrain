@@ -87,7 +87,7 @@ hostname = Socket.gethostname
 myself = RemoteResource.current_resource
 raise "You can only run this seeding process as a BrainPortal CBRAIN application!" unless
   myself.is_a?(BrainPortal)
-myrailsenv = Rails.env || "production"
+myrailsenv = Rails.env || "notset"
 raise "You can only run this seeding process under a 'test' Rails environement!" unless
   myrailsenv =~ /test/
 
