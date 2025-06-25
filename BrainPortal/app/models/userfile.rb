@@ -128,7 +128,7 @@ class Userfile < ApplicationRecord
 
   scope :contain_tags, -> (n) { joins(:tags).where("tag_id IN (?)", n) }
 
-  api_attr_visible :name, :size, :user_id, :parent_id, :type, :group_id, :data_provider_id, :group_writable, :num_files, :hidden, :immutable, :archived, :description
+  api_attr_visible :name, :browse_path, :size, :user_id, :parent_id, :type, :group_id, :data_provider_id, :group_writable, :num_files, :hidden, :immutable, :archived, :description
 
   ##############################################
   # Miscellaneous methods
