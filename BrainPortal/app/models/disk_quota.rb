@@ -88,10 +88,10 @@ class DiskQuota < Quota
   # :bytes_and_files : both are exceeded
   def self.exceeded?(user_id, data_provider_id)
     quota   = self.where(:user_id => user_id, :data_provider_id => data_provider_id).first
-    return true if quota.max_bytes.presence == 0  && quota.max_files.presence == 0 # locked quota
     quota ||= self.where(:user_id => 0      , :data_provider_id => data_provider_id).first
     return nil if quota.nil?
 
+    return true if quota.max_bytes.presence == 0  && quota.max_files.presence == 0 # locked quota
     quota.exceeded?(user_id)
   end
 
