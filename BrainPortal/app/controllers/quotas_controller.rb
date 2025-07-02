@@ -388,7 +388,6 @@ class QuotasController < ApplicationController
 
   # Tries to turn strings like '3 mb' into 3_000_000 etc.
   # Supported suffixes are T, G, M, K, TB, GB, MB, KB, B (case insensitive).
-  # Negative values are parsed, but the DiskQuota model only accepts the special -1
   def guess_size_units(sizestring)
     match = sizestring.match(/\A\s*(-?\d*\.?\d+)\s*([tgmk]?)\s*b?\s*\z/i)
     return "" unless match # parsing error
