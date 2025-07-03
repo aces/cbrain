@@ -298,13 +298,13 @@ class QuotasController < ApplicationController
         .where(:data_provider_id => quota.data_provider_id)
         .group(:user_id)
         .sum(:size)
-        .select { |user_id,size| size >= quota.max_bytes }
+        .select { |user_id,size| size > 0 && size >= quota.max_bytes }
         .keys
       exceed_numfiles_user_ids = Userfile
         .where(:data_provider_id => quota.data_provider_id)
         .group(:user_id)
         .sum(:num_files)
-        .select { |user_id,num_files| num_files >= quota.max_files }
+        .select { |user_id,num_files| num_file > 0 && num_files >= quota.max_files }
         .keys
       union_ids  = exceed_size_user_ids | exceed_numfiles_user_ids
       union_ids -= DiskQuota

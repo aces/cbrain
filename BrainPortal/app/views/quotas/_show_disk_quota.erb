@@ -34,12 +34,12 @@
 
     <% if @quota.is_for_user? %>
       <%= link_to 'New Quota With Same User',
-          new_quota_path(:mode => :disk, :user_id => @quota.user_id), :class => :button %>
+          new_quota_path(:mode => :disk, :data_provider_id => -1                     , :user_id => @quota.user_id), :class => :button %>
     <% end %>
 
     <% if @quota.is_for_resource? %>
       <%= link_to 'New Quota With Same Provider',
-          new_quota_path(:mode => :disk, :data_provider_id => @quota.data_provider_id, :user_id => -1), :class => :button %>
+          new_quota_path(:mode => :disk, :data_provider_id => @quota.data_provider_id, :user_id => -1),             :class => :button %>
     <% end %>
 
   <% end %>

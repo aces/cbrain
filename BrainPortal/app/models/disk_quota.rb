@@ -35,7 +35,7 @@
 # which puts limit to the sum(size) and sum(num_files)
 # of all the userfiles owned by a user on a specific DP.
 #
-# A quota record can be configuered with -1,-1, which prevents
+# A quota record can be configuered with 0, 0, which prevents
 # a user from creating any file at all on a DP.
 class DiskQuota < Quota
 
@@ -70,7 +70,7 @@ class DiskQuota < Quota
   end
 
   def none_allowed? #:nodoc:
-    self.max_files == -1
+    self.max_files == 0
   end
 
   # Returns true if currently, the user specified by +user_id+
@@ -91,7 +91,6 @@ class DiskQuota < Quota
     quota ||= self.where(:user_id => 0      , :data_provider_id => data_provider_id).first
     return nil if quota.nil?
 
-    return true if quota.max_bytes.presence == 0  && quota.max_files.presence == 0 # locked quota
     quota.exceeded?(user_id)
   end
 
@@ -123,11 +122,11 @@ class DiskQuota < Quota
 
     what_is_exceeded = nil
 
-    if @cursize  > self.max_bytes
+    if @cursize  >= self.max_bytes
       what_is_exceeded = :bytes
     end
 
-    if @curfiles > self.max_files
+    if @curfiles >= self.max_files
       what_is_exceeded &&= :bytes_and_files
       what_is_exceeded ||= :files
     end
@@ -151,7 +150,7 @@ class DiskQuota < Quota
   # 1) Both values are > 0 : all OK
   # 2) max_bytes == 0 and max_files == 0 : locked quota
   #
-  # A DP-wode quota of (0, 0) will prevent ALL users from creating files on a DP
+  # A DP-wide quota of (0, 0) will prevent ALL users from creating files on a DP
   # (similar than having the DP set to read-only) but you can give special privileges
   # to individual users by creating user-specific quota records.
   def limits_are_reasonable
