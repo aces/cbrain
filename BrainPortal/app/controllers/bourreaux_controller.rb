@@ -786,7 +786,15 @@ class BourreauxController < ApplicationController
   def bourreau_params #:nodoc:
     params.require(:bourreau).permit(
       :name, :user_id, :group_id, :online, :read_only, :description,
+
       :ssh_control_user, :ssh_control_host, :ssh_control_port, :ssh_control_rails_dir,
+
+      :active_resource_control_port,
+
+      :use_reverse_service,
+      :reverse_service_user, :reverse_service_host, :reverse_service_port,
+      :reverse_service_db_socket_path, :reverse_service_ssh_agent_socket_path,
+
       :cache_md5, :portal_locked, :cache_trust_expire,
       :time_zone, :site_url_prefix, :dp_cache_dir, :dp_ignore_patterns, :cms_class,
       :nh_site_url_prefix, :nh_support_email, :nh_system_from_email,

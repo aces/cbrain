@@ -85,7 +85,7 @@ describe RemoteResource do
     it "should prevent saving if the cache path is not absolute" do
       remote_resource.dp_cache_dir = "not/absolute"
       remote_resource.save
-      expect(remote_resource).to have(1).error_on(:dp_cache_dir)
+      expect(remote_resource).to have(2).error_on(:dp_cache_dir)
     end
     context "on the Portal app" do
       let(:portal_resource) {RemoteResource.current_resource}
@@ -101,12 +101,12 @@ describe RemoteResource do
       it "should be invalid if the cache path is invalid" do
         allow(DataProvider).to receive(:this_is_a_proper_cache_dir!).and_return(false)
         portal_resource.save
-        expect(portal_resource.error_on(:dp_cache_dir).size).to eq(1)
+        expect(portal_resource.error_on(:dp_cache_dir).size).to eq(2)
       end
       it "should be invalid if the cache dir check raises an exception" do
         allow(DataProvider).to receive(:this_is_a_proper_cache_dir!).and_raise(StandardError)
         portal_resource.save
-        expect(portal_resource.error_on(:dp_cache_dir).size).to eq(1)
+        expect(portal_resource.error_on(:dp_cache_dir).size).to eq(2)
       end
     end
   end
