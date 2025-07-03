@@ -53,6 +53,16 @@ class BackgroundActivity::RubyRunner < BackgroundActivity
 
   validates_dynamic_bac_presence_of_option :process
 
+  # Shows the first line of comment of the 'process' code, if present.
+  def pretty_name
+    code = options[:process].to_s.presence
+    match = code.to_s.match /\A\s*#\s*(.+)/ # the dot doesn't match newlines
+    return super if ! match
+    comment = match[1].strip
+    return super if comment.blank?
+    comment
+  end
+
   def prepare_dynamic_items
     code = options[:prepare_dynamic_items].to_s.presence
     return if code.blank?
