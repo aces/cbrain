@@ -33,9 +33,12 @@ class QuotasController < ApplicationController
   before_action :admin_role_required, :except => [ :index ]
 
   def index #:nodoc:
-    @scope = scope_from_session
+    @mode  = cbrain_session[:quota_mode].presence&.to_sym
+    @mode  = :cpu  if params[:mode].to_s == 'cpu'
+    @mode  = :disk if params[:mode].to_s == 'disk' || @mode != :cpu
+    cbrain_session[:quota_mode] = @mode.to_s
 
-    @mode  = params[:mode].to_s == 'cpu' ? :cpu : :disk
+    @scope = scope_from_session("#{@mode}_quotas#index")
 
     @base_scope   = base_scope.includes([:user, :data_provider  ]) if @mode == :disk
     @base_scope   = base_scope.includes([:user, :remote_resource]) if @mode == :cpu
