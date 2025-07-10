@@ -199,7 +199,7 @@
       <%= show_table(@bourreau, :as => :bourreau, :header => "Connection Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
         <% t.edit_cell(:ssh_control_host, :header => "SSH Hostname") do |f| %>
-          <%= f.text_field :ssh_control_host %>
+          <%= f.text_field :ssh_control_host, :size => 20 %>
         <% end %>
 
         <% t.edit_cell(:ssh_control_rails_dir, :header => "Rails Server Directory") do |f| %>
@@ -207,7 +207,7 @@
         <% end %>
 
         <% t.edit_cell(:ssh_control_user, :header => "SSH User") do |f| %>
-          <%= f.text_field :ssh_control_user %>
+          <%= f.text_field :ssh_control_user, :size => 20 %>
         <% end %>
 
         <% t.edit_cell(:ssh_control_port, :header => "SSH Port") do |f| %>
@@ -215,7 +215,59 @@
         <% end %>
 
         <% t.edit_cell(:proxied_host, :header => "Second-level Hostname") do |f| %>
-          <%= f.text_field :proxied_host %>
+          <%= f.text_field :proxied_host, :size => 20 %>
+        <% end %>
+
+        <% t.edit_cell(:active_resource_control_port, :header => "Local Control Port") do |f| %>
+          <%= f.text_field :active_resource_control_port, :size => 6 %>
+        <% end %>
+
+      <% end %>
+
+      <%= show_table(@bourreau, :as => :bourreau, :header => "Optional Reverse Service Connection Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+
+        <% t.row() do %>
+          <p class="medium_paragraphs">
+          This is an alternate mechanism to provide the Bourreau with a distinct database and SSH agent connection. For this to work,
+          an SSH-accessible server (provided by hostname, port number and username) must be configured to accept the main CBRAIN portal
+          key, and be visible from the Bourreau. That server must have a SSH agent that provides keys on a UNIX domain socket,
+          and a database connection for CBRAIN. The database connection specification can be provided as either as a full path
+          to a UNIX domain socket, or as <em>localhost:port</em>.
+          </p>
+          <p class="medium_paragraphs">
+          Some <strong>default values</strong> shown under the input boxes are <em>guesses</em> based on the currently running Portal. These
+          are useful if the portal happens to be the server to connect back to.
+          </p>
+        <% end %>
+
+        <% t.boolean_edit_cell('bourreau[use_reverse_service]', (@bourreau.use_reverse_service ? "1" : ""), "1", "0",
+           :header => "Use the SSH Reverse Service", :show_width => 2) %>
+
+        <% t.edit_cell(:reverse_service_host, :header => "Reverse Service Hostname", :show_width => 1) do |f| %>
+          <%= f.text_field :reverse_service_host, :size => 20 %>
+          <br>Default: <%= Socket.gethostname %>
+        <% end %>
+
+        <% t.edit_cell(:reverse_service_port, :header => "Reverse Service Port", :show_width => 1) do |f| %>
+          <%= f.text_field :reverse_service_port, :size => 6 %>
+        <% end %>
+
+        <% t.edit_cell(:reverse_service_user, :header => "Reverse Service User", :show_width => 1) do |f| %>
+          <%= f.text_field :reverse_service_user, :size => 20 %>
+          <br>Default: <%= CBRAIN::Rails_UserName %>
+        <% end %>
+
+        <% t.empty_cell %>
+
+        <% t.edit_cell(:reverse_service_db_socket_path, :header => "Reverse Service DB Socket Path", :show_width => 2) do |f| %>
+          <%= f.text_field :reverse_service_db_socket_path, :size => 60 %>
+          <% db_host = ApplicationRecord.connection.raw_connection.query_options[:host] rescue nil %>
+          <br>Default: <%= db_host == 'localhost' ? 'localhost:3306' : db_host.nil? ? '(Unknown, check your config)' : db_host %>
+        <% end %>
+
+        <% t.edit_cell(:reverse_service_ssh_agent_socket_path, :header => "Reverse Service SSH Agent Socket Path", :show_width => 2) do |f| %>
+          <%= f.text_field :reverse_service_ssh_agent_socket_path, :size => 60 %>
+          <br>Default: <%= SshAgent.find_current&.socket %>
         <% end %>
 
       <% end %>
