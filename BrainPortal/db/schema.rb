@@ -278,18 +278,25 @@ ActiveRecord::Schema.define(version: 20250704085709) do
     t.string   "type"
     t.integer  "user_id"
     t.integer  "group_id"
-    t.boolean  "online",                                    default: false, null: false
-    t.boolean  "read_only",                                 default: false, null: false
-    t.text     "description",                 limit: 65535
+    t.boolean  "online",                                              default: false, null: false
+    t.boolean  "read_only",                                           default: false, null: false
+    t.text     "description",                           limit: 65535
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "ssh_control_user"
     t.string   "ssh_control_host"
     t.integer  "ssh_control_port"
     t.string   "ssh_control_rails_dir"
+    t.integer  "active_resource_control_port"
+    t.boolean  "use_reverse_service",                                 default: false, null: false
+    t.string   "reverse_service_user"
+    t.string   "reverse_service_host"
+    t.string   "reverse_service_port"
+    t.string   "reverse_service_db_socket_path"
+    t.string   "reverse_service_ssh_agent_socket_path"
     t.string   "cache_md5"
-    t.boolean  "portal_locked",                             default: false, null: false
-    t.integer  "cache_trust_expire",                        default: 0
+    t.boolean  "portal_locked",                                       default: false, null: false
+    t.integer  "cache_trust_expire",                                  default: 0
     t.string   "time_zone"
     t.string   "site_url_prefix"
     t.string   "nh_site_url_prefix"
@@ -303,13 +310,13 @@ ActiveRecord::Schema.define(version: 20250704085709) do
     t.integer  "workers_chk_time"
     t.string   "workers_log_to"
     t.integer  "workers_verbose"
-    t.integer  "activity_workers_instances",                default: 1,     null: false
+    t.integer  "activity_workers_instances",                          default: 1,     null: false
     t.string   "help_url"
     t.integer  "rr_timeout"
     t.string   "proxied_host"
     t.string   "support_email"
     t.string   "system_from_email"
-    t.text     "email_delivery_options",      limit: 65535
+    t.text     "email_delivery_options",                limit: 65535
     t.string   "nh_support_email"
     t.string   "nh_system_from_email"
     t.string   "external_status_page_url"

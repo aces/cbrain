@@ -33,6 +33,24 @@ class Bourreau < RemoteResource
 
   api_attr_visible :name, :user_id, :group_id, :online, :read_only, :description
 
+  validates :active_resource_control_port, numericality: { only_integer: true, greater_than: 1024, less_than: 65536 }, allow_blank: true
+
+  validates_format_of :reverse_service_user, :with => /\A\w[\w\-\.]*\z/,
+                      :message  => 'is invalid as only the following characters are accepted: alphanumeric characters, _, -, and .',
+                      :allow_blank => true
+  validates_format_of :reverse_service_host, :with => /\A\w[\w\-\.]*\z/,
+                      :message  => 'is invalid as only the following characters are accepted: alphanumeric characters, _, -, and .',
+                      :allow_blank => true
+  validates           :reverse_service_port, numericality: { only_integer: true, greater_than: 21, less_than: 65536 }, allow_blank: true
+  validates_format_of :reverse_service_db_socket_path,:with => /\A(localhost:\d+|\/[\w\-\.\=\+\/]*)\z/,
+                      :message  => 'is invalid as only \"localhost:nnnn\" or a full path with simple characters are accepted: a-z, A-Z, 0-9, _, +, =, . and of course /',
+                      :allow_blank => true
+  validates_format_of :reverse_service_ssh_agent_socket_path, :with => /\A\/[\w\-\.\=\+\/]*\z/,
+                      :message  => 'is invalid as only paths with simple characters are accepted: a-z, A-Z, 0-9, _, +, =, . and of course /',
+                      :allow_blank => true
+
+  validate :all_reverse_service_params_supplied
+
   def self.pretty_type #:nodoc:
     "Execution"
   end
@@ -102,25 +120,62 @@ class Bourreau < RemoteResource
   # *ssh_control_rails_dir*:: Mandatory
   #
   def start
-    self.operation_messages = "Unknown internal error."
+    self.operation_messages = ""
 
     self.online = true
 
     self.zap_info_cache
 
+    # Utility to append to a temporary internal log
+    # a bunch of useful messages.
+    logit = ->(message, step=nil) do
+       self.operation_messages += "=====================================\n"
+       self.operation_messages += Time.now.localtime.strftime "[%Y-%m-%d %H:%M:%S %Z]"
+       self.operation_messages += " (#{step}) " if step.present?
+       self.operation_messages += (message.strip + "\n")
+    end
+
     unless self.has_remote_control_info?
-      self.operation_messages = "Not configured for remote control: missing user/host."
+      logit.( "Not configured for remote control: missing user/host." )
       return false
     end
 
     unless RemoteResource.current_resource.is_a?(BrainPortal)
-      self.operation_messages = "Only a Portal can start a Bourreau."
+      logit.( "Only a Portal can start a Bourreau." )
       return false
     end
 
-    unless self.start_tunnels
-      self.operation_messages = "Could not start the SSH master connection."
+    unless self.start_tunnels # this will detect and re-use an existing one, if any
+      logit.( "Could not start the SSH process.", "Start SSH Master" )
       return false
+    end
+    logit.( "Main SSH tunnel started successfully", "Start SSH Master" )
+
+    if self.is_alive?(:ping, true)
+      logit.( "Bourreau process was found to be already running.", "Check Bourreau Process" )
+      return true
+    end
+
+    # In the case of the alternate configuration with
+    # a reverse service, we first run a program on the
+    # remote side called 'cbrain_reverse_ssh' which will
+    # try to establish (or rediscover) a separate SSH process
+    # with a DB tunnel and a SSH agent tunnel.
+    if self.use_reverse_service?
+      rev_user    = self.reverse_service_user
+      rev_host    = self.reverse_service_host
+      rev_port    = self.reverse_service_port
+      rev_dbsock  = self.reverse_service_db_socket_path
+      rev_sshsock = self.reverse_service_ssh_agent_socket_path
+      start_reverse_ssh_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; script/cbrain_reverse_ssh #{rev_user.bash_escape} #{rev_host.bash_escape} #{rev_port.bash_escape} #{rev_dbsock.bash_escape} #{rev_sshsock.bash_escape} 2>&1"
+      CBRAIN.with_unlocked_agent # in case the agent was relocked while cbrain_reverse_ssh was setting up
+      out = self.read_from_remote_shell_command(start_reverse_ssh_command) { |io| io.read() } rescue "popen exception"
+      all_ok = (out =~ /CBRAIN Reverse SSH Started/i) # from output of 'cbrain_reverse_ssh'
+      logit.( "Remote SSH process #{all_ok ? 'started' : 'failed to start'}.\n" +
+              "Command: #{start_reverse_ssh_command}\n" +
+              "---Start Of Output---\n#{out.strip}\n---End Of Output---\n",
+              "Start Reverse Service" )
+      return false if ! all_ok
     end
 
     # What environment will it run under?
@@ -136,22 +191,24 @@ class Bourreau < RemoteResource
     # SSH command to start it up; we pipe to it either a new database.yml file
     # which will be installed, or "" which means to use whatever
     # yml file is already configured at the other end.
+    CBRAIN.with_unlocked_agent # in case the agent was relocked while cbrain_reverse_ssh was setting up
     start_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; script/cbrain_remote_ctl start -e #{myrailsenv.to_s.bash_escape} 2>&1"
     self.write_to_remote_shell_command(start_command, :stdout => captfile) { |io| io.write(db_yml) }
 
     out = File.read(captfile) rescue ""
     File.unlink(captfile) rescue true
-    if out =~ /Bourreau Started/i # output of 'cbrain_remote_ctl'
-      self.operation_messages = "Execution Server #{self.name} started.\n" +
-                                "Command: #{start_command}\n" +
-                                "Output:\n---Start Of Output---\n#{out}\n---End Of Output---\n"
+    all_ok = (out =~ /Bourreau Started/i) # from output of 'cbrain_remote_ctl'
+    logit.( "Execution Server #{self.name} #{all_ok ? 'started' : 'failed'}.\n" +
+            "Command: #{start_command}\n" +
+            "Output:\n---Start Of Output---\n#{out.strip}\n---End Of Output---\n",
+            "Start Bourreau Process" )
+    if all_ok
       self.save
       return true
     end
-    self.operation_messages = "Remote control command for #{self.name} failed.\n" +
-                              "Command: #{start_command}\n" +
-                              "Output:\n---Start Of Output---\n#{out}\n---End Of Output---\n"
     return false
+  ensure
+    Rails.logger.debug self.operation_messages if self.operation_messages.present?
   end
 
   # Stop a Bourreau remotely. The requirements for this to work are
@@ -485,5 +542,22 @@ class Bourreau < RemoteResource
   end
 
   # NOTE: 'private' in effect here.
+
+  ############################################################################
+  # Validation callbacks
+  ############################################################################
+
+  public
+
+  def all_reverse_service_params_supplied
+    return true if ! self.use_reverse_service?
+
+    %i( reverse_service_user reverse_service_host reverse_service_port
+        reverse_service_db_socket_path reverse_service_ssh_agent_socket_path )
+    .each do |att|
+      errors.add( att, "cannot be blank if the option to use the reverse service is selected") if
+        self.send(att).blank?
+    end
+  end
 
 end
