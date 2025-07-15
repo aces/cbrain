@@ -408,6 +408,52 @@ class RemoteResource < ApplicationRecord
   # Network Control Protocol Methods
   ############################################################################
 
+  # Returns the ActiveResource subclass to use
+  # to communicate with the current remote resource.
+  # Generally, the subclass returned will be something like
+  #
+  #   Bourreau::Control_N::Control # where N is the ID of self
+  #
+  # See the class method *control_subclass_for* , where
+  # these subclasses are generated on demand and cached in
+  # the class.
+  def control_subclass
+    self.class.control_subclass_for(self)
+  end
+
+  # Each RemoteResource instance +rr+ need a private
+  # ActiveResource subclass to communicate to the
+  # remote end. This class method here creates the subclass
+  # once, and cache it in a constant. The method
+  # returns it once created and cached. The constant
+  # is "{self}::Control_N::Control" where self
+  # is whatever class we currently invoke this method
+  # on, and the "N" is the ID of +rr+ . E.g.
+  #
+  #   Bourreau::Control_5::Control
+  #
+  # for the Bourreau with ID 5.
+  #
+  # The reason for this construction is that ActiveResource
+  # will use the LAST part of the full class name, 'Control',
+  # to generate its GET and POST URIs, but we still need a distinct
+  # Ruby subclass for each RemoteResource, so we can't just use
+  # Control itself.
+  def self.control_subclass_for(rr)
+    @_control_subclass ||= {}
+    return @_control_subclass[rr.id] if @_control_subclass[rr.id]
+    control_subclass = Class.new(Control)
+    # control_class.site = rr.site
+    @_control_subclass[rr.id] = control_subclass
+    control_n = "Control_#{rr.id}"
+    if ! self.const_defined?(control_n)
+      self.const_set(control_n, Module.new)
+    end
+    mod = self.const_get(control_n)
+    mod.const_set("Control", control_subclass)
+    control_subclass
+  end
+
   # Checks if this remote resource is available or not.
   # This must be a live check, not cached. A cached
   # way to check the state of the resource is to use the
@@ -583,11 +629,12 @@ class RemoteResource < ApplicationRecord
     begin
       # We used to support direct ActiveResource connections to a Bourreau, but not anymore.
       # We expect them all to go through SSH tunnels, now.
-      if self.ssh_master && self.ssh_master.is_alive?
-        Control.site    = self.site
-        Control.timeout = (self.rr_timeout.blank? || self.rr_timeout < 30) ? 30 : self.rr_timeout
-        control_info = Control.find(what) # asks for controls/info.xml or controls/ping.xml
-        info = RemoteResourceInfo.new(control_info.attributes)
+      if self.start_tunnels # will do nothing if already started
+        kontrol         = self.control_subclass # class {self}::Control_N::Control
+        kontrol.site    = self.site
+        kontrol.timeout = (self.rr_timeout.blank? || self.rr_timeout < 30) ? 30 : self.rr_timeout
+        control_info    = kontrol.find(what) # net request, asks for controls/info.xml or controls/ping.xml
+        info            = RemoteResourceInfo.new(control_info.attributes) # repackage the response
       end
     rescue
       # Oops, it's dead
@@ -748,16 +795,19 @@ class RemoteResource < ApplicationRecord
     command.sender_token   = RemoteResource.current_resource.auth_token
     command.receiver_token = self.auth_token
 
-    # Send local
+    # Send local: just send to the processing method
     if self.id == CBRAIN::SelfRemoteResourceId
       self.class.process_command(command)
       return command
     end
 
-    # Send remote
-    Control.site    = self.site
-    Control.timeout = 20
-    control         = Control.new(command)
+    # Send remote: send through a XML/HTTP ActiveResource channel
+    kontrol         = self.control_subclass # class {self}::Control_N::Control
+    kontrol.site    = self.site
+    kontrol.timeout = 20
+
+    cb_error "Cannot start SSH control master for #{self.name}" unless self.start_tunnels # will do nothing if already started
+    control         = kontrol.new(command)
     control.save
 
     returned_command = RemoteCommand.new(control.attributes)
