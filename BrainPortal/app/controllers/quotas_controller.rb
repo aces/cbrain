@@ -37,12 +37,16 @@ class QuotasController < ApplicationController
     @mode  = :cpu  if params[:mode].to_s == 'cpu'
     @mode  = :disk if params[:mode].to_s == 'disk' || @mode != :cpu
     cbrain_session[:quota_mode] = @mode.to_s
-
     @scope = scope_from_session("#{@mode}_quotas#index")
+
+    # Make sure the target user is set if viewing quotas for another user.
+    @as_user                    = see_as_user params['as_user_id']
+    @scope.custom['as_user_id'] = @as_user.id
 
     @base_scope   = base_scope.includes([:user, :data_provider  ]) if @mode == :disk
     @base_scope   = base_scope.includes([:user, :remote_resource]) if @mode == :cpu
-    @view_scope   = @scope.apply(@base_scope)
+
+    @view_scope = @scope.apply(@base_scope)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 15 })
     @quotas = @scope.pagination.apply(@view_scope, api_request?)
@@ -343,6 +347,73 @@ class QuotasController < ApplicationController
 
   end
 
+  def report_almost
+    @mode = params[:mode].to_s == 'cpu' ? :cpu : :disk
+    cb_exception("not supported") if @mode == :cpu
+    report_disk_almost if @mode == :disk
+  end
+
+  def report_disk_almost
+    almost = 0.95 # share of resource use qualifying for 'almost exceeding'
+    quota_to_user_ids = {}  # quota_obj => [uid, uid...]
+
+    # Scan DP-wide quota objects
+    DiskQuota.where(:user_id => 0).all.each do |quota|
+      exceed_size_user_ids     = Userfile
+                                   .where(:data_provider_id => quota.data_provider_id)
+                                   .group(:user_id)
+                                   .sum(:size)
+                                   .select { |user_id,size| size >= quota.max_bytes * almost }
+                                   .keys
+      exceed_numfiles_user_ids = Userfile
+                                   .where(:data_provider_id => quota.data_provider_id)
+                                   .group(:user_id)
+                                   .sum(:num_files)
+                                   .select { |user_id,num_files| num_files >= quota.max_files * almost }
+                                   .keys
+
+      union_ids  = exceed_size_user_ids | exceed_numfiles_user_ids
+      union_ids -= DiskQuota
+                     .where(:data_provider_id => quota.data_provider_id, :user_id => union_ids)
+                     .pluck(:user_id) # remove user IDs that have their own quota records
+      quota_to_user_ids[quota] = union_ids if union_ids.size > 0
+    end
+
+    # Scan user-specific quota objects
+    DiskQuota.where('user_id > 0').all.each do |quota|
+      quota_to_user_ids[quota] = [ quota.user_id ] if quota.almost_exceeded?
+    end
+
+    # Inverse relation: user_id => [ quota, quota ]
+    user_id_to_quotas = {}
+    quota_to_user_ids.each do |quota,user_ids|
+      user_ids.each do |user_id|
+        user_id_to_quotas[user_id] ||= []
+        user_id_to_quotas[user_id]  << quota
+      end
+    end
+
+    # Table content: [ [ user_id, quota ], [user_id, quota] ... ]
+    # Note: the rows are grouped by user_id, but not sorted in any way...
+    @user_id_and_quota = []
+    user_id_to_quotas.each do |user_id, quotas|
+      quotas.each do |quota|
+        @user_id_and_quota << [ user_id, quota ]
+      end
+    end
+
+  end
+
+  # a clone of browse_as
+  def see_as_user(as_user_id) #:nodoc:
+    scope     = scope_from_session("#{@mode}_quotas#index")
+    users     = current_user.available_users
+    as_user   = users.where(:id => as_user_id).first
+    as_user ||= users.where(:id => scope.custom['as_user_id']).first
+    as_user ||= current_user
+    as_user
+  end
+
   private
 
   def disk_quota_params #:nodoc:
@@ -366,12 +437,12 @@ class QuotasController < ApplicationController
     scope = DiskQuota.where(nil) if @mode == :disk
     scope = CpuQuota.where(nil)  if @mode == :cpu
 
-    return scope if current_user.has_role?(:admin_user)
+    return scope if current_user.has_role?(:admin_user) && @as_user.id == current_user.id
 
     if @mode == :disk
-      dp_ids = DataProvider.all.select { |dp| dp.can_be_accessed_by?(current_user) }.map(&:id)
+      dp_ids = DataProvider.all.select { |dp| dp.can_be_accessed_by?(@as_user) }.map(&:id)
       scope = scope.where(
-        :user_id          => [ 0, current_user.id ],
+        :user_id          => [ 0, @as_user.id ],
         :data_provider_id => dp_ids,
       )
     end
