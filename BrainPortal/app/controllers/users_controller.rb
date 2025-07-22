@@ -96,6 +96,20 @@ class UsersController < ApplicationController
     # Hash of OIDC uris with the OIDC name as key
     @oidc_uris    = generate_oidc_login_uri(@oidc_configs)
 
+    # few attributes for quotes table
+    @scope = scope_from_session("mydiskquotes")
+    dp_ids = DataProvider.all.select { |dp| dp.can_be_accessed_by?(current_user) }.map(&:id)
+    @base_scope = DiskQuota.where(
+      :data_provider_id => dp_ids,
+      :user_id          => [ 0, @user.id ],
+    ).includes([:user, :data_provider])
+
+    @view_scope   = @scope.apply(@base_scope)
+
+    @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 10 })
+    @quotas = @scope.pagination.apply(@view_scope)
+    
+
     respond_to do |format|
       format.html # show.html.erb
       format.xml  do
