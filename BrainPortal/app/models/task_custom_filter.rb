@@ -46,12 +46,12 @@ class TaskCustomFilter < CustomFilter
       :wd_status,
       :archiving_status,
       {
-        :user_ids         => [],
-        :group_ids        => [],
-        :bourreau_ids     => [],
-        :types            => [],
-        :status           => [],
+        :user_ids                  => [],
+        :group_ids                 => [],
+        :bourreau_ids              => [],
         :results_data_provider_ids => [],
+        :types                     => [],
+        :status                    => [],
       }
     ]
   self.data_setter_and_getter(WHITELIST_TASKS_FILTERING_PARAMS)
