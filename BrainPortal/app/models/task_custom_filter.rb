@@ -28,6 +28,7 @@
 #[*description*] The CbrainTask description to filter.
 #[*user_id*] The user_id of the CbrainTask owner to filter against.
 #[*bourreau_id*] The bourreau_id of the bourreau to filter against.
+#[*results_data_provider_id*] The id of the results data provider for task results to filter against.
 class TaskCustomFilter < CustomFilter
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -45,11 +46,12 @@ class TaskCustomFilter < CustomFilter
       :wd_status,
       :archiving_status,
       {
-        :user_ids     => [],
-        :group_ids    => [],
-        :bourreau_ids => [],
-        :types        => [],
-        :status       => [],
+        :user_ids         => [],
+        :group_ids        => [],
+        :bourreau_ids     => [],
+        :types            => [],
+        :status           => [],
+        :results_data_provider_ids => [],
       }
     ]
   self.data_setter_and_getter(WHITELIST_TASKS_FILTERING_PARAMS)
@@ -64,11 +66,13 @@ class TaskCustomFilter < CustomFilter
   validate :valid_data_user_ids
   validate :valid_data_group_ids
   validate :valid_data_bourreau_ids
+  validate :valid_data_results_data_provider_ids
   validate :valid_data_types
   validate :valid_data_description
   validate :valid_data_wd_status
   validate :valid_data_status
   validate :valid_data_archiving_status
+
 
   def valid_data_user_ids #:nodoc:
     my_ids = cleaned_array_for_attribute(:user_ids)
@@ -91,6 +95,14 @@ class TaskCustomFilter < CustomFilter
     return true if my_ids.empty?
     return true if (my_ids.map(&:to_i) - Bourreau.find_all_accessible_by_user(self.user).pluck(:id)).empty?
     errors.add(:data_bourreau_ids, 'are not all accessible bourreaux')
+    return false
+  end
+
+  def valid_data_results_data_provider_ids #:nodoc:
+    my_ids = cleaned_array_for_attribute(:results_data_provider_ids)
+    return true if my_ids.empty?
+    return true if (my_ids.map(&:to_i) - DataProvider.find_all_accessible_by_user(self.user).pluck(:id)).empty?
+    errors.add(:data_results_data_provider_ids, 'are not all accessible data providers')
     return false
   end
 
@@ -153,14 +165,15 @@ class TaskCustomFilter < CustomFilter
   # See CustomFilter
   def filter_scope(scope)
     scope = super(scope)
-    scope = scope_types(scope)        if self.data_types.present?
-    scope = scope_description(scope)  if self.data_description_type.present? && self.data_description_term.present?
-    scope = scope_user_ids(scope)     if self.data_user_ids.present?
-    scope = scope_group_ids(scope)    if self.data_group_ids.present?
-    scope = scope_bourreau_ids(scope) if self.data_bourreau_ids.present?
-    scope = scope_status(scope)       if self.data_status.present?
-    scope = scope_archive(scope)      if self.data_archiving_status.present?
-    scope = scope_wd_status(scope)    if self.data_wd_status.present?
+    scope = scope_types(scope)                     if self.data_types.present?
+    scope = scope_description(scope)               if self.data_description_type.present? && self.data_description_term.present?
+    scope = scope_user_ids(scope)                  if self.data_user_ids.present?
+    scope = scope_group_ids(scope)                 if self.data_group_ids.present?
+    scope = scope_bourreau_ids(scope)              if self.data_bourreau_ids.present?
+    scope = scope_results_data_provider_ids(scope) if self.data_results_data_provider_ids.present?
+    scope = scope_status(scope)                    if self.data_status.present?
+    scope = scope_archive(scope)                   if self.data_archiving_status.present?
+    scope = scope_wd_status(scope)                 if self.data_wd_status.present?
     scope
   end
 
@@ -205,6 +218,11 @@ class TaskCustomFilter < CustomFilter
   # Return +scope+ modified to filter the CbrainTask entry's bourreau.
   def scope_bourreau_ids(scope)
     filter_by_attribute(scope, :bourreau_id, self.data_bourreau_ids)
+  end
+
+  # Return +scope+ modified to filter the CbrainTask entry's data provider.
+  def scope_results_data_provider_ids(scope)
+    filter_by_attribute(scope, :results_data_provider_id, self.data_results_data_provider_ids)
   end
 
   # Returns +scope+ modified to filter the CbrainTask entry's status.
