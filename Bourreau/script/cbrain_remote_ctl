@@ -102,6 +102,13 @@ pidhost="$pidfile.hostname"
 prevpid=$(cat $pidfile 2>/dev/null)
 prevhost=$(cat $pidhost 2>/dev/null)
 
+# Advanced socket paths (as established by the script 'cbrain_reverse_ssh')
+# In the case where the system is not booted with that script, the paths
+# will be different: the DB socket will be found by the most recent
+# timestamp, and the SSH agent will be just whatever the master SSH sets.
+database_sock="$rails_home"/tmp/sockets/db.$curhost.remote_ssh.sock
+sshagent_sock="$rails_home"/tmp/sockets/ssa.$curhost.remote_ssh.sock
+
 # Check usage
 if test $# -ne 1 -a $# -ne 3 ; then # 1 or 3 args!
   usage
@@ -110,6 +117,21 @@ fi
 # Auto cleanup no matter what
 trap "rm -f $db_file" EXIT
 
+
+#############################################################
+# Utility functions
+#############################################################
+
+# Returns true if we can find the socketpath (which must
+# exists on the filesystem) among the list of those bound
+# to a process. Hopefully this works on Linux as well as MacOS.
+function check_unix_socket {
+  socketpath=$(realpath $1 2>/dev/null)
+  if ! test -S "$socketpath" ; then
+    return 1 # nope
+  fi
+  lsof -w -a -U -u$USER | grep -q "$socketpath" # grep will return 0 or 1
+}
 
 #############################################################
 # STOP
@@ -165,16 +187,35 @@ if test "$mode" = "start" -a -n "$prevpid" ; then
   rm -f $pidhost
 fi
 
-# Find the most recently created DB socket filename
-sockfile=$( /bin/ls -1tr tmp/sockets/db.*.sock 2>/dev/null | tail -1 )
-if test "X$sockfile" = "X" ; then
-  fatal "Could not find a DB socket in tmp/sockets/db.*.sock"
+# Find DB socket filename:
+# 1. try the one created by cbrain_reverse_ssh
+if check_unix_socket "$database_sock" ; then
+  sockfile="$database_sock"
+else
+  # 2. Find the most recently created DB socket filename
+  sockfile=$( /bin/ls -1tr tmp/sockets/db.*.sock 2>/dev/null | tail -1 )
+  if test "X$sockfile" = "X" ; then
+    fatal "Could not find a DB socket in tmp/sockets/db.*.sock"
+  fi
+  if ! check_unix_socket "$sockfile" ; then
+    fatal "Found DB socket '$sockfile' but it doesn't seem to be connected."
+  fi
 fi
+sockfile=$(realpath "$sockfile")
+
 # Erase older DB socket files
 for badsock in tmp/sockets/db.*.sock ; do
+  badsock=$(realpath "$badsock")
   test "X$badsock" = "X$sockfile" && continue # skip good one
   rm -f "$badsock"
 done
+
+# SSH Auth sock: if present, use it. This happens in the case of
+# cbrain_reverse_ssh . Otherwise, whatever socket is set by the
+# current SSH master will be used.
+if check_unix_socket "$sshagent_sock" ; then
+  export SSH_AUTH_SOCK="$sshagent_sock" # crushes any existing ENV var
+fi
 
 # In 'start' mode, we get the content of the database.yml
 # from STDIN stream. In 'console' mode, the content is already
@@ -184,12 +225,12 @@ if test -s $db_file ; then
   # This takes the current file's content and makes the substitution in it.
   # Mostly used in 'console' mode but it can happen in 'start' mode if
   # a developer has installed manually a DB file.
-  cat $db_file | sed -e 's@socket:.*@socket: '"$PWD/$sockfile"'@' > $db_file.tmp
+  cat $db_file | sed -e 's@socket:.*@socket: '"$sockfile"'@' > $db_file.tmp
   mv -f $db_file.tmp $db_file
 else
   # This gets the file's content from STDIN and makes the substitution in it before writing.
   # Only used in 'start' mode.
-  cat | sed -e 's@socket:.*@socket: '"$PWD/$sockfile"'@' > $db_file
+  cat | sed -e 's@socket:.*@socket: '"$sockfile"'@' > $db_file
 fi
 
 
@@ -200,7 +241,7 @@ fi
 if test "$mode" = "console" ; then
   echo ""
   echo "Bourreau Console Starting on $curhost."
-  script/rails console $environment # this will BLOCk
+  script/rails console $environment # this will BLOCK
   errcode=$?
   echo ""
   echo "Bourreau Console Exiting on $curhost."
