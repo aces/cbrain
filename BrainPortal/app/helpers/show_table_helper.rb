@@ -89,6 +89,12 @@ module ShowTableHelper
       @method          = options[:method].presence || ((object.is_a?(ApplicationRecord) && object.new_record?) ? :post : :put)
       @as              = options[:as].presence || @object.class.to_s.underscore
 
+      # Set the form_helper object name with @as in order to
+      # avoid issue when a form is re-rendered in case of validation errors.
+      # This is a safety check to ensure that the form helper is associated
+      # with the object we are building the table for and not fo a sub-class.
+      @form_helper.object_name = @as if @form_helper
+
       # Safety check to prevent devs from mixing up forms and objects
       if @form_helper && @form_helper.object != @object
         raise "Error: the form helper provided is not associated with our object!"
