@@ -187,6 +187,11 @@ module BoutiquesSupport
     def dup #:nodoc:
       copy = super
       copy.from_file = self.from_file
+      # We need to copy explicitely the 'cbrain_input_notes'
+      self.inputs = [] if self.inputs.nil?
+      copy.inputs.each_with_index do |input,idx|
+        input.cbrain_input_notes = self.inputs[idx].cbrain_input_notes.dup
+      end
       copy
     end
 
@@ -539,7 +544,7 @@ module BoutiquesSupport
     # When dup'ing, also copy the special cbrain_input_notes
     def dup #:nodoc:
       copy = super
-      copy.cbrain_input_notes = self.cbrain_input_notes
+      copy.cbrain_input_notes = self.cbrain_input_notes.dup
       copy
     end
 
