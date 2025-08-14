@@ -405,7 +405,7 @@
       <% end %>
       <br>
       <%= text_area_tag 'background_activity[options][prepare_dynamic_items]',
-          (@bac.options[:prepare_dynamic_items].presence || "self.items=[]"), :rows => 2, :cols => 120 %>
+          (@bac.options[:prepare_dynamic_items].presence || "self.items=[1,2,3,4]"), :rows => 1, :cols => 120 %>
       <p>
 
       <%= label_tag      'background_activity[options][before_first_item]' do %>
@@ -417,12 +417,17 @@
       <p>
 
       <%= label_tag      'background_activity[options][process]' do %>
-        process() : Mandatory. Must return [ ok, message ]
+        process() : Mandatory. Must return <strong>[ true, nil ]</strong> when something is processed properly, and <strong>[ false, message ]</strong> otherwise.
       <% end %>
       <br>
       <%= text_area_tag 'background_activity[options][process]',
-          (@bac.options[:process] || "return [ true, nil ] if item == 3\nreturn [ false, \"Error: not odd\" ]"),
+          (@bac.options[:process] || "# Add a description on first line of comment\nreturn [ true, nil ] if item.odd?\nreturn [ false, \"Error: not odd\" ]"),
           :rows => 5, :cols => 120 %>
+      <div class="field_explanation">
+        Consider adding a short description of what your RubyRunner code does
+        on the very first line of comment; this will be shown as a description
+        of the BackgroundActivity within the index page.
+      </div>
       <p>
 
       <%= label_tag      'background_activity[options][after_last_item]' do %>

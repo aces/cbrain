@@ -153,17 +153,10 @@
             %>
             <% tool_pb, exec_pb = user_can_access_versus, user_can_access_resource %>
             <% exec_pb, tool_pb = tool_pb, exec_pb if for_tool %>
-              <!-- Add information on the tooltip -->
-              <%= html_tool_tip html_colorize(users_with_access.count, "green") do %>
-                <% admins = users_with_access.select {|u| u.has_role? :admin_user } %>
-                <%= "of which #{admins.count} are admins".html_safe %>
-              <% end %>
-            user(s) have access,
+
+            <%= html_colorize(users_with_access.count, "green") %> user(s) have access,
             <span class="warning">
-              <%= html_tool_tip html_colorize users_without_access.count do %>
-                <%= "#{exec_pb.values.count false} - due Execution Server's project<br/>".html_safe unless exec_pb.values.all?  %>
-                <%= "#{tool_pb.values.count false} - due Tool's project".html_safe unless tool_pb.values.all?  %>
-              <% end %>
+              <%= users_without_access.count %>
             </span>
             user(s) have no access
           </td>

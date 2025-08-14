@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20250526170331) do
+ActiveRecord::Schema.define(version: 20250704085709) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -266,9 +266,9 @@ ActiveRecord::Schema.define(version: 20250526170331) do
     t.decimal  "max_bytes",          precision: 24
     t.decimal  "max_files",          precision: 24
     t.integer  "remote_resource_id"
-    t.integer  "max_cpu_past_week"
-    t.integer  "max_cpu_past_month"
-    t.integer  "max_cpu_ever"
+    t.decimal  "max_cpu_past_week",  precision: 24
+    t.decimal  "max_cpu_past_month", precision: 24
+    t.decimal  "max_cpu_ever",       precision: 24
     t.datetime "created_at",                        null: false
     t.datetime "updated_at",                        null: false
   end
