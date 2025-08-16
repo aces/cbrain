@@ -93,6 +93,8 @@ class NhLorisHooksController < NeurohubApplicationController
       result = create_file_for_request(CbrainFileList, "Loris-DQT-List.cbcsv", cblist_content)
     end
 
+    result.addlog("Created by #{current_user.login} using #{self.class.name}/#{__method__}")
+
     # Info message and unmatched entries
     extra_response = {
       :found_count   => file_count,
@@ -149,6 +151,7 @@ class NhLorisHooksController < NeurohubApplicationController
 
     # Save result file
     result = create_file_for_request(CSVFile, "Data.csv", csv_content)
+    result.addlog("Created by #{current_user.login} using #{self.class.name}/#{__method__}")
 
     # Report back to client
     render_created_file_report(result)
