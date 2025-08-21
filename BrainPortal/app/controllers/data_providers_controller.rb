@@ -64,6 +64,8 @@ class DataProvidersController < ApplicationController
     @provider        = DataProvider.find(data_provider_id)
     cb_notice "Provider not accessible by current user." unless @provider.can_be_accessed_by?(current_user)
 
+    @typelist = get_type_list
+
     respond_to do |format|
       format.html # show.html.erb
       format.xml  {
@@ -77,6 +79,7 @@ class DataProvidersController < ApplicationController
 
   def new #:nodoc:
     provider_group_id = current_assignable_group.id
+    @unsaved_meta     = {}
     @provider = DataProvider.new( :user_id   => current_user.id,
                                   :group_id  => provider_group_id,
                                   :online    => true,
@@ -84,12 +87,15 @@ class DataProvidersController < ApplicationController
                                 )
 
     @typelist = get_type_list
+
+    render :action => :show # our show is also edit/create
   end
 
   def create  #:nodoc:
     @provider            = DataProvider.sti_new(data_provider_params)
     @provider.user_id  ||= current_user.id # disabled field in form DOES NOT send value!
     @provider.group_id ||= current_assignable_group.id
+    @unsaved_meta        = params[:meta] || {}
 
     if @provider.save
       add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid])
@@ -103,7 +109,7 @@ class DataProvidersController < ApplicationController
     else
       @typelist = get_type_list
       respond_to do |format|
-        format.html { render :action => :new }
+        format.html { render :action => :show }
         format.xml  { render :xml  => @provider.errors, :status => :unprocessable_entity }
         format.json { render :json => @provider.errors, :status => :unprocessable_entity }
       end
