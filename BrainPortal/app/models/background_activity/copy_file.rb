@@ -32,7 +32,7 @@ class BackgroundActivity::CopyFile < BackgroundActivity
     dp_id = self.options[:dest_data_provider_id]
     dp    = DataProvider.find(dp_id) rescue nil
     dp_name = dp&.name || "##{dp_id}"
-    self.class.to_s.demodulize.underscore.humanize + " on #{dp_name}"
+    self.class.to_s.demodulize.underscore.humanize + " to #{dp_name}"
   end
 
   # Helper for scheduling a copy of files immediately.
