@@ -24,7 +24,7 @@
 #
 # See also the Boutiques repository: https://github.com/boutiques/boutiques
 #
-# The modules provides one main Ruby class, BoutiquesSupport::BoutiquesDescriptor,
+# The module provides one main Ruby class, BoutiquesSupport::BoutiquesDescriptor,
 # and several smaller data classes representing components of a descriptor.
 # These classes are subclasses of RestrictedHash, a type of Hash class that
 # only recognize a select set of keys and raise an exception when other keys
@@ -58,49 +58,6 @@
 # appear in RDOC-generated documentation. Among these, many are
 # used by the BoutiquesTask integrator.
 #
-#   # Returns the name of the tool NNNN, appropriate to use as
-#   # a class name as BoutiquesTask::NNNN
-#   desc.name_as_ruby_class
-#
-#   # Returns all tags as a flat array
-#   desc.flat_tag_list
-#
-#   # Finds a specific BoutiquesSupport:Input by ID
-#   desc.input_by_id(inputid)
-#
-#   # Subset of the list of inputs with just the optional ones
-#   desc.optional_inputs
-#
-#   # Subset of the list of inputs with just the mandatory ones
-#   desc.required_inputs
-#
-#   # Subset of the list of inputs with just the multi-valued ones
-#   desc.list_inputs
-#
-#   # Subset of the list of inputs with just the File inputs
-#   desc.file_inputs
-#
-#   # List of File inputs that are optional
-#   desc.optional_file_inputs
-#
-#   # List of File inputs that are mandatory
-#   desc.required_file_inputs
-#
-#   # Returns the entry for a custom Boutiques integration module
-#   desc.custom_module_info(modulename)
-#
-#   # Utility for building a replacement hash for the inputs based on
-#   # the values in invoke_structure
-#   desc.build_substitutions_by_tokens_hash(invoke_structure)
-#
-#   # Utility to perform the subsitutions of tokens in a string
-#   desc.apply_substitutions(string, substitutions_by_tokens, to_strip=[])
-#
-#   # Returns a new descriptor with the attributes in a canonical beautiful order
-#   desc.pretty_ordered
-#
-#   # Generates a JSON with nice spacing
-#   desc.super_pretty_json
 #
 module BoutiquesSupport
 
@@ -165,6 +122,7 @@ module BoutiquesSupport
       self
     end
 
+    # Creates a new Boutiques object from string
     def self.new_from_string(text)
       json   = JSON.parse(text)
       errors = BoutiquesSupport.validate(json)
@@ -173,13 +131,14 @@ module BoutiquesSupport
       cb_error "Invalid Boutiques descriptor\n" + (errors.map { |e| e[:message] }.join("\n"))
     end
 
+    # Creates a new Boutiques object from a documents stored in a given path
     def self.new_from_file(path)
       obj = self.new_from_string(File.read(path))
       obj.from_file = path
       obj
     end
 
-    def validate
+    def validate #:nodoc:
       BoutiquesSupport.validate(self) # amazingly, the JSON validator also work with our descriptor class
     end
 
@@ -231,6 +190,7 @@ module BoutiquesSupport
           .camelize
     end
 
+    # Returns all tags as a flat arra
     def flat_tag_list
       tags = self.tags
       return [] if ! tags
@@ -240,31 +200,38 @@ module BoutiquesSupport
       end.flatten
     end
 
+    # Finds a specific Input by id
     def input_by_id(inputid)
       inputs.detect { |x| x.id == inputid } or
         cb_error "No input found with ID '#{inputid}'"
     end
 
+    # Lists optional inputs
     def optional_inputs
       inputs.select { |x| x.optional }
     end
 
+    # Lists required inputs
     def required_inputs
       inputs.select { |x| ! x.optional }
     end
 
+    # Lists inputs
     def list_inputs
       inputs.select { |x| x.list }
     end
 
+    # Lists File inputs
     def file_inputs
       inputs.select { |x| x.type == 'File' }
     end
 
+    # Lists optional File inputs
     def optional_file_inputs
       file_inputs.select { |x| x.optional }
     end
 
+    # Lists mandatory File inputs
     def required_file_inputs
       file_inputs.select { |x| ! x.optional }
     end
@@ -343,7 +310,7 @@ module BoutiquesSupport
       end.compact.to_h
     end
 
-    # Replaces in +string+ all occurences of the keys in
+    # Replaces in +string+ all occurrences of the keys in
     # +substitutions_by_tokens+ by the associated values.
     # This is typically used to build a templated string
     # using the "value-key" of the inputs of the descriptor.
@@ -524,6 +491,136 @@ module BoutiquesSupport
       new_json
     end
 
+    #-------------------------------------------------------------------------
+    # Methods to access and document CBRAIN specific custom properties
+    #-------------------------------------------------------------------------
+    # see public/doc/boutiques_extensions for a list of these custom properties
+
+    # Returns a string with name(s) and emails(s) of the Boutiques descriptor authors, enlisted in
+    # "cbrain:author" custom property of the descriptors. Emails are optional
+    # and should be in angle brackets
+    #
+    # For example, given the descriptor with
+    #
+    #    "custom": { "cbrain:author": "Full Name  <email@address.ca>, Co-author Name  <anotheremail@address.org>" }
+    #
+    # The method returns string
+    #    "Full Name  <email@address.ca>, Co-author Name  <anotheremail@address.org>"
+    def custom_author
+      authors = self.custom['cbrain:author']
+      return authors if authors is_a? String
+      return authors.join(", ")   #  if author field is arrays
+    end
+
+    # Returns Boutiques CBRAIN custom property indicating
+    # are forking sub-task(s) allowed. To submit a subtask, a task must create a JSON file
+    # named ".new-task-*.json" in the root of its
+    # work directory. An example of property definition in a tool descriptor:
+    #
+    #   "custom: {
+    #     "cbrain:can-submit-new-tasks": true
+    #   }
+    def custom_can_submit_new_tasks
+      return self.custom["cbrain:can-submit-new-tasks"]
+    end
+
+    # Returns Boutiques CBRAIN custom property indicating
+    # the outputs which will not be saved.
+    # An example of property definition in a tool descriptor:
+    #
+    #   "custom: {
+    #     "cbrain:ignore_outputs": [output_id_1, output_id_2, output_id_3 ... ]
+    #   }
+    def custom_ignore_outputs
+      return self.custom["cbrain:ignore_outputs"]
+    end
+
+    # Returns Boutiques CBRAIN custom property indicating
+    # inputs which are saved back to the dataprovider
+    # (the original data will be mutated).
+    #
+    # An example of property definition in a tool descriptor:
+    #   "custom: {
+    #     "cbrain:save_back_inputs": [id_1, id_2, id_3 ...]
+    #   }
+    def custom_save_back_inputs
+      return self.custom["cbrain:save_back_inputs"]
+    end
+
+    # Returns Boutiques CBRAIN custom property indicating
+    # that the tool does not modify inputs.
+    # An example of property definition in a tool descriptor:
+    #
+    #   "custom: {
+    #     "cbrain:readonly-input-files": true
+    #   }
+    def custom_readonly_input_files
+      return self.custom["cbrain:readonly-input-files"]
+    end
+
+    # Returns Boutiques CBRAIN custom property indicating
+    # if this task may alter its input files.
+    # An example of property definition in a tool descriptor:
+    #
+    #   "custom: {
+    #     "cbrain:alters-input-files": true
+    #   }
+    def custom_alters_input_files
+      return self.custom["cbrain:alters-input-files"]
+    end
+
+    # Returns Boutiques CBRAIN custom property indicating for which outputs
+    # the usual practice of adding a run id to output file names is cancelled,
+    # list of output IDs where no run id inserted. Only allowed for MultiLevel
+    # data-providers with "browse path" capability.
+    # For listed outputs ids new results overwrite old files.
+    # An example of property definition in a tool descriptor:
+    #
+    #   "custom: {
+    #     "cbrain:no-run-id-for-outputs": "id_1, id_2, id_3 .."
+    #   }
+    def custom_no_run_id_for_outputs
+      return self.custom["cbrain:no-run-id-for-outputs"]
+    end
+
+    # Returns Boutiques CBRAIN custom property indicating
+    # for which inputs an empty string is a valid input.
+    # An example of property definition in a tool descriptor:
+    #
+    #   "custom: {
+    #     "cbrain:allow_empty_strings": [input_id]
+    #   }
+    def custom_allow_empty_strings
+      return self.custom["cbrain:allow_empty_strings"]
+    end
+
+    # Experimental feature that affects the way tasks are executed.
+    # The default implied value is 'simulate'
+    # In the mode 'simulate', at the moment of creating
+    # the tool's script in cluster_commands(), the
+    # output of 'bosh exec simulate' will be substituted in
+    # the script to generate the tool's command.
+    # In the mode 'launch', an actual 'bosh exec launch' command
+    # will be put in the script instead.
+    # An example of property definition in a tool descriptor:
+    #
+    #   "custom: {
+    #     "cbrain:boutiques_bosh_exec_mode": "launch"
+    #   }
+    def custom_boutiques_bosh_exec_mode
+      return self.custom["cbrain:boutiques_bosh_exec_mode"]
+    end
+
+    # An advanced feature for seasoned CBRAIN experts only. That allows
+    # overwrite the standard task behavior with custom class.
+    # An example of property definition in a tool descriptor:
+    #   "custom: {
+    #     "cbrain:inherits-from-class": "MyClassName"
+    #   }
+    def custom_inherits_from_class
+      return self.custom["cbrain:inherits-from-class"]
+    end
+
   end  # class BoutiquesSupport::BoutiquesDescriptor
 
   #------------------------------------------------------
@@ -548,23 +645,23 @@ module BoutiquesSupport
       copy
     end
 
-    # This method return the parameter name for an input identified
+    # This method returns the parameter name for an input identified
     # by input_id.
     # We put all input Boutiques parameters under a 'invoke' substructure.
     # E.g. for a input with ID 'abcd' in a task, we'll find the value
     # in task.params['invoke']['abcd'] and the parameter name is thus
     # "invoke[abcd]". The as_list option appends "[]" to the name
     # to make it an array parameter.
-    def self.cb_invoke_name(input_id, as_list = nil)
+    def self.cb_invoke_name(input_id, as_list = nil) #:nodoc:
       return "invoke[#{input_id}][]" if as_list
       return "invoke[#{input_id}]"
     end
 
-    def self.cb_invoke_html_name(input_id, force_list = nil)
+    def self.cb_invoke_html_name(input_id, force_list = nil) #:nodoc:
       self.cb_invoke_name(input_id, force_list).to_la
     end
 
-    def self.cb_invoke_html_id(input_id, force_list = nil)
+    def self.cb_invoke_html_id(input_id, force_list = nil) #:nodoc:
       self.cb_invoke_name(input_id, force_list).to_la_id
     end
 
@@ -581,12 +678,12 @@ module BoutiquesSupport
       self.class.cb_invoke_name(self.id, as_list)
     end
 
-    def cb_invoke_html_name(force_list = nil)
+    def cb_invoke_html_name(force_list = nil) #:nodoc:
       as_list = (self.list && force_list.nil?) || force_list == true
       self.class.cb_invoke_html_name(self.id, as_list)
     end
 
-    def cb_invoke_html_id(force_list = nil)
+    def cb_invoke_html_id(force_list = nil) #:nodoc:
       as_list = (self.list && force_list.nil?) || force_list == true
       self.class.cb_invoke_html_id(self.id, as_list)
     end
