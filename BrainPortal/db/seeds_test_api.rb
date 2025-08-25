@@ -67,7 +67,7 @@ class ApplicationRecord
       # Check other properties here?
       yield(exist) if block_given?
       exist.save!
-      puts "#{exist.class} ##{new_record.id} '#{exist.send(options[:info_name_method])}' : updated." if options[:info_name_method]
+      puts "#{exist.class} ##{exist.id} '#{exist.send(options[:info_name_method])}' : updated." if options[:info_name_method]
       return exist
     end
 
@@ -634,6 +634,28 @@ t6.description = 'DelTestWithWorkdir'
 t6.cluster_workdir = "00/00/05/fake"
 t6.save!
 
+
+puts <<STEP
+
+----------------------------
+Step 12: BackgroundActivites
+----------------------------
+
+STEP
+
 # Some cleanup
 BackgroundActivity.finished.delete_all
 BackgroundActivity.where("updated_at < ?",6.minutes.ago).delete_all
+BackgroundActivity::SyncFile.seed_record!(
+  { :id => 43 },
+  {
+    :user_id => 2,
+    :remote_resource_id => 1,
+    :status => 'Suspended',
+    :items => [2],
+  },
+  {
+    :info_name_method => :pretty_name,
+  }
+)
+
