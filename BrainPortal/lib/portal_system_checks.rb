@@ -228,6 +228,11 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
     SshAgentUnlockingEvent.where(["created_at < ?",1.day.ago]).delete_all # just to be clean in case they accumulate
 
+    if ENV['CBRAIN_NO_SSH_AGENT_LOCKER'].present? || Rails.env == 'test'
+      puts "C> \t- NOT started as we are in test mode, or env variable CBRAIN_NO_SSH_AGENT_LOCKER is set."
+      return
+    end
+
     worker = WorkerPool.find_pool(PortalAgentLocker).workers.first
     if worker
       puts "C> \t- Found locker already running: '#{worker.pretty_name}'."
