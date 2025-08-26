@@ -130,7 +130,8 @@ function check_unix_socket {
   if ! test -S "$socketpath" ; then
     return 1 # nope
   fi
-  lsof -w -a -U -u$USER | grep -q "$socketpath" # grep will return 0 or 1
+  #lsof -w -a -U -u$USER | grep -q "$socketpath" # grep will return 0 or 1
+  nc -z -U "$socketpath" # will return 0 or 1
 }
 
 #############################################################
