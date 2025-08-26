@@ -245,7 +245,7 @@ class DataProvidersController < ApplicationController
   # Refresh is_alive status for all the providers (in or out of the current scope)
   def check_all
 
-    dp_ids = DataProvider.find_all_accessible_by_user(current_user).pluck(:id)  # perhaps cite admins to be added
+    dp_ids = DataProvider.find_all_accessible_by_user(current_user).pluck(:id)
 
     bac = BackgroundActivity::VerifyDataProvider.setup!(current_user.id, dp_ids)
 
