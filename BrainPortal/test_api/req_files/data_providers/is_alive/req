@@ -1,1 +1,1 @@
-GET /data_providers/15/is_alive?NTOK
+POST /data_providers/15/is_alive?NTOK

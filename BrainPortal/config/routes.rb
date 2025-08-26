@@ -120,7 +120,7 @@ Rails.application.routes.draw do
       post 'register'
       post 'unregister'
       post 'delete'
-      get  'is_alive'
+      post 'is_alive'
       get  'disk_usage'
       get  'report'
       post 'report'
@@ -132,6 +132,7 @@ Rails.application.routes.draw do
       get  'dp_transfers'
       get  'new_personal'
       post 'create_personal'
+      post 'check_all'
     end
   end
 
