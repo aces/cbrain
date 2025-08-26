@@ -249,7 +249,7 @@ class DataProvidersController < ApplicationController
 
     bac = BackgroundActivity::VerifyDataProvider.setup!(current_user.id, dp_ids)
 
-    flash[:notice] = "Statuses of your Data Providers are being updated in background."
+    flash[:notice] = "Data Providers statuses are being updated in background."
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
