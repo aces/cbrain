@@ -85,7 +85,7 @@ describe RemoteResource do
     it "should prevent saving if the cache path is not absolute" do
       remote_resource.dp_cache_dir = "not/absolute"
       remote_resource.save
-      expect(remote_resource).to have(1).error_on(:dp_cache_dir)
+      expect(remote_resource).to have(2).error_on(:dp_cache_dir)
     end
     context "on the Portal app" do
       let(:portal_resource) {RemoteResource.current_resource}
@@ -101,12 +101,12 @@ describe RemoteResource do
       it "should be invalid if the cache path is invalid" do
         allow(DataProvider).to receive(:this_is_a_proper_cache_dir!).and_return(false)
         portal_resource.save
-        expect(portal_resource.error_on(:dp_cache_dir).size).to eq(1)
+        expect(portal_resource.error_on(:dp_cache_dir).size).to eq(2)
       end
       it "should be invalid if the cache dir check raises an exception" do
         allow(DataProvider).to receive(:this_is_a_proper_cache_dir!).and_raise(StandardError)
         portal_resource.save
-        expect(portal_resource.error_on(:dp_cache_dir).size).to eq(1)
+        expect(portal_resource.error_on(:dp_cache_dir).size).to eq(2)
       end
     end
   end
@@ -334,6 +334,7 @@ describe RemoteResource do
       #allow(remote_resource).to receive(:ssh_master).and_return(true)
       allow(remote_resource).to receive_message_chain(:ssh_master, :is_alive?).and_return(true)
       allow(remote_resource).to receive(:site).and_return("site")
+      allow(remote_resource).to receive(:start_tunnels).and_return(true)
     end
     it "should delegate to class method if called on model representing current app" do
       portal_resource = RemoteResource.current_resource
@@ -341,16 +342,16 @@ describe RemoteResource do
       portal_resource.remote_resource_info
     end
     it "should try to connect to the resource" do
-      expect(Control).to receive(:find).and_return(double("control_info").as_null_object)
+      expect(remote_resource.control_subclass).to receive(:find).and_return(double("control_info").as_null_object)
       remote_resource.remote_resource_info
     end
-    it "should create a RemoteResourceInfo object if connention works" do
-      allow(Control).to receive(:find).and_return(double("control_info").as_null_object)
+    it "should create a RemoteResourceInfo object if connection works" do
+      allow(remote_resource.control_subclass).to receive(:find).and_return(double("control_info").as_null_object)
       expect(RemoteResourceInfo).to receive(:new).and_return({})
       remote_resource.remote_resource_info
     end
     it "should create a dummy RemoteResourceInfo object if connection fails" do
-      allow(Control).to receive(:find).and_raise(StandardError)
+      allow(remote_resource.control_subclass).to receive(:find).and_raise(StandardError)
       expect(remote_resource.remote_resource_info).to eq(RemoteResourceInfo.dummy_record)
     end
   end
@@ -409,7 +410,8 @@ describe RemoteResource do
     let(:command) {double(RemoteCommand, :is_a? => true).as_null_object}
     before(:each) do
       allow(remote_resource).to receive(:site)
-      allow(Control).to receive(:new).and_return(double("control").as_null_object)
+      allow(remote_resource).to receive(:start_tunnels).and_return(true)
+      allow(remote_resource.control_subclass).to receive(:new).and_return(double("control").as_null_object)
     end
     it "should raise an exception if command is not a RemoteCommand" do
       expect{remote_resource.send_command(nil)}.to raise_error(CbrainError)
@@ -420,7 +422,7 @@ describe RemoteResource do
       portal_resource.send_command(command)
     end
     it "should send the command" do
-      expect(Control).to receive(:new)
+      expect(remote_resource.control_subclass).to receive(:new)
       remote_resource.send_command(command)
     end
     it "should return the command" do

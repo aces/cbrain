@@ -1,0 +1,140 @@
+#!/bin/bash
+
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2025
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+#########################
+# S U B R O U T I N E S #
+#########################
+
+# Usage
+function usage {
+  echo "Usage: $0 remoteuser remotehost remoteport db_spec sshagent_spec"
+  echo ""
+  echo "remoteuser, remotehost and remoteport are the standard SSH connection parameters."
+  echo ""
+  echo "db_spec can be a string like 'localhost:3306' (or any dbhost and port accessible from remotehost)"
+  echo "or a UNIX domain socket on remotehost."
+  echo ""
+  echo "sshagent_spec can only be UNIX domain socket on remotehost."
+  exit 10
+}
+
+# Fatal error message
+function fatal {
+  echo "$*"
+  exit 20
+}
+
+# Returns true if we can find the socketpath (which must
+# exists on the filesystem) among the list of those bound
+# to a process. Hopefully this works on Linux as well as MacOS.
+function check_unix_socket {
+  socketpath=$(realpath $1 2>/dev/null)
+  if ! test -S "$socketpath" ; then
+    return 1 # nope
+  fi
+  lsof -w -a -U -u$USER | grep -q "$socketpath" # grep will return 0 or 1
+}
+
+# Print usage if zero args, or -h or --help
+if test $# -eq 0 -o "X$1" = "-h" -o "X$1" = "--help" ; then
+  usage
+fi
+
+# Make sure we have all 5 args
+if test $# -ne 5 ; then
+  fatal "This program requires 5 arguments. See --help ."
+fi
+
+# This program only works if its CWD is the Bourreau's root dir.
+# We verify this by checking for the presence of a particular file.
+if ! test -f "app/models/bourreau_worker.rb" ; then
+  fatal "This program '$0' must be started from the Bourreau directory."
+fi
+
+# Positional arguments
+user="$1"
+host="$2"
+port="$3"
+dbspec="$4"
+sshagentspec="$5"
+
+# Run-time paths and names of host and program
+basename=$(basename $0)   # not used yet
+curhost=$(hostname -s)    # not used yet
+rails_home=$(realpath $PWD)
+pidfile="$rails_home/tmp/pids/revssh.$curhost.pid"
+bootlog="$rails_home/log/reverse_ssh.log"
+
+# Local socket names that we will establish here
+database_sock="$rails_home/tmp/sockets/db.$curhost.remote_ssh.sock"
+sshagent_sock="$rails_home/tmp/sockets/ssa.$curhost.remote_ssh.sock"
+
+if check_unix_socket "$database_sock" && check_unix_socket "$sshagent_sock" ; then
+  echo "Oh wow, it seems the reverse connection process is still operating. Using it!"
+  echo "CBRAIN Reverse SSH Started" # this sentence is checked by the portal
+  exit 0
+fi
+
+# Okay, clean up and restart the SSH process
+oldpid=""
+test -f "$pidfile" && oldpid=$(cat "$pidfile")
+test -n "$oldpid"  && kill -TERM "$oldpid" 2>/dev/null # I hope I don't kill something else
+rm -f "$database_sock" "$sshagent_sock" "$pidfile"
+
+# Start the main SSH tunnel back to the service host
+date "+%Y-%m-%d %H:%M:%S %Z Attempting to start a new SSH master to $user@$host:$port" | tee -a $bootlog
+
+# Run this in a subprocess, so we can find and kill it later.
+# We need this because the "-f" option of SSH doesn't record
+# a PID anywhere.
+ssh -n -N -x                             \
+  -o SendEnv=CbrainReverse               \
+  -o BatchMode=Yes                       \
+  -o ForwardAgent=No                     \
+  -o ForwardX11=No                       \
+  -o ExitOnForwardFailure=Yes            \
+  -L "$database_sock":"$dbspec"          \
+  -L "$sshagent_sock":"$sshagentspec"    \
+  -p "$port"                             \
+  "$user@$host"                          \
+  >>$bootlog 2>&1 &
+
+# In case it's slow to set up, check five times in the next five seconds.
+for check in 1 2 3 4 5 ; do
+  sleep 1
+  wrapperpid=$(jobs -p)
+  #echo "CHECK=$check PID=$wrapperpid"
+  if test -z "$wrapperpid" ; then
+    fatal "Failed to start SSH connection back to CBRAIN service host: SSH process crashed. Check $bootlog ."
+  fi
+  if test -S "$database_sock" -a -S "$sshagent_sock" ; then
+    echo "CBRAIN Reverse SSH Started" # this sentence is checked by the portal
+    echo "Database socket:  $database_sock through SSH to $dbspec"
+    echo "SSH Agent socket: $sshagent_sock through SSH to $sshagentspec"
+    echo $wrapperpid > "$pidfile"
+    exit 0
+  fi
+done
+
+fatal "Failed to start SSH connection back to CBRAIN service host: SSH started but sockets never appeared. Check $bootlog ."
+

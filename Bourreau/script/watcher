@@ -88,5 +88,9 @@ else
   echo $(date +"%Y-%m-%d %H:%M:%S") Watcher $$: Bourreau curl check failed with unexpected code $status
 fi
 
+# Remove all sockets to keep things clean.
+# Hopefully this won't interfere with something that's still operational.
+rm -f "$socket"
+
 exit 0 # this program's own return code is not used by anything
 
