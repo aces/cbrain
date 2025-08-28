@@ -1138,7 +1138,7 @@ class Userfile < ApplicationRecord
   # used by two entries in the DB.
   def flat_dir_dp_name_uniqueness #:nodoc:
     return true if self.data_provider_id.blank? # no check to make
-    return true if ! self.data_provider.content_storage_shared_between_users?
+    return true if ! self.data_provider&.content_storage_shared_between_users?
     check_dup = Userfile.where(
       :name             => self.name,
       :data_provider_id => self.data_provider_id,
