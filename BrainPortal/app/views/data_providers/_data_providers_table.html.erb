@@ -36,7 +36,7 @@
   <%= link_to "Create Personal Data Provider", new_personal_data_providers_path, :class => "button menu_button" %>
 
   <% if check_role(:admin_user) %>
-    <%= link_to "Check All", nil, {:class => "button check_all_dp",} %>
+    <%= link_to "Check All", check_all_data_providers_path, method: :post, :class => "button menu_button" %>
   <% end %>
 
   <%= link_to "User Access Report",
