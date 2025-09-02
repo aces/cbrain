@@ -439,13 +439,10 @@ class SshMaster
     Process.waitpid(pid) # not the PID we want in @pid!
     pidfile = self.pidfile_path
     CONFIG[:SPAWN_WAIT_TIME].times do
-      if File.exists?(pidfile) && File.size(pidfile) > 0
-        break if File.exist?(socket) # socket has appeared, so SSH subprocess is OK
-        # This reads the PID file and verify that the process is there. If not, something's wrong, no need to continue.
-        # It's possible for raw_read_pidfile to return 0 and that's allowed, it means the double fork has not yet
-        # reached the line with the comment 'Overwrite', about 30 lines above here.
-        break if ! self.raw_read_pidfile
-      end
+      break if File.exist?(socket)         &&
+               File.exists?(pidfile)       &&
+               File.size(pidfile)      > 0 &&
+               self.raw_read_pidfile  != 0  # a zero means not yet fully setup; a nil is an error and no need to wait further
       debugTrace("... waiting for confirmed creation of socket and PID file...")
       sleep 1
     end
