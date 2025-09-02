@@ -83,8 +83,7 @@ dbspec="$4"
 sshagentspec="$5"
 
 # Run-time paths and names of host and program
-basename=$(basename $0)   # not used yet
-curhost=$(hostname -s)    # not used yet
+curhost=$(hostname -s)
 rails_home=$(realpath $PWD)
 pidfile="$rails_home/tmp/pids/revssh.$curhost.pid"
 bootlog="$rails_home/log/reverse_ssh.log"

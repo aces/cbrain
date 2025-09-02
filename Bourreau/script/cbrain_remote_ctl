@@ -192,11 +192,11 @@ if test "$mode" = "start" -a -n "$prevpid" ; then
 fi
 
 # Find DB socket filename:
-# 1. try the one created by cbrain_reverse_ssh
+# 1. try the one created by cbrain_reverse_ssh (this is a configurable option, up to admins)
 if check_unix_socket "$database_sock" ; then
   sockfile="$database_sock"
 else
-  # 2. Find the most recently created DB socket filename
+  # 2. Find the most recently created DB socket filename; normally named db.123456.sock with 123456 changing each time
   sockfile=$( /bin/ls -1tr tmp/sockets/db.*.sock 2>/dev/null | tail -1 )
   if test "X$sockfile" = "X" ; then
     fatal "Could not find a DB socket in tmp/sockets/db.*.sock"
@@ -204,6 +204,12 @@ else
   if ! check_unix_socket "$sockfile" ; then
     fatal "Found DB socket '$sockfile' but it doesn't seem to be connected."
   fi
+  # Renaming socket to use the name of current host.
+  # Renaming does NOT break the socket connection as long as we stay in the same fs!
+  # Verified on MacOS and Linux.
+  database_sock="tmp/sockets/db.$curhost.sock" # naming convention when not using cbrain_reverse_ssh
+  /bin/mv -f "$sockfile" "$database_sock"
+  sockfile="$database_sock"
 fi
 sockfile=$(realpath "$sockfile")
 
