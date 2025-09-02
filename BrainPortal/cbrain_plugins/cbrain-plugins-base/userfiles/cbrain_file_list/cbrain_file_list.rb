@@ -80,7 +80,7 @@ class CbrainFileList < CSVFile
   # cache (if the userfile's content has changed for instance) call
   # the method flush_internal_caches().
   def cached_csv_array
-    @rows ||= create_csv_array(QUOTING_CHARACTER, FIELD_SEPARATOR)
+    @rows ||= create_csv_array(QUOTING_CHARACTER, FIELD_SEPARATOR) rescue []
   end
 
   # Sets the internal cache from an explicit +csv_file_content+ string.
@@ -89,7 +89,7 @@ class CbrainFileList < CSVFile
   # of the CSV data.
   def load_from_content(csv_file_content)
     flush_internal_caches()
-    @rows = CSVFile.parse_file_content_as_csv(csv_file_content, QUOTING_CHARACTER, FIELD_SEPARATOR)
+    @rows = CSVFile.parse_file_content_as_csv(csv_file_content, QUOTING_CHARACTER, FIELD_SEPARATOR) rescue []
   end
 
   # Returns an array of the IDs of the first column of the CSV file
