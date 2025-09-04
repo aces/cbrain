@@ -42,8 +42,8 @@ class Bourreau < RemoteResource
                       :message  => 'is invalid as only the following characters are accepted: alphanumeric characters, _, -, and .',
                       :allow_blank => true
   validates           :reverse_service_port, numericality: { only_integer: true, greater_than: 21, less_than: 65536 }, allow_blank: true
-  validates_format_of :reverse_service_db_socket_path,:with => /\A(localhost:\d+|\/[\w\-\.\=\+\/]*)\z/,
-                      :message  => 'is invalid as only \"localhost:nnnn\" or a full path with simple characters are accepted: a-z, A-Z, 0-9, _, +, =, . and of course /',
+  validates_format_of :reverse_service_db_socket_path,:with => /\A(localhost:\d+|[\w\.]+:\d+|\/[\w\-\.\=\+\/]*)\z/,
+                      :message  => 'is invalid as only \"localhost:nnnn\" or \"hostname:nnnn\" or a full path with simple characters are accepted: a-z, A-Z, 0-9, _, +, =, . and of course /',
                       :allow_blank => true
   validates_format_of :reverse_service_ssh_agent_socket_path, :with => /\A\/[\w\-\.\=\+\/]*\z/,
                       :message  => 'is invalid as only paths with simple characters are accepted: a-z, A-Z, 0-9, _, +, =, . and of course /',
