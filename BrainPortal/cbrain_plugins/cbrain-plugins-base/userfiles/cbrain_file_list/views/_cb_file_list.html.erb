@@ -23,13 +23,15 @@
 -%>
 
 <%
-   csv_array  = @userfile.cached_csv_array rescue nil
+   csv_array = @userfile.cached_csv_array rescue nil
 %>
 
 <% if csv_array.nil? %>
-    <span class="warning">
-      <em> Invalid CBRAIN File list, possibly not even CSV, please check is type is correct - failed to find any files <em>
-    </span>
+    
+    <br>
+    <div class="errorExplanation">
+      Invalid CBRAIN File list, possibly not even CSV. Please verify <em> the file type</em>. No files found. <em>
+    </div>
 
 <% elsif @userfile.is_locally_synced? %>
 
