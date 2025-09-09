@@ -35,7 +35,7 @@
     cbcsvs       = interface_files.where(:type => 'CbrainFileList').to_a
     cbcsvToFiles = cbcsvs.map do |f|                       # Only used for preview button
       f.sync_to_cache # silly and blocking
-      ids = f.ordered_raw_ids.reject { |i| i.blank? || i == 0 }
+      ids = f.ordered_raw_ids.reject { |i| i.blank? || i == 0 } rescue []
       names = Userfile.find_all_accessible_by_user(@task.user, :access_requested => :read).where( 'userfiles.id' => ids).pluck(:name)
       [ f.name, names ]
     end.to_h

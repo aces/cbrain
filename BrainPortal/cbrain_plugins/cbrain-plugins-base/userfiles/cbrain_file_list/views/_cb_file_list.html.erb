@@ -38,8 +38,16 @@
     can be missing or wrong).
     </p>
 
-    <%
-      csv_array     = @userfile.cached_csv_array
+  <%
+     csv_array     = @userfile.cached_csv_array rescue nil
+  %>
+
+  <% if csv_array.nil? %>
+    <em>Invalid CBRAIN File list, failed to find any files<em>
+  <% end %>
+
+  <%
+      csv_array   ||= []
       per_page      = 500
       nb_row        = csv_array.size
       page          = (params[:page] || 1).to_i
