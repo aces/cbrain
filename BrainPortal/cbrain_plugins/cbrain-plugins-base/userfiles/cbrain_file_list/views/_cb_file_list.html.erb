@@ -22,7 +22,16 @@
 #
 -%>
 
-<% if @userfile.is_locally_synced? %>
+<%
+   csv_array  = @userfile.cached_csv_array rescue nil
+%>
+
+<% if csv_array.nil? %>
+    <span class="warning">
+      <em> Invalid CBRAIN File list, possibly not even CSV, please check is type is correct - failed to find any files <em>
+    </span>
+
+<% elsif @userfile.is_locally_synced? %>
 
     <p class="medium_paragraphs">
     This type of file contains a list of other CBRAIN files that can be used as input
@@ -38,15 +47,8 @@
     can be missing or wrong).
     </p>
 
-  <%
-     csv_array     = @userfile.cached_csv_array rescue nil
-  %>
 
-  <% if csv_array.nil? %>
-    <em>Invalid CBRAIN File list, failed to find any files<em>
-  <% end %>
-
-  <%
+    <%
       csv_array   ||= []
       per_page      = 500
       nb_row        = csv_array.size
