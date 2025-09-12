@@ -89,10 +89,13 @@ module BoutiquesForcedOutputBrowsePath
   # only AFTER any other overrides to this method (e.g. what
   # happens in the other module BoutiquesOutputFilenameRenamer )
   def name_and_type_for_output_file(output, pathname)
+    dest_supports_browse_path = self.data_provider.has_browse_path_capabilities?
     if self.getlog.to_s !~ /BoutiquesForcedOutputBrowsePath rev/
       self.addlog("BoutiquesForcedOutputBrowsePath rev. #{Revision_info.short_commit}") # only log this once
+      self.addlog("BoutiquesForcedOutputBrowsePath: result DataProvider doesn't have multi-level capabilities, ignoring all forced browse_path configured by the descriptor.") if ! dest_supports_browse_path
     end
     name, type  = super # the standard names and types; the name will be replaced
+    return [ name, type ] if ! dest_supports_browse_path # when ignoring it all
     descriptor  = descriptor_for_save_results
     config      = descriptor.custom_module_info('BoutiquesForcedOutputBrowsePath') || {}
     browse_path = config[output.id]  # "a/b/c"

@@ -366,6 +366,7 @@ class BoutiquesClusterTask < ClusterTask
     custom    = desc.custom || {} # 'custom' is not packaged as an object, just a hash
     idlist    = custom['cbrain:no-run-id-for-outputs'].presence # list of IDs where no run id inserted
     no_run_id = true if idlist && idlist.include?(output.id)
+    no_run_id = false unless self.data_provider.has_browse_path_capabilities?
 
     # Get basename, use it to guess the class
     name             = File.basename(pathname)
