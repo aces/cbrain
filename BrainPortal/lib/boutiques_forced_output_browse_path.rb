@@ -89,7 +89,7 @@ module BoutiquesForcedOutputBrowsePath
   # only AFTER any other overrides to this method (e.g. what
   # happens in the other module BoutiquesOutputFilenameRenamer )
   def name_and_type_for_output_file(output, pathname)
-    dest_supports_browse_path = self.data_provider.has_browse_path_capabilities?
+    dest_supports_browse_path = self.results_data_provider.has_browse_path_capabilities?
     if self.getlog.to_s !~ /BoutiquesForcedOutputBrowsePath rev/
       self.addlog("BoutiquesForcedOutputBrowsePath rev. #{Revision_info.short_commit}") # only log this once
       self.addlog("BoutiquesForcedOutputBrowsePath: result DataProvider doesn't have multi-level capabilities, ignoring all forced browse_path configured by the descriptor.") if ! dest_supports_browse_path
