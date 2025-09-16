@@ -178,7 +178,7 @@ module BoutiquesInputCopier
 
       rsync_cmd = "rsync -a --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{userfile_cache_full_path.to_s.bash_escape}#{need_slash} #{self.full_cluster_workdir.to_s.bash_escape}/#{userfile_name.bash_escape} 2>&1"
       # self.addlog("Running: #{rsync_cmd}")
-      rsyncout  = bash_this(rsync_cmd)
+      rsyncout  = ic_bash_this(rsync_cmd)
 
       unless rsyncout.blank?
         FileUtils.rm_rf(userfile_name) if File.exist?(userfile_name)
@@ -193,7 +193,7 @@ module BoutiquesInputCopier
   # and returns it. The user of this method is expected to have already
   # properly escaped any special characters in the arguments to the
   # command.
-  def bash_this(command) #:nodoc:
+  def ic_bash_this(command) #:nodoc:
     fh = IO.popen(command,"r")
     output = fh.read
     fh.close
