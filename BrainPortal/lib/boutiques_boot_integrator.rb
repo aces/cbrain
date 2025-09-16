@@ -76,9 +76,19 @@ class BoutiquesBootIntegrator
     end
 
     # Add special module functionality if necessary
+    framework_methods = BoutiquesPortalTask.instance_methods | BoutiquesClusterTask.instance_methods
+    seen_methods      = {}  # method_name => module_name; to detect conflicts
     custom_modules = descriptor.custom['cbrain:integrator_modules'] || {}
     custom_modules.keys.each do |modname|   # "MySuperModule"
-      mod = modname.constantize
+      mod        = modname.constantize
+      modmethods = mod.instance_methods - framework_methods # all local methods of the module
+      modmethods.each do |method|
+        if ! seen_methods[method]
+          seen_methods[method] = modname
+          next
+        end
+        cb_error "Method conflict detected: module '#{modname}' implements method '#{method}' which will hide the method of the same name in module '#{seen_methods[method]}'"
+      end
       klass.include(mod)                    # like 'include MySuperModule'
     end
 
