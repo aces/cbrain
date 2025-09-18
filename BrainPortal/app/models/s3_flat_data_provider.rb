@@ -53,6 +53,14 @@ class S3FlatDataProvider < DataProvider
   validates :cloud_storage_client_identifier,  length: { in: 16..128 }
   validates :cloud_storage_client_token,       length: { in: 20..100 }
 
+  # Attributes of:
+  # - SshDataProvider attributes (not appllicable to S3)
+  # - Containerized/datalad attributes (not applicable to S3)
+  # should be absent for this DP class.
+  validates :remote_host, :remote_user, :remote_dir, :alternate_host, :remote_port,
+            :containerized_path, :datalad_repository_url, :datalad_relative_path,
+            absence: true
+
   validates :cloud_storage_client_bucket_name, format: {
     with: /\A[A-Za-z0-9][A-Za-z0-9\-.]{1,61}[A-Za-z0-9]\z/, # this is good enough; DP will just crash on bad names
     message: "invalid S3 bucket name, for rules see https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-s3-bucket-naming-requirements.html"

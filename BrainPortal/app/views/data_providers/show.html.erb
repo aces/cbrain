@@ -22,44 +22,47 @@
 #
 -%>
 
-<% is_new_record = @provider.new_record? %>
+<%
+  is_new_record        = @provider.new_record?
+  flattened_types      = @typelist.values.flatten
+  include_personal_ssh = flattened_types.include?("UserkeyFlatDirSshDataProvider")
+  include_ssh          = flattened_types.include?("SshDataProvider") || flattened_types.include?("SmartDataProviderInterface")
+  has_owner_access     = (check_role(:admin_user) || @provider.user_id == current_user.id)
+  is_userkey_dp        = @provider.is_a?(UserkeyFlatDirSshDataProvider)
+  needs_ssh_config     = @provider.is_a?(SshDataProvider) || @provider.is_a?(SmartDataProviderInterface)
+%>
+
 <% title is_new_record ? 'Create Data Provider' : 'Data Provider Info' %>
 
-
-<% has_owner_access = (check_role(:admin_user) || @provider.user_id == current_user.id) %>
-<% is_userkey_dp    = @provider.is_a?(UserkeyFlatDirSshDataProvider) %>
-<% needs_ssh_config = @provider.is_a?(SshDataProvider) || @provider.is_a?(SmartDataProviderInterface) %>
-
-<div class="menu_bar">
-    <% if !is_new_record %>
-
-      <% if @provider.is_browsable?(current_user) && @provider.online? %>
-        <%= link_to 'Browse', browse_data_provider_path(@provider), :class => "button" %>
-      <% end %>
-
-      <% if current_user.has_role?(:admin_user) && @provider.method(:impl_provider_report).owner != DataProvider %>
-        <%= link_to 'Inconsistency Report', report_data_provider_path(@provider), :class => "button" %>
-      <% end %>
-
-      <% if @provider.userfiles.count > 0 %>
-        <%= link_to 'File Registration Statistics', report_path(
-                      :table_name       => 'userfiles.combined_file_rep',
-                      :data_provider_id => @provider.id,
-                      :row_type         => :user_id ,
-                      :col_type         => :type,
-                      :generate         => "ok"
-                    ), :class => "button" %>
-      <% end %>
-
-      <% if @provider.respond_to?(:check_connection!) %>
-        <%= link_to "Test Configuration", check_personal_data_provider_path(@provider), :method => :post, :class => "button" %>
-      <% end %>
-
-      <% if has_owner_access %>
-        <%= link_to 'Delete', data_provider_path(@provider), { :data => { :confirm => "Are you sure you want to delete '#{@provider.name}' ?" }, :method => :delete, :class => "button" } %>
-      <% end %>
+<% if !is_new_record %>
+  <div class="menu_bar">
+    <% if @provider.is_browsable?(current_user) && @provider.online? %>
+      <%= link_to 'Browse', browse_data_provider_path(@provider), :class => "button" %>
     <% end %>
-</div>
+
+    <% if current_user.has_role?(:admin_user) && @provider.method(:impl_provider_report).owner != DataProvider %>
+      <%= link_to 'Inconsistency Report', report_data_provider_path(@provider), :class => "button" %>
+    <% end %>
+
+    <% if @provider.userfiles.count > 0 %>
+      <%= link_to 'File Registration Statistics', report_path(
+                    :table_name       => 'userfiles.combined_file_rep',
+                    :data_provider_id => @provider.id,
+                    :row_type         => :user_id ,
+                    :col_type         => :type,
+                    :generate         => "ok"
+                  ), :class => "button" %>
+    <% end %>
+
+    <% if @provider.respond_to?(:check_connection!) %>
+      <%= link_to "Test Configuration", check_personal_data_provider_path(@provider), :method => :post, :class => "button" %>
+    <% end %>
+
+    <% if has_owner_access %>
+      <%= link_to 'Delete', data_provider_path(@provider), { :data => { :confirm => "Are you sure you want to delete '#{@provider.name}' ?" }, :method => :delete, :class => "button" } %>
+    <% end %>
+  </div>
+<% end %>
 
 <P>
 
@@ -79,7 +82,7 @@
         <%= f.text_area :description, :rows => 10, :cols => 40 %><br>
       <% end %>
 
-      <% if has_owner_access || is_new_record %>
+      <% if is_new_record || has_owner_access %>
         <% t.edit_cell(:type, :content => @provider.type) do |f| %>
           <%= f.select :type, grouped_options_for_select(@typelist, @provider.type) %>
         <% end %>
@@ -118,7 +121,7 @@
         <% end %>
       <% end %>
 
-      <% if has_owner_access || is_new_record %>
+      <% if is_new_record || has_owner_access %>
         <% t.edit_cell(:remote_dir, :header => "Physical Data Location", :show_width => 2) do |f| %>
           <%= f.text_field :remote_dir, :size => 80 %>
         <% end %>
@@ -137,7 +140,7 @@
 
     <% end %>
 
-    <% if (has_owner_access && needs_ssh_config) || is_new_record %>
+    <% if is_new_record || (has_owner_access && needs_ssh_config) %>
       <%= show_table(@provider, :form_helper => cf, :as => :data_provider, :header => "SSH parameters", :edit_condition => true) do |t| %>
         <% t.edit_cell(:remote_host, :show_width => 2)  do |f| %>
           <%= f.text_field :remote_host, :size => 40 %>
@@ -157,7 +160,7 @@
       <% end %>
     <% end %>
 
-    <% if (@provider.is_a?(SingSquashfsDataProvider) || @provider.is_a?(SingBindmountDataProvider)) || is_new_record %>
+    <% if ( !@is_personal &&  is_new_record || (@provider.is_a?(SingSquashfsDataProvider) || @provider.is_a?(SingBindmountDataProvider))) %>
       <%= show_table(@provider, :form_helper => cf, :as => :data_provider, :header => "Containerized Storage Configuration", :edit_condition => true) do |t| %>
         <% t.edit_cell(:containerized_path, :header => 'Containerized Data Path', :show_width => 2) do %>
           <%= text_field_tag "data_provider[containerized_path]", @provider.containerized_path, :size => 80 %>
@@ -165,7 +168,7 @@
       <% end %>
     <% end %>
 
-    <% if (@provider.is_a?(S3DataProvider) || @provider.is_a?(S3FlatDataProvider)) || is_new_record %>
+    <% if @provider.is_a?(S3DataProvider) || @provider.is_a?(S3FlatDataProvider) || (is_new_record && @typelist.include?("Cloud")) %>
       <%= show_table(@provider, :form_helper => cf, :as => :data_provider, :header => "Cloud Storage Configuration", :edit_condition => true) do |t| %>
         <% t.edit_cell(:cloud_storage_client_identifier, :header => 'Client Identifier', :show_width => 2)  do |f| %>
           <%= f.text_field :cloud_storage_client_identifier, :size => 40, :autocomplete => 'off' %>
@@ -188,7 +191,7 @@
       <% end %>
     <% end %>
 
-    <% if @provider.is_a?(DataladDataProvider) || is_new_record %>
+    <% if @provider.is_a?(DataladDataProvider) || (is_new_record && @typelist.include?("DataladProvider")) %>
       <%= show_table(@provider, :form_helper => cf, :as => :data_provider, :header => "Datalad Configuration", :edit_condition => true) do |t| %>
         <% t.edit_cell(:datalad_repository_url, :header => 'Datalad Repository URL', :show_width => 2)  do |f| %>
           <%= f.text_field :datalad_repository_url %>
@@ -199,52 +202,54 @@
       <% end %>
     <% end %>
 
-    <%= show_table(@provider, :form_helper => cf, :as => :data_provider, :header => "Other Properties", :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+    <% if !@is_personal %>
+      <%= show_table(@provider, :form_helper => cf, :as => :data_provider, :header => "Other Properties", :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
 
-      <% t.boolean_edit_cell("meta[no_uploads]", is_new_record ? @unsaved_meta[:no_uploads] || false : !@provider.meta[:no_uploads].blank? ,  "on", "", :header => "Cannot be used for uploading files in the file manager") %>
+        <% t.boolean_edit_cell("meta[no_uploads]", is_new_record ? @unsaved_meta[:no_uploads] || false : @provider.meta[:no_uploads],  "on", "", :header => "Cannot be used for uploading files in the file manager") %>
 
-      <% t.boolean_edit_cell("meta[no_viewers]", is_new_record ? @unsaved_meta[:no_viewers] || false : !@provider.meta[:no_viewers].blank? ,  "on", "", :header => "Files cannot be viewed in the file manager") %>
+        <% t.boolean_edit_cell("meta[no_viewers]", is_new_record ? @unsaved_meta[:no_viewers] || false : @provider.meta[:no_viewers],  "on", "", :header => "Files cannot be viewed in the file manager") %>
 
-      <% if @provider.is_browsable? || is_new_record %>
+        <% if is_new_record || @provider.is_browsable? %>
 
-        <% t.boolean_edit_cell("meta[must_move]", is_new_record ? @unsaved_meta[:must_move] || false : !@provider.meta[:must_move].blank? , "on", "", :header => "Files must be copied/moved upon registration") %>
+          <% t.boolean_edit_cell("meta[must_move]", is_new_record ? @unsaved_meta[:must_move] || false : @provider.meta[:must_move], "on", "", :header => "Files must be copied/moved upon registration") %>
 
-        <% browse_gid = !is_new_record ? @provider.meta[:browse_gid].present? : (@unsaved_meta && @unsaved_meta[:browse_gid].present?)  %>
-        <% t.edit_cell("meta[browse_gid]",
-            :header  => "Files can be browsed only by members of this project",
-            :content => !is_new_record && browse_gid ? link_to_group_if_accessible(@provider.meta[:browse_gid]) : '(Any Users)',
-            :show_width => 2
-          ) do %>
-          <%= group_select 'meta[browse_gid]', { :selector => (is_new_record ? @unsaved_meta[:browse_gid] : @provider.meta[:browse_gid]) }, { :include_blank => "(Any Users)" } %>
+          <% browse_gid = !is_new_record ? @provider.meta[:browse_gid].present? : (@unsaved_meta && @unsaved_meta[:browse_gid].present?)  %>
+          <% t.edit_cell("meta[browse_gid]",
+              :header  => "Files can be browsed only by members of this project",
+              :content => !is_new_record && browse_gid ? link_to_group_if_accessible(@provider.meta[:browse_gid]) : '(Any Users)',
+              :show_width => 2
+            ) do %>
+            <%= group_select 'meta[browse_gid]', { :selector => (is_new_record ? @unsaved_meta[:browse_gid] : @provider.meta[:browse_gid]) }, { :include_blank => "(Any Users)" } %>
+          <% end %>
+
         <% end %>
 
       <% end %>
 
-    <% end %>
 
 
+      <% other_dps       = DataProvider.find_all_accessible_by_user(current_user).reject { |dp| dp.id == @provider.id } %>
+      <% dps_by_category = other_dps.to_a.hashed_partitions { |dp| dp.is_browsable? ? :user : :official } %>
 
-    <% other_dps       = DataProvider.find_all_accessible_by_user(current_user).reject { |dp| dp.id == @provider.id } %>
-    <% dps_by_category = other_dps.to_a.hashed_partitions { |dp| dp.is_browsable? ? :user : :official } %>
+      <% if other_dps.size > 0 %>
 
-    <% if other_dps.size > 0 %>
-
-      <%= show_table(@provider, :form_helper => cf, :as => :data_provider, :width => 5, :header => 'Files can be copied or moved to these other Data Providers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
-        <% if dps_by_category[:official] %>
-          <% t.row(:class => 'subheader') { "<strong>Official Storage</strong>".html_safe } %>
-          <% dps_by_category[:official].sort_by(&:name).each do |dp| %>
-            <% meta_key = "dp_no_copy_#{dp.id}" %>
-            <% t.boolean_edit_cell("meta[#{meta_key}]", is_new_record ? @unsaved_meta[meta_key] || false : @provider.meta[meta_key].to_s, "", "disabled", :header => "#{dp.name}", :class => 'checkbox_label') %>
+        <%= show_table(@provider, :form_helper => cf, :as => :data_provider, :width => 5, :header => 'Files can be copied or moved to these other Data Providers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+          <% if dps_by_category[:official] %>
+            <% t.row(:class => 'subheader') { "<strong>Official Storage</strong>".html_safe } %>
+            <% dps_by_category[:official].sort_by(&:name).each do |dp| %>
+              <% meta_key = "dp_no_copy_#{dp.id}" %>
+              <% t.boolean_edit_cell("meta[#{meta_key}]", is_new_record ? @unsaved_meta[meta_key] || false : @provider.meta[meta_key].to_s, "", "disabled", :header => "#{dp.name}", :class => 'checkbox_label') %>
+            <% end%>
           <% end%>
-        <% end%>
 
-        <% t.blank_row %>
+          <% t.blank_row %>
 
-        <% if dps_by_category[:user] %>
-          <% t.row(:class => 'subheader') { "<strong>User or Site Storage</strong>".html_safe } %>
-          <% dps_by_category[:user].sort_by(&:name).each do |dp| %>
-            <% meta_key = "dp_no_copy_#{dp.id}" %>
-            <% t.boolean_edit_cell("meta[#{meta_key}]", is_new_record ? @unsaved_meta[meta_key] || false : @provider.meta[meta_key].to_s, "", "disabled", :header => "#{dp.name}", :class => 'checkbox_label') %>
+          <% if dps_by_category[:user] %>
+            <% t.row(:class => 'subheader') { "<strong>User or Site Storage</strong>".html_safe } %>
+            <% dps_by_category[:user].sort_by(&:name).each do |dp| %>
+              <% meta_key = "dp_no_copy_#{dp.id}" %>
+              <% t.boolean_edit_cell("meta[#{meta_key}]", is_new_record ? @unsaved_meta[meta_key] || false : @provider.meta[meta_key].to_s, "", "disabled", :header => "#{dp.name}", :class => 'checkbox_label') %>
+            <% end%>
           <% end%>
         <% end%>
       <% end%>
@@ -281,10 +286,10 @@
 <p>
 
 <% if has_owner_access %>
-  <% if is_userkey_dp %>
+  <% if include_personal_ssh %>
     <%= render :partial => 'show_user_key' %>
   <% end %>
-  <% if needs_ssh_config || is_new_record %>
+  <% if needs_ssh_config || (is_new_record && include_ssh) %>
   <br>
   <div>
     <table>

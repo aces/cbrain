@@ -35,6 +35,17 @@ class SshDataProvider < DataProvider
 
   include SshDataProviderBase
 
+  # Attributes of:
+  # - S3 attributes (not appllicable to Ssh)
+  # - Containerized/datalad attributes (not applicable to Ssh)
+  # should be absent for this DP class.
+  validates :cloud_storage_client_identifier, :cloud_storage_client_token,
+            :cloud_storage_client_bucket_name, :cloud_storage_client_path_start,
+            :cloud_storage_endpoint, :cloud_storage_region,
+            :containerized_path, :datalad_repository_url, :datalad_relative_path,
+            absence: true
+
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # This returns the category of the data provider

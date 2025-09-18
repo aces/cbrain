@@ -32,8 +32,8 @@ class DataProvidersController < ApplicationController
                            :create_personal, :check_personal, :destroy]
 
   before_action :login_required
-  before_action :manager_role_required, :only => [:new, :create]
-  before_action :admin_role_required,   :only => [:new, :create, :report, :repair]
+  before_action :manager_role_required, :only => [:new, :create ]
+  before_action :admin_role_required,   :only => [:new, :report, :repair]
 
   def index #:nodoc:
     @scope = scope_from_session
@@ -79,16 +79,19 @@ class DataProvidersController < ApplicationController
 
   def new #:nodoc:
     provider_group_id = current_assignable_group.id
-    @unsaved_meta     = {}
-    @provider = DataProvider.new( :user_id   => current_user.id,
+    @provider         = DataProvider.new(
+                                  :user_id   => current_user.id,
                                   :group_id  => provider_group_id,
                                   :online    => true,
                                   :read_only => false
                                 )
 
-    @typelist = get_type_list
+    @unsaved_meta     = {}
+    @is_personal      = false
+    @typelist         = get_type_list
 
-    render :action => :show # our show is also edit/create
+    # Edit/create are the same view
+    render :action => :show
   end
 
   def create  #:nodoc:
@@ -123,14 +126,19 @@ class DataProvidersController < ApplicationController
                                                            :online    => true,
                                                            :read_only => false,
                                                          )
-    @groups           = current_user.assignable_groups
+    @unsaved_meta     = {}
+    @is_personal      = true
+    @typelist         = get_personal_type_list
+
+    # Edit/create are the same view
+    render :action => :show
   end
 
   # Can be create by normal user,
   # only UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider
   def create_personal
     @provider = DataProvider.new(base_provider_params).class_update
-    @provider.update_attributes(userkey_provider_params) if @provider.is_a?(UserkeyFlatDirSshDataProvider)
+    @provider.update_attributes(userkey_provider_params) if @provider.is_a?(Userk eyFlatDirSshDataProvider)
     @provider.update_attributes(s3_provider_params)      if @provider.is_a?(S3FlatDataProvider)
 
     authorized_type     = [UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider]
@@ -142,7 +150,7 @@ class DataProvidersController < ApplicationController
       current_user.assignable_group_ids.include?(@provider.group_id)
     @provider.online   = true
 
-    if ! @provider.save
+      if ! @provider.save
       @groups = current_user.assignable_groups
       respond_to do |format|
         format.html { render :action => :new_personal}
@@ -814,7 +822,29 @@ class DataProvidersController < ApplicationController
     grouped_options = data_provider_list.to_a.hashed_partitions { |name| name.constantize.pretty_category_name }
     grouped_options.delete(nil) # data providers that can not be on this list return a category name of nil, so we remove them
     grouped_options.keys.sort.map { |type| [ type, grouped_options[type].sort ] }
+
+    return grouped_options || []
   end
+
+  def get_personal_type_list #:nodoc:
+    data_provider_list = [ "FlatDirSshDataProvider" ]
+    data_provider_list = DataProvider.descendants.map(&:name)
+
+    grouped_options = data_provider_list.to_a.hashed_partitions { |name| name.constantize.pretty_category_name }
+    # Keep only Cloud and DataladProvider
+    grouped_options = grouped_options.select { |type, values| ["Cloud", "DataladProvider"].include?(type) }
+    # Remove S3DataProvider
+    grouped_options["Cloud"].reject! { |v| v == S3DataProvider.name } if grouped_options["Cloud"]
+
+    # Add UserkeyFlatDirSshDataProvider group
+    category_of_userkey_dp = UserkeyFlatDirSshDataProvider.pretty_category_name
+    userkey_group          = grouped_options.find { |type, _ | type == category_of_userkey_dp } || []
+    userkey_group          << UserkeyFlatDirSshDataProvider.name
+    grouped_options[category_of_userkey_dp] = userkey_group
+
+    return grouped_options || []
+  end
+
 
   # A name to store the scope for the browsing page;
   # a distinct scope is used for each distinct DP
