@@ -32,7 +32,7 @@ class DataProvidersController < ApplicationController
                            :create_personal, :check_personal, :destroy]
 
   before_action :login_required
-  before_action :manager_role_required, :only => [:new, :create ]
+  before_action :manager_role_required, :only => [:new, :create]
   before_action :admin_role_required,   :only => [:new, :report, :repair]
 
   def index #:nodoc:
@@ -100,6 +100,10 @@ class DataProvidersController < ApplicationController
     @provider.group_id ||= current_assignable_group.id
     @unsaved_meta        = params[:meta] || {}
 
+    # Fix some attributes
+    @provider.update_attributes(userkey_provider_params) if @provider.is_a?(UserkeyFlatDirSshDataProvider)
+    @provider.update_attributes(s3_provider_params)      if @provider.is_a?(S3FlatDataProvider)
+
     if @provider.save
       add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid])
       @provider.addlog_context(self,"Created by #{current_user.login}")
@@ -137,11 +141,15 @@ class DataProvidersController < ApplicationController
   # Can be create by normal user,
   # only UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider
   def create_personal
+    @unsaved_meta = params[:meta] || {}
+
+    # Fix some attributes
     @provider = DataProvider.new(base_provider_params).class_update
-    @provider.update_attributes(userkey_provider_params) if @provider.is_a?(Userk eyFlatDirSshDataProvider)
+    @provider.update_attributes(userkey_provider_params) if @provider.is_a?(UserkeyFlatDirSshDataProvider)
     @provider.update_attributes(s3_provider_params)      if @provider.is_a?(S3FlatDataProvider)
 
-    authorized_type     = [UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider]
+    authorized_type     = [UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider, DataladDataProvider]
+    binding.pry
     @provider.errors.add(:type, "is not allowed") unless authorized_type.include?(@provider.type)
 
     # Fix some attributes
@@ -150,13 +158,14 @@ class DataProvidersController < ApplicationController
       current_user.assignable_group_ids.include?(@provider.group_id)
     @provider.online   = true
 
-      if ! @provider.save
+    if ! @provider.save
+      @typelist = get_personal_type_list
       @groups = current_user.assignable_groups
       respond_to do |format|
-        format.html { render :action => :new_personal}
+        format.html { render :action => :show }
         format.json { render :json   => @provider.errors,  :status => :unprocessable_entity }
       end
-      return
+    return
     end
 
     @provider.addlog_context(self, "Created by #{current_user.login}")

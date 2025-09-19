@@ -57,7 +57,7 @@ class S3FlatDataProvider < DataProvider
   # - SshDataProvider attributes (not appllicable to S3)
   # - Containerized/datalad attributes (not applicable to S3)
   # should be absent for this DP class.
-  validates :remote_host, :remote_user, :remote_dir, :alternate_host, :remote_port,
+  validates :remote_user, :remote_host, :remote_port, :remote_dir,
             :containerized_path, :datalad_repository_url, :datalad_relative_path,
             absence: true
 

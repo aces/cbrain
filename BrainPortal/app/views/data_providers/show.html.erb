@@ -30,6 +30,8 @@
   has_owner_access     = (check_role(:admin_user) || @provider.user_id == current_user.id)
   is_userkey_dp        = @provider.is_a?(UserkeyFlatDirSshDataProvider)
   needs_ssh_config     = @provider.is_a?(SshDataProvider) || @provider.is_a?(SmartDataProviderInterface)
+  is_normal_user       = current_user.has_role?(:normal_user)
+  url                  = is_normal_user && is_new_record ? url_for(:controller => 'data_providers', :action => 'create_personal') : nil
 %>
 
 <% title is_new_record ? 'Create Data Provider' : 'Data Provider Info' %>
@@ -70,8 +72,7 @@
 
 <div class="display_inline_block" style="min-width: 50%">
 
-<%= show_table_context(@provider) do |cf| %>
-
+<%= show_table_context(@provider, :url => url) do |cf| %>
     <%= show_table(@provider, :form_helper => cf, :as => :data_provider, :edit_condition => has_owner_access) do |t| %>
 
       <% t.edit_cell(:name) do |f| %>
