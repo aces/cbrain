@@ -143,22 +143,20 @@ class DataProvidersController < ApplicationController
   def create_personal
     @unsaved_meta = params[:meta] || {}
 
-    # Fix some attributes
     @provider = DataProvider.new(base_provider_params).class_update
-    @provider.update_attributes(userkey_provider_params) if @provider.is_a?(UserkeyFlatDirSshDataProvider)
-    @provider.update_attributes(s3_provider_params)      if @provider.is_a?(S3FlatDataProvider)
-
-    authorized_type     = [UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider, DataladDataProvider]
-    binding.pry
-    @provider.errors.add(:type, "is not allowed") unless authorized_type.include?(@provider.type)
-
     # Fix some attributes
     @provider.user_id  = current_user.id
     @provider.group_id = current_user.own_group.id unless
       current_user.assignable_group_ids.include?(@provider.group_id)
     @provider.online   = true
 
-    if ! @provider.save
+    @provider.update_attributes(userkey_provider_params) if @provider.is_a?(UserkeyFlatDirSshDataProvider)
+    @provider.update_attributes(s3_provider_params)      if @provider.is_a?(S3FlatDataProvider)
+
+    authorized_type     = ["UserkeyFlatDirSshDataProvider", "S3FlatDataProvider", "S3MultiLevelDataProvider"]
+    @provider.errors.add(:type, "is not allowed") unless authorized_type.include?(@provider.type)
+
+    if ! @provider.errors.empty? || ! @provider.save
       @typelist = get_personal_type_list
       @groups = current_user.assignable_groups
       respond_to do |format|
@@ -841,7 +839,7 @@ class DataProvidersController < ApplicationController
 
     grouped_options = data_provider_list.to_a.hashed_partitions { |name| name.constantize.pretty_category_name }
     # Keep only Cloud and DataladProvider
-    grouped_options = grouped_options.select { |type, values| ["Cloud", "DataladProvider"].include?(type) }
+    grouped_options = grouped_options.select { |type, values| ["Cloud"].include?(type) }
     # Remove S3DataProvider
     grouped_options["Cloud"].reject! { |v| v == S3DataProvider.name } if grouped_options["Cloud"]
 
