@@ -86,6 +86,10 @@
       <% if is_new_record || has_owner_access %>
         <% t.edit_cell(:type, :content => @provider.type) do |f| %>
           <%= f.select :type, grouped_options_for_select(@typelist, @provider.type) %>
+          <% if !is_normal_user %>
+            <br/>
+            <%= overlay_ajax_link "(Data Provider Type Information)", "/doc/data_providers/data_provider_info.html", :class  => "help_link" %>
+          <% end %>
         <% end %>
       <% else %>
         <% t.empty_cell %>
