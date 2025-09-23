@@ -538,7 +538,9 @@ class UserfilesController < ApplicationController
     rack_tempfile_size = upload_stream.tempfile.size
 
     # Get the data provider for the destination files.
-    data_provider_id   = params[:data_provider_id]
+    data_provider_id = params[:data_provider_id]
+
+    DataProvider.find_accessible_by_user(data_provider_id, current_user)
 
     # Where we'll keep a copy in the spawn() below
     tmpcontentfile     = "/tmp/#{Process.pid}-#{rand(10000).to_s}-#{basename}" # basename's extension is used later on
