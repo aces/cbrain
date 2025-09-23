@@ -378,6 +378,42 @@ class SshMaster
     true
   end
 
+  # Adds the configuration for using a jumphost before
+  # reaching the actual host defined during initialize().
+  # Optional. Only a single jumphost is supported here.
+  def add_jumphost(username, hostname, port = 22)
+
+    self.properly_registered?
+
+    @jumphost_user = username.to_s
+    @jumphost_host = hostname.to_s
+    @jumphost_port = port.to_i
+
+    raise "SSH master's jumphost \"user\" is not a simple identifier." unless
+      @jumphost_user =~ /\A[a-zA-Z0-9][a-zA-Z0-9_\-\.]*\z/
+    raise "SSH master's jumphost \"host\" is not a simple host name." unless
+      @jumphost_host =~ /\A[a-zA-Z0-9][a-zA-Z0-9_\-\.]*\z/
+    raise "SSH master's jumphost \"port\" is not a port number." unless
+      @jumphost_port > 0 && @jumphost_port < 65535
+
+    self
+  end
+
+  # Remove the jumphost configuration that was added by
+  # add_jumphost().
+  def delete_jumphost
+    self.properly_registered?
+    @jumphost_user = @jumphost_host = @jumphost_port = nil
+    self
+  end
+
+  # Returns the string that will be used on the ssh command line
+  # for the -J option of jumphost, e.g. "lois@superman.example.com:22"
+  def get_jumphost_string
+    return nil unless @jumphost_user.present?
+    "#{@jumphost_user}@#{@jumphost_host}:#{@jumphost_port}"
+  end
+
   # Start the master SSH connection, including all tunnels if
   # necessary. The connection is maintained in a subprocess.
   # If a subprocess is already running, nothing will happen:
@@ -396,6 +432,9 @@ class SshMaster
 
     self.get_tunnels_strings(:forward).each { |spec| sshcmd += " -L #{spec}" }
     self.get_tunnels_strings(:reverse).each { |spec| sshcmd += " -R #{spec}" }
+
+    jumphost_spec = self.get_jumphost_string()
+    sshcmd += " -J #{jumphost_spec} " if jumphost_spec
 
     shared_options = self.ssh_shared_options("yes") # ControlMaster=yes
     sshcmd += " #{shared_options}"

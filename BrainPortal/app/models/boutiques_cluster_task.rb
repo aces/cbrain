@@ -283,6 +283,7 @@ class BoutiquesClusterTask < ClusterTask
         # Save the file
         outfile = safe_userfile_find_or_new(userfile_class, :name => name)
         new_out = outfile.new_record?
+        name    = outfile.name # in case safe_userfile_find_or_new, above, adjusted it
 
         unless outfile.save
           messages = outfile.errors.full_messages.join("; ")
