@@ -263,10 +263,11 @@ RSpec.describe UserfilesController, :type => :controller do
 
       before(:each) do
         session[:session_id] = 'session_id'
-        allow(controller).to receive(:current_user).and_return(admin)
-        allow(Message).to    receive(:send_message)
-        allow(File).to       receive(:delete)
-        allow(controller).to receive(:system)
+        allow(controller).to   receive(:current_user).and_return(admin)
+        allow(Message).to      receive(:send_message)
+        allow(File).to         receive(:delete)
+        allow(controller).to   receive(:system)
+        allow(DataProvider).to receive(:find_accessible_by_user).and_return([data_provider])
       end
 
       it "should redirect to index if the upload file is blank" do
@@ -300,7 +301,7 @@ RSpec.describe UserfilesController, :type => :controller do
           end
 
           it "should display an error message" do
-            post :create, params: { :upload_file => mock_upload_stream, :archive => "save", userfile: userfile}
+            post :create, params: { :upload_file => mock_upload_stream, :archive => "save", userfile: userfile, :data_provider_id => data_provider.id}
             expect(flash[:error]).to match(/File .+ could not be added./)
           end
         end
@@ -327,7 +328,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
             it "should copy the file to the local cache" do
               expect(mock_userfile).to receive(:cache_copy_from_local_file)
-              post :create, params: {:upload_file => mock_upload_stream, :archive => "save", userfile: userfile}
+              post :create, params: {:upload_file => mock_upload_stream, :archive => "save", userfile: userfile, :data_provider_id => data_provider.id}
             end
           end
 
