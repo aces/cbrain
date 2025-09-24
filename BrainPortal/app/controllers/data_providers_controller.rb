@@ -836,7 +836,7 @@ class DataProvidersController < ApplicationController
     data_provider_list = DataProvider.descendants.map(&:name)
 
     grouped_options = data_provider_list.to_a.hashed_partitions { |name| name.constantize.pretty_category_name }
-    # Keep only Cloud and DataladProvider
+    # Keep only Cloud
     grouped_options = grouped_options.select { |type, values| ["Cloud"].include?(type) }
     # Remove S3DataProvider
     grouped_options["Cloud"].reject! { |v| v == S3DataProvider.name } if grouped_options["Cloud"]

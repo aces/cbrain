@@ -37,7 +37,7 @@ class SshDataProvider < DataProvider
 
   # Attributes of:
   # - S3 attributes (not appllicable to Ssh)
-  # - Containerized/datalad attributes (not applicable to Ssh)
+  # - Containerized attributes (not applicable to Ssh)
   # should be absent for this DP class.
   validates :cloud_storage_client_identifier, :cloud_storage_client_token,
             :cloud_storage_client_bucket_name, :cloud_storage_client_path_start,
