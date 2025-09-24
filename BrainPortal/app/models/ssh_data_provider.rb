@@ -42,7 +42,7 @@ class SshDataProvider < DataProvider
   validates :cloud_storage_client_identifier, :cloud_storage_client_token,
             :cloud_storage_client_bucket_name, :cloud_storage_client_path_start,
             :cloud_storage_endpoint, :cloud_storage_region,
-            :containerized_path, :datalad_repository_url, :datalad_relative_path,
+            :containerized_path,
             absence: true
 
 

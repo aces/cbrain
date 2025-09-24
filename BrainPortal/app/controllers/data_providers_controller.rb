@@ -90,7 +90,7 @@ class DataProvidersController < ApplicationController
     @is_personal      = false
     @typelist         = get_type_list
 
-    # Edit/create are the same view
+    # Edit/create/show are the same view
     render :action => :show
   end
 
@@ -134,7 +134,7 @@ class DataProvidersController < ApplicationController
     @is_personal      = true
     @typelist         = get_personal_type_list
 
-    # Edit/create are the same view
+    # Edit/create/show are the same view
     render :action => :show
   end
 
@@ -829,8 +829,6 @@ class DataProvidersController < ApplicationController
     grouped_options = data_provider_list.to_a.hashed_partitions { |name| name.constantize.pretty_category_name }
     grouped_options.delete(nil) # data providers that can not be on this list return a category name of nil, so we remove them
     grouped_options.keys.sort.map { |type| [ type, grouped_options[type].sort ] }
-
-    return grouped_options || []
   end
 
   def get_personal_type_list #:nodoc:

@@ -58,7 +58,7 @@ class S3FlatDataProvider < DataProvider
   # - Containerized/datalad attributes (not applicable to S3)
   # should be absent for this DP class.
   validates :remote_user, :remote_host, :remote_port, :remote_dir,
-            :containerized_path, :datalad_repository_url, :datalad_relative_path,
+            :containerized_path
             absence: true
 
   validates :cloud_storage_client_bucket_name, format: {
