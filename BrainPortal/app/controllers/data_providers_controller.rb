@@ -33,7 +33,7 @@ class DataProvidersController < ApplicationController
 
   before_action :login_required
   before_action :manager_role_required, :only => [:new, :create]
-  before_action :admin_role_required,   :only => [:new, :report, :repair]
+  before_action :admin_role_required,   :only => [:new, :create, :report, :repair]
 
   def index #:nodoc:
     @scope = scope_from_session
