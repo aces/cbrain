@@ -29,11 +29,11 @@
 %>
 
 <%
-    @other_work_groups = WorkGroup.all.select { |g| g != @group && g.can_be_accessed_by?(current_user) }
+    @other_work_groups = WorkGroup.all.select { |g| g != @group && g.can_be_accessed_by?(current_user) && ! g.public? }
     @other_work_groups = @other_work_groups.reject { |g| g.invisible? } if ! current_user.has_role?(:admin_user)
     @other_work_groups.sort! { |a,b| a.name.casecmp(b.name) }
 
-    @other_site_groups = SiteGroup.all.select { |g| g != @group && g.can_be_accessed_by?(current_user) }
+    @other_site_groups = SiteGroup.all.select { |g| g != @group && g.can_be_accessed_by?(current_user) && ! g.public? }
     @other_site_groups.sort! { |a,b| a.name.casecmp(b.name) }
 
     user_ids = @users.index_by &:id
