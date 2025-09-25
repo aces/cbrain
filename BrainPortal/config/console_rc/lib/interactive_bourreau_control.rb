@@ -410,7 +410,7 @@ Operations Mode : #{
     if letter == "r"
       bash_command_on_bourreaux(
         #"ps -u $USER -o user,pid,%cpu,%mem,vsize,state,stime,time,command | egrep 'Worker @b@|Bourreau @b@' | grep -v grep | sed -e 's/  *$//'"
-        "ps xww -o pid,vsz,lstart,time,args | egrep 'COMMAND|Worker @b@|Bourreau @b@|BourreauActivity' | grep -v grep | sed -e 's/  *$//'"
+        "ps xww -o pid,vsz,lstart,time,args | egrep 'COMMAND|Worker @b@|Bourreau @b@' | grep -v grep | sed -e 's/  *$//'"
       )
       return true
     end

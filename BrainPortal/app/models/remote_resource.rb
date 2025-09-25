@@ -973,7 +973,7 @@ class RemoteResource < ApplicationRecord
     cb_error "Cannot start BAC workers: improper number of instances to start in config (must be 0..20)." unless
        num_workers && num_workers >= 0 && num_workers < 21
 
-    worker_name = myself.class.to_s + 'Activity'
+    worker_name = "BacWorker"
     baclogger = Log4r::Logger[worker_name]
     unless baclogger
       baclogger = Log4r::Logger.new(worker_name)
@@ -986,7 +986,7 @@ class RemoteResource < ApplicationRecord
 
     WorkerPool.create_or_find_pool(BackgroundActivityWorker,
        num_workers, # number of instances
-       { :name           => worker_name,
+       { :name           => "#{worker_name} #{myself.name}",
          :check_interval => 5,
          :worker_log     => baclogger,
        }
