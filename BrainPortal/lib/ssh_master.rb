@@ -387,7 +387,7 @@ class SshMaster
 
     @jumphost_user = username.to_s
     @jumphost_host = hostname.to_s
-    @jumphost_port = port.to_i
+    @jumphost_port = (port.presence || 22).to_i
 
     raise "SSH master's jumphost \"user\" is not a simple identifier." unless
       @jumphost_user =~ /\A[a-zA-Z0-9][a-zA-Z0-9_\-\.]*\z/

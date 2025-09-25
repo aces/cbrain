@@ -196,10 +196,10 @@
 
     <% if is_bourreau %>
 
-      <%= show_table(@bourreau, :as => :bourreau, :header => "Connection Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <%= show_table(@bourreau, :as => :bourreau, :header => "SSH Connection Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
         <% t.edit_cell(:ssh_control_host, :header => "SSH Hostname") do |f| %>
-          <%= f.text_field :ssh_control_host, :size => 20 %>
+          <%= f.text_field :ssh_control_host, :size => 30 %>
         <% end %>
 
         <% t.edit_cell(:ssh_control_rails_dir, :header => "Rails Server Directory") do |f| %>
@@ -207,19 +207,31 @@
         <% end %>
 
         <% t.edit_cell(:ssh_control_user, :header => "SSH User") do |f| %>
-          <%= f.text_field :ssh_control_user, :size => 20 %>
+          <%= f.text_field :ssh_control_user, :size => 10 %>
         <% end %>
 
         <% t.edit_cell(:ssh_control_port, :header => "SSH Port") do |f| %>
           <%= f.text_field :ssh_control_port, :size => 6 %>
         <% end %>
 
-        <% t.edit_cell(:proxied_host, :header => "Second-level Hostname") do |f| %>
-          <%= f.text_field :proxied_host, :size => 20 %>
-        <% end %>
-
         <% t.edit_cell(:active_resource_control_port, :header => "Local Control Port") do |f| %>
           <%= f.text_field :active_resource_control_port, :size => 6 %>
+        <% end %>
+
+      <% end %>
+
+      <%= show_table(@bourreau, :as => :bourreau, :header => "Optional SSH JumpHost Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+
+        <% t.edit_cell(:jumphost_host, :header => "JumpHost Hostname") do |f| %>
+          <%= f.text_field :jumphost_host, :size => 30 %>
+        <% end %>
+
+        <% t.edit_cell(:jumphost_user, :header => "JumpHost User") do |f| %>
+          <%= f.text_field :jumphost_user, :size => 10 %>
+        <% end %>
+
+        <% t.edit_cell(:jumphost_port, :header => "JumpHost Port") do |f| %>
+          <%= f.text_field :jumphost_port, :size => 6 %>
         <% end %>
 
       <% end %>

@@ -571,10 +571,6 @@ Operations Mode : #{
   end
 
   def bash_command_on_one_bourreau(b,comm,&block) #:nodoc:
-    if b.proxied_host.present? # another level of remote host... ?
-      # ... then we prefix the remote command with another ssh call.
-      comm = "ssh #{b.proxied_host.bash_escape} #{comm.bash_escape}"
-    end
     if block_given?
       b.ssh_master.remote_shell_command_reader(comm,&block)
     else

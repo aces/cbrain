@@ -236,6 +236,8 @@ class RemoteResource < ApplicationRecord
     uniq     = "#{CBRAIN::SelfRemoteResourceId}_#{self.id}"
     master   = SshMaster.find_or_create(self.ssh_control_user,self.ssh_control_host,self.ssh_control_port || 22,
                :category => category, :uniq => uniq, :ssh_config_options => ssh_options )
+    master.add_jumphost(self.jumphost_user, self.jumphost_host, self.jumphost_port) if
+      self.jumphost_user.present? && self.jumphost_host.present?
     master
   end
 

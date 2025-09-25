@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20250704085709) do
+ActiveRecord::Schema.define(version: 20250925185219) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -287,6 +287,9 @@ ActiveRecord::Schema.define(version: 20250704085709) do
     t.string   "ssh_control_host"
     t.integer  "ssh_control_port"
     t.string   "ssh_control_rails_dir"
+    t.string   "jumphost_host"
+    t.string   "jumphost_user"
+    t.integer  "jumphost_port"
     t.integer  "active_resource_control_port"
     t.boolean  "use_reverse_service",                                 default: false, null: false
     t.string   "reverse_service_user"
@@ -313,7 +316,6 @@ ActiveRecord::Schema.define(version: 20250704085709) do
     t.integer  "activity_workers_instances",                          default: 1,     null: false
     t.string   "help_url"
     t.integer  "rr_timeout"
-    t.string   "proxied_host"
     t.string   "support_email"
     t.string   "system_from_email"
     t.text     "email_delivery_options",                limit: 65535

@@ -135,7 +135,7 @@ class BourreauxController < ApplicationController
     old_dp_cache_dir  = @bourreau.dp_cache_dir
 
     if ! @bourreau.update_attributes_with_logging(new_bourreau_attr, current_user,
-        RemoteResource.columns_hash.keys.grep(/actres_|cache_trust|cms_|dp_|url|online|proxied_hosts|rr_timeout|ssh_|email|tunnel_|worker|logo|executable_name/)
+        RemoteResource.columns_hash.keys.grep(/actres_|cache_trust|cms_|dp_|url|online|rr_timeout|ssh_|email|tunnel_|worker|logo|executable_name/)
       )
       @bourreau.reload
       respond_to do |format|
@@ -788,6 +788,7 @@ class BourreauxController < ApplicationController
       :name, :user_id, :group_id, :online, :read_only, :description,
 
       :ssh_control_user, :ssh_control_host, :ssh_control_port, :ssh_control_rails_dir,
+      :jumphost_host, :jumphost_user, :jumphost_port,
 
       :active_resource_control_port,
 
@@ -799,7 +800,7 @@ class BourreauxController < ApplicationController
       :time_zone, :site_url_prefix, :dp_cache_dir, :dp_ignore_patterns, :cms_class,
       :nh_site_url_prefix, :nh_support_email, :nh_system_from_email,
       :cms_default_queue, :cms_extra_qsub_args, :cms_shared_dir, :workers_instances,
-      :workers_chk_time, :workers_log_to, :workers_verbose, :help_url, :rr_timeout, :proxied_host,
+      :workers_chk_time, :workers_log_to, :workers_verbose, :help_url, :rr_timeout,
       :spaced_dp_ignore_patterns, :support_email, :system_from_email, :external_status_page_url,
       :docker_executable_name, :docker_present, :singularity_executable_name, :singularity_present,
       :small_logo, :large_logo, :license_agreements,
