@@ -5,7 +5,7 @@
     "author":         "Pierre Rioux <pierre.rioux@mcgill.ca>",
     "description":    "An administrative utility to help build configure a tool based on another tool. Also supports building the Apptainer image associated with the configuration.",
     "descriptor-url": "https://github.com/aces/cbrain/blob/master/BrainPortal/cbrain_plugins/cbrain-plugins-base/cbrain_task_descriptors/tool_configurator.json",
-    "command-line":   "true This command is only used when building the Apptainer container image, ignore this: TC1:[OLD_TC_ID] TC2:[NEW_TC_ID] [COPY_GROUP_ID] [COPY_QSUB] [COPY_ENV] [COPY_BASH] [COPY_OVERLAYS]; ( if test [BUILD_MODE] = 'docker-daemon' ; then docker pull [DOCKER_NAME] || echo 'Warning: container does not exist remotely, trying to find it locally'; docker inspect --image [DOCKER_NAME] || exit 22 ; fi ; apptainer build [APPTAINER_IMAGE_NAME] [BUILD_MODE]://[DOCKER_NAME] )",
+    "command-line":   "true This command is only used when building the Apptainer container image, ignore this: TC1:[OLD_TC_ID] TC2:[NEW_TC_ID] [COPY_GROUP_ID] [COPY_QSUB] [COPY_ENV] [COPY_BASH] [COPY_OVERLAYS]; ( if test [BUILD_MODE] = 'docker-daemon' ; then docker pull [DOCKER_NAME] || echo 'Warning: container does not exist remotely, trying to find it locally'; docker inspect --type image [DOCKER_NAME] || exit 22 ; fi ; apptainer build [APPTAINER_IMAGE_NAME] [BUILD_MODE]://[DOCKER_NAME] )",
 
     "inputs": [
 
