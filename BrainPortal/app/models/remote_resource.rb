@@ -87,6 +87,15 @@ class RemoteResource < ApplicationRecord
 
   validates             :ssh_control_port, numericality: { only_integer: true, greater_than: 21, less_than: 65536 }, allow_blank: true
 
+  validates_format_of   :jumphost_host, :with => /\A\w[\w\-\.]*\z/,
+                        :message  => 'is invalid as only the following characters are accepted: alphanumeric characters, _, -, and .',
+                        :allow_blank => true
+  validates_format_of   :jumphost_user, :with => /\A\w[\w\-\.]*\z/,
+                        :message  => 'is invalid as only the following characters are accepted: alphanumeric characters, _, -, and .',
+                        :allow_blank => true
+  validates             :jumphost_port,    numericality: { only_integer: true, greater_than: 21, less_than: 65536 }, allow_blank: true
+  validate              :jumphost_config_is_valid
+
   validates_format_of   :ssh_control_rails_dir, :with => /\A\/[\w\-\.\=\+\/]*\z/,
                         :message  => 'is invalid as only paths with simple characters are accepted: a-z, A-Z, 0-9, _, +, =, . and of course /',
                         :allow_blank => true
@@ -181,6 +190,18 @@ class RemoteResource < ApplicationRecord
     end
 
     all_ok
+  end
+
+  # JumpHost config is optional, but if set, we need both the host and user
+  def jumphost_config_is_valid
+    return true if self.jumphost_host.blank? && self.jumphost_user.blank? && self.jumphost_port.blank? # most common sitch
+    self.errors.add(:jumphost_port, "cannot be present if no host and username are provided") if
+      self.jumphost_port.present? && (self.jumphost_host.blank? || self.jumphost_user.blank?)
+    self.errors.add(:jumphost_host, "is required if a username is provided") if
+      self.jumphost_host.blank? && self.jumphost_user.present?
+    self.errors.add(:jumphost_user, "is required if a host is provided") if
+      self.jumphost_user.blank? && self.jumphost_host.present?
+    return (self.errors[:jumphost_host].empty? && self.errors[:jumphost_user].empty? && self.errors[:jumphost_port].empty?)
   end
 
   # Verify that the dp_cache_dir is correct, at least from
