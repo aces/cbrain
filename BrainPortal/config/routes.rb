@@ -132,6 +132,7 @@ Rails.application.routes.draw do
       get  'dp_transfers'
       get  'new_personal'
       post 'create_personal'
+      post 'check_all'
     end
   end
 

@@ -1043,44 +1043,6 @@
     $(document).delegate(".ajax_onclick_show_element", "click", ajax_onclick_show);
     $(document).delegate(".ajax_onclick_hide_element", "click", ajax_onclick_hide);
 
-    // For checking the alive status of all DataProviders
-    // The sequential_loading function is called recursively
-    // with the id of each DataProvider that is online
-    // The url and DataProvider id are stored in the button
-    $(document).delegate(".check_all_dp", "click", function (event) {
-      var dp_check_btns = $("body").find(".dp_alive_btn");
-
-      sequential_loading(0, dp_check_btns);
-
-      event.preventDefault();
-    });
-
-    function sequential_loading(index, element_array) {
-      if (index >= element_array.length) return;
-
-      var current_element = $(element_array[index]);
-      var url = current_element.data("url");
-      var error_message = current_element.data("error");
-      var replace_elem = $("#" + current_element.data("replace"));
-
-      jQuery.ajax({
-        dataType: 'html',
-        url: url,
-        timeout: 50000,
-        success: function(data) {
-          replace_elem.html(data);
-        },
-        error: function(e) {
-          if (!error_message) {
-            error_message = "<span class='loading_message'>???</span>";
-          }
-          replace_elem.html(error_message);
-        },
-        complete: function(e) {
-          sequential_loading(index+1, element_array);
-        }
-      });
-    }
 
     // Allows to submit an interval of two dates, uses
     // datepicker of jquery-ui, see:
