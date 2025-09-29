@@ -221,6 +221,28 @@ class CpuQuota < Quota
   end
 
   #####################################################
+  # Max Active Tasks Limit Methods
+  #####################################################
+
+  # Returns the maximum number of active tasks, in total, on a remote resource.
+  # This is stored in the DB as the CpuQuota limit 'max_active_tasks' for the CoreAdmin user.
+  # Distinct quotas with different group_ids are just lumped together and the minimum is used.
+  def self.max_active_tasks_total_for_remote_resource(remote_resource_id)
+    CpuQuota.where(:remote_resource_id => remote_resource_id, :user_id => User.admin.id).minimum(:max_active_tasks) # can be nil
+  end
+
+  # Returns the maximum number of active tasks for a user on a remote resource.
+  # This is stored in the DB as the CpuQuota limit 'max_active_tasks' for the user,
+  # or if no specific CpuQuota object exist, by the CpuQuota object for the all users.
+  # Note that in the case where several quotas exist (when they differ by group_id), the minimal
+  # value is used and the group_id is not actually used to limit the number of tasks.
+  def self.max_active_tasks_for_user(user_id, remote_resource_id)
+    CpuQuota.where(:remote_resource_id => remote_resource_id, :user_id => user_id).minimum(:max_active_tasks) ||
+    CpuQuota.where(:remote_resource_id => 0                 , :user_id => user_id).minimum(:max_active_tasks) ||
+    CpuQuota.where(:remote_resource_id => remote_resource_id, :user_id => 0      ).minimum(:max_active_tasks)
+  end
+
+  #####################################################
   # Validations callbacks
   #####################################################
 

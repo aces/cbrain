@@ -113,6 +113,18 @@
     </div>
   <% end %>
 
+  <% t.edit_cell(:max_active_tasks, :show_width => 2, :header => "Max Active Tasks", :content => pretty_max_active_tasks(@quota)) do |f| %>
+    <%= f.text_field :max_active_tasks, :size => 6 %>
+    <div class="field_explanation">
+       The maximum number of tasks that can be active at any given time on the Execution Server.
+       Leave blank to not set a limit. A value of zero will prevent any tasks from being launched.
+       Note that projects are ignored for these values, and that if several quota records apply
+       to a user and differ only by project, the minimum value found in that set will be used.
+       The core Admin account is used to set a maximum number of tasks IN TOTAL for an Execution
+       server (thus, no limit specific to that admin user can be specified here).
+    </div>
+  <% end %>
+
 <% end %>
 
 <P>

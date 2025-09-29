@@ -390,34 +390,18 @@
           <div class="field_explanation">Optional.</div>
         <% end %>
 
-        <% t.edit_cell 'meta[task_limit_total]', :header => "Maximum total number of active tasks", :content => (@bourreau.meta["task_limit_total"].blank? ? "Unlimited" : @bourreau.meta["task_limit_total"]) do |f| %>
-          <%=  select_tag  'meta[task_limit_total]',
-              options_for_select( [ [ "Unlimited", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
-                                  @bourreau.meta[:task_limit_total] )
-          %>
-        <% end %>
-
-        <% t.edit_cell(:cms_extra_qsub_args, :header => "Extra 'qsub' options") do |f| %>
-          <%= f.text_field :cms_extra_qsub_args, :size => 60 %><br/>
-          <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
-        <% end %>
-
-        <% t.edit_cell 'meta[task_limit_user_default]',
-                       :header => "Default maximum number of active tasks for each user",
-                       :content => (@bourreau.meta["task_limit_user_default"].blank? ? "Server's max" : @bourreau.meta["task_limit_user_default"]) do %>
-          <%= select_tag 'meta[task_limit_user_default]',
-              options_for_select( [ [ "Server's max", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
-                                  @bourreau.meta[:task_limit_user_default] )
-          %>
-          <div class="field_explanation">(Unless specified below)</div>
-        <% end %>
-
         <% tool_config = ToolConfig.where(:bourreau_id => @bourreau.id, :tool_id => nil).first %>
         <% tool_config_show_link   = tool_config ? (link_to "Show",   tool_config_path(tool_config)) : "No tool config" %>
         <% tool_config_create_link =                link_to "Create", new_tool_config_path(:bourreau_id => @bourreau.id) %>
-
         <% t.edit_cell("Common configuration for all tasks", :content => tool_config_show_link) do %>
           <%= tool_config ? tool_config_show_link : tool_config_create_link %>
+        <% end %>
+
+        <% t.empty_cell %>
+
+        <% t.edit_cell(:cms_extra_qsub_args, :header => "Extra 'qsub' options", :show_width => 2) do |f| %>
+          <%= f.text_field :cms_extra_qsub_args, :size => 60 %><br/>
+          <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
         <% end %>
 
         <% t.edit_cell(:cms_shared_dir, :header => "Path to shared work directory", :show_width => 2) do |f| %>
@@ -426,29 +410,9 @@
                  This is were the work subdirectories for all tasks will be created.</div>
         <% end %>
 
-        <% content = capture do %>
-          <%= array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'simple', :td_class => 'right', :cols => 4, :fill_by_columns => true) do |user,r,c| %>
-            <% metkey = "task_limit_user_#{user.id}".to_sym %>
-            <%= link_to_user_with_tooltip(user) %>:
-            </td><td class="some_left_right_padding">
-            <%= @bourreau.meta[metkey].blank? ? "Default" : @bourreau.meta[metkey] %>
-          <% end %>
-        <% end %>
-
-        <% t.edit_cell 'meta[task_limit_user_default]',
-                       :header => "Maximum number of active tasks per user",
-                       :content => content, :show_width => 2 do %>
-          <%= array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'simple', :td_class => 'right', :cols => 4, :fill_by_columns => true) do |user,r,c| %>
-            <% metkey = "task_limit_user_#{user.id}".to_sym %>
-            <%= link_to_user_with_tooltip(user) %>:
-            </td><td class="some_left_right_padding">
-            <%= select_tag "meta[#{metkey}]",
-                options_for_select( [ [ "Default", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 150 200 250 300 400 500 750 1000 ) ,
-                                    @bourreau.meta[metkey] )
-            %>
-          <% end %>
-        <% end %>
       <% end %>
+
+
       <%= show_table(@bourreau, :as => :bourreau, :header => "Task Workers Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
         <% t.edit_cell :workers_instances, :header => "Number of workers" do |f| %>
           <%=  f.select :workers_instances, [
