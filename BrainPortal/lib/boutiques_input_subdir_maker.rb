@@ -171,7 +171,7 @@ module BoutiquesInputSubdirMaker
       Dir.mkdir(dirname) unless File.directory?(dirname)
       add_slash = userfile.is_a?(FileCollection) ? '/'  : ''
       add_dashL = userfile.is_a?(SingleFile)     ? '-L' : ''
-      rsyncout = bash_this("rsync -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{add_dashL} #{install_tmp.bash_escape}#{add_slash} #{dirname.bash_escape}/#{filename.bash_escape}")
+      rsyncout = ism_bash_this("rsync -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{add_dashL} #{install_tmp.bash_escape}#{add_slash} #{dirname.bash_escape}/#{filename.bash_escape}")
       cb_error "Failed to install '#{dirname}/#{filename}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
     end
 
@@ -201,6 +201,17 @@ module BoutiquesInputSubdirMaker
     end
 
     override_invoke_params
+  end
+
+  # This utility method runs a bash +command+ , captures the output
+  # and returns it. The user of this method is expected to have already
+  # properly escaped any special characters in the arguments to the
+  # command.
+  def ism_bash_this(command) #:nodoc:
+    fh = IO.popen(command,"r")
+    output = fh.read
+    fh.close
+    output
   end
 
 end

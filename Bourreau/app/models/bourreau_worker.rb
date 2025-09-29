@@ -45,6 +45,14 @@ class BourreauWorker < Worker
                  'Restart Setup', 'Restart Cluster', 'Restart PostProcess', # The Restart states, not Restarting
                ]
 
+  # This limit prevents a situation where lots (100s, 1000s) of tasks
+  # are all ready to be handled, and doing so takes such a long time that
+  # we don't even get to re-evaluate the list of things to do (e.g.
+  # we are setting up thousands of tasks while there are some waiting
+  # to be post processed). By breaking out of the sub-worker loop every
+  # 30 minutes, we re-evaluate the state of all tasks on the cluster.
+  MAX_TIME_HANDLING_TASKS = 30.minutes
+
   # Adds "RAILS_ROOT/vendor/cbrain/bin" to the system path.
   def setup
     ENV["PATH"] = Rails.root.to_s + "/vendor/cbrain/bin:" + ENV["PATH"]
@@ -204,6 +212,10 @@ class BourreauWorker < Worker
     # Prepare relation for 'active tasks on this Bourreau'
     bourreau_active_tasks = CbrainTask.where( :status => ActiveTasks, :bourreau_id => @rr_id )
 
+    # This variable is used to break off from the list if
+    # we spend more than MAX_TIME_HANDLING_TASKS
+    start_handling_time = Time.now
+
     # Group tasks by user and process each sublist of tasks
     by_user  = tasks_todo.group_by { |t| t.user_id }
     user_ids = by_user.keys.shuffle # go through users in random order
@@ -237,6 +249,13 @@ class BourreauWorker < Worker
             worker_log.info "User ##{user_id} limit: found #{user_active_tasks_cnt} active tasks, but the limit is #{user_max_tasks}. Skipping."
             break # go to next user
           end
+        end
+
+        # If we've been handling tasks for more than 30 minutes and
+        # return to re-evaluate the state of all tasks on the cluster.
+        if Time.now - start_handling_time > MAX_TIME_HANDLING_TASKS
+           worker_log.info "Returning to main worker, with #{user_tasks.size} tasks still to go."
+           return
         end
 
         # Alright, move the task along its lifecycle

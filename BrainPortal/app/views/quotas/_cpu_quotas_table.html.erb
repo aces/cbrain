@@ -40,13 +40,13 @@
     :id    => 'cpu_quotas_table',
     :class => [ :resource_list ],
     :scope => @scope,
-    :order_map       => {
-      :user          => { :a => 'users.login',           :j =>  User         },
-      :data_provider => { :a => 'data_providers.name',   :j =>  DataProvider },
+    :order_map         => {
+      :user            => { :a => 'users.login',           :j => User           },
+      :remote_resource => { :a => 'remote_resources.name', :j => RemoteResource },
     },
     :filter_map => {
-      :user          => { :a => 'user_id'          },
-      :data_provider => { :a => 'data_provider_id' },
+      :user            => { :a => 'user_id'            },
+      :remote_resource => { :a => 'remote_resource_id' },
     },
   ) do |t|
 %>

@@ -213,6 +213,7 @@ module RichUiHelper
     offset_y = options[:offset_y] || 0
 
     content           = capture(&block) # here, new calls to html_tool_tip can be made.
+    return text if content.blank?
     content_class     = options.delete(:tooltip_div_class) || "html_tool_tip"
     content_signature = Digest::MD5.hexdigest(content_class + content)
 

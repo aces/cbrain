@@ -400,7 +400,8 @@ class SshMaster
     shared_options = self.ssh_shared_options("yes") # ControlMaster=yes
     sshcmd += " #{shared_options}"
 
-    unless self.write_pidfile("0",:check) # 0 means in the process of starting up subprocess
+    # 0 in the pidfile means in the process of starting up the subprocesses
+    unless self.write_pidfile("0",:check)
       self.read_pidfile
       return true if @pid # so it's already running, eh.
     end
@@ -415,7 +416,7 @@ class SshMaster
         subpid = Process.fork do
           begin
             Process.setpgrp rescue true
-            self.write_pidfile(Process.pid,:force)  # Overwrite
+            self.write_pidfile(Process.pid,:force)  # Overwrite : changes the 0 to a real PID
             $stdin.reopen( "/dev/null",    "r") # fd 0
             $stdout.reopen(self.diag_path, "a") # fd 1
             $stdout.sync = true
@@ -438,7 +439,10 @@ class SshMaster
     Process.waitpid(pid) # not the PID we want in @pid!
     pidfile = self.pidfile_path
     CONFIG[:SPAWN_WAIT_TIME].times do
-      break if File.exist?(socket) && File.exist?(pidfile)
+      break if File.exist?(socket)         &&
+               File.exists?(pidfile)       &&
+               File.size(pidfile)      > 0 &&
+               self.raw_read_pidfile  != 0  # a zero means not yet fully setup; a nil is an error and no need to wait further
       debugTrace("... waiting for confirmed creation of socket and PID file...")
       sleep 1
     end
@@ -451,6 +455,7 @@ class SshMaster
     # Something went wrong, kill it if it exists.
     debugTrace("Master did not start.")
     pid = self.raw_read_pidfile
+    pid = nil if pid == 0 # zero is the special value when trying to fork
     if pid
       debugTrace("Killing spurious process at PID #{pid}.")
       Process.kill("HUP",pid) rescue true
@@ -758,6 +763,7 @@ class SshMaster
       return nil
     end
     @pid = self.raw_read_pidfile # can be nil if it's incorrect
+    @pid = nil if @pid == 0
     @pid
   end
 
@@ -770,7 +776,7 @@ class SshMaster
       File.open(pidfile,"r") { |fh| line = fh.read }
       return nil unless line && line.match(/\A\d+/)
       pid = line.to_i
-      pid = nil if pid == 0 # leftover from :check mode of write_pidfile() ? Crash?
+      return pid if pid == 0 # when we're still in the process of forking
       pid = nil unless self.process_ok?(pid)
       return pid
     rescue

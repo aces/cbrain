@@ -208,13 +208,7 @@ class ToolConfigsController < ApplicationController
            @tool_config.container_index_location    = other_tc.container_index_location
            @tool_config.singularity_overlays_specs  = other_tc.singularity_overlays_specs
            @tool_config.extra_qsub_args             = other_tc.extra_qsub_args
-           @tool_config.cloud_disk_image            = other_tc.cloud_disk_image
-           @tool_config.cloud_vm_user               = other_tc.cloud_vm_user
-           @tool_config.cloud_ssh_key_pair          = other_tc.cloud_ssh_key_pair
-           @tool_config.cloud_instance_type         = other_tc.cloud_instance_type
-           @tool_config.cloud_job_slots             = other_tc.cloud_job_slots
-           @tool_config.cloud_vm_boot_timeout       = other_tc.cloud_vm_boot_timeout
-           @tool_config.cloud_vm_ssh_tunnel_port    = other_tc.cloud_vm_ssh_tunnel_port
+           @tool_config.singularity_use_short_workdir  = other_tc.singularity_use_short_workdir
          end
          @tool_config.env_array       += (other_tc.env_array || [])
          @tool_config.script_prologue  = "#{@tool_config.script_prologue}\n#{other_tc.script_prologue}"

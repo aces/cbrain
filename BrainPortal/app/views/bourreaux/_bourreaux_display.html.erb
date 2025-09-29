@@ -342,8 +342,9 @@
           %>
           <p class="dropmenu_info">
             Activity workers are the only service that can be started or stopped
-            on Portals too. For a Portal, they don't require any of the other layers
-            above. On an Execution Server, the require the Tunnel and the Execution Server.
+            on Portals too. On portals the workers don't require any of the other layers
+            above. On Execution Servers these workers require both the Tunnel and the
+            Execution Server to be running.
           </p>
           <%= external_submit_button "3b. Start Activity Workers",  "bourreau_form",
               :class => 'button',

@@ -33,9 +33,12 @@ class QuotasController < ApplicationController
   before_action :admin_role_required, :except => [ :index ]
 
   def index #:nodoc:
-    @scope = scope_from_session
+    @mode  = cbrain_session[:quota_mode].presence&.to_sym
+    @mode  = :cpu  if params[:mode].to_s == 'cpu'
+    @mode  = :disk if params[:mode].to_s == 'disk' || @mode != :cpu
+    cbrain_session[:quota_mode] = @mode.to_s
 
-    @mode  = params[:mode].to_s == 'cpu' ? :cpu : :disk
+    @scope = scope_from_session("#{@mode}_quotas#index")
 
     @base_scope   = base_scope.includes([:user, :data_provider  ]) if @mode == :disk
     @base_scope   = base_scope.includes([:user, :remote_resource]) if @mode == :cpu
@@ -298,13 +301,13 @@ class QuotasController < ApplicationController
         .where(:data_provider_id => quota.data_provider_id)
         .group(:user_id)
         .sum(:size)
-        .select { |user_id,size| size >= quota.max_bytes }
+        .select { |user_id,size| size > 0 && size >= quota.max_bytes }
         .keys
       exceed_numfiles_user_ids = Userfile
         .where(:data_provider_id => quota.data_provider_id)
         .group(:user_id)
         .sum(:num_files)
-        .select { |user_id,num_files| num_files >= quota.max_files }
+        .select { |user_id,num_files| num_files > 0 && num_files >= quota.max_files }
         .keys
       union_ids  = exceed_size_user_ids | exceed_numfiles_user_ids
       union_ids -= DiskQuota
@@ -388,7 +391,6 @@ class QuotasController < ApplicationController
 
   # Tries to turn strings like '3 mb' into 3_000_000 etc.
   # Supported suffixes are T, G, M, K, TB, GB, MB, KB, B (case insensitive).
-  # Negative values are parsed, but the DiskQuota model only accepts the special -1
   def guess_size_units(sizestring)
     match = sizestring.match(/\A\s*(-?\d*\.?\d+)\s*([tgmk]?)\s*b?\s*\z/i)
     return "" unless match # parsing error

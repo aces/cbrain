@@ -299,7 +299,7 @@ class SingSquashfsDataProvider < SshDataProvider
   def singularity_exec_prefix #:nodoc:
     sq_files     = get_squashfs_basenames
     overlay_opts = sq_files.map { |f| "--overlay=#{f.bash_escape}:ro" }.join(" ")
-    "cd #{self.remote_dir.bash_escape} && singularity -s exec #{overlay_opts} #{SINGULARITY_IMAGE_BASENAME}"
+    "cd #{self.remote_dir.bash_escape} && singularity -s exec -c #{overlay_opts} #{SINGULARITY_IMAGE_BASENAME}"
   end
 
   def remote_rsync_command #:nodoc:
@@ -308,7 +308,7 @@ class SingSquashfsDataProvider < SshDataProvider
 
   # Builds a prefix for a +rsync+ command, such as
   #
-  #   "rsync -e 'ssh -x -o a=b -o c=d -p port --rsync-path='singularity exec --overlay a.squashfs img rsync' user@host'"
+  #   "rsync -e 'ssh -x -o a=b -o c=d -p port --rsync-path='singularity exec -c --overlay a.squashfs img rsync' user@host'"
   #
   # Note that this means that remote file specifications for
   # rsync MUST start with a bare ":" :

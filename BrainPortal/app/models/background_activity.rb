@@ -265,7 +265,7 @@ class BackgroundActivity < ApplicationRecord
       message = 'NotFound'
     rescue => ex
       ok = false
-      better_message = ex.message
+      better_message = ex.message.dup # need to dup because some exceptions have frozen messages
       # place code here to simplify other common exception messages
       better_message.sub!(/Internal error: Cannot create or find SyncStatus object for userfile.*/, "No SyncStatus")
       message = "#{ex.class}: #{better_message}"

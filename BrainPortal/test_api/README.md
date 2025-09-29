@@ -40,7 +40,7 @@ variation will work too:
 
 ```bash
 cd BrainPortal
-test -f tmp/pids/server.pid && kill $(cat tmp/pids/server.pid) ; rails server puma -p 3000 -e test -d ; sleep 5 ; tail -f log/test.log
+test -f tmp/pids/server.pid && kill $(cat tmp/pids/server.pid) ; /bin/cp /bin/null log/test.log ; rails server puma -p 3000 -e test & sleep 5 ; tail -f log/test.log
 ```
 
 This command allows you to hit *CTRL-C* and *up arrow* to restart
