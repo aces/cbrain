@@ -267,7 +267,7 @@ RSpec.describe UserfilesController, :type => :controller do
         allow(Message).to      receive(:send_message)
         allow(File).to         receive(:delete)
         allow(controller).to   receive(:system)
-        allow(DataProvider).to receive(:find_accessible_by_user).and_return([data_provider])
+        allow(DataProvider).to receive(:find_accessible_by_user).and_return(data_provider)
       end
 
       it "should redirect to index if the upload file is blank" do
