@@ -433,7 +433,7 @@ class Worker
     self.worker_log.fatal "Exception raised: #{itswrong.class} : #{itswrong.message}"
     # do not trace MySql disconnects but trace bad syntax, timeout and other SQL... errors )
     unless itsworng.is_a?(ActiveRecord::StatementInvalid) || (itswrong.message =~ /server has gone away/ ||
-      itswrong.message =~ /connect/i )
+      itswrong.message =~ /connect|down/i )
       itswrong.backtrace.each do |line|
         self.worker_log.fatal line
       end
