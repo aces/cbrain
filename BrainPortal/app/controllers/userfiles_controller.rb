@@ -540,6 +540,7 @@ class UserfilesController < ApplicationController
     # Get the data provider for the destination files.
     data_provider_id = params[:data_provider_id]
 
+    # Verify that the DP is accessible to the user - this will raise an exception otherwise
     DataProvider.find_accessible_by_user(data_provider_id, current_user)
 
     # Where we'll keep a copy in the spawn() below
