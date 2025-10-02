@@ -27,7 +27,7 @@
 
 # Usage
 function usage {
-  echo "Usage: $0 remoteuser remotehost remoteport db_spec sshagent_spec"
+  echo "Usage: $0 remoteuser remotehost remoteport db_spec sshagent_spec bourreau_name"
   echo ""
   echo "remoteuser, remotehost and remoteport are the standard SSH connection parameters."
   echo ""
@@ -35,6 +35,8 @@ function usage {
   echo "or a UNIX domain socket on remotehost."
   echo ""
   echo "sshagent_spec can only be UNIX domain socket on remotehost."
+  echo ""
+  echo "bourreau_name is a simple identifier that will be added to the SSH command line for recognition."
   exit 10
 }
 
@@ -65,8 +67,8 @@ if test $# -eq 0 -o "X$1" = "-h" -o "X$1" = "--help" ; then
 fi
 
 # Make sure we have all 5 args
-if test $# -ne 5 ; then
-  fatal "This program requires 5 arguments. See --help ."
+if test $# -ne 5 -a $# -ne 6 ; then
+  fatal "This program requires 5 or 6 arguments. See --help ."
 fi
 
 # This program only works if its CWD is the Bourreau's root dir.
@@ -81,6 +83,7 @@ host="$2"
 port="$3"
 dbspec="$4"
 sshagentspec="$5"
+name="$6"
 
 # Run-time paths and names of host and program
 curhost=$(hostname -s)
@@ -110,8 +113,9 @@ date "+%Y-%m-%d %H:%M:%S %Z Attempting to start a new SSH master to $user@$host:
 # Run this in a subprocess, so we can find and kill it later.
 # We need this because the "-f" option of SSH doesn't record
 # a PID anywhere.
+test -n "$name" && name="_$name"
 ssh -n -N -x                             \
-  -o SendEnv=CbrainReverse               \
+  -o "SendEnv=CbrainReverse$name"        \
   -o BatchMode=Yes                       \
   -o ForwardAgent=No                     \
   -o ForwardX11=No                       \

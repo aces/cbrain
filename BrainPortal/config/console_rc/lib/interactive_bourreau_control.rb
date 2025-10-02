@@ -472,7 +472,7 @@ Operations Mode : #{
       mess = " (Wait #{i+1}/#{ntimes})"
       print mess + ( "\b" * mess.size )
       output = bash_command_on_one_bourreau(b,
-        "ps -u $USER -o pid,command | grep 'Worker #{b.name}' | grep -v grep"
+        "ps -u $USER -o pid,command | grep 'TaskWorker #{b.name}' | grep -v grep"
       ) { |fh| fh.read.split(/\n/) }
       break if output.blank? # no lines mean all workers have exited
       delay.times { |d| print [ '-', '\\', '|', '/' ][d % 4], "\b" ; sleep 1 }

@@ -167,7 +167,7 @@ class Bourreau < RemoteResource
       rev_port    = self.reverse_service_port
       rev_dbsock  = self.reverse_service_db_socket_path
       rev_sshsock = self.reverse_service_ssh_agent_socket_path
-      start_reverse_ssh_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; script/cbrain_reverse_ssh #{rev_user.bash_escape} #{rev_host.bash_escape} #{rev_port.bash_escape} #{rev_dbsock.bash_escape} #{rev_sshsock.bash_escape} 2>&1"
+      start_reverse_ssh_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; script/cbrain_reverse_ssh #{rev_user.bash_escape} #{rev_host.bash_escape} #{rev_port.bash_escape} #{rev_dbsock.bash_escape} #{rev_sshsock.bash_escape} #{self.name.bash_escape} 2>&1"
       CBRAIN.with_unlocked_agent # in case the agent was relocked while cbrain_reverse_ssh was setting up
       out = self.read_from_remote_shell_command(start_reverse_ssh_command) { |io| io.read() } rescue "popen exception"
       all_ok = (out =~ /CBRAIN Reverse SSH Started/i) # from output of 'cbrain_reverse_ssh'
