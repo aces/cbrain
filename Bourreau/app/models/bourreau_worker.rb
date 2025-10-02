@@ -220,7 +220,7 @@ class BourreauWorker < Worker
     user_ids = by_user.keys.shuffle # go through users in random order
     while user_ids.size > 0  # loop for each user
       user_id        = user_ids.pop
-      user_max_tasks = CpuQuota.max_active_tasks_for_user(user_id) # nil means infinite
+      user_max_tasks = CpuQuota.max_active_tasks_for_user(user_id, @rr_id) # nil means infinite
       # Go through tasks in random order, but with non-New states having higher priority
       user_tasks     = (by_user[user_id].select { |t| t.status == 'New' }).shuffle +
                        (by_user[user_id].select { |t| t.status != 'New' }).shuffle  # tasks are pop()ed
