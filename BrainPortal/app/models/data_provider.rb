@@ -537,7 +537,8 @@ class DataProvider < ApplicationRecord
       else
         FileUtils.remove_entry(dest, true) if File.exists?(dest) && File.directory?(dest)
       end
-      rsyncout = bash_this("rsync -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{shell_escape(localpath)}#{needslash} #{shell_escape(dest)} 2>&1")
+      need_dotslash = Pathname.new(localpath).relative? ? "./" : ""
+      rsyncout = bash_this("rsync -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{need_dotslash}#{shell_escape(localpath)}#{needslash} #{shell_escape(dest)} 2>&1")
       cb_error "Failed to rsync local file '#{localpath}' to cache file '#{dest}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
     end
     sync_to_provider(userfile)
