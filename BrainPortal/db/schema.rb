@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20250925185219) do
+ActiveRecord::Schema.define(version: 20250929182856) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -269,6 +269,7 @@ ActiveRecord::Schema.define(version: 20250925185219) do
     t.decimal  "max_cpu_past_week",  precision: 24
     t.decimal  "max_cpu_past_month", precision: 24
     t.decimal  "max_cpu_ever",       precision: 24
+    t.integer  "max_active_tasks"
     t.datetime "created_at",                        null: false
     t.datetime "updated_at",                        null: false
   end
