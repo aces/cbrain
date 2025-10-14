@@ -135,9 +135,17 @@ function check_unix_socket {
     return 1 # nope
   fi
   if type -t nc >/dev/null ; then
-    nc -z -U "$socketpath" # will return 0 or 1
-  else
+    # On linux, "nc -z -U" works properly; on MacOS, the -z option doesn't work, so we need the alt way
+    if test $(uname) != "Darwin" ; then
+      nc -z -U "$socketpath" # Linux and other good systems with "nc -z" that works.
+      return $?
+    else # Darwin
+      nc -U "$socketpath" </dev/null >/dev/null 2>/dev/null # Stupid MacOS; it has "nc -z" but it doesn't work
+      return $?
+    fi
+  else # Fallback: linux without "nc". Also will fail totally in all other circumpstances, in that case this script needs adjustments.
     ss -l -x | grep -F -q "$socketpath"
+    return $?
   fi
 }
 
