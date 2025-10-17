@@ -89,7 +89,12 @@
         <% t.edit_cell(:type, :content => @provider.type) do |f| %>
           <%= f.select :type, grouped_options_for_select(@typelist, @provider.type) %>
           <% if !is_normal_user %>
-            <%= overlay_ajax_link "(Data Provider Type Information)", "/doc/data_providers/data_provider_info.html", :class  => "help_link" %>
+            <div class="field_explanation"><%= show_hide_toggle "(Data Provider Type Information)", "#data_provider_classes", :class  => 'action_link' %></div>
+            </p>
+
+            <div id="data_provider_classes" style="display:none">
+              <%= render :partial => 'dp_types_explained' %>
+            </div>
           <% end %>
         <% end %>
       <% else %>

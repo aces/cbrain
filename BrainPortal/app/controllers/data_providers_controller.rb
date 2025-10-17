@@ -830,7 +830,7 @@ class DataProvidersController < ApplicationController
     grouped_options.delete(nil) # data providers that can not be on this list return a category name of nil, so we remove them
     grouped_options.keys.sort.map { |type| [ type, grouped_options[type].sort ] }
 
-    return grouped_options || []
+    return grouped_options
   end
 
   def get_personal_type_list #:nodoc:
@@ -849,7 +849,7 @@ class DataProvidersController < ApplicationController
     userkey_group          << UserkeyFlatDirSshDataProvider.name
     grouped_options[category_of_userkey_dp] = userkey_group
 
-    return grouped_options || []
+    return grouped_options
   end
 
 
