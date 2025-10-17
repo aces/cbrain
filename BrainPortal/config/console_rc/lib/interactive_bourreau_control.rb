@@ -410,7 +410,7 @@ Operations Mode : #{
     if letter == "r"
       bash_command_on_bourreaux(
         #"ps -u $USER -o user,pid,%cpu,%mem,vsize,state,stime,time,command | egrep 'Worker @b@|Bourreau @b@' | grep -v grep | sed -e 's/  *$//'"
-        "ps xww -o pid,vsz,lstart,time,args | egrep 'COMMAND|Worker @b@|Bourreau @b@|BourreauActivity' | grep -v grep | sed -e 's/  *$//'"
+        "ps xww -o pid,vsz,lstart,time,args | egrep 'COMMAND|Worker @b@|Bourreau @b@' | grep -v grep | sed -e 's/  *$//'"
       )
       return true
     end
@@ -472,7 +472,7 @@ Operations Mode : #{
       mess = " (Wait #{i+1}/#{ntimes})"
       print mess + ( "\b" * mess.size )
       output = bash_command_on_one_bourreau(b,
-        "ps -u $USER -o pid,command | grep 'Worker #{b.name}' | grep -v grep"
+        "ps -u $USER -o pid,command | grep 'TaskWorker #{b.name}' | grep -v grep"
       ) { |fh| fh.read.split(/\n/) }
       break if output.blank? # no lines mean all workers have exited
       delay.times { |d| print [ '-', '\\', '|', '/' ][d % 4], "\b" ; sleep 1 }
@@ -571,10 +571,6 @@ Operations Mode : #{
   end
 
   def bash_command_on_one_bourreau(b,comm,&block) #:nodoc:
-    if b.proxied_host.present? # another level of remote host... ?
-      # ... then we prefix the remote command with another ssh call.
-      comm = "ssh #{b.proxied_host.bash_escape} #{comm.bash_escape}"
-    end
     if block_given?
       b.ssh_master.remote_shell_command_reader(comm,&block)
     else

@@ -75,22 +75,28 @@
         <fieldset class="groupentry">
           <legend>SSH Remote Control Configuration</legend>
           <p><%= f.label :ssh_control_host, "Hostname" %><br/>
-                 <%= f.text_field :ssh_control_host %>
+                 <%= f.text_field :ssh_control_host, :size => 30 %>
 
         <p><%= f.label :ssh_control_user, "Username" %><br/>
-               <%= f.text_field :ssh_control_user %>
+               <%= f.text_field :ssh_control_user, :size => 10 %>
 
          <p><%= f.label :ssh_control_port, "Port Number" %><br/>
                      <%= f.text_field :ssh_control_port, :size => 6 %>
 
          <p><%= f.label :ssh_control_rails_dir, "Rails Server Directory" %><br/>
                      <%= f.text_field :ssh_control_rails_dir, :size => 60 %>
+        </fieldset>
 
-            <p><%= f.label :proxied_host, "Second-level effective host" %><br/>
-                     <%= f.text_field :proxied_host %><br/>
-                <div class="field_explanation">This is an experimental field for advanced and non-standard setups
-                  where the remote hostname, above, is actually just a login node and
-                  the real host where we run the server is one step further.</div>
+        <p>
+
+        <fieldset class="groupentry">
+          <legend>Optional SSH JumpHost Configuration</legend>
+            <p><%= f.label      :jumphost_host, "JumpHost hostname" %><br/>
+               <%= f.text_field :jumphost_host, :size => 30 %><br/>
+            <p><%= f.label      :jumphost_user, "JumpHost username" %><br/>
+               <%= f.text_field :jumphost_user, :size => 10 %><br/>
+            <p><%= f.label      :jumphost_port, "JumpHost port" %><br/>
+               <%= f.text_field :jumphost_port, :size => 6 %><br/>
         </fieldset>
 
         <p>

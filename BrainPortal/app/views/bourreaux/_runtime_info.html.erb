@@ -42,7 +42,7 @@
 
     <% t.blank_row %>
 
-    <% t.cell("Remote Host Name",                   :show_width => 2) { @info.host_name == (@bourreau.proxied_host.presence || @bourreau.ssh_control_host) ?
+    <% t.cell("Remote Host Name",                   :show_width => 2) { (@info.host_name == @bourreau.ssh_control_host) ?
                                                               @info.host_name : html_colorize(@info.host_name, "red") } %>
     <% t.cell("Remote Host IP Address",             :show_width => 2) { @info.host_ip } %>
     <% t.cell("Remote Host OS Type",                :show_width => 2) { @info.host_uname } %>

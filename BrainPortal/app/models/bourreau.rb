@@ -167,7 +167,7 @@ class Bourreau < RemoteResource
       rev_port    = self.reverse_service_port
       rev_dbsock  = self.reverse_service_db_socket_path
       rev_sshsock = self.reverse_service_ssh_agent_socket_path
-      start_reverse_ssh_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; script/cbrain_reverse_ssh #{rev_user.bash_escape} #{rev_host.bash_escape} #{rev_port.bash_escape} #{rev_dbsock.bash_escape} #{rev_sshsock.bash_escape} 2>&1"
+      start_reverse_ssh_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; script/cbrain_reverse_ssh #{rev_user.bash_escape} #{rev_host.bash_escape} #{rev_port.bash_escape} #{rev_dbsock.bash_escape} #{rev_sshsock.bash_escape} #{self.name.bash_escape} 2>&1"
       CBRAIN.with_unlocked_agent # in case the agent was relocked while cbrain_reverse_ssh was setting up
       out = self.read_from_remote_shell_command(start_reverse_ssh_command) { |io| io.read() } rescue "popen exception"
       all_ok = (out =~ /CBRAIN Reverse SSH Started/i) # from output of 'cbrain_reverse_ssh'
@@ -445,7 +445,7 @@ class Bourreau < RemoteResource
     # Workers are started when created
     worker_pool = WorkerPool.create_or_find_pool(BourreauWorker,
        num_instances,
-       { :name           => "BourreauWorker #{myself.name}",
+       { :name           => "TaskWorker #{myself.name}",
          :check_interval => chk_time,
          :worker_log     => logger, # nil, a logger object, or :auto
          :log_level      => verbose > 1 ? Log4r::DEBUG : Log4r::INFO # for :auto
@@ -504,9 +504,9 @@ class Bourreau < RemoteResource
 
     # Option 2: log to stdout or stderr
     if log_to =~ /stdout|stderr/i
-      blogger = Log4r::Logger['BourreauWorker']
+      blogger = Log4r::Logger['TaskWorker']
       unless blogger
-        blogger = Log4r::Logger.new('BourreauWorker')
+        blogger = Log4r::Logger.new('TaskWorker')
         if log_to =~ /stdout/i
           stdout_op = Log4r::Outputter.stdout
           stdout_op.formatter = Log4r::PatternFormatter.new(:pattern => "%d %l %m")
@@ -522,11 +522,11 @@ class Bourreau < RemoteResource
 
     # Option 3: combined log a file
     elsif log_to == 'combined'
-      blogger = Log4r::Logger['BourreauWorker']
+      blogger = Log4r::Logger['TaskWorker']
       unless blogger
-        blogger = Log4r::Logger.new('BourreauWorker')
-        blogger.add(Log4r::RollingFileOutputter.new('bourreau_workers_outputter',
-                      :filename  => "#{Rails.root}/log/BourreauWorkers.combined..log",
+        blogger = Log4r::Logger.new('TaskWorker')
+        blogger.add(Log4r::RollingFileOutputter.new('task_workers_outputter',
+                      :filename  => "#{Rails.root}/log/TaskWorkers.combined..log",
                       :formatter => Log4r::PatternFormatter.new(:pattern => "%d %l %m"),
                       :maxsize   => 1000000, :trunc => 600000))
         blogger.level = verbose_level > 1 ? Log4r::DEBUG : Log4r::INFO

@@ -86,6 +86,10 @@ if ! test -f "app/models/bourreau_worker.rb" ; then
   fatal "This program '$0' must be started from the Bourreau directory."
 fi
 
+# Try to find the name of the Bourreau, from a Ruby file. Brittle.
+# We set it in an environement variable so that other sub processes can use it.
+export BOURREAU_NAME=$(grep '^ *CBRAIN_RAILS_APP_NAME' config/initializers/config_bourreau.rb | cut -d= -f2 | tr -cd a-zA-Z0-9- )
+
 # Run-time paths and names of host and program
 basename=$(basename $0)
 curhost=$(hostname -s)
@@ -131,9 +135,17 @@ function check_unix_socket {
     return 1 # nope
   fi
   if type -t nc >/dev/null ; then
-    nc -z -U "$socketpath" # will return 0 or 1
-  else
+    # On linux, "nc -z -U" works properly; on MacOS, the -z option doesn't work, so we need the alt way
+    if test $(uname) != "Darwin" ; then
+      nc -z -U "$socketpath" # Linux and other good systems with "nc -z" that works.
+      return $?
+    else # Darwin
+      nc -U "$socketpath" </dev/null >/dev/null 2>/dev/null # Stupid MacOS; it has "nc -z" but it doesn't work
+      return $?
+    fi
+  else # Fallback: linux without "nc". Also will fail totally in all other circumpstances, in that case this script needs adjustments.
     ss -l -x | grep -F -q "$socketpath"
+    return $?
   fi
 }
 
@@ -285,7 +297,7 @@ fi
 export RAILS_ENV=$environment  # puma's mode of operation is passed through an env var
 # puma_wait_wrapper is a custom bash program that starts puma
 # and waits to make sure it booted properly
-script/puma_wait_wrapper
+script/puma_wait_wrapper $BOURREAU_NAME # the BOURREAU NAME is not an argument, it's just so a ps can recognize what is being started
 start_success=$?
 
 # If we were provided with a database.yml, we need

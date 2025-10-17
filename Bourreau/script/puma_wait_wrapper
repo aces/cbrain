@@ -33,7 +33,8 @@ puma --config config/puma.rb >> log/server_start.log 2>&1 </dev/null &
 while test -n "$(jobs -r -p)" ; do # while the puma process exists
   sleep 1
   if test -e $wait_for_socket ; then # everything is OK, the socket has appeared
-    script/watcher </dev/null >/dev/null 2>&1 & # start background aliveness monitor
+    # Note: the BOURREAU_NAME env variable is not used for anything except help admins with the ps command
+    script/watcher $BOURREAU_NAME </dev/null >/dev/null 2>&1 & # start background aliveness monitor
     exit 0
   fi
 done

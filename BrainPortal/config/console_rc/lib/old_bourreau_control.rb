@@ -60,10 +60,6 @@ Usage: bb_bash(bourreau_list = <online bourreaux>) { |b| "bash_command" }
         next
       end
       # ok send command to remote host
-      if b.proxied_host.present? # another level of remote host... ?
-        # ... then we prefix the remote command with another ssh call.
-        comm = "ssh #{b.proxied_host.bash_escape} #{comm.bash_escape}"
-      end
       b.ssh_master.remote_shell_command_reader(comm) # run it
     end
     return true

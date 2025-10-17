@@ -216,7 +216,6 @@ class RemoteResource
   Owner:    %d (%s)
   Group:    %d (%s)
   SshPath:  ssh://%s@%s:%s%s
-  ProxHost: %s
   TimeZone: %s
   SiteURL:  %s
   HelpURL:  %s
@@ -245,7 +244,6 @@ class RemoteResource
       ssh_control_host.presence || "none",
       ssh_control_port.presence || 22,
       ssh_control_rails_dir.presence || "/none",
-      proxied_host.presence || "",
       time_zone.presence || "none",
       site_url_prefix.presence || "",
       help_url.presence || "",

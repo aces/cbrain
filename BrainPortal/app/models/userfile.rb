@@ -728,6 +728,23 @@ class Userfile < ApplicationRecord
 
 
   ##############################################
+  # API Support Methods
+  ##############################################
+
+  public
+
+  def for_api
+    tags = self.tags.order(:name).to_a
+    return super if tags.empty?
+    super.merge(
+      {
+        :tag_ids   => tags.map(&:id),
+        :tag_names => tags.map(&:name),
+      }
+    )
+  end
+
+  ##############################################
   # Viewer Methods
   ##############################################
 

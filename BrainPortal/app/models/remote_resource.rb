@@ -87,6 +87,15 @@ class RemoteResource < ApplicationRecord
 
   validates             :ssh_control_port, numericality: { only_integer: true, greater_than: 21, less_than: 65536 }, allow_blank: true
 
+  validates_format_of   :jumphost_host, :with => /\A\w[\w\-\.]*\z/,
+                        :message  => 'is invalid as only the following characters are accepted: alphanumeric characters, _, -, and .',
+                        :allow_blank => true
+  validates_format_of   :jumphost_user, :with => /\A\w[\w\-\.]*\z/,
+                        :message  => 'is invalid as only the following characters are accepted: alphanumeric characters, _, -, and .',
+                        :allow_blank => true
+  validates             :jumphost_port,    numericality: { only_integer: true, greater_than: 21, less_than: 65536 }, allow_blank: true
+  validate              :jumphost_config_is_valid
+
   validates_format_of   :ssh_control_rails_dir, :with => /\A\/[\w\-\.\=\+\/]*\z/,
                         :message  => 'is invalid as only paths with simple characters are accepted: a-z, A-Z, 0-9, _, +, =, . and of course /',
                         :allow_blank => true
@@ -183,6 +192,18 @@ class RemoteResource < ApplicationRecord
     all_ok
   end
 
+  # JumpHost config is optional, but if set, we need both the host and user
+  def jumphost_config_is_valid
+    return true if self.jumphost_host.blank? && self.jumphost_user.blank? && self.jumphost_port.blank? # most common sitch
+    self.errors.add(:jumphost_port, "cannot be present if no host and username are provided") if
+      self.jumphost_port.present? && (self.jumphost_host.blank? || self.jumphost_user.blank?)
+    self.errors.add(:jumphost_host, "is required if a username is provided") if
+      self.jumphost_host.blank? && self.jumphost_user.present?
+    self.errors.add(:jumphost_user, "is required if a host is provided") if
+      self.jumphost_user.blank? && self.jumphost_host.present?
+    return (self.errors[:jumphost_host].empty? && self.errors[:jumphost_user].empty? && self.errors[:jumphost_port].empty?)
+  end
+
   # Verify that the dp_cache_dir is correct, at least from
   # what we can see. It's possible to edit the path of an
   # external RemoteResource, so we can't check that the dir
@@ -236,6 +257,8 @@ class RemoteResource < ApplicationRecord
     uniq     = "#{CBRAIN::SelfRemoteResourceId}_#{self.id}"
     master   = SshMaster.find_or_create(self.ssh_control_user,self.ssh_control_host,self.ssh_control_port || 22,
                :category => category, :uniq => uniq, :ssh_config_options => ssh_options )
+    master.add_jumphost(self.jumphost_user, self.jumphost_host, self.jumphost_port) if
+      self.jumphost_user.present? && self.jumphost_host.present?
     master
   end
 
@@ -950,7 +973,7 @@ class RemoteResource < ApplicationRecord
     cb_error "Cannot start BAC workers: improper number of instances to start in config (must be 0..20)." unless
        num_workers && num_workers >= 0 && num_workers < 21
 
-    worker_name = myself.class.to_s + 'Activity'
+    worker_name = "BacWorker"
     baclogger = Log4r::Logger[worker_name]
     unless baclogger
       baclogger = Log4r::Logger.new(worker_name)
@@ -963,7 +986,7 @@ class RemoteResource < ApplicationRecord
 
     WorkerPool.create_or_find_pool(BackgroundActivityWorker,
        num_workers, # number of instances
-       { :name           => worker_name,
+       { :name           => "#{worker_name} #{myself.name}",
          :check_interval => 5,
          :worker_log     => baclogger,
        }
