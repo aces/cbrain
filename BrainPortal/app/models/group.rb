@@ -171,10 +171,14 @@ class Group < ApplicationRecord
       .map    { |a| a.name }
       .reject { |a| a == :resource_usage } # we never modify the resource usage records
     objlist = group_has_many_model_list.inject([]) { |list,modsym| list += self.send(modsym) }
+    # Add tc to the objlist
+    ToolConfig.where(:group_id => self.id).each {|tc| objlist.push(tc)}
     user_id_to_own_group_id = {}
     objlist.each do |obj|
       next if obj.is_a?(ResourceUsage) # again, just to be sure
-      own_group_id = user_id_to_own_group_id[obj.user_id] ||= obj.user.own_group.id
+      own_group_id = obj.is_a?(ToolConfig) ?
+          user_id_to_own_group_id[obj.tool.user_id] ||= obj.tool.user.own_group.id :
+          user_id_to_own_group_id[obj.user_id] ||= obj.user.own_group.id
       obj.update_attributes!( :group_id => own_group_id )
     end
   end
