@@ -206,8 +206,7 @@ class BourreauWorker < Worker
     worker_log.debug "There are #{tasks_todo.size} ready tasks that will increase activity."
 
     # Get limits from meta data store
-    @rr.meta.reload # reload limits if needed.
-    bourreau_max_tasks = @rr.meta[:task_limit_total].to_i # nil or "" or 0 means infinite
+    bourreau_max_tasks = CpuQuota.max_active_tasks_total_for_remote_resource(@rr_id) # nil means infinite
 
     # Prepare relation for 'active tasks on this Bourreau'
     bourreau_active_tasks = CbrainTask.where( :status => ActiveTasks, :bourreau_id => @rr_id )
@@ -221,9 +220,7 @@ class BourreauWorker < Worker
     user_ids = by_user.keys.shuffle # go through users in random order
     while user_ids.size > 0  # loop for each user
       user_id        = user_ids.pop
-      user_max_tasks = @rr.meta["task_limit_user_#{user_id}".to_sym]
-      user_max_tasks = @rr.meta[:task_limit_user_default] if user_max_tasks.blank?
-      user_max_tasks = user_max_tasks.to_i # nil, "" and "0" means unlimited
+      user_max_tasks = CpuQuota.max_active_tasks_for_user(user_id, @rr_id) # nil means infinite
       # Go through tasks in random order, but with non-New states having higher priority
       user_tasks     = (by_user[user_id].select { |t| t.status == 'New' }).shuffle +
                        (by_user[user_id].select { |t| t.status != 'New' }).shuffle  # tasks are pop()ed
@@ -233,7 +230,7 @@ class BourreauWorker < Worker
 
         # Bourreau global limit.
         # If exceeded, there's nothing more we can do for this cycle of 'do_regular_work'
-        if bourreau_max_tasks > 0 # i.e. 'if there is a limit configured'
+        if bourreau_max_tasks # i.e. 'if there is a limit configured'
           bourreau_active_tasks_cnt = bourreau_active_tasks.count
           if bourreau_active_tasks_cnt >= bourreau_max_tasks
             worker_log.info "Bourreau limit: found #{bourreau_active_tasks_cnt} active tasks, but the limit is #{bourreau_max_tasks}. Skipping."
@@ -243,7 +240,7 @@ class BourreauWorker < Worker
 
         # User specific limit.
         # If exceeded, there's nothing more we can do for this user, so we go to the next
-        if user_max_tasks > 0 # i.e. 'if there is a limit configured'
+        if user_max_tasks # i.e. 'if there is a limit configured'
           user_active_tasks_cnt = bourreau_active_tasks.where( :user_id => user_id ).count
           if user_active_tasks_cnt >= user_max_tasks
             worker_log.info "User ##{user_id} limit: found #{user_active_tasks_cnt} active tasks, but the limit is #{user_max_tasks}. Skipping."

@@ -154,11 +154,13 @@ class QuotasController < ApplicationController
       @quota.max_cpu_past_week  = guess_time_units(quota_params[:max_cpu_past_week])  if quota_params[:max_cpu_past_week].present?
       @quota.max_cpu_past_month = guess_time_units(quota_params[:max_cpu_past_month]) if quota_params[:max_cpu_past_month].present?
       @quota.max_cpu_ever       = guess_time_units(quota_params[:max_cpu_ever])       if quota_params[:max_cpu_ever].present?
+      @quota.max_active_tasks   = quota_params[:max_active_tasks].to_i if quota_params[:max_active_tasks].to_s =~ /\A\s*\d+\s*\z/
+      @quota.max_active_tasks   = nil                                  if quota_params[:max_active_tasks].blank?
     end
 
     new_record = @quota.new_record?
 
-    if @quota.save_with_logging(current_user, %w( max_bytes max_files max_cpu_past_week max_cpu_past_month max_cpu_ever ))
+    if @quota.save_with_logging(current_user, %w( max_bytes max_files max_cpu_past_week max_cpu_past_month max_cpu_ever max_active_tasks ))
       if new_record
         flash[:notice] = "Quota entry was successfully created."
       else
@@ -356,6 +358,7 @@ class QuotasController < ApplicationController
     params.require(:quota).permit(
       :user_id, :remote_resource_id, :group_id,
       :max_cpu_past_week, :max_cpu_past_month, :max_cpu_ever,
+      :max_active_tasks,
     )
   end
 
