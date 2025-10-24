@@ -176,7 +176,7 @@
       <% end %>
 
       <% t.column("Repeat", :repeat, :sortable => true) do |bac| %>
-        <%= bac.repeat %>
+        <%= bac_pretty_repeat bac.repeat %>
       <% end %>
 
       <% t.column("Retries", :retry_count, :sortable => false) do |bac| %>
