@@ -52,6 +52,7 @@ class Group < ApplicationRecord
                           :name_format => true
 
   has_many                :tools
+  has_many                :tool_configs
   has_many                :userfiles
   has_many                :data_providers
   has_many                :remote_resources
@@ -170,12 +171,18 @@ class Group < ApplicationRecord
       .select { |a| a.macro == :has_many }
       .map    { |a| a.name }
       .reject { |a| a == :resource_usage } # we never modify the resource usage records
-    objlist = group_has_many_model_list.inject([]) { |list,modsym| list += self.send(modsym) }
-    user_id_to_own_group_id = {}
+    objlist = group_has_many_model_list.inject([]) { |list,modsym| list += self.send(modsym).to_a }
+    user_id_to_own_group_id = {} # to cache lookups
     objlist.each do |obj|
       next if obj.is_a?(ResourceUsage) # again, just to be sure
-      own_group_id = user_id_to_own_group_id[obj.user_id] ||= obj.user.own_group.id
-      obj.update_attributes!( :group_id => own_group_id )
+      if obj.is_a?(ToolConfig)
+        user_id = obj.tool&.user_id || obj.bourreau.user_id
+      else # for all other models, we use the group of the user of obj
+        user_id = obj.user_id
+      end
+      new_group_id = user_id_to_own_group_id[user_id] ||= User.find(user_id).own_group.id
+      obj.update_attributes!( :group_id => new_group_id )
+      obj.addlog("Group reset to ID=#{new_group_id} because group ID=#{self.id} was destroyed") rescue nil
     end
   end
 
