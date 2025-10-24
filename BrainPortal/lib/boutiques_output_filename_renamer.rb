@@ -165,6 +165,29 @@ module BoutiquesOutputFilenameRenamer
     descriptor_with_renaming_explanations(super)
   end
 
+  # The after_form descriptor contains a directive
+  # to allow the curly brackets within the string name
+  # for the output files. Normally these are not allowed
+  # by the core BTQ integrator framework validation code.
+  # The special keyword ':id-with-curlies:' is designed for
+  # such a case.
+  def descriptor_for_after_form #:nodoc:
+    desc = super.dup
+    config_map = desc.custom_module_info('BoutiquesOutputFilenameRenamer') || {}
+    return desc if config_map.blank? # no config means nothing to do
+
+    desc.custom = {} if desc.custom.blank?
+    regexes = desc.custom['cbrain:override-input-string-ruby-regex'] || {}
+
+    config_map.each do |_, pair|
+      fileinputid, _ = *pair
+      regexes[fileinputid] = ":id-with-curlies:" # special keyword for the core validator; see class BoutiquesPortalTask
+    end
+
+    desc.custom['cbrain:override-input-string-ruby-regex'] = regexes
+    desc
+  end
+
   # This method performs exactly the same thing as the
   # standard method, but it will attempt to validate
   # the pattern and inform the user if it seems improper.
