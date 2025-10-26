@@ -180,8 +180,8 @@ module BoutiquesOutputFilenameRenamer
     regexes = desc.custom['cbrain:override-input-string-ruby-regex'] || {}
 
     config_map.each do |_, pair|
-      fileinputid, _ = *pair
-      regexes[fileinputid] = ":id-with-curlies:" # special keyword for the core validator; see class BoutiquesPortalTask
+      _, namestringid = *pair
+      regexes[namestringid] = ":id-with-curlies:" # special keyword for the core validator; see class BoutiquesPortalTask
     end
 
     desc.custom['cbrain:override-input-string-ruby-regex'] = regexes
