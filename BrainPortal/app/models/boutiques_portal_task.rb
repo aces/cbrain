@@ -541,6 +541,11 @@ class BoutiquesPortalTask < PortalTask
     # Default check is pretty strict, but works for most applications.
     charset_regex ||= /\A[\w,\.\/\:\-\+]+\z/ # letters, digits, underscores, commas, periods, slashes, colons, dashes, plusses "a0_,./:-+"
 
+    # These two lines force anchoring, in case the person maintaining the descriptor
+    # forgot them in the values of custom['cbrain:override-input-string-ruby-regex']
+    charset_regex = '\A'+charset_regex      if charset_regex.is_a?(String) && !charset_regex.starts_with?('\A')
+    charset_regex =      charset_regex+'\z' if charset_regex.is_a?(String) && !charset_regex.ends_with?('\z')
+
     # Taken userfile names. An error will be raised if two input files have the
     # same name.
     @taken_files ||= Set.new
