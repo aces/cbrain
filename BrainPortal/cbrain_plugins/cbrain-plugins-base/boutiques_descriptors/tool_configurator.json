@@ -205,7 +205,7 @@
           "Select two ToolConfigs, called 'NEW' and 'OLD'.",
           "Click Refresh as often as necessary; both Refresh buttons are identical.",
           "Each selection box has a top entry 'All' which you can use to filter its list by Tool, based on what is selected in the OTHER selection box.",
-          "The Refresh buttons alway re-update all other fields in the form!",
+          "The Refresh buttons always re-update all other fields in the form!",
           "Select twice the same ToolConfig if you don't need to copy anything.",
           "Nothing is updated or built until you click 'Launch' at the bottom.",
           "If you are building an Apptainer image, the image will be saved in the task's results DataProvider.",
@@ -213,6 +213,9 @@
           "The copy operations happen as soon as you click 'Launch'; the build (if any) will create a CBRAIN task.",
           "If no image is being built, the copying will be performed and the form will just redisplay. Review the changes in the NEW ToolConfig."
         ],
+        "cbrain:override-input-string-ruby-regex": {
+          "build_mode": ":description:"
+        },
         "cbrain:integrator_modules": {
           "BoutiquesOutputFileTypeSetter": {
             "apptainer_sif_name": "ApptainerImage"
