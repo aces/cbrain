@@ -539,7 +539,7 @@ class BoutiquesPortalTask < PortalTask
     charset_regex  = /\A[\w,\.\/\:\-\ \*\{\}\(\)\%\@\=\+]\z/  if charset_regex == ':description:'     # single line text with spaces, no bash special characters
 
     # Default check is pretty strict, but works for most applications.
-    charset_regex ||= /\A[\w,\.\/\:\-\+]+\z/ # letters, digits, underscores, commas, periods, slashes, colons, dashes, plusses "a0_,./:-+"
+    charset_regex ||= /\A[\w,\.\/\:\-\+]*\z/ # letters, digits, underscores, commas, periods, slashes, colons, dashes, plusses "a0_,./:-+"
 
     # These two lines force anchoring, in case the person maintaining the descriptor
     # forgot them in the values of custom['cbrain:override-input-string-ruby-regex']
