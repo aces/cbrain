@@ -574,14 +574,16 @@ class BoutiquesPortalTask < PortalTask
       when :string
         value = value.to_s                                                 if value.is_a?(Symbol)
         params_errors.add(invokename, " is not a string (#{value})")   unless value.is_a?(String)
-        value.strip!
+        value.strip!                                                       if value.is_a?(String)
         params_errors.add(invokename, " is blank")                         if value.blank? && !empty_string_allowed
         # The following three checks are to prevent cases when
         # a string param is used as a path
         params_errors.add(invokename, " cannot contain newlines")          if value =~ /[\n\r]/
         params_errors.add(invokename, " cannot start with this character") if value =~ /^[\.\/]+/
         params_errors.add(invokename, " cannot move up dirs")              if value.include? "/../"
-        params_errors.add(invokename, " contains invalid characters")  unless value.match?(charset_regex) # we can use a string in the match method
+        if value.present?
+          params_errors.add(invokename, " contains invalid characters")  unless value.match?(charset_regex) # we can use a string in the match method
+        end
 
       # Try to match against various common representation of true and false
       when :flag
