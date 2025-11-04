@@ -43,5 +43,14 @@ class BackgroundActivity::TerminateTask < BackgroundActivity
     populate_items_from_task_custom_filter
   end
 
-end
+  # Returns the primary class of items the task targets
+  def targets_model
+    CbrainTask
+  end
 
+  # Returns the primary class of items the task targets
+  def produces_model
+    nil  # stands for undefined
+  end
+
+end

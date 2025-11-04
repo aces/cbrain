@@ -25,6 +25,10 @@ class BackgroundActivity::SaveTaskWorkdir < BackgroundActivity
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  def targets_model
+    CbrainTask
+  end
+
   def process(item)
     task  = CbrainTask.where(:bourreau_id => CBRAIN::SelfRemoteResourceId).find(item)
     ok    = task.send(:save_cluster_workdir, self.user_id) # it's a protected method

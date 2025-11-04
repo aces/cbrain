@@ -94,23 +94,70 @@
 
 <% end %>
 
-<% if (!@bac.is_configured_for_dynamic_items? && @bac.items.size > 0) %>
 
-<fieldset>
-  <legend>Items</legend>
-  <% bad_hash      = @bac.failed_items.index_by(&:itself) %>
-  <% num_processed = @bac.current_item %>
-  <%= array_to_table(@bac.items.each_with_index.to_a, :table_class => 'xsimple', :cols => 10) do |(item,i),r,c| %>
-    <%= i %> :
-    <%= if i >= num_processed
-          item.to_s
-        else
-          red_if(bad_hash[item],item,nil, :color1 => 'green', :color2 => 'red')
-        end
-    %>
-  <% end %>
-</fieldset>
 
+
+<% if !@bac.is_configured_for_dynamic_items? && @bac.items.size > 0 %>
+    <% link_items = true %>
+    <fieldset>
+    <legend>Items</legend>
+
+    <% if check_role(:admin_user) && ( @bac.targets_model.present? || @bac.produces_model.present? ) %>
+
+        <%# show switch to bare-bones/linked-items view only if items are linkable %>
+
+        <% link_items = false if params['link_items'].to_s == 'false'  %>
+
+        <% if link_items %>
+            <%= link_to "Bare-bones view", background_activity_path(@bac, :link_items => 'false'), :class => :button %>
+        <% else %>
+            <%= link_to "Show links", background_activity_path(@bac, :link_items => 'true'), :class => :button %>
+        <% end %>
+        <br>
+    <% end %>
+
+    <% bad_hash      = @bac.failed_items.index_by(&:itself) %>
+    <% num_processed = @bac.current_item %>
+
+    <%= array_to_table(@bac.items.each_with_index.to_a, :table_class => 'xsimple', :cols => 10) do |(item,i),r,c| %>
+        <%= i %> :
+
+        <%# attempts to find a model %>
+        <% model = @bac.find_target item %>
+
+        <%= (link_to model&.name || model&.type || item,
+                     polymorphic_path(model.becomes(model.class.base_class) )
+            ) rescue item %>
+
+        <% if i < num_processed %>
+          <% if bad_hash[item] %>
+            &#x274C;
+          <% else %>
+            &#9989;
+          <% end %>
+        <% end %>
+
+
+        <% msg = @bac.messages[i] %>
+        <% if msg.present? && msg != 'ok'%>
+            <%= ":" %>
+            <% msg_or_model = @bac.find_produced msg %>
+            <% if msg_or_model.is_a? ApplicationRecord %>
+                <% base_class = msg_or_model.class.base_class %>
+
+                <%= (link_to msg_or_model&.name || msg_or_model&.type ,
+                           polymorphic_path(msg_or_model.becomes(base_class))
+                           )
+                %>
+            <% else %>
+                 <%= msg_or_model.to_s.sub(/^[A-Za-z]*:[: ]/, '').truncate(23) %>
+            <% end %>
+        <% end %>
+    <% end %>
+    </fieldset>
 <% end %>
+
+
+
 
 <%= (render :partial => "background_activities/#{@bac.class.to_s.demodulize}") rescue nil %>

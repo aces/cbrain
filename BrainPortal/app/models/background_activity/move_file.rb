@@ -45,6 +45,10 @@ class BackgroundActivity::MoveFile < BackgroundActivity
     [ ok, message ]
   end
 
+  def targets_model
+    Userfile  # stands for undefined
+  end
+
   def prepare_dynamic_items
     populate_items_from_userfile_custom_filter
   end

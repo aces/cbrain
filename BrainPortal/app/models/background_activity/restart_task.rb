@@ -31,6 +31,10 @@ class BackgroundActivity::RestartTask < BackgroundActivity
 
   before_save :must_be_on_bourreau!
 
+  def targets_model
+    CbrainTask
+  end
+
   def process(item)
     task       = CbrainTask.where(:bourreau_id => CBRAIN::SelfRemoteResourceId).find(item)
     atwhat     = options[:atwhat]
