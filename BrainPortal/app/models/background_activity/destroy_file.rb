@@ -34,6 +34,18 @@ class BackgroundActivity::DestroyFile < BackgroundActivity
     ba
   end
 
+  # Returns the primary class of items the task targets
+  def targets_model
+    Userfile
+  end
+
+  # Returns the primary class of items the task targets
+  def produces_model
+    nil  # stands for undefined
+  end
+
+
+
   def process(item)
     userfile     = Userfile.find(item)
     ok           = userfile.destroy
@@ -46,4 +58,3 @@ class BackgroundActivity::DestroyFile < BackgroundActivity
   end
 
 end
-
