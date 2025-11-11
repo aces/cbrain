@@ -2357,6 +2357,7 @@ docker_image_name=#{full_image_name.bash_escape}
     # (3) The root of the GridShare area (all tasks workdirs)
     gridshare_dir  = self.bourreau.cms_shared_dir # not mounted explicitely
 
+
     # (6) Ext3 capture mounts, if any.
     # These will look like "-B .capt_abcd.ext3:/path/workdir/abcd:image-src=/"
     # While we are building these options, we're also creating
@@ -2381,6 +2382,16 @@ docker_image_name=#{full_image_name.bash_escape}
       sing_opts += ":ro" if file_access_symbol == :read
       sing_opts
     end
+
+    # add tool config mounts, specified in 'overlay'
+    esc_local_dp_mountpoints += mountpoints.inject("") do |sing_opts,mount|
+      b_path, c_path = mount.split(":", 2)
+      sing_opts += " -B #{b_path.bash_escape}:#{c_path.bash_escape}:ro"
+      sing_opts
+    end
+
+
+
 
     # (5) Overlays defined in the ToolConfig
     # Some of them might be patterns (e.g. /a/b/data*.squashfs) that need to
@@ -2507,7 +2518,7 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
     -B #{cache_dir.bash_escape}                 \\
     -B #{cache_dir.bash_escape}:/DP_Cache       \\
     -B #{gridshare_dir.bash_escape}             \\
-    #{esc_local_dp_mountpoints}                 \\
+    #{esc_local_dp_mountpoints}                 \\    
     #{overlay_mounts}                           \\
     -B #{task_workdir.bash_escape}:#{effect_workdir.bash_escape} \\
     #{esc_capture_mounts}                       \\
@@ -2564,6 +2575,11 @@ bash -c "exit $_cbrain_status_"
   # Just invokes the same method on the task's ToolConfig.
   def ext3capture_basenames
     self.tool_config.ext3capture_basenames
+  end
+
+  # Just invokes the same method on the task's ToolConfig.
+  def bindmounts
+    self.tool_config.bindmounts
   end
 
   # This method creates an empty +filename+ with +size+ bytes

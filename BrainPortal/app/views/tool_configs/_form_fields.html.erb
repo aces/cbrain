@@ -222,16 +222,19 @@
     <% t.edit_cell(:singularity_overlays_specs, :header => "Singularity Overlays", :show_width => 2, :content => full_description(@tool_config.singularity_overlays_specs)) do |f| %>
       <%= f.text_area :singularity_overlays_specs, :rows => 6, :cols => 120 %>
         <div class="wide_field_explanation">
-        This field can contain one or several specifications for data overlays
+        This field can contain one or several specifications for data overlays and bindmounts
         to be included when the task is started with Singularity.
-        A specification can be either
+        An overlay specification can be either
         a full path (e.g. <em>file:/a/b/data.squashfs</em>),
         a path with a pattern (e.g. <em>file:/a/b/data*.squashfs</em>),
         a registered file identified by ID (e.g. <em>userfile:123</em>),
         a SquashFS Data Provider identified by its ID or name (e.g. <em>dp:123</em>, <em>dp:DpNameHere</em>)
         or an ext3 capture overlay basename (e.g. <em>ext3capture:basename=SIZE</em> where size is <em>12G</em> or <em>12M</em>).
         In the case of a Data Provider, the overlays will be the files that the provider uses.
-        Each overlay specification should be on a separate line.
+        Bindmount specification is like
+          <em> bindmount:/bourreau/path/to/data:/containerized/path/to/data</em>
+
+        Each overlay or bind specification should be on a separate line.
         You can add comments, indicated with hash symbol <em>#</em>.
         For example, <em>file:/a/b/atlas.squashfs # brain atlas</em>
         </div>

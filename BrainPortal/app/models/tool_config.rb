@@ -386,6 +386,8 @@ class ToolConfig < ApplicationRecord
   #         userfile:1234
   #      # A ext3 capture filesystem, will NOT be returned here as an overlay
   #         ext3capture:basename=12G
+  #      # A readonly bind mount, will NOT be returned here as an overlay
+  #        bindmount:/local/basename:/container/basename
   def singularity_overlays_full_paths
     specs = parsed_overlay_specs
     specs.map do |knd, id_or_name|
@@ -410,6 +412,8 @@ class ToolConfig < ApplicationRecord
         { userfile.cache_full_path() =>  "registered userfile" }
       when 'ext3capture'
         []  # handled separately
+      when 'bindmount'
+        []  # hanlded separatery
       else
         cb_error "Invalid '#{knd}:#{id_or_name}' overlay."
       end
@@ -426,6 +430,31 @@ class ToolConfig < ApplicationRecord
     @_data_providers_with_overlays_ = specs.map do |kind, id_or_name|
       DataProvider.where_id_or_name(id_or_name).first if kind == 'dp'
     end.compact
+  end
+
+  def additional_apptainer_mounts
+    specs = parsed_overlay_specs
+    return [] if specs.empty?
+    specs.map do |kind, id_or_name|
+      case kind
+      when 'dp'
+        dp = DataProvider.where_id_or_name(id_or_name).first
+        cb_error "Can't find DataProvider #{id_or_name} for fetching overlays" if ! dp
+        dp.additional_apptainer_mounts rescue nil
+      when 'file'
+        cb_error "Provide absolute path for overlay file '#{id_or_name}'." if (Pathname.new id_or_name).relative?
+
+      end
+    end
+  end
+
+  def bindmounts
+    specs = parsed_overlay_specs
+    return [] if specs.empty?
+    specs
+      .map { |pair| pair[1] if pair[0] == 'bindmount' }
+      .compact
+      .map { |basename_basename | basename_and_basename.split(":") }
   end
 
   # Returns pairs [ [ basename, size], ...] as in [ [ 'work', '28g' ]
@@ -486,8 +515,9 @@ class ToolConfig < ApplicationRecord
   end
 
   # Verifies that the admin has entered a set of
-  # overlay specifications properly. One or several of:
+  # overlay and bindmount specifications properly. One or several of:
   #
+  #    #### the overlay rules
   #    file:/full/path/to/something.squashfs
   #    file:/full/path/to/pattern*/data?.squashfs
   #    userfile:333
@@ -496,6 +526,8 @@ class ToolConfig < ApplicationRecord
   #    ext3capture:basename=SIZE
   #    ext3capture:work=30G
   #    ext3capture:tool_1.1.2=15M
+  #
+  #    bindmount:/bourreau/path/to:/container/path/to     # bindmount rules ( additionally introduced )
   #
   def validate_overlays_specs #:nodoc:
     specs = parsed_overlay_specs
@@ -542,6 +574,10 @@ class ToolConfig < ApplicationRecord
           self.errors.add(:singularity_overlays_specs, "contains invalid ext3capture specification (must be like ext3capture:basename=1g or 2m etc)")
         end
 
+      when 'bindmount' # this is for binding to container rather than overlays
+        if id_or_name !~ /\A\/\w[\w\.-\/]+:\/\w[\w\.-\/]+/
+          self.errors.add(:singularity_overlays_specs, "contains invalid bindmount specification (must be like bindmount:/path/in/bourreau:/path/in/container) and free from special characters")
+        end
       else
         # Other errors
         self.errors.add(:singularity_overlays_specs, "contains invalid specification '#{kind}:#{id_or_name}'")
