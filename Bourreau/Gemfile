@@ -56,7 +56,6 @@ gem "activemodel-serializers-xml"
 #----------------------
 
 group :development do
-  gem "wirble"
   gem "looksee"
   gem "hirb"
   gem "pry"
