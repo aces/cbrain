@@ -38,11 +38,14 @@ class SessionsController < ApplicationController
   skip_before_action :verify_authenticity_token, :only => [ :create ] # we invoke it ourselves in create()
 
   def new #:nodoc:
-    reqenv           = request.env
-    rawua            = reqenv['HTTP_USER_AGENT'] || 'unknown/unknown'
-    ua               = HttpUserAgent.new(rawua)
-    @browser_name    = ua.browser_name    || "(unknown browser name)"
-    @browser_version = ua.browser_version || "(unknown browser version)"
+
+    # HEAD requests render nothing
+    req_method = request.method.to_s.upcase
+    if req_method == 'HEAD'
+      render :plain => "", :status => :ok
+      return
+    end
+
     # Array of enabled OIDC providers configurations
     @oidc_configs    = OidcConfig.all
     # Hash of OIDC uris with the OIDC name as key
