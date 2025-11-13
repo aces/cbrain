@@ -143,11 +143,13 @@ class BoutiquesPortalTask < PortalTask
               descriptor.sole_mandatory_file_input == input  &&
               !invoke_params[input.id].present?
 
+      next if input.value_choices.present? # inputs with enums are checked later
       sanitize_param(input)
     end
 
     # Optional parameters
     descriptor.optional_inputs.each do |input|
+      next if input.value_choices.present? # inputs with enums are checked later
       sanitize_param(input) unless isInactive(input)
     end
 
