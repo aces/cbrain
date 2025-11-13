@@ -2357,7 +2357,6 @@ docker_image_name=#{full_image_name.bash_escape}
     # (3) The root of the GridShare area (all tasks workdirs)
     gridshare_dir  = self.bourreau.cms_shared_dir # not mounted explicitely
 
-
     # (6) Ext3 capture mounts, if any.
     # These will look like "-B .capt_abcd.ext3:/path/workdir/abcd:image-src=/"
     # While we are building these options, we're also creating
@@ -2374,7 +2373,7 @@ docker_image_name=#{full_image_name.bash_escape}
     # must be on a device different from the one for the work directory.
     capture_basenames = ext3capture_basenames.map { |basename,_| basename }
 
-    # (4) More -B (bind mounts) for all the relevant local data providers.
+    # (4a) More -B (bind mounts) for all the relevant local data providers.
     # This will be a string "-B path1 -B path2 -B path3" etc.
     # In the case of read-only input files, ro option is added
     esc_local_dp_mountpoints = local_dp_storage_paths.inject("") do |sing_opts,path|
@@ -2383,15 +2382,11 @@ docker_image_name=#{full_image_name.bash_escape}
       sing_opts
     end
 
-    # add tool config mounts, specified in 'overlay'
-    esc_local_dp_mountpoints += mountpoints.inject("") do |sing_opts,mount|
-      b_path, c_path = mount.split(":", 2)
-      sing_opts += " -B #{b_path.bash_escape}:#{c_path.bash_escape}:ro"
+    # (4b) Add tool config bindmounts, specified in 'overlay'
+    esc_local_bindmounts = bindmount_paths.inject("") do |sing_opts,(from_path,cont_path)|
+      sing_opts += " -B #{from_path.bash_escape}:#{cont_path.bash_escape}"
       sing_opts
     end
-
-
-
 
     # (5) Overlays defined in the ToolConfig
     # Some of them might be patterns (e.g. /a/b/data*.squashfs) that need to
@@ -2508,7 +2503,8 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
 #   a) at its original cluster full path
 #   b) at /DP_Cache (used only when shortening workdir)
 # 3) we mount the root of the gridshare area (for all tasks)
-# 4) we mount each (if any) of the root directories for local data providers
+# 4a) we mount each (if any) of the root directories for local data providers
+# 4b) we mount each (if any) of the bindmounts configured in the ToolConfig
 # 5) we mount (if any) other fixed file system overlays
 # 6) we mount (if any) capture ext3 filesystems
 # 7) with -H we set the task's work directory as the singularity $HOME directory
@@ -2518,7 +2514,8 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
     -B #{cache_dir.bash_escape}                 \\
     -B #{cache_dir.bash_escape}:/DP_Cache       \\
     -B #{gridshare_dir.bash_escape}             \\
-    #{esc_local_dp_mountpoints}                 \\    
+    #{esc_local_dp_mountpoints}                 \\
+    #{esc_local_bindmounts}                     \\
     #{overlay_mounts}                           \\
     -B #{task_workdir.bash_escape}:#{effect_workdir.bash_escape} \\
     #{esc_capture_mounts}                       \\
@@ -2578,8 +2575,9 @@ bash -c "exit $_cbrain_status_"
   end
 
   # Just invokes the same method on the task's ToolConfig.
-  def bindmounts
-    self.tool_config.bindmounts
+  # Returns an array of pairs, e.g. [ [ src, dest ], [ src, dest ] ]
+  def bindmount_paths
+    self.tool_config.bindmount_paths
   end
 
   # This method creates an empty +filename+ with +size+ bytes

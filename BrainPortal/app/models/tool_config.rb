@@ -384,9 +384,9 @@ class ToolConfig < ApplicationRecord
   #         dp:1234
   #      # CBRAIN db registered file
   #         userfile:1234
-  #      # A ext3 capture filesystem, will NOT be returned here as an overlay
+  #      # A ext3 capture filesystem, will NOT be returned here as an overlay (see method ext3capture_basenames() instead)
   #         ext3capture:basename=12G
-  #      # A readonly bind mount, will NOT be returned here as an overlay
+  #      # A bind mount, will NOT be returned here as an overlay (see method bindmount_paths() instead)
   #        bindmount:/local/basename:/container/basename
   def singularity_overlays_full_paths
     specs = parsed_overlay_specs
@@ -413,7 +413,7 @@ class ToolConfig < ApplicationRecord
       when 'ext3capture'
         []  # handled separately
       when 'bindmount'
-        []  # hanlded separatery
+        []  # handled separately
       else
         cb_error "Invalid '#{knd}:#{id_or_name}' overlay."
       end
@@ -421,7 +421,7 @@ class ToolConfig < ApplicationRecord
   end
 
   # Returns an array of the data providers that are
-  # specified in the attribute singularity_overlays_specs,
+  # specified in the attribute +singularity_overlays_specs+,
   # ignoring all other overlay specs for normal files.
   def data_providers_with_overlays
     return @_data_providers_with_overlays_ if @_data_providers_with_overlays_
@@ -432,29 +432,16 @@ class ToolConfig < ApplicationRecord
     end.compact
   end
 
-  def additional_apptainer_mounts
-    specs = parsed_overlay_specs
-    return [] if specs.empty?
-    specs.map do |kind, id_or_name|
-      case kind
-      when 'dp'
-        dp = DataProvider.where_id_or_name(id_or_name).first
-        cb_error "Can't find DataProvider #{id_or_name} for fetching overlays" if ! dp
-        dp.additional_apptainer_mounts rescue nil
-      when 'file'
-        cb_error "Provide absolute path for overlay file '#{id_or_name}'." if (Pathname.new id_or_name).relative?
-
-      end
-    end
-  end
-
-  def bindmounts
+  # Returns an array of pairs extracted from the attribute
+  # +singularity_overlays_specs+ , ignoring all other overlay
+  # specs for normal files.
+  def bindmount_paths
     specs = parsed_overlay_specs
     return [] if specs.empty?
     specs
       .map { |pair| pair[1] if pair[0] == 'bindmount' }
       .compact
-      .map { |basename_basename | basename_and_basename.split(":") }
+      .map { |frompath_contpath| frompath_contpath.split(":",2) }
   end
 
   # Returns pairs [ [ basename, size], ...] as in [ [ 'work', '28g' ]
@@ -504,7 +491,8 @@ class ToolConfig < ApplicationRecord
     return errors.empty?
   end
 
-  # breaks down overlay spec onto a list of overlays
+  # Breaks down the singularity_overlays_specs attribute, and returns a list of pairs [ type, value ] e.g.
+  #   [ [ 'userfile', '1234' ], [ 'file', '/hello/bye/data.sqs' ], [ 'bindmount', '/some/data/dir:/mount/this/here' ] ]
   def parsed_overlay_specs
     specs = self.singularity_overlays_specs
     return [] if specs.blank?
@@ -575,8 +563,8 @@ class ToolConfig < ApplicationRecord
         end
 
       when 'bindmount' # this is for binding to container rather than overlays
-        if id_or_name !~ /\A\/\w[\w\.-\/]+:\/\w[\w\.-\/]+/
-          self.errors.add(:singularity_overlays_specs, "contains invalid bindmount specification (must be like bindmount:/path/in/bourreau:/path/in/container) and free from special characters")
+        if id_or_name !~ /\A\/\w[\w\.\-\/]+:\/\w[\w\.\-\/]+(:ro)?\z/
+          self.errors.add(:singularity_overlays_specs, "contains invalid bindmount specification (must be like 'bindmount:/path/in/bourreau:/path/in/container' with or without a final ':ro') and free from special characters")
         end
       else
         # Other errors
