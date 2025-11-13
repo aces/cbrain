@@ -436,12 +436,32 @@ class ToolConfig < ApplicationRecord
   # +singularity_overlays_specs+ , ignoring all other overlay
   # specs for normal files.
   def bindmount_paths
-    specs = parsed_overlay_specs
-    return [] if specs.empty?
-    specs
+    specs = parsed_overlay_specs.presence || []
+
+    # Pairs of paths obtained from the ToolConfig's "overlay" configuration.
+    tc_paths = specs
       .map { |pair| pair[1] if pair[0] == 'bindmount' }
       .compact
       .map { |frompath_contpath| frompath_contpath.split(":",2) }
+
+    # One additional bindmount path from the plugins directory where the tool
+    # comes from. Available ONLY if tool is configured with
+    # a boutiques descriptor. The following lines of code make
+    # a bunch of checks and as soon as a check fails, we just
+    # return with the array tc_paths computed above.
+    descriptor = self.boutiques_descriptor rescue nil
+    return tc_paths if descriptor.blank?
+    container_mountpoint = descriptor.custom["cbrain:plugins-container-bindmount"]
+    return tc_paths if container_mountpoint.blank?
+    desc_file = descriptor.from_file         # "/path/to/RailsApp/cbrain-plugins/installed_plugins/boutiques_descriptors/toolname.json"
+    return tc_paths if desc_file.blank?
+    real_path = File.realpath(desc_file)     # "/path/to/RailsApp/cbrain-plugins/plugin-name/boutiques_descriptors/toolname.json"
+    parent1 = Pathname.new(real_path).parent # "/path/to/RailsApp/cbrain-plugins/plugin-name/boutiques_descriptors"
+    return tc_paths if parent1.basename.to_s != "boutiques_descriptors" # check plugins convention
+    plugin_path = parent1.parent             # "/path/to/RailsApp/cbrain-plugins/plugin-name"
+    plugin_containerized_dir = plugin_path + "container_mnt" # special plugins folder to mount
+    tc_paths << [ plugin_containerized_dir.to_s, container_mountpoint + ":ro" ]
+    return tc_paths
   end
 
   # Returns pairs [ [ basename, size], ...] as in [ [ 'work', '28g' ]
