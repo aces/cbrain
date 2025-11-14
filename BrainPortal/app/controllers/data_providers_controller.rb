@@ -64,6 +64,8 @@ class DataProvidersController < ApplicationController
     @provider        = DataProvider.find(data_provider_id)
     cb_notice "Provider not accessible by current user." unless @provider.can_be_accessed_by?(current_user)
 
+    @typelist = get_type_list
+
     respond_to do |format|
       format.html # show.html.erb
       format.xml  {
@@ -77,19 +79,30 @@ class DataProvidersController < ApplicationController
 
   def new #:nodoc:
     provider_group_id = current_assignable_group.id
-    @provider = DataProvider.new( :user_id   => current_user.id,
+    @provider         = DataProvider.new(
+                                  :user_id   => current_user.id,
                                   :group_id  => provider_group_id,
                                   :online    => true,
                                   :read_only => false
                                 )
 
-    @typelist = get_type_list
+    @unsaved_meta     = {}
+    @is_personal      = false
+    @typelist         = get_type_list
+
+    # Edit/create/show are the same view
+    render :action => :show
   end
 
   def create  #:nodoc:
     @provider            = DataProvider.sti_new(data_provider_params)
     @provider.user_id  ||= current_user.id # disabled field in form DOES NOT send value!
     @provider.group_id ||= current_assignable_group.id
+    @unsaved_meta        = params[:meta] || {}
+
+    # Fix some attributes
+    @provider.update_attributes(userkey_provider_params) if @provider.is_a?(UserkeyFlatDirSshDataProvider)
+    @provider.update_attributes(s3_provider_params)      if @provider.is_a?(S3FlatDataProvider)
 
     if @provider.save
       add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid])
@@ -103,7 +116,7 @@ class DataProvidersController < ApplicationController
     else
       @typelist = get_type_list
       respond_to do |format|
-        format.html { render :action => :new }
+        format.html { render :action => :show }
         format.xml  { render :xml  => @provider.errors, :status => :unprocessable_entity }
         format.json { render :json => @provider.errors, :status => :unprocessable_entity }
       end
@@ -117,32 +130,40 @@ class DataProvidersController < ApplicationController
                                                            :online    => true,
                                                            :read_only => false,
                                                          )
-    @groups           = current_user.assignable_groups
+    @unsaved_meta     = {}
+    @is_personal      = true
+    @typelist         = get_personal_type_list
+
+    # Edit/create/show are the same view
+    render :action => :show
   end
 
   # Can be create by normal user,
   # only UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider
   def create_personal
+    @unsaved_meta = params[:meta] || {}
+
     @provider = DataProvider.new(base_provider_params).class_update
-    @provider.update_attributes(userkey_provider_params) if @provider.is_a?(UserkeyFlatDirSshDataProvider)
-    @provider.update_attributes(s3_provider_params)      if @provider.is_a?(S3FlatDataProvider)
-
-    authorized_type     = [UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider]
-    @provider.errors.add(:type, "is not allowed") unless authorized_type.include?(@provider.type)
-
     # Fix some attributes
     @provider.user_id  = current_user.id
     @provider.group_id = current_user.own_group.id unless
       current_user.assignable_group_ids.include?(@provider.group_id)
     @provider.online   = true
 
-    if ! @provider.save
+    @provider.update_attributes(userkey_provider_params) if @provider.is_a?(UserkeyFlatDirSshDataProvider)
+    @provider.update_attributes(s3_provider_params)      if @provider.is_a?(S3FlatDataProvider)
+
+    authorized_type     = ["UserkeyFlatDirSshDataProvider", "S3FlatDataProvider", "S3MultiLevelDataProvider"]
+    @provider.errors.add(:type, "is not allowed") unless authorized_type.include?(@provider.type)
+
+    if ! @provider.errors.empty? || ! @provider.save
+      @typelist = get_personal_type_list
       @groups = current_user.assignable_groups
       respond_to do |format|
-        format.html { render :action => :new_personal}
+        format.html { render :action => :show }
         format.json { render :json   => @provider.errors,  :status => :unprocessable_entity }
       end
-      return
+    return
     end
 
     @provider.addlog_context(self, "Created by #{current_user.login}")
@@ -808,7 +829,29 @@ class DataProvidersController < ApplicationController
     grouped_options = data_provider_list.to_a.hashed_partitions { |name| name.constantize.pretty_category_name }
     grouped_options.delete(nil) # data providers that can not be on this list return a category name of nil, so we remove them
     grouped_options.keys.sort.map { |type| [ type, grouped_options[type].sort ] }
+
+    return grouped_options
   end
+
+  def get_personal_type_list #:nodoc:
+    data_provider_list = [ "FlatDirSshDataProvider" ]
+    data_provider_list = DataProvider.descendants.map(&:name)
+
+    grouped_options = data_provider_list.to_a.hashed_partitions { |name| name.constantize.pretty_category_name }
+    # Keep only Cloud
+    grouped_options = grouped_options.select { |type, values| ["Cloud"].include?(type) }
+    # Remove S3DataProvider
+    grouped_options["Cloud"].reject! { |v| v == S3DataProvider.name } if grouped_options["Cloud"]
+
+    # Add UserkeyFlatDirSshDataProvider group
+    category_of_userkey_dp = UserkeyFlatDirSshDataProvider.pretty_category_name
+    userkey_group          = grouped_options.find { |type, _ | type == category_of_userkey_dp } || []
+    userkey_group          << UserkeyFlatDirSshDataProvider.name
+    grouped_options[category_of_userkey_dp] = userkey_group
+
+    return grouped_options
+  end
+
 
   # A name to store the scope for the browsing page;
   # a distinct scope is used for each distinct DP
