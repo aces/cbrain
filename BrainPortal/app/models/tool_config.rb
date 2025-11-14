@@ -460,6 +460,7 @@ class ToolConfig < ApplicationRecord
     return tc_paths if parent1.basename.to_s != "boutiques_descriptors" # check plugins convention
     plugin_path = parent1.parent             # "/path/to/RailsApp/cbrain-plugins/plugin-name"
     plugin_containerized_dir = plugin_path + "container_mnt" # special plugins folder to mount
+    return tc_paths if ! File.directory?(plugin_containerized_dir.to_s)
     tc_paths << [ plugin_containerized_dir.to_s, container_mountpoint + ":ro" ]
     return tc_paths
   end
