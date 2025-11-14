@@ -42,7 +42,7 @@ class SessionsController < ApplicationController
     # HEAD requests render nothing
     req_method = request.method.to_s.upcase
     if req_method == 'HEAD'
-      render :plain => "", :status => :ok
+      head :ok
       return
     end
 
