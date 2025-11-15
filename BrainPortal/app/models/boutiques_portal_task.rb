@@ -143,13 +143,11 @@ class BoutiquesPortalTask < PortalTask
               descriptor.sole_mandatory_file_input == input  &&
               !invoke_params[input.id].present?
 
-      next if input.value_choices.present? # inputs with enums are checked later
       sanitize_param(input)
     end
 
     # Optional parameters
     descriptor.optional_inputs.each do |input|
-      next if input.value_choices.present? # inputs with enums are checked later
       sanitize_param(input) unless isInactive(input)
     end
 
@@ -583,7 +581,7 @@ class BoutiquesPortalTask < PortalTask
         params_errors.add(invokename, " cannot contain newlines")          if value =~ /[\n\r]/
         params_errors.add(invokename, " cannot start with this character") if value =~ /^[\.\/]+/
         params_errors.add(invokename, " cannot move up dirs")              if value.include? "/../"
-        if value.present?
+        if value.present? && input.value_choices.blank?
           params_errors.add(invokename, " contains invalid characters")  unless value.match?(charset_regex) # we can use a string in the match method
         end
 
