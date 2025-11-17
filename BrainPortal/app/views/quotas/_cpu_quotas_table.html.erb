@@ -57,6 +57,9 @@
       :sortable => true,
       :filters  => default_filters_for(@base_scope, User)
     ) do |cq|
+      if cq.is_for_total?
+        html_colorize("(Total for all user)", 'orange')
+      end
       if ! cq.is_for_user?
         if cq.is_for_group?
           html_colorize("(For all users in project)", 'orange')

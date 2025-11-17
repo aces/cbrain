@@ -113,7 +113,6 @@ class QuotasController < ApplicationController
   def update #:nodoc:
     id     = params[:id].presence # can be nil if we create() a new quota object
     @mode  = params[:mode].to_s == 'cpu' ? :cpu : :disk
-
     @quota = Quota.find(id) unless id.blank?
     if @quota
       # Set mode to sane version no matter what

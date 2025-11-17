@@ -81,6 +81,11 @@ class CpuQuota < Quota
     self.user_id != 0
   end
 
+  # currently only for total task cap for all the users
+  def is_for_total? #:nodoc:
+    self.user_id == -7  && ! self.max_active_tasks.nil? && self.is_for_resource?
+  end
+
   def is_for_resource? #:nodoc:
     self.remote_resource_id != 0
   end
@@ -284,6 +289,7 @@ class CpuQuota < Quota
     uid  = self.user_id            || 0
     rrid = self.remote_resource_id || 0
     gid  = self.group_id           || 0
+    return true if uid == -7 && rrid > 0 && gid == 0
     return true if uid > 0 &&  gid == 0  # case 1 and 4
     return true if gid > 0 &&  uid == 0  # case 3 and 5
     return true if rrid > 0 && uid == 0 && gid == 0 # case 2

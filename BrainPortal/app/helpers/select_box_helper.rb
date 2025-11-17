@@ -33,6 +33,8 @@ module SelectBoxHelper
   # [selector] used for default selection. This can be a User object, a user id (String or Integer),
   #            or any model that has a user_id attribute.
   # [users] the array of User objects used to build the select box. Defaults to +current_user.available_users+.
+  # [include_blank] - include blank value with specific label
+  # [special_label] - inject special value and label
   def user_select(parameter_name = "user_id", options = {}, select_tag_options = {} )
     options  = { :selector => options } unless options.is_a?(Hash)
     selector = options[:selector]
@@ -52,9 +54,16 @@ module SelectBoxHelper
     # Final HTML rendering of the options for select
     user_by_lock_status = regroup_users_by_lock_status(users)
     grouped_options     = grouped_options_for_select user_by_lock_status, selected
+
+    special_label = select_tag_options.delete(:special_label) || options[:special_label]
+    if special_label
+      label, value = special_label
+      grouped_options = "<option value=\"#{value}\">#{h(label)}</option>".html_safe + grouped_options
+    end
+
     blank_label         = select_tag_options.delete(:include_blank) || options[:include_blank]
     if blank_label
-      blank_label = "" if blank_label == true
+      blank_label = "" if blank_label == true  # todo remove redundand line, just sup
       grouped_options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + grouped_options
     end
 
