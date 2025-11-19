@@ -420,4 +420,3 @@ class QuotasController < ApplicationController
   end
 
 end
-

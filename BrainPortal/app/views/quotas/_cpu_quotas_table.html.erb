@@ -68,6 +68,9 @@
         end
       else
         link_to_user_if_accessible(cq.user)
+        if cq.is_for_total?
+          html_colorize("(Total for all users)", 'orange')
+        end
       end
     end
 

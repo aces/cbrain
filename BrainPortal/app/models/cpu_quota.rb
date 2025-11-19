@@ -83,7 +83,7 @@ class CpuQuota < Quota
 
   # currently only for total task cap for all the users
   def is_for_total? #:nodoc:
-    self.user_id == -7  && ! self.max_active_tasks.nil? && self.is_for_resource?
+    self.user_id == Quota::ALL_USERS
   end
 
   def is_for_resource? #:nodoc:
@@ -285,11 +285,12 @@ class CpuQuota < Quota
   #   # - - y case 3
   #   # y y - case 4
   #   # - y y case 5
+  #   #Quota::ALL_USERSy - case 6
   def user_exec_group_are_reasonable #:nodoc:
     uid  = self.user_id            || 0
     rrid = self.remote_resource_id || 0
     gid  = self.group_id           || 0
-    return true if uid == -7 && rrid > 0 && gid == 0
+    return true if uid == Quota::ALL_USERS && rrid > 0 && gid == 0  # case #6
     return true if uid > 0 &&  gid == 0  # case 1 and 4
     return true if gid > 0 &&  uid == 0  # case 3 and 5
     return true if rrid > 0 && uid == 0 && gid == 0 # case 2

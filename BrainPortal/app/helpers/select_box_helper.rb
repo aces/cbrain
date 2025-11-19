@@ -63,7 +63,7 @@ module SelectBoxHelper
 
     blank_label         = select_tag_options.delete(:include_blank) || options[:include_blank]
     if blank_label
-      blank_label = "" if blank_label == true  # todo remove redundand line, just sup
+      blank_label = "" if blank_label == true
       grouped_options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + grouped_options
     end
 
@@ -626,4 +626,3 @@ module SelectBoxHelper
   end
 
 end
-
