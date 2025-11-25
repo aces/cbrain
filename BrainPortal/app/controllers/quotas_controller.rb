@@ -399,7 +399,7 @@ class QuotasController < ApplicationController
     return "" unless match # parsing error
     number = match[1]
     suffix = match[3].presence&.downcase || 'u'
-    mult   = { 't' => 1_000_000_000_000, 'g' => 1_000_000_000, 'm' => 1_000_000, 'k' => 1_000 }
+    mult   = { 't' => 1_000_000_000_000, 'g' => 1_000_000_000, 'm' => 1_000_000, 'k' => 1_000, 'u' => 1 }
     totbytes = number.to_f * mult[suffix]
     totbytes = totbytes.to_i
     totbytes
