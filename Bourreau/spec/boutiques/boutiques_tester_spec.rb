@@ -392,7 +392,7 @@ describe "Bourreau Boutiques Tests" do
       @task.user_id, @task.group_id = UID, GID
       # Generate a simulated exit file, as if the task had run
       @simExitFile     = @task.exit_cluster_filename
-      IO.write( @simExitFile, "0\n" )
+      File.write( @simExitFile, "0\n" )
       # The basic properties for the required output file
       @reqOutfileProps = {:name => @fname_base, :data_provider_id => @provider.id}
       # Optional output file properties
@@ -428,11 +428,11 @@ describe "Bourreau Boutiques Tests" do
         expect( @task.save_results ).to be false
       end
       it "save_results is false if the exit status file has invalid content" do
-        IO.write( @simExitFile, "abcde\n" )
+        File.write( @simExitFile, "abcde\n" )
         expect( @task.save_results ).to be false
       end
       it "save_results is false if the exit status file contains a value greater than 1" do
-        IO.write( @simExitFile, "3\n" )
+        File.write( @simExitFile, "3\n" )
         expect( @task.save_results ).to be false
       end
 
