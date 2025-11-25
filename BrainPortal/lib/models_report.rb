@@ -151,8 +151,8 @@ class ModelsReport
   def self.search_for_token(token, user=current_user) #:nodoc:
 
     token       = token.to_s.presence || "-9998877"          # -9998877 is a way to ensure we find nothing ...
+    token.strip!
     is_numeric  = token =~ /\A\d+\z/  || token == "-9998877" # ... because we'll find by ID
-
 
     file_scope  = Userfile      .find_all_accessible_by_user(user, :access_requested => :read).order(:name)
     task_scope  = CbrainTask    .find_all_accessible_by_user(user) .order(:id)
@@ -180,6 +180,7 @@ class ModelsReport
         :tcs    => Array(tc_scope    .find_by_id(token)) ,
       }
     else
+      token = "do-not-match-everything-#{rand(1000000)}" if token =~ /\A[\%\_]+\z/ # don't try matching all
       ptoken = "%#{token}%"
       {
         # Use a wide window to edit this code! Keep it clean!

@@ -56,7 +56,7 @@ class HelpDocument < ApplicationRecord
 
   # Pseudo-attribute representing the document's contents
   def contents
-    @contents ||= (File.file?(self.full_path) ? IO.read(self.full_path) : nil)
+    @contents ||= (File.file?(self.full_path) ? File.read(self.full_path) : nil)
   end
 
   def contents=(contents) #:nodoc:
@@ -79,7 +79,7 @@ class HelpDocument < ApplicationRecord
 
     # FIXME Inefficient; the file is re-written in the before_save callback.
     doc          = self.new(:key => key, :path => path);
-    doc.contents = IO.read(doc.full_path)
+    doc.contents = File.read(doc.full_path)
     doc.save!
     doc
   end
@@ -99,7 +99,7 @@ class HelpDocument < ApplicationRecord
 
     if @contents
       FileUtils.mkpath(doc_dir) unless File.file?(doc_path) || File.directory?(doc_dir)
-      IO.write(doc_path, @contents)
+      File.write(doc_path, @contents)
     else
       File.unlink(doc_path) if File.file?(doc_path)
     end

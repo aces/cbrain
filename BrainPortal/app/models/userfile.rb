@@ -106,7 +106,7 @@ class Userfile < ApplicationRecord
   attr_accessor           :sync_select_patterns
 
   # Utility named scopes
-  scope :name_like,     -> (n) { where("userfiles.name LIKE ?", "%#{n.strip}%") }
+  scope :name_like,     -> (n) { where("userfiles.name LIKE ? ESCAPE '!'", "%#{n.strip.gsub(/([%_!])/,'!\1')}%") }
 
   scope :has_no_parent, ->     { where(parent_id: nil) }
 

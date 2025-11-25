@@ -424,16 +424,6 @@ class PortalController < ApplicationController
   def search
     @search  = params[:search]
     @limit   = 20 # used by interface only
-
-    # In development mode, classes are loaded at first use. This means a dev
-    # will sometimes NOT see a class (e.g. TextFile) until first use, which means
-    # that some parts of the interface will not show them. This trick allows a dev
-    # to force the load of a class just by typing the name in the search box.
-    # The string HAS to be something like 'TextFile' or 'TarArchive' etc.
-    if Rails.env == 'development' && @search.present? && @search.to_s =~ /\A[A-Z]\w+\z/
-      eval @search.to_s rescue nil  # just load a class, if needed
-    end
-
     @results = @search.present? ? ModelsReport.search_for_token(@search, current_user) : {}
   end
 

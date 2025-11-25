@@ -395,11 +395,11 @@ class QuotasController < ApplicationController
   # Tries to turn strings like '3 mb' into 3_000_000 etc.
   # Supported suffixes are T, G, M, K, TB, GB, MB, KB, B (case insensitive).
   def guess_size_units(sizestring)
-    match = sizestring.match(/\A\s*(-?\d*\.?\d+)\s*([tgmk]?)\s*b?\s*\z/i)
+    match = sizestring.match(/\A\s*(-?\d{1,5}(\.\d{1,2})?)\s*([tgmk]?)\s*b?\s*\z/i)
     return "" unless match # parsing error
     number = match[1]
-    suffix = match[2].presence&.downcase || 'u'
-    mult   = { 't' => 1_000_000_000_000, 'g' => 1_000_000_000, 'm' => 1_000_000, 'k' => 1_000, 'u' => 1 }
+    suffix = match[3].presence&.downcase || 'u'
+    mult   = { 't' => 1_000_000_000_000, 'g' => 1_000_000_000, 'm' => 1_000_000, 'k' => 1_000 }
     totbytes = number.to_f * mult[suffix]
     totbytes = totbytes.to_i
     totbytes
@@ -409,10 +409,10 @@ class QuotasController < ApplicationController
   # Supported suffixes are s, h, d, m, w, and y (case insensitive).
   # Minutes not supported because of the sad existance of months.
   def guess_time_units(timestring)
-    match = timestring.match(/\A\s*(\d*\.?\d+)\s*([shdwmy]?)\s*\z/i)
+    match = timestring.match(/\A\s*(\d{1,4}(\.\d{1,2})?)\s*([shdwmy]?)\s*\z/i)
     return "" unless match # parsing error
     number = match[1]
-    suffix = match[2].presence&.downcase || 's'
+    suffix = match[3].presence&.downcase || 's'
     mult   = { 's' => 1.second, 'h' => 1.hour,  'd' => 1.day,
                'w' => 1.week,   'm' => 1.month, 'y' => 1.year, }
     tottime = number.to_f * mult[suffix].to_i

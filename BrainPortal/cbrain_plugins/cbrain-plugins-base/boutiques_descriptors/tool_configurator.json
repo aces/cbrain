@@ -98,7 +98,7 @@
             "name":              "Build Image Mode",
             "id":                "build_mode",
             "type":              "String",
-            "description":       "The source for the Apptainer image that will be assigned to the NEW ToolConfig. The image can be build from Docker, or just copied if an existing image exists in the OLD ToolConfig. When building, use 'docker-daemon' if there is a local docker system, and the tool will pull to it before building the Apptainer image. When using 'docker', Apptainer will pull directly for DockerHub instead.",
+            "description":       "The source for the Apptainer image that will be assigned to the NEW ToolConfig. The image can be build from Docker, or just copied if an existing image exists in the OLD ToolConfig. When building, use 'docker-daemon' if there is a local docker system, and the tool will pull to it before building the Apptainer image. When using 'docker', Apptainer will pull directly for DockerHub instead. Please click any of the 'Refresh' buttons above if you change this value, so as to auto update the fields below.",
             "optional":          false,
             "list":              false,
             "value-key":         "[BUILD_MODE]",
@@ -186,6 +186,10 @@
       {
         "code": 1,
         "description": "Build script error"
+      },
+      {
+        "code": 2,
+        "description": "Apptainer Build command probably ran out of memory"
       },
       {
         "code": 22,

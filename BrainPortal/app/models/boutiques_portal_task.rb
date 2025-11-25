@@ -532,7 +532,7 @@ class BoutiquesPortalTask < PortalTask
     # Some presets for convenience; at most one 'if' will trigger because regex != string always
     charset_regex  = /\A[\w,\.\:\-]+\z/                       if charset_regex == ':basename:'        # "a0_,.:-"
     charset_regex  = /\A[\w,\.\:\-\?\*]+\z/                   if charset_regex == ':basename-pattern:'  # "a0_,.:-*?"
-    charset_regex  = /\A[\w,\.\/\:\-]+(\/[\w,\.\/\:\-]*)*\z/  if charset_regex == ':relative-path:'   # "base" or "/base/base/..."
+    charset_regex  = /\A[\w,\.\/\:\-]+(\/[\w,\.\:\-]+)*\/?\z/ if charset_regex == ':relative-path:'   # "base" or "/base/base/..."
     charset_regex  = /\A\S+\z/                                if charset_regex == ':any-no-blanks:'   # can be dangerous! YOU MUST VALIDATE TOOL'S ESCAPING PROPERLY!
     charset_regex  = /\A[\w,\.\:\-\{\}]+\z/                   if charset_regex == ':id-with-curlies:' # allows "abc" and "abc-{4}" etc
     charset_regex  = /\A[\w,\.\:\-\+]+(\ +[\w,\.\:\-\+]+)*\z/ if charset_regex == ':ids-with-spaces:' # allows "abc" and "abc def xyz" etc
