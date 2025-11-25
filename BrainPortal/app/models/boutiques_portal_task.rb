@@ -136,11 +136,12 @@ class BoutiquesPortalTask < PortalTask
 
     # Required parameters
     descriptor.required_inputs.each do |input|
-      # skip if the input is the sole mandatory file and if
+      # skip if the input is the sole mandatory file,
       # the task is qualified to launch multiple tasks
-      # only if no params was provide
+      # and there is more than one file is selected in UI
       next if descriptor.qualified_to_launch_multiple_tasks? &&
               descriptor.sole_mandatory_file_input == input  &&
+              self.params[:interface_userfile_ids].length > 1
               !invoke_params[input.id].present?
 
       sanitize_param(input)
