@@ -370,7 +370,7 @@ class UserfilesController < ApplicationController
 
     # No viewer
     if ! @viewer
-      render :html => "<div class=\"warning\">Could not find viewer #{h(viewer_name)}.</div>".html_safe, :status  => "404"
+      render :html => "<div class=\"warning\">Could not find viewer #{ERB::Util.html_escape(viewer_name || '(Unset)')}.</div>".html_safe, :status  => "404"
       return
     end
 
@@ -401,7 +401,7 @@ class UserfilesController < ApplicationController
       :description => "An internal error occurred when trying to display the contents of #{@userfile.name}."
     )
 
-    render :html => "<div class=\"warning\">Error generating view code for viewer '#{h(params[:viewer])}'. Admins have been notified and will look into the problem. In the meantime, there's not much you can do about this.</div>".html_safe
+    render :html => "<div class=\"warning\">Error generating view code for viewer '#{ERB::Util.html_escape(params[:viewer] || '(Unset)')}'. Admins have been notified and will look into the problem. In the meantime, there's not much you can do about this.</div>".html_safe
   end
 
   def show #:nodoc:
