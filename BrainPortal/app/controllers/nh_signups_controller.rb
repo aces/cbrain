@@ -28,6 +28,8 @@ class NhSignupsController < NeurohubApplicationController
 
   before_action :login_required, :except => [:new, :create, :show, :confirm]
 
+  spurious_params_ban_ip :new, :show, :confirm => [ :token ]
+
   def new #:nodoc:
     @signup = Signup.new
   end

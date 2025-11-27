@@ -27,7 +27,8 @@ module RequestHelpers
 
   def self.included(includer) #:nodoc:
     includer.class_eval do
-      helper_method :cbrain_request_remote_ip, :ban_ip
+      helper_method :cbrain_request_remote_ip, :ban_ip, :ban_ip_on_spurious_params
+      extend ClassMethods
     end
   end
 
@@ -64,6 +65,83 @@ module RequestHelpers
     end
     head :unauthorized
     false
+  end
+
+  module ClassMethods
+
+    # Returns the list registered allowed params
+    # for some actions filtered by the controller helper
+    # method spurious_params_ban_ip
+    def allowed_params_by_action #:nodoc:
+      @allowed_params_by_action || {}
+    end
+
+    # This is a helper method for controllers.
+    # Register for an action the list of param keys
+    # that are allowed; if any extra keys are found in
+    # a request, the IP address is banned using ban_ip.
+    # For example:
+    #
+    #   (In SessionsController)
+    #   spurious_params_ban_ip :create => [ :login, :password ]
+    #
+    # You can provide first a plain list of actions names,
+    #  which imply "actionname" => [], followed by a hash with the
+    # action names as keys and the allowed params as values:
+    #
+    #   spurious_params_ban_ip :new, :destroy, :show,
+    #      :create  => [ :login, :pw ],
+    #      :inspect => [ :verbose ]
+    #
+    # is the same as
+    #
+    #   spurious_params_ban_ip :new => [], :destroy => [], :show => [],
+    #      :create  => [ :login, :pw ],
+    #      :inspect => [ :verbose ]
+    #
+    def spurious_params_ban_ip(*action_params)
+      @allowed_params_by_action ||= {}
+      action_params.each do |item|
+        if item.is_a?(Hash)
+          item.each { |action,ok_params| @allowed_params_by_action[action.to_s] = Array(ok_params) }
+        else
+          @allowed_params_by_action[item.to_s] = []
+        end
+      end
+      before_action :ban_ip_on_spurious_params, :only => @allowed_params_by_action.keys
+    end
+
+  end
+
+  STANDARD_PARAMS_THAT_DO_NOT_TRIGGER_BANS = %w( id utf8 commit authenticity_token controller action cbrain_api_token format )
+  MINIMUM_NUMBER_OF_SPURIOUS_PARAMS = 3 # we need at least that many spurious params to trigger a ban
+
+  # Called as a before_action method for actions that
+  # need to have a specific list of params.
+  def ban_ip_on_spurious_params #:nodoc:
+
+    # Does the current action have a list of allowed params?
+    ok_params     = self.class.allowed_params_by_action[params[:action].to_s]
+    return true if ok_params.nil? # no list for this action, so make no further verifs
+
+    # Find out the ones we don't expect
+    extended_keys = ok_params.map(&:to_s) + STANDARD_PARAMS_THAT_DO_NOT_TRIGGER_BANS
+    spurious_keys = params.keys.map(&:to_s) - extended_keys
+    return true if spurious_keys.empty? # everything is good
+
+    # Prepare message
+    num_spurious = spurious_keys.size
+    first_four   = spurious_keys[0..3].join(", ")
+    first_four  += " (... #{num_spurious} keys in total)" if num_spurious > 4
+
+    # Report
+    if num_spurious < MINIMUM_NUMBER_OF_SPURIOUS_PARAMS
+      Rails.logger.error "Found some spurious parameters: #{first_four}"
+      return true # don't ban
+    end
+
+    # Ban
+    ban_ip("Spurious parameters detected: #{first_four}") # will return status unauthorized too
   end
 
 end

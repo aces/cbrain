@@ -26,6 +26,10 @@ class SignupsController < ApplicationController
   before_action :login_required,      :except => [:show, :new, :create, :edit, :destroy, :update, :confirm, :resend_confirm]
   before_action :admin_role_required, :except => [:show, :new, :create, :edit, :destroy, :update, :confirm, :resend_confirm]
 
+  spurious_params_ban_ip :show, :new, :edit, :destroy,
+                         :confirm        => [ :token ],
+                         :resend_confirm => []
+
   ################################################################
   # User-accessible action (do not need to be logged in)
   ################################################################

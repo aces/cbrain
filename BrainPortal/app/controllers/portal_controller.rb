@@ -32,6 +32,8 @@ class PortalController < ApplicationController
   before_action :login_required, :except => [ :credits, :about_us, :welcome, :swagger, :available, :stats ]  # welcome is here so that the redirect to the login page doesn't show the error message
   before_action :admin_role_required, :only => :portal_log
 
+  spurious_params_ban_ip :credits, :about_us, :swagger, :available, :stats # no spurious params allowed
+
   # Display a user's home page with information about their account.
   def welcome #:nodoc:
     unless current_user
