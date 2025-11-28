@@ -648,6 +648,16 @@ class RemoteResource < ApplicationRecord
       raise "Unknown info keyword '#{what}'."
     end
 
+    # For any BrainPortal other than us, we return a record with no info,
+    # except the ID and name. Portals don't know how to contact each other.
+    if self.is_a?(BrainPortal)
+      dummy = RemoteResourceInfo.dummy_record.merge(
+        :id   => self.id,
+        :name => self.name,
+      )
+      return dummy
+    end
+
     info = nil
     begin
       # We used to support direct ActiveResource connections to a Bourreau, but not anymore.
