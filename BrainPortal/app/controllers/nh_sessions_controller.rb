@@ -35,7 +35,7 @@ class NhSessionsController < NeurohubApplicationController
                          :request_password => [], # NYI
                          :send_password    => [], # NYI
                          :orcid            => [ :code ],
-                         :nh_oidc          => [ :code, :state ]
+                         :nh_oidc          => [ :code, :state, :scope ] # we don't use scope though
 
   def new #:nodoc:
     @orcid_uri      = orcid_login_uri()

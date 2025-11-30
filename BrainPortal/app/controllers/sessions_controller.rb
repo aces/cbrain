@@ -40,7 +40,7 @@ class SessionsController < ApplicationController
 
   spurious_params_ban_ip :new    => [],
                          :create => [ :login, :password ],
-                         :oidc   => [ :code, :state ]
+                         :oidc   => [ :code, :state, :scope ] # we don't use scope though
 
   def new #:nodoc:
 
