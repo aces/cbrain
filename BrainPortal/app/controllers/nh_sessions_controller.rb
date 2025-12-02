@@ -30,6 +30,13 @@ class NhSessionsController < NeurohubApplicationController
   before_action :login_required,    :except => [ :new, :create, :request_password, :send_password, :orcid, :nh_oidc ]
   before_action :already_logged_in, :except => [ :orcid, :destroy, :nh_oidc, :nh_unlink_oidc, :nh_mandatory_oidc ]
 
+  spurious_params_ban_ip :new              => [],
+                         :create           => [ :username, :password ],
+                         :request_password => [], # NYI
+                         :send_password    => [], # NYI
+                         :orcid            => [ :code ],
+                         :nh_oidc          => [ :code, :state, :scope ] # we don't use scope though
+
   def new #:nodoc:
     @orcid_uri      = orcid_login_uri()
     # Array of enabled OIDC providers configurations

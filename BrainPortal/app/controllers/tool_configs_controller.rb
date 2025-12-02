@@ -30,6 +30,8 @@ class ToolConfigsController < ApplicationController
   before_action :login_required,      :except => [ :boutiques_descriptor ]
   before_action :admin_role_required, :except => [ :index, :boutiques_descriptor ]
 
+  spurious_params_ban_ip :boutiques_descriptor
+
   def index #:nodoc:
     @scope = scope_from_session
     scope_default_order(@scope, 'name')

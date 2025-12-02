@@ -34,8 +34,13 @@ class SessionsController < ApplicationController
 
   api_available :only => [ :new, :show, :create, :destroy ]
 
-  before_action      :user_already_logged_in,    :only => [ :new, :create ]
+  before_action :user_already_logged_in,    :only => [ :new, :create ]
+  before_action :login_required,            :only => [ :mandatory_oidc, :unlink_oidc ]
   skip_before_action :verify_authenticity_token, :only => [ :create ] # we invoke it ourselves in create()
+
+  spurious_params_ban_ip :new    => [],
+                         :create => [ :login, :password ],
+                         :oidc   => [ :code, :state, :scope ] # we don't use scope though
 
   def new #:nodoc:
 
@@ -62,6 +67,8 @@ class SessionsController < ApplicationController
   def mandatory_oidc #:nodoc:
     # Restrict @allowed_oidc_providers to allowed providers
     @allowed_prov_names = allowed_oidc_provider_names(current_user)
+    redirect_to start_page_path if @allowed_prov_names.blank?
+
     # Array of enabled OIDC providers configurations
     @oidc_configs       = OidcConfig.all
     # Array of URIs to redirect to OIDC providers

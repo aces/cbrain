@@ -35,6 +35,9 @@ class UsersController < ApplicationController
   before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password, :push_keys, :new_token]
   before_action :admin_role_required,   :only =>   [:create_user_session]
 
+  spurious_params_ban_ip :request_password => [],
+                         :send_password    => [ :login, :email ]
+
   def index #:nodoc:
     @scope = scope_from_session
     scope_default_order(@scope, 'full_name')
