@@ -743,6 +743,17 @@ class PortalTask < CbrainTask
     @params_errors_cache
   end
 
+  # Needed in case of a dup()
+  def params_errors_clear #:nodoc:
+    @params_errors_cache = nil
+  end
+
+  def dup #:nodoc:
+    obj = super
+    obj.params_errors_clear
+    obj
+  end
+
   # This method returns a 'pretty' name for a params attributes.
   # This implementation will try to look up a hash table returned
   # by the class method pretty_params_names() first, so an

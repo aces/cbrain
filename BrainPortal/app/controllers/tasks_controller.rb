@@ -405,8 +405,9 @@ class TasksController < ApplicationController
       return
     end
 
-    # Create a bunch of tasks and launch them, either in background or in foreground
-    tasklist,tl_messages = create_tasklist_from_initial_task(@task) # 'tasklist' messages
+    # Prepare final list of tasks; from the one maintask object we have,
+    # we get a full array of clones of that task in tasklist
+    tasklist,ftl_message = @task.wrapper_final_task_list
 
     # Revalidate everything for all the tasks in the new tasklist
     # This is kind of costly, but we have no choices if special validation
@@ -414,14 +415,18 @@ class TasksController < ApplicationController
     # As soon as any task in the task list is not valid, we stop checking and
     # return to the form.
     af_messages = "" # 'after_form' messages
-    tasklist.each do |task|
+    tasklist.each_with_index do |task,idx|
       af_messages += task.wrapper_after_form
       af_messages  = af_messages.split("\n").uniq.join("\n") # remove duplicate messages, if any
       next if task.errors.empty? && task.valid? # move on to next task if everything ok
 
-      # Found a faulty task, so inform user and return to launch form.
-      @task.errors.add(:base, "While creating a set of tasks, one of them was found to be invalid, probably because a file selected as input was not appropriate.")
+      # Found at least one faulty task, so inform user
+      task.errors.each { |key,message| @task.errors.add(key,message) } # copy error messages, if any
+      @task.errors.add(:base, "While creating a set of tasks, at least one of them was found to be invalid, probably because a file selected as input was not appropriate.")
       flash.now[:error] += af_messages
+
+      # Re-render the form
+      initialize_common_form_values
       respond_to do |format|
         format.html { render :action => 'new' }
         format.xml  { render :xml  => @task.errors, :status => :unprocessable_entity }
@@ -430,13 +435,17 @@ class TasksController < ApplicationController
       return
     end
 
+    # Create a bunch of tasks and launch them, either in background or in foreground
+    tl_messages = create_tasklist_from_initial_task(@task,tasklist)
+
     if tasklist.size == 1
       flash[:notice] += "Launching a #{@task.pretty_name} task in background."
     else
       flash[:notice] += "Launching #{tasklist.size} #{@task.pretty_name} tasks in background."
     end
-    flash[:notice] += "\n#{tk_messages.strip}" if tl_messages.present?
     flash[:notice] += "\n#{af_messages.strip}" if af_messages.present?
+    flash[:notice] += "\n#{ftl_message.strip}" if ftl_message.present?
+    flash[:notice] += "\n#{tl_messages.strip}" if tl_messages.present?
 
     # Increment the number of times the user has launched this particular tool
     tool_id                           = @task.tool.id
@@ -1417,7 +1426,7 @@ class TasksController < ApplicationController
   # Part of the create() process for a task
   #
   # Code extracted from the old monolithic 'create'
-  def create_tasklist_from_initial_task(maintask) #:nodoc:
+  def create_tasklist_from_initial_task(maintask,tasklist) #:nodoc:
 
     messages = ""
 
@@ -1441,14 +1450,6 @@ class TasksController < ApplicationController
     if parallel_size && ! CbrainTask::Parallelizer.tool
       parallel_size = nil
       messages += "Warning: parallelization cannot be performed until the admin configures a Tool for it.\n"
-    end
-
-    # Prepare final list of tasks; from the one maintask object we have,
-    # we get a full array of clones of that task in tasklist
-    tasklist,task_list_message = maintask.wrapper_final_task_list
-    if task_list_message.present?
-      messages += "\n" if messages.present?
-      messages += task_list_message
     end
 
     # Spawn a background process to launch the tasks.
@@ -1524,7 +1525,7 @@ class TasksController < ApplicationController
 
     end # CBRAIN spawn_if block
 
-    return tasklist,messages
+    return messages
   end
 
   # Some useful variables for the views for 'new' and 'edit'
