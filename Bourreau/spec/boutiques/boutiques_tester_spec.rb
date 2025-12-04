@@ -185,7 +185,7 @@ describe "Bourreau Boutiques Tests" do
       # It properly escapes environment variables
       # Note that we only have to worry about inappropriate values that are still valid JSON
       it "escapes environment variables" do
-        expect( @task.cluster_commands[1] ).to eq("export ev2='ta- 9\"'\\''_%^&$@]['")
+        expect( @task.cluster_commands[1] ).to eq("export ev2='ta- 9\"\\'\\''_%^&$@]['")
       end
 
     end

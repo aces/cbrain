@@ -9,7 +9,7 @@
     "value" : "nice_value"
   }, {
     "name" : "ev2",
-    "value" : "ta- 9\"\'_%^&$@][",
+    "value" : "ta- 9\"\\'_%^&$@][",
     "description" : "Test escaping"
   }],
 	"inputs" : [{
