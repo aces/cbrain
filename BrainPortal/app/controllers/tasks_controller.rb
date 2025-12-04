@@ -394,7 +394,7 @@ class TasksController < ApplicationController
       @task.errors.add(:tool_config_id, 'is on an Execution Server that is currently offline')
     end
 
-    unless @task.errors.empty? && @task.valid?
+    if @task.errors.any? || ! @task.valid?
       flash.now[:error] += messages
       initialize_common_form_values
       respond_to do |format|
@@ -406,15 +406,37 @@ class TasksController < ApplicationController
     end
 
     # Create a bunch of tasks and launch them, either in background or in foreground
-    tasklist,messages = create_tasklist_from_initial_task(@task)
+    tasklist,tl_messages = create_tasklist_from_initial_task(@task) # 'tasklist' messages
+
+    # Revalidate everything for all the tasks in the new tasklist
+    # This is kind of costly, but we have no choices if special validation
+    # modules have been loaded for after_form().
+    # As soon as any task in the task list is not valid, we stop checking and
+    # return to the form.
+    af_messages = "" # 'after_form' messages
+    tasklist.each do |task|
+      af_messages += task.wrapper_after_form
+      af_messages  = af_messages.split("\n").uniq.join("\n") # remove duplicate messages, if any
+      next if task.errors.empty? && task.valid? # move on to next task if everything ok
+
+      # Found a faulty task, so inform user and return to launch form.
+      @task.errors.add(:base, "While creating a set of tasks, one of them was found to be invalid, probably because a file selected as input was not appropriate.")
+      flash.now[:error] += af_messages
+      respond_to do |format|
+        format.html { render :action => 'new' }
+        format.xml  { render :xml  => @task.errors, :status => :unprocessable_entity }
+        format.json { render :json => @task.errors, :status => :unprocessable_entity }
+      end
+      return
+    end
 
     if tasklist.size == 1
       flash[:notice] += "Launching a #{@task.pretty_name} task in background."
     else
       flash[:notice] += "Launching #{tasklist.size} #{@task.pretty_name} tasks in background."
     end
-    flash[:notice] += "\n"            unless messages.blank? || messages =~ /\n$/
-    flash[:notice] += messages + "\n" unless messages.blank?
+    flash[:notice] += "\n#{tk_messages.strip}" if tl_messages.present?
+    flash[:notice] += "\n#{af_messages.strip}" if af_messages.present?
 
     # Increment the number of times the user has launched this particular tool
     tool_id                           = @task.tool.id
