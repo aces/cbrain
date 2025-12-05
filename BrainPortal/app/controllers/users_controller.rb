@@ -29,7 +29,7 @@ class UsersController < ApplicationController
 
   include GlobusHelpers
 
-  api_available :only => [ :index, :create, :show, :destroy, :update, :create_user_session, :push_keys]
+  api_available :only => [ :index, :create, :show, :destroy, :update, :create_user_session, :push_keys, :new_token]
 
   before_action :login_required,        :except => [:request_password, :send_password]
   before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password, :push_keys, :new_token]
@@ -482,9 +482,20 @@ class UsersController < ApplicationController
   end
 
   # POST /users/new_token
+  # Currently the JSON version of this call is a bit dumb and could
+  # be made more intelligent by reusing any available and valid tokens
+  # that come from the same IP address. Right now, a new token is
+  # always generated.
   def new_token
     new_session = cbrain_session.duplicate_with_new_token
     @new_token  = new_session.cbrain_api_token
+
+    respond_to do |format|
+      format.html
+      format.json do
+        render :json => { :cbrain_api_token => @new_token }
+      end
+    end
   end
 
   private
