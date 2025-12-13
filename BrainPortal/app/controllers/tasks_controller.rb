@@ -148,6 +148,7 @@ class TasksController < ApplicationController
              Errno::ECONNREFUSED,
              Errno::ECONNRESET,
              EOFError,
+             CbrainException,
              ActiveResource::ServerError,
              ActiveResource::TimeoutError,
              ActiveResource::MethodNotAllowed,
