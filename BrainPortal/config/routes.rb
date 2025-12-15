@@ -93,7 +93,11 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :invitations,     :only => [ :new, :create, :update, :destroy ]
+  resources :invitations,     :only => [ :new, :create, :update, :destroy ] do
+    collection do
+      post 'create_with_usernames'
+    end
+  end
 
   resources :bourreaux,       :except => [ :edit ] do
     member do

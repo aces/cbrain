@@ -81,5 +81,26 @@ module PermissionHelpers
       end
     end
   end
+
+  def params_group_id
+    return params[:id] if params[:controller] == 'groups'
+    params[:group_id] if params[:controller] != 'groups'
+  end
+
+  def custom_license_check(group_id=nil) # check licenses created by user
+    gid = group_id | params_group_id
+    return true if gid.blank?
+    return true if gid == 'all'
+    # if unexpected id - let the action method handle the error message
+    begin
+      @group = current_user.viewable_groups.find(gid)
+    rescue ActiveRecord::RecordNotFound
+      return true
+    end
+    if current_user.unsigned_custom_licenses(@group).present?
+      flash[:error] = "Access to the project #{@group.name} is blocked due to licensing issues. Please consult with the project maintainer or support for details"
+      license_redirect
+    end
+  end
 end
 

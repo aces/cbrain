@@ -24,7 +24,21 @@
 -%>
 <div style="max-height: 600px; overflow-y: auto; padding-right: 30px">
   <% if @users.count > 0 %>
-  <%= form_tag invitations_path do -%>
+    <fieldset style="border:0px; margin:0px; padding:0px">
+      <legend>Either type in user logins (usernames) or emails </legend>
+      <div id="emails_and_usernames" style="display:block">
+
+      <%= form_tag create_with_usernames_invitations_path do %>
+        <%= hidden_field_tag :group_id, @group.id %>
+        <%= text_area_tag :emails, "", size: "65x2" %>
+        <br>
+        <%= submit_tag "Send Invitations" %>  or, select users in the form below
+      <% end %>
+      </div>
+    </fieldset>
+    <br>
+    <hr>
+    <%= form_tag invitations_path do -%>
       <%= hidden_field_tag :group_id, @group.id %>
       <%= render :partial => 'groups/users_form', :locals => {:parameter_name => "user_ids", :show_locked => false} %>
       <p>
