@@ -33,7 +33,7 @@ class DataProvidersController < ApplicationController
 
   before_action :login_required
   before_action :manager_role_required, :only => [:new, :create]
-  before_action :admin_role_required,   :only => [:new, :create, :report, :repair]
+  before_action :admin_role_required,   :only => [:new, :create, :report, :repair, :check_all]
 
   def index #:nodoc:
     @scope = scope_from_session
@@ -239,6 +239,21 @@ class DataProvidersController < ApplicationController
       format.html { render :html => red_if( ! is_alive, "<span>Yes</span>".html_safe, "No" ) }
       format.xml  { render :xml  => { :is_alive => is_alive } }
       format.json { render :json => { :is_alive => is_alive } }
+    end
+  end
+
+  # Refresh is_alive status for all the providers (in or out of the current scope)
+  def check_all
+
+    dp_ids = DataProvider.find_all_accessible_by_user(current_user).pluck(:id)
+
+    bac = BackgroundActivity::VerifyDataProvider.setup!(current_user.id, dp_ids)
+
+    flash[:notice] = "Data Providers statuses are being updated in background."
+
+    respond_to do |format|
+      format.html { redirect_to :action => :index }
+      format.json { render :json => { :message => flash[:notice], :background_activity_id => bac.id }}
     end
   end
 
