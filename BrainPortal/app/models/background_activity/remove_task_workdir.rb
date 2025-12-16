@@ -27,6 +27,10 @@ class BackgroundActivity::RemoveTaskWorkdir < BackgroundActivity::TerminateTask
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  def targets_model
+    CbrainTask
+  end
+
   def process(item)
     super(item) # invokes the terminate code; will skip tasks that don't need to be terminated
     cbrain_task  = CbrainTask.where(:bourreau_id => CBRAIN::SelfRemoteResourceId).find(item)

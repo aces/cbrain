@@ -44,6 +44,12 @@ class BackgroundActivity::RegisterAndCopyFile < BackgroundActivity::RegisterFile
     ba
   end
 
+
+  # Returns the primary class of items the task targets
+  def produces_model
+    Userfile  # stands for undefined
+  end
+
   def process(item)  # item is like "TextFile-abcd.xyz"
     ok, userfile_id = super # userfile_id is an error message if ok is false
     return [ ok, userfile_id ] if ! ok # registration failed
