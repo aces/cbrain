@@ -144,8 +144,13 @@ class Tool < ApplicationRecord
 
   def self.create_from_descriptor(descriptor)
     name = descriptor.name
-    tool = Tool.where(:name => name).first
+    tool = Tool.where(:descriptor_name => name).first
     return tool if tool
+    tool = Tool.where(:name            => name).first
+    if tool
+      tool.update_column(:descriptor_name, name) # record at first match
+      return tool
+    end
     tool = Tool.create!(
       :name        => name,
       :description => descriptor.description,

@@ -642,7 +642,7 @@ class ToolConfig < ApplicationRecord
   def boutiques_descriptor
     path = boutiques_descriptor_path.presence
     if ! path
-      return self.class.registered_boutiques_descriptor(self.tool.name, self.version_name)
+      return self.class.registered_boutiques_descriptor(self.tool.descriptor_name, self.version_name)
     end
     return @_descriptor_ if @_descriptor_
     path = Pathname.new(path)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20250929182856) do
+ActiveRecord::Schema.define(version: 20251218173042) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -491,6 +491,7 @@ ActiveRecord::Schema.define(version: 20250929182856) do
 
   create_table "tools", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci" do |t|
     t.string   "name"
+    t.string   "descriptor_name"
     t.integer  "user_id"
     t.integer  "group_id"
     t.string   "category"
