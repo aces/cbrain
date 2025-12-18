@@ -64,7 +64,7 @@ require __dir__ + "/lib/shortcuts.rb"
 require __dir__ + "/lib/reports.rb"
 
 # Adds fancy table layouts with Hirb, Wirble and looksee
-require __dir__ + "/lib/wirble_hirb_looksee.rb"
+require __dir__ + "/lib/hirb_looksee.rb"
 
 # Adds utilities for timing ruby block and sql statements
 require __dir__ + "/lib/timing.rb"

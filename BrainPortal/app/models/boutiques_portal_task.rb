@@ -143,11 +143,13 @@ class BoutiquesPortalTask < PortalTask
               descriptor.sole_mandatory_file_input == input  &&
               !invoke_params[input.id].present?
 
+      next if input.value_choices.present? # inputs with enums are checked later
       sanitize_param(input)
     end
 
     # Optional parameters
     descriptor.optional_inputs.each do |input|
+      next if input.value_choices.present? # inputs with enums are checked later
       sanitize_param(input) unless isInactive(input)
     end
 
@@ -525,6 +527,27 @@ class BoutiquesPortalTask < PortalTask
     descriptor = self.descriptor_for_after_form
     empty_string_allowed = Array(descriptor.custom['cbrain:allow_empty_strings']).include?(name)
 
+    # Exceptional regex validation for a String input; this overrides the default rule
+    custom_regexes = descriptor.custom['cbrain:override-input-string-ruby-regex'] || {}
+    charset_regex  = custom_regexes[name] # could be nil; then a default will be assigned. Also as a string it's fine
+
+    # Some presets for convenience; at most one 'if' will trigger because regex != string always
+    charset_regex  = /\A[\w,\.\:\-]+\z/                       if charset_regex == ':basename:'        # "a0_,.:-"
+    charset_regex  = /\A[\w,\.\:\-\?\*]+\z/                   if charset_regex == ':basename-pattern:'  # "a0_,.:-*?"
+    charset_regex  = /\A[\w,\.\/\:\-]+(\/[\w,\.\/\:\-]*)*\z/  if charset_regex == ':relative-path:'   # "base" or "/base/base/..."
+    charset_regex  = /\A\S+\z/                                if charset_regex == ':any-no-blanks:'   # can be dangerous! YOU MUST VALIDATE TOOL'S ESCAPING PROPERLY!
+    charset_regex  = /\A[\w,\.\:\-\{\}]+\z/                   if charset_regex == ':id-with-curlies:' # allows "abc" and "abc-{4}" etc
+    charset_regex  = /\A[\w,\.\:\-\+]+(\ +[\w,\.\:\-\+]+)*\z/ if charset_regex == ':ids-with-spaces:' # allows "abc" and "abc def xyz" etc
+    charset_regex  = /\A[\w,\.\/\:\-\ \*\{\}\(\)\%\@\=\+]\z/  if charset_regex == ':description:'     # single line text with spaces, no bash special characters
+
+    # Default check is pretty strict, but works for most applications.
+    charset_regex ||= /\A[\w,\.\/\:\-\+]+\z/ # letters, digits, underscores, commas, periods, slashes, colons, dashes, plusses "a0_,./:-+"
+
+    # These two lines force anchoring, in case the person maintaining the descriptor
+    # forgot them in the values of custom['cbrain:override-input-string-ruby-regex']
+    charset_regex = '\A'+charset_regex      if charset_regex.is_a?(String) && !charset_regex.starts_with?('\A')
+    charset_regex =      charset_regex+'\z' if charset_regex.is_a?(String) && !charset_regex.ends_with?('\z')
+
     # Taken userfile names. An error will be raised if two input files have the
     # same name.
     @taken_files ||= Set.new
@@ -551,14 +574,18 @@ class BoutiquesPortalTask < PortalTask
 
       # Nothing special required for strings, bar for symbols being acceptable strings.
       when :string
-        value = value.to_s if value.is_a?(Symbol)
-        params_errors.add(invokename, " not a string (#{value})")      unless value.is_a?(String)
+        value = value.to_s                                                 if value.is_a?(Symbol)
+        params_errors.add(invokename, " is not a string (#{value})")   unless value.is_a?(String)
+        value.strip!                                                       if value.is_a?(String)
         params_errors.add(invokename, " is blank")                         if value.blank? && !empty_string_allowed
-        # The following two checks are to prevent cases when
+        # The following three checks are to prevent cases when
         # a string param is used as a path
-        params_errors.add(invokename, " cannot contain newlines")          if value.to_s =~ /[\n\r]/
-        params_errors.add(invokename, " cannot start with this character") if value.to_s =~ /^[\.\/]+/
-        params_errors.add(invokename, " cannot move up dirs")              if value.to_s.include? "/../"
+        params_errors.add(invokename, " cannot contain newlines")          if value =~ /[\n\r]/
+        params_errors.add(invokename, " cannot start with this character") if value =~ /^[\.\/]+/
+        params_errors.add(invokename, " cannot move up dirs")              if value.include? "/../"
+        if value.present?
+          params_errors.add(invokename, " contains invalid characters")  unless value.match?(charset_regex) # we can use a string in the match method
+        end
 
       # Try to match against various common representation of true and false
       when :flag

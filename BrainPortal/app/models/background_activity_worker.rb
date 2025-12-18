@@ -26,7 +26,7 @@ class BackgroundActivityWorker < Worker
 
   # How much time to process a BAC before switching to another BAC.
   # Currently hardcoded, maybe one day it will be configurable.
-  BAC_SLICE_TIME=5.seconds
+  BAC_SLICE_TIME=15.seconds
 
   # Any BAC that had a lock on it and has not been updated in
   # this amount of time is considered 'dead' (process died?)

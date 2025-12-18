@@ -142,6 +142,7 @@ class ScirUnix < Scir
 
       command = ""
       command += "cd #{shell_escape(self.wd)} || exit 20;"  if self.wd
+      command += "ulimit -v #{self.memory.to_i * 1024};"    if self.memory.present? && self.memory.to_i > 0
       command += "timeout #{walltime}s " if SYSTEM_HAS_TIMEOUT && walltime
       command += "/bin/bash #{shell_escape(self.arg[0])}"
       command += "  > #{shell_escape(stdout)}"

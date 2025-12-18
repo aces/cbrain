@@ -407,7 +407,7 @@
             Stopping an Execution Server will also stop the Task Workers <strong>and</strong> Activity Workers running on it.
             Make sure they are not actively <%= html_colorize("processing","orange") %> something.
           </p>
-          <%= external_submit_button "2. Stop Bourreaux",     "bourreau_form",
+          <%= external_submit_button "2. Stop Execution Server", "bourreau_form",
               :class => 'button',
               :name  => 'operation',
               :value => 'stop_bourreaux',
@@ -421,7 +421,7 @@
               :class => 'button',
               :name  => 'operation',
               :value => 'stop_tunnels',
-              :data  => { :confirm => "Make sure Bourreaux, Task Workers and Activity workers are all stopped!" }
+              :data  => { :confirm => "Make sure Execution Servers, Task Workers and Activity workers are all stopped!" }
           %>
         </div>
       <% end %>

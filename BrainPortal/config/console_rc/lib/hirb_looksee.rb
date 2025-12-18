@@ -4,11 +4,8 @@
 # Adds pretty table layouts for serveral CBRAIN models.
 #
 
-require 'wirble'
 require 'hirb'
 require 'looksee'
-Wirble.init
-Wirble.colorize
 Hirb.enable
 extend Hirb::Console
 

@@ -194,9 +194,8 @@ class NocController < ApplicationController
       since_when = [2,since_minutes,527040].sort[1].minutes.ago
     end
 
-    # Auto refresh: default every two minutes.
-    @refresh_every   = nil if @refresh_every.present? && @refresh_every < 10
-    @refresh_every ||= 120.seconds
+    # Auto refresh: minimum 1 minute
+    @refresh_every = nil if @refresh_every.present? && @refresh_every < 60
 
     # RemoteResources, including the portal itself
     @myself        = RemoteResource.current_resource
@@ -310,7 +309,9 @@ class NocController < ApplicationController
       url_sequence = { 'daily' => 'weekly', 'weekly' => 'monthly', 'monthly' => 'daily' }
       myurl.sub!(/\/(daily|weekly|monthly)/) { |m| "/" + url_sequence[m.sub("/","")] }
     end
-    response.headers["Refresh"] = "#{@refresh_every};#{myurl}"
+    if @refresh_every.present?
+      response.headers["Refresh"] = "#{@refresh_every};#{myurl}"
+    end
 
     # Number of exceptions
     @num_exceptions = ExceptionLog.where([ "created_at > ?", since_when ]).count

@@ -61,4 +61,14 @@ module QuotasHelper
     "#{week} last week; #{month} last month; #{ever} total"
   end
 
+  # Renders the max number of active tasks
+  # in pretty form, e.g. "(Unlimited)", "(None allowed)" or "3 tasks".
+  def pretty_max_active_tasks(quota)
+    mat = quota.max_active_tasks
+    return "(Unlimited)"    if mat.nil?
+    return "(None allowed)" if mat < 1
+    return "1 task"         if mat == 1
+    return "#{mat} tasks"
+  end
+
 end

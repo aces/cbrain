@@ -96,6 +96,10 @@
       :sortable => true,
     ) { |cq| pretty_quota_cputime(cq.max_cpu_ever, true) }
 
+    t.column("Max Active Tasks", :max_active_tasks,
+      :sortable => true,
+    ) { |cq| pretty_max_active_tasks(cq) }
+
     # This column is a bit misleading: it shows the CURRENT USER's resources for all
     # quota records that are DP-wide, and the AFFECTED USER'S resources for the user-specific quotas.
     t.column("My Usage") do |cq|
