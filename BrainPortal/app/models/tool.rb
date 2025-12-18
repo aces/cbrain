@@ -153,6 +153,7 @@ class Tool < ApplicationRecord
     end
     tool = Tool.create!(
       :name        => name,
+      :descriptor_name => name,
       :description => descriptor.description,
       :user_id     => User.admin.id,
       :group_id    => User.admin.own_group.id,
