@@ -163,7 +163,7 @@ class NhProjectsController < NeurohubApplicationController
     group_name = @nh_project.name.gsub(/[^\w]+/,"")
     file_name  = "license_#{group_name}_#{timestamp}.txt"
     license    = @nh_project.register_custom_license(license_text, current_user, file_name)
-    user_signs_license_for_project(current_user, license, @nh_project)
+    current_user.signs_license_for_project(license, @nh_project)
 
     flash[:notice] = 'A license is added. You can force users to sign multiple license agreements if needed.'
     redirect_to :action => :show
@@ -236,7 +236,7 @@ class NhProjectsController < NeurohubApplicationController
     end
 
     license = Userfile.find(@license_id)
-    user_signs_license_for_project(current_user, license, @nh_project)
+    current_user.signs_license_for_project(license, @nh_project)
 
     if current_user.unsigned_custom_licenses(@nh_project).empty?
       flash[:notice] = 'You signed all the project licenses'
@@ -330,15 +330,6 @@ class NhProjectsController < NeurohubApplicationController
     else
       redirect_to nh_projects_path
     end
-  end
-
-  # Records that +user+ signed the +license+ file for +project+
-  # with nice log messages to that effect.
-  def user_signs_license_for_project(user, license, project)
-    user.add_signed_custom_license(license)
-
-    user.addlog("Signed custom license agreement '#{license.name}' (ID #{license.id}) for project '#{project.name}' (ID #{project.id}).")
-    project.addlog("User #{user.login} signed license agreement '#{license.name}' (ID #{license.id}).")
   end
 
 end
