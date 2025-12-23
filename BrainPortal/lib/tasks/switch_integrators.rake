@@ -88,8 +88,9 @@ namespace :cbrain do
 
       old_tools.sort! { |t1,t2| t1.id <=> t2.id }
       infos = old_tools.map do |tool|
-        klass    = tool.cbrain_task_class
-        descpath = klass.generated_from.descriptor_path # in installed-plugins
+        oldklassname = tool.cbrain_task_class_name
+        oldklass = tool.cbrain_task_class
+        descpath = oldklass.generated_from.descriptor_path # in installed-plugins
         srcpath  = Pathname.new(File.realpath(descpath)) # resolving symlink too
         srcdir,jsonbase = srcpath.split   # ".../pluginname/cbrain_task_descriptors", "desc.json"
         problems=[];warnings=[]
@@ -99,13 +100,13 @@ namespace :cbrain do
           pluginname = "Unknown!"
           problems << 'PlugName'
         end
-        task_count = klass.count.to_s
-        wd_task_count = klass.wd_present.count
+        task_count = oldklass.count.to_s
+        wd_task_count = oldklass.wd_present.count
         task_count += "/wd=#{wd_task_count}" if wd_task_count > 0
         btq=BoutiquesSupport::BoutiquesDescriptor.new_from_file(srcpath.to_s)
         warnings << "ToolName!=#{btq.name}" if btq.name != tool.name
         btqrubyname = btq.name_as_ruby_class
-        oldrubyname = klass.name.demodulize
+        oldrubyname = oldklassname.demodulize
         problems << "Ruby(#{oldrubyname},#{btqrubyname})" if btqrubyname != oldrubyname
         if BoutiquesTask.const_defined?(btqrubyname.to_sym)
           problems << "Const(#{oldrubyname})"
@@ -136,23 +137,25 @@ namespace :cbrain do
 
       # MIGRATE
       old_tools.each do |tool|
-        klass    = tool.cbrain_task_class
-        descpath = klass.generated_from.descriptor_path # in installed-plugins
-        srcpath  = Pathname.new(File.realpath(descpath)) # resolving symlink too
+        oldklassname = tool.cbrain_task_class_name
+        oldklass     = tool.cbrain_task_class
+        descpath     = oldklass.generated_from.descriptor_path # in installed-plugins
+        srcpath      = Pathname.new(File.realpath(descpath)) # resolving symlink too
         srcdir,jsonbase = srcpath.split   # ".../pluginname/cbrain_task_descriptors", "desc.json"
-        pluginbase = srcdir.dirname       # ".../pluginname"
-        btq      = BoutiquesSupport::BoutiquesDescriptor.new_from_file(srcpath.to_s)
-        inputids = btq.inputs.map(&:id)
-        #puts_red "I=#{inputids.inspect}"
-        tasks    = klass.all.to_a
+        pluginbase   = srcdir.dirname       # ".../pluginname"
+        btq          = BoutiquesSupport::BoutiquesDescriptor.new_from_file(srcpath.to_s)
 
-        puts_cyan "\nAdjusting: TOOL=#{tool.name} CLASS=#{klass.name} TASKS=#{tasks.size}"
+        tasks        = oldklass.all.to_a
+        btqrubyname  = btq.name_as_ruby_class
+        newklassname = "BoutiquesTask::#{btqrubyname}"
 
-        # JSON Path adjustment
+        puts_cyan "\nAdjusting tool: ID=#{tool.id} NAME=#{tool.name} OLDCLASS=#{oldklassname} NEWCLASS=#{newklassname} TASKS=#{tasks.size}"
+
+        # JSON Path copying
         btq_dir = "#{pluginbase}/boutiques_descriptors"
         Dir.mkdir(btq_dir,0700) if ! File.directory?(btq_dir)
         cp_com = [ "cp","-p","#{srcpath}", "#{btq_dir}/#{jsonbase}" ]
-        cp_com.unshift("echo") if action == 'check'
+        cp_com.unshift("echo") if action != 'upgrade'
         puts_red "Warning: there is already a BTQ descriptor in #{btq_dir}/#{jsonbase}" if File.file?("#{btq_dir}/#{jsonbase}")
         if ! system(*cp_com)
           puts_red "Could not copy '#{srcpath}' to '#{btq_dir}/#{jsonbase}' ???"
@@ -160,7 +163,7 @@ namespace :cbrain do
         end
 
         # TASKS object adjustment
-        btqrubyname = btq.name_as_ruby_class
+        inputids = btq.inputs.map(&:id)
         tasks.each_with_index do |task,idx|
           puts " -> Adjusting task #{task.id} (#{idx+1}/#{tasks.size})" if sprintf("%6.6d",idx) =~ /00$/
           puts_yellow "BEFORE: #{task.params.inspect}" if action == 'check'
@@ -179,12 +182,23 @@ namespace :cbrain do
         end # adjust all tasks
         puts " -> Finished adjusting all tasks"
 
-        # TOOL object adjustment
-        tool.cbrain_task_class_name = "BoutiquesTask::#{btqrubyname}"
-        puts " -> Adjusting TOOL class to #{tool.cbrain_task_class_name}"
+        # CustomFilter adjustments
+        tcfs = TaskCustomFilter.all.select { |f| (f.data["types"] || []).include?(oldklassname) }
+        puts " -> Adjusting TaskCustomFilters (#{tcfs.size})"
+        tcfs.each do |tcf|
+          data = tcf.data
+          data["types"] -= [ oldklassname ]
+          data["types"] |= [ newklassname ]
+          tcf.update_column(:data, data) if action == 'upgrade'
+        end
+
+        # TOOL object adjustments
+        tool.cbrain_task_class_name = newklassname
+        puts " -> Adjusting TOOL class to #{newklassname}"
         tool.descriptor_name = btq.name
         tool.save! if action == 'upgrade'
-        tool.addlog("Migrated to new Boutiques integrator")
+        tool.addlog("Migrated to new Boutiques integrator, from #{oldklassname} to #{newklassname}")
+
       end # each oldtoold
 
       puts "All migrations finished. Remember to run the plugins install rake task if descriptors were copied!"
