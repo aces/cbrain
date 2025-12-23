@@ -160,6 +160,7 @@ namespace :cbrain do
         end
 
         # TASKS object adjustment
+        btqrubyname = btq.name_as_ruby_class
         tasks.each_with_index do |task,idx|
           puts " -> Adjusting task #{task.id} (#{idx+1}/#{tasks.size})" if sprintf("%6.6d",idx) =~ /00$/
           puts_yellow "BEFORE: #{task.params.inspect}" if action == 'check'
@@ -172,13 +173,13 @@ namespace :cbrain do
             end
           end
           task.params = top
-          puts_yellow "AFTER: #{task.params.inspect}" if action == 'check'
-          task.update_column(:params, top)            if action == 'upgrade'
+          puts_yellow "AFTER: #{task.params.inspect}"                if action == 'check'
+          task.update_column(:params, top)                           if action == 'upgrade'
+          task.update_column(:type, "BoutiquesTask::#{btqrubyname}") if action == 'upgrade'
         end # adjust all tasks
         puts " -> Finished adjusting all tasks"
 
         # TOOL object adjustment
-        btqrubyname = btq.name_as_ruby_class
         tool.cbrain_task_class_name = "BoutiquesTask::#{btqrubyname}"
         puts " -> Adjusting TOOL class to #{tool.cbrain_task_class_name}"
         tool.descriptor_name = btq.name
@@ -186,7 +187,7 @@ namespace :cbrain do
         tool.addlog("Migrated to new Boutiques integrator")
       end # each oldtoold
 
-      puts "All migrations finished."
+      puts "All migrations finished. Remember to run the plugins install rake task if descriptors were copied!"
 
     end # task      cbrain:integrators:migrate
   end   # namespace cbrain:integrators
