@@ -143,13 +143,14 @@ namespace :cbrain do
         srcpath      = Pathname.new(File.realpath(descpath)) # resolving symlink too
         srcdir,jsonbase = srcpath.split   # ".../pluginname/cbrain_task_descriptors", "desc.json"
         pluginbase   = srcdir.dirname       # ".../pluginname"
+        pluginname   = pluginbase.basename.to_s  # "pluginname"
         btq          = BoutiquesSupport::BoutiquesDescriptor.new_from_file(srcpath.to_s)
 
         tasks        = oldklass.all.to_a
         btqrubyname  = btq.name_as_ruby_class
         newklassname = "BoutiquesTask::#{btqrubyname}"
 
-        puts_cyan "\nAdjusting tool: ID=#{tool.id} NAME=#{tool.name} OLDCLASS=#{oldklassname} NEWCLASS=#{newklassname} TASKS=#{tasks.size}"
+        puts_cyan "\nAdjusting tool: ID=#{tool.id} NAME=#{tool.name} PLUGIN=#{pluginname} OLDCLASS=#{oldklassname} NEWCLASS=#{newklassname} TASKS=#{tasks.size}"
 
         # JSON Path copying
         btq_dir = "#{pluginbase}/boutiques_descriptors"
@@ -161,6 +162,7 @@ namespace :cbrain do
           puts_red "Could not copy '#{srcpath}' to '#{btq_dir}/#{jsonbase}' ???"
           exit 2
         end
+        puts " -> JSON file '#{jsonbase}' copied in plugins '#{pluginname}'"
 
         # TASKS object adjustment
         inputids = btq.inputs.map(&:id)
