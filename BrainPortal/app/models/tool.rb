@@ -132,6 +132,7 @@ class Tool < ApplicationRecord
     tool = Tool.where(:descriptor_name => name).first
     return tool if tool
     tool = Tool.where(:name            => name).first
+    tool ||= Tool.where(:cbrain_task_class_name => "CbrainTask::#{descriptor.name_as_ruby_class}").first #old integration; will make the boot process skip it all
     if tool
       tool.update_column(:descriptor_name, name) # record at first match
       return tool
