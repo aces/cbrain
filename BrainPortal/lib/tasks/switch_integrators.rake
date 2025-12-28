@@ -22,11 +22,14 @@
 
 namespace :cbrain do
   namespace :integrators do
-    desc "Switch tools from the old Boutiques integrator to the new integrator"
 
+    #############################################################
+    # MIGRATE
+    #############################################################
+    desc "Switch tools from the old Boutiques integrator to the new integrator"
     task :migrate, [:action, :tool_id] => :environment do |t,args|
 
-      args.with_defaults(:action => 'check', :tool_id => nil)
+      args.with_defaults(:action => 'list', :tool_id => nil)
       action     = args.action
       argtool_id = args.tool_id # could be nil
 
@@ -206,6 +209,95 @@ namespace :cbrain do
       puts "All migrations finished. Remember to run the plugins install rake task if descriptors were copied!"
 
     end # task      cbrain:integrators:migrate
+
+
+
+    #############################################################
+    # RELINK
+    #############################################################
+    desc "Adjust tool configs with missing links to descriptors"
+    task :relink, [:action, :tool_id] => :environment do |t,args|
+
+      args.with_defaults(:action => 'list', :tool_id => nil)
+      action     = args.action
+      argtool_id = args.tool_id # could be nil
+
+      tool=nil
+      if argtool_id.present?
+        if ! argtool_id.match?(/\A\d+\z/) || ! (argtool=Tool.where(:id => argtool_id).first)
+          raise "Cannot find a tool with ID=#{argtool_id}"
+        end
+      end
+
+      # Usage
+      if action !~ /\A(list|upgrade)\z/
+        puts <<-USAGE
+        Usage:
+          rake cbrain:integrators:relink[list]          # default
+          rake cbrain:integrators:relink[list,tool_id]
+          rake cbrain:integrators:migrate[upgrade]
+          rake cbrain:integrators:migrate[upgrade,tool_id]
+
+          No description yet
+        USAGE
+        exit 1
+      end
+
+      tools = Tool
+        .where('cbrain_task_class_name like "BoutiquesTask::%"')
+        .to_a
+
+      if tools.empty?
+        puts "There are no tools configured with the new integrator in this system."
+        exit 1
+      end
+
+      if argtool
+        if ! tools.any? { |t| t.id == argtool.id }
+          puts "Error: the tool ID #{argtool_id} doesn't match any tool configured with the new integrator."
+          exit 1
+        end
+        tools = [ argtool ]
+      end
+
+      report = tools.map do |tool|
+        tot_tcs    = tool.tool_configs.where.not(:bourreau_id => nil).to_a
+        unconf_tcs = tot_tcs.select { |tc| tc.boutiques_descriptor.blank? }
+        next nil if unconf_tcs.empty?
+        [ tool.id, tool.name, tot_tcs.count, unconf_tcs.count ]
+      end.compact
+
+      if action == 'list'
+        require "hirb.rb"
+        extend Hirb::Console
+        prettyinfos = report.dup
+        prettyinfos.unshift(["Tool ID", "Name", "Tot Configs", "Unconf Configs"])
+        table prettyinfos, :headers => false, :resize => false
+      end
+
+      exit 0 if action == 'list' && report.size != 1
+      if action == 'list' # single tool report
+        tool = tools.first
+        tcs  = tool.tool_configs.where.not(:bourreau_id => nil).to_a
+        puts_cyan "Detailed report for tool '#{tool.name}' (ID=#{tool.id}) with #{tcs.size} ToolConfigs"
+        grps = tcs.group_by(&:version_name)
+        report2 = grps.keys.sort.map do |vers|
+          tcs = grps[vers]
+          has_desc = tcs.select { |tc| tc.boutiques_descriptor.present? }
+          no_desc  = tcs - has_desc
+          #next nil if no_desc.blank?
+          [ vers, has_desc.map(&:bourreau_id).sort, no_desc.map(&:bourreau_id).sort ]
+        end
+        prettyinfos = report2.dup
+        prettyinfos.unshift(["Version", "Exec OK", "Exec Missing"])
+        table prettyinfos, :headers => false, :resize => false
+        exit 0
+      end
+
+      puts_red "TODO. The reports work though."
+
+    end # task cbrain:integrators:relink
+
   end   # namespace cbrain:integrators
 end     # namespace cbrain
 
