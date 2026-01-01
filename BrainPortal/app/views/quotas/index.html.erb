@@ -42,7 +42,26 @@
   <% if @mode == :disk %>
     <%= link_to "Switch to CPU Quotas",  quotas_path(:mode => :cpu),   :class => :button %>
   <% end %>
-</div>
+
+  <% user_list = current_user.available_users.sort_by(&:login) %>
+  <% if @mode == :disk && user_list.size > 1 && current_user.has_role?(:admin_user) %>
+
+
+    <div class="disk_quota_user_select">
+        View as
+        <%=
+          ajax_onchange_select(:as_user_id,
+                               quotas_path,
+                               options_for_select(
+                               user_list.collect { |u| [ u.login, u.id.to_s ] },
+                               @as_user.id.to_s
+                               ),
+                               :datatype => 'script'
+          )
+        %>
+    </div>
+  </div>
+  <% end %>
 
 <% if @mode == :disk %>
   <fieldset class="disk_quota_explanations" style="display: none">
@@ -63,7 +82,7 @@
     <p class="long_paragraphs">
     This page shows the limits for the amount of CPU processing time
     that a user can historically accumulate. There are three rolling
-    windows: for the CPU time accummulated over the past week, over
+    windows: for the CPU time accumulated over the past week, over
     the past month, and over the entire lifetime of the user's account.
     <p class="long_paragraphs">
     Each row contains a quota entry with all three limits. Quotas
