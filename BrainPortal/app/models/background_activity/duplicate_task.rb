@@ -28,6 +28,11 @@ class BackgroundActivity::DuplicateTask < BackgroundActivity
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  def pretty_name
+    dest_name = RemoteResource.where(:id => self.options[:dub_bourreau_id]).first&.name.presence
+    [super, dest_name].compact.join(" to ")
+  end
+
   def process(item)
     task         = CbrainTask.real_tasks.find(item)
     new_bid      = options[:dup_bourreau_id].presence || task.bourreau_id
