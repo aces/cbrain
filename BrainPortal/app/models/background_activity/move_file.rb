@@ -35,7 +35,6 @@ class BackgroundActivity::MoveFile < BackgroundActivity
     self.class.to_s.demodulize.underscore.humanize + " to #{dp_name}"
   end
 
-
   # Helper for scheduling a move of the files immediately.
   def self.setup!(user_id, userfile_ids, remote_resource_id, dest_data_provider_id, options={})
     ba         = self.local_new(user_id, userfile_ids, remote_resource_id)
