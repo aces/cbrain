@@ -25,6 +25,16 @@ class BackgroundActivity::CopyFileAndUnregister < BackgroundActivity::CopyFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # Returns the primary class of items the task targets
+  def targets_model
+    Userfile
+  end
+
+  # Returns the primary class of items the task targets
+  def output_model
+    nil  # stands for undefined
+  end
+
   def process(item)
     ok, userfile_id = super # CopyFile can return the ID or a string message
     return [ ok, userfile_id ] if userfile_id.is_a?(String) # a message
@@ -34,4 +44,3 @@ class BackgroundActivity::CopyFileAndUnregister < BackgroundActivity::CopyFile
   end
 
 end
-

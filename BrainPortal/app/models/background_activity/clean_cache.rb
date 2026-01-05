@@ -48,6 +48,11 @@ class BackgroundActivity::CleanCache < BackgroundActivity
     desc
   end
 
+  # Returns the primary class of items the task targets
+  def targets_model
+    Userfile
+  end
+
   def process(item)
     userfile = Userfile.find(item)
     return [ false, "File is under transfer" ] if
@@ -85,4 +90,3 @@ class BackgroundActivity::CleanCache < BackgroundActivity
   end
 
 end
-

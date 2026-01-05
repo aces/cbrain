@@ -35,6 +35,17 @@ class BackgroundActivity::CopyFile < BackgroundActivity
     self.class.to_s.demodulize.underscore.humanize + " to #{dp_name}"
   end
 
+  # Returns the primary class of items the task targets
+  def targets_model
+    Userfile  # stands for undefined
+  end
+
+  # Returns the primary class of items the task targets
+  def produces_model
+    Userfile  # stands for undefined
+  end
+
+
   # Helper for scheduling a copy of files immediately.
   def self.setup!(user_id, userfile_ids, remote_resource_id, dest_data_provider_id, options={})
     ba         = self.local_new(user_id, userfile_ids, remote_resource_id)
@@ -82,4 +93,3 @@ class BackgroundActivity::CopyFile < BackgroundActivity
   end
 
 end
-

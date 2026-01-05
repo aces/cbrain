@@ -30,6 +30,11 @@ class BackgroundActivity::UnarchiveTaskWorkdir < BackgroundActivity
   before_save :must_be_on_bourreau!
 
   validates_dynamic_bac_presence_of_option :task_custom_filter_id
+  # Returns the primary class of items the task targets
+
+  def targets_model
+    CbrainTask
+  end
 
   def process(item)
     cbrain_task = CbrainTask.where(:bourreau_id => CBRAIN::SelfRemoteResourceId).find(item)
