@@ -29,8 +29,8 @@ class BackgroundActivity::MoveFile < BackgroundActivity
   validates_dynamic_bac_presence_of_option :userfile_custom_filter_id
 
   def pretty_name
-    dp_id = self.options[:dest_data_provider_id]
-    dp    = DataProvider.find(dp_id) rescue nil
+    dp_id   = self.options[:dest_data_provider_id]
+    dp      = DataProvider.find_by_id(dp_id)
     dp_name = dp&.name || "##{dp_id}"
     self.class.to_s.demodulize.underscore.humanize + " to #{dp_name}"
   end
