@@ -29,7 +29,7 @@ class BackgroundActivity::DuplicateTask < BackgroundActivity
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def pretty_name
-    dest_name = Bourreau.find_by_id(self.options[:dub_bourreau_id])&.name.presence
+    dest_name = Bourreau.find_by_id(self.options[:dup_bourreau_id])&.name.presence
     [super, dest_name].compact.join(" to ")
   end
 
