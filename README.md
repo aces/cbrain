@@ -20,6 +20,40 @@ systems.
 
 CBRAIN (and the alternative NeuroHub interface) consists of two Ruby on Rails Applications: BrainPortal and Bourreau
 
+## System architecture
+
+```mermaid
+flowchart LR
+  Users([Researchers & Web browsers])
+  NH[NeuroHub Portal<br/>Alternative UI]
+  BP[BrainPortal<br/>Rails frontend]
+  DB[(Shared database & metadata)]
+  DP[Data providers<br/>(S3/HTTP/FTP, etc.)]
+  BO[Bourreau<br/>Rails backend services]
+  Sched[HPC scheduler<br/>(SLURM/PBS/...)]
+  Compute[Compute nodes]
+  Scratch[(Working directories<br/>/ shared storage)]
+
+  Users --> BP
+  Users --> NH
+  NH --> BP
+  BP <--> DB
+  BP <--> DP
+  BP <--> BO
+  BO <--> DB
+  BO --> Sched --> Compute
+  BO <--> Scratch
+  Compute <--> Scratch
+```
+
+At a high level, researchers interact with BrainPortal (or the NeuroHub
+portal) through a web browser. BrainPortal orchestrates access to data
+providers, persists metadata in the shared database, and delegates
+execution requests to Bourreau instances. Bourreau connects to local HPC
+schedulers to launch jobs on compute nodes, manages working directories
+on shared storage, and synchronizes job and file state back to the
+database for BrainPortal to display.
+
 ## BrainPortal
 
 BrainPortal is the frontend of the CBRAIN architecture. It is a
@@ -45,4 +79,3 @@ running on the HPC where it resides.
 ## For more information
 
 CBRAIN is extensively documented in its [Wiki](https://github.com/aces/cbrain/wiki).
-
