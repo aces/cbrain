@@ -28,11 +28,11 @@ flowchart LR
   NH[NeuroHub Portal<br/>Alternative UI]
   BP[BrainPortal<br/>Rails frontend]
   DB[(Shared database & metadata)]
-  DP[Data providers<br/>(S3/HTTP/FTP, etc.)]
+  DP[Data providers<br/>S3/HTTP/FTP, etc.]
   BO[Bourreau<br/>Rails backend services]
-  Sched[HPC scheduler<br/>(SLURM/PBS/...)]
+  Sched[HPC scheduler<br/>SLURM/PBS/...]
   Compute[Compute nodes]
-  Scratch[(Working directories<br/>/ shared storage)]
+  Scratch[(Working directories<br/>Shared storage)]
 
   Users --> BP
   Users --> NH
