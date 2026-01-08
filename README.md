@@ -75,16 +75,10 @@ flowchart LR
   BO2 --> DataProviders
   BO1 --> DB
   BO2 --> DB
-  BO1 --> Sched1 --> Compute1
-  BO2 --> Sched2 --> Compute3
-  BO1 --> Scratch1
-  BO2 --> Scratch2
-  Compute1 --> Scratch1
-  Compute2 --> Scratch1
-  ComputeMoreA --> Scratch1
-  Compute3 --> Scratch2
-  Compute4 --> Scratch2
-  ComputeMoreB --> Scratch2
+  BO1 --> Sched1 --> ComputePoolA
+  BO2 --> Sched2 --> ComputePoolB
+  ComputePoolA --> Scratch1
+  ComputePoolB --> Scratch2
 ```
 
 At a high level, researchers interact with BrainPortal (or the NeuroHub
