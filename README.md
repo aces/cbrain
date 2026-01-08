@@ -44,24 +44,24 @@ flowchart LR
       subgraph ResourceA[HPC resource A]
         BO1[Bourreau]
         Sched1[HPC scheduler<br/>SLURM/PBS/...]
-      subgraph ComputePoolA[Compute nodes]
-        Compute1[Compute node]
-        ComputeMoreA[More...]
-        Compute2[Compute node]
-      end
-      Scratch1[(Working directories<br/>Shared storage)]
+        subgraph ComputePoolA[Compute nodes]
+          Compute1[Compute node]
+          ComputeMoreA[More...]
+          Compute2[Compute node]
+        end
+        Scratch1[(Working directories<br/>Shared storage)]
       end
       subgraph ResourceB[HPC resource B]
         BO2[Bourreau]
         Sched2[HPC scheduler<br/>SLURM/PBS/...]
-      subgraph ComputePoolB[Compute nodes]
-        Compute3[Compute node]
-        ComputeMoreB[More...]
-        Compute4[Compute node]
+        subgraph ComputePoolB[Compute nodes]
+          Compute3[Compute node]
+          ComputeMoreB[More...]
+          Compute4[Compute node]
+        end
+        Scratch2[(Working directories<br/>Shared storage)]
       end
-      Scratch2[(Working directories<br/>Shared storage)]
-      end
-  end
+    end
   end
 
   Users --> BP
