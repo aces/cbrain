@@ -47,14 +47,14 @@ flowchart LR
   NH --> BP
   BP --> DB
   BP --> DP
-  BP --> BO1
-  BP --> BO2
+  BP -->|SSH/XML| BO1
+  BP -->|SSH/XML| BO2
   BO1 --> DP
   BO2 --> DP
   BO1 --> DB
   BO2 --> DB
-  BO1 --> Sched --> Compute1
-  BO2 --> Sched --> Compute2
+  BO1 -->|SSH| Sched --> Compute1
+  BO2 -->|SSH| Sched --> Compute2
   BO1 --> Scratch
   BO2 --> Scratch
   Compute1 --> Scratch
@@ -65,11 +65,12 @@ At a high level, researchers interact with BrainPortal (or the NeuroHub
 portal) through a web browser. The arrows in the diagram show the primary
 request flow; responses are implied by each call. BrainPortal orchestrates
 access to data providers, persists metadata in the shared database, and
-delegates execution requests to one or more Bourreau instances. Bourreaux
-connect to local HPC schedulers to launch jobs on pools of compute nodes,
-manage working directories on shared storage, and synchronize job and file
-state back to the database for BrainPortal to display. Bourreaux can also
-fetch and stage data from providers as part of backend task execution.
+delegates execution requests to one or more Bourreau instances, typically
+over SSH/XML. Bourreaux connect to local HPC schedulers over SSH to launch
+jobs on pools of compute nodes, manage working directories on shared
+storage, and synchronize job and file state back to the database for
+BrainPortal to display. Bourreaux can also fetch and stage data from
+providers as part of backend task execution.
 
 ## BrainPortal
 
