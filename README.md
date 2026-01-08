@@ -36,8 +36,8 @@ flowchart LR
     subgraph DataProviders[Data providers]
       direction TB
       DP1[Data provider<br/>S3/HTTP/FTP, etc.]
-      DP3[More...]
       DP2[Data provider<br/>S3/HTTP/FTP, etc.]
+      DP3[More...]
     end
     subgraph HPCResources[HPC resources]
       direction TB
@@ -46,8 +46,8 @@ flowchart LR
         Sched1[HPC scheduler<br/>SLURM/PBS/...]
         subgraph ComputePoolA[Compute nodes]
           Compute1[Compute node]
-          ComputeMoreA[More...]
           Compute2[Compute node]
+          ComputeMoreA[More...]
         end
         Scratch1[(Working directories<br/>Shared storage)]
       end
@@ -56,8 +56,8 @@ flowchart LR
         Sched2[HPC scheduler<br/>SLURM/PBS/...]
         subgraph ComputePoolB[Compute nodes]
           Compute3[Compute node]
-          ComputeMoreB[More...]
           Compute4[Compute node]
+          ComputeMoreB[More...]
         end
         Scratch2[(Working directories<br/>Shared storage)]
       end
