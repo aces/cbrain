@@ -34,10 +34,10 @@ flowchart LR
   subgraph ExternalResources[External resources]
     direction TB
     subgraph DataProviders[Data providers]
-      direction LR
+      direction TB
       DP1[Data provider<br/>S3/HTTP/FTP, etc.]
-      DP2[Data provider<br/>S3/HTTP/FTP, etc.]
       DP3[More...]
+      DP2[Data provider<br/>S3/HTTP/FTP, etc.]
     end
     subgraph HPCResources[HPC resources]
       direction TB
@@ -46,8 +46,8 @@ flowchart LR
         Sched1[HPC scheduler<br/>SLURM/PBS/...]
       subgraph ComputePoolA[Compute nodes]
         Compute1[Compute node]
-        Compute2[Compute node]
         ComputeMoreA[More...]
+        Compute2[Compute node]
       end
       Scratch1[(Working directories<br/>Shared storage)]
       end
@@ -56,13 +56,12 @@ flowchart LR
         Sched2[HPC scheduler<br/>SLURM/PBS/...]
       subgraph ComputePoolB[Compute nodes]
         Compute3[Compute node]
-        Compute4[Compute node]
         ComputeMoreB[More...]
+        Compute4[Compute node]
       end
       Scratch2[(Working directories<br/>Shared storage)]
       end
-      ResourceMore[More...]
-    end
+  end
   end
 
   Users --> BP
