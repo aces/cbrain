@@ -77,6 +77,8 @@ flowchart LR
   BO2 --> DB
   BO1 --> Sched1 --> ComputePoolA
   BO2 --> Sched2 --> ComputePoolB
+  BO1 --> Scratch1
+  BO2 --> Scratch2
   ComputePoolA --> Scratch1
   ComputePoolB --> Scratch2
 ```
