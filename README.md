@@ -42,16 +42,22 @@ flowchart LR
       subgraph ResourceA[HPC resource A]
         BO1[Bourreau]
         Sched1[HPC scheduler<br/>SLURM/PBS/...]
+      subgraph ComputePoolA[Compute nodes]
         Compute1[Compute node]
         Compute2[Compute node]
-        Scratch1[(Working directories<br/>Shared storage)]
+        ComputeMoreA[More...]
+      end
+      Scratch1[(Working directories<br/>Shared storage)]
       end
       subgraph ResourceB[HPC resource B]
         BO2[Bourreau]
         Sched2[HPC scheduler<br/>SLURM/PBS/...]
+      subgraph ComputePoolB[Compute nodes]
         Compute3[Compute node]
         Compute4[Compute node]
-        Scratch2[(Working directories<br/>Shared storage)]
+        ComputeMoreB[More...]
+      end
+      Scratch2[(Working directories<br/>Shared storage)]
       end
       ResourceMore[More...]
     end
@@ -76,7 +82,11 @@ flowchart LR
   BO1 --> Scratch1
   BO2 --> Scratch2
   Compute1 --> Scratch1
+  Compute2 --> Scratch1
+  ComputeMoreA --> Scratch1
   Compute3 --> Scratch2
+  Compute4 --> Scratch2
+  ComputeMoreB --> Scratch2
 ```
 
 At a high level, researchers interact with BrainPortal (or the NeuroHub
