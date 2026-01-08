@@ -29,18 +29,20 @@ flowchart LR
   BP[BrainPortal<br/>Rails frontend]
   DB[(Shared database & metadata)]
   DP[Data providers<br/>S3/HTTP/FTP, etc.]
-  subgraph Bourreaux[Multiple Bourreaux]
+  subgraph ResourceA[HPC resource A]
     BO1[Bourreau]
-    BO2[Bourreau]
-    BO3[More...]
-  end
-  Sched[HPC scheduler<br/>SLURM/PBS/...]
-  subgraph ComputePool[Compute nodes pool]
+    Sched1[HPC scheduler<br/>SLURM/PBS/...]
     Compute1[Compute node]
     Compute2[Compute node]
-    Compute3[More...]
+    Scratch1[(Working directories<br/>Shared storage)]
   end
-  Scratch[(Working directories<br/>Shared storage)]
+  subgraph ResourceB[HPC resource B]
+    BO2[Bourreau]
+    Sched2[HPC scheduler<br/>SLURM/PBS/...]
+    Compute3[Compute node]
+    Compute4[Compute node]
+    Scratch2[(Working directories<br/>Shared storage)]
+  end
 
   Users --> BP
   Users --> NH
@@ -53,12 +55,12 @@ flowchart LR
   BO2 --> DP
   BO1 --> DB
   BO2 --> DB
-  BO1 -->|SSH| Sched --> Compute1
-  BO2 -->|SSH| Sched --> Compute2
-  BO1 --> Scratch
-  BO2 --> Scratch
-  Compute1 --> Scratch
-  Compute2 --> Scratch
+  BO1 -->|SSH| Sched1 --> Compute1
+  BO2 -->|SSH| Sched2 --> Compute3
+  BO1 --> Scratch1
+  BO2 --> Scratch2
+  Compute1 --> Scratch1
+  Compute3 --> Scratch2
 ```
 
 At a high level, researchers interact with BrainPortal (or the NeuroHub
@@ -66,11 +68,11 @@ portal) through a web browser. The arrows in the diagram show the primary
 request flow; responses are implied by each call. BrainPortal orchestrates
 access to data providers, persists metadata in the shared database, and
 delegates execution requests to one or more Bourreau instances, typically
-over SSH/XML. Bourreaux connect to local HPC schedulers over SSH to launch
-jobs on pools of compute nodes, manage working directories on shared
-storage, and synchronize job and file state back to the database for
-BrainPortal to display. Bourreaux can also fetch and stage data from
-providers as part of backend task execution.
+over SSH/XML. Each Bourreau runs on a specific HPC resource and connects
+to the local scheduler over SSH to launch jobs on that resource's compute
+nodes. Bourreaux manage working directories on shared storage, synchronize
+job and file state back to the database for BrainPortal to display, and
+fetch or stage data from providers as part of backend task execution.
 
 ## BrainPortal
 
