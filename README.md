@@ -23,6 +23,7 @@ CBRAIN (and the alternative NeuroHub interface) consists of two Ruby on Rails Ap
 ## System architecture
 
 ```mermaid
+%%{init: {"theme": "base", "flowchart": {"defaultRenderer": "elk"}}}%%
 flowchart LR
   Users([Researchers & Web browsers])
   NH[NeuroHub Portal<br/>Alternative UI]
