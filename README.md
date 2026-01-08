@@ -28,7 +28,11 @@ flowchart LR
   NH[NeuroHub Portal<br/>Alternative UI]
   BP[BrainPortal<br/>Rails frontend]
   DB[(Shared database & metadata)]
-  DP[Data providers<br/>S3/HTTP/FTP, etc.]
+  subgraph DataProviders[Data providers]
+    DP1[Data provider<br/>S3/HTTP/FTP, etc.]
+    DP2[Data provider<br/>S3/HTTP/FTP, etc.]
+    DP3[More...]
+  end
   subgraph ResourceA[HPC resource A]
     BO1[Bourreau]
     Sched1[HPC scheduler<br/>SLURM/PBS/...]
@@ -48,11 +52,14 @@ flowchart LR
   Users --> NH
   NH --> BP
   BP --> DB
-  BP --> DP
+  BP --> DP1
+  BP --> DP2
   BP -->|SSH/XML| BO1
   BP -->|SSH/XML| BO2
-  BO1 --> DP
-  BO2 --> DP
+  BO1 --> DP1
+  BO1 --> DP2
+  BO2 --> DP1
+  BO2 --> DP2
   BO1 --> DB
   BO2 --> DB
   BO1 -->|SSH| Sched1 --> Compute1
@@ -72,7 +79,8 @@ over SSH/XML. Each Bourreau runs on a specific HPC resource and connects
 to the local scheduler over SSH to launch jobs on that resource's compute
 nodes. Bourreaux manage working directories on shared storage, synchronize
 job and file state back to the database for BrainPortal to display, and
-fetch or stage data from providers as part of backend task execution.
+fetch or stage data from multiple data providers as part of backend task
+execution.
 
 ## BrainPortal
 
