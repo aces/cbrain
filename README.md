@@ -62,8 +62,8 @@ flowchart LR
   BO2 --> DP2
   BO1 --> DB
   BO2 --> DB
-  BO1 -->|SSH| Sched1 --> Compute1
-  BO2 -->|SSH| Sched2 --> Compute3
+  BO1 --> Sched1 --> Compute1
+  BO2 --> Sched2 --> Compute3
   BO1 --> Scratch1
   BO2 --> Scratch2
   Compute1 --> Scratch1
@@ -76,7 +76,7 @@ request flow; responses are implied by each call. BrainPortal orchestrates
 access to data providers, persists metadata in the shared database, and
 delegates execution requests to one or more Bourreau instances, typically
 over SSH/XML. Each Bourreau runs on a specific HPC resource and connects
-to the local scheduler over SSH to launch jobs on that resource's compute
+to the local scheduler to launch jobs on that resource's compute
 nodes. Bourreaux manage working directories on shared storage, synchronize
 job and file state back to the database for BrainPortal to display, and
 fetch or stage data from multiple data providers as part of backend task
