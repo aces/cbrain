@@ -33,6 +33,7 @@ flowchart LR
   subgraph ExternalResources[External resources]
     direction TB
     subgraph DataProviders[Data providers]
+      direction LR
       DP1[Data provider<br/>S3/HTTP/FTP, etc.]
       DP2[Data provider<br/>S3/HTTP/FTP, etc.]
       DP3[More...]
