@@ -26,8 +26,10 @@ CBRAIN (and the alternative NeuroHub interface) consists of two Ruby on Rails Ap
 flowchart LR
   Users([Researchers & Web browsers])
   NH[NeuroHub Portal<br/>Alternative UI]
-  BP[BrainPortal<br/>Rails frontend]
-  DB[(Shared database & metadata)]
+  subgraph Frontend[Frontend resources]
+    BP[BrainPortal<br/>Rails frontend]
+    DB[(Shared database & metadata)]
+  end
   subgraph DataProviders[Data providers]
     DP1[Data provider<br/>S3/HTTP/FTP, etc.]
     DP2[Data provider<br/>S3/HTTP/FTP, etc.]
