@@ -30,28 +30,31 @@ flowchart LR
     BP[BrainPortal<br/>Rails frontend]
     DB[(Shared database & metadata)]
   end
-  subgraph DataProviders[Data providers]
-    DP1[Data provider<br/>S3/HTTP/FTP, etc.]
-    DP2[Data provider<br/>S3/HTTP/FTP, etc.]
-    DP3[More...]
-  end
-  subgraph HPCResources[HPC resources]
+  subgraph ExternalResources[External resources]
     direction TB
-    subgraph ResourceA[HPC resource A]
-      BO1[Bourreau]
-      Sched1[HPC scheduler<br/>SLURM/PBS/...]
-      Compute1[Compute node]
-      Compute2[Compute node]
-      Scratch1[(Working directories<br/>Shared storage)]
+    subgraph DataProviders[Data providers]
+      DP1[Data provider<br/>S3/HTTP/FTP, etc.]
+      DP2[Data provider<br/>S3/HTTP/FTP, etc.]
+      DP3[More...]
     end
-    subgraph ResourceB[HPC resource B]
-      BO2[Bourreau]
-      Sched2[HPC scheduler<br/>SLURM/PBS/...]
-      Compute3[Compute node]
-      Compute4[Compute node]
-      Scratch2[(Working directories<br/>Shared storage)]
+    subgraph HPCResources[HPC resources]
+      direction TB
+      subgraph ResourceA[HPC resource A]
+        BO1[Bourreau]
+        Sched1[HPC scheduler<br/>SLURM/PBS/...]
+        Compute1[Compute node]
+        Compute2[Compute node]
+        Scratch1[(Working directories<br/>Shared storage)]
+      end
+      subgraph ResourceB[HPC resource B]
+        BO2[Bourreau]
+        Sched2[HPC scheduler<br/>SLURM/PBS/...]
+        Compute3[Compute node]
+        Compute4[Compute node]
+        Scratch2[(Working directories<br/>Shared storage)]
+      end
+      ResourceMore[More...]
     end
-    ResourceMore[More...]
   end
 
   Users --> BP
