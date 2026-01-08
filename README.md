@@ -68,14 +68,11 @@ flowchart LR
   Users --> NH
   NH --> BP
   BP --> DB
-  BP --> DP1
-  BP --> DP2
+  BP --> DataProviders
   BP -->|SSH/XML| BO1
   BP -->|SSH/XML| BO2
-  BO1 --> DP1
-  BO1 --> DP2
-  BO2 --> DP1
-  BO2 --> DP2
+  BO1 --> DataProviders
+  BO2 --> DataProviders
   BO1 --> DB
   BO2 --> DB
   BO1 --> Sched1 --> Compute1
