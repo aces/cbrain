@@ -36,6 +36,7 @@ flowchart LR
     DP3[More...]
   end
   subgraph HPCResources[HPC resources]
+    direction TB
     subgraph ResourceA[HPC resource A]
       BO1[Bourreau]
       Sched1[HPC scheduler<br/>SLURM/PBS/...]
