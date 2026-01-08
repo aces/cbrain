@@ -29,9 +29,9 @@ flowchart LR
   BP[BrainPortal<br/>Rails frontend]
   DB[(Shared database & metadata)]
   DP[Data providers<br/>S3/HTTP/FTP, etc.]
-  BO[Bourreau<br/>Rails backend services]
+  BO[Bourreau(s)<br/>Rails backend services]
   Sched[HPC scheduler<br/>SLURM/PBS/...]
-  Compute[Compute nodes]
+  Compute[Compute node(s)]
   Scratch[(Working directories<br/>Shared storage)]
 
   Users --> BP
@@ -51,11 +51,11 @@ At a high level, researchers interact with BrainPortal (or the NeuroHub
 portal) through a web browser. The arrows in the diagram show the primary
 request flow; responses are implied by each call. BrainPortal orchestrates
 access to data providers, persists metadata in the shared database, and
-delegates execution requests to Bourreau instances. Bourreau connects to
-local HPC schedulers to launch jobs on compute nodes, manages working
-directories on shared storage, and synchronizes job and file state back
-to the database for BrainPortal to display. Bourreau can also fetch and
-stage data from providers as part of backend task execution.
+delegates execution requests to one or more Bourreau instances. Bourreaux
+connect to local HPC schedulers to launch jobs on pools of compute nodes,
+manage working directories on shared storage, and synchronize job and file
+state back to the database for BrainPortal to display. Bourreaux can also
+fetch and stage data from providers as part of backend task execution.
 
 ## BrainPortal
 
