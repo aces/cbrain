@@ -29,9 +29,17 @@ flowchart LR
   BP[BrainPortal<br/>Rails frontend]
   DB[(Shared database & metadata)]
   DP[Data providers<br/>S3/HTTP/FTP, etc.]
-  BO[Bourreaux<br/>Rails backend services]
+  subgraph Bourreaux[Multiple Bourreaux]
+    BO1[Bourreau]
+    BO2[Bourreau]
+    BO3[More...]
+  end
   Sched[HPC scheduler<br/>SLURM/PBS/...]
-  Compute[Compute nodes]
+  subgraph ComputePool[Compute nodes pool]
+    Compute1[Compute node]
+    Compute2[Compute node]
+    Compute3[More...]
+  end
   Scratch[(Working directories<br/>Shared storage)]
 
   Users --> BP
@@ -39,12 +47,18 @@ flowchart LR
   NH --> BP
   BP --> DB
   BP --> DP
-  BP --> BO
-  BO --> DP
-  BO --> DB
-  BO --> Sched --> Compute
-  BO --> Scratch
-  Compute --> Scratch
+  BP --> BO1
+  BP --> BO2
+  BO1 --> DP
+  BO2 --> DP
+  BO1 --> DB
+  BO2 --> DB
+  BO1 --> Sched --> Compute1
+  BO2 --> Sched --> Compute2
+  BO1 --> Scratch
+  BO2 --> Scratch
+  Compute1 --> Scratch
+  Compute2 --> Scratch
 ```
 
 At a high level, researchers interact with BrainPortal (or the NeuroHub
