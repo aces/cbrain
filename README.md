@@ -33,19 +33,22 @@ flowchart LR
     DP2[Data provider<br/>S3/HTTP/FTP, etc.]
     DP3[More...]
   end
-  subgraph ResourceA[HPC resource A]
-    BO1[Bourreau]
-    Sched1[HPC scheduler<br/>SLURM/PBS/...]
-    Compute1[Compute node]
-    Compute2[Compute node]
-    Scratch1[(Working directories<br/>Shared storage)]
-  end
-  subgraph ResourceB[HPC resource B]
-    BO2[Bourreau]
-    Sched2[HPC scheduler<br/>SLURM/PBS/...]
-    Compute3[Compute node]
-    Compute4[Compute node]
-    Scratch2[(Working directories<br/>Shared storage)]
+  subgraph HPCResources[HPC resources]
+    subgraph ResourceA[HPC resource A]
+      BO1[Bourreau]
+      Sched1[HPC scheduler<br/>SLURM/PBS/...]
+      Compute1[Compute node]
+      Compute2[Compute node]
+      Scratch1[(Working directories<br/>Shared storage)]
+    end
+    subgraph ResourceB[HPC resource B]
+      BO2[Bourreau]
+      Sched2[HPC scheduler<br/>SLURM/PBS/...]
+      Compute3[Compute node]
+      Compute4[Compute node]
+      Scratch2[(Working directories<br/>Shared storage)]
+    end
+    ResourceMore[More...]
   end
 
   Users --> BP
