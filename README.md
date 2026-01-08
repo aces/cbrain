@@ -40,6 +40,7 @@ flowchart LR
   BP --> DB
   BP --> DP
   BP --> BO
+  BO --> DP
   BO --> DB
   BO --> Sched --> Compute
   BO --> Scratch
@@ -53,7 +54,8 @@ access to data providers, persists metadata in the shared database, and
 delegates execution requests to Bourreau instances. Bourreau connects to
 local HPC schedulers to launch jobs on compute nodes, manages working
 directories on shared storage, and synchronizes job and file state back
-to the database for BrainPortal to display.
+to the database for BrainPortal to display. Bourreau can also fetch and
+stage data from providers as part of backend task execution.
 
 ## BrainPortal
 
