@@ -57,6 +57,16 @@ Rails.application.configure do
   # config.active_job.queue_name_prefix = "BrainPortal5_#{Rails.env}"
   config.action_mailer.perform_caching = false
 
+  # Use array option for sendmail
+  #  https://github.com/mikel/mail/issues/1652
+  sendmail_path = `which sendmail`.strip
+  if sendmail_path.present?
+    config.action_mailer.sendmail_settings = {
+      location: sendmail_path,
+      arguments: ["-i"]
+    }
+  end
+
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
