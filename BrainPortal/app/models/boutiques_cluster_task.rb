@@ -227,7 +227,7 @@ class BoutiquesClusterTask < ClusterTask
       status = out.strip.to_i
       descriptor.error_codes ||= []
       descriptor.error_codes.each do |err|  # note, 0 code is supported by boutiques
-        self.addlog err['description'] if err['code'] == status
+        self.addlog("Boutiques status code #{status} description: #{err['description']}") if err['code'] == status
       end
       if exit_status_means_failure?(status)
         self.addlog "Command failed, exit status #{status}"

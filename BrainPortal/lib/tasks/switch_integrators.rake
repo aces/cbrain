@@ -275,7 +275,7 @@ namespace :cbrain do
         table prettyinfos, :headers => false, :resize => false
       end
 
-      exit 0 if action == 'list' && report.size != 1
+      exit 0 if action == 'list' && argtool.blank?
       if action == 'list' # single tool report
         tool = tools.first
         tcs  = tool.tool_configs.where.not(:bourreau_id => nil).to_a

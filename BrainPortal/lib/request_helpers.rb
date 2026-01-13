@@ -113,7 +113,7 @@ module RequestHelpers
 
   end
 
-  STANDARD_PARAMS_THAT_DO_NOT_TRIGGER_BANS = %w( id utf8 commit authenticity_token controller action cbrain_api_token format )
+  STANDARD_PARAMS_THAT_DO_NOT_TRIGGER_BANS = %w( id utf8 commit authenticity_token controller action cbrain_api_token format _method )
   MINIMUM_NUMBER_OF_SPURIOUS_PARAMS = 3 # we need at least that many spurious params to trigger a ban
 
   # Called as a before_action method for actions that
