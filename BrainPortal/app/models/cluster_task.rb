@@ -1835,6 +1835,12 @@ class ClusterTask < CbrainTask
       io.write( science_script )
     end
 
+    # Copy the runtime_info.sh script
+    rt_info_script = "#{Rails.root.to_s.bash_escape}/vendor/cbrain/bin/runtime_info.sh"
+    if File.exists?(rt_info_script) && ! File.exists?(".runtime_info.sh")
+      FileUtils.copy(rt_info_script, ".runtime_info.sh")
+    end
+
     # Create the QSUB wrapper script which is going to be submitted
     # to the cluster.
     qsub_script = <<-QSUB_SCRIPT
@@ -1865,7 +1871,9 @@ date '+CBRAIN Task Starting At %s : %F %T'
 date '+CBRAIN Task Starting At %s : %F %T' 1>&2
 
 # Record runtime environment
-bash #{Rails.root.to_s.bash_escape}/vendor/cbrain/bin/runtime_info.sh > #{runtime_info_basename}
+if test -e .runtime_info.sh ; then
+  bash .runtime_info.sh > #{runtime_info_basename}
+end
 
 # With apptainer/singularity jobs, we sometimes get an error booting the container,
 # so we try up to five times.
