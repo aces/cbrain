@@ -1873,7 +1873,7 @@ date '+CBRAIN Task Starting At %s : %F %T' 1>&2
 # Record runtime environment
 if test -e .runtime_info.sh ; then
   bash .runtime_info.sh > #{runtime_info_basename}
-end
+fi
 
 # With apptainer/singularity jobs, we sometimes get an error booting the container,
 # so we try up to five times.
