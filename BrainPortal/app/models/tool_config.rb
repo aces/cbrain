@@ -505,7 +505,7 @@ class ToolConfig < ApplicationRecord
         errors[:container_index_location] = "is invalid for container engine Singularity. Should end in '://'."
       end
     elsif self.container_engine.present? && self.container_engine == "Docker"
-      if self.container_index_location.present? && self.container_index_location !~ /\A[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}\z/i
+      if self.container_index_location.present? && self.container_index_location !~ /\Adocker:\/\/\z|\A[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}\z/i
         errors[:container_index_location] = "is invalid for container engine Docker. Should be a valid hostname."
       end
     end

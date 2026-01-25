@@ -241,7 +241,7 @@ module BoutiquesSupport
     end
 
     def input_by_id(inputid)
-      inputs.detect { |x| x.id == inputid } or
+      inputs.detect { |x| x.id.to_s == inputid.to_s } or
         cb_error "No input found with ID '#{inputid}'"
     end
 
