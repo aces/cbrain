@@ -32,6 +32,11 @@ class BackgroundActivity::UpdateTaskWorkdirSize < BackgroundActivity
     ba.start_at = 5.minutes.from_now
     ba.save
   end
+  # Returns the primary class of items the task targets
+  def targets_model
+    CbrainTask
+  end
+
 
   def process(task_id)
     task = CbrainTask.where(:bourreau_id => CBRAIN::SelfRemoteResourceId).find(task_id)

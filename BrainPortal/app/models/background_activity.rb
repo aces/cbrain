@@ -180,6 +180,47 @@ class BackgroundActivity < ApplicationRecord
     ""
   end
 
+
+  ###########################################################
+  # Auxiliary meta info regarding the items being processed #
+  ###########################################################
+
+  # Returns the primary class of items the task targets
+  def targets_model
+    nil  # stands for undefined
+  end
+
+  # Returns the primary class of items the task targets
+  def produces_model
+    nil  # stands for undefined
+  end
+
+  # helper method to find item
+  def find_target(item)
+    # if class is not ActiveRecord, still can try implement find method
+    targets_model&.find(item_to_id item) rescue item
+    # todo find accessible to user
+  end
+
+  # helper method to transform message to id if needed
+  def find_produced(msg)
+    produces_model&.find(message_to_id msg) rescue msg
+  end
+
+  # extract id from item list element.
+  # In most cases it is identity, yet sometimes items are string with additional value
+  # besides id, as with file registration
+  #
+  def item_to_id(item)
+    item
+  end
+
+  # extracts id from message
+  def message_to_id(m)
+    m # just a message no ids
+  end
+
+
   protected
 
   # Abstract method that must be implemented in a subclass.
@@ -958,4 +999,3 @@ class BackgroundActivity < ApplicationRecord
   end
 
 end
-

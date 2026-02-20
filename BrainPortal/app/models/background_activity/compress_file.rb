@@ -27,6 +27,13 @@ class BackgroundActivity::CompressFile < BackgroundActivity
 
   validates_dynamic_bac_presence_of_option :userfile_custom_filter_id
 
+  # Returns the primary class of items the task targets
+  def targets_model
+    Userfile
+  end
+
+
+
   # Helper for scheduling a copy of files immediately.
   def self.setup!(user_id, userfile_ids, remote_resource_id=nil)
     ba         = self.local_new(user_id, userfile_ids, remote_resource_id)
@@ -75,4 +82,3 @@ class BackgroundActivity::CompressFile < BackgroundActivity
   end
 
 end
-

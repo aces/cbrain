@@ -28,6 +28,13 @@ class BackgroundActivity::DuplicateTask < BackgroundActivity
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  def targets_model
+    CbrainTask
+  end
+
+  def produces_model
+    CbrainTask
+  end
   def process(item)
     task         = CbrainTask.real_tasks.find(item)
     new_bid      = options[:dup_bourreau_id].presence || task.bourreau_id
