@@ -342,6 +342,10 @@ class BoutiquesPortalTask < PortalTask
         end
       end
 
+      # Re-introduce the file IDs of the task list, in case the main form
+      # needs to be re-rendered.
+      self.params[:interface_userfile_ids] |= task_array_userfiles_ids
+
       return tasklist.flatten
     end # When only one file input
 
@@ -505,8 +509,8 @@ class BoutiquesPortalTask < PortalTask
   # Ensure that the +input+ parameter is not null and matches a generic tool
   # parameter type (:file, :numeric, :string or :flag) before converting the
   # parameter's value to the corresponding Ruby type (if appropriate).
-  # For example, sanitize_param(someinput) where someinput's name is 'deviation'
-  # and someinput's type is 'numeric' would validate that
+      # For example, sanitize_param(someinput) where someinput's name is 'deviation'
+      # and someinput's type is 'numeric' would validate that
   # self.params['invoke']['deviation'] is a number and then convert it to a Ruby Float or
   # Integer.
   #
@@ -548,7 +552,7 @@ class BoutiquesPortalTask < PortalTask
 
     # Taken userfile names. An error will be raised if two input files have the
     # same name.
-    @taken_files ||= Set.new
+    @taken_files ||= {}
 
     # Fetch the parameter and convert to an Enumerable if required
     values = invoke_params[name]
@@ -608,10 +612,10 @@ class BoutiquesPortalTask < PortalTask
           next nil # remove bad value
         end
 
-        if @taken_files.include?(file.id)
+        if @taken_files[file.id].present? && @taken_files[file.id] != input.id
           params_errors.add(invokename, ": file name already in use (#{file.name})")
         else
-          @taken_files.add(file.id)
+          @taken_files[file.id] = input.id
         end
 
       end
