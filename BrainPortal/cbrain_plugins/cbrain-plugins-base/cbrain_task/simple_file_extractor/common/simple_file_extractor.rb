@@ -52,25 +52,9 @@ class CbrainTask::SimpleFileExtractor
     hsh
   end
 
-  def rename_glob(glob_pattern, replace_pattern)
-    Dir.glob(glob_pattern) do |path|
-      new_path = path.gsub(glob_to_regex(glob_pattern), replace_pattern)
-      next if new_path == path
-      # puts "#{path} -> #{new_path}"   e
-      File.rename(path, new_path)
-    end
-  end
-
-  # glob pattern to cache conversion (cached)
-  def glob_to_regex(glob_pattern)
-    Rails.cache.fetch("glob_pattern_#{glob_pattern}", expires_in: 20.minutes) do
-      glob_to_regex_no_cache(glob_pattern)
-    end
-  end
-
   # best effort mapping of a glob pattern to regex (with groups)
   # https://stackoverflow.com/questions/1307712/how-to-convert-glob-to-regular-expression
-  def glob_to_regex_no_cache(glob)
+  def glob_to_regex(glob)
     escaped = ''
     i = 0
     while i < glob.length
