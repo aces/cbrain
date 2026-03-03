@@ -20,6 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+require "fileutils"
+
 # A subclass of CbrainTask::ClusterTask to run SimpleFileExtractor.
 class CbrainTask::SimpleFileExtractor < ClusterTask
 
@@ -94,8 +96,14 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
     ids    = params[:interface_userfile_ids]
 
     # Main inputs
-    patterns  = patterns_as_array(params[:patterns].presence || {})
+
     file_cols = FileCollection.where(:id => ids).to_a
+
+    patterns, repls, folds = patterns_as_arrays(
+      params[:patterns].presence || {},
+      params[:replace_paths].presence || {},
+      params[:folders].presence || {}
+    )
 
     # Error and warning helpers
     error_examples = {}
@@ -127,12 +135,17 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
       cache_path   = userfile.cache_full_path
       parent_cpath = cache_path.parent
       patterns.each_with_index do |pat,patidx|
-        pat = pat.dup
-        pat = Pathname.new(pat).cleanpath
+
+        pat  = pat.dup
+        pat  = Pathname.new(pat).cleanpath
+        rep  = repls[patidx]&.dup
+        rep  = Pathname.new(rep).cleanpath if rep
+        fold = folds[patidx].dup
 
         # Replace "*/" at the beginning of a pattern with "userfilename/"
         # This is just an optimization for flat dir DPs, removing one
         # unneccesary level of globbing
+        pat_orig = pat.to_s.dup
         if pat.to_s.starts_with?("*/")
           pat    = pat.to_s
           pat[0] = userfile.name # replaces the *
@@ -140,8 +153,9 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
         end
 
         # Quick safety check just like in after_form on portal side
-        cb_error "Wrong pattern encountered: #{pat}" if
-          (! pat.relative?) || (! pat.to_s.index('/')) || (pat.to_s.start_with? "../")
+        cb_error "Wrong pattern encountered: #{pat}" if (! pat.relative?) || (! pat.to_s.index('/')) || (pat.to_s.start_with? "../")
+        cb_error "Wrong replacement pattern: #{rep}" if rep && ( (! rep.relative?) || (rep.to_s.start_with? "../") )
+
         path_pattern = parent_cpath + pat
         globbed_paths=Dir.glob(path_pattern.to_s)
         if globbed_paths.empty?
@@ -154,27 +168,45 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
             log_it.("Globbing through missing filesystem entries", pat, userfile, filepath)
             next
           end
+          if rep.present?
+            relpath  = (Pathname.new filepath).relative_path_from(File.realpath(Pathname.new parent_cpath)) # new path
+            target   = "extracted/" + relpath.to_s.gsub(glob_to_regex(pat_orig.to_s), rep.to_s)
+          else
+            basename = File.basename(filepath)
+            target   = "extracted/#{basename}"
+          end
           if ! filepath.start_with?(cache_path.to_s)
             log_it.("Extraction outside collection", pat, userfile, filepath)
+            next
+          end
+          if ! (Pathname.new target).cleanpath.to_s.start_with?("extracted/")
+            log_it.("Probably bad renaming pattern", pat_orig.to_s + ' --- ' + rep.to_s, userfile, filepath)
             next
           end
           if File.symlink?(filepath)
             log_it.("Trying to extract a symbolic link", pat, userfile, filepath)
             next
           end
-          if ! File.file?(filepath)
+          if fold == "0"  && ! File.file?(filepath)
             log_it.("Trying to extract a non regular file", pat, userfile, filepath)
             next
           end
-          basename = File.basename(filepath)
-          if File.file?("extracted/#{basename}")
+
+          if File.exist?(target)
             log_it.("Trying to extract a file with a name matching something already extracted", pat, userfile, filepath)
             next
           end
 
+          unless rep.to_s.blank?
+            #makesure path exists
+            dir = File.dirname(target)
+            FileUtils.mkdir_p(dir)
+          end
+
           # Make the copy
-          system "cp", "#{filepath}", "extracted/#{basename}" # no .bash_escape because no bash subshell
+          system "cp", "-rn", "#{filepath}", target # no .bash_escape because no bash subshell
           status = $? # a Process::Status object
+          basename = File.basename(filepath)
           if status.signaled?
             self.addlog("Error copying file '#{basename}': got signal #{status.termsig || 'unknown'}. This is fatal.")
             return false
@@ -231,4 +263,3 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
   # friends, described in the CbrainTask Programmer Guide.
 
 end
-

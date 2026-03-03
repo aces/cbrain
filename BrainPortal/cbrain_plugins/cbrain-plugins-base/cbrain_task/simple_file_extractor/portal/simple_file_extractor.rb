@@ -27,15 +27,21 @@ class CbrainTask::SimpleFileExtractor < PortalTask
 
   # RDOC comments here, if you want, although the method
   # is created with #:nodoc: in this template.
+
   def self.default_launch_args #:nodoc:
     {
-      :patterns => {}, # keys are numeric, values are the patterns
+      :patterns      => {}, # keys are numeric, values are the patterns
+      :replace_paths => {},
+      :folders       =>  Hash.new("0".freeze)
     }
   end
 
   def before_form #:nodoc:
+
+
     params = self.params
-    ids    = params[:interface_userfile_ids].presence || []
+
+    ids = params[:interface_userfile_ids].presence || []
 
     self.validate_input_ids(ids)
     ""
@@ -53,10 +59,20 @@ class CbrainTask::SimpleFileExtractor < PortalTask
       FileCollection.is_legal_filename?(out_name)
 
     # Clean up pattern list
-    patterns = patterns_as_array(params[:patterns].presence || {})
-    patterns = patterns.map(&:presence).compact.map(&:strip).map(&:presence).compact # ignore blanks at each end
-    patterns = patterns.map { |pat| Pathname.new(pat).cleanpath }
-    params[:patterns] = patterns_as_hash(patterns.map(&:to_s)) # write back cleaned list
+
+    patterns, repls, folds = patterns_as_arrays(
+                                 params[:patterns].presence || {},
+                                 params[:replace_paths].presence || {},
+                                 params[:folders].presence || {}
+    )
+
+    patterns = patterns.map { |pat| Pathname.new(pat).cleanpath.to_s if pat}
+    repls    = repls.map { |pat| Pathname.new(pat).cleanpath.to_s if pat }
+
+    params[:patterns]      = array_to_hash(patterns)
+    params[:replace_paths] = array_to_hash(repls)
+    params[:folders]       = array_to_hash(folds)
+
 
     # Validate them and report errors; note that here the array contains Pathname objects
     #
@@ -67,7 +83,26 @@ class CbrainTask::SimpleFileExtractor < PortalTask
     #   */subdir/*/*.txt
     #   FileColName*/*/*.txt
     patterns.each_with_index do |pat,idx|
-      if ! pat.relative?
+
+      rep  = repls[idx]
+      fld = folds[idx]
+
+      if rep.present? && pat.blank?
+        self.params_errors.add("replace_paths[#{idx}]", "replacement path cannot be provided without pattern")
+      end
+      if fld.to_s == "1" && pat.blank?
+        self.params_errors.add("folders[#{idx}]", "folder extraction flag cannot be set without pattern")
+      end
+      if rep.present? && ! Pathname.new(rep).relative?
+        self.params_errors.add("replace_path[#{idx}]", "is not a relative path")
+      end
+      if rep.to_s.start_with? "../"
+        self.params_errors.add("replace_path[#{idx}]", "cannot map outside of collections")
+      end
+
+      next if pat.blank? # shortcut for pattern validation if it is not present
+
+      if pat && ! Pathname.new(pat).relative?
         self.params_errors.add("patterns[#{idx}]", "is not a relative path")
       end
       if ! pat.to_s.index('/') # must contain at least 2 components
@@ -102,7 +137,6 @@ class CbrainTask::SimpleFileExtractor < PortalTask
     end
 
     # Make sure they are all FileCollections
-    # TODO support CbrainFileLists ?
     fc_count = FileCollection.where(:id => ids).count
     if fc_count != ids.size
       cb_error "This task requires all inputs to be FileCollections (or subclasses of FileCollection)"
@@ -116,4 +150,3 @@ class CbrainTask::SimpleFileExtractor < PortalTask
   end
 
 end
-
