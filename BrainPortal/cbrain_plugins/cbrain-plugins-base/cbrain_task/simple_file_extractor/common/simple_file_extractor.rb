@@ -61,16 +61,16 @@ class CbrainTask::SimpleFileExtractor
     end
   end
 
-
-  # naive ()but short) conversion of glob pattern to regex
-    def glob_to_regex_naive(glob)
-    Regexp.new('\A' + glob.gsub('.', '\.').gsub('*', '(.*)').gsub('?', '(.)') + '\z')
+  # glob pattern to cache conversion (cached)
+  def glob_to_regex(glob_pattern)
+    Rails.cache.fetch("glob_pattern_#{glob_pattern}", expires_in: 20.minutes) do
+      glob_to_regex_no_cache(glob_pattern)
+    end
   end
 
-  # best effort converts glob pattern to regex
+  # best effort mapping of a glob pattern to regex (with groups)
   # https://stackoverflow.com/questions/1307712/how-to-convert-glob-to-regular-expression
-  def glob_to_regex(glob)
-    # Step 1: Escape regex metacharacters except glob special chars (*, ?, [], {})
+  def glob_to_regex_no_cache(glob)
     escaped = ''
     i = 0
     while i < glob.length
