@@ -27,21 +27,19 @@ class CbrainTask::SimpleFileExtractor < PortalTask
 
   # RDOC comments here, if you want, although the method
   # is created with #:nodoc: in this template.
-
   def self.default_launch_args #:nodoc:
     {
-      :patterns      => {}, # keys are numeric, values are the patterns
+      # keys are numeric, values are the patterns
+      :patterns      => {},
       :replace_paths => {},
+      # values are flags
       :folders       =>  Hash.new("0".freeze)
     }
   end
 
   def before_form #:nodoc:
-
-
     params = self.params
-
-    ids = params[:interface_userfile_ids].presence || []
+    ids    = params[:interface_userfile_ids].presence || []
 
     self.validate_input_ids(ids)
     ""
@@ -72,7 +70,6 @@ class CbrainTask::SimpleFileExtractor < PortalTask
     params[:patterns]      = array_to_hash(patterns)
     params[:replace_paths] = array_to_hash(repls)
     params[:folders]       = array_to_hash(folds)
-
 
     # Validate them and report errors; note that here the array contains Pathname objects
     #
@@ -137,6 +134,7 @@ class CbrainTask::SimpleFileExtractor < PortalTask
     end
 
     # Make sure they are all FileCollections
+    # TODO support CbrainFileLists ?
     fc_count = FileCollection.where(:id => ids).count
     if fc_count != ids.size
       cb_error "This task requires all inputs to be FileCollections (or subclasses of FileCollection)"
