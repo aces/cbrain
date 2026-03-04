@@ -21,7 +21,7 @@
 #
 
 # This module allows a Boutiques task to be considered
-# succesful even when the command's return code is
+# successful even when the command's return code is
 # something other than zero.
 #
 # To include the module automatically at boot time
