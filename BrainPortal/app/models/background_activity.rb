@@ -362,7 +362,7 @@ class BackgroundActivity < ApplicationRecord
   # +failed_items+ and +successful_items+.  These two methods
   # actually indirectly invoke this method here.
   #
-  # By convention, a succesfully processed item is
+  # By convention, a successfully processed item is
   # generally recorded as a nil in the message array,
   # and a failed or skipped item is recorded with
   # a short message. So this method can be used to:
@@ -688,7 +688,7 @@ class BackgroundActivity < ApplicationRecord
     # everything so we don't need to adjust the list.
     # If the bac is in PartiallyCompleted state,
     # we extract just the elements to try again.
-    if self.status = "PartiallyCompleted"
+    if self.status == "PartiallyCompleted"
       new_items = self.failed_items
       if new_items.blank?
         self.internal_error!('No items list after retry')
