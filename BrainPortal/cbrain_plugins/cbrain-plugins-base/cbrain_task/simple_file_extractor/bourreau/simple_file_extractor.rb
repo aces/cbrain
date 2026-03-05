@@ -139,13 +139,16 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
         pat  = pat.dup
         pat  = Pathname.new(pat).cleanpath
         rep  = repls[patidx]&.dup
-        rep  = Pathname.new(rep).cleanpath if rep
+        rep  = Pathname.new(rep) if rep
         fold = folds[patidx].dup
 
         # Replace "*/" at the beginning of a pattern with "userfilename/"
         # This is just an optimization for flat dir DPs, removing one
         # unneccesary level of globbing
-        pat_orig = pat.to_s.dup
+        if rep.present?
+          pat_orig = pat.to_s.dup
+          regexp   =  glob_to_regex(pat_orig.to_s) # to use gsub - potentially maybe allow use globe pattern or regex on will
+        end
         if pat.to_s.starts_with?("*/")
           pat    = pat.to_s
           pat[0] = userfile.name # replaces the *
@@ -170,7 +173,7 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
           end
           if rep.present?
             relpath  = (Pathname.new filepath).relative_path_from(File.realpath(Pathname.new parent_cpath)) # new path
-            target   = "extracted/" + relpath.to_s.gsub(glob_to_regex(pat_orig.to_s), rep.to_s)
+            target   = "extracted/" + relpath.to_s.gsub(regexp, rep.to_s)
           else
             basename = File.basename(filepath)
             target   = "extracted/#{basename}"
@@ -184,11 +187,11 @@ class CbrainTask::SimpleFileExtractor < ClusterTask
             next
           end
           if File.symlink?(filepath)
-            log_it.("Trying to extract a symbolic link", pat, userfile, filepath)
+            log_it.("Trying to extract a symbolic link", pat_orig, userfile, filepath)
             next
           end
           if fold == "0"  && ! File.file?(filepath)
-            log_it.("Trying to extract a non regular file", pat, userfile, filepath)
+            log_it.("Trying to extract a non regular file", pat_orig, userfile, filepath)
             next
           end
 
