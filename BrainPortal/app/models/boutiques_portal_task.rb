@@ -568,7 +568,7 @@ class BoutiquesPortalTask < PortalTask
       when :number
         if value.blank?
           params_errors.add(invokename, ": value missing")
-        elsif (number = Integer(value) rescue Float(value) rescue nil)
+        elsif (number = (Integer(value) rescue Float(value) rescue nil))
           value = number
         else
           params_errors.add(invokename, ": not a number (#{value})")
@@ -664,7 +664,7 @@ class BoutiquesPortalTask < PortalTask
       ok = values.all? { |v| v <  input.maximum.to_f } if clusive == 'exclusive'
       ok = values.all? { |v| v <= input.maximum.to_f } if clusive == 'inclusive'
       if ! ok
-        params_errors.add(input.cb_invoke_name, "violates #{clusive} maximum value #{input.minimum}")
+        params_errors.add(input.cb_invoke_name, "violates #{clusive} maximum value #{input.maximum}")
       end
     end
 
