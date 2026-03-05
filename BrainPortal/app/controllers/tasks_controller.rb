@@ -265,6 +265,33 @@ class TasksController < ApplicationController
         redirect_to :controller  => :userfiles, :action  => :index
         return
       end
+
+      # Check that Userkey SSH Data Providers have their SSH key available.
+      # If the user's SSH key files don't exist, the task will fail with a
+      # cryptic error during setup on the cluster; warn them now instead.
+      # NOTE: we use ssh_key(:ok_no_files => true) to get an SshKey object
+      # without triggering a RuntimeError when the key files are absent;
+      # then .valid? returns false safely via its rescue clause.
+      userkey_dps_without_keys = DataProvider.where(:id => dp_ids_of_inputs)
+        .to_a
+        .select { |dp| dp.is_a?(UserkeyFlatDirSshDataProvider) }
+        .select do |dp|
+          owner = dp.user
+          owner.present? && ! owner.ssh_key(:ok_no_files => true).valid?
+        end
+      if userkey_dps_without_keys.present?
+        account_url   = url_for(:controller => :users, :action => :show, :id => current_user.id)
+        bourreau_name = @task.bourreau.name
+        flash.now[:notice] ||= ""
+        flash.now[:notice] +=
+          "\nWarning: some of your input files are on SSH Data Providers that " +
+          "require your personal CBRAIN SSH key to be installed:\n" +
+          (userkey_dps_without_keys.map { |dp| "  - Data Provider '#{dp.name}'" }).join("\n") +
+          "\n\nTo run this task on '#{bourreau_name}', go to your " +
+          "account page (#{account_url}), open the 'Your System SSH Key' panel " +
+          "and push your SSH key to '#{bourreau_name}' before launching this task. " +
+          "If no key exists yet, it will be created automatically."
+      end
     end
 
     @task.params[:interface_userfile_ids] = @files.map(&:id)
@@ -393,6 +420,37 @@ class TasksController < ApplicationController
 
     if @tool_config && @tool_config.bourreau.present? && ! @tool_config.bourreau.online?
       @task.errors.add(:tool_config_id, 'is on an Execution Server that is currently offline')
+    end
+
+    # Check that any Userkey SSH Data Providers used by input files have their
+    # SSH key files available. If not, the task will fail on cluster setup with
+    # a cryptic error like "Public file for SSH Key 'u123' does not exist".
+    if @task.bourreau
+      input_ids  = Array(@task.params[:interface_userfile_ids]).map(&:to_i)
+      dp_ids     = Userfile.where(:id => input_ids).pluck(:data_provider_id).uniq
+      # NOTE: we use ssh_key(:ok_no_files => true) to get an SshKey object
+      # without triggering a RuntimeError when the key files are absent;
+      # then .valid? returns false safely via its rescue clause.
+      userkey_dps_without_keys = DataProvider.where(:id => dp_ids)
+        .to_a
+        .select { |dp| dp.is_a?(UserkeyFlatDirSshDataProvider) }
+        .select do |dp|
+          owner = dp.user
+          owner.present? && ! owner.ssh_key(:ok_no_files => true).valid?
+        end
+      if userkey_dps_without_keys.present?
+        bourreau_name = @task.bourreau.name
+        account_url   = url_for(:controller => :users, :action => :show, :id => current_user.id)
+        userkey_dps_without_keys.each do |dp|
+          @task.errors.add(:base,
+            "Cannot run this task on '#{bourreau_name}': your personal CBRAIN SSH key " +
+            "has not been pushed to the server for Data Provider '#{dp.name}'. " +
+            "Please go to your account page (#{account_url}), open the " +
+            "'Your System SSH Key' panel, and push your SSH key to '#{bourreau_name}' " +
+            "before launching this task."
+          )
+        end
+      end
     end
 
     if @task.errors.any? || ! @task.valid?
