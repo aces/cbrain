@@ -90,6 +90,34 @@ class UserkeyFlatDirSshDataProvider < FlatDirSshDataProvider
     self.master(user, userfile).ssh_shared_options
   end
 
+  # Checks whether this Data Provider can have its files fetched by +bourreau+ on
+  # behalf of +user+. In addition to the base-class check, we verify that the DP
+  # owner has pushed their personal SSH key to the target Bourreau, because this
+  # provider type uses the owner's key for authentication.
+  #
+  # Returns nil if everything looks fine, or a human-readable error String
+  # that explains what the user should do (go to their account page and push
+  # the key to the Bourreau).
+  def userfile_syncing_issue(userfile, bourreau, user)
+    base_issue = super
+    return base_issue if base_issue.present?
+
+    owner = self.user
+    return nil unless owner.present?
+
+    unless owner.is_ssh_key_installed?(bourreau)
+      return(
+        "Data Provider '#{self.name}' uses your personal SSH key for authentication, " \
+        "but that key does not appear to have been pushed to '#{bourreau.name}' yet. " \
+        "Please go to your account page and use the 'Your System SSH Key' panel " \
+        "to push your key to '#{bourreau.name}' before launching this task. " \
+        "If no key exists yet, it will be created automatically."
+      )
+    end
+
+    nil
+  end
+
   #################################################################
   # Model Callbacks
   #################################################################

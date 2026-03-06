@@ -222,6 +222,33 @@ class TasksController < ApplicationController
     tool_config_id = @tool_config.id
     bourreau_id    = @tool_config.bourreau_id
 
+    # Early general sync-issue check: done BEFORE task class instantiation so the
+    # warning is always shown even when the task class fails to load. For each input
+    # file's Data Provider, we call the general dp.userfile_syncing_issue() hook,
+    # which subclasses can override to return a human-readable problem description
+    # (e.g. UserkeyFlatDirSshDataProvider checks that the SSH key was pushed).
+    if bourreau_id
+      bourreau        = Bourreau.find(bourreau_id)
+      early_file_ids  = params[:file_ids] || []
+      early_files     = Userfile.where(:id => early_file_ids).to_a
+      early_dp_map    = DataProvider
+        .where(:id => early_files.map(&:data_provider_id).uniq)
+        .index_by(&:id)
+      dp_issues = []
+      early_files.each do |uf|
+        dp  = early_dp_map[uf.data_provider_id]
+        next unless dp
+        error_message = dp.userfile_syncing_issue(uf, bourreau, current_user)
+        dp_issues << error_message if error_message.present?
+      end
+      dp_issues.uniq!
+      if dp_issues.present?
+        flash[:notice] = dp_issues.join("\n\n")
+        redirect_to :controller => :userfiles, :action => :index
+        return
+      end
+    end
+
     # Create the new task object
     @task       = tool.cbrain_task_class.new
     @toolname   = tool.name
@@ -266,33 +293,22 @@ class TasksController < ApplicationController
         return
       end
 
-      # Check that Userkey SSH Data Providers have their SSH key available.
-      # If the user's SSH key files don't exist, the task will fail with a
-      # cryptic error during setup on the cluster; warn them now instead.
-      # NOTE: we use ssh_key(:ok_no_files => true) to get an SshKey object
-      # without triggering a RuntimeError when the key files are absent;
-      # then .valid? returns false safely via its rescue clause.
-      userkey_dps_without_keys = DataProvider.where(:id => dp_ids_of_inputs)
-        .to_a
-        .select { |dp| dp.is_a?(UserkeyFlatDirSshDataProvider) }
-        .select do |dp|
-          owner = dp.user
-          owner.present? && ! owner.ssh_key(:ok_no_files => true).valid?
-        end
-      if userkey_dps_without_keys.present?
-        account_url   = url_for(:controller => :users, :action => :show, :id => current_user.id)
-        bourreau_name = @task.bourreau.name
-        flash.now[:notice] ||= ""
-        flash.now[:notice] +=
-          "\nWarning: some of your input files are on SSH Data Providers that " +
-          "require your personal CBRAIN SSH key to be installed:\n" +
-          (userkey_dps_without_keys.map { |dp| "  - Data Provider '#{dp.name}'" }).join("\n") +
-          "\n\nTo run this task on '#{bourreau_name}', go to your " +
-          "account page (#{account_url}), open the 'Your System SSH Key' panel " +
-          "and push your SSH key to '#{bourreau_name}' before launching this task. " +
-          "If no key exists yet, it will be created automatically."
+      # General sync-issue check using the extensible DP hook. This is only reached
+      # if the early check above was skipped (rare, e.g. when bourreau_id resolved
+      # after files were loaded). Each DP subclass can override userfile_syncing_issue
+      # to describe its own requirements.
+      dp_ids_indexed = DataProvider.where(:id => dp_ids_of_inputs).index_by(&:id)
+      secondary_issues = @files.filter_map do |uf|
+        dp = dp_ids_indexed[uf.data_provider_id]
+        dp&.userfile_syncing_issue(uf, @task.bourreau, current_user)
+      end.uniq
+      if secondary_issues.present?
+        flash[:notice] = secondary_issues.join("\n\n")
+        redirect_to :controller => :userfiles, :action => :index
+        return
       end
     end
+
 
     @task.params[:interface_userfile_ids] = @files.map(&:id)
 
@@ -422,34 +438,22 @@ class TasksController < ApplicationController
       @task.errors.add(:tool_config_id, 'is on an Execution Server that is currently offline')
     end
 
-    # Check that any Userkey SSH Data Providers used by input files have their
-    # SSH key files available. If not, the task will fail on cluster setup with
-    # a cryptic error like "Public file for SSH Key 'u123' does not exist".
+    # General sync-issue check using the extensible DP hook. Each DP subclass
+    # can override `userfile_syncing_issue` to describe what is needed.
+    # For UserkeyFlatDirSshDataProvider this checks that the SSH key was pushed.
     if @task.bourreau
-      input_ids  = Array(@task.params[:interface_userfile_ids]).map(&:to_i)
-      dp_ids     = Userfile.where(:id => input_ids).pluck(:data_provider_id).uniq
-      # NOTE: we use ssh_key(:ok_no_files => true) to get an SshKey object
-      # without triggering a RuntimeError when the key files are absent;
-      # then .valid? returns false safely via its rescue clause.
-      userkey_dps_without_keys = DataProvider.where(:id => dp_ids)
-        .to_a
-        .select { |dp| dp.is_a?(UserkeyFlatDirSshDataProvider) }
-        .select do |dp|
-          owner = dp.user
-          owner.present? && ! owner.ssh_key(:ok_no_files => true).valid?
-        end
-      if userkey_dps_without_keys.present?
-        bourreau_name = @task.bourreau.name
-        account_url   = url_for(:controller => :users, :action => :show, :id => current_user.id)
-        userkey_dps_without_keys.each do |dp|
-          @task.errors.add(:base,
-            "Cannot run this task on '#{bourreau_name}': your personal CBRAIN SSH key " +
-            "has not been pushed to the server for Data Provider '#{dp.name}'. " +
-            "Please go to your account page (#{account_url}), open the " +
-            "'Your System SSH Key' panel, and push your SSH key to '#{bourreau_name}' " +
-            "before launching this task."
-          )
-        end
+      input_ids   = Array(@task.params[:interface_userfile_ids]).map(&:to_i)
+      input_files = Userfile.where(:id => input_ids).to_a
+      dp_map      = DataProvider
+        .where(:id => input_files.map(&:data_provider_id).uniq)
+        .index_by(&:id)
+      error_messages = input_files.filter_map do |uf|
+        dp  = dp_map[uf.data_provider_id]
+        dp&.userfile_syncing_issue(uf, @task.bourreau, current_user)
+      end.uniq
+
+      error_messages.each do |error_message|
+        @task.errors.add(:base, error_message)
       end
     end
 

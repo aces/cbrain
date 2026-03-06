@@ -1402,6 +1402,13 @@ class DataProvider < ApplicationRecord
       self.dp_allows_copy?(other_dp)
   end
 
+  # General-purpose hook that checks whether a +userfile+ on this DataProvider
+  # can be fetched by +bourreau+ on behalf of +user+, and returns a human-readable
+  # error message string if there is a problem, or nil if everything is OK.
+  def userfile_syncing_issue(userfile, bourreau, user)
+    nil # base class: no known issue
+  end
+
 
 
   #################################################################

@@ -391,6 +391,15 @@ class User < ApplicationRecord
     SshKey.find(name) # will raise exception if files are not there
   end
 
+  # Returns true if the user's SSH key has been installed on +bourreau+.
+  # CBRAIN records this event in the MetaData store when the Bourreau acknowledges
+  # a successful key push (see RemoteResource#process_command_push_ssh_keys).
+  # This is an OO wrapper around the raw meta-data key so callers don't need to
+  # know the internal storage format.
+  def is_ssh_key_installed?(bourreau)
+    self.meta["ssh_key_install_date_#{bourreau.id}"].present?
+  end
+
   # After destroy callback: destroy the user's SSH key on the filesystem, if any.
   def destroy_user_ssh_key
     self.ssh_key.destroy
