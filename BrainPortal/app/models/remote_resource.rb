@@ -969,7 +969,7 @@ class RemoteResource < ApplicationRecord
     # Log install date
     user.addlog("User SSH key installed on #{myself.name}")
     myself.addlog("User SSH key for #{user.login} installed")
-    user.meta["ssh_key_install_date_#{myself.id}"] = Time.now
+    user.record_ssh_key_install_date(myself.id)
 
     true
   end
