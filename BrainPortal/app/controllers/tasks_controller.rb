@@ -255,13 +255,24 @@ class TasksController < ApplicationController
         ! dp.rr_allowed_syncing?(@task.bourreau)
       end
       if bad_dps.present?
-        flash[:error] =
+        bad_dp_report = # this report should be made into a view code partial or something, this code is ugly
           "Some selected files are stored on Data Providers that are\n" +
-          "not accessible from execution server #{@task.bourreau.name}:\n\n" +
-          (bad_dps.map do |dp|
-            num_files =  @files.count { |f| f.data_provider_id == dp.id }
+          "not accessible from execution server #{@task.bourreau.name}:\n\n"
+        bad_dps.each do |dp|
+          num_files =  @files.count { |f| f.data_provider_id == dp.id }
+          bad_dp_report +=
             "Data Provider '#{dp.name}' : #{view_pluralize(num_files, "file")}\n"
-          end).join
+        end
+        bad_dps.select { |dp|
+          dp.is_a?(UserkeyFlatDirSshDataProvider) &&
+          dp.user.get_ssh_key_install_date(@task.bourreau_id).blank?
+        }.each { |dp|
+          bad_dp_report +=
+          "\nNote: DataProvider '#{dp.name}' is a private SSH belonging to user '#{dp.user.login}',\n" +
+          "but that user has not yet pushed the key to the Execution Server.\n" +
+          "This is performed in the user's 'MyAccount' page.\n"
+        }
+        flash[:error] = bad_dp_report
         redirect_to :controller  => :userfiles, :action  => :index
         return
       end
