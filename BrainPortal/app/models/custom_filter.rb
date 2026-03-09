@@ -142,7 +142,7 @@ class CustomFilter < ApplicationRecord
   end
 
   # Returns the table name associated with the filters.
-  # This is generally like the contoller name, but it COULD be
+  # This is generally like the controller name, but it COULD be
   # different. E.g. tasks vs cbrain_tasks
   def target_filtered_table
     filtered_class_controller

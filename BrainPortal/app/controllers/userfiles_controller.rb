@@ -1117,7 +1117,7 @@ class UserfilesController < ApplicationController
   def delete_files #:nodoc:
     filelist    = params[:file_ids] || []
 
-    # Select all accessible files with write acces by the user.
+    # Select all accessible files with write access by the user.
     to_delete_ids = Userfile.accessible_for_user(current_user, :access_requested => :write).where(:id => filelist).pluck(:id)
     not_accessible_count = filelist.size - to_delete_ids.size
 
@@ -1637,7 +1637,7 @@ class UserfilesController < ApplicationController
   # TODO: FIXME . Not sure how to fix.
   #
   # Note on the name of the method: a previous version tried to
-  # create a symlink structure, but that transferred hte values of
+  # create a symlink structure, but that transferred the values of
   # all symbolic links internal to the userfiles on LINUX.
   # See also: the -H option of tar on MacOS X which would do the trick,
   # but doesn't exist on LINUX.

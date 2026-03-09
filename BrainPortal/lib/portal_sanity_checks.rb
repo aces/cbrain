@@ -259,7 +259,7 @@ class PortalSanityChecks < CbrainChecker #:nodoc:
 
 
 
-  # Makes sure that the portal is registered as a remote ressource or adds it
+  # Makes sure that the portal is registered as a remote resource or adds it
   def self.ensure_that_rails_app_is_a_remote_resource #:nodoc:
 
     #-----------------------------------------------------------------------------

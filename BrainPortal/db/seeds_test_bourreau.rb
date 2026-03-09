@@ -89,7 +89,7 @@ myself = RemoteResource.current_resource
 raise "You can only run this seeding process as a BrainPortal CBRAIN application!" unless
   myself.is_a?(BrainPortal)
 myrailsenv = Rails.env || "production"
-raise "You can only run this seeding process under a 'test' Rails environement!" unless
+raise "You can only run this seeding process under a 'test' Rails environment!" unless
   myrailsenv =~ /test/
 
 unix_user  = Etc.getpwuid(Process.uid).name rescue ENV['USER']

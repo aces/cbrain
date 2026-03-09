@@ -312,7 +312,7 @@ class BackgroundActivity < ApplicationRecord
   # This method should not produce too much text,
   # even when there are thousands of items in the
   # current object; the point is only to let the
-  # user know what happened when error occured.
+  # user know what happened when error occurred.
   #
   # The default behavior is to ignore all blank messages
   # or messages that are numbers (for background activities

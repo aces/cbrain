@@ -103,7 +103,7 @@ class BoutiquesBootIntegrator
     puts "B> Boutiques JSON: #{basename} Class: #{klass_name} Tool: #{tool_name} ToolConfigs: #{tool_configs.count}"
   rescue => ex
     Rails.logger.error(
-      "An error occured while trying to integrate descriptor '#{path}'"
+      "An error occurred while trying to integrate descriptor '#{path}'"
     )
     raise ex
   end

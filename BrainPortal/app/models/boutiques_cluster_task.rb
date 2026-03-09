@@ -35,7 +35,7 @@ class BoutiquesClusterTask < ClusterTask
   end
 
   # This method returns the same descriptor as
-  # boutiques_descriptor(), by default, but can be overriden
+  # boutiques_descriptor(), by default, but can be overridden
   # by subclasses to change the behavior of what happens
   # in the setup() method.
   def descriptor_for_setup
@@ -43,7 +43,7 @@ class BoutiquesClusterTask < ClusterTask
   end
 
   # This method returns the same descriptor as
-  # boutiques_descriptor(), by default, but can be overriden
+  # boutiques_descriptor(), by default, but can be overridden
   # by subclasses to change the behavior of what happens
   # in the cluster_commands() method.
   def descriptor_for_cluster_commands
@@ -53,7 +53,7 @@ class BoutiquesClusterTask < ClusterTask
   end
 
   # This method returns the same descriptor as
-  # boutiques_descriptor(), by default, but can be overriden
+  # boutiques_descriptor(), by default, but can be overridden
   # by subclasses to change the behavior of what happens
   # in the save_results() method.
   def descriptor_for_save_results

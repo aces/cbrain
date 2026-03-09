@@ -230,7 +230,7 @@ class NocController < ApplicationController
                        .sum(:value)
 
     # This is used to adjust the color ranges
-    @num_hours     = (Time.now - since_when) / 24.hours; @num_hours = 1.0 if @num_hours < 1
+    @num_hours     = (Time.now - since_when) / 1.hour; @num_hours = 1.0 if @num_hours < 1
 
     # This is used to debug layout issues by generating random numbers
     if fake

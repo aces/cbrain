@@ -44,7 +44,7 @@ describe ToolConfig do
       expect(no_b_tool_config.can_be_accessed_by?(user)).to be_falsey
     end
 
-    it "should not allow user to acces a tool config if the tool is not set" do
+    it "should not allow user to access a tool config if the tool is not set" do
       expect(no_t_tool_config.can_be_accessed_by?(user)).to be_falsey
     end
 

@@ -84,7 +84,7 @@ class RemoteCommand < RestrictedHash
 
     # -------- ERROR TRACES --------
 
-    :exception_class,      # filled by receiver if an exception occured
+    :exception_class,      # filled by receiver if an exception occurred
     :exception_message,    # filled by receiver
     :backtrace,            # array of lines
 

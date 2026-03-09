@@ -349,7 +349,7 @@ module TestHelpers
     cmdLine
   end
 
-  # Helper for cleaning spaces after key subsitution, to make it easier to write the correct test result
+  # Helper for cleaning spaces after key substitution, to make it easier to write the correct test result
   # Ignores the export commands and assumes the final command is the log writer
   NormedTaskCmd = lambda do |task|
     task.cluster_commands[-2].split.join(' ')

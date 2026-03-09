@@ -601,7 +601,7 @@ describe Userfile do
       expect(userfile.is_locally_synced?).to be_falsey
     end
 
-    it "should return false if the data provider isn't syncablw" do
+    it "should return false if the data provider isn't syncable" do
       allow(data_provider).to receive(:not_syncable?).and_return(true)
       expect(userfile.is_locally_synced?).to be_falsey
     end
@@ -642,7 +642,7 @@ describe Userfile do
     end
   end
 
-  context "data provider easy acces methods" do
+  context "data provider easy access methods" do
 
     let(:data_provider) {create(:ssh_data_provider, :online => true, :read_only => false)}
 

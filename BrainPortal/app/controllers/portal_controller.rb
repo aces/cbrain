@@ -446,7 +446,7 @@ class PortalController < ApplicationController
       return
     end
 
-    # FIXME the way we exatrct the version number from the file name is brittle...
+    # FIXME the way we extract the version number from the file name is brittle...
     @spec_version = @specfile.sub("cbrain-","").sub(/-swagger.*/,"")
 
     respond_to do |format|

@@ -220,7 +220,7 @@ describe "Bourreau Boutiques Tests" do
       context 'cluster_command substitution' do
 
         # Test basic command substitution correctness
-        it "should correctly subsitute cluster_commands with default settings" do
+        it "should correctly substitute cluster_commands with default settings" do
           task = @generateTask.( { a: 'value' } )
           expect( task.cluster_commands[0].strip ).to eq( '/minimalApp -a value' )
         end
@@ -239,7 +239,7 @@ describe "Bourreau Boutiques Tests" do
         end
 
         # Test output flag substitution
-        it "should correctly subsitute cluster_commands with output keys" do
+        it "should correctly substitute cluster_commands with output keys" do
           @descriptor['command-line'] += ' [OUT-KEY]'
           @descriptor['output-files'][0].merge!( { 'value-key' => '[OUT-KEY]', 'command-line-flag' => '-o' } )
           task = @generateTask.( { a: 'value' } )
@@ -247,7 +247,7 @@ describe "Bourreau Boutiques Tests" do
         end
 
         # Test output flag separator substitution
-        it "should correctly subsitute cluster_commands with output keys and a separator" do
+        it "should correctly substitute cluster_commands with output keys and a separator" do
           @descriptor['command-line'] += ' [OUT-KEY]'
           @descriptor['output-files'][0].merge!( {
             'value-key'                   => '[OUT-KEY]',
@@ -258,7 +258,7 @@ describe "Bourreau Boutiques Tests" do
         end
 
         # Test output flag separator substitution with prior path-template substitution
-        it "should correctly subsitute cluster_commands with output flag separators and path-template substitutions" do
+        it "should correctly substitute cluster_commands with output flag separators and path-template substitutions" do
           @descriptor['command-line'] += ' [B] [OUT-KEY]'
           @descriptor['inputs'] << GenerateJsonInputDefault.('b','Number','Numerical arg')
           @descriptor['output-files'][0].merge!( {
