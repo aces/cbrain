@@ -37,7 +37,11 @@ module SshDataProviderBase
 
     # Stupidly, some SSHDs insist on having 'keyboard-interactive' in the :auth_methods
     # even if we're not planning ot use it. Probably because of 2FA.
-    Net::SFTP.start(remote_host, remote_user, :port => (remote_port.presence || 22), :auth_methods => [ 'publickey', 'keyboard-interactive' ] ) do |sftp|
+    Net::SFTP.start(remote_host, remote_user,
+        :port         => (remote_port.presence || 22),
+        :auth_methods => [ 'publickey', 'keyboard-interactive' ],
+        :append_all_supported_algorithms => true,
+    ) do |sftp|
       yield sftp
     end
   end
