@@ -57,12 +57,14 @@ Rails.application.configure do
   # config.active_job.queue_name_prefix = "BrainPortal5_#{Rails.env}"
   config.action_mailer.perform_caching = false
 
-  # Use array option for sendmail to maintain compatibility with mail gem 2.8+
-  config.action_mailer.delivery_method = :sendmail
-  config.action_mailer.sendmail_settings = {
-    location: '/usr/sbin/sendmail',
-    arguments: ['-i', '-t']
-  }
+  # Use array option for sendmail for compatibility with mail gem 2.8+
+  # Fixes #1588. Uncomment and adjust the location if sendmail is used.
+  # The path can be overridden via CBRAIN_SENDMAIL_PATH for custom installs.
+  # config.action_mailer.delivery_method = :sendmail
+  # config.action_mailer.sendmail_settings = {
+  #   location: ENV.fetch('CBRAIN_SENDMAIL_PATH', '/usr/sbin/sendmail'),
+  #   arguments: ['-i']
+  # }
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
