@@ -229,9 +229,6 @@ class NocController < ApplicationController
                        .group(:data_provider_id)
                        .sum(:value)
 
-    # This is used to adjust the color ranges
-    @num_hours     = (Time.now - since_when) / 1.hour; @num_hours = 1.0 if @num_hours < 1
-
     # This is used to debug layout issues by generating random numbers
     if fake
       @active_users  = rand(fake)

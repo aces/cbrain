@@ -654,9 +654,9 @@ class ToolConfig < ApplicationRecord
     manual     = self.boutiques_descriptor_path.presence
     registered = self.class.registered_boutiques_descriptor(self.tool.name, self.version_name)
     return [ :overridden, manual ]               if registered && manual
-    return [ :manual,    manual ]               if manual
-    return [ :automatic, registered.from_file ] if registered
-    return [ :none,      "" ]
+    return [ :manual,     manual ]               if manual
+    return [ :automatic,  registered.from_file ] if registered
+    return [ :none,       "" ]
   end
 
   def self.create_from_descriptor(bourreau, tool, descriptor, record_path=false)
