@@ -100,7 +100,7 @@ class AccessProfilesController < ApplicationController
       end
     end
 
-    # New users added to the the AP? Adjust their groups
+    # New users added to the AP? Adjust their groups
     added_uids   = new_user_ids - old_user_ids
     User.find(added_uids).each do |user|
       orig_user_gids = user.group_ids
@@ -109,7 +109,7 @@ class AccessProfilesController < ApplicationController
                                       Group, orig_user_gids, user.group_ids, current_user)
     end
 
-    # Some users lost access to the the AP? Adjust their groups
+    # Some users lost access to the AP? Adjust their groups
     removed_uids = old_user_ids - new_user_ids
     User.find(removed_uids).each do |user|
       orig_user_gids = user.group_ids

@@ -461,7 +461,7 @@ class BourreauxController < ApplicationController
 
   public
 
-  # Define disk usage of remote ressource,
+  # Define disk usage of remote resource,
   # with date filtering if wanted.
   def rr_disk_usage
     date_filtering = params[:date_range] || {}
@@ -679,14 +679,14 @@ class BourreauxController < ApplicationController
 
   end
 
-  # Define remote ressource and users accessible/available by
+  # Define remote resource and users accessible/available by
   # the current user.
   def rr_access
     @remote_r = RemoteResource.find_all_accessible_by_user(current_user).all.sort { |a,b| a.name <=> b.name }
     @users    = current_user.available_users.all.sort { |a,b| a.login <=> b.login }
   end
 
-  # Define which remote resource can acces which data provider.
+  # Define which remote resource can access which data provider.
   def rr_access_dp
     @rrs = RemoteResource.find_all_accessible_by_user(current_user).all.sort do |a,b|
            (b.online?.to_s <=> a.online?.to_s).nonzero? ||

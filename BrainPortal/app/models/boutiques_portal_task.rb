@@ -33,7 +33,7 @@ class BoutiquesPortalTask < PortalTask
   end
 
   # This method returns the same descriptor as
-  # boutiques_descriptor(), by default, but can be overriden
+  # boutiques_descriptor(), by default, but can be overridden
   # by subclasses to change the behavior of what happens
   # in the before_form() method.
   def descriptor_for_before_form
@@ -41,7 +41,7 @@ class BoutiquesPortalTask < PortalTask
   end
 
   # This method returns the same descriptor as
-  # boutiques_descriptor(), by default, but can be overriden
+  # boutiques_descriptor(), by default, but can be overridden
   # by subclasses to change the behavior of what happens
   # in the after_form() method.
   def descriptor_for_after_form
@@ -49,7 +49,7 @@ class BoutiquesPortalTask < PortalTask
   end
 
   # This method returns the same descriptor as
-  # boutiques_descriptor(), by default, but can be overriden
+  # boutiques_descriptor(), by default, but can be overridden
   # by subclasses to change the behavior of what happens
   # in the final_task_list() method.
   def descriptor_for_final_task_list
@@ -57,7 +57,7 @@ class BoutiquesPortalTask < PortalTask
   end
 
   # This method returns the same descriptor as
-  # boutiques_descriptor(), by default, but can be overriden
+  # boutiques_descriptor(), by default, but can be overridden
   # by subclasses to change the behavior of what happens
   # when generating the task's parameter page.
   def descriptor_for_form
@@ -65,7 +65,7 @@ class BoutiquesPortalTask < PortalTask
   end
 
   # This method returns the same descriptor as
-  # boutiques_descriptor(), by default, but can be overriden
+  # boutiques_descriptor(), by default, but can be overridden
   # by subclasses to change the behavior of what happens
   # when generating the task's "show" page.
   def descriptor_for_show_params

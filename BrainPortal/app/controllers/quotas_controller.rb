@@ -96,7 +96,7 @@ class QuotasController < ApplicationController
     # Try to find an existing quota record; nils will mean we fetch nothing
     @quota = model.where( atts ).first
 
-    # If we haven't found an existing quota entry, we intialize a new one.
+    # If we haven't found an existing quota entry, we initialize a new one.
     # It can contain nils for the attributes.
     @quota ||= model.new( atts )
 
@@ -218,7 +218,7 @@ class QuotasController < ApplicationController
         .group(:user_id,:remote_resource_id).sum(:value)
     end
 
-    # These two lamdas transform the hashes above into new hashes
+    # These two lambdas transform the hashes above into new hashes
     # where the top level is a UID (user or bourreau) and the key is
     # a hash with a subset of the entries for each. It's darn complicated.
     # For help, try this in Ruby shell:
@@ -407,7 +407,7 @@ class QuotasController < ApplicationController
 
   # Tries to turn strings like '2h' into 7200 (for 7200 seconds, etc).
   # Supported suffixes are s, h, d, m, w, and y (case insensitive).
-  # Minutes not supported because of the sad existance of months.
+  # Minutes not supported because of the sad existence of months.
   def guess_time_units(timestring)
     match = timestring.match(/\A\s*(\d{1,4}(\.\d{1,2})?)\s*([shdwmy]?)\s*\z/i)
     return "" unless match # parsing error

@@ -21,7 +21,7 @@
 #
 
 #Subclass of CustomFilter representing custom filters for the CbrainTask resource
-#(which are controlled by the tasks contoller).
+#(which are controlled by the tasks controller).
 #
 #=Parameters filtered:
 #[*type*] The CbrainTask subclass to filter.

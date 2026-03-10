@@ -35,7 +35,7 @@ describe Tool do
    expect(tool.description).to eq("keep this")
   end
 
-  it "should invalidated incorrect license" do
+  it "should invalidate an incorrect license" do
     tool.license_agreements = ["bad"]
     expect(tool.__send__(:valid_license_agreements?)).to eq(false)
     expect(tool.valid?).to eq(false)
@@ -66,7 +66,7 @@ describe Tool do
     expect(tool.license_agreements).to eq(["keep_that", "keep_this"])
   end
 
-  it "should be able able remove license from a tool" do
+  it "should be able to remove a license from a tool" do
     tool.license_agreements = "keep_this"
     tool.license_agreements = ""
     expect(tool.license_agreements).to eq([])

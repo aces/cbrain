@@ -138,7 +138,7 @@ class ScirGcloudBatch < Scir
       get_config_value_from_extra_qsubs('GCLOUD_IMAGE_BASENAME')
     end
 
-    # This method should not be overriden
+    # This method should not be overridden
     def full_compute_node_image_name
       "projects/#{gcloud_project}/global/images/#{gcloud_compute_image_basename}"
     end

@@ -475,7 +475,7 @@ class Userfile < ApplicationRecord
   # as 'newer' on the cache side of the current
   # Rails application compared to whatever is in
   # the official data provider.
-  # Results in the the local sync status object
+  # Results in the local sync status object
   # to be marked as 'CacheNewer'.
   def cache_is_newer
     SyncStatus.ready_to_modify_cache(self) do

@@ -112,7 +112,7 @@ min_inputs  = inputs.select { |i| i.type == 'Number' && i.minimum.present? }
 max_inputs  = inputs.select { |i| i.type == 'Number' && i.maximum.present? }
 int_inputs  = inputs.select { |i| i.type == 'Number' && i.integer.present? }
 
-# Maps and lists that are subsituted in the javascript code below
+# Maps and lists that are substituted in the javascript code below
 names_map           = inputs.map { |i| [i.id, i.name] }.to_h
 min_inputs_map      = min_inputs.map { |i| [i.id, i.minimum] }.to_h
 max_inputs_map      = max_inputs.map { |i| [i.id, i.maximum] }.to_h

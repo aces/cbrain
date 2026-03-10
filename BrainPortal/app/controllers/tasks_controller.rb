@@ -367,7 +367,7 @@ class TasksController < ApplicationController
     new_task_params = task_params() # filters and censors
 
     @task           = create_initial_task_from_form(new_task_params, params[:tool_id])
-    @tool_config    = @task.tool_config # for acces in view
+    @tool_config    = @task.tool_config # for access in view
 
     # Give a task the ability to do a refresh of its form
     commit_name     = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ])

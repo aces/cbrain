@@ -762,7 +762,7 @@ RSpec.describe UserfilesController, :type => :controller do
       it "should display error message if userfiles is not accessible by user" do
         allow(controller).to    receive(:current_user).and_return(user)
         delete :delete_files, params: {:file_ids => [user_userfile.id, admin_userfile.id]}
-        expect(flash[:error]).to match("not have acces")
+        expect(flash[:error]).to match("not have access")
       end
 
       it "should destroy the userfiles" do
