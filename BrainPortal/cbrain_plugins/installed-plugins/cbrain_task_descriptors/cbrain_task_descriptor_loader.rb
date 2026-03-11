@@ -50,9 +50,16 @@
     #puts "================="
   end
 
+  # This is a check performed while we transition from the old integrator to the new one
+  new_integrated_tool = Tool.where(:cbrain_task_class_name => "BoutiquesTask::#{generator.name}").first
+  if new_integrated_tool
+    puts "C> Skipping integration of CbrainTask::#{generator.name} : new integration already present."
+    break
+  end
+
   begin
     generator.integrate if generator
-    puts "C> Integrated CbrainTask::#{generator.name} from descriptor '#{descriptor_basename}'"
+    puts "C> [DEPRECATED] Integrated CbrainTask::#{generator.name} from descriptor '#{descriptor_basename}'"
   rescue StandardError => e
     #puts "================="
     puts "C> Failed to integrate CbrainTask from descriptor '#{descriptor_basename}'."

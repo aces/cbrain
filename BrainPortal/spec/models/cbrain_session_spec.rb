@@ -105,7 +105,7 @@ describe CbrainSession do
 
   describe "[]" do
 
-    it "should acces to session attributes" do
+    it "should access to session attributes" do
       hash = {"filter_hash"=>{}}
       cb_session[:userfiles] = hash
       expect(cb_session[:userfiles]).to eq(hash)

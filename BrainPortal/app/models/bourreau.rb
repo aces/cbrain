@@ -207,8 +207,8 @@ class Bourreau < RemoteResource
       return true
     end
     return false
-  ensure
-    Rails.logger.debug self.operation_messages if self.operation_messages.present?
+  #ensure
+  #  Rails.logger.debug self.operation_messages if self.operation_messages.present?
   end
 
   # Stop a Bourreau remotely. The requirements for this to work are

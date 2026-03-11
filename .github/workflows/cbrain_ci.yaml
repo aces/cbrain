@@ -20,6 +20,9 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       RAILS_ENV: test
+    permissions:
+      contents: read
+      pull-requests: read
 
     ###########################################################
     services:

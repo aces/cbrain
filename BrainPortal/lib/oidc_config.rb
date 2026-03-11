@@ -125,7 +125,7 @@ class OidcConfig
   # recover during the protocol negotiation the proper OidcConfig
   # we're using.
   def create_state(session_id_string)
-    state = Digest::MD5.hexdigest( session_id_string ) + "_" + self.name
+    state = Digest::SHA256.hexdigest( session_id_string ) + "_" + self.name
     return state # just to be clear
   end
 
@@ -135,8 +135,8 @@ class OidcConfig
     # Verify state structure is 33 hex chars + "_" + oidc_name
     # and extract name
     oidc_name = ""
-    if state.length >= 34 && state[32] == '_'
-      oidc_name = state[33..-1]
+    if state.length >= 66 && state[64] == '_'
+      oidc_name = state[65..-1]
     end
 
     self.find_by_name(oidc_name)

@@ -151,7 +151,9 @@ namespace :cbrain do
             setup.('cbrain_task/*', 'task', tasks_plugins_dir,
               condition: lambda { |f| File.directory?(f) },
               after: lambda do |symlink_location|
-                File.symlink "cbrain_task_class_loader.rb", "#{symlink_location}.rb"
+                if ! File.symlink?("#{symlink_location}.rb")
+                  File.symlink "cbrain_task_class_loader.rb", "#{symlink_location}.rb"
+                end
               end
             )
 
@@ -160,7 +162,10 @@ namespace :cbrain do
             setup.('cbrain_task_descriptors/*', 'descriptor', descriptors_plugins_dir,
               condition: lambda { |f| File.extname(f) == '.json' },
               after: lambda do |symlink_location|
-                File.symlink "cbrain_task_descriptor_loader.rb", "#{symlink_location.sub(/.json$/, '.rb')}"
+                dest=symlink_location.to_s.sub(/.json$/, '.rb')
+                if ! File.symlink?(dest)
+                  File.symlink "cbrain_task_descriptor_loader.rb", dest
+                end
               end
             )
 

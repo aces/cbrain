@@ -93,7 +93,7 @@
 #   # the values in invoke_structure
 #   desc.build_substitutions_by_tokens_hash(invoke_structure)
 #
-#   # Utility to perform the subsitutions of tokens in a string
+#   # Utility to perform the substitutions of tokens in a string
 #   desc.apply_substitutions(string, substitutions_by_tokens, to_strip=[])
 #
 #   # Returns a new descriptor with the attributes in a canonical beautiful order
@@ -241,7 +241,7 @@ module BoutiquesSupport
     end
 
     def input_by_id(inputid)
-      inputs.detect { |x| x.id == inputid } or
+      inputs.detect { |x| x.id.to_s == inputid.to_s } or
         cb_error "No input found with ID '#{inputid}'"
     end
 
@@ -343,7 +343,7 @@ module BoutiquesSupport
       end.compact.to_h
     end
 
-    # Replaces in +string+ all occurences of the keys in
+    # Replaces in +string+ all occurrences of the keys in
     # +substitutions_by_tokens+ by the associated values.
     # This is typically used to build a templated string
     # using the "value-key" of the inputs of the descriptor.

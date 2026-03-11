@@ -53,7 +53,8 @@ class UserkeyFlatDirSshDataProvider < FlatDirSshDataProvider
         :port         => (remote_port.presence || 22),
         :use_agent    => false,
         :auth_methods => [ 'publickey', 'keyboard-interactive' ],
-        :keys         => [ id_file ]
+        :keys         => [ id_file ],
+        :append_all_supported_algorithms => true,
     ) do |sftp|
       yield sftp
     end
@@ -88,6 +89,19 @@ class UserkeyFlatDirSshDataProvider < FlatDirSshDataProvider
     user = self.user # forced use of the DP owner as the connection ssh user
     # no need to add "-i identityfile" because we'll get it with "-o IdentityFile=file" instead
     self.master(user, userfile).ssh_shared_options
+  end
+
+  # This method overrides the superclass method,
+  # but also adds a special check to make sure the user's key has been pushed
+  # to the remote_resource.
+  def rr_allowed_syncing?(rr = RemoteResource.current_resource, check_dp = self)
+    superresult = super
+    return false unless superresult # I am aware I could have just done 'super || return false'
+    datetime = self.user.get_ssh_key_install_date(rr.id)
+    return false if datetime.nil?
+    true
+    # This shorter version is less lisible
+    #( super && self.user.get_ssh_key_install_date(rr.id) ).present?
   end
 
   #################################################################

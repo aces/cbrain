@@ -61,10 +61,11 @@ module BoutiquesOutputTagger
           next
         end
         tag_ids = taglist.map do |tagname|
-          tag_req = Tag.where(:name => tagname, :user_id => self.user_id, :group_id => self.group_id)
+          tag_req = Tag.where(:name => tagname, :group_id => self.group_id) # scope is one tag name per prject
           tag = tag_req.first
           if ! tag
              self.addlog "BoutiquesOutputTagger: Creating new tag '#{tagname}'"
+             tag_req = tag_req.where(:user_id => self.user_id)  # add owner
              tag = tag_req.create!
           end
           tag.id

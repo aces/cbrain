@@ -52,7 +52,7 @@ describe SshDataProvider do
       expect(provider.impl_is_alive?).to be_truthy
     end
     it "should return false if the bash command returns something other than the expected string" do
-      allow(provider).to receive(:remote_bash_this).and_return("ERRROR")
+      allow(provider).to receive(:remote_bash_this).and_return("ERROR")
       expect(provider.impl_is_alive?).to be_falsey
     end
   end

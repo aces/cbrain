@@ -62,5 +62,12 @@ class BoutiquesToolConfiguratorHandler < BoutiquesClusterTask
     true
   end
 
+  # Override the standard method to ALWAYS strip the run_id
+  def name_and_type_for_output_file(output, pathname)
+    name, userfile_class = super
+    name = name.sub "-#{self.run_id}", ""  # this is what is inserted on non multi-level DPs
+    [ name, userfile_class ]
+  end
+
 end
 

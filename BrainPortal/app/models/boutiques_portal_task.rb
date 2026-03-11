@@ -33,7 +33,7 @@ class BoutiquesPortalTask < PortalTask
   end
 
   # This method returns the same descriptor as
-  # boutiques_descriptor(), by default, but can be overriden
+  # boutiques_descriptor(), by default, but can be overridden
   # by subclasses to change the behavior of what happens
   # in the before_form() method.
   def descriptor_for_before_form
@@ -41,7 +41,7 @@ class BoutiquesPortalTask < PortalTask
   end
 
   # This method returns the same descriptor as
-  # boutiques_descriptor(), by default, but can be overriden
+  # boutiques_descriptor(), by default, but can be overridden
   # by subclasses to change the behavior of what happens
   # in the after_form() method.
   def descriptor_for_after_form
@@ -49,7 +49,7 @@ class BoutiquesPortalTask < PortalTask
   end
 
   # This method returns the same descriptor as
-  # boutiques_descriptor(), by default, but can be overriden
+  # boutiques_descriptor(), by default, but can be overridden
   # by subclasses to change the behavior of what happens
   # in the final_task_list() method.
   def descriptor_for_final_task_list
@@ -57,7 +57,7 @@ class BoutiquesPortalTask < PortalTask
   end
 
   # This method returns the same descriptor as
-  # boutiques_descriptor(), by default, but can be overriden
+  # boutiques_descriptor(), by default, but can be overridden
   # by subclasses to change the behavior of what happens
   # when generating the task's parameter page.
   def descriptor_for_form
@@ -65,7 +65,7 @@ class BoutiquesPortalTask < PortalTask
   end
 
   # This method returns the same descriptor as
-  # boutiques_descriptor(), by default, but can be overriden
+  # boutiques_descriptor(), by default, but can be overridden
   # by subclasses to change the behavior of what happens
   # when generating the task's "show" page.
   def descriptor_for_show_params
@@ -143,13 +143,11 @@ class BoutiquesPortalTask < PortalTask
               descriptor.sole_mandatory_file_input == input  &&
               !invoke_params[input.id].present?
 
-      next if input.value_choices.present? # inputs with enums are checked later
       sanitize_param(input)
     end
 
     # Optional parameters
     descriptor.optional_inputs.each do |input|
-      next if input.value_choices.present? # inputs with enums are checked later
       sanitize_param(input) unless isInactive(input)
     end
 
@@ -344,6 +342,10 @@ class BoutiquesPortalTask < PortalTask
         end
       end
 
+      # Re-introduce the file IDs of the task list, in case the main form
+      # needs to be re-rendered.
+      self.params[:interface_userfile_ids] |= task_array_userfiles_ids
+
       return tasklist.flatten
     end # When only one file input
 
@@ -507,8 +509,8 @@ class BoutiquesPortalTask < PortalTask
   # Ensure that the +input+ parameter is not null and matches a generic tool
   # parameter type (:file, :numeric, :string or :flag) before converting the
   # parameter's value to the corresponding Ruby type (if appropriate).
-  # For example, sanitize_param(someinput) where someinput's name is 'deviation'
-  # and someinput's type is 'numeric' would validate that
+      # For example, sanitize_param(someinput) where someinput's name is 'deviation'
+      # and someinput's type is 'numeric' would validate that
   # self.params['invoke']['deviation'] is a number and then convert it to a Ruby Float or
   # Integer.
   #
@@ -534,7 +536,7 @@ class BoutiquesPortalTask < PortalTask
     # Some presets for convenience; at most one 'if' will trigger because regex != string always
     charset_regex  = /\A[\w,\.\:\-]+\z/                       if charset_regex == ':basename:'        # "a0_,.:-"
     charset_regex  = /\A[\w,\.\:\-\?\*]+\z/                   if charset_regex == ':basename-pattern:'  # "a0_,.:-*?"
-    charset_regex  = /\A[\w,\.\/\:\-]+(\/[\w,\.\/\:\-]*)*\z/  if charset_regex == ':relative-path:'   # "base" or "/base/base/..."
+    charset_regex  = /\A[\w,\.\/\:\-]+(\/[\w,\.\:\-]+)*\/?\z/ if charset_regex == ':relative-path:'   # "base" or "/base/base/..."
     charset_regex  = /\A\S+\z/                                if charset_regex == ':any-no-blanks:'   # can be dangerous! YOU MUST VALIDATE TOOL'S ESCAPING PROPERLY!
     charset_regex  = /\A[\w,\.\:\-\{\}]+\z/                   if charset_regex == ':id-with-curlies:' # allows "abc" and "abc-{4}" etc
     charset_regex  = /\A[\w,\.\:\-\+]+(\ +[\w,\.\:\-\+]+)*\z/ if charset_regex == ':ids-with-spaces:' # allows "abc" and "abc def xyz" etc
@@ -550,7 +552,7 @@ class BoutiquesPortalTask < PortalTask
 
     # Taken userfile names. An error will be raised if two input files have the
     # same name.
-    @taken_files ||= Set.new
+    @taken_files ||= {}
 
     # Fetch the parameter and convert to an Enumerable if required
     values = invoke_params[name]
@@ -566,7 +568,7 @@ class BoutiquesPortalTask < PortalTask
       when :number
         if value.blank?
           params_errors.add(invokename, ": value missing")
-        elsif (number = Integer(value) rescue Float(value) rescue nil)
+        elsif (number = (Integer(value) rescue Float(value) rescue nil))
           value = number
         else
           params_errors.add(invokename, ": not a number (#{value})")
@@ -583,7 +585,7 @@ class BoutiquesPortalTask < PortalTask
         params_errors.add(invokename, " cannot contain newlines")          if value =~ /[\n\r]/
         params_errors.add(invokename, " cannot start with this character") if value =~ /^[\.\/]+/
         params_errors.add(invokename, " cannot move up dirs")              if value.include? "/../"
-        if value.present?
+        if value.present? && input.value_choices.blank?
           params_errors.add(invokename, " contains invalid characters")  unless value.match?(charset_regex) # we can use a string in the match method
         end
 
@@ -610,10 +612,10 @@ class BoutiquesPortalTask < PortalTask
           next nil # remove bad value
         end
 
-        if @taken_files.include?(file.id)
+        if @taken_files[file.id].present? && @taken_files[file.id] != input.id
           params_errors.add(invokename, ": file name already in use (#{file.name})")
         else
-          @taken_files.add(file.id)
+          @taken_files[file.id] = input.id
         end
 
       end
@@ -662,7 +664,7 @@ class BoutiquesPortalTask < PortalTask
       ok = values.all? { |v| v <  input.maximum.to_f } if clusive == 'exclusive'
       ok = values.all? { |v| v <= input.maximum.to_f } if clusive == 'inclusive'
       if ! ok
-        params_errors.add(input.cb_invoke_name, "violates #{clusive} maximum value #{input.minimum}")
+        params_errors.add(input.cb_invoke_name, "violates #{clusive} maximum value #{input.maximum}")
       end
     end
 

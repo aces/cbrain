@@ -20,22 +20,24 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
-<% delimiter    = params[:delimiter] || "," -%>
-<%-
-# Should escape the quote_marker in description.
-# Maybe buggy when quote_marker is not a double quote.
+<%
+   delimiter    = params[:delimiter] || ','
+   quote_marker = params[:quote]     || '"'
+   delimiter    = ',' unless %w( , | ; ! - + # ).include?(delimiter)
+   quote_marker = '"' unless %w( ' " ).include?(quote_marker)
+   rows = @userfiles.map do |u|
+      [ u.name,
+        u.type,
+        u.user&.login,
+        u.group&.name,
+        to_localtime(u.created_at, :datetime),
+        to_localtime(u.updated_at, :datetime),
+        u.data_provider&.name,
+        u.tags.map(&:name).join(','),
+        u.description.presence || ""
+      ]
+   end
 -%>
-<% quote_marker = params[:quote]     || "\"" -%>
-<% @userfiles.each do |u| -%>
-<%= [quote_marker + u.name                                + quote_marker,
-       u.size,
-       quote_marker + u.type                                + quote_marker,
-       quote_marker + u.user.try(:login)                    + quote_marker,
-       quote_marker + u.group.try(:name)                    + quote_marker,
-       quote_marker + to_localtime(u.created_at, :datetime) + quote_marker,
-       quote_marker + to_localtime(u.updated_at, :datetime) + quote_marker,
-       quote_marker + u.data_provider.try(:name)            + quote_marker,
-       quote_marker + u.tags.map(&:name).join(delimiter)    + quote_marker,
-       quote_marker + u.description.to_s.gsub(/\"/, "\"\"") + quote_marker,
-      ].join(delimiter).html_safe %>
-<% end -%>
+<%= CSV.generate(:force_quotes => true, :col_sep => delimiter, :quote_char => quote_marker) do |csv|
+      rows.each { |r| csv << r }
+    end.html_safe -%>

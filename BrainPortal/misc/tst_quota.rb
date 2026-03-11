@@ -8,7 +8,7 @@
 1.times do # just a block for the whole thing
 
 if Rails.env != 'development'
-  puts "ERROR Eh, only run this in a dev environement!"
+  puts "ERROR Eh, only run this in a dev environment!"
   puts <<-WARN
     THIS WILL DELETE ALL CPUQUOTA OBJECTS
     IN THE DB WHILE IT RUNS!

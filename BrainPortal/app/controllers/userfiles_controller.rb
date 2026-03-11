@@ -370,7 +370,7 @@ class UserfilesController < ApplicationController
 
     # No viewer
     if ! @viewer
-      render :html => "<div class=\"warning\">Could not find viewer #{viewer_name}.</div>".html_safe, :status  => "404"
+      render :html => "<div class=\"warning\">Could not find viewer #{ERB::Util.html_escape(viewer_name || '(Unset)')}.</div>".html_safe, :status  => "404"
       return
     end
 
@@ -401,7 +401,7 @@ class UserfilesController < ApplicationController
       :description => "An internal error occurred when trying to display the contents of #{@userfile.name}."
     )
 
-    render :html => "<div class=\"warning\">Error generating view code for viewer '#{params[:viewer]}'. Admins have been notified and will look into the problem. In the meantime, there's not much you can do about this.</div>".html_safe
+    render :html => "<div class=\"warning\">Error generating view code for viewer '#{ERB::Util.html_escape(params[:viewer] || '(Unset)')}'. Admins have been notified and will look into the problem. In the meantime, there's not much you can do about this.</div>".html_safe
   end
 
   def show #:nodoc:
@@ -1117,7 +1117,7 @@ class UserfilesController < ApplicationController
   def delete_files #:nodoc:
     filelist    = params[:file_ids] || []
 
-    # Select all accessible files with write acces by the user.
+    # Select all accessible files with write access by the user.
     to_delete_ids = Userfile.accessible_for_user(current_user, :access_requested => :write).where(:id => filelist).pluck(:id)
     not_accessible_count = filelist.size - to_delete_ids.size
 
@@ -1637,7 +1637,7 @@ class UserfilesController < ApplicationController
   # TODO: FIXME . Not sure how to fix.
   #
   # Note on the name of the method: a previous version tried to
-  # create a symlink structure, but that transferred hte values of
+  # create a symlink structure, but that transferred the values of
   # all symbolic links internal to the userfiles on LINUX.
   # See also: the -H option of tar on MacOS X which would do the trick,
   # but doesn't exist on LINUX.

@@ -26,11 +26,11 @@ describe CustomFilter do
   let(:cf)  {create(:custom_filter)}
 
   describe "#filtered_class_controller" do
-    it "should return the name of the controllerof the ressource being filtered (userfiles)" do
+    it "should return the name of the controller of the resource being filtered (userfiles)" do
       ucf = create(:userfile_custom_filter)
       expect(ucf.filtered_class_controller).to eq("userfiles")
     end
-    it "should return the name of the controllerof the ressource being filtered (tasks)" do
+    it "should return the name of the controller of the resource being filtered (tasks)" do
       tcf = create(:task_custom_filter)
       expect(tcf.filtered_class_controller).to eq("tasks")
     end

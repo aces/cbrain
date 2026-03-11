@@ -185,7 +185,7 @@ describe "Bourreau Boutiques Tests" do
       # It properly escapes environment variables
       # Note that we only have to worry about inappropriate values that are still valid JSON
       it "escapes environment variables" do
-        expect( @task.cluster_commands[1] ).to eq("export ev2='ta- 9\"'\\''_%^&$@]['")
+        expect( @task.cluster_commands[1] ).to eq("export ev2='ta- 9\"\\'\\''_%^&$@]['")
       end
 
     end
@@ -220,7 +220,7 @@ describe "Bourreau Boutiques Tests" do
       context 'cluster_command substitution' do
 
         # Test basic command substitution correctness
-        it "should correctly subsitute cluster_commands with default settings" do
+        it "should correctly substitute cluster_commands with default settings" do
           task = @generateTask.( { a: 'value' } )
           expect( task.cluster_commands[0].strip ).to eq( '/minimalApp -a value' )
         end
@@ -239,7 +239,7 @@ describe "Bourreau Boutiques Tests" do
         end
 
         # Test output flag substitution
-        it "should correctly subsitute cluster_commands with output keys" do
+        it "should correctly substitute cluster_commands with output keys" do
           @descriptor['command-line'] += ' [OUT-KEY]'
           @descriptor['output-files'][0].merge!( { 'value-key' => '[OUT-KEY]', 'command-line-flag' => '-o' } )
           task = @generateTask.( { a: 'value' } )
@@ -247,7 +247,7 @@ describe "Bourreau Boutiques Tests" do
         end
 
         # Test output flag separator substitution
-        it "should correctly subsitute cluster_commands with output keys and a separator" do
+        it "should correctly substitute cluster_commands with output keys and a separator" do
           @descriptor['command-line'] += ' [OUT-KEY]'
           @descriptor['output-files'][0].merge!( {
             'value-key'                   => '[OUT-KEY]',
@@ -258,7 +258,7 @@ describe "Bourreau Boutiques Tests" do
         end
 
         # Test output flag separator substitution with prior path-template substitution
-        it "should correctly subsitute cluster_commands with output flag separators and path-template substitutions" do
+        it "should correctly substitute cluster_commands with output flag separators and path-template substitutions" do
           @descriptor['command-line'] += ' [B] [OUT-KEY]'
           @descriptor['inputs'] << GenerateJsonInputDefault.('b','Number','Numerical arg')
           @descriptor['output-files'][0].merge!( {
@@ -392,7 +392,7 @@ describe "Bourreau Boutiques Tests" do
       @task.user_id, @task.group_id = UID, GID
       # Generate a simulated exit file, as if the task had run
       @simExitFile     = @task.exit_cluster_filename
-      IO.write( @simExitFile, "0\n" )
+      File.write( @simExitFile, "0\n" )
       # The basic properties for the required output file
       @reqOutfileProps = {:name => @fname_base, :data_provider_id => @provider.id}
       # Optional output file properties
@@ -428,11 +428,11 @@ describe "Bourreau Boutiques Tests" do
         expect( @task.save_results ).to be false
       end
       it "save_results is false if the exit status file has invalid content" do
-        IO.write( @simExitFile, "abcde\n" )
+        File.write( @simExitFile, "abcde\n" )
         expect( @task.save_results ).to be false
       end
       it "save_results is false if the exit status file contains a value greater than 1" do
-        IO.write( @simExitFile, "3\n" )
+        File.write( @simExitFile, "3\n" )
         expect( @task.save_results ).to be false
       end
 

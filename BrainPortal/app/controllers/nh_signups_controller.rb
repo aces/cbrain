@@ -28,6 +28,8 @@ class NhSignupsController < NeurohubApplicationController
 
   before_action :login_required, :except => [:new, :create, :show, :confirm]
 
+  spurious_params_ban_ip :new, :show, :confirm => [ :token ]
+
   def new #:nodoc:
     @signup = Signup.new
   end
@@ -68,6 +70,8 @@ class NhSignupsController < NeurohubApplicationController
       flash[:error] = "It seems some error occurred. The email notification was probably not sent. There's nothing we can do about this."
     end
 
+    send_admin_notification(@signup)
+
     sleep 1
     flash[:notice] = "Success!"
     redirect_to nh_signup_path(@signup)
@@ -93,10 +97,6 @@ class NhSignupsController < NeurohubApplicationController
     end
   end
 
-
-
-  private
-
   def signup_params
     params.require(:signup).permit(
       :title, :first, :middle, :last,
@@ -118,6 +118,16 @@ class NhSignupsController < NeurohubApplicationController
   def send_nh_confirm_email(signup) #:nodoc:
     confirm_url = url_for(:controller => :nh_signups, :action => :confirm, :id => signup.id, :only_path => false, :token => signup.confirm_token)
     signup.action_mailer_class.signup_request_confirmation(signup, confirm_url).deliver
+    return true
+  rescue => ex
+    Rails.logger.error ex.to_s
+    return false
+  end
+
+  def send_admin_notification(signup) #:nodoc:
+    return unless RemoteResource.current_resource.support_email
+    show_url  = url_for(:controller => :signups, :action => :show, :id => signup.id, :only_path => false)
+    signup.action_mailer_class.signup_notify_admin(signup, show_url).deliver
     return true
   rescue => ex
     Rails.logger.error ex.to_s

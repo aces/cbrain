@@ -144,7 +144,7 @@
     <% end %>
 
     <%
-       installed_site_ids = @user.meta.keys.grep(/\Assh_key_install_date_/).map { |x| x[/(\d+)\z/] }
+       installed_site_ids = @user.all_ssh_key_install_dates.keys
        installed_sites    = RemoteResource.where(:id => installed_site_ids).all
        installed_links    = installed_sites.map { |s| link_to_bourreau_if_accessible(s) }.join(", ")
        all_bourreaux      = Bourreau.find_all_accessible_by_user(@user).order(:online, :name)
@@ -152,7 +152,7 @@
     <% t.edit_cell "Installation Sites", :show_with => 2, :content => installed_links.html_safe do %>
       <%= hidden_field_tag 'user[dummy]', "dummy" %>
       <%= array_to_table(all_bourreaux, :table_class => 'simple bordered', :fill_by_columns => true, :cols => 1) do |b,r,c| %>
-        <% date = @user.meta["ssh_key_install_date_#{b.id}"] %>
+        <% date = @user.get_ssh_key_install_date(b.id) %>
         <%= link_to_bourreau_if_accessible(b) %>
         </td>
         <td>Last pushed: <%= date || 'Never' %></td>

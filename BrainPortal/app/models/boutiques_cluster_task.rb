@@ -35,7 +35,7 @@ class BoutiquesClusterTask < ClusterTask
   end
 
   # This method returns the same descriptor as
-  # boutiques_descriptor(), by default, but can be overriden
+  # boutiques_descriptor(), by default, but can be overridden
   # by subclasses to change the behavior of what happens
   # in the setup() method.
   def descriptor_for_setup
@@ -43,7 +43,7 @@ class BoutiquesClusterTask < ClusterTask
   end
 
   # This method returns the same descriptor as
-  # boutiques_descriptor(), by default, but can be overriden
+  # boutiques_descriptor(), by default, but can be overridden
   # by subclasses to change the behavior of what happens
   # in the cluster_commands() method.
   def descriptor_for_cluster_commands
@@ -53,7 +53,7 @@ class BoutiquesClusterTask < ClusterTask
   end
 
   # This method returns the same descriptor as
-  # boutiques_descriptor(), by default, but can be overriden
+  # boutiques_descriptor(), by default, but can be overridden
   # by subclasses to change the behavior of what happens
   # in the save_results() method.
   def descriptor_for_save_results
@@ -227,7 +227,7 @@ class BoutiquesClusterTask < ClusterTask
       status = out.strip.to_i
       descriptor.error_codes ||= []
       descriptor.error_codes.each do |err|  # note, 0 code is supported by boutiques
-        self.addlog err['description'] if err['code'] == status
+        self.addlog("Boutiques status code #{status} description: #{err['description']}") if err['code'] == status
       end
       if exit_status_means_failure?(status)
         self.addlog "Command failed, exit status #{status}"

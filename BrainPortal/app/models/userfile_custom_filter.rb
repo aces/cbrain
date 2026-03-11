@@ -207,6 +207,7 @@ class UserfileCustomFilter < CustomFilter
   def scope_name(scope)
     query = 'userfiles.name'
     term = self.data_file_name_term
+    term = "do-not-match-everything-#{rand(1000000)}" if term =~ /\A[\%\_]+\z/ # don't try matching all
     if self.data_file_name_type == 'match'
       query += ' = ?'
     else

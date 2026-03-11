@@ -133,6 +133,7 @@ module NeurohubHelpers
   def neurohub_search(token, limit=20, user=current_user)
     token      = token.to_s.presence  || "-9998877"          # -9998877 is a way to ensure we find nothing ...
     is_numeric = token =~ /\A\d+\z/   || token == "-9998877" # ... because we'll find by ID
+    token      = "do-not-match-everything-#{rand(1000000)}" if token =~ /\A[\%\_]*\z/ # don't try matching all
     token      = is_numeric ? token.to_i : "%#{token}%"
 
     if is_numeric

@@ -648,6 +648,16 @@ class RemoteResource < ApplicationRecord
       raise "Unknown info keyword '#{what}'."
     end
 
+    # For any BrainPortal other than us, we return a record with no info,
+    # except the ID and name. Portals don't know how to contact each other.
+    if self.is_a?(BrainPortal)
+      dummy = RemoteResourceInfo.dummy_record.merge(
+        :id   => self.id,
+        :name => self.name,
+      )
+      return dummy
+    end
+
     info = nil
     begin
       # We used to support direct ActiveResource connections to a Bourreau, but not anymore.
@@ -959,7 +969,7 @@ class RemoteResource < ApplicationRecord
     # Log install date
     user.addlog("User SSH key installed on #{myself.name}")
     myself.addlog("User SSH key for #{user.login} installed")
-    user.meta["ssh_key_install_date_#{myself.id}"] = Time.now
+    user.record_ssh_key_install_date(myself.id)
 
     true
   end

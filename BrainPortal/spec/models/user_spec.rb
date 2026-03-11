@@ -441,13 +441,13 @@ describe User do
         expect(admin.available_users).to match(User.all)
       end
 
-      it "should acces to all site users if site_manager" do
+      it "should access to all site users if site_manager" do
         site = site_manager.site
         site.reload
         expect(site_manager.available_users).to match_array([user_of_site,site_manager])
       end
 
-      it "should only acces to him" do
+      it "should only access to him" do
         expect(normal_user.available_users).to match_array([normal_user])
       end
 

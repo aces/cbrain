@@ -21,7 +21,7 @@
 #
 
 #Subclass of CustomFilter representing custom filters for the CbrainTask resource
-#(which are controlled by the tasks contoller).
+#(which are controlled by the tasks controller).
 #
 #=Parameters filtered:
 #[*type*] The CbrainTask subclass to filter.
@@ -175,6 +175,7 @@ class TaskCustomFilter < CustomFilter
   def scope_description(scope)
     query = 'cbrain_tasks.description'
     term = self.data_description_term
+    term = "do-not-match-everything-#{rand(1000000)}" if term =~ /\A[\%\_\s]+\z/ # don't try matching all
     if self.data_description_type == 'match'
       query += ' = ?'
     else

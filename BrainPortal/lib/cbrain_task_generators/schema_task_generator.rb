@@ -298,11 +298,11 @@ module SchemaTaskGenerator
       Dir.chdir(path) do
         ['portal', 'bourreau', 'views/public'].each { |d| FileUtils.mkpath(d) }
 
-        IO.write("portal/#{name}.rb",                  @source[:portal])
-        IO.write("bourreau/#{name}.rb",                @source[:bourreau])
-        IO.write("views/_task_params.html.erb",        @source[:task_params])
-        IO.write("views/_show_params.html.erb",        @source[:show_params])
-        IO.write("views/public/edit_params_help.html", @source[:edit_help])
+        File.write("portal/#{name}.rb",                  @source[:portal])
+        File.write("bourreau/#{name}.rb",                @source[:bourreau])
+        File.write("views/_task_params.html.erb",        @source[:task_params])
+        File.write("views/_show_params.html.erb",        @source[:show_params])
+        File.write("views/public/edit_params_help.html", @source[:edit_help])
       end
     end
 
@@ -363,7 +363,7 @@ module SchemaTaskGenerator
     end
 
     apply_template = lambda do |template|
-      ERB.new(IO.read(
+      ERB.new(File.read(
         Rails.root.join('lib/cbrain_task_generators/templates', template).to_s
       ), nil, '%-').result(binding)
     end
@@ -548,7 +548,7 @@ module SchemaTaskGenerator
   def self.expand_json(obj)
     return obj unless obj.is_a?(String)
 
-    JSON.parse!(File.exists?(obj) ? IO.read(obj) : obj)
+    JSON.parse!(File.exists?(obj) ? File.read(obj) : obj)
   end
 
   # Utility method to convert a string (+str+) to an identifier suitable for a

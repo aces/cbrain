@@ -75,9 +75,10 @@ class HttpUserAgent
     keyvals = {}
     lastname = ""
     adj_ua.split(/[\s;()]+/).each do |comp|
-      next unless comp =~ /\A(\S+)\/(\S+)\z/
-      name  = Regexp.last_match[1]
-      value = Regexp.last_match[2]
+      comps = comp.split("/")          # "Super/Mega/Chrome/1.23"
+      next unless comps.size >= 2
+      value = comps.pop                # "1.23"
+      name  = comps.join("/")          # "Super/Mega/Chrome"
       next if keyvals.has_key?(name.downcase) # first match has priority
       keyvals[name.downcase] = value
       lastname = name

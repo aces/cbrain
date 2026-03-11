@@ -40,6 +40,12 @@ class BoutiquesBootIntegrator
 
     # Create Tool if necessary
     tool = Tool.create_from_descriptor(descriptor) # does nothing if it already exists
+    if tool.cbrain_task_class_name =~ /^CbrainTask::/
+      basename = Pathname.new(path).basename
+      puts "B> SKIPPING old integraton of Boutiques JSON: #{basename} Class: #{tool.cbrain_task_class_name}"
+      return
+    end
+
     # Create ToolConfig if necessary
     if myself.is_a?(Bourreau)
       ToolConfig.create_from_descriptor(myself, tool, descriptor) # does nothing if it already exists
@@ -97,7 +103,7 @@ class BoutiquesBootIntegrator
     puts "B> Boutiques JSON: #{basename} Class: #{klass_name} Tool: #{tool_name} ToolConfigs: #{tool_configs.count}"
   rescue => ex
     Rails.logger.error(
-      "An error occured while trying to integrate descriptor '#{path}'"
+      "An error occurred while trying to integrate descriptor '#{path}'"
     )
     raise ex
   end

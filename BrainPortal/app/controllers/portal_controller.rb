@@ -32,6 +32,8 @@ class PortalController < ApplicationController
   before_action :login_required, :except => [ :credits, :about_us, :welcome, :swagger, :available, :stats ]  # welcome is here so that the redirect to the login page doesn't show the error message
   before_action :admin_role_required, :only => :portal_log
 
+  spurious_params_ban_ip :credits, :about_us, :swagger, :available, :stats # no spurious params allowed
+
   # Display a user's home page with information about their account.
   def welcome #:nodoc:
     unless current_user
@@ -424,16 +426,6 @@ class PortalController < ApplicationController
   def search
     @search  = params[:search]
     @limit   = 20 # used by interface only
-
-    # In development mode, classes are loaded at first use. This means a dev
-    # will sometimes NOT see a class (e.g. TextFile) until first use, which means
-    # that some parts of the interface will not show them. This trick allows a dev
-    # to force the load of a class just by typing the name in the search box.
-    # The string HAS to be something like 'TextFile' or 'TarArchive' etc.
-    if Rails.env == 'development' && @search.present? && @search.to_s =~ /\A[A-Z]\w+\z/
-      eval @search.to_s rescue nil  # just load a class, if needed
-    end
-
     @results = @search.present? ? ModelsReport.search_for_token(@search, current_user) : {}
   end
 
@@ -454,7 +446,7 @@ class PortalController < ApplicationController
       return
     end
 
-    # FIXME the way we exatrct the version number from the file name is brittle...
+    # FIXME the way we extract the version number from the file name is brittle...
     @spec_version = @specfile.sub("cbrain-","").sub(/-swagger.*/,"")
 
     respond_to do |format|

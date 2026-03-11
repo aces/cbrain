@@ -977,7 +977,7 @@ describe DataProvider do
       DataProvider.instance_eval { @cache_rootdir = @old_cache_rootdir }
     end
     it "should return the app's cache directory" do
-      current_resource = double("current_ressource")
+      current_resource = double("current_resource")
       allow(RemoteResource).to receive(:current_resource).and_return(current_resource)
       expect(current_resource).to receive(:dp_cache_dir).and_return("cache_dir")
       DataProvider.cache_rootdir
@@ -994,7 +994,7 @@ describe DataProvider do
 
   describe "#rsync_ignore_patterns" do
     it "should return the app's rsync ignore patterns" do
-      current_resource = double("current_ressource")
+      current_resource = double("current_resource")
       allow(RemoteResource).to receive(:current_resource).and_return(current_resource)
       expect(current_resource).to receive(:dp_ignore_patterns)
       DataProvider.instance_variable_set("@ig_patterns", nil)

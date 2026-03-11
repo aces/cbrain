@@ -135,7 +135,7 @@ class ToolConfig < ApplicationRecord
     self.tool     && self.tool.can_be_accessed_by?(user)
   end
 
-  # Returns the verion name or the first line of the description.
+  # Returns the version name or the first line of the description.
   # This is used to represent the 'name' of the version.
   def short_description
     description = self.description || ""
@@ -151,7 +151,7 @@ class ToolConfig < ApplicationRecord
 
   # Sets in the current Ruby process all the environment variables
   # defined in the object. If +use_extended+ is true, the
-  # set of variables provided by +extended_environement+ will be
+  # set of variables provided by +extended_environment+ will be
   # applied instead.
   def apply_environment(use_extended = false)
     env   = (use_extended ? self.extended_environment : self.env_array) || []
@@ -194,10 +194,10 @@ class ToolConfig < ApplicationRecord
   end
 
   # Generates a partial BASH script that initializes environment
-  # variables and is followed a the script prologue stored in the
+  # variables and is followed by the script prologue stored in the
   # object. For singularity prologues, special prefixes are added to
   # variable names to ensure they will be propagated to the container
-  # even in presence of --cleanenv parameteres and such
+  # even in presence of --cleanenv parameters and such
   def to_bash_prologue(singularity=false)
     tool     = self.tool
     bourreau = self.bourreau
@@ -247,7 +247,7 @@ class ToolConfig < ApplicationRecord
 
       ENV_HEADER
       script += vars_to_export_script("SINGULARITYENV_")
-      script += vars_to_export_script("APPTAINERENV_")  #  SINGULARITYENV is to be depricated
+      script += vars_to_export_script("APPTAINERENV_")  #  SINGULARITYENV is to be deprecated
 
     end
     script += "\n" if env.size > 0
@@ -269,7 +269,7 @@ class ToolConfig < ApplicationRecord
     script
   end
 
-  # Generates a partial BASH script that unitializes
+  # Generates a partial BASH script that uninitializes
   # what the script_prologue did. Unlike for to_bash_prologue,
   # it doesn't undo the settings of the environment variables.
   def to_bash_epilogue
@@ -505,7 +505,7 @@ class ToolConfig < ApplicationRecord
         errors[:container_index_location] = "is invalid for container engine Singularity. Should end in '://'."
       end
     elsif self.container_engine.present? && self.container_engine == "Docker"
-      if self.container_index_location.present? && self.container_index_location !~ /\A[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}\z/i
+      if self.container_index_location.present? && self.container_index_location !~ /\Adocker:\/\/\z|\A[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}\z/i
         errors[:container_index_location] = "is invalid for container engine Docker. Should be a valid hostname."
       end
     end
@@ -642,7 +642,7 @@ class ToolConfig < ApplicationRecord
   def boutiques_descriptor
     path = boutiques_descriptor_path.presence
     if ! path
-      return self.class.registered_boutiques_descriptor(self.tool.name, self.version_name)
+      return self.class.registered_boutiques_descriptor(self.tool.descriptor_name, self.version_name)
     end
     return @_descriptor_ if @_descriptor_
     path = Pathname.new(path)
@@ -653,10 +653,10 @@ class ToolConfig < ApplicationRecord
   def boutiques_descriptor_origin_keyword
     manual     = self.boutiques_descriptor_path.presence
     registered = self.class.registered_boutiques_descriptor(self.tool.name, self.version_name)
-    return [ :overriden, manual ]               if registered && manual
-    return [ :manual,    manual ]               if manual
-    return [ :automatic, registered.from_file ] if registered
-    return [ :none,      "" ]
+    return [ :overridden, manual ]               if registered && manual
+    return [ :manual,     manual ]               if manual
+    return [ :automatic,  registered.from_file ] if registered
+    return [ :none,       "" ]
   end
 
   def self.create_from_descriptor(bourreau, tool, descriptor, record_path=false)

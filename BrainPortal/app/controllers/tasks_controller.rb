@@ -148,6 +148,7 @@ class TasksController < ApplicationController
              Errno::ECONNREFUSED,
              Errno::ECONNRESET,
              EOFError,
+             CbrainException,
              ActiveResource::ServerError,
              ActiveResource::TimeoutError,
              ActiveResource::MethodNotAllowed,
@@ -254,13 +255,24 @@ class TasksController < ApplicationController
         ! dp.rr_allowed_syncing?(@task.bourreau)
       end
       if bad_dps.present?
-        flash[:error] =
+        bad_dp_report = # this report should be made into a view code partial or something, this code is ugly
           "Some selected files are stored on Data Providers that are\n" +
-          "not accessible from execution server #{@task.bourreau.name}:\n\n" +
-          (bad_dps.map do |dp|
-            num_files =  @files.count { |f| f.data_provider_id == dp.id }
+          "not accessible from execution server #{@task.bourreau.name}:\n\n"
+        bad_dps.each do |dp|
+          num_files =  @files.count { |f| f.data_provider_id == dp.id }
+          bad_dp_report +=
             "Data Provider '#{dp.name}' : #{view_pluralize(num_files, "file")}\n"
-          end).join
+        end
+        bad_dps.select { |dp|
+          dp.is_a?(UserkeyFlatDirSshDataProvider) &&
+          dp.user.get_ssh_key_install_date(@task.bourreau_id).blank?
+        }.each { |dp|
+          bad_dp_report +=
+          "\nNote: DataProvider '#{dp.name}' is a private SSH belonging to user '#{dp.user.login}',\n" +
+          "but that user has not yet pushed the key to the Execution Server.\n" +
+          "This is performed in the user's 'MyAccount' page.\n"
+        }
+        flash[:error] = bad_dp_report
         redirect_to :controller  => :userfiles, :action  => :index
         return
       end
@@ -355,7 +367,7 @@ class TasksController < ApplicationController
     new_task_params = task_params() # filters and censors
 
     @task           = create_initial_task_from_form(new_task_params, params[:tool_id])
-    @tool_config    = @task.tool_config # for acces in view
+    @tool_config    = @task.tool_config # for access in view
 
     # Give a task the ability to do a refresh of its form
     commit_name     = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ])
@@ -394,7 +406,7 @@ class TasksController < ApplicationController
       @task.errors.add(:tool_config_id, 'is on an Execution Server that is currently offline')
     end
 
-    unless @task.errors.empty? && @task.valid?
+    if @task.errors.any? || ! @task.valid?
       flash.now[:error] += messages
       initialize_common_form_values
       respond_to do |format|
@@ -405,16 +417,47 @@ class TasksController < ApplicationController
       return
     end
 
+    # Prepare final list of tasks; from the one maintask object we have,
+    # we get a full array of clones of that task in tasklist
+    tasklist,ftl_message = @task.wrapper_final_task_list
+
+    # Revalidate everything for all the tasks in the new tasklist
+    # This is kind of costly, but we have no choices if special validation
+    # modules have been loaded for after_form().
+    # As soon as any task in the task list is not valid, we stop checking and
+    # return to the form.
+    af_messages = "" # 'after_form' messages
+    tasklist.each_with_index do |task,idx|
+      af_messages += task.wrapper_after_form
+      af_messages  = af_messages.split("\n").uniq.join("\n") # remove duplicate messages, if any
+      next if task.errors.empty? && task.valid? # move on to next task if everything ok
+
+      # Found at least one faulty task, so inform user
+      task.errors.each { |key,message| @task.errors.add(key,message) } # copy error messages, if any
+      @task.errors.add(:base, "While creating a set of tasks, at least one of them was found to be invalid, probably because a file selected as input was not appropriate.")
+      flash.now[:error] += af_messages
+
+      # Re-render the form
+      initialize_common_form_values
+      respond_to do |format|
+        format.html { render :action => 'new' }
+        format.xml  { render :xml  => @task.errors, :status => :unprocessable_entity }
+        format.json { render :json => @task.errors, :status => :unprocessable_entity }
+      end
+      return
+    end
+
     # Create a bunch of tasks and launch them, either in background or in foreground
-    tasklist,messages = create_tasklist_from_initial_task(@task)
+    tl_messages = create_tasklist_from_initial_task(@task,tasklist)
 
     if tasklist.size == 1
       flash[:notice] += "Launching a #{@task.pretty_name} task in background."
     else
       flash[:notice] += "Launching #{tasklist.size} #{@task.pretty_name} tasks in background."
     end
-    flash[:notice] += "\n"            unless messages.blank? || messages =~ /\n$/
-    flash[:notice] += messages + "\n" unless messages.blank?
+    flash[:notice] += "\n#{af_messages.strip}" if af_messages.present?
+    flash[:notice] += "\n#{ftl_message.strip}" if ftl_message.present?
+    flash[:notice] += "\n#{tl_messages.strip}" if tl_messages.present?
 
     # Increment the number of times the user has launched this particular tool
     tool_id                           = @task.tool.id
@@ -1395,7 +1438,7 @@ class TasksController < ApplicationController
   # Part of the create() process for a task
   #
   # Code extracted from the old monolithic 'create'
-  def create_tasklist_from_initial_task(maintask) #:nodoc:
+  def create_tasklist_from_initial_task(maintask,tasklist) #:nodoc:
 
     messages = ""
 
@@ -1419,14 +1462,6 @@ class TasksController < ApplicationController
     if parallel_size && ! CbrainTask::Parallelizer.tool
       parallel_size = nil
       messages += "Warning: parallelization cannot be performed until the admin configures a Tool for it.\n"
-    end
-
-    # Prepare final list of tasks; from the one maintask object we have,
-    # we get a full array of clones of that task in tasklist
-    tasklist,task_list_message = maintask.wrapper_final_task_list
-    if task_list_message.present?
-      messages += "\n" if messages.present?
-      messages += task_list_message
     end
 
     # Spawn a background process to launch the tasks.
@@ -1502,7 +1537,7 @@ class TasksController < ApplicationController
 
     end # CBRAIN spawn_if block
 
-    return tasklist,messages
+    return messages
   end
 
   # Some useful variables for the views for 'new' and 'edit'

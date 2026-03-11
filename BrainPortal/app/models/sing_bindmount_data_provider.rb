@@ -45,7 +45,7 @@
 #
 # This class hardcode the values for /my/mount/point to be "/cbrain"
 # and /inside/dir to be "/". The value of the data provider
-# attribute 'containerized_path' is used to narrow down wich part
+# attribute 'containerized_path' is used to narrow down which part
 # of the mounted filesystem is accessed by CBRAIN, and so normally
 # should always start with '/cbrain' too.
 #

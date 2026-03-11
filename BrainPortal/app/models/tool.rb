@@ -50,7 +50,6 @@ class Tool < ApplicationRecord
   validates_presence_of   :name, :cbrain_task_class_name, :user_id, :group_id, :category, :select_menu_text, :description
   validates_inclusion_of  :category, :in => Categories
   validates_format_of     :url, :with => URI::regexp(%w(http https)), :if => :url_present?
-  validate                :prevent_name_change_for_boutiques_tool
 
 
   belongs_to              :user
@@ -124,30 +123,23 @@ class Tool < ApplicationRecord
     self.description      ||= "#{self.name}"
   end
 
-  # Since the name of the tool is used as a lookup
-  # in the ToolConfig class to find the associated
-  # Boutiques descriptor, we can't change it. We'd
-  # need a way to adjust the lookup table too, and
-  # also the content of the files on disk. Ideally,
-  # the JSON file should be linked by the tool ID
-  # instead...
-  def prevent_name_change_for_boutiques_tool #:nodoc:
-    return if     self.new_record?
-    return unless self.name_change
-    return unless self.cbrain_task_class_name.to_s.match(/^BoutiquesTask::/)
-    self.errors.add(:name, 'cannot be changed because this is a Boutiques tool')
-  end
-
   ######################################################
   # Boutiques Integration Methods
   ######################################################
 
   def self.create_from_descriptor(descriptor)
     name = descriptor.name
-    tool = Tool.where(:name => name).first
+    tool = Tool.where(:descriptor_name => name).first
     return tool if tool
+    tool = Tool.where(:name            => name).first
+    tool ||= Tool.where(:cbrain_task_class_name => "CbrainTask::#{descriptor.name_as_ruby_class}").first #old integration; will make the boot process skip it all
+    if tool
+      tool.update_column(:descriptor_name, name) # record at first match
+      return tool
+    end
     tool = Tool.create!(
       :name        => name,
+      :descriptor_name => name,
       :description => descriptor.description,
       :user_id     => User.admin.id,
       :group_id    => User.admin.own_group.id,

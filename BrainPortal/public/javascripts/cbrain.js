@@ -249,7 +249,7 @@
 
     //Makes a button set, buttons that are glued together
     loaded_element.find(".button_set").each( function() {
-      $(this).buttonset();
+      $(this).controlgroup();
     });
 
 
