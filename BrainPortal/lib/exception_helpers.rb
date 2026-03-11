@@ -29,11 +29,12 @@ module ExceptionHelpers
 
   def self.included(includer) #:nodoc:
     includer.class_eval do
-      rescue_from StandardError,                        :with => :generic_exception
-      rescue_from ActiveRecord::RecordNotFound,         :with => :record_not_found
-      rescue_from ::AbstractController::ActionNotFound, :with => :unknown_action
-      rescue_from CbrainException,                      :with => :cb_exception
-      rescue_from ActionController::UnknownFormat,      :with => :unknown_format
+      rescue_from StandardError,                              :with => :generic_exception
+      rescue_from ActiveRecord::RecordNotFound,               :with => :record_not_found
+      rescue_from ::AbstractController::ActionNotFound,       :with => :unknown_action
+      rescue_from CbrainException,                            :with => :cb_exception
+      rescue_from ActionController::UnknownFormat,            :with => :unknown_format
+      rescue_from ActionController::InvalidAuthenticityToken, :with => :invalid_auth_token
     end
   end
 
@@ -108,6 +109,32 @@ module ExceptionHelpers
       format.js   { render :partial  => "shared/flash_update",          :status => exception.status }
       format.xml  { render :xml      => {:error  => exception.message}, :status => exception.status }
       format.json { render :json     => {:error  => exception.message}, :status => exception.status }
+    end
+  end
+
+  # The authenticity token is maintained in the cookie session
+  # for web pages; sometimes users open several tabs or keep them open
+  # so long that it becomes out of sync. We just redirect.
+  # There are also cases where bots try to POST a lot, so we are more
+  # strict here and return unauthorized.
+  def invalid_auth_token(exception)
+    raise if Rails.env == 'development' #Want to see stack trace in dev. Also will log it in exception logger
+    respond_to do |format|
+      format.html do
+        controller = params[:controller].to_s
+        action     = params[:action].to_s
+        if current_user.present? # some browser shenanigans, but legit user
+          redirect_to default_redirect
+        elsif controller == 'sessions' && action == 'create' # browser shenanigans but trying to log in
+          redirect_to default_redirect # will be the sign in page
+        else # POST to other forms; hackers?
+          head :unauthorized
+        end
+      end
+      format.js   { head :unauthorized }
+      format.xml  { head :unauthorized }
+      format.json { head :unauthorized }
+      format.any  { head :unauthorized }
     end
   end
 
