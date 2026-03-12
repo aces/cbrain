@@ -592,13 +592,14 @@ class User < ApplicationRecord
   def system_group_site_update  #:nodoc:
     self.own_group.update_attributes(:site_id => self.site_id)
 
-    if self.changed.include?("site_id")
-      unless self.changes["site_id"].first.blank?
-        old_site = Site.find(self.changes["site_id"].first)
+    if saved_change_to_attribute?("site_id")
+      old_val, new_val = saved_change_to_attribute("site_id")
+      unless old_val.blank?
+        old_site = Site.find(old_val)
         old_site.own_group.users.delete(self)
       end
-      unless self.changes["site_id"].last.blank?
-        new_site = Site.find(self.changes["site_id"].last)
+      unless new_val.blank?
+        new_site = Site.find(new_val)
         new_site.own_group.user_ids |= [ self.id ]
       end
     end

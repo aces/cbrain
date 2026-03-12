@@ -219,9 +219,9 @@ class Site < ApplicationRecord
   end
 
   def system_group_rename #:nodoc:
-    if self.changed.include?("name")
-      old_name = self.changes["name"].first
-      SiteGroup.find_by_name(old_name).update_attributes!(:name => self.name)
+    if saved_change_to_attribute?("name")
+      old_name = saved_change_to_attribute("name").first
+      SiteGroup.find_by_name(old_name)&.update_attributes!(:name => self.name)
     end
   end
 
