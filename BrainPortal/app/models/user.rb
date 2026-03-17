@@ -449,15 +449,17 @@ class User < ApplicationRecord
   # Shared Secret Methods
   ##############################################
 
+  # Stores a secret for the users, for a named client.
   def set_shared_secret_for_client(client, secret)
     client = client.to_s
     cb_error "Invalid client name" unless client =~ /\A[a-z][a-z0-9_]*[a-z]+\z/i
     secret = secret.to_s
     cb_error "Secret is too short"          if secret.length < 30
-    cb_error "Entropy of secret is too low" if Shannon::entropy(secret) < 4.0
+    cb_error "Entropy of secret is too low" if Shannon::entropy(secret) < 3.0
     self.meta["secret_for_client_#{client}"] = secret
   end
 
+  # Returns the user's secret for a named client.
   def get_shared_secret_for_client(client)
     client = client.to_s
     cb_error "Invalid client name" unless client =~ /\A[a-z][a-z0-9_]*[a-z]+\z/i
