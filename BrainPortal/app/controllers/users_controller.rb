@@ -602,13 +602,13 @@ class UsersController < ApplicationController
     return unauthorized.('Bad IssuedAt field') unless timestamp && timestamp > DateTime.parse("2025-01-01").to_f
     return unauthorized.('IssuedAt is too far from present') if Time.now.to_f - timestamp > 3600.0 # one hour
 
-    # Try to find an existing session, in case the client makes multiple requests with the same token
+    # Try to find an existing session, in case the client makes multiple requests
     ip_add = cbrain_request_remote_ip()
     ses = LargeSessionInfo.where(:user_id => user.id, :active => true).to_a.detect do |lsi|
       lsi.data[:api].present?                        &&
       lsi.data[:jwt_client]        == client         &&
-      lsi.data[:jwt_iat]           == timestamp.to_s &&
-      lsi.data[:guessed_remote_ip] == ip_add
+      lsi.data[:guessed_remote_ip] == ip_add         &&
+      lsi.updated_at > SessionHelpers::SESSION_API_TOKEN_VALIDITY.ago
     end
 
     Rails.logger.info "Re-using existing session" if ses
