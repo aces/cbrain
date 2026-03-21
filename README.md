@@ -1,46 +1,58 @@
 
 ![Continuous Integration](https://github.com/aces/cbrain/workflows/cbrain_ci/badge.svg)
 
-## CBRAIN
+# CBRAIN
 
-CBRAIN is a collaborative, web-enabled grid platform built to
-facilitate research on large, distributed datasets by managing user
-access, transfer, caching and provenence for distributed data, as
-well as mediating interactions with high-performance computing
-centres (HPCs).
+CBRAIN is a web-based platform that helps researchers work with large and distributed datasets. It handles things like user access, data transfer, caching, and provenance, and also connects with high-performance computing (HPC) and cloud resources to run heavy processing tasks.
+
 
 ## NeuroHub Portal
 
-The NeuroHub Portal is an alternative interface to CBRAIN. It provides a few
-special capabilities that are not accessible in CBRAIN, while also
-lacking many of CBRAIN's features (because it is fairly new, as of
-August 2020). Users can switch back and forth between the two
-interfaces, since they share the same authentication and database
-systems.
+NeuroHub is an alternative interface to CBRAIN. It includes some features that are not available in CBRAIN yet, but at the same time, it doesn’t have all of CBRAIN’s functionality since it is still relatively new.
 
-CBRAIN (and the alternative NeuroHub interface) consists of two Ruby on Rails Applications: BrainPortal and Bourreau
+Both CBRAIN and NeuroHub use the same authentication and database system, so users can switch between them easily.
 
-## BrainPortal
 
-BrainPortal is the frontend of the CBRAIN architecture. It is a
-Rails application that provides a web-based graphical user interface
-to CBRAIN. Users can upload, tag and search their files. They can
-launch compute-intensive processing jobs on remote High-Performance
-Computing (HPC) sites. Remote file repositories can be created to
-provide files from any network-enabled system.
+## Architecture Overview
 
-## Bourreau
+CBRAIN (along with NeuroHub) is built using two Ruby on Rails applications:
 
-Bourreau is the backend of the CBRAIN architecture. It is a Rails
-application that is not meant to serve the user directly. It interacts
-with the CBRAIN Brainportal application using XML, acting as an
-intermediary between user requests through BrainPortal and the
-cluster management software running on High-Performance Computing
-sites. A Bourreau receives requests to launch a processing task,
-sets up the required working directories, runs the process and then
-sends information about any newly created files back to BrainPortal.
-A Bourreau can also be queried about the jobs that are currently
-running on the HPC where it resides.
+### BrainPortal
+
+BrainPortal is the frontend of CBRAIN. It provides a web interface where users can:
+
+* Upload, tag, and search their data
+* Run compute-intensive jobs on remote HPC systems
+* Access files stored on different remote systems
+
+
+### Bourreau
+
+Bourreau acts as the backend of CBRAIN and is not directly used by end users.
+
+It communicates with BrainPortal using XML and works as a bridge between user requests and the HPC systems.
+
+Its responsibilities include:
+
+* Receiving job requests
+* Preparing the required environment
+* Running tasks on HPC systems
+* Sending results and generated files back to BrainPortal
+* Providing updates on running jobs
+
+
+## Possible Improvement: Python CLI
+
+A Python-based command line interface (CLI) could be a useful addition to CBRAIN.
+
+With a CLI, users could:
+
+* Upload and download data from the terminal
+* Submit and monitor jobs
+* Automate workflows without using the web interface
+
+This would especially help advanced users who prefer scripting and automation.
+
 
 ## For more information
 
