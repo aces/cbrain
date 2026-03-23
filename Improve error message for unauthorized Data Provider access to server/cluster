@@ -1,0 +1,1 @@
+Currently, when a Data Provider (DP) is not authorized to use a specific server or cluster, the system throws an unclear runtime error during task setup. This makes it difficult for users to understand the actual cause of failure.
