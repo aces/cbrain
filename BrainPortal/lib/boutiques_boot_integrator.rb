@@ -42,8 +42,7 @@ class BoutiquesBootIntegrator
     tool = Tool.create_from_descriptor(descriptor) # does nothing if it already exists
     if tool.cbrain_task_class_name =~ /^CbrainTask::/
       basename = Pathname.new(path).basename
-      puts "B> SKIPPING old integraton of Boutiques JSON: #{basename} Class: #{tool.cbrain_task_class_name}"
-      return
+      raise "ERROR: old integraton of Boutiques JSON: #{basename} Class: #{tool.cbrain_task_class_name}"
     end
 
     # Create ToolConfig if necessary

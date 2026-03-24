@@ -372,7 +372,7 @@ module TestHelpers
 
   # Helper to generate simple json inputs with default values
   GenerateJsonInputDefault = lambda do |id,type,desc,otherParams = {}|
-    return {
+    return BoutiquesSupport::Input.new({
       'id'                => id,
       'name'              => id.upcase,
       'type'              => type,
@@ -380,7 +380,7 @@ module TestHelpers
       'command-line-flag' => "-#{id}",
       'value-key'         => "[#{id.upcase}]",
       'optional'          => true
-    }.merge( otherParams )
+    }.merge( otherParams ))
   end
 
 end
