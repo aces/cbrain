@@ -29,14 +29,17 @@ class UsersController < ApplicationController
 
   include GlobusHelpers
 
-  api_available :only => [ :index, :create, :show, :destroy, :update, :create_user_session, :push_keys, :new_token]
+  api_available :only => [ :index, :create, :show, :destroy, :update, :create_user_session, :push_keys, :new_token, :new_token_from_jwt ]
 
-  before_action :login_required,        :except => [:request_password, :send_password]
-  before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password, :push_keys, :new_token]
+  before_action :login_required,        :except => [:request_password, :send_password, :new_token_from_jwt]
+  before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password, :push_keys, :new_token, :new_token_from_jwt]
   before_action :admin_role_required,   :only =>   [:create_user_session]
 
   spurious_params_ban_ip :request_password => [],
-                         :send_password    => [ :login, :email ]
+                         :send_password    => [ :login, :email ],
+                         :new_token_from_jwt => [ :jwt ]
+
+  skip_before_action :verify_authenticity_token, :only => [ :new_token_from_jwt ]
 
   def index #:nodoc:
     @scope = scope_from_session
@@ -496,6 +499,153 @@ class UsersController < ApplicationController
         render :json => { :cbrain_api_token => @new_token }
       end
     end
+  end
+
+  # POST /users/new_token_from_jwt
+  #
+  # This action allows an external service (called 'client' in the code)
+  # to get a CBRAIN API token for a user using a shared secret. Each user
+  # has their own secret for each client. For populating the CBRAIN side
+  # secrets, see the methods in the User class.
+  #
+  # This action requires a small JSON object with a single key, :jwt,
+  # whose value is an encoded JWT. E.g.
+  #
+  #   { "jwt": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ
+  #             jbGllbnQiOiJ0ZXN0IiwiaWF0IjoxNzczNzcyNTI
+  #             yLjc2NDAyMn0.7eeAoeH1ZBzuIJqKnGy6bn7R6th
+  #             OCcTMQncPaett2Js" }
+  #
+  # In this example, the payload is
+  #
+  #   { "user_id": 2, "client" => "test", "iat": 1773772522.764022 }
+  #
+  # and it has been signed with HS256 using the shared common secret.
+  #
+  # The payload MUST contain "iat" and "client". "client" is any
+  # simple alphanum name string that identify the external service,
+  # chosen in agreement by the people making the integrations.
+  #
+  # The payload MUST contain a way to identify a CBRAIN user. Currently,
+  # three ways are provided by three keys, which are tried in this order:
+  #
+  #   1. "user_id" or, if missing,
+  #   2. "login" or, if missing,
+  #   3. "email"
+  #
+  # The action returns a simple JSON object with a single JWT in exactly
+  # the same way, signed using the same secret:
+  #
+  #   { "jwt": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJ
+  #             jYnJhaW5fYXBpX3Rva2VuIjoiMDFkNmM5Nzg4YmM
+  #             xODNhMmY0NjdlMzA0OTZlMGFiZmMiLCJpYXQiOjE
+  #             3NzM3NzMzMzcuOTI2MzQ5Mn0.NjjDAt2sZNI8mI8
+  #             Q3js_U4suzn_ACbKEDrSrqhSb0-E" }
+  #
+  # The JWT payload will contain only three values, as shown here:
+  #
+  #   {
+  #     "user_id"=>2,
+  #     "cbrain_api_token"=>"fc50499d5a073cb98b33fde3080af19f",
+  #     "iat"=>1773772586.881768
+  #   }
+  #
+  # Note that the CBRAIN session will be reused if the requests
+  # happen to match a request sent a bit earlier. Also, the CBRAIN
+  # session will always be tied to the IP address of the client.
+  #
+  # Anything that goes wrong generates a 401.
+  def new_token_from_jwt
+
+    unauthorized = ->(message) do
+      Rails.logger.error "Unauthorized: #{message}"
+      head :unauthorized
+    end
+
+    return unauthorized.('Not JSON') if ! api_request?
+    jwtstring = params[:jwt].presence
+    return unauthorized.('No JWT provided') if jwtstring.blank?
+    jwt = JWT::EncodedToken.new(jwtstring)
+
+    # First try to find a user ID using the unverified payload
+    user        = nil
+    danger_pl   = jwt.unverified_payload
+
+    # Verify that we have a name for the client
+    client = danger_pl["client"].to_s # name of service asking for token
+    return unauthorized.('Bad/missing client name') if client.blank? || client !~ /^\A[a-z][a-z0-9_]*[a-z]+\z/i # letters digits numbers only
+
+    # We try these three in order of priority
+    user_id     = danger_pl["user_id"].to_s  # cbrain User numeric ID
+    user_login  = danger_pl["login"].to_s    # cbrain User login
+    user_email  = danger_pl["email"].to_s    # cbrain User email
+    if user_id.present? && user_id =~ /\A\d+\z/
+      user = NormalUser.find(user_id)
+    elsif user_login.present?
+      user = NormalUser.find_by_login(user_login)
+    elsif user_email.present?
+      user = NormalUser.where(:email => user_email).first
+    else
+      return unauthorized.('No user specified')
+    end
+
+    # Get the shared secret for the user/client pair
+    secret = user.get_shared_secret_for_client(client)
+    return unauthorized.("No shared secret for user #{user.login} from client #{client}") if secret.blank?
+
+    # Now verify the JWT using the common secret.
+    # This will raise JWT::VerificationError if the JWT is bad
+    jwt.verify!( :signature => { :algorithm => jwt.header["alg"], :key => secret } )
+
+    # Find the issue timestamp; must have been issued in the past hour
+    timestamp = jwt.payload['iat'].to_f rescue nil # numeric date
+    return unauthorized.('Bad IssuedAt field') unless timestamp && timestamp > DateTime.parse("2025-01-01").to_f
+    return unauthorized.('IssuedAt is too far from present') if Time.now.to_f - timestamp > 3600.0 # one hour
+
+    # Try to find an existing session, in case the client makes multiple requests
+    ip_add = cbrain_request_remote_ip()
+    ses = LargeSessionInfo.where(:user_id => user.id, :active => true).to_a.detect do |lsi|
+      lsi.data[:api].present?                        &&
+      lsi.data[:jwt_client]        == client         &&
+      lsi.data[:guessed_remote_ip] == ip_add         &&
+      lsi.updated_at > SessionHelpers::SESSION_API_TOKEN_VALIDITY.ago
+    end
+
+    Rails.logger.info "Re-using existing session" if ses
+
+    # If we can't reuse a session, we create a new one
+    if ses.blank?
+      ses = LargeSessionInfo.new(
+        :user_id    => user.id,
+        :active     => true,
+        :session_id => CbrainSession.random_session_id,
+        :data => { :api               => 'yes',
+                   :jwt_client        => client,
+                   :jwt_iat           => timestamp.to_s,
+                   :guessed_remote_ip => ip_add, # maybe leave blank and wait until first connection?
+                 }
+      )
+      ses.save!
+      Rails.logger.info "Creating new session"
+    end
+
+    # Create the encoded response JWT
+    answer = JWT.encode(
+      {
+        :user_id          => user.id,
+        :cbrain_api_token => ses.session_id,
+        :iat              => Time.now.to_f,
+      },
+      secret,
+      'HS256'
+    )
+
+    # Return the info
+    render :json => { :jwt => answer }
+
+  rescue JWT::VerificationError
+    Rails.logger.error "Token verification failed"
+    head :unauthorized
   end
 
   private
