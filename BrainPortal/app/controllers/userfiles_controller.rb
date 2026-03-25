@@ -741,8 +741,11 @@ class UserfilesController < ApplicationController
 
       if @userfile.save_with_logging(current_user, %w( group_writable num_files parent_id hidden ) )
         if new_name != old_name
-          @userfile.provider_rename(new_name)
-          @userfile.addlog("Renamed by #{current_user.login}: #{old_name} -> #{new_name}")
+          if @userfile.provider_rename(new_name)
+            @userfile.addlog("Renamed by #{current_user.login}: #{old_name} -> #{new_name}")
+          else
+            @userfile.errors.add(:name, "could not be changed on the storage provider. A file with that name likely already exists.")
+          end    
         end
       end
     end
