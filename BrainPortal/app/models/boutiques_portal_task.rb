@@ -115,10 +115,12 @@ class BoutiquesPortalTask < PortalTask
 
     # return "Warning: you selected more files than this task requires, so you won't be able to assign them all."
     # Not available in case of descriptor qualified to launch multiple task
-    if !descriptor.qualified_to_launch_multiple_tasks? && (num_in_files < num_needed_inputs || num_in_files > num_needed_inputs+num_opt_inputs)
-      message = "This task requires #{num_needed_inputs} mandatory file(s) and #{num_opt_inputs} optional file(s)\n" +
-        input_infos
-      cb_error message
+    if num_in_files < num_needed_inputs || num_in_files > num_needed_inputs+num_opt_inputs
+      if (! descriptor.qualified_to_launch_multiple_tasks? || num_in_files == 0)
+        message = "This task requires #{num_needed_inputs} mandatory file(s) and #{num_opt_inputs} optional file(s)\n" +
+          input_infos
+        cb_error message
+      end
     end
 
     ""
@@ -299,6 +301,7 @@ class BoutiquesPortalTask < PortalTask
     # --------------------------------------
     if descriptor.file_inputs.size == 1 || descriptor.qualified_to_launch_multiple_tasks?
       input = descriptor.file_inputs.first
+      input = descriptor.sole_mandatory_file_input if descriptor.qualified_to_launch_multiple_tasks?
 
       fillTask = lambda do |userfile,tsk,extra_params=nil|
         tsk.params[:interface_userfile_ids] |= [ userfile.id.to_s ]
@@ -445,6 +448,8 @@ class BoutiquesPortalTask < PortalTask
         next if isInactive(input)
         userfile_id = invoke_params[input.id]
         next if userfile_id.blank?
+        next if userfile_id.is_a?(Array) && userfile_id.size > 1 # list = true
+        userfile_id = userfile_id.first if userfile_id.is_a?(Array)
         userfile = Userfile.find_accessible_by_user(userfile_id, self.user, :access_requested => file_access_symbol())
         next unless ( userfile.is_a?(CbrainFileList) || (userfile.suggested_file_type || Object) <= CbrainFileList )
         [ input, userfile ]
@@ -576,16 +581,18 @@ class BoutiquesPortalTask < PortalTask
 
       # Nothing special required for strings, bar for symbols being acceptable strings.
       when :string
-        value = value.to_s                                                 if value.is_a?(Symbol)
-        params_errors.add(invokename, " is not a string (#{value})")   unless value.is_a?(String)
-        value.strip!                                                       if value.is_a?(String)
-        params_errors.add(invokename, " is blank")                         if value.blank? && !empty_string_allowed
-        # The following three checks are to prevent cases when
-        # a string param is used as a path
-        params_errors.add(invokename, " cannot contain newlines")          if value =~ /[\n\r]/
-        params_errors.add(invokename, " cannot start with this character") if value =~ /^[\.\/]+/
-        params_errors.add(invokename, " cannot move up dirs")              if value.include? "/../"
-        if value.present? && input.value_choices.blank?
+        value = value.to_s                                                  if value.is_a?(Symbol)
+        params_errors.add(invokename, " is not a string")               unless value.is_a?(String)
+        value = value.to_s.strip # now force it
+        params_errors.add(invokename, " is blank")                           if value.blank? && !empty_string_allowed
+        # The following checks are to prevent cases when a string param is used as a path
+        if value.present?
+          params_errors.add(invokename, " cannot contain newlines")          if value =~ /[\n\r]/
+          params_errors.add(invokename, " cannot start with this character") if value =~ /^[\.\/]+/
+          params_errors.add(invokename, " cannot move up dirs")              if value.include? "/../"
+        end
+        # Finally, check allowed characters
+        if value.present? && input.value_choices.blank? # valid value choices are checked elsewhere
           params_errors.add(invokename, " contains invalid characters")  unless value.match?(charset_regex) # we can use a string in the match method
         end
 
@@ -628,7 +635,7 @@ class BoutiquesPortalTask < PortalTask
   end
 
   def check_enum_param(input)
-    value = invoke_params[input.id]
+    value = invoke_params[input.id] || input.default_value
     string_values  = Array(value).map(&:to_s)
     allowed_values = input.value_choices.map(&:to_s)
     return if (string_values - allowed_values).empty? # I hope that comparing the sets as strings is OK
@@ -714,7 +721,7 @@ class BoutiquesPortalTask < PortalTask
   # MAYBE IN COMMON
 
   def invoke_params
-    self.params[:invoke] ||= {}
+    self.params[:invoke] ||= {}.with_indifferent_access
   end
 
   # In the case of a misconfiguration of the portal, or if the file for

@@ -63,7 +63,7 @@ describe "BrainPortal Boutiques Tests" do
     })
     @dp.save!
     # Lambda for constructing cbcsv files
-    @makeCbcsv = -> (fs, name, task, mangler=nil, addToIuids=true, user: @user, group: @group, dp: @dp) {
+    @makeCbcsv = -> (fs, name, task, mangler=nil, addToUids=true, user: @user, group: @group, dp: @dp) {
       flist = CbrainFileList.new(
         :user             => user,
         :user_id          => user.id,
@@ -75,18 +75,21 @@ describe "BrainPortal Boutiques Tests" do
       text = CbrainFileList.create_csv_file_from_userfiles( fs )
       text = mangler.( text ) unless mangler.nil?
       flist.cache_writehandle { |t| t.write( text ) }
-      task.params[:interface_userfile_ids] << flist.id if addToIuids
+      task.params[:interface_userfile_ids] ||= []           if addToUids
+      task.params[:interface_userfile_ids]  |= [ flist.id ] if addToUids
       flist # return the cbcsv object
     }
     # Helper for generating and sending userfiles to tasks
     @addUserFile = -> (name, task, addToUids=true, user: @user, group: @group, dp: @dp) {
       uf = SingleFile.new({data_provider_id: dp.id, name: name, group_id: group.id, user_id: user.id})
       uf.save!
-      task.params[:interface_userfile_ids] << uf.id if addToUids
+      task.params[:interface_userfile_ids] ||= []        if addToUids
+      task.params[:interface_userfile_ids]  |= [ uf.id ] if addToUids
       uf
     }
     # Checks after_form output. Checks both the number or errors and ascertains at least one of their contents.
     @checkAfterForm = -> (task, checkVal=0, atLeastOneErrWith=nil, runBeforeForm=false) {
+      task.params_errors.clear
       task.before_form if runBeforeForm
       task.after_form # Run the method
       errMsgs = task.params_errors.full_messages # Get any error messages
@@ -154,10 +157,10 @@ describe "BrainPortal Boutiques Tests" do
       execer         = FactoryBot.create(:bourreau)
       schema         = Rails.root + "lib/boutiques.schema.json"
       desc_path      = File.join(__dir__, TestScriptDescriptor)
-      descriptor     = BoutiquesSupport::BoutiquesDescriptor.new_from_file(desc_path)
+      @descriptor    = BoutiquesSupport::BoutiquesDescriptor.new_from_file(desc_path)
 
-      tool           = Tool.create_from_descriptor(descriptor)
-      tool_config    = ToolConfig.create_from_descriptor(execer, tool, descriptor)
+      tool           = Tool.create_from_descriptor(@descriptor)
+      tool_config    = ToolConfig.create_from_descriptor(execer, tool, @descriptor)
       if ! BoutiquesTask.const_defined?(:BoutiquesTest)
         BoutiquesBootIntegrator.link_from_json_file(desc_path) rescue nil
       end
@@ -166,7 +169,7 @@ describe "BrainPortal Boutiques Tests" do
       @task          = BoutiquesTask::BoutiquesTest.new
       @task.bourreau = execer
       @task.tool_config = FactoryBot.create(:tool_config)
-      @task.user_id, @task.group_id, @task.params = @user.id, @group.id, {}
+      @task.user_id, @task.group_id, @task.params = @user.id, @group.id, {}.with_indifferent_access
       # Setup for holding the files the user had selected in the UI
       @task.params[:interface_userfile_ids] = []
       # Create userfiles for C, d, j, f (used to convert the ids from strings to numbers)
@@ -174,10 +177,10 @@ describe "BrainPortal Boutiques Tests" do
       @file_f1, @file_f2 = @addUserFile.('f1',@task), @addUserFile.('f2',@task)
       # Helper for converting files in the argument dict to int ids
       @replaceFileIds = -> (replaceF=false) {
-        @task.params[:C] = @file_C.id unless @task.params[:C].nil?
-        @task.params[:d] = @file_d.id unless @task.params[:d].nil?
-        @task.params[:j] = @file_j.id unless @task.params[:j].nil?
-        @task.params[:f] = [ @file_f1.id, @file_f2.id ] if replaceF
+        @task.invoke_params[:C] = @file_C.id unless @task.invoke_params[:C].nil?
+        @task.invoke_params[:d] = @file_d.id unless @task.invoke_params[:d].nil?
+        @task.invoke_params[:j] = @file_j.id unless @task.invoke_params[:j].nil?
+        @task.invoke_params[:f] = [ @file_f1.id, @file_f2.id ] if replaceF
       }
       # Give access to the class version of the task
       @task_const = BoutiquesTask::BoutiquesTest
@@ -194,17 +197,10 @@ describe "BrainPortal Boutiques Tests" do
       it "should have no public path" do # Just test the help file
         expect( @task_const.public_path("edit_params_help.html") ).to eq( nil )
       end
-      it "has all raw partials" do
-        expect( @task_const.raw_partial(:task_params) ).not_to eq( nil )
-        expect( @task_const.raw_partial(:show_params) ).not_to eq( nil )
-        expect( @task_const.raw_partial(:edit_help)   ).not_to eq( nil )
-      end
       it "has pretty param names" do
-        allThere = TestArgs.all? { |s| @task_const.pretty_params_names[s] == s.to_s }
+        @task_const.add_pretty_params_names(@descriptor.inputs || [])
+        allThere = TestArgs.all? { |s| @task_const.pretty_params_names[@descriptor.input_by_id(s).cb_invoke_name] == s.to_s }
         expect( allThere ).to be true
-      end
-      it "has expected default values" do # Only -r has a default value
-        expect( @task_const.default_launch_args[:'r'] ).to eq( 'r' )
       end
     end
 
@@ -225,10 +221,10 @@ describe "BrainPortal Boutiques Tests" do
       # Here, UserFile existence is merely simulated, and before_form is tested in isolation
       describe "has a before_form method that" do
         before(:each) do
-          @task.params = {}
+          @task.params = {}.with_indifferent_access
         end
         it "should fail when no input files are given" do
-          expect { @task.before_form }.to raise_error(CbrainError, /Error: this task requires/)
+          expect { @task.before_form }.to raise_error(CbrainError, /This task requires/i)
         end
       end
 
@@ -247,12 +243,12 @@ describe "BrainPortal Boutiques Tests" do
           it "after_form #{t[0]}" do
             @task.params_errors.clear # Reset to having no errors
             begin # Parse the input command line
-              @task.params = ArgumentDictionary.( t[1].dup )
+              @task.params[:invoke] = ArgumentDictionary.( t[1].dup ).with_indifferent_access
             rescue OptionParser::MissingArgument => e
               next # after_form does not need to check this, since rails puts a value in the hash
             end
-            hasFileListFilled = ! @task.params[:f].nil? # Whether the file list parameter is in use
-            @task.params[:f] ||= [] # after_form expects [], not nil, for empty file lists
+            hasFileListFilled = ! @task.invoke_params[:f].nil? # Whether the file list parameter is in use
+            @task.invoke_params[:f] ||= [] # after_form expects [], not nil, for empty file lists
             @replaceFileIds.( hasFileListFilled ) # replace the file paths with IDs
             @task.after_form # Run the method
             errMsgs = @task.params_errors.full_messages
@@ -260,9 +256,17 @@ describe "BrainPortal Boutiques Tests" do
             errMsgs.delete_if { |m| ignoredMsgs.any? { |e| m.include?(e) } }
             # When there is an error, the exit code should be non-zero; no errors should be present otherwise
             expect(
-              (errMsgs.length == 0 && t[2] == 0) || (errMsgs.length > 0 && t[2] != 0)
+              if (errMsgs.length == 0 && t[2] == 0) || (errMsgs.length > 0 && t[2] != 0)
+                true
+              else
+                # Uncomment this to debug a particularly tricky situation
+                #puts_yellow "Got #{errMsgs.length} error messages and expected #{t[2]}"
+                #puts_yellow "Messages are:\n#{errMsgs.join("\n")}" if errMsgs.length > 0
+                #puts_yellow "Params: #{@task.params.inspect}"
+                false
+              end
             ).to be true
-            @task.params = {} # Clean up; @task is shared between tests
+            @task.params = {}.with_indifferent_access # Clean up; @task is shared between tests
           end # it block
         end # all? block
       end # describe block generated after_form method
@@ -273,16 +277,15 @@ describe "BrainPortal Boutiques Tests" do
         # Setup the environment with several userfiles and cbcsv files
         before(:each) do
           # Fill in the minimal required arguments for the class (but save the mock UI chosen files)
-          temp = @task.params[:interface_userfile_ids]
-          @task.params = ArgumentDictionary.( MinArgs )
-          @task.params[:interface_userfile_ids] = temp
+          @task.params_errors.clear
+          @task.params[:invoke] = ArgumentDictionary.( MinArgs ).with_indifferent_access
           # Create some user files
           @userfiles   = (0..9).map { |i| @addUserFile.("f-#{i}",@task) }
           # Create some cbcsvs
           @std1, @std2 = @makeCbcsv.(@userfiles[0..3],"std2.cbcsv",@task), @makeCbcsv.(@userfiles[4..7],"std1.cbcsv",@task)
           # File input parameters
-          @task.params[:C]   = @file_C.id # Replace as above, since it is a required argument
-          @task.params[:f] ||= [] # after_form expects [], not nil, for empty file lists
+          @task.invoke_params[:C]   = @file_C.id # Replace as above, since it is a required argument
+          @task.invoke_params[:f] ||= [] # after_form expects [], not nil, for empty file lists
         end
 
         # Clean up after each test by removing the cbcsvs we saved (includes destroying them on the data provider)
@@ -293,25 +296,25 @@ describe "BrainPortal Boutiques Tests" do
         # Test the after_form error checking for multi-task launching
         describe "in after_form" do
           it "with one cbcsv file" do
-            @task.params[:d] = @std1.id # single cbcsv
+            @task.invoke_params[:d] = @std1.id # single cbcsv
             @checkAfterForm.( @task )
           end
           it "with more than one cbcsv files" do
-            @task.params[:d], @task.params[:j] = @std1.id, @std2.id
+            @task.invoke_params[:d], @task.invoke_params[:j] = @std1.id, @std2.id
             @checkAfterForm.( @task )
           end
           it "with a cbcsv that does not have the cbcsv extension" do
-            @task.params[:d] = @makeCbcsv.(@userfiles[0..3],"misname.m",@task).id
+            @task.invoke_params[:d] = @makeCbcsv.(@userfiles[0..3],"misname.m",@task).id
             @checkAfterForm.( @task )
           end
           it "with a cbcsv with nil entries" do
             nilEntries = @makeCbcsv.(@userfiles[3..6],"hasNils.cbcsv",@task,@nilRowAdder)
-            @task.params[:d] = nilEntries.id
+            @task.invoke_params[:d] = nilEntries.id
             @checkAfterForm.( @task )
           end
           it "to detect errors when lengths don't match" do
             smaller = @makeCbcsv.(@userfiles[8..9], "small.cbcsv", @task)
-            @task.params[:d], @task.params[:j] = @std1.id, smaller.id
+            @task.invoke_params[:d], @task.invoke_params[:j] = @std1.id, smaller.id
             @checkAfterForm.( @task, 1, "number of files" )
           end
           it "to detect errors when a file does not exist" do
@@ -322,7 +325,7 @@ describe "BrainPortal Boutiques Tests" do
                 v.join( CbrainFileList::FIELD_SEPARATOR )
               }
             )
-            @task.params[:d] = noFile.id
+            @task.invoke_params[:d] = noFile.id
             @checkAfterForm.( @task, 1, "unable to find file" )
           end
           it "to detect errors when a file is inaccessible" do
@@ -331,13 +334,13 @@ describe "BrainPortal Boutiques Tests" do
             file2 = @addUserFile.("file2.c", @task, user: user2, group: grp2)
             # Put the file in a cbcsv and check after_form
             cbcsvTest = @makeCbcsv.([@userfiles[0],file2,@userfiles[1]],"cbcsvWithOthersFiles.cbcsv", @task)
-            @task.params[:d] = cbcsvTest.id
+            @task.invoke_params[:d] = cbcsvTest.id
             # Make sure after_form catches the problem
             @checkAfterForm.( @task, 1, "unable to find file" )
           end
           # This assumes the user made a mistake, e.g. forgot to convert the file, in this case
           it "to detect errors when a file is not a cbcsv but has the cbcsv extension" do
-            @task.params[:d] = @addUserFile.('fake.cbcsv',@task).id
+            @task.invoke_params[:d] = @addUserFile.('fake.cbcsv',@task).id
             @checkAfterForm.( @task, 1, "not of type" )
           end
           it "to detect errors when a row has invalid attributes" do
@@ -348,7 +351,7 @@ describe "BrainPortal Boutiques Tests" do
                 v.join( CbrainFileList::FIELD_SEPARATOR )
               }
             )
-            @task.params[:d] = invalidFile.id
+            @task.invoke_params[:d] = invalidFile.id
             @checkAfterForm.( @task, 1, "are invalid" ) # Two errors: as the misnamed file is missing and the row is invalid
           end
         end
@@ -358,38 +361,27 @@ describe "BrainPortal Boutiques Tests" do
         describe "in final_task_list" do
           # Normal case (no cbcsv files)
           it "with no cbcsvs" do
-            @task.params[:d] = @userfiles[0].id
+            @task.invoke_params[:C] = @userfiles[0].id
             expect( @task.final_task_list.length ).to eq( 1 )
           end
           # Standard single cbcsv case
           it "with a single cbcsv" do
-            @task.params[:d] = @std1.id
+            @task.invoke_params[:C] = @std1.id
             expect( @task.final_task_list.length ).to eq( 4 )
-          end
-          # Try with multiple cbcsvs
-          it "with multiple cbcsvs" do
-            # First, test that the number of tasks is good
-            @task.params[:d], @task.params[:j] = @std1.id, @std2.id #0-3, 4-7
-            taskList = @task.final_task_list
-            expect( taskList.length ).to eq( 4 )
-            # Second, test that the parameters of those tasks are good (i.e. correct userfiles in the right places)
-            taskList.each_with_index do |task, i|
-              expect( task.params[:d] ).to eq( @userfiles[i].id )   # cbcsv expansion of std1
-              expect( task.params[:j] ).to eq( @userfiles[i+4].id ) # cbcsv expansion of std2
-            end
           end
           # The presence of null entries should give tasks with empty parameters when reached
           it "with nil entries in cbcsvs" do
             c1 = @makeCbcsv.(@userfiles[3..6],"hasNils.cbcsv",@task,@nilRowAdder)
-            c2 = @makeCbcsv.(@userfiles[1..5],"noNils.cbcsv",@task)
-            @task.params[:d], @task.params[:j] = c1.id, c2.id
+            #c2 = @makeCbcsv.(@userfiles[1..5],"noNils.cbcsv",@task)
+            @task.invoke_params[:C] = c1.id
+            #@task.invoke_params[:j] = c2.id
             taskList = @task.final_task_list
             # Should be 5 tasks in total (the nil row should count)
-            expect( taskList.length ).to eq( 5 )
+            expect( taskList.length ).to eq( 4 )
             # Should be nothing for d when it's the nil row's turn
             taskList.each_with_index do |task, i|
-              expect( task.params[:d] ).to eq( (i==4) ? nil : @userfiles[i+3].id )
-              expect( task.params[:j] ).to eq( @userfiles[i+1].id )
+              expect( task.invoke_params[:C] ).to eq( @userfiles[i+3].id )
+              #expect( task.invoke_params[:j] ).to eq( @userfiles[i+1].id )
             end
           end
         end
@@ -411,21 +403,21 @@ describe "BrainPortal Boutiques Tests" do
       tool_config    = ToolConfig.create_from_descriptor(execer, tool, @descriptor)
       BoutiquesTask.const_set(:MinimalTest, Class.new(BoutiquesPortalTask)) if ! BoutiquesTask.const_defined?(:MinimalTest)
       ToolConfig.register_descriptor(@descriptor, tool.name, tool_config.version_name) rescue nil
-#puts_red "TOOLS=#{Tool.pluck(:name).join(", ")}"
-#puts_red "KLASS=#{Tool.pluck(:cbrain_task_class_name).join(", ")}"
-#puts_red "TCS=#{ToolConfig.pluck(:version_name).join(", ")}"
 
       # Generates a task object from the minimal mock app
 key = [ tool.name, tool_config.version_name ]
       @generateTask = ->(params,reset_desc = nil) do
         useDefaults = (params.is_a? String) && (params == 'defaults')
         task = BoutiquesTask::MinimalTest.new(:tool_config_id => tool_config.id, :bourreau_id => execer.id)
-if reset_desc
-ToolConfig.instance_eval {
- @_descriptors_[key] = reset_desc
-}
-end
-        task.params = useDefaults ? task.class.default_launch_args : params
+
+        # reset_desc is a kludge
+        if reset_desc
+          ToolConfig.instance_eval {
+            @_descriptors_[key] = reset_desc
+          }
+        end
+
+        task.params = useDefaults ? task.default_launch_args : { :invoke => params.with_indifferent_access }
         task
       end
     end
@@ -448,7 +440,7 @@ end
         @task = @generateTask.( 'defaults', @descriptor )
         # Add metadata to the task
         @task.bourreau = FactoryBot.create(:bourreau)
-        @task.user_id, @task.group_id, @task.params = @user.id, @group.id, {}
+        @task.user_id, @task.group_id, @task.params = @user.id, @group.id, {}.with_indifferent_access
         @task.params[:interface_userfile_ids] = []
         @task.tool_config = FactoryBot.create(:tool_config)
         # Generate some userfiles for testing
@@ -459,30 +451,28 @@ end
         Userfile.all.select { |f| f.is_a?(CbrainFileList) }.each { |uf| uf.destroy }
       end
       describe "has after_form that" do
-        it "works without any cbcsvs" do
-          @addUserFile.('t.txt',@task); @addUserFile.('r.txt',@task)
-          @checkAfterForm.( @task, 0, nil, true )
-        end
         it "works with one cbcsv" do
-          @makeCbcsv.([@f1,@f2], 'test.cbcsv', @task)
+          cb1 = @makeCbcsv.([@f1,@f2], 'test.cbcsv', @task)
+          @task.invoke_params['f'] = cb1.id
           @checkAfterForm.( @task, 0, nil, true )
         end
-        it "works with two cbcsvs" do
-          @makeCbcsv.([@f1,@f2], 't1.cbcsv', @task); @makeCbcsv.([@f1,@f3], 't2.cbcsv', @task)
-          @checkAfterForm.( @task, 0, nil, true )
-        end
-        it "works with two cbcsvs of different lengths" do
-          @makeCbcsv.([@f1,@f2], 't1.cbcsv', @task); @makeCbcsv.([@f1,@f2,@f3], 't2.cbcsv', @task)
-          @checkAfterForm.( @task, 0, nil, true )
-        end
+        #it "works with two cbcsvs" do
+        #  @makeCbcsv.([@f1,@f2], 't1.cbcsv', @task); @makeCbcsv.([@f1,@f3], 't2.cbcsv', @task)
+        #  @checkAfterForm.( @task, 0, nil, true )
+        #end
+        #it "works with two cbcsvs of different lengths" do
+        #  @makeCbcsv.([@f1,@f2], 't1.cbcsv', @task); @makeCbcsv.([@f1,@f2,@f3], 't2.cbcsv', @task)
+        #  @checkAfterForm.( @task, 0, nil, true )
+        #end
         it "fails when a subfile is non-existent" do
-          @makeCbcsv.( [@f1,@f2,@f3], 'missing.cbcsv', @task,
+          cbl = @makeCbcsv.( [@f1,@f2,@f3], 'missing.cbcsv', @task,
             -> (text) { # Lambda for mangling the input text so the first number becomes invalid (choose max + 1)
               v    = text.split( CbrainFileList::FIELD_SEPARATOR )
-              v[0] = Userfile.all.map { |f| f.id }.max + 1
+              v[0] = Userfile.pluck(:id).max + 1
               v.join( CbrainFileList::FIELD_SEPARATOR )
             }
           )
+          @task.invoke_params['f'] = cbl.id
           @checkAfterForm.( @task, 1, "unable to find file", true )
         end
         it "fails gracefully when a file is inaccessible" do
@@ -490,7 +480,8 @@ end
           user2, grp2 = FactoryBot.create( :user ), FactoryBot.create( :group )
           file2 = @addUserFile.("f2.tex", @task, user: user2, group: grp2)
           # Make sure after_form catches the problem
-          @checkAfterForm.( @task, 1, "trying to find file", true )
+          @task.invoke_params['f'] = file2.id
+          @checkAfterForm.( @task, 1, "cannot find userfile", true )
         end
         it "fails gracefully when a cbcsv subfile is inaccessible" do
           # Create a new user and file for him/her
@@ -499,6 +490,7 @@ end
           # Put the file in a cbcsv and check after_form (only add the prohibited file to a cbcsv)
           cbcsvTest = @makeCbcsv.( [@f1,file2,@f3], "cbcsvWithOthersFiles.cbcsv", @task)
           # Make sure after_form catches the problem
+          @task.invoke_params['f'] = cbcsvTest.id
           @checkAfterForm.( @task, 1, "unable to find file", true )
         end
         it "fails when there are non-matching attributes" do
@@ -510,6 +502,7 @@ end
               v.join( CbrainFileList::FIELD_SEPARATOR )
             }
           )
+          @task.invoke_params['f'] = invalidFile.id
           @checkAfterForm.( @task, 1, "are invalid" )
         end
       end

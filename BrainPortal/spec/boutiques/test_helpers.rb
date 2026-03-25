@@ -305,7 +305,7 @@ module TestHelpers
   # e.g. {:a => val_a, :l => [1,2], :v => true, ...} when "-a val_a -l 1 2 -v" appears in the string
   ArgumentDictionary = lambda do |argsIn, idsForFiles=nil|
     # This will hold the output hash arguments
-    hash, copy = {}, argsIn.dup
+    hash, copy = {}.with_indifferent_access, argsIn.dup
     # Shellify the input string
     args = Shellwords.shellwords(argsIn)
     # Must handle space-separated lists separately
@@ -315,8 +315,8 @@ module TestHelpers
     # Fix issues with special separator argument -x
     # We put a boolean there if the wrong separator is used, so the after_form test fails properly
     xarg = copy.split.find { |a| a.start_with? "-x=" }
-    hash.keys.each { |k| hash[k] = xarg[2..-1] if k==:x } unless xarg.nil?
-    hash[:x] = false if hash.keys.include?(:x) and xarg.nil?
+    hash.keys.each { |k| hash[k] = xarg[3..-1] if k.to_s=="x" } unless xarg.nil?
+    hash['x'] = false if hash.keys.include?('x') and xarg.nil?
     # Replace file paths with ids
     unless idsForFiles.nil?
       hash.each do |k,v|

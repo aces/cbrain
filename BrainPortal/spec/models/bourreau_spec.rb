@@ -56,7 +56,6 @@ describe Bourreau do
   describe "#start" do
     before(:each) do
       allow(bourreau).to receive(:has_remote_control_info?).and_return(true)
-      allow(RemoteResource).to receive_message_chain(:current_resource, :is_a?).and_return(true)
       allow(bourreau).to receive(:start_tunnels).and_return(true)
       allow(bourreau).to receive(:write_to_remote_shell_command)
       allow(File).to receive(:read).and_return("Bourreau Started")
