@@ -568,6 +568,8 @@ class BoutiquesPortalTask < PortalTask
       when :number
         if value.blank?
           params_errors.add(invokename, ": value missing")
+        elsif (value.is_a?(Integer) || value.is_a?(Float))
+          value
         elsif (number = (Integer(value) rescue Float(value) rescue nil))
           value = number
         else
