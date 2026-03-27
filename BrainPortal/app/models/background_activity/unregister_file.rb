@@ -34,6 +34,10 @@ class BackgroundActivity::UnregisterFile < BackgroundActivity
     ba
   end
 
+  def targets_model
+    Userfile  # stands for undefined
+  end
+
   def process(item)
     userfile = Userfile.find(item)
     return [ false, "File is under transfer" ] if

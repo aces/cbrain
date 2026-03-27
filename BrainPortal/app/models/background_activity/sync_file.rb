@@ -33,6 +33,10 @@ class BackgroundActivity::SyncFile < BackgroundActivity
     ba.save!
     ba
   end
+  def targets_model
+    Userfile  # stands for undefined
+  end
+
 
   def process(item)
     Userfile.find(item).sync_to_cache

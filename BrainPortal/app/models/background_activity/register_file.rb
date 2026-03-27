@@ -31,6 +31,11 @@ class BackgroundActivity::RegisterFile < BackgroundActivity
     "Register #{cnt} file#{cnt > 1 ? 's' : ''} on #{source_name}"
   end
 
+  def produces_model
+    Userfile  # stands for undefined
+  end
+
+
   # Helper for scheduling a registration of the files immediately.
   # Note that the argument +dest_data_provider_id+ is always ignored
   # but it is declared to make this method's signature identical to
@@ -45,6 +50,10 @@ class BackgroundActivity::RegisterFile < BackgroundActivity
     }
     ba.save!
     ba
+  end
+
+  def item_to_id(item)
+    type,name   = item.split("-",2)
   end
 
   def process(item)  # item is like "TextFile-abcd.xyz"
