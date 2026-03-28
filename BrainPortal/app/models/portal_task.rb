@@ -619,7 +619,7 @@ class PortalTask < CbrainTask
     end
 
     def count #:nodoc:
-      inject(0) { |c| c += 1 }
+      inject(0) { |c, _| c + 1 }
     end
 
     def delete(paramspath) #:nodoc:

@@ -1590,7 +1590,7 @@ class UserfilesController < ApplicationController
         u.name          = file_name
         if u.save
           u.cache_copy_from_local_file("#{workdir}/#{file_name}")
-          u.size = File.size(file_name)
+          u.size = File.size("#{workdir}/#{file_name}")
           u.save
         else
           status = :failed

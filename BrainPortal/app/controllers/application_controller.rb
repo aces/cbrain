@@ -186,8 +186,6 @@ class ApplicationController < ActionController::Base
   #
   #  "User: tsmith from example.com (256.0.0.9) using FireChrome 99.9"
   def log_user_info #:nodoc:
-    reqenv = request.env || {}
-
     # Short username for the message
     login  = current_user ? current_user.login : "(none)"
 

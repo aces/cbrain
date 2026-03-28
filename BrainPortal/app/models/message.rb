@@ -261,7 +261,7 @@ class Message < ApplicationRecord
   # will return
   #   'abcde <a href="/my/path" class="action_link">name</a> def'
   def render_attr(attr)
-    return sefl.attr unless %w[description variable_text header].include?(attr.to_s)
+    return self[attr] unless %w[description variable_text header].include?(attr.to_s)
     if self.message_type == 'communication'
       self[attr] || ''
     else
@@ -330,7 +330,7 @@ class Message < ApplicationRecord
 
     # Get a unique list of all users from all these groups
     groups.compact!
-    allusers = groups.inject([]) { |flat,group| flat |= group.users }
+    allusers = groups.inject([]) { |flat,group| flat | group.users }
     allusers.reject! { |u| u.account_locked? } if ! options[:include_locked_users]
 
     # Select the list of users in list of groups; a special case is made

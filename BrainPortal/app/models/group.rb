@@ -171,7 +171,7 @@ class Group < ApplicationRecord
       .select { |a| a.macro == :has_many }
       .map    { |a| a.name }
       .reject { |a| a == :resource_usage } # we never modify the resource usage records
-    objlist = group_has_many_model_list.inject([]) { |list,modsym| list += self.send(modsym).to_a }
+    objlist = group_has_many_model_list.inject([]) { |list,modsym| list + self.send(modsym).to_a }
     user_id_to_own_group_id = {} # to cache lookups
     objlist.each do |obj|
       next if obj.is_a?(ResourceUsage) # again, just to be sure
