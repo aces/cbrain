@@ -57,8 +57,8 @@ class ToolsController < ApplicationController
     @tool   = current_user.available_tools.find(tool_id)
 
     # All accessible bourreaux for this tool
-    bourreau_ids  = @tool.bourreaux.map(&:id)
-    @bourreaux    = Bourreau.find_all_accessible_by_user(current_user).where( :id => bourreau_ids)
+    tool_bids     = @tool.bourreaux.pluck(:id)
+    @bourreaux    = Bourreau.find_all_accessible_by_user(current_user).where(:id => tool_bids)
     # All accessible tc for this tool on accessible bourreaux
     bourreaux_ids = @bourreaux.map(&:id)
     @tool_configs = ToolConfig.find_all_accessible_by_user(current_user).where(:tool_id => tool_id, :bourreau_id => bourreaux_ids)
@@ -66,12 +66,11 @@ class ToolsController < ApplicationController
     bourreaux_ids = @tool_configs.map(&:bourreau_id)
     @bourreaux    = @bourreaux.where(:id => bourreaux_ids).all
 
-    # Select a specific tool_config
-    selected_by_default = current_user.meta["pref_bourreau_id"]
-    @tool_config = @tool_configs.where(:bourreau_id => selected_by_default).last if (
-      bourreaux_ids.include?(selected_by_default) &&
-      @bourreaux.any? { |b| b.id == selected_by_default && b.online? }
-    )
+    # Select a specific tool_config based on user's preferred Bourreau
+    pref_bid = current_user.meta["pref_bourreau_id"].presence&.to_i # could be nil
+    if @bourreaux.any? { |b| b.id == pref_bid && b.online? }
+      @tool_config = @tool_configs.where(:bourreau_id => pref_bid).order(:id).last
+    end
 
     respond_to do |format|
       format.html { render :partial => 'tools/tool_config_select' }
