@@ -61,7 +61,7 @@ class ToolsController < ApplicationController
     @bourreaux    = Bourreau.find_all_accessible_by_user(current_user).where( :id => bourreau_ids)
     # All accessible tc for this tool on accessible bourreaux
     bourreaux_ids = @bourreaux.map(&:id)
-    @tool_configs = ToolConfig.find_all_accessible_by_user(current_user).where(:tool_id => tool_id, :bourreau_id => bourreau_ids)
+    @tool_configs = ToolConfig.find_all_accessible_by_user(current_user).where(:tool_id => tool_id, :bourreau_id => bourreaux_ids)
     # Reduce list of bourreaux, bourreaux need at least one config available
     bourreaux_ids = @tool_configs.map(&:bourreau_id)
     @bourreaux    = @bourreaux.where(:id => bourreaux_ids).all
@@ -70,7 +70,7 @@ class ToolsController < ApplicationController
     selected_by_default = current_user.meta["pref_bourreau_id"]
     @tool_config = @tool_configs.where(:bourreau_id => selected_by_default).last if (
       bourreaux_ids.include?(selected_by_default) &&
-      @bourreaux.detect? { |b| b.id == selected_by_default && b.online? }
+      @bourreaux.any? { |b| b.id == selected_by_default && b.online? }
     )
 
     respond_to do |format|

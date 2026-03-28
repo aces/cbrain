@@ -328,7 +328,6 @@ class NocController < ApplicationController
 
   # Show IP address
   def fetch_ip_address
-    reqenv = request.env || {}
     @ip_address ||= cbrain_request_remote_ip rescue 'UnknownIP'
   end
 

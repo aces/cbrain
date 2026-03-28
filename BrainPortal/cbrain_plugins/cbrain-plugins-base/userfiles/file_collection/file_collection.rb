@@ -97,7 +97,7 @@ class FileCollection < Userfile
   def merge_collections(userfiles)
 
     # Check for collision
-    full_names = userfiles.inject([]){|list, file| list += file.list_files.map(&:name)}
+    full_names = userfiles.inject([]){|list, file| list + file.list_files.map(&:name)}
 
     unless full_names.uniq.size == full_names.size
       return :collision

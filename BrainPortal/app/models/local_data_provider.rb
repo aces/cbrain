@@ -119,7 +119,7 @@ class LocalDataProvider < DataProvider
       next unless stat # In case the file has been deleted
 
       # Adjust type
-      type =  type = stat.ftype.to_sym
+      type = stat.ftype.to_sym
       type = :regular if type == :file
       next if type != :regular && type != :directory && type != :symlink
 

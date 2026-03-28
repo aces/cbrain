@@ -186,7 +186,7 @@ class CustomFilter < ApplicationRecord
     relative_to           = self.data_relative_to
     table_name            = self.target_filtered_table()
 
-    scope = add_time_condition_to_scope(scope, table_name,
+    add_time_condition_to_scope(scope, table_name,
             mode_is_absolute_from, mode_is_absolute_to,
             absolute_from,         absolute_to,
             relative_from,         relative_to,
