@@ -38,7 +38,8 @@ module TestHelpers
   TempStore                = File.join('spec','fixtures') # Site for temp file creation, as in other specs
 
   ### Helper script argument-specific constants ###
-  TmpJoin = lambda { |fname| File.join(TempStore, fname) }
+  #TmpJoin = lambda { |fname| File.join(TempStore, fname) }
+  TmpJoin = lambda { |fname| fname }
   # Local name variables for outfile arguments
   DefReqOutName = TmpJoin.('r.txt') # Default name for required output
   AltReqOutName = TmpJoin.('r.csv') # Alternate name for required output
@@ -71,8 +72,16 @@ module TestHelpers
   # Execute program with given options
   def runTestScript(cmdOptions, outfileNamesToCheckFor = [])
     system( File.join(__dir__, TestScriptName + (Verbose ? ' --verbose ' : ' ') + cmdOptions) )
+    status=$?
     outfileNamesToCheckFor.each { |n| return 11 unless File.exist?(n) }
-    return $?.exitstatus
+    return status.exitstatus
+  end
+
+  def extractOptions(runscript, command_name)
+    myline = Array(runscript).join("").split(/\n/)
+               .detect { |line| line.include? command_name }
+    opts = myline.sub("./#{command_name}","").sub(command_name,"").strip
+    opts
   end
 
   # JSON validation
@@ -95,6 +104,12 @@ module TestHelpers
   # Destroy Input files
   def destroyInputFiles
     ['c','f','jf','f1','f2'].map{|f| TmpJoin.(f) }.each { |f| File.delete(f) if File.exist?(f) }
+  end
+
+  def destroyTaskSupportFiles
+    %w( .qsub* .invoke* .science* .boutiques ).each do |pat|
+      Dir.glob(pat).to_a.each { |file| File.delete(file) }
+    end
   end
 
   # Destroy output files of the mock program
@@ -177,52 +192,52 @@ module TestHelpers
     ["has mutable required output file name", baseArgs + r_arg, 0, [AltReqOutName] ],
     ["should not find the default required file when renamed", baseArgs + r_arg, 11, [DefReqOutName] ],
     ["outputs optional file", baseArgs + o_arg, 0, [DefReqOutName, OptOutName] ],
-    ["works with a correctly specified enum", baseArgs + '-E c', 0],
+    ["works with a correctly specified enum", baseArgs + '-E b', 0],
     ### Tests that should result in the program failing ###
     # Argument requirement failures
-    ["fails when a required argument is missing (A: flag + value)", "-n 7 -B 7 -C #{C_file} -v s", 9],
-    ["fails when a required argument is missing (A: value)", "-n 7 -B 7 -C #{C_file} -v s -A", 1],
+    ["fails when a required argument is missing (A: flag + value)", "-n 7 -B 7 -C #{C_file} -v s", 9, nil, "'A' is a required property"],
+    ["fails when a required argument is missing (A: value)", "-n 7 -B 7 -C #{C_file} -v s -A", 1, nil, "'A' is a required property"],
     # Argument type failures
-    ["fails when number (-B) is non-numeric (required)", "-n 7 -A a -B q -C #{C_file} -v s -b 7", 3],
-    ["fails when number (-b) is non-numeric (optional)", baseArgs + "-b u", 3],
-    ["fails when number in list (-l) is non-numeric (optional, pos 2)", baseArgs + "-l 2 u 2", 4],
-    ["fails when number in list (-l) is non-numeric (optional, pos 1)", baseArgs + "-l u 1 2", 4],
-    ["fails when enum is not given a reasonable value", baseArgs + '-E d', 11],
+    ["fails when number (-B) is non-numeric (required)", "-n 7 -A a -B q -C #{C_file} -v s -b 7", 3, nil, "'q' is not of type 'number'"],
+    ["fails when number (-b) is non-numeric (optional)", baseArgs + "-b u", 3, nil, "'u' is not of type 'number'"],
+    ["fails when number in list (-l) is non-numeric (optional, pos 2)", baseArgs + "-l 2 u 2", 4, nil, "'u' is not of type 'number'"],
+    ["fails when number in list (-l) is non-numeric (optional, pos 1)", baseArgs + "-l u 1 2", 4, nil, "'u' is not of type 'number'"],
+    ["fails when enum is not given a reasonable value", baseArgs + '-E d', 11, nil, "'d' is not one of"],
     ["fails when numeric enum is not given a proper value", baseArgs + '-i 7', 11],
     # Special separator failures
     ["fails when special separator is missing", baseArgs + "-x 7", 5],
     ["fails when special separator is wrong", baseArgs + "-x~7", 5],
     # Number constraints on lists
-    ["fails when int list contains non-int", baseArgs + "-L 9 9.1 12", 12],
-    ["fails when list entry is too low", baseArgs + "-L 9 6 12", 12],
-    ["fails when list entry is too high", baseArgs + "-L 9 15 12", 12],
-    ["fails when list entry is on excluded boundary", baseArgs + "-L 9 13 12", 12],
+    ["fails when int list contains non-int", baseArgs + "-L 9 9.1 12", 12, nil, "is not of type 'integer'"],
+    ["fails when list entry is too low", baseArgs + "-L 9 6 12", 12, nil, "6 is less than the minimum"],
+    ["fails when list entry is too high", baseArgs + "-L 9 15 12", 12, nil, "15 is greater than or equal to the maximum"],
+    ["fails when list entry is on excluded boundary", baseArgs + "-L 9 13 12", 12, nil, "13 is greater than or equal to the maximum"],
     # List constraint failures
-    ["fails when string list entries are too few", baseArgs + "-e hi", 13],
-    ["fails when string list entries are too many", baseArgs + "-e a b c d", 13],
-    ["fails when number list entries are too few", baseArgs + "-L 11 12", 13],
-    ["fails when number list entries are too many", baseArgs + "-L 7 8 9 10 11 12", 13],
+    ["fails when string list entries are too few", baseArgs + "-e hi", 13, nil, "is too short"],
+    ["fails when string list entries are too many", baseArgs + "-e a b c d", 13, nil, "is too long"],
+    ["fails when number list entries are too few", baseArgs + "-L 11 12", 13, nil, "is too short"],
+    ["fails when number list entries are too many", baseArgs + "-L 7 8 9 10 11 12", 13, nil, "is too long"],
     # Numeric constraints failures
-    ["fails when float is under min", baseArgs + "-N 7", 12],
-    ["fails when float is over max", baseArgs + "-N 13", 12],
-    ["fails when float is on prohibited boundary", baseArgs + "-N 7.7", 12],
-    ["fails when int is not an int", baseArgs + "-I 7.9", 12],
-    ["fails when int is under min", baseArgs + "-I -9", 12],
-    ["fails when int is over max", baseArgs + "-I 13", 12],
-    ["fails when int is on prohibited boundary", baseArgs + "-I 9", 12],
+    ["fails when float is under min", baseArgs + "-N 7", 12, nil, "is less than or equal to the minimum"],
+    ["fails when float is over max", baseArgs + "-N 13", 12, nil, "is greater than the maximum"],
+    ["fails when float is on prohibited boundary", baseArgs + "-N 7.7", 12, nil, "is less than or equal to the minimum"],
+    ["fails when int is not an int", baseArgs + "-I 7.9", 12, nil, "is not of type 'integer'"],
+    ["fails when int is under min", baseArgs + "-I -9", 12, nil, "is less than the minimum"],
+    ["fails when int is over max", baseArgs + "-I 13", 12, nil, "is greater than or equal to the maximum"],
+    ["fails when int is on prohibited boundary", baseArgs + "-I 9", 12, nil, '9 is greater than or equal to the maximum of 9'],
     # Disables/requires failures
-    ["fails if both disabler and target present (k)", baseArgs + "-i 9 -k s", 6],
-    ["fails if both disabler and target present (k+s)", baseArgs + "-i 9 -j #{J_file} -k s", 6],
-    ["fails if both disabler and target present (flag: y)", baseArgs + "-i 9 -y", 6],
-    ["fails when requirement missing (k: no m [number])", baseArgs + "-k s -l 1 2", 7],
-    ["fails when requirement missing (k: no l [string])", baseArgs + "-k s -m s1 s2", 7],
-    ["fails when requirement missing (k: no y [flag])", baseArgs + "-k s -m s1 s2 -l 1 2", 7],
-    ["fails when requirement missing (flag case: y - no l)", baseArgs + "-y", 7],
+    ["fails if both disabler and target present (k)", baseArgs + "-i 9 -k s", 6, nil, "'l' is a required property"],
+    ["fails if both disabler and target present (k+s)", baseArgs + "-i 9 -j #{J_file} -k s", 6, nil, "'l' is a required property"],
+    ["fails if both disabler and target present (flag: y)", baseArgs + "-i 9 -y", 6, nil, "True is not one of"],
+    ["fails when requirement missing (k: no m [number])", baseArgs + "-k s -l 1 2", 7, nil, "'m' is a required property"],
+    ["fails when requirement missing (k: no l [string])", baseArgs + "-k s -m s1 s2", 7, nil, "'l' is a required property"],
+    ["fails when requirement missing (k: no y [flag])", baseArgs + "-k s -m s1 s2 -l 1 2", 7, nil, "'y' is a required property"],
+    ["fails when requirement missing (flag case: y - no l)", baseArgs + "-y", 7, nil, "True is not one of"],
     # Group tests
-    ["fails if group one-is-required is violated (group 1)", reqArgs + "-w", 8],
-    ["fails if group mutex is violated (group 2)", baseArgs + "-q s -u", 8],
-    ["fails if group one-is-required is violated (group 3)", reqArgs + "-n 7", 8],
-    ["fails if group mutex is violated (group 3)", reqArgs + "-n 7 -v s -w", 8],
+    ["fails if group one-is-required is violated (group 1)", reqArgs + "-w", 8, nil, "is not valid under any of the given schemas"],
+    ["fails if group mutex is violated (group 2)", baseArgs + "-q s -u", 8, nil, "command failed with return code 1"], # bug in bosh!!
+    ["fails if group one-is-required is violated (group 3)", reqArgs + "-n 7", 8, nil, "is not valid under any of the given schemas"],
+    ["fails if group mutex is violated (group 3)", reqArgs + "-n 7 -v s -w", 8, nil, "command failed with return code 1"], # bug in bosh!!
     # Superfluous argument failures
     ["fails with unrecognized flagged arguments", baseArgs + "-z", 1],
     ["fails with unrecognized non-flagged arguments", baseArgs + "z", 1],
@@ -305,7 +320,7 @@ module TestHelpers
   # e.g. {:a => val_a, :l => [1,2], :v => true, ...} when "-a val_a -l 1 2 -v" appears in the string
   ArgumentDictionary = lambda do |argsIn, idsForFiles=nil|
     # This will hold the output hash arguments
-    hash, copy = {}, argsIn.dup
+    hash, copy = {}.with_indifferent_access, argsIn.dup
     # Shellify the input string
     args = Shellwords.shellwords(argsIn)
     # Must handle space-separated lists separately
@@ -315,12 +330,12 @@ module TestHelpers
     # Fix issues with special separator argument -x
     # We put a boolean there if the wrong separator is used, so the after_form test fails properly
     xarg = copy.split.find { |a| a.start_with? "-x=" }
-    hash.keys.each { |k| hash[k] = xarg[2..-1] if k==:x } unless xarg.nil?
-    hash[:x] = false if hash.keys.include?(:x) and xarg.nil?
+    hash.keys.each { |k| hash[k] = xarg[3..-1] if k.to_s=="x" } unless xarg.nil?
+    hash['x'] = false if hash.keys.include?('x') and xarg.nil?
     # Replace file paths with ids
-    unless idsForFiles.nil?
+    if idsForFiles.present?
       hash.each do |k,v|
-        if FileLists.include? k
+        if FileLists.include? k.to_sym
           hash[k] = v.map { |filepath| idsForFiles[ InputFilesList.find_index(filepath) ] }
         else
           hash[k] = idsForFiles[ InputFilesList.find_index(v) ] if InputFilesList.include? v
@@ -352,13 +367,17 @@ module TestHelpers
   # Helper for cleaning spaces after key substitution, to make it easier to write the correct test result
   # Ignores the export commands and assumes the final command is the log writer
   NormedTaskCmd = lambda do |task|
-    task.cluster_commands[-2].split.join(' ')
+    coms = task.cluster_commands
+    coms = coms.join("") if coms.is_a?(Array)
+    comline = coms.split(/\n/).select { |line| line.match(/^\s*\.\//) }.join("\n").strip
+    comline
   end
 
   # A mock json task object, to test possible problems that the full mock app cannot be used to reproduce
   # e.g. a bug incurred when group constraints were present without any disables-inputs/requires-inputs being so
   # Note the method generates a new task each time
   NewMinimalTask = -> {
+    BoutiquesSupport::BoutiquesDescriptor.new(
     {
       'name'           => "MinimalTest",
       'tool-version'   => "9.7.13",
@@ -368,11 +387,12 @@ module TestHelpers
       'inputs'         => [GenerateJsonInputDefault.('a','String','A String arg')],
       'output-files'   => [{'id' => 'u', 'name' => 'U', 'path-template' => '[A]'}],
     }
+    )
   }
 
   # Helper to generate simple json inputs with default values
   GenerateJsonInputDefault = lambda do |id,type,desc,otherParams = {}|
-    return {
+    return BoutiquesSupport::Input.new({
       'id'                => id,
       'name'              => id.upcase,
       'type'              => type,
@@ -380,7 +400,7 @@ module TestHelpers
       'command-line-flag' => "-#{id}",
       'value-key'         => "[#{id.upcase}]",
       'optional'          => true
-    }.merge( otherParams )
+    }.merge( otherParams ))
   end
 
 end
