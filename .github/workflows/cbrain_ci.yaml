@@ -50,8 +50,11 @@ jobs:
           ruby-version: 2.7.2
 
       ###########################################################
-      - name: Setup python package Boutiques to install 'bosh'
+      - name: Setup python
         uses: actions/setup-python@v1
+
+      ###########################################################
+      - name: Setup python package Boutiques to install 'bosh'
         uses: BSFishy/pip-action@v1
         with:
           packages: boutiques
