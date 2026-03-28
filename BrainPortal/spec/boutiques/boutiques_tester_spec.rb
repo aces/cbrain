@@ -405,7 +405,7 @@ describe "BrainPortal Boutiques Tests" do
       ToolConfig.register_descriptor(@descriptor, tool.name, tool_config.version_name) rescue nil
 
       # Generates a task object from the minimal mock app
-key = [ tool.name, tool_config.version_name ]
+      key = [ tool.name, tool_config.version_name ]
       @generateTask = ->(params,reset_desc = nil) do
         useDefaults = (params.is_a? String) && (params == 'defaults')
         task = BoutiquesTask::MinimalTest.new(:tool_config_id => tool_config.id, :bourreau_id => execer.id)

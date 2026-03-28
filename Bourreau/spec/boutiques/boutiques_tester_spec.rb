@@ -42,39 +42,95 @@ describe "Bourreau Boutiques Tests" do
 
   # Run before block to create required input files
   before(:all) do
+        Userfile.all.each{ |uf| uf.destroy }
+        DataProvider.all.each { |dp| dp.destroy }
     # The group, provider, and user ids used downstream
     GID, UID, DPID = Group.everyone.id, User.admin.id, 9
     @ftype = lambda { |fname| Userfile.suggested_file_type(fname) || SingleFile }
+
+    @execer        = RemoteResource.current_resource
+    # Get the schema and json descriptor
+    desc_path      = File.join(__dir__, TestScriptDescriptor)
+    @descriptor    = BoutiquesSupport::BoutiquesDescriptor.new_from_file(desc_path)
+
+    @unrestricted_descriptor = @descriptor.dup
+    @unrestricted_descriptor.inputs.each { |input| input.optional = true; input.delete "requires-inputs" ; input.delete "disables-inputs" }
+    @unrestricted_descriptor.groups.each { |group| group.delete "mutually-exclusive" ; group.delete "one-is-required" }
+
+    # Create tool and tool config and task class
+    tool           = Tool.create_from_descriptor(@descriptor)
+    @tool_config   = ToolConfig.create_from_descriptor(@execer, tool, @descriptor)
+    if ! BoutiquesTask.const_defined?(:BoutiquesTest)
+      BoutiquesBootIntegrator.link_from_json_file(desc_path) rescue nil
+    end
+    key = [ tool.name, @tool_config.version_name ]
+    @switchDescriptor = ->(desc) {
+      ToolConfig.instance_eval { @_descriptors_[key] = desc.dup }
+    }
+    @switchDescriptor.(@descriptor) # resets to full standard
+    # Create new data provider
+    @provider    = FlatDirLocalDataProvider.new({ :online => true, :read_only => false, :remote_dir => '.' })
+    @provider.id, @provider.name, @provider.user_id, @provider.group_id = DPID, 'test_provider', UID, GID
+    @provider.save!
+    @userFiles   = InputFilesList.map { |f| uf=Userfile.new(:type => @ftype.(f), name: File.basename(f), data_provider_id: DPID, user_id: UID, group_id: GID); uf.save!; uf }
+
+    @minimalDescriptor = NewMinimalTask.()
+    min_tool         = Tool.create_from_descriptor(@minimalDescriptor)
+    @min_tool_config = ToolConfig.create_from_descriptor(@execer, min_tool, @minimalDescriptor)
+    if ! BoutiquesTask.const_defined?(:MinimalTask)
+      BoutiquesBootIntegrator.link_from_descriptor(@minimalDescriptor) rescue nil
+    end
+
+    # Adjust numbers; tries to guess what they should
+    # be. We leave bad values alone (e.g. bad strings) for tests
+    @adjustNumbers = ->(task) do
+      task.boutiques_descriptor.inputs
+        .select { |input| input.type == 'Number' }
+        .each do |input|
+          val = task.invoke_params[input.id]
+          next if val.blank?
+          if val.is_a?(String) && val =~ /\A-?[0-9.]+\z/
+            val = (input.integer ? Integer(val) : Float(val)) rescue val
+            task.invoke_params[input.id] = val
+          elsif val.is_a?(Array)
+            val = val.map do |x|
+              next x if x !~ /\A-?[0-9.]+\z/
+              (input.integer ? Integer(x) : Float(x)) rescue x
+            end
+            task.invoke_params[input.id] = val
+          end
+        end
+    end
   end
 
   # Post-test cleanup via after block
   after(:all) do
-    destroyInputFiles
-    destroyOutputFiles
+    Dir.chdir(TempStore) do
+      destroyInputFiles
+      destroyOutputFiles
+    end
   end
 
   context "Cbrain external" do
     # Run before block to create ClusterTask object
     before(:each) do
-      # Get the schema and json descriptor
-      schema         = SchemaTaskGenerator.default_schema
-      descriptor     = File.join(__dir__, TestScriptDescriptor)
-      # Generate a new task class via the Boutiques framework and integrate it into cbrain
-      @boutiquesTask = SchemaTaskGenerator.generate(schema, descriptor)
-      @boutiquesTask.integrate if File.exists?(descriptor)
       # Create a new instance of the generated task class
-      @task             = CbrainTask::BoutiquesTest.new
-      @task.tool_config = ToolConfig.new
-      @task.params      = {}
+      @task             = BoutiquesTask::BoutiquesTest.new
+      @task.cluster_workdir = 'fcw'
+      @task.tool_config_id = @tool_config.id
+      @task.params          = {}.with_indifferent_access
+      @task.params[:invoke] = {}.with_indifferent_access
       # Assign it a bourreau
       resource = RemoteResource.current_resource
       @task.bourreau_id = resource.id
       # Give access to the generated task class itself
-      @task_const    = "CbrainTask::#{SchemaTaskGenerator.classify(@task.name)}".constantize
+      @task_const = BoutiquesTask::BoutiquesTest
     end
 
     before(:all) do
-      createInputFiles
+      Dir.chdir(TempStore) do
+        createInputFiles
+      end
     end
 
     # Tests expected behaviour of the auto-generated cluster task
@@ -83,7 +139,7 @@ describe "Bourreau Boutiques Tests" do
       # Check necessary properties of the descriptor object
       describe "descriptor" do
         it "has the right name" do
-          expect( @boutiquesTask.descriptor['name'] ).to eq( 'BoutiquesTest' )
+          expect( @task.boutiques_descriptor.name ).to eq( 'BoutiquesTest' )
         end
       end
 
@@ -96,96 +152,31 @@ describe "Bourreau Boutiques Tests" do
         expect( @task_const.tool ).not_to be_nil
       end
 
-      # Test that the apply_template method works as expected
-      # for some representative (or previously buggy) cases
-      describe "apply_template" do
-
-        # Define some default parameters to use in the tests
-        before(:each) do
-          @template = 'cmd [1] [2] [3] [4] [5]'
-          @def_keys = {'[1]' => 'one.txt', '[2]' => 2,             '[3]' => 't.csv', '[4]' => nil, '[5]' => nil}
-          @flags    = {'[1]' => '-1',      '[2]' => '--long-flag', '[3]' => '-t',    '[4]' => nil, '[5]' => nil}
-          @seps     = {'[1]' => '=',       '[2]' => '~',           '[3]' => ' ',     '[4]' => nil, '[5]' => nil}
-        end
-
-        it "handles string substitutions" do
-          s = @task.apply_template(@template, @def_keys)
-          expect( s.strip ).to eq( 'cmd one.txt 2 t.csv' )
-        end
-
-        it "handles string substituions with spaces" do
-          s = @task.apply_template(@template, @def_keys.merge({'[4]' => '4 4'}))
-          expect( s.strip ).to eq( "cmd one.txt 2 t.csv '4 4'" )
-        end
-
-        # Characters special to the shell or ruby's gsub should not interfere
-        # In this case, ensure that ' is escaped properly
-        it "handles special meaning characters" do
-          s = @task.apply_template(@template, @def_keys.merge({'[4]' => " '; arg"}))
-          expect( s.strip ).to eq( "cmd one.txt 2 t.csv ' '\\''; arg'" )
-        end
-
-        it "handles substitutions with command-line flags" do
-          s = @task.apply_template(@template, @def_keys, flags: @flags)
-          expect( s.strip ).to eq( "cmd -1 one.txt --long-flag 2 -t t.csv" )
-        end
-
-        it "handles substitution with flag-type inputs (when true)" do
-          s = @task.apply_template(@template, @def_keys.merge({'[4]' => true}), flags: {'[4]' => '-f'})
-          expect( s.strip ).to eq( "cmd one.txt 2 t.csv -f" )
-        end
-
-        it "handles substitution with flag-type inputs (when false)" do
-          s = @task.apply_template(@template, @def_keys.merge({'[4]' => false}), flags: {'[4]' => '-f'})
-          expect( s.strip ).to eq( "cmd one.txt 2 t.csv" )
-        end
-
-        it "handles substitution with list-type inputs" do
-          s = @task.apply_template(@template, @def_keys.merge({'[4]' => ['a', 'b', 'c']}), flags: {'[4]' => '-l'})
-          expect( s.strip ).to eq( "cmd one.txt 2 t.csv -l a b c" )
-        end
-
-        it "handles special flag separator substitution" do
-          s = @task.apply_template(@template,
-                @def_keys.merge({'[4]' => true}),
-                flags:      @flags.merge({'[4]' => '-f'}),
-                separators: @seps)
-          expect( s.strip ).to eq( "cmd -1=one.txt --long-flag~2 -t t.csv -f" )
-        end
-
-        it "properly strips endings" do
-          s = @task.apply_template(@template,
-                @def_keys.merge({'[4]' => true, '[5]' => '9.tex'}),
-                flags:      @flags.merge({'[4]' => '-f', '[5]' => '-tex'}),
-                separators: @seps,
-                strip:      [ '.txt', '.tex' ])
-          expect( s.strip ).to eq( "cmd -1=one --long-flag~2 -t t.csv -f -tex 9" )
-        end
-
-      end
-
       # Test that creating a basic cluster command in isolation works
       it "can create cluster commands" do
-        @task.params[:A] = "A_VAL"
-        expect( NormedTaskCmd.(@task) ).to eq( './' + TestScriptName + ' -A A_VAL' )
+        @switchDescriptor.(@unrestricted_descriptor)
+        @task.invoke_params[:A] = "A_VAL"
+        expect( NormedTaskCmd.(@task) ).to eq( './' + TestScriptName + ' -A A_VAL -r r.txt' )
       end
 
       # Test that creating cluster commands with string lists works
       it "can create cluster commands with lists" do
-        @task.params[:A] = "A_VAL"
-        @task.params[:p] = ['e1', 'e2', 'e3']
-        expect( NormedTaskCmd.(@task) ).to eq( './' + TestScriptName + ' -A A_VAL -p e1 e2 e3' )
+        @task.invoke_params[:A] = "A_VAL"
+        @task.invoke_params[:p] = ['e1', 'e2', 'e3']
+        expect( NormedTaskCmd.(@task) ).to eq( './' + TestScriptName + ' -A A_VAL -p e1 e2 e3 -r r.txt' )
       end
 
       # Test that export commands work and are in the right place
       it "exports environment variables" do
-        expect( @task.cluster_commands[0] ).to eq("export ev1='nice_value'")
+        @switchDescriptor.(@unrestricted_descriptor)
+        expect( @task.cluster_commands.join('') ).to include("export ev1=nice_value\n")
       end
 
       # It properly escapes environment variables
       # Note that we only have to worry about inappropriate values that are still valid JSON
       it "escapes environment variables" do
-        expect( @task.cluster_commands[1] ).to eq("export ev2='ta- 9\"\\'\\''_%^&$@]['")
+        @switchDescriptor.(@unrestricted_descriptor)
+        expect( @task.cluster_commands.join('') ).to include("export ev2='ta- 9\"\\'\\''_%^&$@]['")
       end
 
     end
@@ -198,23 +189,16 @@ describe "Bourreau Boutiques Tests" do
         # Generate a descriptor
         @descriptor = NewMinimalTask.()
         # Generates a task object from the minimal mock app
-        @generateTask = -> params {
-          genTask = SchemaTaskGenerator.generate(SchemaTaskGenerator.default_schema, @descriptor, false).integrate
-          task = CbrainTask::MinimalTest.new
-          task.params = params
+        @generateTask = -> (params) {
+          task = BoutiquesTask::MinimalTest.new(:tool_config_id => @min_tool_config.id, :bourreau_id => @execer.id)
+          task.cluster_workdir = "task_wd"
+          task.params = {}.with_indifferent_access
+          task.params[:invoke] = params.with_indifferent_access
+          key = [ @min_tool_config.tool.name, @min_tool_config.version_name ]
+          desc = @descriptor
+          ToolConfig.instance_eval { @_descriptors_[key] = desc }
           task
         }
-      end
-
-      context 'cbrain integration' do
-
-        # Simple test to ensure integration is correct
-        it "should work correctly" do
-          genTask = SchemaTaskGenerator.generate(SchemaTaskGenerator.default_schema, @descriptor, false).integrate
-          expect( (CbrainTask::MinimalTest.new).name ).to eq( "MinimalTest" ) # Check for task instance
-          expect( genTask.name ).to eq( "CbrainTask::MinimalTest" ) # Check for generated task class instance
-        end
-
       end
 
       context 'cluster_command substitution' do
@@ -222,20 +206,7 @@ describe "Bourreau Boutiques Tests" do
         # Test basic command substitution correctness
         it "should correctly substitute cluster_commands with default settings" do
           task = @generateTask.( { a: 'value' } )
-          expect( task.cluster_commands[0].strip ).to eq( '/minimalApp -a value' )
-        end
-
-        # Test that optional "shell" in descriptor trigger the creation of a wrapper
-        it "should create wrapper commands for alternate shells" do
-          @descriptor['shell'] = 'myFakeShell'
-          task = @generateTask.( { a: 'value' } )
-          expect( task.cluster_commands[0].strip ).to match(
-            /
-            myFakeShell\s*<<'BoutiquesShellWrapper'\s+
-            \/minimalApp\s-a\svalue\s+
-            BoutiquesShellWrapper
-            /x
-          )
+          expect( task.cluster_commands[0].strip ).to include( "/minimalApp -a value\n" )
         end
 
         # Test output flag substitution
@@ -243,7 +214,7 @@ describe "Bourreau Boutiques Tests" do
           @descriptor['command-line'] += ' [OUT-KEY]'
           @descriptor['output-files'][0].merge!( { 'value-key' => '[OUT-KEY]', 'command-line-flag' => '-o' } )
           task = @generateTask.( { a: 'value' } )
-          expect( task.cluster_commands[0].strip ).to eq( '/minimalApp -a value -o value' )
+          expect( task.cluster_commands[0].strip ).to include( "/minimalApp -a value -o value" )
         end
 
         # Test output flag separator substitution
@@ -254,7 +225,7 @@ describe "Bourreau Boutiques Tests" do
             'command-line-flag'           => '-o',
             'command-line-flag-separator' => '=' } )
           task = @generateTask.( { a: 'value' } )
-          expect( task.cluster_commands[0].strip ).to eq( '/minimalApp -a value -o=value' )
+          expect( task.cluster_commands[0].strip ).to include( "/minimalApp -a value -o=value" )
         end
 
         # Test output flag separator substitution with prior path-template substitution
@@ -267,7 +238,16 @@ describe "Bourreau Boutiques Tests" do
             'path-template'               => '[A]+[B]',
             'command-line-flag-separator' => '/' } )
           task = @generateTask.( { a: 'val', b: 9 } )
-          expect( task.cluster_commands[0].strip ).to eq( '/minimalApp -a val -b 9 -o/val+9' )
+          expect( task.cluster_commands[0].strip ).to include( "/minimalApp -a val -b 9 -o/val+9" )
+        end
+
+        # Test absolute file path
+        it "should correctly generate full paths if uses-absolute-path is set" do
+          @descriptor['command-line'] += ' [F1] [F2]'
+          @descriptor['inputs'] << GenerateJsonInputDefault.('f1','File','basename file', { 'uses-absolute-path' => false } )
+          @descriptor['inputs'] << GenerateJsonInputDefault.('f2','File','abs path file', { 'uses-absolute-path' => true } )
+          task = @generateTask.( { f1: Userfile.first.id , f2: Userfile.first.id } )
+          expect( task.cluster_commands[0].strip ).to match( /minimalApp -f1 ([a-zA-Z0-9\.]+) -f2 \/.*\/\1/ )
         end
 
       end
@@ -280,21 +260,28 @@ describe "Bourreau Boutiques Tests" do
       # The cluster_commands method requires userfiles to exist before running now
       before(:each) do
         # Clean userfiles and data providers
-        Userfile.all.each{ |uf| uf.destroy }
-        DataProvider.all.each { |dp| dp.destroy }
+        #Userfile.all.each{ |uf| uf.destroy }
+        #DataProvider.all.each { |dp| dp.destroy }
         # Create new data provider
-        @provider    = FlatDirLocalDataProvider.new({ :online => true, :read_only => false, :remote_dir => '.' })
-        @provider.id, @provider.name, @provider.user_id, @provider.group_id = DPID, 'test_provider', UID, GID
-        @provider.save!
+        #@provider    = FlatDirLocalDataProvider.new({ :online => true, :read_only => false, :remote_dir => '.' })
+        #@provider.id, @provider.name, @provider.user_id, @provider.group_id = DPID, 'test_provider', UID, GID
+        #@provider.save!
         # Generate files used downstream
         @userFiles   = InputFilesList.map { |f| @task.safe_userfile_find_or_new(@ftype.(f), name: File.basename(f), data_provider_id: DPID, user_id: UID, group_id: GID) }
         @userFiles.each { |f| f.save! }
         @idsForFiles = @userFiles.map { |f| f.id }
+        @switchDescriptor.(@descriptor) # resets to full standard
+        Dir.chdir(TempStore) do
+          destroyTaskSupportFiles
+        end
       end
 
       # After each local test, destroy the output files, so they don't interfere with downstream tests
       after(:each) do
-        destroyOutputFiles
+        Dir.chdir(TempStore) do
+          destroyOutputFiles
+          destroyTaskSupportFiles
+        end
       end
 
       # Check that userfiles are discoverable
@@ -302,41 +289,51 @@ describe "Bourreau Boutiques Tests" do
         expect( @idsForFiles.all? { |t| Userfile.find_by_id( t ) } ).to be true
       end
 
-      # Note: -C is a file of the mock task with uses-absolute-path equaling true. -d doesn't specify.
-      it "handles uses-absolute-paths as intended" do
-        # Mock the location of the full cluster workdir
-        allow_any_instance_of( CbrainTask::BoutiquesTest ).to receive( :full_cluster_workdir ).and_return( File.join(Dir.pwd, TempStore) )
-        s1, s2 = @task.apply_template('[C]', { '[C]' => @idsForFiles[0] }), @task.apply_template('[d]', { '[d]' => @idsForFiles[1] })
-        expect( (Pathname.new(s1)).absolute? && ( !(Pathname.new(s2)).absolute? ) ).to be true
-      end
-
       # Ensure that the `setup` method does not replace ids with hashes
       it "works with ids rather than objects" do
-        @task.params = ArgumentDictionary.( "-A a -B 9 -C #{C_file} -v s -n 7 ", @idsForFiles )
+        @task.params[:invoke] = ArgumentDictionary.( "-A a -B 9 -C #{C_file} -v s -n 7 ", @idsForFiles )
         @task.cluster_workdir = 'fcw'
         @task.setup
-        expect( @task.params[:C] ).to eq( @idsForFiles[0] )
+        expect( @task.invoke_params[:C] ).to eq( @idsForFiles[0] )
       end
 
       # Perform tests by running the cmd line given by cluster_commands and checking the exit code
       BasicTests.each do |test|
+        test_name    = test[0]
+#next unless test_name == "fails when a required argument is missing (A: flag + value)"
+        test_args    = test[1]
+        test_status  = test[2]
+        test_fnames  = test[3] || []
+        test_cberror = test[4] # message in exception when the failure is in cluster_commands
         # Testing for unrecognized inputs will not work here, since apply_template will ignore them
-        next if test[0].include?( "unrecognized" )
+        next if test_name.include?( "unrecognized" )
         # The apply_template method adds the separator on its own, so we need only check that works
-        next if test[0].include?( "fails when special separator" )
+        next if test_name.include?( "fails when special separator" )
         # Run the test
-        it "#{test[0]}" do
+        it "#{test_name}" do
+          Dir.chdir(TempStore) do
           # Mock the location of the full cluster workdir
-          allow_any_instance_of( CbrainTask::BoutiquesTest ).to receive( :full_cluster_workdir ).and_return( File.join(Dir.pwd, TempStore) )
+          allow_any_instance_of( BoutiquesTask::BoutiquesTest ).to receive( :full_cluster_workdir ).and_return( File.join(Dir.pwd, TempStore) )
           begin # Convert string arg to params dict
-            @task.params = ArgumentDictionary.( test[1], @idsForFiles )
+            @task.params[:invoke] = ArgumentDictionary.( test_args, @idsForFiles )
+            @adjustNumbers.(@task)
           rescue OptionParser::MissingArgument => e
             next # after_form does not need to check this here, since rails puts a value in the hash
           end
           # Run the generated command line from cluster_commands (-2 to ignore export lines and the echo log at -1)
-          exit_code = runTestScript( FileNamesToPaths.( @task.cluster_commands[-2].strip.gsub('./'+TestScriptName,'') ), test[3] || [] )
-          # Check that the exit code is appropriate
-          expect( exit_code ).to eq( test[2] )
+          if test_cberror.present?
+            expect { @task.cluster_commands }.to raise_error(Regexp.new(test_cberror))
+          else
+            opts = extractOptions( @task.cluster_commands.join(""), TestScriptName )
+            exit_code = runTestScript(
+              FileNamesToPaths.(
+               #@task.cluster_commands.join("").strip.gsub('./'+TestScriptName,'')
+               opts
+              ), test_fnames )
+            # Check that the exit code is appropriate
+            expect( exit_code ).to eq( test_status )
+          end
+          end # chdir
         end
       end
 
@@ -349,7 +346,7 @@ describe "Bourreau Boutiques Tests" do
     # Define some useful constants (constants get redefined in before(:each) blocks)
     before(:all) do
       # The warning message used when unable to find optional output files
-      OptOutFileNotFoundWarning = "Unable to find optional output file: "
+      OptOutFileNotFoundWarning = "Skipped optional missing output file"
       # Current rails pwd
       PWD = Dir.pwd
     end
@@ -357,6 +354,7 @@ describe "Bourreau Boutiques Tests" do
     # Note: FactoryGirl methods should be used instead, but only if their db changes get rolled back in the before(:each) block
     # This is currently not happening, possibly due to some versioning issues
     before(:each) do
+      Dir.chdir TempStore
       # Destroy any pre-existing userfiles
       Userfile.all.each{ |uf| uf.destroy }
       # Create a mock task required output file
@@ -366,51 +364,54 @@ describe "Bourreau Boutiques Tests" do
       # Use helper method for getting filetype classes
       @userfileClass   = @ftype.(@fname)
       # Get the schema and json descriptor
-      descriptor       = File.join(__dir__, TestScriptDescriptor)
-      # Generate a new task class via the Boutiques framework and integrate it into cbrain
-      @boutiquesTask   = SchemaTaskGenerator.generate(SchemaTaskGenerator.default_schema, descriptor)
-      @boutiquesTask.integrate
+      descriptor       = @descriptor.dup
       # Instantiate an object of the new class type
-      @task            = CbrainTask::BoutiquesTest.new
+      @task            = BoutiquesTask::BoutiquesTest.new
+      @task.tool_config_id = @tool_config.id
+      @task.bourreau_id    = @tool_config.bourreau_id
       # Destroy any prior existing data providers (so we use a clean, lone one)
       DataProvider.all.each { |dp| dp.destroy }
       # Create a local data_provider to hold our files
       @provider        = FlatDirLocalDataProvider.new({ :online => true, :read_only => false, :remote_dir => '.' })
       @provider.id, @provider.name, @provider.user_id, @provider.group_id = DPID, 'test_provider', UID, GID
       @provider.save!
+      @task.results_data_provider_id = @provider.id
       # Change base directory so checks for simulated files go to the right temp storage place
       # This is because some checks by e.g. save_results expect files from the task to be in the pwd
       # Passing a block to chdir would be preferable but then one would have to do it in every test
-      Dir.chdir TempStore
       allow( @task ).to receive( :full_cluster_workdir ).and_return( Dir.pwd )
       # Add a local input file to the data provider (allows smarter lookup in userfile_exists)
       @file_c, @ft     = 'c', @ftype.(@file_c)
       newFile          = @task.safe_userfile_find_or_new(@ft, name: @file_c, data_provider_id: DPID, user_id: UID, group_id: GID)
       newFile.save!
       # Fill in data necessary for the task to check for and save the output file '@fname'
-      @task.params     = {:ro => @fname_base, :interface_userfile_ids => [Userfile.all.first.id]}
+      @task.params ||= { :interface_userfile_ids => [Userfile.all.first.id] }.with_indifferent_access
+      @task.params[:invoke] = {}.with_indifferent_access
+      @task.params[:invoke].merge!({:r => @fname_base })
       @task.user_id, @task.group_id = UID, GID
       # Generate a simulated exit file, as if the task had run
-      @simExitFile     = @task.exit_cluster_filename
+      @simExitFile     = @task.exit_status_filename
       File.write( @simExitFile, "0\n" )
       # The basic properties for the required output file
       @reqOutfileProps = {:name => @fname_base, :data_provider_id => @provider.id}
       # Optional output file properties
       @optOutFileName  = File.basename(OptOutName) # Implicitly in temp storage
       @optFileClass    = @ftype.( @optOutFileName )
+      @switchDescriptor.(@unrestricted_descriptor)
     end
 
     # Clean up after each test
     after(:each) do
       # Also need to get rid of the (simulated) exit file
-      File.delete( @simExitFile ) if File.exists?( @simExitFile )
+      File.delete( @simExitFile ) if @simExitFile.present? && File.exists?( @simExitFile )
       # Destroy the registered userfiles and the data_provider, so as not to affect downstream tests
       # Needed to destroy actual output files written to the filesystem
       Userfile.all.each{ |uf| uf.destroy }
-      # Return to rails base dir
-      Dir.chdir PWD
       # Delete any generated output files
       destroyOutputFiles
+      destroyTaskSupportFiles
+      # Return to rails base dir
+      Dir.chdir PWD
     end
 
     # Test that the generated Boutiques task can handle output file saving and renaming
@@ -427,9 +428,9 @@ describe "Bourreau Boutiques Tests" do
         File.delete(@simExitFile)
         expect( @task.save_results ).to be false
       end
-      it "save_results is false if the exit status file has invalid content" do
+      it "save_results raises an exception if the exit status file has invalid content" do
         File.write( @simExitFile, "abcde\n" )
-        expect( @task.save_results ).to be false
+        expect { @task.save_results }.to raise_error(/Exit status file.*has unexpected content/)
       end
       it "save_results is false if the exit status file contains a value greater than 1" do
         File.write( @simExitFile, "3\n" )
@@ -439,10 +440,11 @@ describe "Bourreau Boutiques Tests" do
       # Check that save_results works as expected for existent files
       it "can save results files" do
         # Make sure the file on the filesystem exists
-        expect( File.exists? @fname_base ).to be true
+        expect( File.exists?(@fname_base) ).to be true
         # Ensure the file has not been registered/created yet
         expect( @task.userfile_exists(@userfileClass, @reqOutfileProps) ).to be false
         # Ensure that saving the results occurs error-free
+        @task.cluster_commands
         expect( @task.save_results ).to be true
         # Ensure that the file now exists in the data_provider
         # Output name now contains the run_id inside it...
@@ -457,6 +459,7 @@ describe "Bourreau Boutiques Tests" do
         # Destroy the required output file
         File.delete( @fname_base )
         # Attempting to save_results should return a 'failure' error code
+        @task.cluster_commands
         expect( @task.save_results ).to be false
       end
 
@@ -465,10 +468,11 @@ describe "Bourreau Boutiques Tests" do
         # Create the optional output file
         FileUtils.touch( @optOutFileName )
         # Inform the generated task to look for the optional output file
-        @task.params = @task.params.merge({:oo => @optOutFileName})
+        @task.params[:invoke] = @task.invoke_params.merge!({:o => @optOutFileName})
         # Ensure the file exists
         expect( File.exists? @optOutFileName ).to be true
         # Attempt to save both the optional and required output files. Should succeed.
+        @task.cluster_commands
         expect( @task.save_results ).to be true
         # Both files should exist in the data_provider
         newReqName = "r-#{@task.run_id}.txt"
@@ -483,10 +487,12 @@ describe "Bourreau Boutiques Tests" do
       # However, a logging should occur to note that fact
       it "handles absent optional output files properly" do
         # Inform the generated task to look for the optional output file
-        @task.params = @task.params.merge({:oo => @optOutFileName})
+        @task.params[:invoke] = @task.invoke_params.merge!({:o => @optOutFileName})
+        @switchDescriptor.(@unrestricted_descriptor) # resets to full standard
         # Ensure the file does not exist
         expect( File.exists? @optOutFileName ).to be false
         # Attempt to save both the optional and required output files. Should succeed (in terms of return value).
+        @task.cluster_commands
         expect( @task.save_results ).to be true
         # Only the required file should exist in the data_provider
         newReqName = "r-#{@task.run_id}.txt"
@@ -494,7 +500,7 @@ describe "Bourreau Boutiques Tests" do
         expect( @task.userfile_exists(@userfileClass, {:name => newReqName, :data_provider_id => @provider.id}) ).to be true
         expect( @task.userfile_exists(@optFileClass,  {:name => newOptName, :data_provider_id => @provider.id}) ).to be false
         # Check that a notice was logged to warn of the missing optional output file
-        expect( @task.getlog.include?( OptOutFileNotFoundWarning ) ).to be true
+        expect( @task.getlog ).to include( OptOutFileNotFoundWarning )
       end
 
       # Ensure the files do not survive between tests
@@ -503,117 +509,6 @@ describe "Bourreau Boutiques Tests" do
       end
 
     end # End output file handling tests
-
-    # Test that a Tool Config is created iff both the bourreau and the descriptor specify docker
-    # Also ensure move commands are added to cluster_commands when needed
-    context 'Containerized Behaviour' do
-
-      before(:each) do
-        # Ensure the Bourreau does not have docker installed by default
-        resource = RemoteResource.current_resource
-        resource.docker_executable_name = "docker"
-        resource.save!
-        # Get the schema and json descriptor
-        @schema          = SchemaTaskGenerator.default_schema
-        @descriptor      = File.join(__dir__, TestScriptDescriptor)
-        # Generate a new task class via the Boutiques framework, without integrating it
-        @boutiquesTask   = SchemaTaskGenerator.generate(@schema, @descriptor)
-        @boutiquesTask.descriptor["container-image"] = nil # tool does not use docker by default
-        @task_const_name = "CbrainTask::#{SchemaTaskGenerator.classify(@boutiquesTask.name)}"
-        # Destroy any tools/toolconfigs for the tool, if any exist
-        ToolConfig.where(tool_id: CbrainTask::BoutiquesTest.tool.id).destroy_all rescue nil
-        Tool.where(:cbrain_task_class_name => @task_const_name).destroy_all rescue nil
-        # Placeholder image
-        @dockerImg = { "type" => "docker", "image" => "image" }
-        # Check for mv commands
-        @nMvCmds = lambda { |a| a.reduce(0) { |t,s| t + ( s.start_with?("mv ") ? 1 : 0 ) } }
-        @setupForMvTests = lambda do |wd, outfile1, outfile2 = nil|
-          # Tell the Bourreau to use docker
-          resource = RemoteResource.current_resource
-          resource.docker_executable_name = "docker"
-          resource.save!
-          # Make the task execute in a specific container dir
-          descriptor = SchemaTaskGenerator.expand_json(@descriptor)
-          descriptor['container-image'] = @dockerImg.merge( { "working-directory" => wd } )
-          # Force an output file to be generated outside of that dir or its subtree
-          descriptor["output-files"][0]["path-template"] = outfile1
-          descriptor["output-files"][1]["path-template"] = outfile2 unless outfile2.nil?
-          boutiquesTask   = SchemaTaskGenerator.generate(@schema, descriptor)
-          # Generate the task class via templating
-          boutiquesTask.integrate if File.exists?(@descriptor)
-          # Ensure cluster_commands accounts for the problem by mocking the environment
-          allow_any_instance_of( CbrainTask::BoutiquesTest ).to receive( :use_docker? ).and_return( true )
-          allow_any_instance_of( CbrainTask::BoutiquesTest ).to receive( :full_cluster_workdir ).and_return( File.join(Dir.pwd, TempStore) )
-          task = CbrainTask::BoutiquesTest.new
-          userFiles   = InputFilesList.map { |f| task.safe_userfile_find_or_new(@ftype.(f), name: File.basename(f), data_provider_id: DPID, user_id: UID, group_id: GID) }
-          userFiles.each { |f| f.save! }
-          idsForFiles = userFiles.map { |f| f.id }
-          return task, idsForFiles
-        end
-      end
-
-      after(:each) do
-        # Destroy any tools/toolconfigs for the tool, if any exist
-        ToolConfig.where(tool_id: @task_const_name.constantize.tool.id).destroy_all
-        Tool.where(:cbrain_task_class_name => @task_const_name).destroy_all
-        # Ensure the Bourreau does not have docker installed by default
-        resource = RemoteResource.current_resource
-        resource.docker_executable_name = "docker"
-        resource.save!
-      end
-
-      it "correctly adds mv commands when relative optional files are specified" do
-        task, idsForFiles = @setupForMvTests.( "/launch/", "/far/away/[r]")
-        task.params = ArgumentDictionary.( "-A a -B 9 -C #{C_file} -v s -n 7 -r r -o optOutFile", idsForFiles )
-        expect( @nMvCmds.( task.cluster_commands ) ).to eq( 1 ) # It's a relative path, so only one mv need be done
-      end
-
-      it "correctly adds mv commands when optional files are not specified" do
-        task, idsForFiles = @setupForMvTests.( "/launch/", "/far/away/[r]")
-        task.params = ArgumentDictionary.( "-A a -B 9 -C #{C_file} -v s -n 7 -r r", idsForFiles )
-        expect( @nMvCmds.( task.cluster_commands ) ).to eq( 1 ) # Only mv required file
-      end
-
-      it "correctly adds mv commands when absolute optional files are specified" do
-        task, idsForFiles = @setupForMvTests.( "/launch/", "/far/away/[r]", "/another/evil/dir/[o]" )
-        task.params = ArgumentDictionary.( "-A a -B 9 -C #{C_file} -v s -n 7 -r r -o optOutFile", idsForFiles )
-        expect( @nMvCmds.( task.cluster_commands ) ).to eq( 2 ) # Need to mv both files
-      end
-
-
-      it "is not created when Bourreau does not support Docker" do
-        resource = RemoteResource.current_resource
-        resource.docker_executable_name = ""
-        resource.save!
-        @boutiquesTask.descriptor['container-image'] = @dockerImg
-        @boutiquesTask.integrate if File.exists?(@descriptor)
-        expect( ToolConfig.exists?( :tool_id => @task_const_name.constantize.tool.id ) ).to be false
-      end
-
-      it "is not created when descriptor has no Docker image" do
-        RemoteResource.current_resource.docker_executable_name = "docker"
-        RemoteResource.current_resource.save!
-        @boutiquesTask.integrate if File.exists?(@descriptor)
-        expect( ToolConfig.exists?( :tool_id => @task_const_name.constantize.tool.id ) ).to be false
-      end
-
-      it "is created when descriptor has Docker image and Bourreau has Docker" do
-        @boutiquesTask.descriptor['container-image'] = @dockerImg
-        resource = RemoteResource.current_resource
-        resource.docker_executable_name = "docker"
-        resource.save!
-        @boutiquesTask.integrate if File.exists?(@descriptor)
-        expect( ToolConfig.exists?( :tool_id => @task_const_name.constantize.tool.id ) ).to be true
-      end
-
-      # When neither criteria is met, check that a ToolConfig is not made
-      # Also checks that the integration changes were rolled back
-      it "is not created when Bourreau does not support Docker and descriptor has no Docker image" do
-        @boutiquesTask.integrate if File.exists?(@descriptor)
-        expect( ToolConfig.exists?( :tool_id => @task_const_name.constantize.tool.id ) ).to be false
-      end
-
-    end
 
   end
 

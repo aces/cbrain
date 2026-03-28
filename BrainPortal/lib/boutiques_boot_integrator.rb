@@ -34,6 +34,11 @@ class BoutiquesBootIntegrator
 
   def self.link_from_json_file(path)
     descriptor   = BoutiquesSupport::BoutiquesDescriptor.new_from_file(path)
+    self.link_from_descriptor(descriptor)
+  end
+
+  def self.link_from_descriptor(descriptor)
+    path         = descriptor.from_file.presence || "unknown.json"
     tool_name    = descriptor.name
     tool_version = descriptor.tool_version
     myself       = RemoteResource.current_resource
