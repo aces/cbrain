@@ -45,17 +45,17 @@ end || "unknown"
 # Validations Scenarios By Program Name
 #
 
-puts "C> CBRAIN identified boot mode: #{program_name}"
+puts "V> CBRAIN identified boot mode: #{program_name}"
 
 # ----- CONSOLE -----
 if program_name =~ /console/
   if ENV['CBRAIN_SKIP_VALIDATIONS']
-    puts "C> \t- Warning: environment variable 'CBRAIN_SKIP_VALIDATIONS' is set, so we\n"
-    puts "C> \t-          are skipping all validations! Proceed at your own risks!\n"
+    puts "V> \t- Warning: environment variable 'CBRAIN_SKIP_VALIDATIONS' is set, so we\n"
+    puts "V> \t-          are skipping all validations! Proceed at your own risks!\n"
     CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself]) rescue true
   else
-    puts "C> \t- Note:  You can skip all CBRAIN validations by temporarily setting the\n"
-    puts "C> \t         environment variable 'CBRAIN_SKIP_VALIDATIONS' to '1'.\n"
+    puts "V> \t- Note:  You can skip all CBRAIN validations by temporarily setting the\n"
+    puts "V> \t         environment variable 'CBRAIN_SKIP_VALIDATIONS' to '1'.\n"
     CbrainSystemChecks.check(:all)
     PortalSystemChecks.check(:all, :except => [ :z020_start_background_activity_workers ])
   end
@@ -63,7 +63,7 @@ if program_name =~ /console/
 
 # ----- SERVER -----
 elsif program_name =~ /server|puma/ # normal server mode
-  puts "C> \t- Running all validations for server."
+  puts "V> \t- Running all validations for server."
   CbrainSystemChecks.check(:all)
   PortalSystemChecks.check(:all)
   # Note, because the puma server insists on renaming its process,
@@ -73,7 +73,7 @@ elsif program_name =~ /server|puma/ # normal server mode
 
 # ----- RSPEC TESTS -----
 elsif program_name =~ /rspec/ # test suite
-  puts "C> \t- Testing with 'rspec'."
+  puts "V> \t- Testing with 'rspec'."
   CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
   PortalSystemChecks.check([:a000_ensure_models_are_preloaded])
   PortalSystemChecks.check([:a010_check_if_pending_database_migrations])
@@ -88,13 +88,13 @@ elsif program_name =~ /rake/
   first_arg ||= '(none)'
   if skip_validations_for.any? { |p| first_arg =~ p }
     #------------------------------------------------------------------------------
-    puts "C> \t- No validations needed for rake task '#{first_arg}'. Skipping."
+    puts "V> \t- No validations needed for rake task '#{first_arg}'. Skipping."
     #------------------------------------------------------------------------------
     CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself]) if first_arg == "db:seed:test:api"
     PortalSystemChecks.check([:a000_ensure_models_are_preloaded])  if first_arg == "db:seed:test:api"
   else # all other rake cases
     #------------------------------------------------------------------------------
-    puts "C> \t- All validations will run for rake task '#{first_arg}'."
+    puts "V> \t- All validations will run for rake task '#{first_arg}'."
     #------------------------------------------------------------------------------
     CbrainSystemChecks.check(:all)
     PortalSystemChecks.check(:all, :except => [ :z020_start_background_activity_workers ])
@@ -102,7 +102,7 @@ elsif program_name =~ /rake/
 
 # ----- RAILS GENERATE -----
 elsif program_name =~ /generators/ # probably 'generate', 'destroy', 'plugin' etc, but we can't tell!
-  puts "C> \t- Running Rails utility."
+  puts "V> \t- Running Rails utility."
 
 # ----- OTHER -----
 else # any other case is something we've not yet thought about, so we crash until we fix it.
@@ -113,6 +113,6 @@ else # any other case is something we've not yet thought about, so we crash unti
 end
 
 #-----------------------------------------------------------------------------
-puts "C> CBRAIN BrainPortal validation completed, " + Time.now.to_s
+puts "V> CBRAIN BrainPortal validation completed, " + Time.now.to_s
 #-----------------------------------------------------------------------------
 

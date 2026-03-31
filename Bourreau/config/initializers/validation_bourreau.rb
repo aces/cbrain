@@ -40,16 +40,16 @@ end || "unknown"
 # Validations Scenarios By Program Name
 #
 
-puts "C> CBRAIN identified boot mode: #{program_name}"
+puts "V> CBRAIN identified boot mode: #{program_name}"
 
 # ----- CONSOLE -----
 if program_name =~ /console/
   if ENV['CBRAIN_SKIP_VALIDATIONS']
-    puts "C> \t- Warning: environment variable 'CBRAIN_SKIP_VALIDATIONS' is set, so we\n"
-    puts "C> \t-          are skipping all validations! Proceed at your own risks!\n"
+    puts "V> \t- Warning: environment variable 'CBRAIN_SKIP_VALIDATIONS' is set, so we\n"
+    puts "V> \t-          are skipping all validations! Proceed at your own risks!\n"
   else
-    puts "C> \t- Note:  You can skip all CBRAIN validations by temporarily setting the\n"
-    puts "C> \t         environment variable 'CBRAIN_SKIP_VALIDATIONS' to '1'.\n"
+    puts "V> \t- Note:  You can skip all CBRAIN validations by temporarily setting the\n"
+    puts "V> \t         environment variable 'CBRAIN_SKIP_VALIDATIONS' to '1'.\n"
     CbrainSystemChecks.check(:all)
     BourreauSystemChecks.check([
       :a000_ensure_models_are_preloaded,
@@ -62,7 +62,7 @@ if program_name =~ /console/
 
 # ----- SERVER -----
 elsif program_name =~ /server|puma/ # normal server mode
-  puts "C> \t- Running all validations for server."
+  puts "V> \t- Running all validations for server."
   CbrainSystemChecks.check(:all)
   BourreauSystemChecks.check(:all)
   # Note, because the puma server insists on renaming its process,
@@ -72,17 +72,17 @@ elsif program_name =~ /server|puma/ # normal server mode
 
 # ----- RSPEC TESTS -----
 elsif program_name =~ /rspec/ # test suite
-  puts "C> \t- Testing with 'rspec'."
+  puts "V> \t- Testing with 'rspec'."
   CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
   BourreauSystemChecks.check([:a000_ensure_models_are_preloaded])
 
 # ----- RAKE TASK -----
 elsif program_name =~ /rake/
-  puts "C> \t- Running Rake '#{first_arg}'."
+  puts "V> \t- Running Rake '#{first_arg}'."
 
 # ----- RAILS GENERATE -----
 elsif program_name =~ /generators/ # probably 'generate', 'destroy', 'plugin' etc, but we can't tell!
-  puts "C> \t- Running Rails utility."
+  puts "V> \t- Running Rails utility."
 
 # ----- OTHER -----
 else # any other case is something we've not yet thought about, so we crash until we fix it.
@@ -92,6 +92,6 @@ else # any other case is something we've not yet thought about, so we crash unti
 end
 
 #-----------------------------------------------------------------------------
-puts "C> CBRAIN Bourreau validation completed, " + Time.now.to_s
+puts "V> CBRAIN Bourreau validation completed, " + Time.now.to_s
 #-----------------------------------------------------------------------------
 

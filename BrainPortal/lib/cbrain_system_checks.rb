@@ -24,6 +24,10 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # When logging with puts(), please follow this convention:
+  #
+  # Use the prefix "C> message" for the main section headers (C for 'common')
+  # Use the prefix "C> \t- message" for the minor messages.
   def self.puts(*args) #:nodoc:
     Rails.logger.info("\e[33m" + args.join("\n") + "\e[0m") rescue nil
     Kernel.puts(*args)

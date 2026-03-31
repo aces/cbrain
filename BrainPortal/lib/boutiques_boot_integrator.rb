@@ -104,7 +104,14 @@ class BoutiquesBootIntegrator
 
     # Boot process messages
     basename = Pathname.new(path).basename
-    puts "B> Boutiques JSON: #{basename} Class: #{klass_name} Tool: #{tool_name} ToolConfigs: #{tool_configs.count}"
+    num_bourreaux = tool_configs.to_a.map(&:bourreau_id).tally.keys.count
+    if myself.is_a?(BrainPortal)
+      tc_message = "#{tool_configs.count} configs on #{num_bourreaux} servers"
+    else
+      local_tcs = tool_configs.to_a.select { |tc| tc.bourreau_id == myself.id }
+      tc_message = "#{local_tcs.count} local / #{tool_configs.count} total on #{num_bourreaux} servers"
+    end
+    puts "T> Boutiques JSON: #{basename} Class: #{klass_name} Tool: #{tool_name} Version: #{tool_version} ToolConfigs: #{tc_message}"
   rescue => ex
     Rails.logger.error(
       "An error occurred while trying to integrate descriptor '#{path}'"

@@ -26,6 +26,10 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # When logging with puts(), please follow this convention:
+  #
+  # Use the prefix "B> message" for the main section headers (B for 'Bourreau')
+  # Use the prefix "B> \t- message" for the minor messages.
   def self.puts(*args) #:nodoc:
     Rails.logger.info("\e[33m" + args.join("\n") + "\e[0m") rescue nil
     Kernel.puts(*args)
@@ -48,7 +52,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
   def self.a005_ensure_boutiques_descriptors_are_loaded #:nodoc:
     #-----------------------------------------------------------------------------
-    puts "C> Associating Boutiques Descriptors With ToolConfigs"
+    puts "B> Associating Boutiques Descriptors With ToolConfigs"
     #-----------------------------------------------------------------------------
     BoutiquesBootIntegrator.link_all
   end
@@ -58,7 +62,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
   def self.a025_check_single_table_inheritance_types #:nodoc:
 
     #-----------------------------------------------------------------------------
-    puts "C> Checking 'type' columns for single table inheritance..."
+    puts "B> Checking 'type' columns for single table inheritance..."
     #-----------------------------------------------------------------------------
 
     myself      = RemoteResource.current_resource
@@ -77,7 +81,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
       badtypes = query.distinct(:type).pluck(:type).compact
         .reject { |type| type.safe_constantize }
       next if badtypes.empty?
-      puts "C> \t- #{err_or_warn}: Bad type values in table '#{query.table_name}': #{badtypes.join(', ')}"
+      puts "B> \t- #{err_or_warn}: Bad type values in table '#{query.table_name}': #{badtypes.join(', ')}"
       errcount += 1
     end
 
@@ -90,7 +94,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
   def self.a050_ensure_proper_cluster_management_layer_is_loaded #:nodoc:
 
     #-----------------------------------------------------------------------------
-    puts "C> Loading cluster management SCIR class..."
+    puts "B> Loading cluster management SCIR class..."
     #-----------------------------------------------------------------------------
 
     myself        = RemoteResource.current_resource
@@ -100,7 +104,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     raise "CBRAIN configuration error: cluster type is set to an invalid Scir class name '#{cluster_type}'." if (! cluster_class) || (! (cluster_class < Scir))
     session = myself.scir_session
     rev = session.revision_info.format("%f %s %a %d") # loads it?
-    puts "C> \t- Layer for '#{cluster_class}' #{rev} loaded."
+    puts "B> \t- Layer for '#{cluster_class}' #{rev} loaded."
   end
 
 
@@ -114,7 +118,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     return unless Dir.exists?(gridshare_dir)
 
     #-----------------------------------------------------------------------------
-    puts "C> Making sure work directories for local tasks exist (in background)"
+    puts "B> Making sure work directories for local tasks exist (in background)"
     #-----------------------------------------------------------------------------
 
     BackgroundActivity::CheckMissingWorkdir.setup!
@@ -126,7 +130,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
   def self.a076_ensure_task_archived_status_is_consistent #:nodoc:
 
     #-----------------------------------------------------------------------------
-    puts "C> Verifying CbrainTasks with inconsistent archiving information..."
+    puts "B> Verifying CbrainTasks with inconsistent archiving information..."
     #-----------------------------------------------------------------------------
 
     # 4 valid cases
@@ -152,7 +156,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     # CASE 1
     case1_tasks = local_tasks.where(:workdir_archived => true, :workdir_archive_userfile_id => nil, :cluster_workdir_size => nil)
     case1_count = case1_tasks.count
-    puts "C> \t- Processing #{case1_count} CbrainTasks that seem to be archived but missing their archiving information." if case1_count > 0
+    puts "B> \t- Processing #{case1_count} CbrainTasks that seem to be archived but missing their archiving information." if case1_count > 0
     case1_tasks.all.each do |t|
       t.addlog("INCONSISTENCY REPAIR: This task was marked as archived but the archiving information was lost")
       t.workdir_archived = false # turn to CASE A
@@ -162,7 +166,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     # CASE 2
     case2_tasks = local_tasks.where(:workdir_archived => false, :cluster_workdir_size => nil).where("workdir_archive_userfile_id IS NOT null")
     case2_count = case2_tasks.count
-    puts "C> \t- Processing #{case2_count} CbrainTasks that seem to be archived as a file but are not marked as archived." if case2_count > 0
+    puts "B> \t- Processing #{case2_count} CbrainTasks that seem to be archived as a file but are not marked as archived." if case2_count > 0
     case2_tasks.all.each do |t|
       userfile_id = t.workdir_archive_userfile_id
       tarch       = TaskWorkdirArchive.where(:id => userfile_id).first
@@ -183,7 +187,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     # CASE 3 and CASE 4
     case3_and_case4_tasks = local_tasks.where("workdir_archive_userfile_id IS NOT null").where("cluster_workdir_size IS NOT null")
     case3_and_case4_count = case3_and_case4_tasks.count
-    puts "C> \t- Processing #{case3_and_case4_count} CbrainTasks that seem to be archived both as a file and on cluster." if case3_and_case4_count > 0
+    puts "B> \t- Processing #{case3_and_case4_count} CbrainTasks that seem to be archived both as a file and on cluster." if case3_and_case4_count > 0
     case3_and_case4_tasks.all.each do |t|
       userfile_id = t.workdir_archive_userfile_id
       tarch       = TaskWorkdirArchive.where(:id => userfile_id).first
@@ -208,7 +212,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     all_tasks_ids          = tasks_archived_as_file.pluck("cbrain_tasks.id")
     case5_tasks            = CbrainTask.find(all_tasks_ids - valid_tasks_ids)
     case5_count            = case5_tasks.size
-    puts "C> \t- Processing #{case5_count} CbrainTasks that seem to be archived but that haven't workdir_archive." if case5_count > 0
+    puts "B> \t- Processing #{case5_count} CbrainTasks that seem to be archived but that haven't workdir_archive." if case5_count > 0
     case5_tasks.each do |t|
       t.addlog("INCONSISTENCY REPAIR: This task was marked as archived but doesn't have a corresponding archive file.")
       t.workdir_archived            = false # turn to CASE A
@@ -218,7 +222,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
 
     total_count = case1_count + case2_count + case3_and_case4_count + case5_count
-    puts "C> \t- No tasks need to be updated." if total_count == 0
+    puts "B> \t- No tasks need to be updated." if total_count == 0
 
   end
 
@@ -227,14 +231,14 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
   def self.a080_ensure_tasks_have_workdir_sizes #:nodoc:
 
     #-----------------------------------------------------------------------------
-    puts "C> Refreshing the disk sizes for workdirs of CbrainTasks..."
+    puts "B> Refreshing the disk sizes for workdirs of CbrainTasks..."
     #-----------------------------------------------------------------------------
 
     myself        = RemoteResource.current_resource
     gridshare_dir = myself.cms_shared_dir
 
     if gridshare_dir.blank? || ! Dir.exists?(gridshare_dir)
-      puts "C> \t- SKIPPING! No global task work directory yet configured!"
+      puts "B> \t- SKIPPING! No global task work directory yet configured!"
       return
     end
 
@@ -250,11 +254,11 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
     how_many = local_tasks_not_sized.count
     if how_many == 0
-      puts "C> \t- No tasks need to be adjusted."
+      puts "B> \t- No tasks need to be adjusted."
       return
     end
 
-    puts "C> \t- Refreshing sizes for #{how_many} tasks (in background)..."
+    puts "B> \t- Refreshing sizes for #{how_many} tasks (in background)..."
     BackgroundActivity::UpdateTaskWorkdirSize.setup!( local_tasks_not_sized.pluck(:id) )
 
   end
@@ -264,14 +268,14 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
   def self.a090_check_for_spurious_task_workdirs #:nodoc:
 
     #-----------------------------------------------------------------------------
-    puts "C> Trying to see if there are any spurious task work directories..."
+    puts "B> Trying to see if there are any spurious task work directories..."
     #-----------------------------------------------------------------------------
 
     myself        = RemoteResource.current_resource
     gridshare_dir = myself.cms_shared_dir
 
     if gridshare_dir.blank? || ! Dir.exists?(gridshare_dir)
-      puts "C> \t- SKIPPING! No global task work directory yet configured!"
+      puts "B> \t- SKIPPING! No global task work directory yet configured!"
       return
     end
 
@@ -293,10 +297,10 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     spurious_ids  = uids2path.keys - all_task_ids
 
     if spurious_ids.empty?
-      puts "C> \t- No spurious task work directories detected."
+      puts "B> \t- No spurious task work directories detected."
       return
     else
-      puts "C> \t- There are #{spurious_ids.size} spurious task work directories. Notifying admin."
+      puts "B> \t- There are #{spurious_ids.size} spurious task work directories. Notifying admin."
     end
 
     message = spurious_ids.collect { |id| "rm -rf #{uids2path[id]}" }.join("\n");
@@ -325,7 +329,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     return unless Dir.exists?(gridshare_dir) && Dir.exists?(cache_dir)
 
     #----------------------------------------------------------------------------
-    puts "C> Making sure the grid share directory has a symlink to the data provider cache..."
+    puts "B> Making sure the grid share directory has a symlink to the data provider cache..."
     #----------------------------------------------------------------------------
 
     sym_path = "#{gridshare_dir}/#{DataProvider::DP_CACHE_SYML}"
@@ -337,7 +341,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     File.unlink(sym_path) if File.exists?(sym_path)
     File.symlink(cache_dir, sym_path)
 
-    puts "C> \t- '#{sym_path}' -> '#{cache_dir}'"
+    puts "B> \t- '#{sym_path}' -> '#{cache_dir}'"
 
   end
 
@@ -346,7 +350,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
   def self.a110_ensure_task_class_git_commits_cached #:nodoc:
 
     #----------------------------------------------------------------------------
-    puts "C> Ensuring git commits for tasks classes are pre-cached..."
+    puts "B> Ensuring git commits for tasks classes are pre-cached..."
     #----------------------------------------------------------------------------
 
     myself = RemoteResource.current_resource
@@ -363,16 +367,16 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
   def self.z000_ensure_we_have_a_forwarded_ssh_agent #:nodoc:
 
     #----------------------------------------------------------------------------
-    puts "C> Making sure the portal is forwarding a SSH agent to us..."
+    puts "B> Making sure the portal is forwarding a SSH agent to us..."
     #----------------------------------------------------------------------------
 
     agent = SshAgent.find_forwarded.try(:aliveness)
     if agent
-      puts "C> \t- Found a forwarded agent on SOCK=#{agent.socket}"
+      puts "B> \t- Found a forwarded agent on SOCK=#{agent.socket}"
       agent.apply
     else
-      puts "C> \t- WARNING: no forwarded agent detected! Hope you exchanged all the SSH keys instead!"
-      puts "C> \t- WARNING: this mode of operation is not really supported!"
+      puts "B> \t- WARNING: no forwarded agent detected! Hope you exchanged all the SSH keys instead!"
+      puts "B> \t- WARNING: this mode of operation is not really supported!"
     end
 
   end
@@ -385,22 +389,22 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     return if ! File.directory? checker_dir.to_s
 
     #----------------------------------------------------------------------------
-    puts "C> Running custom checker bash scripts..."
+    puts "B> Running custom checker bash scripts..."
     #----------------------------------------------------------------------------
 
     scripts  = Dir.glob("#{checker_dir}/*.sh")
     if scripts.empty?
-      puts "C> \t- Skipping, no scripts configured."
+      puts "B> \t- Skipping, no scripts configured."
       return
     end
 
     scripts.sort.each do |fullpath|
       basename = Pathname.new(fullpath).basename
-      puts "C> \t- Executing '#{basename}'..."
+      puts "B> \t- Executing '#{basename}'..."
       system("bash",fullpath)
       status  = $? # a Process::Status object
       next if status.exitstatus == 0
-      puts "C> \t- STOPPING BOOT SEQUENCE: script returned with status #{status.exitstatus}"
+      puts "B> \t- STOPPING BOOT SEQUENCE: script returned with status #{status.exitstatus}"
       raise "Script '#{basename}' exited with #{status.exitstatus}"
     end
   end
@@ -410,11 +414,11 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
   def self.z020_start_background_activity_workers #:nodoc:
 
     #----------------------------------------------------------------------------
-    puts "C> Starting Background Activity Workers..."
+    puts "B> Starting Background Activity Workers..."
     #----------------------------------------------------------------------------
 
     if ENV['CBRAIN_NO_BACKGROUND_ACTIVITY_WORKER'].present? || Rails.env == 'test'
-      puts "C> \t- NOT started as we are in test mode, or env variable CBRAIN_NO_BACKGROUND_ACTIVITY_WORKER is set."
+      puts "B> \t- NOT started as we are in test mode, or env variable CBRAIN_NO_BACKGROUND_ACTIVITY_WORKER is set."
       return
     end
 
