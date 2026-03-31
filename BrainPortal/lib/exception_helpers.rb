@@ -65,11 +65,11 @@ module ExceptionHelpers
       format.html { redirect_to default_redirect }
       format.js   { render :partial  => "shared/flash_update",     :status => 403 }
       format.xml  { render :xml =>  {:error => exception.message}, :status => 403 }
-      format.json { render :json => {:error => "The #{exception.model} with id = #{exception.id}} fails to delete",
+      format.json { render :json => {:error => "The #{exception.model} with id = #{exception.id} fails to delete",
                                      :message => CANNOT_DELETE_MSG,
                                      :type => "delete failed",
                                      :model => exception.model,
-                                     :id => expectation.id
+                                     :id => exception.id
                                      },
                            :status => 403 }
     end
