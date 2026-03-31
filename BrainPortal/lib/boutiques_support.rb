@@ -107,7 +107,7 @@ module BoutiquesSupport
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # Descriptor schema
-  SCHEMA_FILE = "#{Rails.root.to_s}/lib/cbrain_task_generators/schemas/boutiques.schema.json"
+  SCHEMA_FILE = "#{Rails.root.to_s}/lib/boutiques.schema.json"
 
   # Read schema, store it in the module.
   @schema = JSON.parse(File.read(SCHEMA_FILE))

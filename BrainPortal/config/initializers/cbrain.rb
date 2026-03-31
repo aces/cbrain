@@ -49,8 +49,6 @@ class CBRAIN
   TasksPlugins_Dir                = "#{Plugins_Dir}/installed-plugins/cbrain_task" # singular; historical
   ViewsPlugins_Dir                = "#{Plugins_Dir}/installed-plugins/views"
 
-  # Original integrator
-  TaskDescriptorsPlugins_Dir      = "#{Plugins_Dir}/installed-plugins/cbrain_task_descriptors"
   # New integrator
   BoutiquesDescriptorsPlugins_Dir = "#{Plugins_Dir}/installed-plugins/boutiques_descriptors"
 

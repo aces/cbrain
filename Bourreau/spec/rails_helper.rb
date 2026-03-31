@@ -13,6 +13,7 @@ ENV['RAILS_ENV'] ||= 'test'
 # DATABASE_URL=mysql2://prioux:mypassword@localhost/prioux_test
 #
 require 'yaml'
+require 'uri'
 1.times do # a block to encapsulate local variables and not pollute anything
   env           = ENV['RAILS_ENV']
   dbconfig_file = "../BrainPortal/config/database.yml"
