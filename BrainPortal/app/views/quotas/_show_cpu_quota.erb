@@ -47,16 +47,25 @@
 
   <% t.cell("User", :show_width => 2) do %>
     <% if @quota.new_record? %>
-      <%= user_select("quota[user_id]", { :selector => @quota.user_id, :include_blank => '(Default For All Users)' }) %>
+
+      <%= user_select("quota[user_id]", { :selector => @quota.user_id,
+                                          :include_blank => '(Default For All Users)',
+                                          :special_label => ["Max for all users together", Quota::ALL_USERS ]
+      }) %>
       <div class="field_explanation">
          You can leave the user field blank and instead specify a project, below.
          You can also leave them both blank.
       </div>
     <% else %>
-      <%= @quota.is_for_user? ?
+      <% if @quota.is_for_total? %>
+        <%=  html_colorize("(Server-wide task total)", 'orange') %>
+      <% else %>
+        <%= @quota.is_for_user? ?
           link_to_user_if_accessible(@quota.user) :
           html_colorize("(Default for all users)", 'orange') %>
+      <% end %>
     <% end %>
+
   <% end %>
 
   <% t.cell("Project", :show_width => 2) do %>
@@ -120,8 +129,7 @@
        Leave blank to not set a limit. A value of zero will prevent any tasks from being launched.
        Note that projects are ignored for these values, and that if several quota records apply
        to a user and differ only by project, the minimum value found in that set will be used.
-       The core Admin account is used to set a maximum number of tasks IN TOTAL for an Execution
-       server (thus, no limit specific to that admin user can be specified here).
+       It is possible to define a maximum number of tasks IN TOTAL for an Execution server.
     </div>
   <% end %>
 
