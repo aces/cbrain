@@ -104,7 +104,7 @@ class BoutiquesBootIntegrator
 
     # Boot process messages
     basename = Pathname.new(path).basename
-    num_bourreaux = tool_configs.to_a.map(&:bourreau_id).tally.keys.count
+    num_bourreaux = tool_configs.to_a.map(&:bourreau_id).uniq.count
     if myself.is_a?(BrainPortal)
       tc_message = "#{tool_configs.count} configs on #{num_bourreaux} servers"
     else
