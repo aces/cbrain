@@ -66,5 +66,5 @@ Your code *MUST* be written in plain UTF-8 text with only the _linefeed_ charact
 
 ## Be nice.
 
-Consider reading our [Code of Conduct](https://github.com/aces/cbrain/blob/a91de18dd9902e3458dd36ae70cf0c049133a776/.github/CODE_OF_CONDUCT.md) for further information.
+Consider reading our [Code of Conduct](https://github.com/aces/cbrain/blob/master/.github/CODE_OF_CONDUCT.md) for further information.
 
