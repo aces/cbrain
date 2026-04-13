@@ -38,8 +38,7 @@
 		"optional" : false,
 		"list" : false,
 		"value-key" : "[C]",
-		"command-line-flag" : "-C",
-		"uses-absolute-path" : true
+		"command-line-flag" : "-C"
 	}, {
 		"id" : "a",
 		"name" : "a",
@@ -112,6 +111,7 @@
 		"description" : "A number disabler",
 		"optional" : true,
 		"list" : false,
+                "integer": true,
 		"disables-inputs" : [ "j", "k", "y" ],
 		"value-key" : "[i]",
 		"command-line-flag" : "-i",
@@ -150,7 +150,7 @@
 		"type" : "String",
 		"description" : "A string list (mutually requires k)",
 		"optional" : true,
-		"list" : false,
+		"list" : true,
 		"requires-inputs" : [ "k" ],
 		"value-key" : "[m]",
 		"command-line-flag" : "-m"
@@ -299,7 +299,7 @@
 		"description" : "Optional output filename for required output",
 		"optional" : true,
 		"list" : false,
-		"default-value" : "r",
+		"default-value" : "r.txt",
 		"value-key" : "[r]",
 		"command-line-flag" : "-r"
 	}],

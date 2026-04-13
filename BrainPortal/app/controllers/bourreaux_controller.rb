@@ -476,9 +476,6 @@ class BourreauxController < ApplicationController
 
     date_filtering["relative_from"] ||= 50.years.to_i.to_s
     date_filtering["relative_to"]   ||= 1.week.to_i.to_s
-    accessed_after  = date_filtering["relative_from"].to_i.seconds.ago
-    accessed_before = date_filtering["relative_to"].to_i.seconds.ago
-
     # Used only relative value for determine_date_range_start_end --> harcode the 4 first values.
     (accessed_after,accessed_before) = determine_date_range_start_end(false , false, Time.now, Time.now , date_filtering["relative_from"], date_filtering["relative_to"])
 

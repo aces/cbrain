@@ -41,7 +41,7 @@ class SingleFile < Userfile
 
   # Forces calculation and setting of the size attribute.
   def set_size!
-    self.size = self.list_files.inject(0){ |total, file_entry|  total += file_entry.size }
+    self.size = self.list_files.inject(0){ |total, file_entry|  total + file_entry.size }
     self.save!
 
     true

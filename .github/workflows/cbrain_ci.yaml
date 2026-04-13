@@ -50,6 +50,16 @@ jobs:
           ruby-version: 2.7.2
 
       ###########################################################
+      - name: Setup python
+        uses: actions/setup-python@v1
+
+      ###########################################################
+      - name: Setup python package Boutiques to install 'bosh'
+        uses: BSFishy/pip-action@v1
+        with:
+          packages: boutiques
+
+      ###########################################################
       - name: Setup BrainPortal And Bourreau Names
         run: |
           bash .github/workflows/scripts/make_cbrain_app_name_rb.sh > BrainPortal/config/initializers/config_portal.rb

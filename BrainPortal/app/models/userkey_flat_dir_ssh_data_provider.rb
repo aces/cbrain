@@ -97,6 +97,7 @@ class UserkeyFlatDirSshDataProvider < FlatDirSshDataProvider
   def rr_allowed_syncing?(rr = RemoteResource.current_resource, check_dp = self)
     superresult = super
     return false unless superresult # I am aware I could have just done 'super || return false'
+    return true if rr.is_a?(BrainPortal) # keys are always available on portals
     datetime = self.user.get_ssh_key_install_date(rr.id)
     return false if datetime.nil?
     true

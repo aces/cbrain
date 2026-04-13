@@ -32,15 +32,6 @@ module CbrainRailsBourreau
     # properly set up all tasks installed from plugins (and the defaults tasks).
     config.autoload_paths += Dir["#{config.root}/cbrain_plugins/installed-plugins/cbrain_task"]
 
-    # CBRAIN Plugins load paths: add directory for descriptor-based CbrainTask
-    # models. This directory, similarly to the one above, contains symbolic
-    # links to a special loader code which will call a task generator to
-    # generate the requested CbrainTask subclass on the fly.
-    #
-    # The rake task cbrain:plugins:install:all also takes care of creating the
-    # symlinks for this location.
-    config.autoload_paths += Dir["#{config.root}/cbrain_plugins/installed-plugins/cbrain_task_descriptors"]
-
     # Only load the plugins named here, in the order given (default is alphabetical).
     # :all can be used as a placeholder for all plugins not explicitly named.
     # config.plugins = [ :exception_notification, :ssl_requirement, :all ]
