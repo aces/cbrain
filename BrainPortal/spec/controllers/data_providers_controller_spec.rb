@@ -58,9 +58,9 @@ RSpec.describe DataProvidersController, :type => :controller do
           expect(controller).to receive(:get_type_list)
           get :new
         end
-        it "should render the new page" do
+        it "should render the show page" do
           get :new
-          expect(response).to render_template(:new)
+          expect(response).to render_template(:show)
         end
       end
       describe "create" do
@@ -96,9 +96,9 @@ RSpec.describe DataProvidersController, :type => :controller do
             expect(controller).not_to receive(:add_meta_data_from_form)
             post :create, :xhr => true
           end
-          it "should render new page again" do
+          it "should render show page again" do
             post :create, :xhr => true
-            expect(response).to render_template(:new)
+            expect(response).to render_template(:show)
           end
         end
       end
