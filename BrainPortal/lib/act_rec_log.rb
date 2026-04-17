@@ -212,7 +212,7 @@ module ActRecLog
   # The first time a message is created, some revision
   # information about the current ActiveRecord class
   # will be added to the top of the log.
-  def addlog(message, options = { :no_caller => true })
+  def addlog(message, options = { :show_method => false, :show_class => false })
     return true  if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
     use_internal = self.new_record? || self.id.blank?
     begin
@@ -223,20 +223,34 @@ module ActRecLog
 
       callerlevel    = options[:caller_level] || 0
       calling_info   = caller[callerlevel]
+
+      # Prepare the string for the class or module name, as in "[ModuleName] "
+      # This is guessed by camelizing the file name before the '.rb' extension.
+      calling_file   = calling_info.match(/\/([^\/]+).rb:\d+:in/) ? $1 : nil
+      calling_class  = calling_file.present? ? "[#{calling_file.camelize}] " : nil
+      calling_class  = "" if ! options[:show_class]
+
+      # Prepare the string for the method name, as in "methodname() "
       calling_method = options[:prefix] || ( calling_info.match(/in `(.*)'/) ? ($1 + "() ") : "unknown() " )
-      calling_method = "" if options[:no_caller]
+      calling_method = "" if ! options[:show_method]
       calling_method.sub!(/(block|rescue).*? in /, "")
 
+      # Prepare the log and message
       log = use_internal ? @tmp_internal_log : arl.log
       log = "" if log.blank?
       lines = message.split(/\s*\n/)
       lines.pop while lines.size > 0 && lines[-1] == ""
-
       message = lines.join("\n") + "\n"
-      log += Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z] ") + calling_method + message
+
+      # Append the log entry with all special fields
+      log += Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z] ") + calling_class + calling_method + message
+
+      # Reduce size of logs
       while log.size > 65500 && log =~ /\n/   # TODO: archive ?
         log.sub!(/\A[^\n]*\n/,"")
       end
+
+      # Store the new log
       if use_internal
         @tmp_internal_log = log
       else
