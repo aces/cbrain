@@ -90,7 +90,7 @@ module BoutiquesResourceManager
 
     memory_estimate = asked_memories.empty? ? super : asked_memories.max
     self.addlog("Job_memory_estimate: #{memory_estimate.inspect}")
-    return memory_estimate
+    return(memory_estimate * 1024)
   end
 
   def job_number_of_cores #:nodoc:
