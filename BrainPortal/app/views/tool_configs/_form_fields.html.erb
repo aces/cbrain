@@ -106,7 +106,7 @@
 
   <%= show_table(@tool_config, :form_helper => cf, :header => "Execution Server Control", :edit_condition => check_role(:admin_user)) do |t| %>
 
-    <% t.edit_cell(:extra_qsub_args, :header => "Extra 'qsub' options", :show_width => 2) do |f| %>
+    <% t.edit_cell(:extra_qsub_args, :header => "Extra cluster submission options(srun, qsub)", :show_width => 2) do |f| %>
       <%= f.text_field :extra_qsub_args, :size => 80 %>
       <div class="wide_field_explanation">
         <b>Note:</b>This string will be appended to the extra 'qsub' option defined at the bourreau level.

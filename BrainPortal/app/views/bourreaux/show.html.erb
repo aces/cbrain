@@ -399,7 +399,7 @@
 
         <% t.empty_cell %>
 
-        <% t.edit_cell(:cms_extra_qsub_args, :header => "Extra 'qsub' options", :show_width => 2) do |f| %>
+        <% t.edit_cell(:cms_extra_qsub_args, :header => "Extra cluster submission options(srun, qsub)", :show_width => 2) do |f| %>
           <%= f.text_field :cms_extra_qsub_args, :size => 60 %><br/>
           <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
         <% end %>
