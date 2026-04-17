@@ -21,7 +21,11 @@
 #
 
 #
-# For example:
+# This module provides a tool with the ability to selectively specify resources parameters (walltime, cpus, memory)
+# based on the values of some of the input fields.
+#
+#
+# For example an input with specific value:
 #   "BoutiquesResourceManager": {
 #      "step": {
 #         "demuxalot":
@@ -43,6 +47,18 @@
 #     - demuxalot it will set the ram requirement to 15
 #     - demuxlet  it will set the ram requirement to 150
 #
+# It can be used for input that accept a boolean:
+#   "BoutiquesResourceManager": {
+#      "vireo": {
+#         "true":
+#         {
+#             "cpu-cores":         1,
+#             "ram":               30,
+#             "walltime-estimate": "01:00:00"
+#         }
+#      }
+#   }
+#
 # If multiple option are setup the highest value needed for cpu-core and ram will be kept,
 # and all walltime requirement will be added.
 #
@@ -57,7 +73,7 @@ module BoutiquesResourceManager
     @_custom_asked_resources ||= asked_resources()
 
     asked_walltimes = @_custom_asked_resources.map do |resources|
-      walltime_in_second(resources["walltime-estimate"])
+      walltime_in_seconds(resources["walltime-estimate"])
     end.reject { |x| x == 0 }
 
     walltime_estimate = asked_walltimes.empty? ? super : asked_walltimes.sum
@@ -110,7 +126,7 @@ module BoutiquesResourceManager
 
   private
 
-  def walltime_in_second(walltime) #:nodoc:
+  def walltime_in_seconds(walltime) #:nodoc:
     # nil or already in second
     return 0             if !walltime
     return walltime      if walltime.is_a?(Integer)
