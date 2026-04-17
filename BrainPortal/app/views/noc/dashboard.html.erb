@@ -110,7 +110,7 @@
 
 <h1>Execution Servers Caches And Tasks</h1>
 
-<% ([ @myself ] + @bourreaux).each do |b| %>
+<% (@portals + @bourreaux).each do |b| %>
   <%
     info          = @bourreau_info[b.id] || {}
     task_space    = info[:task_space]    || 0

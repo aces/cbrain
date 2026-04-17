@@ -198,7 +198,7 @@ class NocController < ApplicationController
     @refresh_every = nil if @refresh_every.present? && @refresh_every < 60
 
     # RemoteResources, including the portal itself
-    @myself        = RemoteResource.current_resource
+    @portals       = BrainPortal.where(:online => true).all.to_a # includes the current portal and any other
     acttasks_bids  = CbrainTask.active.group(:bourreau_id).pluck(:bourreau_id)
     updated_bids   = Bourreau.where([ "updated_at > ?", offline_resource_limit.ago ]).pluck(:id) # must have been toggled within a month.
     @bourreaux     = Bourreau.where(:id => (acttasks_bids | updated_bids)).order(:name).all
@@ -246,7 +246,7 @@ class NocController < ApplicationController
 
     # We also scan the BrainPortal, although it has no tasks, because
     # the caching logic is the same.
-    ([ @myself ] + @bourreaux ).each do |b| # b is a BrainPortal once, and a Bourreau for the rest
+    ( @portals + @bourreaux ).each do |b| # b is a BrainPortal once, and a Bourreau for the rest
       info  = @bourreau_info[b.id] = {}
 
       # Sum of task workdir space
