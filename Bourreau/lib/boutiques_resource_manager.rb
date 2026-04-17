@@ -1,0 +1,1 @@
+../../BrainPortal/lib/boutiques_resource_manager.rb
