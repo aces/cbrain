@@ -832,10 +832,13 @@ class CbrainTask < ApplicationRecord
   # Overrides the default behavior of the ActRecLog addlog method
   # so that caller information is provided by default.
   def addlog(message,options={})
-    caller_level = options[:caller_level] || 0
+    caller_level  = options[:caller_level] || 0
     caller_level += 1
-    no_caller    = options.has_key?(:no_caller) ? options[:no_caller] : false
-    super(message,options.dup.merge({ :no_caller => no_caller, :caller_level => caller_level }))
+    super(message,
+          options.dup
+            .merge( :caller_level => caller_level )
+            .reverse_merge( :show_method => true, :show_class => true )
+         )
   end
 
   # Records in the task's log the info about an exception.
@@ -854,7 +857,7 @@ class CbrainTask < ApplicationRecord
     self.addlog("#{message} #{exception.class}: #{exception.message}", :caller_level => 1)
     if backtrace_lines > 0 && ! exception.is_a?(CbrainException)
       backtrace_lines = exception.backtrace.size if backtrace_lines >= exception.backtrace.size
-      exception.cbrain_backtrace[0..backtrace_lines-1].each { |m| self.addlog(m, :no_caller => true) }
+      exception.cbrain_backtrace[0..backtrace_lines-1].each { |m| self.addlog(m, :show_method => false, :show_class => false) }
     end
     true
   end
