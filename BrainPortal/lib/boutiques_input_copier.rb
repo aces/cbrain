@@ -117,24 +117,20 @@ module BoutiquesInputCopier
 
     # Get the custom module info
     module_config = descriptor.custom_module_info('BoutiquesInputCopier')
-    basename = Revision_info.basename
-    commit   = Revision_info.short_commit
-    self.addlog("#{basename} rev. #{commit}")
-
     if module_config.blank?
-      self.addlog("Configuration for BoutiquesInputCopier is blank, nothing to do.")
+      self.addlog("Configuration is blank, nothing to do.")
       return true
     end
 
     invoke_params = self.invoke_params
 
     module_config.each do |parent_inputid, config|
-      self.addlog("#{basename}: handling copy of input '#{parent_inputid}'")
+      self.addlog("Handling copy of input '#{parent_inputid}'")
 
       # Skip if no input is selected
       userfile_id = invoke_params[parent_inputid]
       if userfile_id.blank?
-        self.addlog("#{basename}: no input files provided for '#{parent_inputid}', skipping")
+        self.addlog("No input files provided for '#{parent_inputid}', skipping")
         next
       end
 
@@ -148,7 +144,7 @@ module BoutiquesInputCopier
       # We skip if (the checkbox is SHOWN) *AND* (the user DID NOT SELECT IT)
       # We COPY in all other cases.
       if checkbox_hidden.blank? && (checkbox_checked.blank? || checkbox_checked == "0")
-        self.addlog("#{basename}: no need to copy for #{parent_inputid}, skipping")
+        self.addlog("No need to copy for #{parent_inputid}, skipping")
         next
       end
 
@@ -161,14 +157,14 @@ module BoutiquesInputCopier
       userfile_cache_full_path = userfile.cache_full_path     # Path in cache
 
       if ! File.symlink?(userfile_name)
-        cb_error("#{basename}: original userfile is not a symlink: '#{userfile_name}'.")
+        cb_error("Original userfile is not a symlink: '#{userfile_name}'.")
       end
 
       if userfile_cache_full_path.to_s != userfile_path.to_s
-        cb_error("#{basename}: path of cache and workdir are inconsistent for '#{userfile_name}'.")
+        cb_error("Path of cache and workdir are inconsistent for '#{userfile_name}'.")
       end
 
-      self.addlog("#{basename}: Copy input for '#{userfile_name}' in task work directory")
+      self.addlog("Copy input for '#{userfile_name}' in task work directory")
 
       # Remove the symbolic link to the userfile's cache from the working directory
       File.delete(userfile_name)

@@ -66,9 +66,7 @@ module BoutiquesDirMaker
     patterns   = descriptor.custom_module_info('BoutiquesDirMaker')
     return commands if patterns.blank?
 
-    # Log revision information
-    commit = Revision_info.short_commit
-    self.addlog("Creating auxiliary directories with BoutiquesDirMaker rev. #{commit}.")
+    self.addlog("Creating auxiliary directories")
 
     substitutions_by_token  = descriptor.build_substitutions_by_tokens_hash(
       JSON.parse(File.read(self.invoke_json_basename))
@@ -79,9 +77,9 @@ module BoutiquesDirMaker
       path = descriptor.apply_substitutions(pattern, substitutions_by_token)
       path = path.strip  # whitespaces in dir names are not supported
       path = Pathname.new(path.strip).cleanpath  # normalizing: removing unnecessary dots ...
-      cb_error "BoutiquesDirMaker cannot create path '#{path}' (pattern '#{pattern}')." if path.to_s.start_with?('.')
+      cb_error "Cannot create path '#{path}' (pattern '#{pattern}')." if path.to_s.start_with?('.')
       safe_mkdir(path)
-      self.addlog("BoutiquesDirMaker created '#{path}'.")
+      self.addlog("Created '#{path}'.")
     end
     commands
   end
