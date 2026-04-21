@@ -131,12 +131,8 @@ module BoutiquesInputSubdirMaker
     original_userfile_ids = {} # Needed in 'ensure' clause below
 
     return super if parent_dirname_by_inputid.blank? # no config means nothing to do
-
-    # Log revision information
-    basename = Revision_info.basename
-    commit   = Revision_info.short_commit
-    self.addlog("Creating parent directories in BoutiquesInputSubdirMaker.")
-    self.addlog("#{basename} rev. #{commit}")
+    # Log our activity  
+    self.addlog("Creating parent directories")
 
     # Remove IDs from invoke_params
     parent_dirname_by_inputid.each_key do |inputid|

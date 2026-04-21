@@ -123,9 +123,6 @@ module BoutiquesOutputCacheCleaner
     # This is controlled by a new fake input checkbox in the form. See above.
     return true unless self.params[:cbrain_enable_output_cache_cleaner]
 
-    # Log version of this module
-    self.addlog("BoutiquesOutputCacheCleaner rev. #{Revision_info.short_commit}")
-
     # Get the list of outputs to clean from the descriptor
     descriptor = self.descriptor_for_save_results
     output_ids = descriptor.custom_module_info('BoutiquesOutputCacheCleaner') || []

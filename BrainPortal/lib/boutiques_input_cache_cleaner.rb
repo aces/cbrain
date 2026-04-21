@@ -92,7 +92,7 @@ module BoutiquesInputCacheCleaner
       next if     last_cache_access_time >= setup_time  # skip, file is being accessed by another task
 
       userfile.cache_erase
-      self.addlog("BoutiquesInputCacheCleaner deleted cache of '#{userfile.name}'")
+      self.addlog("Deleted cache of '#{userfile.name}'")
 
     end
 

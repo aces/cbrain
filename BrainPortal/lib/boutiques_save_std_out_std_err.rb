@@ -124,10 +124,10 @@ module BoutiquesSaveStdOutStdErr
     attlist[:name] = pn.basename.to_s  # "hello.txt"
     if dp.has_browse_path_capabilities?
       attlist[:browse_path] = pn.dirname.to_s   # "a/b/c"
-      self.addlog "BoutiquesSaveStdErrOut: result DataProvider browse_path for Stderr and Stdout will be '#{pn.dirname}'"
+      self.addlog "Result DataProvider browse_path for Stderr and Stdout will be '#{pn.dirname}'"
     else
       attlist[:browse_path] = nil # ignore the browse_path
-      self.addlog "BoutiquesSaveStdErrOut: result DataProvider doesn't have multi-level capabilities, ignoring forced browse_path for Stderr and Stdout '#{pn.dirname}'."
+      self.addlog "Result DataProvider doesn't have multi-level capabilities, ignoring forced browse_path for Stderr and Stdout '#{pn.dirname}'."
     end
 
     # Invoke the standard code
