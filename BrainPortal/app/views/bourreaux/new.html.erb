@@ -169,7 +169,7 @@
           <%= f.text_field :cms_default_queue %><br/>
           <div class="field_explanation">Optional.</div>
 
-          <p><%= f.label :cms_extra_qsub_args, "Extra 'qsub' options" %><br/>
+          <p><%= f.label :cms_extra_qsub_args, "Extra cluster submission options(sbatch, qsub)" %><br/>
           <%= f.text_field :cms_extra_qsub_args, :size => 60 %><br/>
           <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
 
