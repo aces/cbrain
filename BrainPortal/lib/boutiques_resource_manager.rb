@@ -77,7 +77,7 @@ module BoutiquesResourceManager
     end.reject { |x| x == 0 }
 
     walltime_estimate = asked_walltimes.empty? ? super : asked_walltimes.sum
-    self.addlog("Job_walltime_estimate: #{walltime_estimate.inspect}")
+    self.addlog("walltime: #{walltime_estimate.inspect}")
     return walltime_estimate
   end
 
@@ -85,12 +85,13 @@ module BoutiquesResourceManager
     @_custom_asked_resources ||= asked_resources()
 
     asked_memories = @_custom_asked_resources.map do |resources|
-      resources["ram"].to_i
+      resources["ram"].to_i # in GB
     end.compact.reject { |x| x == 0 }
 
-    memory_estimate = asked_memories.empty? ? super : asked_memories.max
-    self.addlog("Job_memory_estimate: #{memory_estimate.inspect}")
-    return(memory_estimate * 1024)
+    return super if asked_memories.empty?
+    memory_estimate = asked_memories.max  # in GB
+    self.addlog("memory: #{memory_estimate} GB")
+    return(memory_estimate * 1024) # in MB
   end
 
   def job_number_of_cores #:nodoc:
@@ -101,7 +102,7 @@ module BoutiquesResourceManager
     end.compact.reject { |x| x == 0 }
 
     number_of_cores = asked_cpus.empty?  ? super : asked_cpus.max
-    self.addlog("Job_number_of_cores: #{number_of_cores.inspect}")
+    self.addlog("cpu-cores: #{number_of_cores.inspect}")
     return number_of_cores
   end
 
