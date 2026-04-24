@@ -190,9 +190,20 @@ module BoutiquesInputSubdirMaker
         override_invoke_params.delete(inputid)
       else
         dirname              = subdir_config["dirname"]
-        filename             = subdir_config["filename"] || "#{override_invoke_params[inputid]}"
+        filename             = subdir_config["filename"]
         append_userfile_name = subdir_config["append_filename"]
-        override_invoke_params[inputid] = append_userfile_name ? "#{dirname}/#{filename}" : dirname
+        new_value = if override_invoke_params[inputid].is_a?(String)
+                      filename ||= "#{override_invoke_params[inputid]}"
+                      append_userfile_name ? "#{dirname}/#{filename}" : dirname
+                    elsif filename || ! append_userfile_name   # handing input filelist
+                      [append_userfile_name ? "#{dirname}/#{filename}" : dirname]
+                    else
+                      override_invoke_params[inputid].map do |filename|
+                        "#{dirname}/#{filename}"
+                      end
+                    end
+
+        override_invoke_params[inputid] = new_value
       end
     end
 
