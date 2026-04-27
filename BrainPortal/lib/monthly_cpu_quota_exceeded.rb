@@ -21,7 +21,7 @@
 #
 
 # Use this exception class for notification of monthly CPU quota exceeded.
-class MonthlyCbrainCpuQuotaExceeded < CbrainCpuQuotaExceeded
+class MonthlyCpuQuotaExceeded < CbrainCpuQuotaExceeded
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
