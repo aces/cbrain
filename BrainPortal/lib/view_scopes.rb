@@ -1275,7 +1275,11 @@ module ViewScopes
       common     = params.to_unsafe_hash.slice(*att_list)
       scopes     = {
           name => { 'f' =>
-            common.map { |attr,value| { 'a' => attr.to_s, 'v' => value.to_s } }
+            common.map { |attr,value|
+              value.is_a?(Array) ?
+              { 'a' => attr.to_s, 'v' => value.to_a.map(&:to_s), :o => 'in' } :
+              { 'a' => attr.to_s, 'v' => value.to_s }
+            }
           }
         } if common.present?
 
