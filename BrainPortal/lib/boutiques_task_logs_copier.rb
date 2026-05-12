@@ -148,9 +148,9 @@ module BoutiquesTaskLogsCopier
     # and patterns are normally configured by the administrator, who
     # should know better than to misconfigure the module or
     # point at paths outside the task's work directory.
-    cb_error "Misconfigured module BoutiquesTaskLogsCopier for #{typeinfo} with absolute path pattern '#{destpath}'" if destpath.absolute?
+    cb_error "Misconfigured module for #{typeinfo} with absolute path pattern '#{destpath}'" if destpath.absolute?
     if prefixglob.to_s.blank? || prefixglob.to_s == '.'
-      cb_error "Misconfigured module BoutiquesTaskLogsCopier without a prefix subdirectory for #{typeinfo} '#{destpath}'"
+      cb_error "Misconfigured module without a prefix subdirectory for #{typeinfo} '#{destpath}'"
     end
 
     # Try to find one and only one directory where to install the file.
@@ -178,7 +178,7 @@ module BoutiquesTaskLogsCopier
 
     destdir = dirglobs.first
     if ! path_is_in_workdir?(destdir)
-      self.addlog "Misconfigured module BoutiquesTaskLogsCopier: path pattern '#{destpath}' is outside of the task's workdirectory; #{typeinfo} file not saved."
+      self.addlog "Misconfigured module: path pattern '#{destpath}' is outside of the task's workdirectory; #{typeinfo} file not saved."
       return
     end
 

@@ -227,7 +227,6 @@ module BoutiquesOutputFilenameRenamer
       outname_pattern   = invoke_params[outnameinputid]
       outname           = output_name_from_pattern(outname_pattern, input_userfile.name)
       if outname_pattern != outname
-        self.addlog("BoutiquesOutputFilenameRenamer rev. #{Revision_info.short_commit}")
         self.addlog "Generating output name: \"#{outname_pattern}\" -> \"#{outname}\""
         self.invoke_params[outnameinputid] = outname # replace pattern with value
       end

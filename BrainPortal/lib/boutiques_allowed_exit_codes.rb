@@ -50,7 +50,7 @@ module BoutiquesAllowedExitCodes
     descriptor = self.descriptor_for_save_results
     ok_codes   = descriptor.custom_module_info('BoutiquesAllowedExitCodes') || [ 0 ]
 
-    addlog("BoutiquesAllowedExitCodes rev. #{Revision_info.short_commit}, status=#{status}, allowed=#{ok_codes}")
+    addlog("Status=#{status}, allowed=#{ok_codes}")
 
     ! Array(ok_codes).include?(status)
   end

@@ -57,20 +57,20 @@ module BoutiquesOutputTagger
       file_ids.each do |fid|
         userfile = Userfile.where(:id => fid).first
         if ! userfile
-          self.addlog("BoutiquesOutputTagger: Skipped tagging file ##{fid} for output '#{output_id}': file doesn't exist.")
+          self.addlog("Skipped tagging file ##{fid} for output '#{output_id}': file doesn't exist.")
           next
         end
         tag_ids = taglist.map do |tagname|
           tag_req = Tag.where(:name => tagname, :group_id => self.group_id) # scope is one tag name per prject
           tag = tag_req.first
           if ! tag
-             self.addlog "BoutiquesOutputTagger: Creating new tag '#{tagname}'"
+             self.addlog "Creating new tag '#{tagname}'"
              tag_req = tag_req.where(:user_id => self.user_id)  # add owner
              tag = tag_req.create!
           end
           tag.id
         end
-        self.addlog "BoutiquesOutputTagger: tagging file '#{userfile.name}' (ID #{userfile.id}) with tags: #{taglist.join(', ')}"
+        self.addlog "Tagging file '#{userfile.name}' (ID #{userfile.id}) with tags: #{taglist.join(', ')}"
         userfile.tag_ids |= tag_ids
       end
     end
