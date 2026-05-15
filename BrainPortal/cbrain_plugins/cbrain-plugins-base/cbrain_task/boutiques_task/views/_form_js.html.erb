@@ -80,13 +80,13 @@ makeReceiverWithValueActionMap = lambda do |action|
         doesMap[id] = doesMap[id] || {};
         if (doesMap[id] && doesMap[id][disable_by])
           doesMap[id][disable_by].push(value)
-        elsif (doesMap[id]) 
+        elsif (doesMap[id])
           doesMap[id][disable_by] = [value]
         end
       end
     end
   end
-  
+
   doesMap
 end
 
@@ -171,8 +171,8 @@ $(function () {
   var isActiveParamWithValues = function(disable_by, disabled_by_values) {
     var targ = $( 'li.' + ("btq-" + disable_by) + '.tsk-prm' );
 
-    var current_values = ($(targ[0].querySelector('select')) && $(targ[0].querySelector('select')).val()) || 
-                            [targ[0].querySelector('input[type="hidden"]') && targ[0].querySelector('input[type="hidden"]').value]; 
+    var current_values = ($(targ[0].querySelector('select')) && $(targ[0].querySelector('select')).val()) ||
+                            [targ[0].querySelector('input[type="hidden"]') && targ[0].querySelector('input[type="hidden"]').value];
         current_values = (current_values && current_values.filter(k => k !== "")) || [];
 
     return current_values.filter(value => disabled_by_values.includes(value));
@@ -402,6 +402,8 @@ $(function () {
     handleNumberConstraints();
   })
 
+  /*** Need to call it when the form is displayed (fix bug when reload form)
+  handleDisablesAndRequires();
 
   /*** Optional parameters ***/
   parameters.delegate('.tsk-prm-sel', 'click', function(){
@@ -414,7 +416,7 @@ $(function () {
   })
 
   /* Clicking on the parameter's checkbox toggles the parameter's state */
-  parameters.delegate('.tsk-prm-opt, .tsk-prm-chk, .tsk-prm-sel, .tsk-prm-sel-mult', 'change activate.tsk-prm', function () {  
+  parameters.delegate('.tsk-prm-opt, .tsk-prm-chk, .tsk-prm-sel, .tsk-prm-sel-mult', 'change activate.tsk-prm', function () {
     var opt   = $(this),
         param = opt.parent();
 
@@ -584,7 +586,7 @@ $(function () {
     // Helper for extracting value lists
     var getVals = function( id, join ) {
       var vals = $('li.' + ('btq-' + id) + '.tsk-prm').find('.tsk-prm-in').map( function(){ return $(this).val(); } );
-      
+
       if (vals.length === 0 ) {
         var li = $('li.' + ('btq-' + id));
         vals   = li.find(":selected").map(idx => li.find(":selected")[idx]['value']);
