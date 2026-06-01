@@ -164,6 +164,13 @@ $(function () {
     if( targ.hasClass( 'flag' ) ){ // Flag case
       return targ.find('.tsk-prm-chk').prop('checked');
     }
+    // If a mandatory param can be deactivate by other input ->  means no checkbox
+    // then we should look for a value and not only the checkbox
+    var opt = targ.find('.tsk-prm-opt');
+    if( opt.length === 0 ) {
+      var val = targ.find('.tsk-prm-in').val();
+      return (val !== undefined && val !== '');
+    }
     return targ.find('.tsk-prm-opt').prop('checked'); // Non-flag case
   }
 
@@ -402,8 +409,6 @@ $(function () {
     handleNumberConstraints();
   })
 
-  /*** Need to call it when the form is displayed (fix bug when reload form)
-  handleDisablesAndRequires();
 
   /*** Optional parameters ***/
   parameters.delegate('.tsk-prm-sel', 'click', function(){
