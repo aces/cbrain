@@ -1294,13 +1294,15 @@ class ClusterTask < CbrainTask
      runtimefile = Pathname.new(self.full_cluster_workdir) + self.runtime_info_basename(run_number)   rescue nil
 
      if stdoutfile && File.exist?(stdoutfile)
-       io = IO.popen("tail -#{stdout_lim} #{stdoutfile.to_s.bash_escape}","r")
+       # The sed filter transforms CRLFs into LFs and also filters out stupid progress bars.
+       io = IO.popen("tail -#{stdout_lim} #{stdoutfile.to_s.bash_escape} | sed -e 's/\\r$//g' -e 's/.*\\r//g'","r")
        self.cluster_stdout = io.read.gsub(/\e\[[0-9;]*[a-zA-Z]/, '')
        io.close
      end
 
      if stderrfile && File.exist?(stderrfile)
-       io = IO.popen("tail -#{stderr_lim} #{stderrfile.to_s.bash_escape}","r")
+       # The sed filter transforms CRLFs into LFs and also filters out stupid progress bars.
+       io = IO.popen("tail -#{stderr_lim} #{stderrfile.to_s.bash_escape} | sed -e 's/\\r$//g' -e 's/.*\\r//g'","r")
        self.cluster_stderr = io.read.gsub(/\e\[[0-9;]*[a-zA-Z]/, '')
        io.close
      end
@@ -1866,6 +1868,14 @@ function got_sigxfsz {
   exit 10
 }
 trap got_sigxfsz XFSZ
+
+# Remove some env variables that are
+# irrelevent system configuration values.
+unset $(env | grep = | grep ^SSH    | cut -d= -f1)
+unset $(env | grep = | grep ^BUNDLE | cut -d= -f1)
+unset $(env | grep = | grep ^GEM    | cut -d= -f1)
+unset $(env | grep = | grep ^IRB    | cut -d= -f1)
+unset $(env | grep = | grep ^rvm_   | cut -d= -f1)
 
 date '+CBRAIN Task Starting At %s : %F %T'
 date '+CBRAIN Task Starting At %s : %F %T' 1>&2
