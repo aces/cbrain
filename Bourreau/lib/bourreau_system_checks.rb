@@ -313,7 +313,8 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
                         "cd #{gridshare_dir.bash_escape}\n" +
                         "#{message}\n",
       :critical      => true,
-      :send_email    => false
+      :send_email    => false,
+      :include_locked_users => true,
     ) rescue true
 
   end

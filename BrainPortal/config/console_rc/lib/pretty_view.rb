@@ -188,7 +188,7 @@ class DataProvider
   Owner:    %d (%s)
   Group:    %d (%s)
   TimeZone: %s
-  SshPath:  %s
+  Path:     %s
   AltHosts: %s
   Created:  %s
   Updated:  %s
@@ -199,7 +199,12 @@ class DataProvider
       user_id, user.login,
       group_id, group.try(:name),
       time_zone,
-      "ssh://#{remote_user.presence || 'none'}@#{remote_host.presence || 'none'}:#{remote_port.presence || 22}#{remote_dir.presence || "/none"}",
+      ( (self.is_a?(SshDataProvider) || self.is_a?(SmartDataProviderInterface)) ?
+          ( "ssh://#{remote_user.presence || 'none'}@#{remote_host.presence || 'none'}:#{remote_port.presence || 22}#{remote_dir.presence || "/none"}" ) :
+        self.is_a?(S3FlatDataProvider) ?
+          ( "#{cloud_storage_endpoint}/#{cloud_storage_client_bucket_name}/#{cloud_storage_client_path_start}" ) :
+          ( "Unknown" )
+      ),
       alternate_host, # should be plural
       ConsoleCtx.send(:pretty_past_date,created_at),
       ConsoleCtx.send(:pretty_past_date,updated_at),
