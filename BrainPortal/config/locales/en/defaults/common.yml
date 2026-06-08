@@ -1,4 +1,7 @@
 en:
+  ago_time: "%{time} ago"
+  unknown: "Unknown"
+  none: "None"
   edit: "Edit"
   browse: "Browse"
   dataset:

@@ -27,25 +27,25 @@
   tags     = @my_tools.map { |t| t.application_tags         :array  }.flatten.sort_by { |tag| tag.downcase }.uniq
 %>
 
-<div id="toolsDialog" title="Select Tool" >
+<div id="toolsDialog" title=t('.title') >
 
   <div class="userfiles_bourreau_selector" id="tool_version_selector"></div>
 
   <div id="toolsDialogLeftCol">
     <div>
-      <span class="toolsDialogLabel">Search:</span><input type="text" id="searchToolSelectionBox" size="20">
+      <span class="toolsDialogLabel"><%= t('.search') %></span><input type="text" id="searchToolSelectionBox" size="20">
     </div>
     <p>
 
     <% if types.present? || packages.present? || tags.present? %>
       <div>
-        <label><input type="checkbox" class="tag_checkbox" id="showAllTools"/>All tools</label>
+        <label><input type="checkbox" class="tag_checkbox" id="showAllTools"/><%= t('.all_tools') %></label>
       </div>
       <p>
     <% end %>
 
     <% if types.present? %>
-      <span class="toolsDialogLabel">Type:</span><br>
+      <span class="toolsDialogLabel"><%= t('.type') %></span><br>
       <% types.each do |type| %>
         <label>
           <input type="checkbox" class="tag_checkbox" data-tagname="<%= type %>"/>
@@ -57,7 +57,7 @@
     <% end %>
 
     <% if packages.present? %>
-      <span class="toolsDialogLabel">Software Package:</span><br>
+      <span class="toolsDialogLabel"><%= t('.software_package') %></span><br>
       <% packages.each do |package| %>
         <label>
           <input type="checkbox" class="tag_checkbox" data-tagname="<%= package %>"/>
@@ -69,7 +69,7 @@
     <% end %>
 
     <% if tags.present? %>
-      <span class="toolsDialogLabel">Tags:</span><br>
+      <span class="toolsDialogLabel"><%= t('.tags') %></span><br>
       <% tags.each do |tag|%>
         <label>
           <input type="checkbox" class="tag_checkbox" data-tagname="<%= tag %>"/>
@@ -87,7 +87,7 @@
 
   <div id="toolsDialogRightCol">
 
-    <span class="toolsDialogLabel">Tools:</span>
+    <span class="toolsDialogLabel"><%= t('.tools') %></span>
 
     <div class="tools-container">
       <table id="toolSelectTable">
@@ -96,9 +96,9 @@
         <tr>
           <td>
             <% if current_user.has_role? :admin_user %>
-              <h1 class="warning">No tools available. New tools may be registered from the Tools index.</h1>
+              <h1 class="warning"><%= t('.no_tools_admin') %></h1>
             <% else %>
-              <h1 class="warning">No tools available. Contact your admin to have them registered.</h1>
+              <h1 class="warning"><%= t('.no_tools_others') %></h1>
             <% end %>
           </td>
         </tr>
@@ -118,9 +118,9 @@
           <td id="tool_<%= tool.id %>">
             <span data-tool-id="<%= tool.id %>" class="toolsLink"><%= tool.name %></span><br>
             <% if taglist.present? %>
-              Tags: <%= taglist.join(', ') %><br>
+              <%= t('.tags') %> <%= taglist.join(', ') %><br>
             <% end %>
-            <%= link_to( "Tool Website", tool.url, :target => "_blank") if tool.url.present? %>
+            <%= link_to( t('.tool_website'), tool.url, :target => "_blank") if tool.url.present? %>
           </td>
         </tr>
       <% end # each @my_tools %>

@@ -33,28 +33,28 @@
 <!-- User control buttons -->
 
   <fieldset class="display_inline_block">
-    <legend>Navigation: file <%= @current_index + 1 %> out of <%= @filelist.size %></legend>
+    <legend><%= t('.navigation_info', current: @current_index + 1, total: @filelist.size) %></legend>
     <%= link_to_userfile_if_accessible(@userfile, current_user, :html_options => { :target => '_blank' }) %>
     <p>
     <% not_first_file = @current_index != 0 %>
     <% not_last_file  = @current_index < @filelist.size - 1 %>
     <% if  not_first_file %>
-      <%= submit_button "Previous File", :name => :previous %>
+      <%= submit_button t('.previous_file'), :name => :previous %>
     <% end %>
     <% if not_last_file %>
-      <%= submit_button "Next File", :name => :next %>
+      <%= submit_button t('.next_file'), :name => :next %>
     <% end %>
   </fieldset>
 
   <br>
 
   <fieldset class="display_inline_block">
-    <legend>File Tags</legend>
-    <%= submit_button "Pass",    :name => :pass %>
-    <%= submit_button "Fail",    :name => :fail %>
-    <%= submit_button "Unknown", :name => :unknown %>
+    <legend><%= t('.file_tags') %></legend>
+    <%= submit_button t('.pass'),    :name => :pass %>
+    <%= submit_button t('.fail'),    :name => :fail %>
+    <%= submit_button t('unknown').downcase, :name => :unknown %>
     <br>
-    Full list of tags:<br>
+    <%= t('.full_list_of_tags') %><br>
     <select name="tag_ids[]" multiple="multiple" style="width: 15em" size="4" >
       <%= options_from_collection_for_select current_user.available_tags, 'id', 'name',
           @userfile.get_tags_for_user(current_user).ids %>
@@ -62,14 +62,14 @@
   </fieldset>
 
   <fieldset class="display_inline_block">
-    <legend>File Description</legend>
+    <legend><%= t('.file_description') %></legend>
     <%= text_area_tag "userfile[description]", @userfile.description, :rows => 5, :cols => 40 %>
   </fieldset>
 
 <p>
 
-<% update_message  = "Update" %>
-<% update_message += " (and go to next file)" if not_last_file %>
+<% update_message  = t('userfiles.common.update') %>
+<% update_message += t('userfiles.common.and_go') if not_last_file %>
 <%= submit_tag "#{update_message}", :name => :update, :data => {:current_file_id => @userfile.id } %>
 
 <hr>
@@ -79,14 +79,13 @@
 <% begin %>
   <%= render :file => @qc_view_file %>
 <% rescue => ex %>
-  There was an error generating the QC panel for this file. Please talk to the developers.
+  <%= t('.qc_error') %>
   <% if current_user.has_role? :admin_user %>
     <pre>
-    Exception: <%= ex.class %> : <%= ex.message %>
+    <%= t('userfiles.common.exception') %> <%= ex.class %> : <%= ex.message %>
     <% ex.backtrace.each do |line| %>
     <%= line %>
     <% end %>
     </pre>
   <% end %>
 <% end %>
-

@@ -30,24 +30,24 @@
 
 <div id="upload-dialog"
   class="dlg-dialog"
-  title="Upload - Single file"
+  title="<%= t('.title_upload_sf') %>"
   data-max-upload-size="<%= RemoteResource.current_resource.meta[:upload_size_limit].to_i.megabytes %>"
   data-type-detect-url="<%= detect_file_type_userfiles_path %>"
 >
   <form action="<%= userfiles_path %>" method="post" enctype="multipart/form-data">
-    <label for="up-file" class="dlg-fld-lbl">Upload</label>
+    <label for="up-file" class="dlg-fld-lbl"><%= t('userfiles.common.upload') %></label>
     <input id="up-file" class="dlg-fld" type="file" name="upload_file" />
     <span id="up-file-warn" class="dlg-msg-err"></span>
     <br />
 
-    <label for="up-dp" class="dlg-fld-lbl">To</label>
+    <label for="up-dp" class="dlg-fld-lbl"><%= t('.to') %></label>
     <%=
       data_provider_select('data_provider_id',
         { :data_providers => uploadable_dps },
         {
           :id    => 'up-dp',
           :class => 'dlg-fld',
-          :'data-placeholder' => "A data provider..."
+          :'data-placeholder' => t('.a_dp')
         }
       )
     %>
@@ -60,12 +60,12 @@
     %>
     <br />
 
-    <label for="up-prj" class="dlg-fld-lbl">Project</label>
+    <label for="up-prj" class="dlg-fld-lbl"><%= t('activerecord.models.group.one') %></label>
     <%=
       group_select('userfile[group_id]', {}, {
         :id    => 'up-prj',
         :class => 'dlg-fld',
-        :'data-placeholder' => "A project..."
+        :'data-placeholder' => t('userfiles.common.a_group')
       })
     %>
     <br />
@@ -76,7 +76,7 @@
       <label for="up-ex" class="dlg-chk-icon">
         <span class="ui-icon ui-icon-check"></span>
       </label>
-      <label for="up-ex" class="dlg-chk-lbl">Extract</label>
+      <label for="up-ex" class="dlg-chk-lbl"><%= t('.extract') %></label>
 
       <br />
 
@@ -86,7 +86,7 @@
         <label for="up-col" class="dlg-rad-icon">
           <span class="round-icon"></span>
         </label>
-        <label for="up-col" class="dlg-rad-lbl">As a single collection</label>
+        <label for="up-col" class="dlg-rad-lbl"><%= t('.as_single_collection') %></label>
 
         <br />
 
@@ -94,7 +94,7 @@
         <label for="up-mul" class="dlg-rad-icon">
           <span class="round-icon"></span>
         </label>
-        <label for="up-mul" class="dlg-rad-lbl">As multiple files</label>
+        <label for="up-mul" class="dlg-rad-lbl"><%= t('.as_multiple_files') %></label>
 
       </div>
 
@@ -106,31 +106,31 @@
       <span class="ui-icon up-closed ui-icon-caret-1-e"></span>
       <span class="ui-icon up-open ui-icon-caret-1-s"></span>
     </label>
-    <label id="up-opt-lbl" for="up-opt-toggle">Advanced options...</label>
+    <label id="up-opt-lbl" for="up-opt-toggle"><%= t('.advanced_options') %> </label>
     <div id="up-opt">
-      <label for="up-tag" class="dlg-fld-lbl">Tags</label>
+      <label for="up-tag" class="dlg-fld-lbl"><%= t('activerecord.models.tag.other') %></label>
       <select id="up-tag"
         class="dlg-fld dlg-chosen"
         name="tags[]"
         multiple="multiple"
-        data-placeholder="Some tags..."
+        data-placeholder="<%= t('.some_tags') %>"
         data-default-project="<%= default_project.id %>"
       >
         <%= options_from_collection_for_select(current_user.available_tags, 'id', 'name') %>
       </select>
       <br /><br />
 
-      <label for="up-type" class="dlg-fld-lbl">Detect as</label>
+      <label for="up-type" class="dlg-fld-lbl"><%= t('.detect_as') %></label>
       <%=
         userfile_type_select(:file_type, {}, {
           :id                 => 'up-type',
           :class              => 'dlg-fld',
-          :'data-placeholder' => "A file type...",
+          :'data-placeholder' => t('.a_file_type'),
           # :include_blank      => "(Detect during autoextract)",  # doesn't work
         })
       %>
-      <span id="up-type-auto">(autodetected)</span>
-      <span id="up-type-unknown" class="dlg-msg-warn">Unknown file type!</span>
+      <span id="up-type-auto"><%= t('.autodetect') %></span>
+      <span id="up-type-unknown" class="dlg-msg-warn"><%= t('.unknown_file_type') %></span>
       <br />
 
       <input id="up-shr" class="dlg-chk" name="group_writable" type="checkbox" />
@@ -138,7 +138,8 @@
         <span class="ui-icon ui-icon-check"></span>
       </label>
       <label for="up-shr" class="dlg-chk-lbl">
-        Allow modification by other project members
+        <%= t('.allow_modification') %>
+
       </label>
     </div>
   </form>
@@ -159,16 +160,16 @@
 
 </div>
 
-<div id="cpmv-dialog" class="dlg-dialog" title="Copy" data-title="Copy">
+<div id="cpmv-dialog" class="dlg-dialog" title="<%= t('userfiles.common.copy') %>" data-title="<%= t('userfiles.common.copy') %>">
   <form action="<%= change_provider_userfiles_path %>" method="post">
-    <label for="cpmv-dp" class="dlg-fld-lbl">To</label>
+    <label for="cpmv-dp" class="dlg-fld-lbl"><%= t('.to') %></label>
     <%=
       data_provider_select('data_provider_id_for_mv_cp',
         { :data_providers => writable_dps },
         {
           :id    => 'up-dp',
           :class => 'dlg-fld',
-          :'data-placeholder' => "A data provider..."
+          :'data-placeholder' => t('.a_dp')
         }
       )
     %>
@@ -186,22 +187,22 @@
       <span class="ui-icon ui-icon-check"></span>
     </label>
     <label for="cpmv-ovr" class="dlg-chk-lbl">
-      Overwrite existing file(s) with the same name
+      <%= t('.overwrite') %>
     </label>
     <br /><br />
   </form>
 </div>
 
-<div id="prop-dialog" class="dlg-dialog" title="File properties">
+<div id="prop-dialog" class="dlg-dialog" title="<%= t('.file_properties') %>">
   <span id="pp-fcs" autofocus="autofocus"></span>
 
   <form action="<%= update_multiple_userfiles_path %>" method="post">
-    <label for="pp-tag" class="dlg-fld-lbl">Tags</label>
+    <label for="pp-tag" class="dlg-fld-lbl"><%= t('activerecord.models.tag.other') %></label>
     <select id="pp-tag"
       class="dlg-fld dlg-chosen"
       name="tags[]"
       multiple="multiple"
-      data-placeholder="Keep current tags"
+      data-placeholder="<%= t('.keep_current_tags') %>"
       data-default-project="<%= default_project.id %>"
     >
       <%= options_from_collection_for_select(current_user.available_tags, 'id', 'name') %>
@@ -213,33 +214,32 @@
       <span class="ui-icon ui-icon-check"></span>
     </label>
     <label for="pp-tag-clr" class="dlg-chk-lbl">
-      Clear tags
+      <%= t('.clear_tags') %>
+
     </label>
     <br />
 
     <br />
 
     <% unless current_user.has_role?(:normal_user) %>
-      <label for="pp-own" class="dlg-fld-lbl">Owner</label>
+      <label for="pp-own" class="dlg-fld-lbl"><%= t('userfiles.common.owner').downcase %></label>
       <%=
         user_select('user_id', { :selector => nil }, {
           :id       => 'pp-own',
           :class    => 'dlg-fld',
-          :include_blank      => "(keep current owner)",
-          :'data-placeholder' => "Keep current owner"
-        })
+          :include_blank      => "(#{t('.keep_current', attribute: t('userfiles.common.owner')).downcase})",
+          :'data-placeholder' => "#{t('.keep_current', attribute: t('userfiles.common.owner'))}"        })
       %>
       <br />
     <% end %>
 
-    <label for="pp-prj" class="dlg-fld-lbl">Project</label>
+    <label for="pp-prj" class="dlg-fld-lbl"><%= t('activerecord.models.group.one') %></label>
     <%=
       group_select('group_id', { :selector => nil }, {
         :id       => 'pp-prj',
         :class    => 'dlg-fld',
-        :include_blank      => "(keep current project)",
-        :'data-placeholder' => "Keep current project"
-      })
+        :include_blank      => "(#{t('.keep_current', attribute: t('activerecord.models.group.one')).downcase})",
+        :'data-placeholder' => "#{t('.keep_current',  attribute: t('activerecord.models.group.one'))}"      })
     %>
     <br />
 
@@ -248,19 +248,19 @@
       <span class="ui-icon ui-icon-check"></span>
     </label>
     <label for="pp-shr" class="dlg-chk-lbl">
-      Allow modification by other project members
+      <%= t('.allow_modification') %>
     </label>
     <br />
 
     <br />
 
-    <label for="pp-type" class="dlg-fld-lbl">Type</label>
+    <label for="pp-type" class="dlg-fld-lbl"><%= t('activerecord.attributes.type') %></label>
     <%=
       userfile_type_select(:type, { :selector => nil }, {
         :id       => 'pp-type',
         :class    => 'dlg-fld',
-        :include_blank      => "(keep current file type)",
-        :'data-placeholder' => "Keep current file type"
+        :include_blank      => "(#{t('.keep_current', attribute: t('.type')).downcase})",
+        'data-placeholder' => "#{t('.keep_current', attribute: t('.type'))}"
       })
     %>
     <br />
@@ -275,7 +275,7 @@
       data-offset-x="80"
       data-offset-y="-2"
     >
-      Hidden (<span class="pp-hid-ind">H</span>)
+      <%= t('shared.show_table.hidden_html') %>
     </label>
     <br />
 
@@ -289,29 +289,28 @@
       data-offset-x="80"
       data-offset-y="-2"
     >
-      Locked (<span class="pp-ro-ind">I</span>)
+      <%= t('shared.show_table.locked_html') %>
     </label>
   </form>
 </div>
 
 <div id="pp-hid-tp" class="html_tool_tip" style="z-index:105">
-  Hidden files are invisible by default, and are usually reserved for
-  maintenance, internal and archiving purposes.
+  <%= t('.hidden_p') %>
 </div>
 
 <div id="pp-ro-tp" class="html_tool_tip" style="z-index:105">
-  Locked files cannot be modified or moved across data providers.
+  <%= t('.locked_p') %>
 </div>
 
 <div id="filter-dialog" class="dlg-dialog"></div>
 
-<div id="tag-dialog" class="dlg-dialog" title="Tags">
+<div id="tag-dialog" class="dlg-dialog" title="<%= t('activerecord.models.tag.other') %>" >
   <form action="#" method="post">
     <%=
       group_select('', {}, {
         :id    => 'tag-mov-prj',
         :class => 'tag-in-prj',
-        :'data-placeholder' => "A project..."
+        :'data-placeholder' => t('userfiles.common.a_group')
       })
     %>
     <table id="tag-table">
@@ -320,28 +319,28 @@
   </form>
 </div>
 
-<div id="collection-dialog" class="dlg-dialog" title="New collection">
+<div id="collection-dialog" class="dlg-dialog" title="<%= t('userfiles.common.new_collection') %>">
   <form action="<%= create_collection_userfiles_path %>" method="post">
-    <label for="co-name" class="dlg-fld-lbl">Name</label>
+    <label for="co-name" class="dlg-fld-lbl"><%= t('activerecord.attributes.name') %></label>
     <input id="co-name"
       class="dlg-fld"
       type="text"
       name="collection_name"
-      value="NewCollection"
+      value="<%= t('.newcollection') %>"
     />
     <span id="co-invalid-name" class="dlg-msg-err">
-      &#9888; Invalid!
+      &#9888; <%= t('.invalid') %>
     </span>
     <br />
 
-    <label for="co-dp" class="dlg-fld-lbl">Provider</label>
+    <label for="co-dp" class="dlg-fld-lbl"><%= t('activerecord.models.data_provider.one') %></label>
     <%=
       data_provider_select('data_provider_id_for_collection',
         { :data_providers => writable_dps },
         {
           :id    => 'co-dp',
           :class => 'dlg-fld',
-          :'data-placeholder' => "A data provider..."
+          :'data-placeholder' => t('.a_dp')
         }
       )
     %>
@@ -351,27 +350,28 @@
 
 <div id="delete-confirm"
   class="dlg-dialog dlg-cfrm"
-  title="Delete"
-  data-action="Delete"
+  title="<%= t('userfiles.common.delete') %>"
+  data-action="<%= t('userfiles.common.delete') %>"
 >
   <span class="dlg-cfrm-icon ui-icon ui-icon-alert"></span>
-  Are you sure you wish to delete these <span class="dlg-cfrm-cnt"></span> file(s)?
+
+  <%= t('.delete_confirmation_file_html') %>
 </div>
 
 <div id="qc-confirm"
   class="dlg-dialog dlg-cfrm"
-  title="Quality control"
-  data-action="Proceed"
+  title="<%= t('userfiles.common.qc') %>"
+  data-action="<%= t('.proceed') %>"
 >
   <span class="dlg-cfrm-icon ui-icon ui-icon-info"></span>
-  Note that quality control (QC) requires files to be synchronized locally first.
+  <%=t('.qc_note') %>
 </div>
 
 <div id="tag-del-confirm"
   class="dlg-dialog dlg-cfrm"
-  title="Delete"
-  data-action="Delete"
+  title="<%= t('userfiles.common.delete') %>"
+  data-action="<%= t('userfiles.common.delete') %>"
 >
   <span class="dlg-cfrm-icon ui-icon ui-icon-alert"></span>
-  Are you sure you wish to delete the tag <span class="dlg-cfrm-obj"></span> ?
+  <%= t('.delete_confirmation_tag_html') %>
 </div>

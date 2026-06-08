@@ -22,31 +22,31 @@
 #
 -%>
 
-<% title('File Info') %>
+<% title(t('.title')) %>
 
 <% is_editable_by_current_user = @userfile.can_be_accessed_by?(current_user, requested_access = :write) %>
 
 <div class="menu_bar">
   <% if is_editable_by_current_user %>
-    <%= link_to 'Delete', { :action => 'delete_files', :file_ids => [@userfile.id] }, :data => { :confirm => "Are you sure you want to delete '#{@userfile.name}' ?" }, :class  => "button menu_button", :method => :delete  %>
+    <%= link_to t('userfiles.common.delete'), { :action => 'delete_files', :file_ids => [@userfile.id] }, :data => { :confirm => t('.confirm_delete', name: @userfile.name) }, :class  => "button menu_button", :method => :delete  %>
     <span class="vertical_bar"></span>
   <% end %>
   <% if @userfile.can_be_accessed_by?(current_user, requested_access = :read) %>
-    <%= link_to(@userfile.is_a?(FileCollection) ? "Download Collection" : "Download File", { :action => 'download', :file_ids => [@userfile.id] }, :class => "button menu_button", :method  => :get) %>
+    <%= link_to(@userfile.is_a?(FileCollection) ? t('.download_collection') : t('.download_file'), { :action => 'download', :file_ids => [@userfile.id] }, :class => "button menu_button", :method  => :get) %>
     <span class="vertical_bar"></span>
   <% end %>
 
   <% if is_editable_by_current_user %>
     <% if @userfile.compressed? %>
-      <%= link_to "Uncompress", { :action => 'uncompress', :file_ids => [@userfile.id] }, { :method => "POST", :class => 'button menu_button' } %>
+      <%= link_to t('userfiles.common.uncompress'), { :action => 'uncompress', :file_ids => [@userfile.id] }, { :method => "POST", :class => 'button menu_button' } %>
     <% else %>
-      <%= link_to "Compress", { :action => 'compress', :file_ids => [@userfile.id] }, { :method => "POST", :class => 'button menu_button' } %>
+      <%= link_to t('userfiles.common.compress'), { :action => 'compress', :file_ids => [@userfile.id] }, { :method => "POST", :class => 'button menu_button' } %>
     <% end %>
   <% end %>
 </div>
 
 <br>
-<%= error_messages_for @userfile, :header_message => "#{@userfile.name} could not be updated." %>
+<%= error_messages_for @userfile, :header_message => t('.update_error', name: @userfile.name ) %>
 <div class="display_inline_block" style="min-width: 50%">
   <%= show_table(@userfile, :as => :userfile, :edit_condition => is_editable_by_current_user ) do |t| %>
 
@@ -59,117 +59,121 @@
       <%= f.text_field :name %>
     <% end %>
 
-    <% t.cell("Created at") do %>
+    <% t.cell(t('userfiles.common.created_at')) do %>
       <%= h(to_localtime(@userfile.created_at,:datetime)) %>
-      (<%= pretty_elapsed(Time.now - @userfile.created_at, :num_components => 3) %> ago)
+      (<%= t('ago_time', time: pretty_elapsed(Time.now - @userfile.created_at, :num_components => 3)) %>)
     <% end %>
 
-    <% t.cell("Type") do %>
+    <% t.cell(t('activerecord.attributes.type')) do %>
       <%= inline_edit_field(@userfile, :type, :content => @userfile.pretty_type, :disabled => !@userfile.has_owner_access?(current_user)) do %>
         <% u_type = @userfile.is_a?(SingleFile) ? ["SingleFile"] : ["FileCollection"] %>
         <%= userfile_type_select("userfile[type]", {:userfile_types => u_type, :selector => @userfile.class.name}) %>
       <% end %>
       <% if @userfile.class.to_s =~ /^(SingleFile|FileCollection)$/ && @userfile.suggested_file_type &&  @userfile.suggested_file_type != @userfile.class %>
-        (<span class="warning">This file appears to be a <%= @userfile.suggested_file_type.pretty_type %>.</span>)
+        (<span class="warning"><%= t('.suggested_type_html', type: @userfile.suggested_file_type.pretty_type ) %></span>)
       <% end %>
     <% end %>
 
-    <% t.cell("Modified at") do %>
+    <% t.cell(t('shared.show_table.modified_at')) do %>
       <%= to_localtime(@userfile.updated_at,:datetime) %>
-      (<%= pretty_elapsed(Time.now - @userfile.updated_at, :num_components => 3) %> ago)
+
+      (<%= t('ago_time', time: pretty_elapsed(Time.now - @userfile.updated_at, :num_components => 3)) %>)
     <% end %>
 
-    <% t.cell("Size") do %>
+    <% t.cell(t('activerecord.attributes.size')) do %>
       <% if @userfile.archived? %>
         <!-- Information after compression -->
         <%= archived_icon %>
         <%= colored_pretty_size(@userfile.size) %>
         <% if @userfile.size && @userfile.size >= 1_000 -%>
-          = <%= @userfile.size %> bytes
+          = <%= t('userfiles.common.size_bytes', size: @userfile.size) %>
         <% end %>
         <!-- Information before compression -->
         <% before_archiving_size      = @userfile.meta[:before_archiving_size].presence %>
         <% before_archiving_num_files = @userfile.meta[:before_archiving_num_files].presence %>
         <% if before_archiving_size || before_archiving_num_files %>
           <br>
-          Was:
-            <%= colored_pretty_size(before_archiving_size) %> in
-            <%= before_archiving_num_files ? view_pluralize(before_archiving_num_files, "file") : "unknown" %>
+            <%=
+              t('.was_html',
+                size: colored_pretty_size(before_archiving_size),
+                file_count: before_archiving_num_files ? view_pluralize(before_archiving_num_files, t('activerecord.models.userfile.one').downcase) : t('unknown').downcase
+              )
+            %>
             <% if before_archiving_size && before_archiving_size >= 1_000 -%>
-              = <%= before_archiving_size %> bytes
+              = <%= t('.size_bytes', size: before_archiving_size) %>
             <% end %>
          <% end %>
       <% else %>
         <%= colored_format_size(@userfile) %>
         <% if @userfile.size && @userfile.size >= 1_000 -%>
-          = <%= @userfile.size %> bytes
+          <%= t('userfiles.common.size_bytes', size: @userfile.size) %>
         <% end %>
       <% end %>
     <% end %>
 
-    <% t.cell("Data Provider") do %>
+    <% t.cell(t('activerecord.models.data_provider.one')) do %>
       <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
       ( <%= @userfile.data_provider.class.to_s %> )
       <% ss = @userfile.sync_status.all.to_a %>
       <% if ss.size > 0 %>
-        Cached:
+        <%= t('.cached') %>
         <% ss.each do |syncstat| %>
           <%= render :partial => 'syncstatus', :locals => { :syncstat => syncstat } %>
         <% end %>
       <% end %>
     <% end %>
 
-    <% t.edit_cell(:user_id, :content => link_to_user_with_tooltip(@userfile.user), :disabled => !(current_user.available_users.include?(@userfile.user) && @userfile.data_provider.allow_file_owner_change?), :header => "Owner") do %>
+    <% t.edit_cell(:user_id, :content => link_to_user_with_tooltip(@userfile.user), :disabled => !(current_user.available_users.include?(@userfile.user) && @userfile.data_provider.allow_file_owner_change?), :header => t('userfiles.common.owner')) do %>
       <%= user_select("userfile[user_id]", { :selector => @userfile }) %>
     <% end %>
 
-    <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@userfile.group), :disabled => (!@userfile.has_owner_access?(current_user))) do %>
+    <% t.edit_cell(:group_id, :header => t('activerecord.models.group.one'), :content => link_to_group_if_accessible(@userfile.group), :disabled => (!@userfile.has_owner_access?(current_user))) do %>
       <%= group_select 'userfile[group_id]', { :groups => current_user.assignable_groups, :selector => @userfile.group_id.to_s } %>
     <% end  %>
 
-    <% t.edit_cell(:tag_ids, :header => "Tags", :content => @userfile.get_tags_for_user(current_user).map(&:name).join(", ")) do %>
+    <% t.edit_cell(:tag_ids, :header => t('activerecord.models.tag.one'), :content => @userfile.get_tags_for_user(current_user).map(&:name).join(", ")) do %>
       <select name="tag_ids[]" multiple="multiple" style="width:150px" >
         <%= options_from_collection_for_select current_user.available_tags, 'id', 'name', @userfile.get_tags_for_user(current_user).map(&:id) %>
       </select>
     <% end %>
 
-    <% t.edit_cell(:group_writable, :header => "Project permission on file", :content => (@userfile.group_writable? ? "Read/Write" : "Read"), :disabled => !@userfile.has_owner_access?(current_user)) do |f| %>
-      <%= f.select :group_writable, [['Read Only', false],['Read/Write', true]] %>
+    <% t.edit_cell(:group_writable, :header => t('shared.show_table.project_permission'), :content => (@userfile.group_writable? ? t('userfiles.common.read_write') : t('userfiles.common.read')), :disabled => !@userfile.has_owner_access?(current_user)) do |f| %>
+      <%= f.select :group_writable, [[t('userfiles.common.read_only'), false],[t('userfiles.common.read_write'), true]] %>
     <% end %>
 
-    <% t.edit_cell("Hidden file", :content => check_box_tag(nil ,nil, @userfile.hidden?, :disabled => true) + "&nbsp;".html_safe + hidden_icon, :disabled => (!@userfile.has_owner_access?(current_user))) do |f| %>
+    <% t.edit_cell(t('shared.show_table.hidden_file'), :content => check_box_tag(nil ,nil, @userfile.hidden?, :disabled => true) + "&nbsp;".html_safe + hidden_icon, :disabled => (!@userfile.has_owner_access?(current_user))) do |f| %>
       <%= f.check_box :hidden %>
       <%= hidden_icon %>
     <% end %>
 
-    <% t.edit_cell("Immutable file", :content => check_box_tag(nil ,nil, @userfile.immutable?, :disabled => true) + "&nbsp;".html_safe + immutable_icon, :disabled => (!@userfile.has_owner_access?(current_user))) do |f| %>
+    <% t.edit_cell(t('shared.show_table.immutable_file'), :content => check_box_tag(nil ,nil, @userfile.immutable?, :disabled => true) + "&nbsp;".html_safe + immutable_icon, :disabled => (!@userfile.has_owner_access?(current_user))) do |f| %>
       <%= f.check_box :immutable %>
       <%= immutable_icon %>
     <% end %>
 
-    <% t.cell("Zenodo Publication") do %>
+    <% t.cell(t('.zenodo_publication')) do %>
       <% if @userfile.zenodo_doi.present? %>
         <% if @userfile.zenodo_doi.starts_with?( ZenodoHelper::ZenodoSandboxDOIPrefix ) %>
-          Published: <%= link_to_deposit(@userfile.zenodo_deposit_id) %>
+          <%= t('.published', link: link_to_deposit(@userfile.zenodo_deposit_id)) %>
         <% else %>
-          Published: <%= link_to_zenodo_doi(@userfile.zenodo_doi) %>
+          <%= t('.published', link: link_to_zenodo_doi(@userfile.zenodo_doi)) %>
         <% end %>
       <% elsif @userfile.zenodo_deposit_id.present? %>
-          In progress: <%= link_to_deposit(@userfile.zenodo_deposit_id) %>
+          <%= t('.in_progress', link: link_to_deposit(@userfile.zenodo_deposit_id)) %>
       <% else %>
-          None.
+          <%= "#{t('none')}." %>
       <% end %>
     <% end %>
     <% t.empty_cell %>
 
     <% if @userfile.parent %>
-      <% t.cell("Parent") { link_to_userfile_if_accessible(@userfile.parent) } %>
+      <% t.cell(t('.parent')) { link_to_userfile_if_accessible(@userfile.parent) } %>
       <% t.empty_cell %>
     <% end %>
 
     <% children = @userfile.children.order(:name).all.to_a %>
     <% if children.size > 0 %>
-      <% t.cell("Children", :show_width => 2) do %>
+      <% t.cell(t('.children'), :show_width => 2) do %>
         <%= array_to_table(children, :table_class => 'simple', :min_data => 3, :cols => 3, :fill_by_columns => true ) do |u,r,c| %>
           <%= link_to_userfile_if_accessible(u) %>
         <% end %>
@@ -178,9 +182,9 @@
 
 
     <% if current_user.has_role? :admin_user %>
-      <% t.attribute_cell(:cache_full_path, :header => "Local Data Provider (cache) path", :show_width => 2) %>
+      <% t.attribute_cell(:cache_full_path, :header => t('shared.show_table.local_cache_path'), :show_width => 2) %>
       <% if @userfile.data_provider.respond_to?(:provider_full_path) %>
-        <% t.cell("Remote Data Provider path", :show_width => 2) do %>
+        <% t.cell(t('shared.show_table.remote_path'), :show_width => 2) do %>
           <%= @userfile.data_provider.provider_full_path(@userfile) %>
         <% end %>
       <% end %>
@@ -201,70 +205,59 @@
 
 
   <fieldset>
-    <legend>Content</legend>
+    <legend><%= t('.content') %></legend>
 
     <% if @userfile.archived? %>
 
-      <%= html_colorize("This #{@userfile.pretty_type} has been archived.", 'red') %><br>
-      Content viewers are disabled until the file is unarchived.
+      <%= html_colorize(t('.archived_html', type: @userfile.pretty_type), 'red') %><br>
+      <%= t('.viewers_disabled') %>
 
     <% elsif ! @userfile.can_be_accessed_by?(current_user, :read) %>
 
-        (This file cannot be viewed by you; I wonder how you got here.)
+        <%= t('.cannot_view') %>
 
     <% elsif @userfile.data_provider.meta[:no_viewers] %>
 
-        (This file cannot be viewed as it is stored on Data Provider
-        <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
-        which is marked as <strong>non-viewable</strong>)
+        <%= t('.non_viewable_dp_html') %>
 
     <% elsif @userfile.data_provider.not_syncable? %>
 
-        (This file cannot be viewed as it is stored on Data Provider
-        <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
-        which is configured to <strong>not allow synchronization</strong> <em>at all</em>)
+        <%= t('.not_syncable_dp_html') %>
 
     <% elsif @sync_status == "Corrupted" %>
 
         <span style="background-color: pink;">
-          (The content of this file seems to be corrupted. This might be the result
-          of a bad data transfer while it was being created or a filesystem failure.
-          There isn't much you can do about this, although if the file was produced
-          by a task, consider restarting the task's Post Processing stage.)
+          <%= t('.corrupted_html') %>
         </span>
 
     <% elsif ! @userfile.data_provider.rr_allowed_syncing? %>
 
-        (This file cannot be viewed as it is stored on Data Provider
-        <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
-        which is configured to <strong>not allow synchronization</strong> to <em>this Portal</em>)
+        <%= t('.sync_not_allowed_html') %>
 
     <% elsif (! @userfile.is_locally_synced?) && (! @userfile.data_provider.online?) %>
 
-        (This data is not currently synchronized and its Data Provider
-        <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
-        is offline, so its content is not viewable for the moment)
+        <%= t('.offline_dp_html') %>
 
     <% elsif ! @userfile.is_locally_synced? %>
 
           <% if @sync_status =~ /^To/ %>
-            (This data file is currently being synchronized. Wait a few seconds for this to complete)
+            <%= t('.sync_in_progress') %>
           <% else %>
-            (This data file is not currently synchronized. Click
-            <%= link_to "here", sync_multiple_userfiles_path(:file_ids => [ @userfile.id ], :back_to_show_page => 1), :method  => :post %>
-            to start the synchronization process.
-            This may allow you to view displayable content<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>).
+            <%=
+              t('.sync_start_html',
+                link: link_to(t('.here'), sync_multiple_userfiles_path(file_ids: [@userfile.id], back_to_show_page: 1), method: :post),
+                collection_text: @userfile.is_a?(FileCollection) ? t('.extract_collection') : "")
+            %>
           <% end %>
 
     <% elsif @userfile.viewers_with_applied_conditions.blank? %>
 
-        (The contents of this file cannot be viewed: no viewer code available at this moment
-        for files of type '<%= @userfile.pretty_type %>')
+        <%= t('.no_viewer_code', type: @userfile.pretty_type) %>
 
     <% else %>
 
         <% if @userfile.viewers_with_applied_conditions.size > 1 %>
-            Change view:
+            <%= t('.change_view') %>
             <%= select_tag "viewer", options_for_select(@userfile.viewers_with_applied_conditions.map { |v| [v.name, v.name] }, (@viewer.try(:name) || @userfile.class.name.underscore)),
                            :class        => :request_on_change,
                            "data-target" => "#userfile_viewer",
@@ -286,7 +279,7 @@
               <% end %>
             <% rescue ActionView::Template::Error => e %>
               <span class="warning">
-                An error occurred when loading the viewer plugin.
+                <%= t('.viewer_error') %>
               </span>
               <% raise e.original_exception unless Rails.env == 'production' %>
               <% ExceptionLog.log_exception(e.original_exception, current_user, request) %>
@@ -301,7 +294,6 @@
 </div>
 
 <P>
-<%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'File Log' } %>
+<%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => t('.file_log') } %>
 <p>
 <%= render :partial => "resource_usage" %>
-

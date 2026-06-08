@@ -1,4 +1,7 @@
 fr:
+  ago_time: "depuis %{time}"
+  unknown: "Inconnu"
+  none: "Aucun"
   edit: "Modifier"
   browse: "Parcourir"
   dataset:

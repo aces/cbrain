@@ -24,7 +24,7 @@
 
 <li class="act-item">
   <a style="text-decoration: none; display: block" href="/custom_filters/new?filter_class=UserfileCustomFilter">
-   New filter
+   <%= t('.new_filter') %>
   <span class="ui-icon ui-icon-plus"></span>
   </a>
 </li>
@@ -81,11 +81,11 @@
 %>
 <li class="filter-item act-item" <%= no_parent_attr.to_html_attributes.html_safe %>>
   <div>
-  Has no parent
+  <%= t('.has_no_parent') %>
   </div>
 </li>
 <li class="filter-item act-item" <%= no_children_attr.to_html_attributes.html_safe %>>
   <div>
-  Has no children
+  <%= t('.has_no_children') %>
   </div>
 </li>
