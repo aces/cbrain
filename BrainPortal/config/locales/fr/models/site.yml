@@ -1,0 +1,7 @@
+fr:
+  activerecord:
+      models:
+        site:
+          one: "Site"
+          other: "Sites"
+

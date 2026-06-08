@@ -1,0 +1,62 @@
+en:
+  shared:
+
+    common:
+      clear: "Clear"
+      do_not_filter: "Do not filter"
+
+    access_profile_checkbox_table:
+
+    active_filters:
+      active_filters: "Active Filters"
+
+    color_picker:
+
+    date_range_info:
+      created: "created"
+      updated: "updated"
+      from_to: "from %{from} to %{to}"
+
+    date_range_panel:
+      from: "From"
+      to: "To"
+
+    dynamic_table:
+      no_records_found: "No records found"
+      filter: "Filter - %{name}"
+      columns: "Columns"
+      per_page: "per page."
+
+    error_messages:
+      header_message: "%{object_errors} prohibited this %{object_name} from being saved:"
+      message: "There were problems with the following fields:"
+
+    group_tables:
+      work_groups: "Work Projects"
+      invisible_groups: "Invisible Projects"
+
+    persistent_selection:
+      currently_selected: "%{item_name} currently selected"
+      select_all: "select all"
+      select_all_on_all_pages_tooltip: "Select all %{item_name} on all pages"
+      clear_tooltip: "Clear selected %{item_name}"
+
+    show_table_content:
+      edit: "Edit"
+      create: "Create"
+      update: "Update"
+
+    show_table_context:
+
+    show_table:
+      modified_at: "Modified at"
+      project_permission: "Project permission on file"
+      hidden_html: "Hidden (<span class='pp-hid-ind'>H</span>)"
+      hidden_file: "Hidden file"
+      locked_html: "Locked (<span class='pp-ro-ind'>L</span>)"
+      locked_file: "Locked file"
+      immutable_file: "Immutable file"
+      local_cache_path: "Local Data Provider (cache) path"
+      remote_path: "Remote Data Provider path"
+
+    users_checkbox_table:

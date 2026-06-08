@@ -30,14 +30,14 @@
 
 <div class="active_status">
   <span class="active_status_left_side">
-    <span class="active_label">Active Filters</span>
+    <span class="active_label"><%= t('.active_filters') %></span>
     (<%=
       empty = scope.dup
       empty.filters.clear
       empty.custom[:custom_filters] = [] if
         empty.custom.has_key?(:custom_filters)
 
-      scope_link('clear',
+      scope_link(t('shared.common.clear'),
         scope.name, empty.to_hash,
         link: { :ajax => true }
       )

@@ -1,8 +1,8 @@
 <% if object.errors.any? %>
-  <% 
+  <%
     object_name    ||= object.class.to_s.demodulize.underscore.humanize.downcase
-    header_message ||= "#{pluralize(object.errors.count, "error")} prohibited this #{object_name} from being saved:"
-    message        ||= "There were problems with the following fields:"
+    header_message ||= t('.header_message', object_errors: pluralize(object.errors.count, "error"), object_name: object_name)
+    message        ||= t('.message')
     html_options   ||= {}
   %>
   <div id="errorExplanation" class="errorExplanation" <%= html_options.to_html_attributes.html_safe %>>

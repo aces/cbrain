@@ -1,0 +1,6 @@
+fr:
+  activerecord:
+      models:
+        group:
+          one: "Projet"
+          other: "Projets"

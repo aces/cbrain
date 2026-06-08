@@ -5,7 +5,7 @@
     <% if tb.editable? %>
       <% class_name  = "show_table_edit_link inline_edit_field_link" %>
       <% class_name += " open_on_display" if tb.is_for_new_record? %>
-      <span class="show_table_edit">(<%= link_to "Edit", "#", :class => class_name %>)</span>
+      <span class="show_table_edit">(<%= link_to t('.edit'), "#", :class => class_name %>)</span>
     <% end %>
   </legend>
 
@@ -41,9 +41,9 @@
     <div class="inline_edit_field_input" style="display:none">
       <br>
       <% if tb.object.new_record? %>
-        <%= submit_button("Create") %>
+        <%= submit_button(t('.create')) %>
       <% else %>
-        <%= submit_button("Update") %>
+        <%= submit_button(t('.update')) %>
       <% end %>
     </div>
   <% end %>

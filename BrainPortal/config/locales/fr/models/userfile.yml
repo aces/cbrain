@@ -1,0 +1,8 @@
+fr:
+  activerecord:
+      models:
+        userfile:
+          one: "Fichier"
+          other: "Fichiers"
+
+
