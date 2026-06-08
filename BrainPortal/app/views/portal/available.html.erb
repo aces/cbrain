@@ -22,11 +22,10 @@
 #
 -%>
 
-<% title 'List of tools and datasets' %>
+<% title t('.title') %>
 
 <em>
-These tables list all tools and datasets configured on this CBRAIN portal.
-Not all of them are available to all users.
+<%= t('.note_html')%>
 </em>
 <p>
 
@@ -34,12 +33,12 @@ Not all of them are available to all users.
 <% restrict_tools = @tools - open_tools %>
 
 <%= build_tabs( :class => 'available_tabs' ) do |tb| %>
-  <%= tb.tab("Tools") do %>
+  <%= tb.tab(t('activerecord.models.tool.other')) do %>
     <%= render :partial => 'available_tools_table', :locals => { :tools => open_tools } %>
     <%= render :partial => 'available_tools_table', :locals => { :tools => restrict_tools } %>
   <% end %>
 
-  <%= tb.tab("Datasets") do %>
+  <%= tb.tab(t('dataset.other')) do %>
     <%= render :partial => 'available_datasets_table', :locals => { :groups => @groups.select(&:public?) } %>
     <%= render :partial => 'available_datasets_table', :locals => { :groups => @groups.reject(&:public?) } %>
   <% end %>

@@ -25,10 +25,10 @@
 <table class="simple public_tools_list">
 
   <tr>
-    <th>Name and description</th>
-    <th>Versions</th>
-    <th>Tags</th>
-    <th>Availability</th>
+    <th><%= t('portal.common.name_description') %></th>
+    <th><%= t('.versions') %></th>
+    <th><%= t('activerecord.models.tag.other') %></th>
+    <th><%= t('portal.common.availability') %></th>
   </tr>
 
 <% tools.each do |tool| %>
@@ -47,9 +47,9 @@
                       .uniq.sort.join(", ")
     next if versions.blank?
     if (tool.group_id == @everyone_gid) && tool.tool_configs.where(:group_id => @everyone_gid).exists?
-      access = html_colorize('Generally open', 'green')
+      access = html_colorize(t('portal.common.open'), 'green')
     else
-      access = html_colorize('Restricted/on demand', 'red')
+      access = html_colorize(t('portal.common.restricted'), 'red')
     end
   %>
   <tr>

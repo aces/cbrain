@@ -78,11 +78,11 @@
          <% end %>
          <% if !current_user.has_role?(:normal_user) || (cbrain_session[:active_group_id] && page_is_not?("groups#index")) %>
            <li <%= set_selected(params[:controller], :userfiles) %>>
-             <%= link_to Userfile.model_name.human(count: 2), userfiles_path %>
+             <%= link_to t('activerecord.models.userfile.other'), userfiles_path %>
            </li>
            <li <%= set_selected(params[:controller], :tasks) %>>
              <%=
-               label = CbrainTask.model_name.human(count: 2); label_class = ""
+               label = t('activerecord.models.cbrain_task.other'); label_class = ""
                if @count_tasks_in_progress.present? && @count_tasks_in_progress > 0
                  label += " (#{@count_tasks_in_progress})"
                  label_class = "active_bac"
@@ -93,19 +93,19 @@
          <% end %>
          <% unless current_user.has_role?(:normal_user) %>
            <li <%= set_selected(params[:controller], :data_providers) %>>
-             <%= link_to DataProvider.model_name.human(count: 2 ), data_providers_path %>
+             <%= link_to t('activerecord.models.data_provider.other'), data_providers_path %>
            </li>
            <li <%= set_selected(params[:controller], :bourreaux) %>>
-             <%= link_to RemoteResource.model_name.human(count: 2), bourreaux_path %>
+             <%= link_to t('activerecord.models.remote_resource.other'), bourreaux_path %>
            </li>
            <li <%= set_selected(params[:controller], :tools) %>>
-             <%= link_to Tool.model_name.human(count: 2), tools_path %>
+             <%= link_to t('activerecord.models.tool.other'), tools_path %>
            </li>
            <li <%= set_selected(params[:controller], :tool_configs) %>>
              <%= link_to t('layouts.common.tool_versions'), tool_configs_path %>
            </li>
            <li <%= set_selected(params[:controller], :users) %>>
-             <%= link_to User.model_name.human(count: 2), users_path %>
+             <%= link_to t('activerecord.models.user.other'), users_path %>
            </li>
            <li <%= set_selected(params[:controller], :quotas) %>>
              <%= link_to t('layouts.common.quotas'), quotas_path %>
@@ -119,7 +119,7 @@
              <%= link_to t('layouts.common.usage'), resource_usage_index_path %>
            </li>
            <li <%= set_selected(params[:controller], :sites) %>>
-             <%= link_to Site.model_name.human(count: 2), sites_path %>
+             <%= link_to t('activerecord.models.site.other'), sites_path %>
            </li>
            <li <%= set_selected(params[:controller], :exception_logs) %>>
              <%= link_to t('exceptions'), exception_logs_path %>

@@ -22,16 +22,16 @@
 #
 -%>
 
-<% title 'Welcome' %>
+<% title t('.welcome') %>
 
-<h1>Welcome to CBRAIN, <%= current_user.full_name %></h1>
+<h1><%= t('.welcome_to', name: current_user.full_name) %></h1>
 
 <% if @dashboard_messages.count > 0 %>
     <div class="generalbox no_wrap">
-      <h1>CBRAIN News</h1>
+      <h1><%= t('.news') %></h1>
       <% @dashboard_messages.each do |message| %>
         <h2><%= message.header %></h2>
-        <span class="small">Posted: <%= message.created_at.strftime("%B %e, %Y") %></span><br>
+        <span class="small"><%= t('.posted_at', created_at: message.created_at.strftime("%B %e, %Y")) %></span><br>
         <%= message.description.html_safe %>
       <% end %>
     </div>
@@ -43,78 +43,77 @@
 
     <div class="generalbox no_wrap">
 
-      <h1><%= link_to_bourreau_if_accessible(RemoteResource.current_resource, current_user, :name => "System Info") %></h1>
+      <h1><%= link_to_bourreau_if_accessible(RemoteResource.current_resource, current_user, :name => t('.system_info')) %></h1>
 
       <p>
-        <strong>Portal instance name:</strong> <%= link_to_bourreau_if_accessible(RemoteResource.current_resource) %>
+      <%= t('.instance_name_html', name: link_to_bourreau_if_accessible(RemoteResource.current_resource)) %>
       </p>
 
       <%= form_tag home_path do %>
         <% if BrainPortal.current_resource.portal_locked? %>
               <%= hidden_field_tag :lock_portal, "unlock" %>
-              <%= submit_tag "Unlock this Portal", :data => { :confirm => "Are you sure you wish to unlock this portal?" } %>
+              <%= submit_tag t('.unlock'), :data => { :confirm => t('.unlock_confirm') } %>
         <% else %>
               <% message = BrainPortal.current_resource.meta[:portal_lock_message] %>
-              <% message = "(lock message)" if message.blank? %>
+              <% message = t('.lock_message') if message.blank? %>
               <%= hidden_field_tag :lock_portal, "lock" %>
               <%= text_field_tag :message, message, :size => 30 %>
-              <%= submit_tag "Lock this Portal", :data => { :confirm => "Are you sure you wish to lock this portal?" } %>
+              <%= submit_tag t('.lock'), :data => { :confirm => t('.lock_confirm') } %>
         <% end %>
       <% end %>
 
       <% if @active_users %>
         <p>
-          <strong>Users currently online:</strong><%= array_to_table(@active_users.map(&:login), :table_class => 'simple', :cols => 4) %>
+          <strong><%= t('.online_users') %></strong><%= array_to_table(@active_users.map(&:login), :table_class => 'simple', :cols => 4) %>
         </p>
       <% end %>
 
 
       <p>
-        <strong>Recent activity:</strong>
-        <%= link_to "(View logs)", url_for(:action => :portal_log, :hide_rendered => "1") %>
+        <strong><%= t('.recent_activity') %></strong>
+        <%= link_to t('.view_logs'), url_for(:action => :portal_log, :hide_rendered => "1") %>
       </p>
 
       <%= array_to_table(CbrainSession.recent_activity, :table_class => 'simple', :cols => 1) do |entry,r,c| %>
         <%= link_to_user_with_tooltip entry[:user] %><%= ", #{entry[:user].city}" if entry[:user].city %>:
-        <%= entry[:active] ? "Active" : "Logged out" %>
-        <%= distance_of_time_in_words(entry[:last_access], Time.now) %> ago
+        <%= entry[:active] ? t('.active') : t('.logged_out') %>
+        <%= t('ago_time', time: distance_of_time_in_words(entry[:last_access], Time.now)) %>
         <% if entry[:remote_host] || entry[:raw_user_agent] %>
           <%
              parsed   = HttpUserAgent.new(entry[:raw_user_agent] || 'unknown/unknown')
-             browser  = (parsed.browser_name    || 'unknown browser')
+             browser  = (parsed.browser_name    || t('.unknown_browser'))
              brow_ver = (parsed.browser_version || '?')
-             os       = (parsed.os_name         || 'unknown OS')
-             pretty = "#{browser} #{brow_ver} on #{os}"
+             os       = (parsed.os_name         || t('.unknown_os'))
+             pretty = "#{browser} #{brow_ver} #{t('on')} #{os}"
           %>
           <br/>
           <small>
-            From
+            <%= t('from') %>
             <%= html_tool_tip(entry[:remote_host], :offset_x => 0, :offset_y => 12) do %>
               <%= entry[:remote_ip] || entry[:remote_host] %>
             <% end %>
-            with
+            <%= t('with') %>
             <%= html_tool_tip(pretty, :offset_x => 0, :offset_y => 12) do %>
-              <%= entry[:raw_user_agent] || 'unknown' %>
+              <%= entry[:raw_user_agent] || t('unknown').downcase %>
             <% end %>
           </small>
         <% end %>
       <% end %>
 
       <p>
-        <strong>Sessions</strong>
+        <strong><%= t('.session_title') %></strong>
       </p>
-
-      There are currently <%= CbrainSession.count %> entries in the sessions table.<br/>
+      <%= t('.sessions_count', count: CbrainSession.count) %>
       <%= form_tag home_path do %>
-        Clear sessions older than
+        <%= t('.clear_sessions') %>
         <%= select_tag :session_clear, options_for_select( [
-             [ "One month ago",     1.month.seconds.to_i   ],
-             [ "One week ago",      1.week.seconds.to_i    ],
-             [ "One day ago",       1.day.seconds.to_i     ],
-             [ "One hour ago",      1.hour.seconds.to_i    ],
-             [ "Now! (Including yours!)", 1.seconds.to_i   ],
+             [ t('clear_options.month'),     1.month.seconds.to_i   ],
+             [ t('clear_options.week'),      1.week.seconds.to_i    ],
+             [ t('clear_options.day'),       1.day.seconds.to_i     ],
+             [ t('clear_options.hour'),      1.hour.seconds.to_i    ],
+             [ t('clear_options.now'),      1.seconds.to_i   ],
            ]) %>
-        <%= submit_tag "Clear", :data => { :confirm => "Are you sure you want to clear the sessions?" } %>
+        <%= submit_tag t('clear'), :data => { :confirm => t('.clear_confirm') } %>
       <% end %>
 
 
@@ -127,23 +126,21 @@
       %>
       <% if all_ex > 0 %>
         <p>
-          <strong>Exceptions</strong>
+          <strong><%= t('activerecord.models.exception.other') %></strong>
         </p>
 
         <div class="exception_report">
-          There are internal exceptions logged:<br/>
+          <%= t('.exceptions_logged') %>
           <ul>
-            <li><%= pluralize(one_day_ex,"exception") %> in the past day.<br/></li>
-            <li><%= pluralize(three_day_ex,"exception")%> in the past three days.<br/></li>
-            <li><%= pluralize(one_week_ex,"exception") %> in the past week.<br/></li>
-            <li><%= pluralize(all_ex,"exception") %> in total.<br/></li>
+            <li><%= t('.exceptions_past_day', count: one_day_ex) %><br/></li>
+            <li><%= t('.exceptions_past_three_days', count: three_day_ex) %><br/></li>
+            <li><%= t('.exceptions_past_week', count: one_week_ex) %><br/></li>
+            <li><%= t('.exceptions_total', count: all_ex) %><br/></li>
           </ul>
-          <div class="centered"><%= link_to "Show Exceptions", :controller => :exception_logs, :action => :index %></div>
+          <div class="centered"><%= link_to t('.show_exceptions'), :controller => :exception_logs, :action => :index %></div>
         </div>
       <% end %>
     </div>
-
-
 
     <div class="box_spacer"></div>
 
@@ -152,32 +149,38 @@
 
 
 <div class="generalbox no_wrap">
-  <h1><%= link_to "Account Info", user_path(current_user) %></h1>
+  <h1><%= link_to t('.account_info'), user_path(current_user) %></h1>
     <p>
-      <strong>Your login name:</strong> <%= link_to_user_if_accessible(current_user) %>
+      <strong><%= t('.login_name') %></strong> <%= link_to_user_if_accessible(current_user) %>
     </p>
     <p>
-      <strong>Your full name:</strong> <%= current_user.full_name %>
+      <strong><%= t('.full_name') %></strong> <%= current_user.full_name %>
     </p>
     <p>
-      <strong>Your site affiliation:</strong> <%= link_to_site_if_accessible(current_user.site) %>
+      <strong><%= t('.site_affiliation') %></strong> <%= link_to_site_if_accessible(current_user.site) %>
     </p>
     <p>
-      <strong>Your time zone:</strong> <%= red_if(current_user.time_zone.blank?,h(current_user.time_zone),"(Unset)") %><BR>
-      <strong>Your current time:</strong> <%= to_localtime(Time.now, :datetime) %><BR>
+      <strong><%= t('.time_zone') %></strong> <%= red_if(current_user.time_zone.blank?,h(current_user.time_zone), t('unset')) %><BR>
+      <strong><%= t('.current_time') %></strong> <%= to_localtime(Time.now, :datetime) %><BR>
     </p>
     <p>
-      <strong> Tools available to you (<%= @available_tool_names.count  %> out of <%= @tool_names.count %>, <%= link_to 'full list of all tools here', available_path %>):</strong><br/>
+      <strong>
+        <%= t('.tools_available_info_html',
+          available: @available_tool_names.count,
+          total: @tool_names.count,
+          link: link_to(t('.full_tools_list'), available_path)
+         ) %>
+       </strong><br/>
       <%= array_to_table(@available_tool_names.sort, :table_class => 'simple', :cols => 4) %>
     </p>
     <p>
-       <strong>Projects you belong to:</strong>  <%= array_to_table(@groups, :table_class => 'simple', :cols => 4) { |g,r,c| link_to_group_if_accessible(g) } %>
+       <strong><%= t('.projects') %></strong>  <%= array_to_table(@groups, :table_class => 'simple', :cols => 4) { |g,r,c| link_to_group_if_accessible(g) } %>
     </p>
     <p>
-      <strong>Your default Data Provider:</strong> <%= link_to_data_provider_if_accessible(@default_data_provider) %>
+      <strong><%= t('.default_provider') %></strong> <%= link_to_data_provider_if_accessible(@default_data_provider) %>
     </p>
     <p>
-      <strong>Your default Execution Server:</strong> <%= link_to_bourreau_if_accessible(@default_bourreau) %>
+      <strong><%= t('.default_server') %></strong> <%= link_to_bourreau_if_accessible(@default_bourreau) %>
     </p>
 </div>
 
@@ -189,7 +192,7 @@
     <% if @tasks.size > 0 %>
       <h1>
         <%=
-          scope_link('Latest Updated Tasks',
+          scope_link(t('.latest_tasks'),
             'tasks#index', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
             url: { :controller => :tasks, :action => :index }
           )
@@ -197,13 +200,16 @@
         <% active_count = CbrainTask.find_all_accessible_by_user(current_user).active.count rescue 0 %>
         <% if active_count > 0 %>
           <%=
-            scope_filter_link("(#{active_count} active)",
-              'tasks#index', :replace, { :t => 't.sts', :v => 'active' },
+            scope_filter_link(
+              t('.active_count_html', count: active_count),
+              'tasks#index',
+              :replace,
+              { :t => 't.sts', :v => 'active' },
               url: { :controller => :tasks, :action => :index }
             )
           %>
         <% else %>
-          (None active)
+          <%= t('.none_active') %>
         <% end %>
       </h1>
       <table class="latest_summary_table">
@@ -222,7 +228,7 @@
     <% if @files.size > 0 %>
       <h1>
         <%=
-          scope_link('Latest Updated Files',
+          scope_link(t('.latest_files'),
             'userfiles#index', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
             url: { :controller => :userfiles, :action => :index }
           )
