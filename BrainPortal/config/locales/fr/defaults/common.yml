@@ -1,7 +1,12 @@
 fr:
   ago_time: "depuis %{time}"
+  delete: "Supprimer"
+  confirm_delete: "Êtes-vous sûr de vouloir supprimer %{name}?"
+  saved: "Enregistré"
+  updated: "Mis à jour"
   unknown: "Inconnu"
   none: "Aucun"
+  help: "Aide"
   edit: "Modifier"
   browse: "Parcourir"
   dataset:

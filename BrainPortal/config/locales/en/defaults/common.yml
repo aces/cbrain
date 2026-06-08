@@ -1,7 +1,12 @@
 en:
   ago_time: "%{time} ago"
+  delete: "Delete"
+  confirm_delete: "Are you sure you want to delete %{name}?"
+  saved: "Saved"
+  updated: "Updated"
   unknown: "Unknown"
   none: "None"
+  help: "Help"
   edit: "Edit"
   browse: "Browse"
   dataset:

@@ -1,0 +1,22 @@
+en:
+  access_profiles:
+
+    access_profiles_table:
+      create_profile: "Create Access Profile"
+      white: "white"
+
+    index:
+      title: "Access Profiles"
+
+    show:
+      add_new_access_profile: "Add New Access Profile"
+      saved_error: "Access profile could not be %{action}."
+      css_explanation_html: "Use a CSS-compliant <strong>pale</strong> color:<br>e.g. <em>#ff0</em> or <em>yellow</em> etc."
+      private_note: "These are your private notes about this profile."
+      change_note: "When adding or removing projects, apply the change to the users:"
+      normal_users: "Normal Users"
+      locked_users: "Locked Users"
+      project_membership: "Project Membership"
+      projects_in_this_profile: "Projects In This Profile"
+      with_this_profile: "Users With This Profile"
+      access_profile_log: "Access Profile Log"

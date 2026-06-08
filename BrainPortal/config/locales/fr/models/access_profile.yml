@@ -1,0 +1,8 @@
+fr:
+  activerecord:
+      models:
+        access_profile:
+          one: "Profil d'accès"
+          other: "Profils d'accès"
+
+

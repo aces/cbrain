@@ -8,7 +8,6 @@ fr:
       rename: "Renommer"
       compress: "Compresser"
       uncompress: "Décompresser"
-      delete: "Supprimer"
       properties: "Propriétés"
       synchronize: "Synchroniser"
       mark_newer: "Marquer comme plus récent"

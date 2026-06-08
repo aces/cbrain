@@ -28,7 +28,7 @@
 
 <div class="menu_bar">
   <% if is_editable_by_current_user %>
-    <%= link_to t('userfiles.common.delete'), { :action => 'delete_files', :file_ids => [@userfile.id] }, :data => { :confirm => t('.confirm_delete', name: @userfile.name) }, :class  => "button menu_button", :method => :delete  %>
+    <%= link_to t('delete'), { :action => 'delete_files', :file_ids => [@userfile.id] }, :data => { :confirm => t('confirm_delete', name: @userfile.name) }, :class  => "button menu_button", :method => :delete  %>
     <span class="vertical_bar"></span>
   <% end %>
   <% if @userfile.can_be_accessed_by?(current_user, requested_access = :read) %>

@@ -103,7 +103,7 @@
     data-method="DELETE"
     data-icon="ui-icon-trash"
     data-confirm-dlg="delete-confirm"
-  ><%= t('userfiles.common.delete') %></span>
+  ><%= t('delete') %></span>
 </div>
 
 <div id="menu-actions">
@@ -122,7 +122,7 @@
       data-dialog="tag-dialog"
     >
       <div>
-      <%= Tag.model_name.human %>
+      <%= t('activerecord.models.tag.other')  %>
       <span class="ui-icon ui-icon-tag"></span>
       </div>
     </li>
