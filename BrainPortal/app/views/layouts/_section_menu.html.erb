@@ -39,8 +39,8 @@
 
     <% if current_user && page_is?("userfiles#","tasks#") %>
       <span>-</span>
-      <%= hover_dropdown(link_to(current_project.try(:name) || "All", current_project ? group_path(current_project) : groups_path), :dropdown_class => "project_select_dropdown") do %>
-          <div class="title">Quick Project Switcher</div>
+      <%= hover_dropdown(link_to(current_project.try(:name) || t('.all'), current_project ? group_path(current_project) : groups_path), :dropdown_class => "project_select_dropdown") do %>
+          <div class="title"><%= t('.quick_project_switcher') %></div>
 
           <% current_user.groups.where(:type => "WorkGroup", :invisible => false, :creator_id => current_user.id).order(:name).limit(20).all.each do |g| %>
             <%= link_to h(crop_text_to(95, g.name)),
@@ -48,9 +48,9 @@
           <% end %>
 
           <div class="project_select_spacer"></div>
-          <%= link_to "#{current_user.own_group.name} (default private project)", {:controller => :groups, :action => :switch, :id  => current_user.own_group.id.to_s}, {:method => :post, :class => "button"} %>
-          <%= link_to "All (no specific project: see all files and tasks)", {:controller => :groups, :action => :switch, :id  => "all"}, {:method => :post, :class => "button"} %>
-          <%= link_to "(Full project list)", groups_path, :class => "button" %>
+          <%= link_to t('.default_private_project', group_name: current_user.own_group.name), {:controller => :groups, :action => :switch, :id  => current_user.own_group.id.to_s}, {:method => :post, :class => "button"} %>
+          <%= link_to t('.all_files_tasks'), {:controller => :groups, :action => :switch, :id  => "all"}, {:method => :post, :class => "button"} %>
+          <%= link_to t('.full_project_list'), groups_path, :class => "button" %>
       <% end %>
 
     <% end %>
@@ -63,7 +63,7 @@
   <% if current_user && page_is_not?("portal#search") %>
     <div id="cbsearch">
       <%= form_tag search_path, :method => :get do %>
-        <%= text_field_tag :search, nil, :placeholder => 'Search for anything' %>
+        <%= text_field_tag :search, nil, :placeholder => t('.search_placeholder') %>
       <% end %>
     </div>
   <% end %>
@@ -73,16 +73,16 @@
        <ul>
          <% if cbrain_session[:active_group_id].blank? && page_is_not?("groups#index","portal#show_license") %>
            <li class="unselected">
-             <%= link_to '(Click here to select a Project and access Files and Tasks)', groups_path, :class => 'active_bac' %>
+             <%= link_to t('.select_project'), groups_path, :class => 'active_bac' %>
            </li>
          <% end %>
          <% if !current_user.has_role?(:normal_user) || (cbrain_session[:active_group_id] && page_is_not?("groups#index")) %>
            <li <%= set_selected(params[:controller], :userfiles) %>>
-             <%= link_to 'Files', userfiles_path %>
+             <%= link_to Userfile.model_name.human(count: 2), userfiles_path %>
            </li>
            <li <%= set_selected(params[:controller], :tasks) %>>
              <%=
-               label = 'Tasks'; label_class = ""
+               label = CbrainTask.model_name.human(count: 2); label_class = ""
                if @count_tasks_in_progress.present? && @count_tasks_in_progress > 0
                  label += " (#{@count_tasks_in_progress})"
                  label_class = "active_bac"
@@ -93,40 +93,40 @@
          <% end %>
          <% unless current_user.has_role?(:normal_user) %>
            <li <%= set_selected(params[:controller], :data_providers) %>>
-             <%= link_to 'Data Providers', data_providers_path %>
+             <%= link_to DataProvider.model_name.human(count: 2 ), data_providers_path %>
            </li>
            <li <%= set_selected(params[:controller], :bourreaux) %>>
-             <%= link_to 'Servers', bourreaux_path %>
+             <%= link_to RemoteResource.model_name.human(count: 2), bourreaux_path %>
            </li>
            <li <%= set_selected(params[:controller], :tools) %>>
-             <%= link_to 'Tools', tools_path %>
+             <%= link_to Tool.model_name.human(count: 2), tools_path %>
            </li>
            <li <%= set_selected(params[:controller], :tool_configs) %>>
-             <%= link_to 'Tool Versions', tool_configs_path %>
+             <%= link_to t('layouts.common.tool_versions'), tool_configs_path %>
            </li>
            <li <%= set_selected(params[:controller], :users) %>>
-             <%= link_to 'Users', users_path %>
+             <%= link_to User.model_name.human(count: 2), users_path %>
            </li>
            <li <%= set_selected(params[:controller], :quotas) %>>
-             <%= link_to 'Quotas', quotas_path %>
+             <%= link_to t('layouts.common.quotas'), quotas_path %>
            </li>
          <% end %>
          <% if current_user.has_role?(:admin_user) %>
            <li <%= set_selected(params[:controller], :access_profiles) %>>
-             <%= link_to 'Profiles', access_profiles_path %>
+             <%= link_to t('.profiles'), access_profiles_path %>
            </li>
            <li <%= set_selected(params[:controller], :resource_usage) %>>
-             <%= link_to 'Usage', resource_usage_index_path %>
+             <%= link_to t('layouts.common.usage'), resource_usage_index_path %>
            </li>
            <li <%= set_selected(params[:controller], :sites) %>>
-             <%= link_to 'Sites', sites_path %>
+             <%= link_to Site.model_name.human(count: 2), sites_path %>
            </li>
            <li <%= set_selected(params[:controller], :exception_logs) %>>
-             <%= link_to 'Exceptions', exception_logs_path %>
+             <%= link_to t('exceptions'), exception_logs_path %>
            </li>
            <li <%= set_selected(params[:controller], :signups) %>>
              <%=
-               label = 'Signups'; label_class = ""
+               label = t('.signups'); label_class = ""
                signup_waiting = Signup.where(:hidden => false, :approved_at => nil, :confirmed => true).count
                if signup_waiting > 0
                  label += " (#{signup_waiting})"
@@ -140,7 +140,7 @@
          <% if !current_user.has_role?(:normal_user) || (cbrain_session[:active_group_id] && page_is_not?("groups#index")) %>
            <li <%= set_selected(params[:controller], :background_activities) %>>
              <%=
-               label = 'Ongoing'; label_class = ""
+               label = t('.ongoing'); label_class = ""
                if @count_background_activities_in_progress.present? && @count_background_activities_in_progress > 0
                  label += " (#{@count_background_activities_in_progress})"
                  label_class = "active_bac"

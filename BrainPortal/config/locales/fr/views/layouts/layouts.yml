@@ -1,0 +1,61 @@
+fr:
+    layouts:
+
+      common:
+        quotas: "Quotas"
+        tool_versions: "Versions des outils"
+        usage: "Utilisation"
+
+      cbrain_application:
+
+      log_report:
+
+      neurohub_application:
+
+      neurohub_flash_message:
+
+      neurohub_footer:
+
+      neurohub_navbar:
+
+      neurohub_secondary_navbar:
+
+      section_account:
+        dashboard: "Tableau de bord"
+        my_account: "Mon compte"
+        unread_message:
+          one: "message non lu"
+          other: "messages non lus"
+        resource: "Ressource"
+        full_list: "Liste complète des outils et des jeux de données"
+        help_site: "Site d'aide"
+        email_support: "Support par e-mail"
+        email_support_tool_tip_html: "Pour le support par e-mail concernant cette plateforme, y compris l'aide<br>sur les tâches échouées et le transfert de fichiers, veuillez cliquer ici<br>ou écrire à : %{email}"
+        revision: "Rev : %{rev}"
+        branch: "Branche : %{name}"
+        last_updated_html: "dernière mise à jour il y a <span class=\"elapsed\">%{time}</span>"
+        as: "Connecté en tant que %{name}"
+        sign_out: "Se déconnecter"
+        sign_in: "Se connecter"
+
+      section_cookie_notif:
+        legend: "Avertissement concernant les cookies"
+        strong: "Ce site utilise un cookie pour se souvenir de vous."
+        small_html: "C'est sûr et privé. Les informations du cookie sont uniquement échangées entre votre navigateur et le site.<br />Aucune information n'est envoyée à d'autres sites, personnes ou tiers."
+        unagree: "(Bouton de débogage pour supprimer l'accord)"
+
+      section_footer:
+        powered_by: "Fourni par %{name}"
+        credits: "Crédits"
+
+      section_menu:
+        all: "Tous"
+        quick_project_switcher: "Sélecteur rapide de projet"
+        default_private_project: "%{group_name} (projet privé par défaut)"
+        all_files_tasks: "Tous (aucun projet spécifique : voir tous les fichiers et tâches)"
+        full_project_list: "(Liste complète des projets)"
+        search_placeholder: "Rechercher n'importe quoi"
+        select_project: "(Cliquez ici pour sélectionner un projet et accéder aux fichiers et tâches)"
+        profiles: "Profils"
+        signups: "Inscriptions"
+        ongoing: "En cours"

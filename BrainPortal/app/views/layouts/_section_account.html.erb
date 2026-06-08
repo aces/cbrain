@@ -29,7 +29,7 @@
 <%
   # We can colorize the CBRAIN interface based on the current GIT branch
   # One only needs to define a CSS class 'account_git_branch_NAME'
-  git_branch = CBRAIN::CBRAIN_Git_Branch.presence || "unknown"
+  git_branch = CBRAIN::CBRAIN_Git_Branch.presence || t('unknown')
   # When devs are working in their own special branches, highlight the top in green
   colorstyle = 'style="background-color: #393"'.html_safe if git_branch !~ /^(dev|master|unknown|service)$/
 %>
@@ -39,52 +39,52 @@
   <span class="home_credits">
     <%= link_to 'NeuroHub', alternate_page_or_dashboard_path, :class => "home_credits-neurohub" %>
     <% if current_user %>
-      <%= link_to "Dashboard", home_path %>
-      <%= link_to 'My Account', user_path(current_user) %>
-      <%= link_to 'Projects', groups_path %>
+      <%= link_to t('.dashboard'), home_path %>
+      <%= link_to t('.my_account'), user_path(current_user) %>
+      <%= link_to Group.model_name.human(count: 2 ), groups_path %>
       <%
-         message_link = 'Messages'
+         message_link = Message.model_name.human(count: 2 )
          message_link = "#{message_link} <span class=\"message_count\">(#{@unread_message_count})</span>".html_safe if (@unread_message_count.presence || 0) > 0
       %>
-      <%= link_to message_link, messages_path, :title => pluralize(@unread_message_count, "unread message") %>
+      <%= link_to message_link, messages_path, :title => t('.unread_message', count: @unread_message_count) %>
       <% if current_user.has_role?(:normal_user) %>
-        <%= hover_dropdown("Resources", :dropdown_class => "resource_header") do %>
-          <%= link_to 'Data Providers', data_providers_path %><BR>
-          <%= link_to 'Quotas', quotas_path %><BR>
-          <%= link_to 'Servers', bourreaux_path %><BR>
-          <%= link_to 'Tools', tools_path %><BR>
-          <%= link_to 'Tool Versions', tool_configs_path %><BR>
-          <%= link_to 'Usage', resource_usage_index_path %><BR>
-          <%= link_to 'Full list of tools and datasets', available_path %><BR>
+        <%= hover_dropdown(t('.resource'), :dropdown_class => "resource_header") do %>
+          <%= link_to DataProvider.model_name.human(count: 2 ), data_providers_path %><BR>
+          <%= link_to t('layouts.common.quotas'), quotas_path %><BR>
+          <%= link_to RemoteResource.model_name.human(count: 2), bourreaux_path %><BR>
+          <%= link_to Tool.model_name.human(count: 2 ), tools_path %><BR>
+          <%= link_to t('layouts.common.tool_versions'), tool_configs_path %><BR>
+          <%= link_to t('layouts.common.usage'), resource_usage_index_path %><BR>
+          <%= link_to t('.full_list'), available_path %><BR>
         <% end %>
       <% end %>
       <% help_url = RemoteResource.current_resource.help_url %>
       <% if help_url.present? %>
-        <%= link_to "Help Site", help_url, :target => '_blank' %>
+        <%= link_to t('.help_site'), help_url, :target => '_blank' %>
       <% end %>
       <% support_email = RemoteResource.current_resource.support_email %>
       <% if support_email.present? %>
-        <%= html_tool_tip(mail_to(support_email, "Email Support"), :offset_x => 0, :offset_y => 20) do %>
-          For email support about this platform, including help<br>
-          about failed tasks and file transfer please click here<br>
-          or write to: <%= support_email %>
+        <%= html_tool_tip(mail_to(support_email, t('.email_support')), :offset_x => 0, :offset_y => 20) do %>
+          <%= t('.email_support_tool_tip_html', email: support_email) %>
         <% end %>
       <% end %>
     <% end %>
-    Rev: <%= CBRAIN::CBRAIN_StartTime_Revision %>
+    <%= t('.revision', rev: CBRAIN::CBRAIN_StartTime_Revision) %>
     <% if current_user.present? && current_user.has_role?(:admin_user) %>
-      Branch: <%= git_branch %>
+      <%= t('.branch', name: git_branch) %>
     <% end %>
+    <%= link_to "EN", url_for(locale: 'en') %> /
+    <%= link_to "FR", url_for(locale: 'fr') %>
   </span>
 
   <span class="loggedas">
     <% if current_user %>
-      <span class="last_updated">(last updated <span class="elapsed">0m</span> ago)</span>
+      <span class="last_updated"><%= (t('.last_updated_html', time: "0m")) %></span>
 
-      Logged in as <%= current_user.full_name %>
-      <%= link_to "Sign out", "/logout" %>
+      <%= t('.as', name: current_user.full_name) %>
+      <%= link_to t('.sign_out'), "/logout" %>
     <% else %>
-      <%= link_to "Sign in", "/login" %>
+      <%= link_to t('.sign_in'), "/login" %>
     <% end %>
   </span>
 
