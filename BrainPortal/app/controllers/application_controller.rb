@@ -50,6 +50,7 @@ class ApplicationController < ActionController::Base
   before_action :count_background_activities
   before_action :prepare_messages
   before_action :adjust_system_time_zone
+  before_action :set_locale
   before_action :adjust_remote_ip_and_host
   before_action :disable_cookies_for_api   # prevent sending back the session cookie for API requests
 
@@ -70,6 +71,43 @@ class ApplicationController < ActionController::Base
   ########################################################################
 
   private
+
+  # Extract the locale from HTTP_ACCEPT_LANGUAGE
+  def extract_locale_from_request #:nodoc:
+    locale_from_cookies = cookies[:locale]&.to_sym
+
+    return locale_from_cookies if locale_from_cookies.presence && I18n.available_locales.include?(locale_from_cookies)
+
+    http_request_languages = request.env['HTTP_ACCEPT_LANGUAGE']
+    return nil unless http_request_languages
+
+    http_request_languages = http_request_languages.scan(/^[a-z]{2}/).map{|l| l.to_sym }
+
+    # Return the 1st language in I18n availables locales
+    return http_request_languages.detect{|l| I18n.available_locales.include?(l) }
+  end
+
+  # Use the parameter from the URL if it exist
+  def set_locale
+    return true if api_request?
+
+    locale_param        = params[:locale]&.to_sym
+
+    if locale_param.presence && I18n.available_locales.include?(locale_param) && current_user
+      if current_user.meta[:locale] != locale_param
+        current_user.meta[:locale] = locale_param
+        current_user.save
+      end
+      cookies[:locale] = locale_param
+      redirect_to url_for(request.query_parameters.except(:locale))
+      return
+    elsif current_user && current_user&.meta[:locale]
+      I18n.locale = current_user&.meta[:locale]
+    else
+      I18n.locale = extract_locale_from_request() ||
+                    I18n.default_locale
+    end
+  end
 
   # Re-compute the host and IP from the request (when not logged in, or changed)
   def adjust_remote_ip_and_host #:nodoc:
