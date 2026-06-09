@@ -73,8 +73,10 @@
     <% if current_user.present? && current_user.has_role?(:admin_user) %>
       <%= t('.branch', name: git_branch) %>
     <% end %>
-    <%= link_to "EN", url_for(locale: 'en') %> /
-    <%= link_to "FR", url_for(locale: 'fr') %>
+    <div>
+      <%= link_to "EN", url_for(locale: 'en') %> /
+      <%= link_to "FR", url_for(locale: 'fr') %>
+    </div>
   </span>
 
   <span class="loggedas">

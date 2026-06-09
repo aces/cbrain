@@ -24,184 +24,146 @@
 
 <div class="menu_bar">
 
-  <%= button_with_dropdown_menu("Update Attributes") do %>
+  <%= button_with_dropdown_menu(t('.update_attributes')) do %>
     <% if !current_user.has_role?(:normal_user) %>
-      Change Owner:
-      <%= user_select('cbrain_task[user_id]', {}, { :include_blank => "(Select another Owner)" } ) %>
-      <%= hijacker_submit_button("Update", :url => url_for(:action => :update_multiple, :update_user_id => 1), :method => :post, :datatype => :script, :class => "button") %>
+      <%= t('.change_owner') %>
+      <%= user_select('cbrain_task[user_id]', {}, { :include_blank => t('.select_another_owner') } ) %>
+      <%= hijacker_submit_button(t('update'), :url => url_for(:action => :update_multiple, :update_user_id => 1), :method => :post, :datatype => :script, :class => "button") %>
       <hr>
     <% end %>
-    Change Project:
-    <%= group_select('cbrain_task[group_id]', {}, { :include_blank => "(Select another Project)" } ) %>
-    <%= hijacker_submit_button("Update", :url => url_for(:action => :update_multiple, :update_group_id => 1), :method => :post, :datatype => :script, :class => "button") %>
+    <%= t('.change_group') %>
+    <%= group_select('cbrain_task[group_id]', {}, { :include_blank => t('.select_another_group') } ) %>
+    <%= hijacker_submit_button(t('update'), :url => url_for(:action => :update_multiple, :update_group_id => 1), :method => :post, :datatype => :script, :class => "button") %>
     <hr>
-    Change Data Provider For Results:
-    <%= data_provider_select('cbrain_task[results_data_provider_id]', {}, { :include_blank => "(Select another Data Provider)" } ) %>
-    <%= hijacker_submit_button("Update", :url => url_for(:action => :update_multiple, :update_results_data_provider_id => 1), :method => :post, :datatype => :script, :class => "button") %>
+    <%= t('.change_data_provider') %>
+    <%= data_provider_select('cbrain_task[results_data_provider_id]', {}, { :include_blank => t('.select_another_data_provider') } ) %>
+    <%= hijacker_submit_button(t('update'), :url => url_for(:action => :update_multiple, :update_results_data_provider_id => 1), :method => :post, :datatype => :script, :class => "button") %>
     <hr>
-    Change Tool Version:
-    <%= tool_config_select('cbrain_task[tool_config_id]', {}, :include_blank => "(Select another Tool Version)"  ) %>
-    <%= hijacker_submit_button("Update", :url => url_for(:action => :update_multiple, :update_tool_config_id => 1), :method => :post, :datatype => :script, :class => "button") %>
+    <%= t('.change_tool_version') %>
+    <%= tool_config_select('cbrain_task[tool_config_id]', {}, :include_blank => t('.select_another_tool_version')  ) %>
+    <%= hijacker_submit_button(t('update'), :url => url_for(:action => :update_multiple, :update_tool_config_id => 1), :method => :post, :datatype => :script, :class => "button") %>
   <% end %>
 
 
-  <%= button_with_dropdown_menu("For Failed Tasks") do %>
+  <%= button_with_dropdown_menu(t('.for_failed_tasks')) do %>
     <p class="dropmenu_info">
-      This panel allows you to affect tasks that have failed, one way or another.
-      Trying to recover from errors will trigger cleanup code and a restart at
-      the closest successful processing stage before it failed. It doesn't always
-      work but it's often useful to try at least once!
+      <%= t('.for_failed_tasks_p_html') %>
     </p>
     <p class="centered">
-      <%= hijacker_submit_button("Trigger Error Recovery", :url => url_for(:action  => :operation, :operation => 'recover'), :method  => :post, :datatype => :script, :class => "button") %>
+      <%= hijacker_submit_button(t('.trigger_error_recovery'), :url => url_for(:action  => :operation, :operation => 'recover'), :method  => :post, :datatype => :script, :class => "button") %>
     <p/>
   <% end %>
 
 
-  <%= button_with_dropdown_menu("For Completed Tasks") do %>
+  <%= button_with_dropdown_menu(t('.for_completed_tasks')) do %>
     <p class="dropmenu_info">
-      This panel allows you to affect tasks that have completed successfully.
-      You can try to restart them at three different stages in their lifecycle:
+      <%= t('.for_completed_tasks_p_html') %>
     </p>
     <p class="dropmenu_info">
-      <ul>
-         <li>At <strong>Setup</strong>, when input data files<br/>
-             are synchronized on the Execution server and the<br/>
-             processing scripts are created.</li>
-         <li>At <strong>Cluster</strong>, when the scientific scripts<br/>
-             are actually run on the Execution Server's nodes.</li>
-         <li>At <strong>Post Processing</strong>, when the resulting output<br/>
-             files are sent back to the CBRAIN Data Providers.</li>
-      </ul>
+      <%= t('.for_completed_tasks_ul_html') %>
     </p>
     <p class="centered">
-      <strong>Restart at:</strong><br/>
-      <%= hijacker_submit_button("\"Setup\" stage", :url => url_for(:action  => :operation, :operation => 'restart_setup'), :method  => :post, :datatype => :script, :class => "button") %>
-      <%= hijacker_submit_button("\"Cluster\" stage",             :url => url_for(:action  => :operation, :operation => 'restart_cluster'), :method  => :post, :datatype => :script, :class => "button") %>
-      <%= hijacker_submit_button("\"Post Processing\" stage",     :url => url_for(:action  => :operation, :operation => 'restart_postprocess'), :method  => :post, :datatype => :script, :class => "button") %>
+      <strong><%= t('.restart_at') %></strong><br/>
+      <%= hijacker_submit_button(t('.setup_stage'),           :url => url_for(:action  => :operation, :operation => 'restart_setup'),       :method  => :post, :datatype => :script, :class => "button") %>
+      <%= hijacker_submit_button(t('.cluster_stage'),         :url => url_for(:action  => :operation, :operation => 'restart_cluster'),     :method  => :post, :datatype => :script, :class => "button") %>
+      <%= hijacker_submit_button(t('.post_processing_stage'), :url => url_for(:action  => :operation, :operation => 'restart_postprocess'), :method  => :post, :datatype => :script, :class => "button") %>
     <p/>
     <p class="dropmenu_info">
-      You can also duplicate tasks and recreate them on a different
-      Execution Server. Before restarting them, make sure to adjust
-      their tool version, though.
+      <%= t('.for_completed_tasks_note_html') %>
+
     </p>
     <p class="centered">
-      <%= hijacker_submit_button("Duplicate Tasks", :url => url_for(:action  => :operation, :operation => 'duplicate'), :method  => :post, :datatype => :script, :class => "button") %>
-      on Execution Server: <%= bourreau_select :dup_bourreau_id %>
+      <%= hijacker_submit_button(t('.duplicate_tasks'), :url => url_for(:action  => :operation, :operation => 'duplicate'), :method  => :post, :datatype => :script, :class => "button") %>
+      <%= t('.on_execution_server') %><%= bourreau_select :dup_bourreau_id %>
     <p/>
   <% end %>
 
 
-  <%= button_with_dropdown_menu("Terminating And Cleaning Up") do %>
+  <%= button_with_dropdown_menu(t('.terminating_and_cleaning_up')) do %>
     <p class="dropmenu_info">
-      This panel allows you to affect tasks that you no longer need.
-      You can terminate tasks that are at any point in their lifecycle, even
-      failed tasks. Tasks marked <strong>Terminated</strong> can be restarted
-      later on.
+      <%= t('.terminating_and_cleaning_up_p_html') %>
     </p>
     <p class="centered">
       <%=
-        hijacker_submit_button("Terminate Tasks", :url => url_for(:action  => :operation, :operation => 'terminate'),
+        hijacker_submit_button(t('.terminate_tasks'), :url => url_for(:action  => :operation, :operation => 'terminate'),
                                                   :method  => :post,
                                                   :datatype => :script,
                                                   :class => "button",
-                                                  :confirm => "Are you sure you want to terminate the selected tasks?"
+                                                  :confirm => t('.confirm_terminate_tasks')
                                                   )
       %>
     </p>
     <p class="dropmenu_info">
-      It's also possible to remove the tasks' work directories
-      on the Execution Server while leaving the rest of the tasks'
-      information intact. This is useful to free space on the Server
-      or when the tasks have processed confidential information that
-      you'd rather not leave over there. The panel <em>Archiving</em>
-      on the left provides you with other options for disposing of
-      the tasks' work directories.
+      <%= t('.remove_work_directories_note') %>
+
     <p/>
     <p class="centered">
       <%=
-        hijacker_submit_button("Remove Work Directories", :url => url_for(:action  => :operation, :operation => 'zap_wd'),
+        hijacker_submit_button(t('.remove_work_directories'), :url => url_for(:action  => :operation, :operation => 'zap_wd'),
                                                   :method  => :post,
                                                   :datatype => :script,
                                                   :class => "button",
-                                                  :confirm =>
-                  "Are you sure you want to remove the\nWORK DIRECTORIES of the selected tasks?"
+                                                  :confirm => t('.confirm_remove_work_directories')
                                                   )
       %>
     <p/>
     <p class="dropmenu_info">
-      Finally, you can remove tasks completely. This will erase the task's work directory
-      on the Execution Server, including temporary data files, but will not erase
-      a successful task's output files. This is useful if you have
-      confidential data, for instance. Removing a task <strong>will</strong> delete any
-      archives of the task's work directory, if any (as indicated by
-      the symbols <%= colored_archived_status(:workdir) %> and
-      <%= colored_archived_status(:userfile) %> in the 'Workdir Size' column).
+      <%=
+        t('.remove_tasks_p_html',
+          workdir_status: colored_archived_status(:workdir),
+          userfile_status: colored_archived_status(:userfile))
+      %>
+
     </p>
     <p class="centered">
       <%=
-        hijacker_submit_button("Remove Tasks",    :url => url_for(:action  => :operation, :operation => 'delete'),
+        hijacker_submit_button(t('.remove_tasks'),:url => url_for(:action  => :operation, :operation => 'delete'),
                                                   :method  => :post,
                                                   :datatype => :script,
                                                   :class => "button",
-                                                  :confirm =>
-                  "Are you sure you want to remove the selected tasks?\n\n" +
-                  "IMPORTANT NOTE: This will also remove their archived work directories, if any."
-                                                  )
+                                                  :confirm => t('.confirm_remove_tasks')
+                              )
       %>
     <p/>
   <% end %>
 
 
-  <%= button_with_dropdown_menu("Archiving") do %>
+  <%= button_with_dropdown_menu(t('.archiving')) do %>
     <p class="dropmenu_info">
-      This panel allows you to archive the content of the work directory
-      of your tasks. This can only be done on tasks that are in a final
-      state, such as <strong>Completed</strong>, <strong>Failed</strong> or <strong>Terminated</strong>.
+      <%= t('.archiving_p_1_html') %>
     </p>
     <p class="dropmenu_info">
-      The process can take a very long time for each task being archived or restored, so
-      be patient and do not request this action multiple times in parallel.
+      <%= t('.archiving_p_2_html') %>
     </p>
     <p class="dropmenu_info">
-      There are two different 'levels' of archiving:<br/>
-      <ul>
-        <li class="dropmenu_info">
-          Archiving <em>On Cluster</em> means that the task's files will be compressed
-          and archived but will stay on the cluster's side. Such tasks are shown
-          with the symbol <%= colored_archived_status(:workdir) %> in the index table.
-        </li>
-        <li class="dropmenu_info">
-          Archiving <em>As File</em> means that the archive will
-          be brought back to your file manager as a '<%= TaskWorkdirArchive.pretty_type %>' file
-          and no data at all will be left on the cluster side. Such tasks are shown
-          with the symbol <%= colored_archived_status(:userfile) %> in the index table.
-        </li>
-      </ul>
+      <%=
+        t('.archiving_p_3_html',
+          workdir_status: colored_archived_status(:workdir),
+          type: TaskWorkdirArchive.pretty_type,
+          userfile_status: colored_archived_status(:userfile))
+      %>
     </p>
     <p class="dropmenu_info">
-      The rest of the information about the tasks will not be affected in any way
-      when they are archived. No operation can be performed on archived task, except
-      of course unarchiving them.
+      <%= t('.archiving_p_4_html') %>
     </p>
     <p class="centered">
-      <%= hijacker_submit_button("Archive On Cluster", :url => url_for(:action  => :operation, :operation => 'archive'),      :method  => :post, :datatype => :script, :class => "button") %>
-      <%= hijacker_submit_button("Archive As File",    :url => url_for(:action  => :operation, :operation => 'archive_file'), :method  => :post, :datatype => :script, :class => "button") %>
-      <%= hijacker_submit_button("Unarchive Tasks",    :url => url_for(:action  => :operation, :operation => 'unarchive'),    :method  => :post, :datatype => :script, :class => "button") %>
+      <%= hijacker_submit_button(t('.archive_on_cluster'), :url => url_for(:action  => :operation, :operation => 'archive'),      :method  => :post, :datatype => :script, :class => "button") %>
+      <%= hijacker_submit_button(t('.archive_as_file'),    :url => url_for(:action  => :operation, :operation => 'archive_file'), :method  => :post, :datatype => :script, :class => "button") %>
+      <%= hijacker_submit_button(t('.unarchive_tasks'),    :url => url_for(:action  => :operation, :operation => 'unarchive'),    :method  => :post, :datatype => :script, :class => "button") %>
       <br/>
       <br/>
-      Optional: when archiving <em>As File</em>, choose a destination Data Provider:<br/>
+      <%= t('.optional_destination_dp') %>
       <%= data_provider_select :archive_dp_id, { :selector => "" }, :include_blank => "" %>
 
       <% if current_user.has_role?(:admin_user) %>
         <br/><br/>
-        Do not compress while archiving <%= check_box_tag :nozip, "yes", false %>
+        <%= t('.do_not_compress') %> <%= check_box_tag :nozip, "yes", false %>
       <% end %>
     <p/>
 
   <% end %>
 
-  <%= button_with_dropdown_menu("Filters", :content_id => 'tasks_filters') do %>
+  <%= button_with_dropdown_menu(t('.filters'), :content_id => 'tasks_filters') do %>
     <%= render :partial => 'tasks/filters' %>
   <% end %>
 

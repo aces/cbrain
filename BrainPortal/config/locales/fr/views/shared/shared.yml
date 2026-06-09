@@ -28,8 +28,8 @@ fr:
       per_page: "par page."
 
     error_messages:
-      header_message: "%{object_errors} ont empêché la sauvegarde de %{object_name} :"
-      message: "Il y a eu des problèmes avec les champs suivants :"
+      header_message: "%{object_errors} ont empêché la sauvegarde de %{object_name}:"
+      message: "Il y a eu des problèmes avec les champs suivants:"
 
     group_tables:
       work_groups: "Projets de travail"

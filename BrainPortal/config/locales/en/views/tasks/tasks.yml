@@ -1,0 +1,125 @@
+en:
+  tasks:
+
+    common:
+      description: "Description:"
+      show_hide: "(show/hide)"
+
+    control:
+      h2: "Task Control:"
+      server_version_html: "Server&nbsp;&amp;&nbsp;Version:"
+      select_server_version: "Select Server & Version"
+      save_results_to_html: "Save&nbsp;results&nbsp;to:"
+      select_data_provider: "(Select a Data Provider for your results)"
+      description_note: "(This first line should be a short summary, and the rest are your notes)"
+      owner: "Owner:"
+      group: "Project:"
+
+    filters:
+
+    output_renaming_fieldset:
+      output_filenames_renaming: "Output filenames renaming"
+      output_files_pattern: "Output files can be named or renamed automatically using this pattern:"
+      leave_blank_html: "<small>(Leave blank to let the program name the files automatically using its own rules)</small>"
+      supported_keywords_html: "Patterns can include the following special<br /><em>{keywords}</em> in curly brackets that will be substituted<br />automatically.<br /><p><br />The supported keywords are:"
+
+    params:
+      h2: "Task Parameters"
+
+    presets:
+      h2: "Preset Management:"
+      load_preset_configuration: "Load a preset configuration:"
+      select_preset: "(Select a preset to load)"
+      load_preset: "Load Preset"
+      delete_preset: "Delete Preset"
+      delete_this_preset: "Delete this preset?"
+      save_as_preset: "Save as a preset configuration:"
+      select_preset_to_overwrite: "(Select a preset to overwrite)"
+      or_as_new_name: " (or as new name)"
+      save_as_site_preset: "Save as site preset:"
+      save_preset: "Save Preset"
+
+    resource_usage:
+      legend: "Resource Usage History"
+      date: "Date"
+      task_status: "Task Status"
+      usage_type: "Usage Type"
+      time_used: "Time Used"
+      disk_space_used: "Disk Space Used"
+      cpu: "CPU"
+      walltime: "Walltime"
+      disk_space: "Disk Space"
+
+    show_prereqs:
+      other_tasks: "These other tasks..."
+      must_be: "...must be in these states"
+      destroyed_task: "(DestroyedTask)"
+
+    task_menu:
+      update_attributes: "Update Attributes"
+
+      change_owner: "Change Owner:"
+      select_another_owner: "(Select another Owner)"
+      change_group: "Change Project:"
+      select_another_group: "(Select another Project)"
+      change_data_provider: "Change Data Provider For Results:"
+      select_another_data_provider: "(Select another Data Provider)"
+      change_tool_version: "Change Tool Version:"
+      select_another_tool_version: "(Select another Tool Version)"
+
+      for_failed_tasks: "For Failed Tasks"
+      for_failed_tasks_p_html: "This panel allows you to affect tasks that have failed, one way or another.<br />Trying to recover from errors will trigger cleanup code and a restart at<br />the closest successful processing stage before it failed. It doesn't always<br />work but it's often useful to try at least once!"
+      trigger_error_recovery: "Trigger Error Recovery"
+
+      for_completed_tasks: "For Completed Tasks"
+      for_completed_tasks_p_html: "This panel allows you to affect tasks that have completed successfully.<br />You can try to restart them at three different stages in their lifecycle:"
+      for_completed_tasks_ul_html: "<ul><li>At <strong>Setup</strong>, when input data files<br />are synchronized on the Execution server and the<br />processing scripts are created.</li><li>At <strong>Cluster</strong>, when the scientific scripts<br />are actually run on the Execution Server's nodes.</li><li>At <strong>Post Processing</strong>, when the resulting output<br/>files are sent back to the CBRAIN Data Providers.</li></ul>"
+
+      setup_stage: "\"Setup\" stage"
+      cluster_stage: "\"Cluster\" stage"
+      post_processing_stage: "\"Post Processing\" stage"
+
+      restart_at: "Restart at:"
+      for_completed_tasks_note_html: "You can also duplicate tasks and recreate them on a different<br />Execution Server. Before restarting them, make sure to adjust<br />their tool version, though."
+      duplicate_tasks: "Duplicate Tasks"
+      on_execution_server: "on Execution Server: "
+
+      terminating_and_cleaning_up: "Terminating And Cleaning Up"
+      terminating_and_cleaning_up_p_html: "This panel allows you to affect tasks that you no longer need.<br />You can terminate tasks that are at any point in their lifecycle, even<br />failed tasks. Tasks marked <strong>Terminated</strong> can be restarted<br />later on."
+      terminate_tasks: "Terminate Tasks"
+      confirm_terminate_tasks: "Are you sure you want to terminate the selected tasks?"
+      remove_work_directories_note: "It's also possible to remove the tasks' work directories<br />on the Execution Server while leaving the rest of the tasks'<br />information intact. This is useful to free space on the Server<br />or when the tasks have processed confidential information that<br />you'd rather not leave over there. The panel <em>Archiving</em><br />on the left provides you with other options for disposing of<br />the tasks' work directories."
+
+      remove_work_directories: "Remove Work Directories"
+      confirm_remove_work_directories: "Are you sure you want to remove the\nWORK DIRECTORIES of the selected tasks?"
+
+      remove_tasks_p_html: "Finally, you can remove tasks completely. This will erase the task's work directory<br />on the Execution Server, including temporary data files, but will not erase<br />a successful task's output files. This is useful if you have<br />confidential data, for instance. Removing a task <strong>will</strong> delete any<br />archives of the task's work directory, if any (as indicated by<br />the symbols %{workdir_status} and<br />%{userfile_status} in the 'Workdir Size' column)."
+      remove_tasks: "Remove Tasks"
+      confirm_remove_tasks: "Are you sure you want to remove the selected tasks?\n\nIMPORTANT NOTE: This will also remove their archived work directories, if any."
+
+      archiving: "Archiving"
+      archiving_p_1_html: "This panel allows you to archive the content of the work directory<br / >of your tasks. This can only be done on tasks that are in a final<br />state, such as <strong>Completed</strong>, <strong>Failed</strong> or <strong>Terminated</strong>."
+      archiving_p_2_html: "The process can take a very long time for each task being archived or restored, so<br />be patient and do not request this action multiple times in parallel."
+      archiving_p_3_html: "There are two different 'levels' of archiving:<br/>\n<ul>\n  <li class=\"dropmenu_info\">\n    Archiving <em>On Cluster</em> means that the task's files will be compressed and archived but will stay on the cluster's side. Such tasks are shown with the symbol %{workdir_status} in the index table.\n  </li>\n  <li class=\"dropmenu_info\">\n    Archiving <em>As File</em> means that the archive will be brought back to your file manager as a '%{type}' file and no data at all will be left on the cluster side. Such tasks are shown with the symbol %{userfile_status} in the index table.\n  </li>\n</ul>"
+      archiving_p_4_html: "The rest of the information about the tasks will not be affected in any way<br />when they are archived. No operation can be performed on archived task, except<br />of course unarchiving them."
+      archive_on_cluster: "Archive On Cluster"
+      archive_as_file: "Archive As File"
+      unarchive_tasks: "Unarchive Tasks"
+      optional_destination_dp: "Optional: when archiving <em>As File</em>, choose a destination Data Provider:<br />"
+      do_not_compress: "Do not compress while archiving"
+
+      filters: "Filters"
+
+    utility_interface_file_list:
+
+    zenodo_deposit_form:
+
+    edit:
+
+    index:
+
+    new:
+
+    show:
+
+    zenodo:

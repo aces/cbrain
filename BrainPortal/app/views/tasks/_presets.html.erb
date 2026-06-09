@@ -22,37 +22,37 @@
 #
 -%>
 
-<h2>Preset Management:
-<%= show_hide_toggle "(show/hide)", ".preset_box", :class => 'task_help_link', :slide_effect => true, :slide_duration => 'fast'  %>
+<h2><%= t('.h2') %>
+<%= show_hide_toggle t('tasks.common.show_hide'), ".preset_box", :class => 'task_help_link', :slide_effect => true, :slide_duration => 'fast'  %>
 </h2>
 
 <table class="simple preset_box hidden">
 
 <tr>
-  <td><strong>Load a preset configuration:</strong></td>
-  <td><%= select_tag :load_preset_id, 
-    "<option value=\"\">(Select a preset to load)</option>".html_safe +
+  <td><strong><%= t('.load_preset_configuration') %></strong></td>
+  <td><%= select_tag :load_preset_id,
+    "<option value=\"\"><%= t('.select_preset') %></option>".html_safe +
     grouped_options_for_select(@all_presets)
       %>
   </td>
   <td>
-    <%= submit_tag "Load Preset",   :name => :load_preset %>
-    <%= submit_tag "Delete Preset", :name => :delete_preset, :data => { :confirm => 'Delete this preset?' } %>
+    <%= submit_tag t('.load_preset'),   :name => :load_preset %>
+    <%= submit_tag t('.delete_preset'), :name => :delete_preset, :data => { :confirm => t('.delete_this_preset') } %>
  </td>
 </tr>
 
 <tr>
-  <td><strong>Save as a preset configuration:</strong></td>
+  <td><strong><%= t('.save_as_preset') %></strong></td>
   <td><%= select_tag :save_preset_id,
-          "<option value=\"\">(Select a preset to overwrite)</option>".html_safe +
+          "<option value=\"\"><%= t('.select_preset_to_overwrite') %></option>".html_safe +
           options_for_select(@own_presets)
-      %><strong> or as new name:</strong>
+      %><strong><%= t('.or_as_new_name') %></strong>
       <%= text_field_tag :save_preset_name, "", :size => 20 %>
       <% if @offer_site_preset %>
-        (Save as site preset: <%= check_box_tag :save_as_site_preset, 1 %>)
+        (<%= t('.save_as_site_preset') %> <%= check_box_tag :save_as_site_preset, 1 %>)
       <% end %>
   </td>
-  <td><%= submit_tag "Save Preset", :name => :save_preset %></td>
+  <td><%= submit_tag t('.save_preset'), :name => :save_preset %></td>
 </tr>
 
 </table>

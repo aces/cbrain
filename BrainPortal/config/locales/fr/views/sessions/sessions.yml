@@ -6,11 +6,11 @@ fr:
       before_message_html: "Avant de pouvoir continuer, votre compte CBRAIN <em>doit</em> être lié à un fournisseur d'identité."
       explanations: "Explications"
       p_explanations: "Lorsque vous cliquez sur le bouton ci-dessous, votre navigateur sera redirigé vers une page de connexion d'un fournisseur d'identité ; de là, vous pouvez choisir l'un des fournisseurs d'identité pris en charge. Cela vous redirigera à son tour vers la propre page de connexion du fournisseur. Une fois que vous vous êtes authentifié avec succès là-bas, votre navigateur sera redirigé ici pour finaliser le lien avec votre compte CBRAIN."
-      allowed_providers: "Les fournisseurs d'identité autorisés pour votre compte sont :"
+      allowed_providers: "Les fournisseurs d'identité autorisés pour votre compte sont:"
       any_provider: "(Tout fournisseur d'identité)"
       p_no_provider: "Aucun fournisseur d'identité n'est actuellement disponible pour votre compte. Veuillez contacter l'administrateur de CBRAIN pour plus d'informations."
       login_with: "Se connecter avec %{name}"
-      p_already_logged_in: "Si vous êtes déjà connecté en utilisant un autre fournisseur d'identité, vous voudrez peut-être vous déconnecter d'abord. Cela peut être accompli par le bouton ci-dessous :"
+      p_already_logged_in: "Si vous êtes déjà connecté en utilisant un autre fournisseur d'identité, vous voudrez peut-être vous déconnecter d'abord. Cela peut être accompli par le bouton ci-dessous:"
       logout_from: "Se déconnecter de %{name}"
 
     new:
