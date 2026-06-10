@@ -51,7 +51,7 @@ class NhInvitationsController < NeurohubApplicationController
     uids_by_email   = User.where(:email => user_specs).pluck(:id)
     uids_by_uname   = User.where(:login => user_specs).pluck(:id)
     user_ids        = uids_by_email | uids_by_uname
-    found_users     = User.where(:id => user_ids).to_a
+    found_users     = User.where(:id => user_ids).to_a.uniq
     found_specs     = user_specs.select do |spec|
       found_users.any? { |u| u.login == spec || u.email == spec }
     end
