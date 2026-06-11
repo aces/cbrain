@@ -269,7 +269,7 @@
               <th<%= th_att %>><div<%= th_div_att %>><%= col_key.nil? ? "(#{t('none')})" : col_proc.call(col_key) %></div></th>
             <% end %>
             <% if @table_col_values.size > 1 %>
-              <th<%= th_att %>><div<%= th_div_att %>><%= t('total') %></div></th>
+              <th<%= th_att %>><div<%= th_div_att %>><%= t('.total') %></div></th>
             <% end %>
             <% if left_header_column %>
               <th<%= th_att %>></th>
@@ -333,7 +333,7 @@
 
         <% if @table_row_values.size > 1 %>
         <tr>
-          <th><%= t('total') %></th>
+          <th><%= t('.total') %></th>
           <% @table_col_values.each do |col_key| %>
             <% col_tot = total_of_col[col_key] %>
             <td><%= td_content_proc.call(col_tot, { @filter_col_key => col_key }) %></td>
@@ -342,7 +342,7 @@
             <td><%= td_content_proc.call(total_total, {}) %></td>
           <% end %>
           <% if left_header_column %>
-            <th><%= t('total') %></th>
+            <th><%= t('.total') %></th>
           <% end %>
         </tr>
         <% end %>
@@ -370,7 +370,7 @@
               <th<%= bot_th_att %>><div<%= bot_th_div_att %>><%= col_key.nil? ? "(#{t('none')})" : col_proc.call(col_key) %></div></th>
             <% end %>
             <% if @table_col_values.size > 1 %>
-              <th<%= bot_th_att %>><div<%= bot_th_div_att %>><%= t('total') %></div></th>
+              <th<%= bot_th_att %>><div<%= bot_th_div_att %>><%= t('.total') %></div></th>
             <% end %>
             <% if left_header_column %>
               <th></th>

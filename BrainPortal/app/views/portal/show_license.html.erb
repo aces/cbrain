@@ -35,7 +35,7 @@
   <hr>
   <% if ! is_signed %>
       <%= submit_tag t('agree'), :name => :agree %>
-      <%= submit_tag t('disagree'), :name => :not_agree %>
+      <%= submit_tag t('.disagree'), :name => :not_agree %>
     </form>
   <% else %>
     <strong><%= t('.already_signed') %></strong>

@@ -9,6 +9,7 @@ fr:
       title: "Profils d'accès"
 
     show:
+      add_new_access_profile: "Ajouter un nouveau profil d'accès"
       saved_error: "Le profil d'accès n'a pas pu être %{action}."
       css_explanation_html: "Utilisez une couleur <strong>pâle</strong> conforme au CSS:<br>ex. <em>#ff0</em> ou <em>yellow</em> etc."
       private_note: "Ce sont vos notes privées à propos de ce profil."

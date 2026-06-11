@@ -84,15 +84,15 @@
              browser  = (parsed.browser_name    || t('.unknown_browser'))
              brow_ver = (parsed.browser_version || '?')
              os       = (parsed.os_name         || t('.unknown_os'))
-             pretty = "#{browser} #{brow_ver} #{t('on')} #{os}"
+             pretty = "#{browser} #{brow_ver} #{t('.on')} #{os}"
           %>
           <br/>
           <small>
-            <%= t('from') %>
+            <%= t('.from') %>
             <%= html_tool_tip(entry[:remote_host], :offset_x => 0, :offset_y => 12) do %>
               <%= entry[:remote_ip] || entry[:remote_host] %>
             <% end %>
-            <%= t('with') %>
+            <%= t('.with') %>
             <%= html_tool_tip(pretty, :offset_x => 0, :offset_y => 12) do %>
               <%= entry[:raw_user_agent] || t('unknown').downcase %>
             <% end %>
@@ -107,11 +107,11 @@
       <%= form_tag home_path do %>
         <%= t('.clear_sessions') %>
         <%= select_tag :session_clear, options_for_select( [
-             [ t('clear_options.month'),     1.month.seconds.to_i   ],
-             [ t('clear_options.week'),      1.week.seconds.to_i    ],
-             [ t('clear_options.day'),       1.day.seconds.to_i     ],
-             [ t('clear_options.hour'),      1.hour.seconds.to_i    ],
-             [ t('clear_options.now'),      1.seconds.to_i   ],
+             [ t('clear_options.month'),    1.month.seconds.to_i   ],
+             [ t('clear_options.week'),     1.week.seconds.to_i    ],
+             [ t('clear_options.day'),      1.day.seconds.to_i     ],
+             [ t('clear_options.hour'),     1.hour.seconds.to_i    ],
+             [ t('clear_options.now'),      1.seconds.to_i         ],
            ]) %>
         <%= submit_tag t('clear'), :data => { :confirm => t('.clear_confirm') } %>
       <% end %>
@@ -160,7 +160,7 @@
       <strong><%= t('.site_affiliation') %></strong> <%= link_to_site_if_accessible(current_user.site) %>
     </p>
     <p>
-      <strong><%= t('.time_zone') %></strong> <%= red_if(current_user.time_zone.blank?,h(current_user.time_zone), t('unset')) %><BR>
+      <strong><%= t('.time_zone') %></strong> <%= red_if(current_user.time_zone.blank?,h(current_user.time_zone), t('.unset')) %><BR>
       <strong><%= t('.current_time') %></strong> <%= to_localtime(Time.now, :datetime) %><BR>
     </p>
     <p>

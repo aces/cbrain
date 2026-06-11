@@ -100,7 +100,7 @@
               )
             %>
             <% if before_archiving_size && before_archiving_size >= 1_000 -%>
-              = <%= t('.size_bytes', size: before_archiving_size) %>
+              = <%= t('userfiles.common.size_bytes', size: before_archiving_size) %>
             <% end %>
          <% end %>
       <% else %>
@@ -161,7 +161,7 @@
       <% elsif @userfile.zenodo_deposit_id.present? %>
           <%= t('.in_progress', link: link_to_deposit(@userfile.zenodo_deposit_id)) %>
       <% else %>
-          <%= "#{t('none')}." %>
+          <%= t('none') %>.
       <% end %>
     <% end %>
     <% t.empty_cell %>

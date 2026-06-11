@@ -68,7 +68,7 @@
 
 <p>
 
-<% update_message  = t('userfiles.common.update') %>
+<% update_message  = t('update') %>
 <% update_message += t('userfiles.common.and_go') if not_last_file %>
 <%= submit_tag "#{update_message}", :name => :update, :data => {:current_file_id => @userfile.id } %>
 

@@ -13,8 +13,6 @@ fr:
     color_picker:
 
     date_range_info:
-      created: "créé"
-      updated: "mis à jour"
       from_to: "de %{from} à %{to}"
 
     date_range_panel:
@@ -42,9 +40,6 @@ fr:
       clear_tooltip: "Effacer les %{item_name} sélectionnés"
 
     show_table_content:
-      edit: "Modifier"
-      create: "Créer"
-      update: "Mettre à jour"
 
     show_table_context:
 
@@ -58,5 +53,7 @@ fr:
       immutable_file: "Fichier immuable"
       local_cache_path: "Chemin du fournisseur de données local (cache)"
       remote_path: "Chemin du fournisseur de données distant"
+      public: "Public"
+      not_assignable: "Non assignable"
 
     users_checkbox_table:

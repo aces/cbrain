@@ -37,6 +37,7 @@ fr:
       other_licenses: "Autres licences"
       other_desc_html: "Certains packages ou bibliothèques développés par des entités externes<br/>sont utilisés dans la base de code de CBRAIN ; voici un résumé de leurs<br/>respectives licences."
       error_getting_license: "Erreur lors de l'obtention du fichier de licence."
+      for: "pour: "
 
     available:
       title: "Liste des outils et des ensembles de données"
@@ -146,6 +147,7 @@ fr:
     show_license:
       error_fetching: "(Erreur lors de la récupération du texte de la licence)"
       already_signed: "Vous avez déjà signé cet accord."
+      disagree: "Je ne suis pas d'accord"
 
     swagger:
       title: "CBRAIN API"
@@ -247,3 +249,7 @@ fr:
       latest_tasks: "Dernières tâches mises à jour"
       none_active: "(Aucune active)"
       latest_files: "Derniers fichiers mis à jour"
+      on: "sur"
+      from: "De"
+      with: "avec"
+      unset: "(Non défini)"

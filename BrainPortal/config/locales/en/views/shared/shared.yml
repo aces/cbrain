@@ -58,5 +58,7 @@ en:
       immutable_file: "Immutable file"
       local_cache_path: "Local Data Provider (cache) path"
       remote_path: "Remote Data Provider path"
+      public: "Public"
+      not_assignable: "Not assignable"
 
     users_checkbox_table:

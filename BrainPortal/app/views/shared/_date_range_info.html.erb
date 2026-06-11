@@ -26,7 +26,7 @@
   <% if type.blank? %>
     <%= t('shared.common.do_not_filter') %>
   <% else %>
-    <%= type == "created_at" ? t('.created') : t('.updated') %>
+    <%= type == "created_at" ? t('created') : t('updated') %>
     <%= t('.from_to', from: from, to: to) %>
   <% end %>
 </div>

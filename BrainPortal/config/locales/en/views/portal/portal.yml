@@ -37,6 +37,7 @@ en:
       other_licenses: "Other licenses"
       other_desc_html: "Some packages or libraries developed by external entities<br />are used in the CBRAIN code base; here is a summary of their<br />respective licenses."
       error_getting_license: "Error getting license file."
+      for: "for: "
 
     available:
       title: "List of tools and datasets"
@@ -146,6 +147,7 @@ en:
     show_license:
       error_fetching: "(Error fetching license text)"
       already_signed: "You have already signed this agreement."
+      disagree: "I do not agree"
 
     swagger:
       title: "CBRAIN API"
@@ -247,4 +249,8 @@ en:
       latest_tasks: "Latest Updated Tasks"
       none_active: "(None active)"
       latest_files: "Latest Updated Files"
+      on: "on"
+      from: "From"
+      with: "with"
+      unset: "(Unset)"
 

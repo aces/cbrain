@@ -14,7 +14,6 @@ fr:
       upload: "Téléverser"
       qc: "Contrôle qualité"
       new_collection: "Nouvelle collection"
-      update: "Mettre à jour"
       and_go: " (et passer au fichier suivant)"
       exception: "Exception:"
       a_group: "Un projet..."
@@ -76,8 +75,8 @@ fr:
 
     filter_items:
       new_filter: "Nouveau filtre"
-      has_no_parent: "N'a pas de parent"
-      has_no_children: "N'a pas d'enfants"
+      has_no_parent: "Sans parent"
+      has_no_children: "Sans enfants"
 
     quality_control_panel:
       previous_file: "Fichier précédent"

@@ -4,5 +4,7 @@ fr:
         remote_resource:
           one: "Serveur"
           other: "Serveurs"
+        portal: "Portail"
+        execution: "Exécution"
 
 

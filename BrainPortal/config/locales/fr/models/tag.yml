@@ -1,0 +1,6 @@
+fr:
+  activerecord:
+      models:
+        tag:
+          one: "Label"
+          other: "Labels"

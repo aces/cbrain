@@ -133,8 +133,8 @@
       :sortable => true
     ) do |u|
       html_tool_tip(to_localtime(u.created_at, :date), :offset_x => 0, :offset_y => 20) do
-        ("#{t('.created')} #{u.created_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z")} <br />" +
-         "#{t('.updated')} #{u.updated_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z")}").html_safe
+        ("#{t('created')} #{u.created_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z")} <br />" +
+         "#{t('updated')} #{u.updated_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z")}").html_safe
       end
     end
   %>
