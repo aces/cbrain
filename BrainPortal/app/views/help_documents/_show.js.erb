@@ -137,7 +137,7 @@ $(document).delegate('div.help_document_popup', 'new_content', function () {
 
   /* Save the document on the server */
   function save() {
-    toggle_button(buttons.save, "Saving...");
+    toggle_button(buttons.save, "<%= j t('.saving') %>");
 
     $.ajax({
       url:      server_doc.url,
@@ -155,13 +155,13 @@ $(document).delegate('div.help_document_popup', 'new_content', function () {
       buttons.remove.show();
       buttons.save.hide();
     }).always(function () {
-      toggle_button(buttons.save, "Save");
+      toggle_button(buttons.save, "<%= j t('save') %>");
     });
   };
 
   /* Remove/delete the document */
   function remove() {
-    toggle_button(buttons.remove, "Removing...");
+    toggle_button(buttons.remove, "<%= j t('.removing') %>");
 
     $.ajax({
       url:  server_doc.url,
@@ -173,7 +173,7 @@ $(document).delegate('div.help_document_popup', 'new_content', function () {
 
       buttons.remove.hide();
     }).always(function () {
-      toggle_button(buttons.remove, "Remove");
+      toggle_button(buttons.remove, "<%= j t('.remove') %>");
     });
   };
 

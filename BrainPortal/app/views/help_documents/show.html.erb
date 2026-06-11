@@ -26,16 +26,15 @@
   <% if HelpDocument.can_edit?(current_user) %>
     <%= stylesheet_link_tag "codemirror", "codemirror-neo" %>
 
-    <button class="show" style="display:none">Show</button>
-    <button class="edit" style="display:none">Edit</button>
-    <button class="save" style="display:none">Save</button>
-    <button class="remove" style="display:none">Remove</button>
+    <button class="show" style="display:none"><%= t('show') %></button>
+    <button class="edit" style="display:none"><%= t('edit') %></button>
+    <button class="save" style="display:none"><%= t('save') %></button>
+    <button class="remove" style="display:none"><%= t('.remove') %></button>
 
     <div class="editor" style="display:none"></div>
 
     <div class="empty" style="display:none">
-      There is no documentation on this topic right now. <br />
-      Add some by using the edit button in the top left corner.
+      <%= t('.description_p1_html') %>
     </div>
   <% end %>
 

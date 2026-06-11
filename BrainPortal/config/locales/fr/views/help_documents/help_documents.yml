@@ -1,0 +1,7 @@
+fr:
+  help_documents:
+    show:
+      remove: "Supprimer"
+      description_p1_html: "Il n'y a pas de documentation sur ce sujet pour le moment. <br />Ajoutez-en en utilisant le bouton d'édition dans le coin supérieur gauche."
+      saving: "Enregistrement..."
+      removing: "Suppression..."
