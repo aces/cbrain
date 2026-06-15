@@ -23,15 +23,15 @@
 #
 -%>
 <div style="max-height: 600px; overflow-y: auto; padding-right: 30px">
-  <% if @users.count > 0 %>
   <%= form_tag invitations_path do -%>
-      <%= hidden_field_tag :group_id, @group.id %>
-      <%= render :partial => 'groups/users_form', :locals => {:parameter_name => "user_ids", :show_locked => false} %>
-      <p>
-        <%= submit_tag "Send Invitations" %>
-      </p>
-    <% end %>
-  <% else %>
-    <strong style="color:red">No users available to invite.</strong>
+    <%= hidden_field_tag :group_id, @group.id %>
+    <h5>Invite other users to join your project</h5>
+    <div class="field_note">
+      Enter one or several email addresses separated by blanks or commas.
+      You can also provide CBRAIN usernames if you know them.
+    </div>
+    <%= text_area_tag :emails, "", :rows => 8, :cols => 100 %>
+    <p>
+    <%= submit_tag "Send Invitations" %>
   <% end %>
 </div>
