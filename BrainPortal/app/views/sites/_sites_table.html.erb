@@ -23,8 +23,8 @@
 -%>
 
 <div class="menu_bar">
-  <%= link_to 'Create New Site', new_site_path, :class => "button" %>
-  <%= overlay_ajax_link "Help", "/doc/sites/site_info.html", :class  => "button" %>
+  <%= link_to t('.create_new_site'), new_site_path, :class => "button" %>
+  <%= overlay_ajax_link t('help'), "/doc/#{I18n.locale}/sites/site_info.html", :class  => "button" %>
 </div>
 
 <%=
@@ -34,7 +34,7 @@
   })
 %>
 
-<div class="centered"> (<%= pluralize @sites.count, "site" %>) </div>
+<div class="centered"> (<%= t('activerecord.models.site', count: @sites.count).downcase %>) </div>
 
 <%=
   dynamic_scoped_table(@sites,
@@ -44,15 +44,15 @@
   ) do |t|
 %>
   <%
-    t.column("Name", :name,
+    t.column(t('activerecord.attributes.name'), :name,
       :sortable => true,
     ) { |s| link_to_site_if_accessible(s) }
 
-    t.column("Description", :description,
+    t.column(t('activerecord.attributes.description'), :description,
       :sortable => true,
     ) { |s| overlay_description(s.description) }
 
-    t.column("Managers", :managers) do |s|
+    t.column(t('sites.common.managers'), :managers) do |s|
       array_to_table(s.managers.sort { |a,b| a.login.casecmp(b.login) },
         :min_data    => 2,
         :table_class => 'simple bordered'
@@ -62,14 +62,14 @@
     users_scope  = scope_from_session('users#index')
     groups_scope = scope_from_session('groups#index')
 
-    t.column("Number of Users", :nusers) do |s|
+    t.column(t('.number_of_users'), :nusers) do |s|
       scope_filter_link(s.users.count.to_s,
         users_scope, :set, { :a => 'site_id', :v => s.id },
         url: { :controller => :users }
       )
     end
 
-    t.column("Number of Projects", :nprojects) do |s|
+    t.column(t('.number_of_projects'), :nprojects) do |s|
       scope_filter_link(s.groups.count.to_s,
         groups_scope, :set, { :a => 'site_id', :v => s.id },
         url: { :controller => :groups }

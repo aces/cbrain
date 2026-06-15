@@ -1,0 +1,5 @@
+en:
+  invitations:
+    new:
+      send_invitations: "Send Invitations"
+      no_users_available: "No users available to invite."

@@ -28,10 +28,10 @@
       <%= hidden_field_tag :group_id, @group.id %>
       <%= render :partial => 'groups/users_form', :locals => {:parameter_name => "user_ids", :show_locked => false} %>
       <p>
-        <%= submit_tag "Send Invitations" %>
+        <%= submit_tag t('.send_invitations') %>
       </p>
     <% end %>
   <% else %>
-    <strong style="color:red">No users available to invite.</strong>
+    <strong style="color:red"><%= t('.no_users_available') %></strong>
   <% end %>
 </div>

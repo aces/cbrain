@@ -22,36 +22,36 @@
 #
 -%>
 
-<% title "Site" %>
+<% title t('.title') %>
 
 <div class="menu_bar">
-  <%= overlay_ajax_link "Help", "/doc/sites/site_info.html", :class  => "button" %>
-  <%= link_to 'Delete', site_path(@site),  { :data => { :confirm => "Are you sure you want to delete '#{@site.name}' ?" }, :method => :delete, :class => "button"} %>
+  <%= overlay_ajax_link t('help'), "/doc/#{I18n.locale}/sites/site_info.html", :class  => "button" %>
+  <%= link_to t('delete'), site_path(@site),  { :data => { :confirm => t('confirm_delete', name: @site.name )},  :method => :delete, :class => "button"} %>
 </div>
 
 <br>
 
-<%= error_messages_for @site, :header_message => "site could not be updated." %>
+<%= error_messages_for @site, :header_message => t('.could_not_be_updated') %>
 <div class="display_inline_block" style="min-width: 50%">
 
   <%= show_table(@site, :edit_condition => check_role(:admin_user)) do |t| %>
     <% t.edit_cell(:name) { |f| f.text_field :name } %>
     <% t.edit_cell(:description, content: full_description(@site.description)) do |f| %>
       <%= f.text_area :description, cols:40, rows: 10 %><br/>
-      <div class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</div><br>
+      <div class="field_explanation"><%= t('sites.common.brief_description') %></div><br>
     <% end %>
   <% end %>
-  <%= show_table(@site, :header => 'Resources') do |t| %>
-    <% t.cell("Managers", :show_width => 2) do %>
+  <%= show_table(@site, :header => t('.resources')) do |t| %>
+    <% t.cell(t('sites.common.managers'), :show_width => 2) do %>
       <%= array_to_table(@site.managers.sort{|a, b| a.login.casecmp(b.login)}, :min_data => 6, :table_class => 'simple bordered') {|u,r,c| link_to_user_with_tooltip(u)} %>
     <% end %>
     <%
       t.blank_row
-      t.cell("Users")            { index_count_filter @site.users.count,  :users,  {:site_id => @site.id} }
-      t.cell("Projects")         { index_count_filter @site.groups.count, :groups, {:site_id => @site.id} }
-      t.cell("Files")            { @site.userfiles_find_all.count }
-      t.cell("Data Providers")   { @site.data_providers_find_all.count }
-      t.cell("Remote Resources") { @site.remote_resources_find_all.count }
+      t.cell(t('activerecord.models.user.other'))            { index_count_filter @site.users.count,  :users,  {:site_id => @site.id} }
+      t.cell(t('activerecord.models.group.other'))           { index_count_filter @site.groups.count, :groups, {:site_id => @site.id} }
+      t.cell(t('activerecord.models.userfile.other'))        { @site.userfiles_find_all.count }
+      t.cell(t('activerecord.models.data_provider.other'))   { @site.data_providers_find_all.count }
+      t.cell(t('activerecord.models.remote_resource.other')) { @site.remote_resources_find_all.count }
     %>
   <% end %>
 
@@ -60,17 +60,17 @@
   <table class="resource_list">
     <tr>
       <th>
-        Users
+        <%= t('activerecord.models.user.other') %>
         <% if check_role(:admin_user) %>
-          <%= overlay_content_link "(Update)", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span", :height => 400 do %>
+          <%= overlay_content_link "(#{t('update')})", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span", :height => 400 do %>
             <%= form_for(@site) do |f| %>
               <div class="display_cell">
-                <label>Users</label>
+                <label><%= t('activerecord.models.user.other') %></label>
                 <table class="button_table">
                   <tr>
-                    <td>Login</td>
-                    <td>Regular User</td>
-                    <td>Site Manager</td>
+                    <td><%= t('login') %></td>
+                    <td><%= t('sites.common.regular_user') %></td>
+                    <td><%= t('sites.common.site_manager') %></td>
                   </tr>
                   <% for user in User.all.sort { |a,b| a.full_name.casecmp(b.full_name) } %>
                     <tr>
@@ -84,7 +84,7 @@
 
               <div class="display_row">
                 <P>
-                <%= f.submit "Update Users", :name => :update_users %>
+                <%= f.submit t('.update_users'), :name => :update_users %>
               </div>
 
             <% end %>
@@ -92,18 +92,18 @@
         <% end %>
       </th>
       <th>
-        Projects
+        <%= t('activerecord.models.group.other') %>
         <% if check_role(:admin_user) %>
-          <%= overlay_content_link "(Update)", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span", :height => 400 do %>
+          <%= overlay_content_link "(#{t('update')})", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span", :height => 400 do %>
             <%= form_for(@site) do |f| %>
               <%= render :partial => 'shared/group_tables', :locals => {:model => @site} %><br>
-              <%= f.submit 'Update Projects', :name => :update_groups %>
+              <%= f.submit t('.update_projects'), :name => :update_groups %>
             <% end %>
           <% end %>
         <% end %>
       </th>
-      <th>Data Providers</th>
-      <th>Remote Resources</th>
+      <th><%= t('activerecord.models.data_provider.other') %></th>
+      <th><%= t('activerecord.models.remote_resource.other') %></th>
     </tr>
     <tr>
       <td><%= array_to_table(@site.users.all.sort{|a, b| a.login.casecmp(b.login)}, :min_data => 2, :table_class => 'simple bordered') {|u,r,c| link_to_user_with_tooltip(u)} %></td>
@@ -116,6 +116,6 @@
 
 
   <P>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @site.getlog, :title => 'Site Log' } %>
+  <%= render :partial => "layouts/log_report", :locals  => { :log  => @site.getlog, :title => t('.site_log') } %>
 
 

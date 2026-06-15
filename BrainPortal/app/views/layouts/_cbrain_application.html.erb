@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
-<html lang="en">
+<html lang=<%= locale.to_s %>>
 
   <head>
     <title><%= RemoteResource.current_resource.name.presence || "CBRAIN" %><%= yield :title %></title>

@@ -1,0 +1,85 @@
+en:
+  groups:
+    common:
+      creator: "Creator"
+      select_site: "(Select a site)"
+      all: "All"
+
+    groups_table:
+      create_project: "Create Project"
+      switch_to_list_view: "Switch to List View"
+      switch_to_button_view: "Switch to Button View"
+      large_buttons: "Large buttons"
+      small_buttons: "Small buttons"
+      project_count:
+        one: "1 project"
+        other: "%{count} projects"
+
+    users_form:
+      quick_select_work: "Quick select based on other work Projects"
+      quick_select_site: "Quick select based on other site Projects"
+
+    view_buttons_tab:
+      creator: "Creator:"
+      user_count:
+        one: "1 user"
+        other: "%{count} users"
+      special_all_project: "Special 'ALL' Project"
+
+    view_buttons:
+      group_description_p1_html: "A project is a way to group together under single name a set<br />of CBRAIN files and tasks.  A project <em>is not a folder</em>.<br />Switching to a project makes it the 'active' project.  When a<br />project is active, an automatic implicit filter will be applied<br />such that only files and tasks assigned to the project are shown<br />in the file or task manager."
+      group_description_p2_html: "These projects are visible only to you. There is one particular<br />project named <strong>%{name}</strong> that is created<br />by the system for you, by default, and cannot be deleted. Any of<br />these projects can be turned into a Shared Project by inviting other<br />users to join. When this happens, the projects will appear in a separate tab."
+      group_description_p3_html: "These are projects that you created and are shared with other users.<br />Files and tasks assigned to a project are visible to all users of that project."
+      group_description_p4_html: "These are projects created by other users who have invited you to join them.<br />Files and tasks assigned to a project are visible to all users of that project."
+      group_description_p5_html: "These are Public projects. All files and tasks assigned to them are visible to all users!"
+      group_description_p6_html: "These are Site projects. They can be used to share files and tasks among the set of users belonging to the associated Site."
+      group_description_p7_html: "This special <strong>ALL Project</strong> is in fact no<br />project at all. Selecting this as your currently active<br />'project' will disable all project-based filtering, so<br />you will see together <strong>all</strong> files and tasks.<br />The file manager and task manager will each show you a new<br />column where you'll be able to filter by project directly<br />there. Selecting the <strong>ALL Project</strong> is useful<br />when you need to manage or browse files and tasks that are<br />in multiple projects."
+      group_description_p8_html: "Projects that for some reason are not assigned to other tabs"
+      admin_only: "Admin only"
+      my_private_projects: "My Private Projects"
+      my_shared_projects: "My Shared Projects"
+      projects_shared_with_me: "Projects Shared With Me"
+      public_projects: "Public Projects"
+      site_projects: "Site Projects"
+      other_users_system_projects: "Other Users System Projects"
+      other_users_private_projects: "Other Users Private Projects"
+      other_projects: "Other Projects"
+
+    view_list:
+      represents_all_projects: "Represents all the projects"
+      all_projects: "All Projects"
+      project_type: "Project Type"
+
+    index:
+      title: "Projects"
+
+    new:
+      title: "New Project"
+      group_description_p1_html: "The first line should be a short summary, and the rest are for details."
+      group_description_p2_html: "Make this a system group invisible to normal users:"
+      group_description_p3_html: "Turn on usage tracking for files in this project:"
+      group_description_p4_html: "Normal members will not be able to assign files or other resources<br />to this project (but editors are always allowed to do so):"
+      group_description_p5_html: "Make the project public, so that all users can access the files. Be careful with this option! You can always make the project public later on:"
+
+    show:
+      title: "Project Info"
+      leave_project: "Leave Project"
+      invite: "Invite Other Users"
+      maintainer: "Maintainer"
+      header_message_1: "Project could not be updated."
+      warning_message_html: "<span class=\"warning\">Warning</span>: If you change the maintainer to someone else you won't be able to edit this project any more"
+      group_description_p1_html: "The first line should be a short summary, and the rest are for details."
+      header_message_2: "Urls are clickable "
+      group_description_p2_html: "If checked, normal members will not be able to assign files or other<br />resources to this project (but editors are always allowed to do so)."
+      group_description_p3_html: "If checked, a public project makes all its files visible to all the users. <span class=\"warning\">Be careful </span><br />with this option!"
+      invisible: "Invisible"
+      group_description_p4_html: "If checked, the project will not be shown in the list of projects."
+      track_usage: "Track Usage"
+      resources: "Resources"
+      group_description_p5_html: "If checked, the system will track overall usage of files in this project<br />(views, downloads etc) per month."
+      header_message_3: "Assigned To Access Profiles"
+      members: "Members"
+      remove: ": Remove"
+      pending_invitations: "Pending Invitations"
+      project_log: "Project Log"
+

@@ -1,0 +1,6 @@
+en:
+  activerecord:
+      models:
+        data_provider:
+          one: "Data Provider"
+          other: "Data Providers"

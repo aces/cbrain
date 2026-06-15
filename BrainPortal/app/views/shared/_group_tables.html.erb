@@ -56,7 +56,7 @@
 
 <% if work_groups.present? %>
 
-  <label>Work Projects</label>
+  <label><%= t('.work_groups') %></label>
   <%= array_to_table(work_groups, :cols => 4, :td_class => 'left_align no_wrap') do |group,r,c| %>
     <%= group_check_box.(group) %>
   <% end %>
@@ -68,7 +68,7 @@
 <% if invis_groups.present? %>
 
   <br>
-  <label>Invisible Projects</label>
+  <label><%= t('.invisible_groups') %></label>
   <%= array_to_table(invis_groups, :cols => 4, :td_class => 'left_align no_wrap') do |group,r,c| %>
     <%= group_check_box.(group) %>
   <% end %>

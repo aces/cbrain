@@ -1,0 +1,8 @@
+fr:
+  activerecord:
+      models:
+        cbrain_task:
+          one: "Tâche"
+          other: "Tâches"
+
+

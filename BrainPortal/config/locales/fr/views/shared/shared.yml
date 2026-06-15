@@ -1,0 +1,59 @@
+fr:
+  shared:
+
+    common:
+      clear: "Effacer"
+      do_not_filter: "Ne pas filtrer"
+
+    access_profile_checkbox_table:
+
+    active_filters:
+      active_filters: "Filtres actifs"
+
+    color_picker:
+
+    date_range_info:
+      from_to: "de %{from} à %{to}"
+
+    date_range_panel:
+      from: "De"
+      to: "À"
+
+    dynamic_table:
+      no_records_found: "Aucun enregistrement trouvé"
+      filter: "Filtrer - %{name}"
+      columns: "Colonnes"
+      per_page: "par page."
+
+    error_messages:
+      header_message: "%{object_errors} ont empêché la sauvegarde de %{object_name}:"
+      message: "Il y a eu des problèmes avec les champs suivants:"
+
+    group_tables:
+      work_groups: "Projets de travail"
+      invisible_groups: "Projets invisibles"
+
+    persistent_selection:
+      currently_selected: "%{item_name} actuellement sélectionné"
+      select_all: "Tout sélectionner"
+      select_all_on_all_pages_tooltip: "Sélectionner tous les %{item_name} sur toutes les pages"
+      clear_tooltip: "Effacer les %{item_name} sélectionnés"
+
+    show_table_content:
+
+    show_table_context:
+
+    show_table:
+      modified_at: "Modifié le"
+      project_permission: "Permission de projet sur le fichier"
+      hidden_html: "Caché (<span class='pp-hid-ind'>C</span>)"
+      hidden_file: "Fichier caché"
+      locked_html: "Verrouillé (<span class='pp-ro-ind'>V</span>)"
+      locked_file: "Fichier verrouillé"
+      immutable_file: "Fichier immuable"
+      local_cache_path: "Chemin du fournisseur de données local (cache)"
+      remote_path: "Chemin du fournisseur de données distant"
+      public: "Public"
+      not_assignable: "Non assignable"
+
+    users_checkbox_table:

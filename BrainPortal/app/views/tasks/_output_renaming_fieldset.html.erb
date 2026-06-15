@@ -33,7 +33,7 @@
    #   dt_dd_pairs : must contain pairs of special keywords
    #                 for the task's renaming mechanism. E.g.:
    #
-   #     dt_dd_pairs = 
+   #     dt_dd_pairs =
    #     [
    #        [ "{author}",           "The name of the <i>author</i>".html_safe ],
    #        [ "{in-1}, {in-2} etc", "The n'th component of the input file name" ],
@@ -45,25 +45,21 @@
 %>
 
 <fieldset class="groupentry">
-<legend>Output filenames renaming
-<%= show_hide_toggle "(show/hide)", ".#{uniq_class}", :class => 'task_help_link', :slide_effect => true, :slide_duration => 'fast'  %>
+<legend><%= t('.output_filenames_renaming') %>
+<%= show_hide_toggle t('tasks.common.show_hide'), ".#{uniq_class}", :class => 'task_help_link', :slide_effect => true, :slide_duration => 'fast'  %>
 </legend>
 <div class="<%= uniq_class %>" style="display: none;">
 
 <p>
 
-Output files can be named or renamed automatically using this pattern:
+<%= t('.output_files_pattern') %>
 <br>
 <%= form.params_text_field param_name, :size => 80 %><br>
-<small>(Leave blank to let the program name the files automatically using its own rules)</small>
+<%= t('.leave_blank_html') %>
 
 <P>
 
-Patterns can include the following special
-<em>{keywords}</em> in curly brackets that will be substituted
-automatically.
-<p>
-The supported keywords are:
+<%= t('.supported_keywords_html') %>
 
 <dl>
 

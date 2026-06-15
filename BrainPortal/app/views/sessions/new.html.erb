@@ -22,32 +22,32 @@
 #
 -%>
 
-<% title 'Login' %>
+<% title t('.title') %>
 
 <%= form_tag session_path do -%>
 
     <table class="logintable">
 
     <tr>
-      <td><label for="login">Login</label></td>
+      <td><label for="login"><%= t('login') %></label></td>
       <td class="field"><%= text_field_tag 'login', nil, tabindex: 1 %></td>
     </tr>
 
     <tr>
-      <td><label for="password">Password</label></td>
+      <td><label for="password"><%= t('.password') %></label></td>
       <td class="field"><%= password_field_tag 'password', nil, tabindex: 2 %></td>
     </tr>
 
     <tr>
       <td></td>
       <td class="field">
-      <%= submit_tag 'Sign in', tabindex: 3 %>
+      <%= submit_tag t('.sign_in'), tabindex: 3 %>
       </td>
     </tr>
 
     <tr>
       <td></td>
-      <td class="field"><%= link_to "Forgot your password?", request_password_users_path, :class  => "action_link" %></td>
+      <td class="field"><%= link_to t('.forgot_password'), request_password_users_path, :class  => "action_link" %></td>
     </tr>
 
     <% @oidc_configs.each do |oidc| %>
@@ -60,13 +60,12 @@
 
       <tr>
         <td>
-            <strong>OR</strong>
+            <strong><%= t('.or') %></strong>
         </td>
         <td class="field">
-          <%= link_to "Sign In With #{oidc.name}", @oidc_uris[oidc.name], :class => 'button globus_button' %>
+          <%= link_to t('.sign_in_with', name:oidc.name ), @oidc_uris[oidc.name], :class => 'button globus_button' %>
           <div class="field_explanation">
-            (Only available if you have already linked your<br>
-            CBRAIN account to a <%= oidc.name %> identity)
+            <%= t('.only_available_html', name: oidc.name) %>
           </div>
         </td>
       </tr>
@@ -79,8 +78,8 @@
 
 <div class="centered">
   <p>
-  Not a user?
-  <%= link_to 'Request an account.',
+  <%= t('.not_a_user') %>
+  <%= link_to t('.request_account'),
         url_for(:controller => :signups, :action => :new),
         { tabindex: 4, :class => "action_link" }
    %>
@@ -88,5 +87,5 @@
 
 <p>
 <div class="centered">
-  <%= link_to "Full list of all tools and datasets", available_path, :class => :action_link %>
+  <%= link_to t('.full_list'), available_path, :class => :action_link %>
 </div>

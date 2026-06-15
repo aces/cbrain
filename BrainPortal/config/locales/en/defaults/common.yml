@@ -1,0 +1,49 @@
+en:
+  ago_time: "%{time} ago"
+
+  unknown: "Unknown"
+  none: "None"
+  show: "Show"
+  edit: "Edit"
+  help: "Help"
+  browse: "Browse"
+  cancel: "Cancel"
+  switch: "Switch"
+  clear: "Clear"
+  refresh: "Refresh"
+
+  delete: "Delete"
+  deleted: "Deleted"
+
+  save: "Save"
+  saved: "Saved"
+
+  create: "Create"
+  created: "Created"
+
+  update: "Update"
+  updated: "Updated"
+
+  active_users: "Active Users"
+  locked_users: "Locked Users"
+
+  search_by_name: "Search by name:"
+  confirm_delete: "Are you sure you want to delete %{name}?"
+
+  dataset:
+    one: "Dataset"
+    other: "Datasets"
+
+  agree: "I agree"
+
+  clear_options:
+      month: "One month ago"
+      week: "One week ago"
+      day: "One day ago"
+      hour: "One hour ago"
+      now: "Now! (Including yours!)"
+
+  login: "Login"
+
+
+

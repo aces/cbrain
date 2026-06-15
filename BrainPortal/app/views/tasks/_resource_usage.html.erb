@@ -2,25 +2,25 @@
 <% rus = ResourceUsage.where(:cbrain_task_id => @task.id).all.to_a %>
 <% if rus.present? %>
   <fieldset>
-    <legend>Resource Usage History</legend>
+    <legend><%= t('.legend') %></legend>
     <table class="simple">
       <tr>
-        <th>Date</th>
-        <th>Task Status</th>
-        <th>Usage Type</th>
-        <th>Time Used</th>
-        <th>Disk Space Used</th>
+        <th><%= t('.date') %></th>
+        <th><%= t('.task_status') %></th>
+        <th><%= t('.usage_type') %></th>
+        <th><%= t('.time_used') %></th>
+        <th><%= t('.disk_space_used') %></th>
       </tr>
       <% rus.each do |ru| %>
-        <% type = ru.is_a?(CputimeResourceUsageForCbrainTask)  ? "CPU"        :
-                  ru.is_a?(WalltimeResourceUsageForCbrainTask) ? "Walltime"   :
-                  ru.is_a?(SpaceResourceUsageForCbrainTask)    ? "Disk Space" :
-                  "Unknown"
+        <% type, type_label  = ru.is_a?(CputimeResourceUsageForCbrainTask)  ? [ "CPU", t('.cpu') ]               :
+                               ru.is_a?(WalltimeResourceUsageForCbrainTask) ? [ "Walltime", t('.walltime') ]     :
+                               ru.is_a?(SpaceResourceUsageForCbrainTask)    ? [ "Disk Space", t('.disk_space') ] :
+                               [ "Unknown", t('unknown') ]
         %>
         <tr>
           <td><%= pretty_past_date ru.created_at %></td>
           <td><%= ru.cbrain_task_status.present? ? colored_status(ru.cbrain_task_status) : "-" %></td>
-          <td><%= type %></td>
+          <td><%= type_label %></td>
 
           <% if type =~ /CPU|Walltime/ %>
             <td><%= pretty_resource_usage_value(ru) %></td>

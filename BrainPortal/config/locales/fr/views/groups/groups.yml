@@ -1,0 +1,84 @@
+fr:
+  groups:
+    common:
+      creator: "Créateur"
+      select_site: "(Sélectionner un site)"
+      all: "Tous"
+
+    groups_table:
+      create_project: "Créer un projet"
+      switch_to_list_view: "Passer en vue liste"
+      switch_to_button_view: "Passer en vue boutons"
+      large_buttons: "Grands boutons"
+      small_buttons: "Petits boutons"
+      project_count:
+        one: "1 projet"
+        other: "%{count} projets"
+
+    users_form:
+      quick_select_work: "Sélection rapide basée sur d'autres projets de travail"
+      quick_select_site: "Sélection rapide basée sur d'autres projets de site"
+
+    view_buttons_tab:
+      creator: "Créateur:"
+      user_count:
+        one: "1 utilisateur"
+        other: "%{count} utilisateurs"
+
+    view_buttons:
+      group_description_p1_html: "<br />Un projet est un moyen de regrouper sous un même nom un ensemble de fichiers et de tâches CBRAIN.<br />Un projet <em>n'est pas un dossier</em>.<br /><br />Changer pour un projet en fait le projet 'actif'.<br />Lorsqu'un projet est actif, un filtre implicite automatique s'applique de sorte que seuls les fichiers et les tâches assignés au projet sont affichés dans le gestionnaire de fichiers ou de tâches."
+      group_description_p2_html: "Ces projets ne sont visibles que par vous.<br />Il y a un projet particulier nommé <strong>%{name}</strong> qui est créé par le système pour vous, par défaut, et qui ne peut pas être supprimé.<br />N'importe lequel de ces projets peut être transformé en projet partagé en invitant d'autres utilisateurs à le rejoindre.<br />Lorsque cela se produit, les projets apparaîtront dans un onglet séparé."
+      group_description_p3_html: "Ce sont les projets que vous avez créés et qui sont partagés avec d'autres utilisateurs.<br />Les fichiers et les tâches assignés à un projet sont visibles par tous les utilisateurs de ce projet."
+      group_description_p4_html: "Ce sont les projets créés par d'autres utilisateurs qui vous ont invité à les rejoindre.<br />Les fichiers et les tâches assignés à un projet sont visibles par tous les utilisateurs de ce projet."
+      group_description_p5_html: "Ce sont des projets publics.<br />Tous les fichiers et tâches qui leur sont assignés sont visibles par tous les utilisateurs !"
+      group_description_p6_html: "Ce sont des projets de site.<br />Ils peuvent être utilisés pour partager des fichiers et des tâches entre l'ensemble des utilisateurs appartenant au site associé."
+      group_description_p7_html: "Ce projet spécial <strong>TOUS</strong> n'est en fait aucun projet du tout.<br />Le sélectionner comme 'projet' actuellement actif désactivera tout filtrage par projet, vous verrez donc ensemble <strong>tous</strong> les fichiers et tâches.<br />Le gestionnaire de fichiers et le gestionnaire de tâches vous montreront chacun une nouvelle colonne où vous pourrez filtrer par projet directement là-bas.<br />Sélectionner le projet <strong>TOUS</strong> est utile lorsque vous avez besoin de gérer ou de parcourir des fichiers et des tâches qui sont dans plusieurs projets."
+      group_description_p8_html: "Les projets qui, pour une raison quelconque, ne sont assignés à aucun autre onglet"
+      admin_only: "Réservé aux administrateurs"
+      special_all_project: "Projet spécial 'TOUS'"
+      my_private_projects: "Mes projets privés"
+      my_shared_projects: "Mes projets partagés"
+      projects_shared_with_me: "Projets partagés avec moi"
+      public_projects: "Projets publics"
+      site_projects: "Projets de site"
+      other_users_system_projects: "Projets système d'autres utilisateurs"
+      other_users_private_projects: "Projets privés d'autres utilisateurs"
+      other_projects: "Autres projets"
+
+    view_list:
+      represents_all_projects: "Représente tous les projets"
+      all_projects: "Tous les projets"
+      project_type: "Type de projet"
+
+    index:
+      title: "Projets"
+
+    new:
+      title: "Nouveau projet"
+      group_description_p1_html: "La première ligne doit être un bref résumé, et le reste sert pour les détails."
+      group_description_p2_html: "Faire de ce groupe un groupe système invisible pour les utilisateurs normaux :"
+      group_description_p3_html: "Activer le suivi de l'utilisation des fichiers dans ce projet :"
+      group_description_p4_html: "Les membres normaux ne pourront pas assigner de fichiers ou d'autres ressources à ce projet (mais les éditeurs sont toujours autorisés à le faire) :"
+      group_description_p5_html: "Rendre le projet public, pour que tous les utilisateurs puissent accéder aux fichiers. Soyez prudent avec cette option ! Vous pouvez toujours rendre le projet public plus tard :"
+
+    show:
+      title: "Informations du projet"
+      leave_project: "Quitter le projet"
+      invite: "Inviter d'autres utilisateurs"
+      maintainer: "Responsable"
+      header_message_1: "Le projet n'a pas pu être mis à jour."
+      warning_message_html: "<span class=\"warning\">Attention</span> : Si vous changez le responsable pour quelqu'un d'autre, vous ne pourrez plus modifier ce projet."
+      group_description_p1_html: "La première ligne doit être un bref résumé, et le reste sert pour les détails."
+      header_message_2: "Les URL sont cliquables "
+      group_description_p2_html: "Si coché, les membres normaux ne pourront pas assigner de fichiers ou d'autres ressources à ce projet (mais les éditeurs sont toujours autorisés à le faire)."
+      group_description_p3_html: "Si coché, un projet public rend tous ses fichiers visibles par tous les utilisateurs. <span class=\"warning\">Soyez prudent</span> avec cette option !"
+      invisible: "Invisible"
+      group_description_p4_html: "Si coché, le projet ne sera pas affiché dans la liste des projets."
+      track_usage: "Suivre l'utilisation"
+      resources: "Ressources"
+      group_description_p5_html: "Si coché, le système suivra l'utilisation globale des fichiers dans ce projet (vues, téléchargements, etc.) par mois."
+      header_message_3: "Assigné aux profils d'accès"
+      members: "Membres"
+      remove: ": Retirer"
+      pending_invitations: "Invitations en attente"
+      project_log: "Journal du projet"

@@ -26,11 +26,11 @@
   locals      = { :params  => @task.params, :form => form }
 %>
 
-<h2>Task Parameters
+<h2><%= t('.h2') %>
   <% if (public_path = @task.public_path("edit_params_help.html")) %>
-    <%= overlay_ajax_link "(Help)", public_path.to_s, :class  => "task_help_link" %>
+    <%= overlay_ajax_link "(#{t('help')})", public_path.to_s, :class  => "task_help_link" %>
   <% elsif (edit_help_partial = task_partial(:edit_help) rescue nil) %>
-    <%= overlay_content_link "(Help)", :class => "task_help_link", :enclosing_element => "span" do %>
+    <%= overlay_content_link "(#{t('help')})", :class => "task_help_link", :enclosing_element => "span" do %>
       <%= render :partial => edit_help_partial, :locals => locals %>
     <% end %>
   <% end %>

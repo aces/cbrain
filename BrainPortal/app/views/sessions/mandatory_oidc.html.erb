@@ -22,26 +22,21 @@
 #
 -%>
 
-<% title 'Mandatory Identity provider Link' %>
+<% title t('.title') %>
 
-<h2>Before you can continue, your CBRAIN account <em>must</em> be linked to an identity provider.</h2>
+<h2><%= t('.before_message_html') %></h2>
 
-<h5>Explanations</h5>
+<h5><%= t('.explanations') %></h5>
 
 <p class="short_paragraphs">
-When you click on the button below, your browser will be redirected
-to an identity provider login page; from there you can choose one of the
-supported identity providers. This will in turn redirect you
-to the provider's own login page. Once you've successfully authenticated
-there, your browser will be redirected back here to finalize
-the link with your CBRAIN account.
+  <%= t('.p_explanations') %>
 </p>
 
-<h5>The identity providers that are allowed for your account are:</h5>
+<h5><%= t('.allowed_providers') %></h5>
 
 <ul>
   <% @allowed_prov_names.each do |provname| %>
-    <% provname = '(Any identity provider)' if provname == '*' %>
+    <% provname = t('.any_provider') if provname == '*' %>
     <li><%= provname %></li>
   <% end %>
 </ul>
@@ -49,23 +44,21 @@ the link with your CBRAIN account.
 
 <% if @oidc_configs.empty? %>
   <p class="short_paragraphs">
-  No identity provider is currently available for your account.
-  Please contact the CBRAIN administrator for more information.
+    <%= t('.p_no_provider') %>
   </p>
 <% end %>
 
 <% @oidc_configs.each do |oidc| %>
-  <%= link_to "Login with #{oidc.name}", @oidc_uris[oidc.name], :class => 'button globus_button' %></br></br>
+  <%= link_to t('.login_with', name: oidc.name), @oidc_uris[oidc.name], :class => 'button globus_button' %></br></br>
 <% end %>
 
 <% if !@oidc_configs.empty? %>
 <p class="short_paragraphs">
-  If you already are logged in using a different identity provider, you
-  might want to log out first. This can be accomplished by the button below:
+  <%= t('.p_already_logged_in') %>
 <p>
 <% end %>
 
 <% @oidc_configs.each do |oidc| %>
-  <%= link_to "Logout from #{oidc.name}", oidc.logout_uri, :class => 'button globus_button' %></br></br>
+  <%= link_to t('.logout_from', name: oidc.name), oidc.logout_uri, :class => 'button globus_button' %></br></br>
 <% end %>
 

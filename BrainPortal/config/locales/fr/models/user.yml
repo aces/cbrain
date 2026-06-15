@@ -1,0 +1,8 @@
+fr:
+  activerecord:
+      models:
+        user:
+          one: "Utilisateur"
+          other: "Utilisateurs"
+
+

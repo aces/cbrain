@@ -22,9 +22,9 @@
 #
 -%>
 
-<% title 'New Project' %>
+<% title t('.title') %>
 
-<h2>New Project</h2>
+<h2><%= t('.title') %></h2>
 
 <%= error_messages_for @group %>
 
@@ -33,34 +33,36 @@
   <div class="generalbox">
 
     <p>
-    <%= f.label :name, "Name" %><br />
+    <%= f.label :name, t('activerecord.attributes.name') %><br />
     <%= f.text_field :name %>
     </p>
 
     <p>
-    <%= f.label :description, "Description" %><br />
+    <%= f.label :description, t('activerecord.attributes.description') %><br />
     <%= f.text_area :description, :rows => 4, :cols => 40 %>
-    <div class="field_explanation">The first line should be a short summary, and the rest are for details.</div>
+    <div class="field_explanation">
+      <%= t('.group_description_p1_html') %>
+    </div>
 
     <% if current_user.has_role?(:admin_user) %>
       <p>
-      <%= f.label :site_id, "Site:" %>
-      <%= site_select "group[site_id]",{}, :prompt => "(Select a site)" %>
+      <%= f.label :site_id, t('activerecord.models.site.one') %>
+      <%= site_select "group[site_id]",{}, :prompt => t('groups.common.select_site') %>
       <p>
-      Make this a system group invisible to normal users:
+      <%= t('.group_description_p2_html') %>
+
       <%= f.check_box :invisible %>
       <p>
-      Turn on usage tracking for files in this project:
+      <%= t('.group_description_p3_html') %>
       <%= f.check_box :track_usage %>
     <% end %>
 
     <p>
-    Normal members will not be able to assign files or other resources
-    to this project (but editors are always allowed to do so):
+    <%= t('.group_description_p4_html') %>
     <%= f.check_box :not_assignable %>
 
     <p>
-    Make the project public, so that all users can access the files. Be careful with this option! You can always make the project public later on:
+    <%= t('.group_description_p5_html') %>
     <%= f.check_box :public %>
     <p>
       <% if current_user.has_role?(:normal_user) %>
@@ -69,6 +71,6 @@
       <%= render :partial => 'users_form' %>
     <% end %>
     <p>
-    <%= f.submit "Create" %>
+    <%= f.submit t('create') %>
     </p>
 <% end %>

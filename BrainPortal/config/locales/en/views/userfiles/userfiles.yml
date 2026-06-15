@@ -1,0 +1,179 @@
+en:
+  userfiles:
+
+    common:
+      download: "Download"
+      copy: "Copy"
+      move: "Move"
+      rename: "Rename"
+      compress: "Compress"
+      uncompress: "Uncompress"
+      properties: "Properties"
+      synchronize: "Synchronize"
+      mark_newer: "Mark as newer"
+      upload: "Upload"
+      qc: "Quality control"
+      new_collection: "New collection"
+      and_go: " (and go to next file)"
+      exception: "Exception:"
+      a_group: "A project..."
+      owner: "Owner"
+      read_only: "Read Only"
+      read_write: "Read/Write"
+      read: "Read"
+      size_bytes: "%{size} bytes"
+      created_at: "Created at"
+
+    context_menu:
+
+    default_qc_panel:
+      not_synced: "This file must be synced locally to view QC data."
+      no_qc_data: "This file does not seem to contain any QC data, or no template is available to QC this file type."
+
+    dialogs:
+      title_upload_sf: "Upload - Single file"
+      to: "To"
+      a_dp: "A data provider..."
+      extract: "Extract"
+      as_single_collection: "As a single collection"
+      as_multiple_files: "As multiple files"
+      advanced_options: "Advanced options..."
+      some_tags: "Some tags..."
+      a_file_type: "A file type..."
+      detect_during_autoextract: "(Detect during autoextract)"
+      autodetect: "(autodetected)"
+      unknown_file_type: "Unknown file type!"
+      allow_modification: "Allow modification by other project members"
+      overwrite: "Overwrite existing file(s) with the same name"
+      file_properties: "File properties"
+      keep_current_tags: "Keep current tags"
+      clear_tags: "Clear tags"
+      keep_current: "Keep current %{attribute}"
+      type: "type"
+      hidden_p: "Hidden files are invisible by default, and are usually reserved for<br />maintenance, internal and archiving purposes."
+      locked_p: "Locked files cannot be modified or moved across data providers."
+      delete_confirmation_file_html: "Are you sure you wish to delete these <span class='dlg-cfrm-cnt'></span> file(s)?"
+      proceed: "Proceed"
+      qc_note: "Note that quality control (QC) requires files to be synchronized locally first."
+      delete_confirmation_tag_html: "Are you sure you wish to delete the tag <span class='dlg-cfrm-obj'></span> ?"
+      detect_as: "Detect as"
+      invalid: "Invalid!"
+      newcollection: "NewCollection"
+
+    file_menu:
+      launch: "Launch"
+      show_only_my_files: "Show only my files"
+      show_all_files: "Show all files"
+      custom_filters: "Custom filters"
+      export_as_CSV: "Export as CSV"
+      create_file_list: "Create a file list"
+      hide_hidden_files: "Hide hidden files"
+      show_hidden_files: "Show hidden files"
+      list_view: "List view"
+      tree_view: "Tree view"
+      more: "More..."
+
+    filter_items:
+      new_filter: "New filter"
+      has_no_parent: "Has no parent"
+      has_no_children: "Has no children"
+
+    quality_control_panel:
+      previous_file: "Previous File"
+      next_file: "Next File"
+      file_tags: "File Tags"
+      pass  : "Pass"
+      fail: "Fail"
+      full_list_of_tags: "Full list of tags:"
+      file_description: "File Description"
+      navigation_info: "Navigation: file %{current} out of %{total}"
+      qc_error: "There was an error generating the QC panel for this file. Please talk to the developers."
+
+    resource_usage:
+      disk_space_history: "Disk Space History"
+      date: "Date"
+      space_delta: "Space Delta"
+
+    syncstatus:
+      last_synchronized_date: "Last Synchronized Date:"
+      last_accessed_date: "Last Accessed Date:"
+      transfer_started: "Transfer Started:"
+      state_occurred: "State Occurred:"
+
+    tags_table:
+
+    tools_interface:
+      title: "Select Tool"
+      search: "Search:"
+      all_tools: "All tools"
+      type: "Type:"
+      software_package: "Software Package:"
+      tags: "Tags:"
+      tools: "Tools:"
+      no_tools_admin: "No tools available. New tools may be registered from the Tools index."
+      no_tools_others: "No tools available. Contact your admin to have them registered."
+      tool_website: "Tool Website"
+
+    userfiles_display:
+      entry:
+        one: "1 entry"
+        other: "%{count} entries"
+      own_files_only: "(own files only)"
+      hidden: "hidden"
+      archived: "archived"
+      locked: "locked"
+      search_by_name: "Search by name:"
+      type_icon: "Type Icon"
+      filename: "Filename"
+      file_type: "File Type"
+      creation_date: "Creation Date"
+      created: "Created:"
+      updated: "Updated:"
+      size: "Size"
+      was_html: "(was: %{size} in %{file_count})"
+      project_access: "Project Access"
+
+    viewer_errors:
+
+    display:
+
+    index:
+      title: "Files"
+      sync_symbols: "Synchronization symbols:"
+
+    quality_control:
+      finished: "Finished"
+      one_panel: "1 panel"
+      loading_panel: "Loading panel..."
+
+    show:
+      title: "File Info"
+      confirm_delete: "Are you sure you want to delete '%{name}' ?"
+      download_collection: "Download Collection"
+      download_file: "Download File"
+      update_error: "%{name} could not be updated."
+      suggested_type_html: "This file appears to be a %{type}."
+      was_html: "Was:<br>%{size} in %{file_count}"
+      cached: "Cached:"
+      zenodo_publication: "Zenodo Publication"
+      published: "Published: %{link}"
+      in_progress: "In progress: %{link}"
+      parent: "Parent"
+      children: "Children"
+      content: "Content"
+      archived_html: "This %{type} has been archived."
+      viewers_disabled: "Content viewers are disabled until the file is unarchived."
+      cannot_view: "(This file cannot be viewed by you; I wonder how you got here.)"
+      non_viewable_dp_html: "(This file cannot be viewed as it is stored on Data Provider <br />%{dp_link} <br />which is marked as <strong>non-viewable</strong>)"
+      not_syncable_dp_html: "(This file cannot be viewed as it is stored on Data Provider <br />%{dp_link} <br />which is configured to <strong>not allow synchronization</strong> <em>at all</em>)"
+      sync_not_allowed_html: "(This file cannot be viewed as it is stored on Data Provider <br />%{dp_link} <br />which is configured to <strong>not allow synchronization</strong> to <em>this Portal</em>)"
+      offline_dp_html: "(This data is not currently synchronized and its Data Provider <br />%{dp_link} <br />is offline, so its content is not viewable for the moment)"
+      sync_in_progress: "(This data file is currently being synchronized. Wait a few seconds for this to complete)"
+      sync_start_html: "(This data file is not currently synchronized. Click<br />%{link} to start the synchronization process.<br />This may allow you to view displayable content%{collection_text})."
+      corrupted_html: "(The content of this file seems to be corrupted. This might be the result of a bad data transfer while it was being created or a filesystem failure. There isn't much you can do about this, although if the file was produced by a task, consider restarting the task's Post Processing stage.)"
+      here: "here"
+      extract_collection: " and extract files from this collection"
+      change_view: "Change view:"
+      viewer_error: "An error occurred when loading the viewer plugin."
+      file_log: "File Log"
+      no_viewer_code: "(The contents of this file cannot be viewed: no viewer code available at this moment<br />for files of type '%{type}')"

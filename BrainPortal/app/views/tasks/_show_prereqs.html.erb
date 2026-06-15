@@ -23,8 +23,8 @@
 -%>
 
 <tr>
-  <td><strong>These other tasks...</strong></td>
-  <td><strong>...must be in these states</strong></td>
+  <td><strong><%= t('.other_tasks') %></strong></td>
+  <td><strong><%= t('.must_be') %></strong></td>
 </tr>
 
 <% for_this.keys.sort.each do |ttid|
@@ -32,7 +32,7 @@
    tid = Regexp.last_match[1]
    pstate = for_this[ttid]
    otask = CbrainTask.find(tid) rescue nil
-   otaskname = "(DestroyedTask)/#{tid}"
+   otaskname = "#{t('.destroyed_task')}/#{tid}"
    ostate    = ""
    if otask
      otaskname = "#{otask.pretty_name}@#{otask.bname_tid}"

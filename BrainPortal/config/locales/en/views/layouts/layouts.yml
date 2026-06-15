@@ -1,0 +1,69 @@
+en:
+    layouts:
+
+      common:
+        quotas: "Quotas"
+        tool_versions: "Tool Versions"
+        usage: "Usage"
+
+      cbrain_application:
+
+      log_report:
+
+      neurohub_application:
+
+      neurohub_flash_message:
+
+      neurohub_footer:
+
+      neurohub_navbar:
+
+      neurohub_secondary_navbar:
+
+      section_account:
+        dashboard: "Dashboard"
+        my_account: "My Account"
+        unread_message:
+          one: "unread message"
+          other: "unread messages"
+        resource: "Resource"
+        full_list: "Full list of tools and datasets"
+        help_site: "Help Site"
+        email_support: "Email Support"
+        email_support_tool_tip_html: "For email support about this platform, including help<br />about failed tasks and file transfer please click here<br />or write to: %{email}"
+        revision: "Rev: %{rev}"
+        branch: "Branch: %{name}"
+        last_updated_html: "last updated <span class=\"elapsed\">%{time}</span> ago"
+        as: "Logged in as %{name}"
+        sign_out: "Sign out"
+        sign_in: "Sign in"
+
+      section_cookie_notif:
+        legend: "Cookie Notification"
+        strong: "This site uses a cookie to remember you."
+        small_html: "This is safe and private. The cookie information is only exchanged between your browser and the site.<br />No information is sent to other sites, people or third parties."
+        unagree: "(Debug button remove agree)"
+
+      section_footer:
+        powered_by: "Powered by %{name}"
+        credits: "Credits"
+
+      section_main:
+
+      application:
+
+      mailer_html:
+
+      mailer_text:
+
+      section_menu:
+        all: "All"
+        quick_project_switcher: "Quick Project Switcher"
+        default_private_project: "%{group_name} (default private project)"
+        all_files_tasks: "All (no specific project: see all files and tasks)"
+        full_project_list: "(Full project list)"
+        search_placeholder: "Search for anything"
+        select_project: "(Click here to select a Project and access Files and Tasks)"
+        profiles: "Profiles"
+        signups: "Signups"
+        ongoing: "Ongoing"

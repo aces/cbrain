@@ -22,18 +22,18 @@
 #
 -%>
 
-<% title("Quality Control") %>
+<% title(t('userfiles.common.qc')) %>
 
 <div class="menu_bar">
-  <%= link_to "Finished", {:action => :index}, :class => "button menu_button" %>
-  <button class="button menu_button hide_qc_panel">1 panel</button>
+  <%= link_to t('.finished'), {:action => :index}, :class => "button menu_button" %>
+  <button class="button menu_button hide_qc_panel"><%= t('.one_panel') %></button>
 </div>
 
 <div id="quality_control_table" class="display_table qc_table">
   <div class="display_cell qc_panel">
     <%= ajax_form_tag url_for(:action  => :quality_control_panel), :target => "#qc_left_panel" do %>
       <%= ajax_element url_for(:action => :quality_control_panel), :data => {:file_ids => @filelist, :index => -1, :authenticity_token => form_authenticity_token, :target => "qc_left_panel"}, :method => :post, :id => "qc_left_panel" do %>
-        <span class="loading_message">Loading panel...</span>
+        <span class="loading_message"><%= t('.loading_panel') %></span>
       <% end %>
     <% end %>
   </div>
@@ -41,10 +41,9 @@
     <div class="display_cell qc_panel qc_right_panel">
       <%= ajax_form_tag url_for(:action  => :quality_control_panel), :target => "#qc_right_panel" do %>
         <%= ajax_element url_for(:action => :quality_control_panel), :data => {:file_ids => @filelist, :index => 0, :authenticity_token => form_authenticity_token, :target => "qc_right_panel"}, :method => :post, :id => "qc_right_panel" do %>
-          <span class="loading_message">Loading panel...</span>
+          <span class="loading_message"><%= t('.loading_panel') %></span>
         <% end %>
       <% end %>
     </div>
   <% end %>
 </div>
-

@@ -1,0 +1,13 @@
+fr:
+  activerecord:
+    attributes:
+      category: "Catégorie"
+      city: "Ville"
+      country: "Pays"
+      yearmonth: "Année/Mois"
+      name: "Nom"
+      description: "Description"
+      status: "Statut"
+      type: "Type"
+      size: "Taille"
+      color: "Couleur"

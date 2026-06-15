@@ -2,11 +2,11 @@
 <% rus = @userfile.resource_usage.all.to_a %>
 <% unless rus.empty? %>
   <%= build_accordion do |acc| %>
-    <%= acc.section "Disk Space History" do %>
+    <%= acc.section t('.disk_space_history') do %>
       <table class="simple">
         <tr>
-          <th>Date</th>
-          <th>Space Delta</th>
+          <th><%= t('.date') %></th>
+          <th><%= t('.space_delta') %></th>
         </tr>
         <% rus.each do |ru| %>
           <tr>
@@ -18,4 +18,3 @@
     <% end %>
   <% end %>
 <% end %>
-

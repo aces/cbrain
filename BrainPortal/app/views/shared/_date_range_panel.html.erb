@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -27,23 +27,23 @@
   <!-- First line date attribute selector -->
   <% if !date_attributes.empty? %>
     <div class="left_align">
-      <%= radio_button_tag date_attribute[0], "", !date_attribute[1] || date_attribute[1] == ""  %> Do not filter
+      <%= radio_button_tag date_attribute[0], "", !date_attribute[1] || date_attribute[1] == ""  %> <%= t('shared.common.do_not_filter') %>
       <% date_attributes.each do |attribute|  %>
         <% attribute_name = attribute[0].to_s %>
         <% attribute_text = attribute[1].to_s %>
-        <%= radio_button_tag date_attribute[0], attribute_name, date_attribute[1].to_s == attribute_name %> <%= attribute_text %> 
+        <%= radio_button_tag date_attribute[0], attribute_name, date_attribute[1].to_s == attribute_name %> <%= attribute_text %>
       <% end %>
     </div>
   <% end %>
-  
+
   <div>
     <!-- from column-->
     <span class="display_cell">
-      <div class="centered">From</div>
+      <div class="centered"><%= t('.from') %></div>
       <!-- relative-->
       <div class="date_range_with_size">
         <% if !without_abs %>
-          <%= radio_button_tag absolute_or_relative_from[0], "relative", !absolute_or_relative_from[1] || absolute_or_relative_from[1] == "relative" %> 
+          <%= radio_button_tag absolute_or_relative_from[0], "relative", !absolute_or_relative_from[1] || absolute_or_relative_from[1] == "relative" %>
         <% else %>
           <%= hidden_field_tag absolute_or_relative_from[0], "relative" %>
         <% end %>
@@ -52,15 +52,15 @@
       <!-- absolute-->
       <% if !without_abs %>
         <div class="date_range_with_size">
-          <%= radio_button_tag absolute_or_relative_from[0], "absolute", absolute_or_relative_from[1] == "absolute" %> 
+          <%= radio_button_tag absolute_or_relative_from[0], "absolute", absolute_or_relative_from[1] == "absolute" %>
           <%= text_field_tag absolute_from[0],  absolute_from[1], :class => "daterangepicker date_range_txt_with_size", "data-datefieldtype" => "from" %>
-        </div>                     
+        </div>
       <% end %>
     </span>
-    
+
     <!-- to column -->
     <span class="display_cell">
-      <div class="centered">To</div>
+      <div class="centered"><%= t('.to') %></div>
       <!-- relative-->
       <div class="date_range_with_size">
         <% if !without_abs %>
@@ -70,15 +70,15 @@
         <% end %>
         <%= select_tag relative_to[0],   grouped_options_for_select(offset_times, adjusted_relative_to ) %>
       </div>
-      <!-- absolute-->  
+      <!-- absolute-->
       <% if !without_abs %>
         <div class="date_range_with_size">
-          <%= radio_button_tag absolute_or_relative_to[0], "absolute", absolute_or_relative_to[1] == "absolute" %> 
+          <%= radio_button_tag absolute_or_relative_to[0], "absolute", absolute_or_relative_to[1] == "absolute" %>
           <%= text_field_tag absolute_to[0],  absolute_to[1], :class => "daterangepicker date_range_txt_with_size", "data-datefieldtype" => "to" %>
         </div>
       <% end %>
     </span>
   </div>
-  
+
 </div>
 

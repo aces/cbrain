@@ -24,7 +24,7 @@
 
 <% if ! @userfile.is_locally_synced? %>
   <span class="warning">
-    This file must be synced locally to view QC data.
+    <%= t('.not_synced') %>
   </span>
 <% else %>
   <% div_id_to_replace = "sub_viewer_#{@userfile.id}" %>
@@ -40,7 +40,7 @@
     </script>
   <% else %>
     <span class="warning">
-      This file does not seem to contain any QC data, or no template is available to QC this file type.
+      <%= t('.no_qc_data') %>
     </span>
   <% end %>
 <% end %>

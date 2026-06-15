@@ -51,9 +51,9 @@
 
 <thead>
   <tr id="tag-hdr" class="tag-row">
-    <th class="tag-name">Tag</th>
-    <th class="tag-prj">Project</th>
-    <th class="tag-files">Files</th>
+    <th class="tag-name"><%= t('activerecord.models.tag.one') %></th>
+    <th class="tag-prj"><%= t('activerecord.models.group.one') %></th>
+    <th class="tag-files"><%= t('activerecord.models.userfile.other') %></th>
     <th class="tag-act"></th>
   </tr>
 </thead>
@@ -73,7 +73,7 @@
         group_select('group_id', {}, {
           :id    => 'tag-add-prj',
           :class => 'tag-in-prj',
-          :'data-placeholder' => "A project..."
+          :'data-placeholder' => t('userfiles.common.a_group')
         })
       %>
     </td>

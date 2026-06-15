@@ -1,0 +1,27 @@
+en:
+  sessions:
+
+    mandatory_oidc:
+      title: "Mandatory Identity provider Link"
+      before_message_html: "Before you can continue, your CBRAIN account <em>must</em> be linked to an identity provider."
+      explanations: "Explanations"
+      p_explanations: "When you click on the button below, your browser will be redirected to an identity provider login page; from there you can choose one of the supported identity providers. This will in turn redirect you to the provider's own login page. Once you've successfully authenticated there, your browser will be redirected back here to finalize the link with your CBRAIN account."
+      allowed_providers: "The identity providers that are allowed for your account are:"
+      any_provider: "(Any identity provider)"
+      p_no_provider: "No identity provider is currently available for your account. Please contact the CBRAIN administrator for more information."
+      login_with: "Login with %{name}"
+      p_already_logged_in: "If you already are logged in using a different identity provider, you might want to log out first. This can be accomplished by the button below:"
+      logout_from: "Logout from %{name}"
+
+    new:
+      title: "Login"
+      login: "Login"
+      password: "Password"
+      sign_in: "Sign in"
+      forgot_password: "Forgot your password?"
+      or: "OR"
+      sign_in_with: "Sign In With %{name}"
+      only_available_html: "(Only available if you have already linked your<br />CBRAIN account to a %{name} identity)"
+      not_a_user: "Not a user?"
+      request_account: "Request an account."
+      full_list: "Full list of all tools and datasets"

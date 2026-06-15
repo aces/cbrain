@@ -1,0 +1,6 @@
+fr:
+  activerecord:
+      models:
+        data_provider:
+          one: "Fournisseur de données"
+          other: "Fournisseurs de données"

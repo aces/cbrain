@@ -55,7 +55,7 @@
             span  = table.columns.length rescue 0
             span += 1 if table.has_row_selection?
           %>
-          <td class="dt-table-empty dt-table-wide" colspan="<%= span %>"> No records found </td>
+          <td class="dt-table-empty dt-table-wide" colspan="<%= span %>"> <%= t('.no_records_found') %> </td>
           <td class="dt-col-csp"> ... </td>
         </tr>
       <% end %>
@@ -133,7 +133,7 @@
                 <% end %>
               </tbody>
             </table>
-            <div class="dt-pop-title">Filter - <%= column.pretty_name %></div>
+            <div class="dt-pop-title"><%= t('.filter', name: column.pretty_name) %></div>
             <div class="dt-pop-close-btn ui-icon ui-icon-close"></div>
           </div>
         <% end %>
@@ -153,7 +153,7 @@
             <% end %>
           </tbody>
         </table>
-        <div class="dt-pop-title">Columns</div>
+        <div class="dt-pop-title"><%= t('.columns') %></div>
         <div class="dt-pop-close-btn ui-icon ui-icon-close"></div>
       </div>
     </th>
@@ -218,7 +218,7 @@
     </div>
     <div class="dt-pag-cnt">
       <input <%= input_attr.to_html_attributes.html_safe %> />
-      per page.
+      <%= t('.per_page') %>
     </div>
   </div>
 <% end %>

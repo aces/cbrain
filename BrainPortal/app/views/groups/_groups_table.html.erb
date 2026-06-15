@@ -25,23 +25,23 @@
 <% button_view = @scope.custom[:button].present? %>
 
 <div class="menu_bar">
-  <%= link_to "Create Project", new_group_path, :class => 'button' %>
+  <%= link_to t('.create_project'), new_group_path, :class => 'button' %>
 
   <%=
     scope_custom_link(
-      "Switch to #{button_view ? 'List' : 'Button'} View",
+      (button_view ? t('.switch_to_list_view') : t('.switch_to_button_view')),
       @scope, { 'button' => !button_view }, { :link => { :class => 'button' } }
     )
   %>
 
   <%=
     scope_custom_link(
-      "#{@scope.custom[:small_buttons] ? 'Large' : 'Small'} buttons",
+      (@scope.custom[:small_buttons] ? t('.large_buttons') : t('.small_buttons')),
       @scope, { 'small_buttons' => !@scope.custom[:small_buttons] }, { :link => { :class => 'button' } }
     ) if button_view
   %>
 
-  <%= overlay_ajax_link "Help", "/doc/groups/groups_info.html", :class  => "button" %>
+  <%= overlay_ajax_link t('help'), "/doc/#{I18n.locale}/groups/groups_info.html", :class  => "button" %>
 </div>
 
 <%=
@@ -55,10 +55,10 @@
   <div class="pagination_left_side">
   </div>
   <div class="page_links">
-    (<%= pluralize @view_scope.count, "projects" %>)
+    (<%= t('.project_count', count: @view_scope.count) %>)
   </div>
   <div class="pagination_right_side">
-    Search by name: <%= ajax_search_box "name_like", groups_path %>
+    <%= t('search_by_name') %><%= ajax_search_box "name_like", groups_path %>
   </div>
 </div>
 

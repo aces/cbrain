@@ -1,0 +1,11 @@
+en:
+  activerecord:
+      models:
+        remote_resource:
+          one: "Server"
+          other: "Servers"
+        portal: "Portal"
+        execution: "Execution"
+
+
+

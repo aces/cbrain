@@ -1,0 +1,45 @@
+fr:
+  ago_time: "depuis %{time}"
+
+  unknown: "Inconnu"
+  none: "Aucun"
+  help: "Aide"
+  edit: "Modifier"
+  browse: "Parcourir"
+  show: "Afficher"
+  cancel: "Annuler"
+  switch: "Changer"
+  clear: "Effacer"
+  refresh: "Rafraîchir"
+
+  delete: "Supprimer"
+  deleted: "Supprimé"
+
+  save: "Enregistrer"
+  saved: "Enregistré"
+
+  create: "Créer"
+  created: "Créé"
+
+  update: "Mettre à jour"
+  updated: "Mis à jour"
+
+  active_users: "Utilisateurs actifs"
+  locked_users: "Utilisateurs verrouillés"
+
+  search_by_name: "Rechercher par nom:"
+  confirm_delete: "Êtes-vous sûr de vouloir supprimer %{name}?"
+
+  dataset:
+      one: "Jeu de données"
+      other: "Jeux de données"
+
+  agree: "J'accepte"
+
+  clear_options:
+      month: "Il y a un mois"
+      week: "Il y a une semaine"
+      day: "Il y a un jour"
+      hour: "Il y a une heure"
+      now: "Maintenant! (Y compris la vôtre!)"
+

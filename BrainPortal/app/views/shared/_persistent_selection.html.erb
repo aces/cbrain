@@ -183,24 +183,24 @@
   <% unless hidden %>
     <span class="psel-icon ui-icon"></span>
     <span class="psel-count">0</span>
-    <span class="psel-text"><%= item_name.pluralize %> currently selected</span>
+    <span class="psel-text"><%= t('.currently_selected', item_name: item_name.pluralize) %></span>
     (<!--
       <%- if all_url -%>
         --><span class="psel-all html_tool_tip_trigger"
           data-tool-tip-id="<%= all_tooltip %>"
           data-offset-y="20"
-        >select all</span>, <!--
+        ><%= t('.select_all') %></span>, <!--
       <%- end -%>
       --><span class="psel-clear html_tool_tip_trigger"
         data-tool-tip-id="<%= clear_tooltip %>"
         data-offset-y="20"
-      >clear</span><!--
+      ><%= t('shared.common.clear').downcase %></span><!--
     -->)
     <div id="<%= all_tooltip %>" class="html_tool_tip">
-      Select all <%= item_name.pluralize %> on all pages
+      <%= t('.select_all_on_all_pages_tooltip', item_name: item_name.pluralize) %>
     </div>
     <div id="<%= clear_tooltip %>" class="html_tool_tip">
-      Clear selected <%= item_name.pluralize %>
+      <%= t('.clear_tooltip', item_name: item_name.pluralize) %>
     </div>
   <% end %>
   <input class="psel-val" name="_psel_val_<%= param %>" type="hidden" value="[]" />

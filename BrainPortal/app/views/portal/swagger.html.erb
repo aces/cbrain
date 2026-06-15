@@ -22,7 +22,7 @@
 #
 -%>
 
-<% title 'CBRAIN API' %>
+<% title t('.title') %>
 
 <link href='swagger/css/typography.css' media='screen' rel='stylesheet' type='text/css'/>
 <link href='swagger/css/reset.css'      media='screen' rel='stylesheet' type='text/css'/>
@@ -44,25 +44,34 @@
 <script src='swagger/lib/swagger-oauth.js'                 type='text/javascript'></script>
 
 <div class="generalbox">
-<big><strong>This page describes the CBRAIN API</strong></big>
+<big><strong><%= t('.page_description') %></strong></big>
 
 <p class="medium_paragraphs">
-For more information about the work in progress on the API, please look up the
-<a href="https://github.com/aces/cbrain/issues?q=is%3Aopen+is%3Aissue+label%3AAPI">API issues</a>
-on
-<a href="https://github.com/aces/cbrain">CBRAIN's GitHub repository</a>.
+<%=
+  t('.more_info_html',
+    api_issues_link: link_to(t('.api_issues'), "https://github.com/aces/cbrain/issues?q=is%3Aopen+is%3Aissue+label%3AAPI"),
+    github_link:     link_to(t('.github_repo'), "https://github.com/aces/cbrain")
+  )
+%>
 
 <p class="medium_paragraphs">
-This specification's <a href="/swagger.yaml">YAML</a> or <a href="/swagger.json">JSON</a> files can be opened
-at <a href="https://app.swaggerhub.com/home">SwaggerHUB</a>.
+<%=
+  t('.spec_files_html',
+    yaml_link:       link_to("YAML", "/swagger.yaml"),
+    json_link:       link_to("JSON", "/swagger.json"),
+    swaggerhub_link: link_to("SwaggerHUB", "https://app.swaggerhub.com/home")
+  )
+%>
 
 <p class="medium_paragraphs">
-This will provide you a way to generate client code and inspect the same documentation
-that is shown here.
-In particular, this will allow you to generate client libraries in all sorts of
-marvelous exotic languages, such as <em>Python</em>, <em>Perl</em>, <em>Java</em>, <em>Swift</em> and even <em><strong>Ruby</strong></em>.
+<%= t('.generate_code') %>
+<%= t('.client_languages_html') %>
 <p class="medium_paragraphs">
-Here is a direct link to the developer's <a href="https://app.swaggerhub.com/apis/prioux/CBRAIN/<%= @spec_version %>">latest version on SwaggerHub</a>.
+<%=
+  t('.latest_version_html',
+    latest_version_link: link_to(t('.latest_version'), "https://app.swaggerhub.com/apis/prioux/CBRAIN/#{@spec_version}")
+  )
+%>
 </div>
 
 <div class="swagger-section">

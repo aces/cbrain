@@ -22,9 +22,9 @@
 #
 -%>
 
-<% title 'Add New Site' %>
+<% title t('.title') %>
 
-<h2>Add New Site</h2>
+<h2><%= t('.title') %></h2>
 
 <%= error_messages_for @site %>
 
@@ -37,10 +37,10 @@
         <%= f.text_field :name %>
         <P/>
 
-        <span title="Brief description of the site.">
-          <%= f.label :description, "Description" %><br/>
+        <span title="<%= t('.brief_description_title') %>" >
+          <%= f.label :description, t('activerecord.attributes.description') %><br/>
           <%= f.text_area :description, :rows => 10, :cols => 40 %><br/>
-          <div class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</div>
+          <div class="field_explanation"><%= t('sites.common.brief_description') %></div>
         </span>
         <P/>
 
@@ -49,21 +49,22 @@
       <div class="button_div">
         <!-- Separation between active and locked users -->
         <%
-        user_by_lock_status_hash = User.all.to_a.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"}
-        active_users = user_by_lock_status_hash["Active users"] || []
-        locked_users = user_by_lock_status_hash["Locked users"] || []
+        user_by_lock_status_hash = User.all.to_a.hashed_partition { |u| u.account_locked == false ? t('active_users') : t('locked_users')}
+        active_users = user_by_lock_status_hash[t('active_users')] || []
+        locked_users = user_by_lock_status_hash[t('locked_users')] || []
         %>
 
         <!-- Active Users -->
         <div style="margin:0px">
-          Active users
+
+          <%= t('active_users') %>
           <br>
           <div id="active_users" class="button_inner_div">
             <table class="button_table" style="border:0px;">
               <tr>
-                <td>Login</td>
-                <td>Regular User</td>
-                <td>Site Manager</td>
+                <td><%= t('login') %></td>
+                <td><%= t('sites.common.regular_user') %></td>
+                <td><%= t('sites.common.site_manager') %></td>
               </tr>
               <% for user in active_users.sort { |a,b| a.full_name.casecmp(b.full_name) } %>
                 <tr>
@@ -81,7 +82,7 @@
       <!-- Projects -->
       <div class="button_div">
         <div style="margin:0px">
-          Projects
+          <%= t('activerecord.models.group.other') %>
           <br>
           <div id="projects" class="button_inner_div">
             <table class="button_table" style="border:0px;">
@@ -100,14 +101,14 @@
       <div>
         <!-- Locked Users -->
         <br/>
-            Locked users
-            <%= show_hide_toggle "(Show)", "#locked_users", :class  => 'action_link', :alternate_text => "(Hide)" %>
+            <%= t('locked_users') %>
+            <%= show_hide_toggle "(#{t('show')})", "#locked_users", :class  => 'action_link', :alternate_text => t('.hide') %>
           <div id="locked_users" style="display:none" class="button_inner_div">
             <table class="button_table" style="border:0px;">
               <tr>
-                <td>Login</td>
-                <td>Regular User</td>
-                <td>Site Manager</td>
+                <td><%= t('login') %></td>
+                <td><%= t('sites.common.regular_user') %></td>
+                <td><%= t('sites.common.site_manager') %></td>
               </tr>
               <% for user in locked_users.sort { |a,b| a.full_name.casecmp(b.full_name) } %>
                 <tr>
@@ -124,6 +125,6 @@
 
       <div class="display_row">
         <P/>
-        <%= f.submit "Create" %>
+        <%= f.submit t('create') %>
       </div>
 <% end %>

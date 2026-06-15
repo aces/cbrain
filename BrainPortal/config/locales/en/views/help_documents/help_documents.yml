@@ -1,0 +1,7 @@
+en:
+  help_documents:
+    show:
+      remove: "Remove"
+      description_p1_html: "There is no documentation on this topic right now. <br />Add some by using the edit button in the top left corner."
+      saving: "Saving..."
+      removing: "Removing..."

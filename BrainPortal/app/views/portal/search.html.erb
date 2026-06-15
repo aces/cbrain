@@ -22,12 +22,12 @@
 #
 -%>
 
-<% title 'Search' %>
+<% title t('.title') %>
 
 <%= form_tag(search_path, :method => :get) do %>
 
-   <strong>Search:</strong> <%= text_field_tag :search, @search.presence, :placeholder => "Search for anything" %>
-   <span class="field_explanation">This will search files, tasks, users, tools, projects, etc by ID, by name or by description. <%= @limit %> results shown maximum.</span>
+   <strong><%= t('.search_label') %></strong> <%= text_field_tag :search, @search.presence, :placeholder => t('.search_placeholder') %>
+   <span class="field_explanation"><%= t('.explanation_html', limit: @limit) %></span>
    <p>
 <% end %>
 
@@ -41,7 +41,7 @@
   <% result = result.limit(@limit).to_a if result.is_a?(ActiveRecord::Relation) %>
   <% return if result.blank? %>
   <div class="generalbox no_wrap">
-  <h4><%= title || name.to_s.humanize %> (found: <%= result.size %>)</h4>
+  <h4><%= title || t('activerecord.models.#{name.to_s.singularize}.other', default: name.to_s.humanize) %><%= t('.found', count: result.size) %></h4>
   <%=
     array_to_table(result[0, @limit], {
       :rows            => 10,
@@ -59,7 +59,7 @@
 
 <% result_table.(:tasks) do |task, r, c| %>
   <%= link_to_model_if_accessible(CbrainTask,task,:name_and_bourreau) %> (<%= task.user.login %>)
-  <%= link_to "(edit)", edit_task_path(task), :class => 'action_link' %><br>
+  <%= link_to "(#{t('edit').downcase})", edit_task_path(task), :class => 'action_link' %><br>
   <%= overlay_description(task.description, :header_width => 35) %>
 <% end %>
 
@@ -67,36 +67,36 @@
 
 <% result_table.(:users) do |user, r, c| %>
   <%= user.full_name %> (<%= link_to_user_if_accessible(user) %>)
-  <%= link_to '(switch)', switch_user_path(user), :method  => :post, :class => 'action_link' if current_user.has_role?(:admin_user) %>
+  <%= link_to "(#{t('.switch')})", switch_user_path(user), :method  => :post, :class => 'action_link' if current_user.has_role?(:admin_user) %>
 <% end %>
 
-<% result_table.(:groups, 'Projects') do |group, r, c| %>
+<% result_table.(:groups, t('activerecord.models.group.other')) do |group, r, c| %>
   <%= link_to_group_if_accessible(group) %> (<%= group.creator.try(:login) %>)
-  <%= link_to '(switch)', { :controller => :groups, :action => :switch, :id => group.id } , :method  => :post, :class => 'action_link' %>
+  <%= link_to "(#{t('.switch')})", { :controller => :groups, :action => :switch, :id => group.id } , :method  => :post, :class => 'action_link' %>
 <% end %>
 
 <br>
 
-<% result_table.(:rrs, 'Execution Servers') do |rr, r, c| %>
+<% result_table.(:rrs, t('.execution_servers')) do |rr, r, c| %>
   <%= link_to_bourreau_if_accessible(rr) %>
   <% task_count = current_user.cbrain_tasks.real_tasks.where(:bourreau_id => rr.id).count %>
   <% if task_count > 0 %>
     (<%= index_count_filter(
       task_count, :tasks,
       { :user_id => current_user.id, :bourreau_id => rr.id }
-    ) %> tasks)
+    ) %> <%= t('activerecord.models.cbrain_task.other') %>)
   <% end %>
 <% end %>
 
-<% result_table.(:dps, 'Data Providers') do |dp, r, c| %>
+<% result_table.(:dps,  t('activerecord.models.data_provider.other')) do |dp, r, c| %>
   <%= link_to_data_provider_if_accessible(dp) %>
-  <%= link_to '(browse)', browse_data_provider_path(dp), :class => 'action_link' if dp.is_browsable? %>
+  <%= link_to "(#{t('browse').downcase})", browse_data_provider_path(dp), :class => 'action_link' if dp.is_browsable? %>
   <% file_count = current_user.userfiles.where(:data_provider_id => dp.id).count %>
   <% if file_count > 0 %>
     (<%= index_count_filter(
       file_count, :userfiles,
       { :user_id => current_user.id, :data_provider_id => dp.id }
-    ) %> registered files)
+    ) %> <%= t('.registered_files') %>)
   <% end %>
 <% end %>
 
@@ -114,7 +114,7 @@
   <% end %>
 <% end %>
 
-<% result_table.(:tcs, 'Tool Versions') do |tc, r, c| %>
+<% result_table.(:tcs, t('.tool_versions')) do |tc, r, c| %>
   <% if current_user.has_role?(:admin_user) %>
     <%= tc.tool.name %>@<%= tc.bourreau.name%> : <%= link_to tc.version_name, tool_config_path(tc) %>
   <%  else %>
