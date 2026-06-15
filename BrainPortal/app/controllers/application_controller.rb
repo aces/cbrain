@@ -46,11 +46,11 @@ class ApplicationController < ActionController::Base
 
   # These will be executed in order
   before_action :check_for_banned_ip
+  before_action :set_locale
   before_action :check_account_validity
   before_action :count_background_activities
   before_action :prepare_messages
   before_action :adjust_system_time_zone
-  before_action :set_locale
   before_action :adjust_remote_ip_and_host
   before_action :disable_cookies_for_api   # prevent sending back the session cookie for API requests
 
@@ -104,7 +104,7 @@ class ApplicationController < ActionController::Base
     elsif current_user && current_user&.meta[:locale]
       I18n.locale = current_user&.meta[:locale]
     else
-      I18n.locale = extract_locale_from_request() ||
+      I18n.locale = locale_param || extract_locale_from_request() ||
                     I18n.default_locale
     end
   end
