@@ -287,7 +287,7 @@ class Userfile < ApplicationRecord
   # by +user+. Actually returns a ActiveRecord::Relation.
   def get_tags_for_user(user)
     user = User.find(user) unless user.is_a?(User)
-    self.tags.where('tags.user_id' => user.id)
+    self.tags.where(:user_id => user.id).or(self.tags.where(:user_id => User.admin.id, :group_id => Group.everyone.id, :name => [ 'QC_PASS', 'QC_FAIL', 'QC_UNKNOWN']))
   end
 
   # Set the tags associated with this file to those
