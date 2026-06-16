@@ -788,8 +788,18 @@ class DataProvidersController < ApplicationController
     elsif for_data_provider.is_a?(UserkeyFlatDirSshDataProvider)
       params.require_as_params(:data_provider).permit(
         :name, :description, :group_id,
-        :remote_user, :remote_host, :remote_port, :remote_dir,
         :online, :read_only, :not_syncable,
+
+        :remote_user, :remote_host, :remote_port, :remote_dir,
+      )
+    elsif for_data_provider.is_a?(S3FlatDataProvider)
+      params.require_as_params(:data_provider).permit(
+        :name, :description, :group_id,
+        :online, :read_only, :not_syncable,
+
+        :cloud_storage_client_identifier, :cloud_storage_client_token,
+        :cloud_storage_client_bucket_name, :cloud_storage_client_path_start,
+        :cloud_storage_endpoint, :cloud_storage_region,
       )
     else # place for future expansion; be careful to not introduce security bugs
       params.require_as_params(:data_provider).permit(
