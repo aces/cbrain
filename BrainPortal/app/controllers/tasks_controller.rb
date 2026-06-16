@@ -1162,7 +1162,7 @@ class TasksController < ApplicationController
     end
     # Let's be nice with the poor sysadmins who look at logs
     ZenodoClient::ApiClient.default.user_agent =
-      "CBRAIN/#{CBRAIN::CBRAIN::CBRAIN_StartTime_Revision}/ZenodoClient/#{ZenodoClient::VERSION}"
+      "CBRAIN/#{CBRAIN::CBRAIN_StartTime_Revision}/ZenodoClient/#{ZenodoClient::VERSION}"
     zsite
   end
 
