@@ -59,7 +59,7 @@ class S3FlatDataProvider < DataProvider
   }
 
   validates :cloud_storage_endpoint, format: {
-    with: /\Ahttps?:\/\/[0-9a-zA-Z][\w\.]+(:\d+)?\z/,
+    with: /\Ahttps?:\/\/[0-9a-zA-Z][\w\.\-]+(:\d+)?\z/,
     message: "invalid S3 endpoint name, it should be formatted as a plain HTTPS URL with an optional port number, but no ending slash, like https://example.com or https://example.com:9000."
   }
 
