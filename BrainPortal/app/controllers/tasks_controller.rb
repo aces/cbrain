@@ -1324,9 +1324,11 @@ class TasksController < ApplicationController
     file_h.close rescue true # hope it's ok
 
     # Rename? Sometimes necessary
-    if dep_file.filename != filename
+    zen_filename = dep_file.filename # can be different
+    if zen_filename != filename
       dep_file.filename = filename
-      filesapi.update_file(deposit_id, dep_file.id, dep_file)
+      ok = filesapi.update_file(deposit_id, dep_file.id, dep_file) rescue nil # sometimes it crashes
+      dep_file.filename = zen_filename if ! ok # reset it back, we couldn't rename it.
     end
 
     dep_file
