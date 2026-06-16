@@ -48,7 +48,7 @@ class S3FlatDataProvider < DataProvider
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   validates_presence_of :cloud_storage_client_identifier, :cloud_storage_client_token,
-                        :cloud_storage_client_bucket_name
+                        :cloud_storage_client_bucket_name, :cloud_storage_endpoint
 
   validates :cloud_storage_client_identifier,  length: { in: 16..128 }
   validates :cloud_storage_client_token,       length: { in: 20..100 }
@@ -56,6 +56,11 @@ class S3FlatDataProvider < DataProvider
   validates :cloud_storage_client_bucket_name, format: {
     with: /\A[A-Za-z0-9][A-Za-z0-9\-.]{1,61}[A-Za-z0-9]\z/, # this is good enough; DP will just crash on bad names
     message: "invalid S3 bucket name, for rules see https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-s3-bucket-naming-requirements.html"
+  }
+
+  validates :cloud_storage_endpoint, format: {
+    with: /\Ahttps?:\/\/[0-9a-zA-Z][\w\.]+(:\d+)?\z/,
+    message: "invalid S3 endpoint name, it should be formatted as a plain HTTPS URL with an optional port number, but no ending slash, like https://example.com or https://example.com:9000."
   }
 
   before_save :canonify_path_start
