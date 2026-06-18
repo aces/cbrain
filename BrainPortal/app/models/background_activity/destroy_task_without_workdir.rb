@@ -30,6 +30,11 @@ class BackgroundActivity::DestroyTaskWithoutWorkdir < BackgroundActivity
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  def targets_model
+    CbrainTask
+  end
+
+
   def process(item)
     cbrain_task = CbrainTask.find(item)
 

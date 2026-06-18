@@ -30,6 +30,11 @@ class BackgroundActivity::RegisterAndMoveFile < BackgroundActivity::RegisterFile
     super + " and move to #{dest_name}"
   end
 
+  # Returns the primary class of items the task targets
+  def produces_model
+    Userfile  # stands for undefined
+  end
+
   # Helper for scheduling a registration and move of the files immediately.
   def self.setup!(user_id, type_dash_names, remote_resource_id, src_data_provider_id, browse_path, group_id, as_user_id, dest_data_provider_id)
     ba         = self.local_new(user_id, type_dash_names, remote_resource_id)
