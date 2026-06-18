@@ -67,6 +67,10 @@
     <%= bourreau_select 'data[bourreau_ids]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => @custom_filter.data_bourreau_ids, :offline_is_ok => true }, :include_blank => true, :multiple => true %>
   <% end %>
 
+  <% t.edit_cell(:data_results_data_provider_ids, :header => "Results on", :content => DataProvider.where(:id => @custom_filter.data_results_data_provider_ids).pluck(:name).join(", ").presence || "None") do %>
+    <%= data_provider_select 'data[results_data_provider_ids]', { :data_providers => DataProvider.find_all_accessible_by_user(current_user).all, :selector => @custom_filter.data_results_data_provider_ids, :offline_is_ok => true }, :include_blank => true, :multiple => true %>
+  <% end %>
+  
   <%
     archiving_status =
       {
