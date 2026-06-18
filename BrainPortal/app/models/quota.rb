@@ -28,4 +28,6 @@ class Quota < ApplicationRecord
 
   cbrain_abstract_model! # objects of this class are not to be instantiated
 
+  ALL_USERS = -7 # indicate total quota for all the users togeter
+  
 end
