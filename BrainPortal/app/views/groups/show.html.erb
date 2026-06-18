@@ -37,7 +37,12 @@
         <% end %>
         <%= link_to 'Delete', group_path(@group), { :data => { :confirm => "Are you sure you want to delete '#{@group.name}'?" }, :method => :delete, :class => "button" } %>
     <% end %>
-    </div>
+    <% if @can_add_license %>
+        <%= link_to "Add License", new_license_group_path(@group.id), :class => "button" %>
+    <% end %>
+
+  </div>
+
 <% end %>
 
 <P>
@@ -177,10 +182,34 @@
     <% end %>
   <% end %>
 
+
+
+
+
+  <% if @current_licenses.size > 0 %>
+
+    <% default_text = array_to_table(@current_licenses, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) {|id, r, c|
+        link_to "License ##{id}", show_license_group_path(:group_id => @group.id, :license_id => id)
+    } %>
+
+
+    <%= show_table(@group, :as => :group, :header => 'Project License Agreements', :edit_condition => false) do |t| %>
+      <% t.edit_cell(:licenses, :show_width => 2,
+                     :header     => 'Licenses',
+                     :content    => default_text) do %>
+
+      <% end %>
+    <% end %>
+
+  <% end %>
+
+
 </div>
 
 <% if @group.can_be_edited_by?(current_user) %>
   <P>
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @group.getlog, :title => 'Project Log' } %>
 <% end %>
+
+
 

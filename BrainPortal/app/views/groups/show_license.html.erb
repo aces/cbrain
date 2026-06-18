@@ -1,0 +1,78 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title("License #{@license_id}", '') %>
+
+<h2> <i> License <%= @license_id %> </i> </h2>
+
+<div id="show_license">
+
+  <% unless @is_signed %>
+    The owner of the project <%= @group.name %> forbade access to the project info, until you sign the license
+  <% else %>
+    You already signed this license
+  <% end %>
+
+  <%- # actions -%>
+  <% if @can_add_license %>
+      <%= link_to "Add License", new_license_group_path(@group.id) %>
+  <% end %>
+
+  <p class="license_agreement">
+
+     <%#= render :partial => 'show_license_text' %>
+
+        <div class="generalbox">
+          <%= form_tag sign_license_group_path(@group) do %>
+            <%= hidden_field_tag :license_id, @license_id %>
+
+            <pre><%= @license_text %></pre>
+
+            <% unless @is_signed %>
+              <p>
+                <%= check_box_tag :license_check, 1, nil, :class => "my-2" %>
+                By clicking here, I agree with all the conditions above.
+              </p>
+              <p>
+                <%= submit_tag "I agree with the above statement", :name => :agree,     :class => "button" %>
+                <%= submit_tag "I do not agree",                   :name => :not_agree, :class => "button" %>
+              </p>
+            <% end %>
+          <% end %>
+        </div>
+    </p>
+
+    <% if @current_licenses.size > 1 %>
+        <p>
+          Licenses for the project <%= @group.name %>
+        </p>
+        <ul>
+          <% @current_licenses.each do |id| %>
+            <li>
+            <%= link_to "License ##{id} #{id == @license_id? "- currently selected": ""}", show_license_group_path(:group_id => @group.id, :license_id => id), 'data-active' => (id == @license_id), 'disabled' => (id == @license_id) %>
+            </li>
+          <% end %>
+        </ul>
+    <% end %>
+</div>
