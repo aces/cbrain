@@ -440,6 +440,36 @@ class UserfilesController < ApplicationController
     end
   end
 
+  # establishes trust in all the files of a creator of this file for the duration of the session
+  # This method is used to render html userfiles or collection elements
+  def trust_creator
+    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
+    cbrain_session[:trust_user_files] ||= []
+    unless cbrain_session[:trust_user_files].include?(@userfile.user_id)
+      ids = cbrain_session[:trust_user_files] # in place modification does not work well within a session
+      ids.shift if ids.length > 99  # cap to 100 ids, session storage is limited
+      cbrain_session[:trust_userfiles] = ids << @userfile.user_id
+    end
+    respond_to do |format|
+      format.js  { render js: "" }  # no need to do anything as of now
+    end
+  end
+
+  # establishes trust in a file or all the other files of a collection for the duration of the session
+  # This method is used to render html userfiles or collection elements
+  def trust
+    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
+    cbrain_session[:trust_userfiles] ||= []
+    unless cbrain_session[:trust_userfiles].include?(@userfile.id)
+      ids = cbrain_session[:trust_userfiles]  # in place modification does not work well within a session
+      ids.shift if ids.length > 199  # limit to 200 file ids, session size is limited
+      cbrain_session[:trust_userfiles] = ids << @userfile.id
+    end
+    respond_to do |format|
+      format.js  { render js: "" }  # no need to do anything as of now
+    end
+  end
+
   # Triggers the mass synchronization of several userfiles
   # or mass 'desynchronization' (ProvNewer) of several userfiles.
   def sync_multiple #:nodoc:
