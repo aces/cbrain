@@ -147,9 +147,12 @@ class DataProvidersController < ApplicationController
 
     @provider.addlog_context(self, "Created by #{current_user.login}")
     @provider.meta[:browse_gid] = current_user.own_group.id
-    flash[:notice] = "Provider successfully created. Please click the Test Configuration button."\
-      " This will run tests on the current storage configuration. Note that if these tests fail,"\
-      " the storage will be marked 'offline'."
+    flash[:notice]  = "Provider successfully created."
+    if @provider.is_a?(SshDataProvider)
+      flash[:notice] += " Please click the Test Configuration button."\
+        " This will run tests on the current storage configuration. Note that if these tests fail,"\
+        " the storage will be marked 'offline'."
+    end
 
     respond_to do |format|
       format.html { redirect_to :action => :show, :id => @provider.id}
