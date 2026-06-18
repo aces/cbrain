@@ -1275,8 +1275,8 @@ class TasksController < ApplicationController
     userfile.sync_to_cache
     content_path = userfile.cache_full_path
     content_name = userfile.name
-    content_path = create_tmp_tar_for_filecollection(userfile) if is_col
-    content_name = userfile.name + ".tar.gz"                   if is_col
+    content_path = create_tmp_tar_for_filecollection(deposit, userfile) if is_col
+    content_name = userfile.name + ".tar.gz"                            if is_col
 
     # Upload
     dep_file = upload_file_content_to_deposit(deposit.id, content_path, content_name)
@@ -1294,7 +1294,9 @@ class TasksController < ApplicationController
     cb_error "No content provided" if text.blank?
 
     # Prep temp file
-    content_path = "/tmp/#{filename}.#{rand(1000000)}"
+    tmpdir = "/tmp/zenodo-upload-#{deposit.id}"
+    Dir.mkdir(tmpdir, 0700) unless Dir.exists?(tmpdir)
+    content_path = "#{tmpdir}/#{filename}"
     File.open(content_path, "w:BINARY") { |fh| fh.write(text) }
 
     # Upload
@@ -1308,9 +1310,11 @@ class TasksController < ApplicationController
   end
 
   # This assumes filecollection has already been sychronized
-  def create_tmp_tar_for_filecollection(filecollection) #:nodoc:
+  def create_tmp_tar_for_filecollection(deposit, filecollection) #:nodoc:
     cache   = filecollection.cache_full_path
-    tmpbase = "/tmp/#{filecollection.name}-#{rand(1000000)}.tar.gz"
+    tmpdir  = "/tmp/zenodo-upload-#{deposit.id}"
+    tmpbase = "#{tmpdir}/#{filecollection.name}.tar.gz"
+    Dir.mkdir(tmpdir, 0700) unless Dir.exists?(tmpdir)
     ret     = system "cd #{cache.parent.to_s.bash_escape} && tar -czf #{tmpbase} #{filecollection.name.bash_escape}"
     cb_error "Cannot create tmp tar file for FileCollection ##{filecollection.id}" unless ret
     tmpbase
