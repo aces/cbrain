@@ -63,7 +63,7 @@
 
   <tr>
     <td>
-      <strong><%= t('.owner') %></strong><br>
+      <strong><%= t('owner') %></strong><br>
       <%= user_select "cbrain_task[user_id]", @task.user_id, { :disabled => ! (current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)) } %>
     </td>
 

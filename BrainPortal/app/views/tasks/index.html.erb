@@ -18,18 +18,18 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<% title("Tasks") %>
+<% title t('.title') %>
 
 <div id="tasks_div">
   <%= form_tag(url_for(:controller => 'tasks', :action => 'operation'), :method => :post) do %>
-      
+
       <div class="index_block">
         <%= render :partial => 'task_menu' %>
-        
+
         <div id="tasks_display">
           <%= render :partial => "tasks/tasks_display" %>
         </div>

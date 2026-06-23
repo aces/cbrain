@@ -3,7 +3,6 @@ en:
     common:
       creator: "Creator"
       select_site: "(Select a site)"
-      all: "All"
 
     groups_table:
       create_project: "Create Project"

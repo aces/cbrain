@@ -2,11 +2,14 @@ fr:
   ago_time: "depuis %{time}"
 
   unknown: "Inconnu"
+  unset: "(Non défini)"
+  yes: "Oui"
+  offline: "Hors ligne"
   none: "Aucun"
-  help: "Aide"
-  edit: "Modifier"
-  browse: "Parcourir"
   show: "Afficher"
+  edit: "Modifier"
+  help: "Aide"
+  browse: "Parcourir"
   cancel: "Annuler"
   switch: "Changer"
   clear: "Effacer"
@@ -23,6 +26,7 @@ fr:
 
   update: "Mettre à jour"
   updated: "Mis à jour"
+  last_updated: "Dernière mise à jour"
 
   active_users: "Utilisateurs actifs"
   locked_users: "Utilisateurs verrouillés"
@@ -43,3 +47,19 @@ fr:
       hour: "Il y a une heure"
       now: "Maintenant! (Y compris la vôtre!)"
 
+  login: "Connexion"
+  owner: "Propriétaire"
+  version:
+    one: "Version"
+    other: "Versions"
+  tool_version: "Version de l'outil"
+
+  parameters:
+    one: "Paramètre"
+    other: "Paramètres"
+  summary: "Résumé"
+
+  status: "Statut:"
+
+  time_zone: "Fuseau horaire"
+  all: "Tous"

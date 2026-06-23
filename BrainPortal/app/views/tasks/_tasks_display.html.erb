@@ -318,7 +318,7 @@
   <% if @tasks.empty? %>
     <tr class="batch">
       <td class="dt-table-wide">
-        This batch of tasks has disappeared
+        <%= t('.disappeared_tasks') %>
       </td>
     </tr>
   <% else %>
@@ -337,21 +337,21 @@
     <div class="pagination_left_side">
       <%=
         scope_custom_link(
-          "Switch to #{batch_view ? 'List' : 'Batch'} View",
+          batch_view ? t('.switch_to_list_view') : t('.switch_to_batch_view'),
           @scope, { 'batch' => !batch_view },
           link: { :ajax => true }
         )
       %>
     </div>
     <div class="page_links">
-      (<%= pluralize @total_tasks, "task" %>)
+      (<%= t('activerecord.models.cbrain_task', count: @total_tasks) %>)
     </div>
     <div class="pagination_right_side">
       <% if @total_space_known > 0 %>
-        Total task space used: <%= colored_pretty_size(@total_space_known) %>
+        <%= t('.total_space', space: colored_pretty_size(@total_space_known))  %>
       <% end %>
       <% if @total_space_unkn  > 0 %>
-        (<%= pluralize @total_space_unkn, "task" %> without space estimates)
+        <%= t('.tasks_without_estimates', count: @total_space_unkn ) %>
       <% end %>
     </div>
   </div>
@@ -363,9 +363,9 @@
   <%= table.render %>
 
   <%=
-    center_legend("Workdir archiving status symbols:", [
-      [ colored_archived_status(:workdir),  "On Cluster" ],
-      [ colored_archived_status(:userfile), "As File"    ],
+    center_legend(t('.workdir_archiving_status_symbols'), [
+      [ colored_archived_status(:workdir),  t('.on_cluster') ],
+      [ colored_archived_status(:userfile), t('.as_file')    ],
     ])
   %>
 <% end %>

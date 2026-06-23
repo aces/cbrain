@@ -10,7 +10,6 @@ fr:
     available_datasets_table:
 
     available_tools_table:
-      versions: "Versions"
 
     logo_footer:
       supported_by: "Soutenu par les organisations suivantes"
@@ -19,7 +18,6 @@ fr:
       title: "À propos"
       header: "À propos de nous"
       platform_revision: "Informations sur la révision de la plateforme"
-      version: "Version:"
       last_author: "Dernier auteur ayant modifié le portail:"
       last_revision: "Dernière révision du portail:"
       last_changed: "Dernière date de modification du portail:"

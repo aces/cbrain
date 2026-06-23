@@ -2,6 +2,9 @@ en:
   ago_time: "%{time} ago"
 
   unknown: "Unknown"
+  unset: "(Unset)"
+  yes: "Yes"
+  offline: "Offline"
   none: "None"
   show: "Show"
   edit: "Edit"
@@ -23,6 +26,7 @@ en:
 
   update: "Update"
   updated: "Updated"
+  last_updated: "Last Updated"
 
   active_users: "Active Users"
   locked_users: "Locked Users"
@@ -44,6 +48,18 @@ en:
       now: "Now! (Including yours!)"
 
   login: "Login"
+  owner: "Owner"
+  version:
+    one: "Version"
+    other: "Versions"
+  tool_version: "Tool Version"
 
+  parameters:
+    one: "Parameter"
+    other: "Parameters"
+  summary: "Summary"
 
+  status: "Status:"
 
+  time_zone: "Time Zone"
+  all: "All"

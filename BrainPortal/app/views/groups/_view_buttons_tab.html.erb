@@ -34,7 +34,7 @@
 
       <% if g == "ALL" %>
         <div style="color:black" data-href="<%= url_for(:action => :switch, :id => "all") %>" data-method="post" class="project_button <%= css_small %>">
-          <h4 style="color:black"><%= t('groups.common.all') %></h4>
+          <h4 style="color:black"><%= t('all') %></h4>
           <hr>
           <%= t('activerecord.models.userfile.other') %>: <%= @group_id_2_userfile_counts[nil] || "(#{t('none')})" %><br>
           <%= t('activerecord.models.cbrain_task.other') %>: <%= @group_id_2_task_counts[nil] || "(#{t('none')})" %><br>

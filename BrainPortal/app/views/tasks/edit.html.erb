@@ -22,9 +22,9 @@
 #
 -%>
 
-<% title "Edit Task " + @task.name %>
+<% title t('.edit_task', name: @task.pretty_name) %>
 
-<h1>Edit Task <%= @task.pretty_name %></h1>
+<h1><%= t('.edit_task', name: @task.pretty_name) %></h1>
 
 <%= form_for(@task, :as => :cbrain_task, :url => {:controller  => :tasks, :action  => :update}, :html => { :method => :put }, :builder => CbrainTaskFormBuilder ) do |form| -%>
 
@@ -54,7 +54,7 @@
 
 
 <P>
-<%= submit_tag "Save modified parameters for this task", :class => "button", :disabled => @task.errors[:unsavable].present? %>
+<%= submit_tag t('.save_modified_parameters'), :class => "button", :disabled => @task.errors[:unsavable].present? %>
 <BR>
 
 <% end %>

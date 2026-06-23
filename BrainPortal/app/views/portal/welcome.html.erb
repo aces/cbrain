@@ -160,7 +160,7 @@
       <strong><%= t('.site_affiliation') %></strong> <%= link_to_site_if_accessible(current_user.site) %>
     </p>
     <p>
-      <strong><%= t('.time_zone') %></strong> <%= red_if(current_user.time_zone.blank?,h(current_user.time_zone), t('.unset')) %><BR>
+      <strong><%= t('.time_zone') %></strong> <%= red_if(current_user.time_zone.blank?,h(current_user.time_zone), t('unset')) %><BR>
       <strong><%= t('.current_time') %></strong> <%= to_localtime(Time.now, :datetime) %><BR>
     </p>
     <p>

@@ -123,7 +123,7 @@
       <% end %>
     <% end %>
 
-    <% t.edit_cell(:user_id, :content => link_to_user_with_tooltip(@userfile.user), :disabled => !(current_user.available_users.include?(@userfile.user) && @userfile.data_provider.allow_file_owner_change?), :header => t('userfiles.common.owner')) do %>
+    <% t.edit_cell(:user_id, :content => link_to_user_with_tooltip(@userfile.user), :disabled => !(current_user.available_users.include?(@userfile.user) && @userfile.data_provider.allow_file_owner_change?), :header => t('owner')) do %>
       <%= user_select("userfile[user_id]", { :selector => @userfile }) %>
     <% end %>
 

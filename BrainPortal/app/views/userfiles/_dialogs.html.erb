@@ -222,13 +222,13 @@
     <br />
 
     <% unless current_user.has_role?(:normal_user) %>
-      <label for="pp-own" class="dlg-fld-lbl"><%= t('userfiles.common.owner').downcase %></label>
+      <label for="pp-own" class="dlg-fld-lbl"><%= t('owner').downcase %></label>
       <%=
         user_select('user_id', { :selector => nil }, {
           :id       => 'pp-own',
           :class    => 'dlg-fld',
-          :include_blank      => "(#{t('.keep_current', attribute: t('userfiles.common.owner')).downcase})",
-          :'data-placeholder' => "#{t('.keep_current', attribute: t('userfiles.common.owner'))}"        })
+          :include_blank      => "(#{t('.keep_current', attribute: t('owner')).downcase})",
+          :'data-placeholder' => "#{t('.keep_current', attribute: t('owner'))}"        })
       %>
       <br />
     <% end %>
@@ -295,7 +295,7 @@
 </div>
 
 <div id="pp-hid-tp" class="html_tool_tip" style="z-index:105">
-  <%= t('.hidden_p') %>
+  <%= t('.hidden_p_html') %>
 </div>
 
 <div id="pp-ro-tp" class="html_tool_tip" style="z-index:105">

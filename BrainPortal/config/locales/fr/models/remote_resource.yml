@@ -6,5 +6,6 @@ fr:
           other: "Serveurs"
         portal: "Portail"
         execution: "Exécution"
+        execution_server: "Serveur d'exécution"
 
 

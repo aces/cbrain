@@ -27,7 +27,7 @@
 <div class="credit_box">
 
   <h3><%= t('.header') %></h3>
-  <strong><%= t('.version') %></strong> <%= @revinfo['Revision'] %>
+  <strong><%= t('version.one') %></strong> <%= @revinfo['Revision'] %>
   <br>
   <strong><%= t('.last_author') %></strong> <%= @revinfo['Last Changed Author'] %>
   <br>
@@ -55,7 +55,7 @@
       <% revtag  = CbrainFileRevision.cbrain_head_tag(plugin)                 rescue CbrainFileRevision::DEFAULT_TAG %>
       <% revinfo = CbrainFileRevision.cbrain_head_revinfo(plugin).self_update rescue nil %>
       <h5><%= t('.plugins_package', plugin.sub("cbrain-plugins-","").capitalize)  %></h5>
-      <strong><%= t('.version') %></strong> <%= revtag %>
+      <strong><%= t('version.one') %></strong> <%= revtag %>
       <br>
       <strong><%= t('.last_author') %></strong> <%= revinfo.try(:author) || "?" %>
       <br>
