@@ -22,24 +22,24 @@
 #
 -%>
 
-<% title "Account Info" %>
+<% title t('.title') %>
 
 <div class="menu_bar">
   <% if check_role(:admin_user) %>
-    <%= link_to 'Tool Access Reports', { :controller => :tool_configs, :action => :report, :user_id => @user.id }, :class => "button" %>
-    <%= link_to 'Switch To User',  switch_user_path(@user), :class => 'button', :method => 'POST' %>
+    <%= link_to t('.tool_access_reports'), { :controller => :tool_configs, :action => :report, :user_id => @user.id }, :class => "button" %>
+    <%= link_to t('.switch_to_user'),  switch_user_path(@user), :class => 'button', :method => 'POST' %>
   <% end %>
 
-  <%= link_to 'Report Maker', report_path, :class => "button" %>
+  <%= link_to t('.report_maker'), report_path, :class => "button" %>
 
   <% if delete_permission?(@user) %>
-    <%= link_to 'Delete', user_path(@user), :data => { :confirm => "Are you sure you want to delete '#{@user.name}' ?" }, :method => :delete, :class => "button" %>
+    <%= link_to t('delete'), user_path(@user), :data => { :confirm => t('confirm_delete', name: @user.name) }, :method => :delete, :class => "button" %>
   <% end %>
 </div>
 
 <br>
 
-<%= error_messages_for @user, :header_message => "User could not be updated." %>
+<%= error_messages_for @user, :header_message => t('.header_message') %>
 
 <div class="display_inline_block" style="min-width: 50%">
   <%= show_table(@user, :as => :user, :edit_condition => edit_permission?(@user)) do |t| %>
@@ -56,7 +56,7 @@
 
     <%
       t.edit_cell(:site_id, :content => link_to_site_if_accessible(@user.site), :disabled => !current_user.has_role?(:admin_user)) do
-        site_select("user[site_id]", @user.site_id, :prompt => "(Select a site)")
+        site_select("user[site_id]", @user.site_id, :prompt => t('users.common.select_site'))
       end
     %>
 
@@ -68,15 +68,15 @@
     <% t.edit_cell(:email,       :content => mail_to(h(@user.email))) { |f| f.text_field :email } %>
 
     <%
-      t.cell("Last Connected") do
-        @user.last_connected_at ? "#{to_localtime(@user.last_connected_at, :datetime)} (#{pretty_elapsed(Time.now - @user.last_connected_at, :num_components => 3)} ago)" : "(Never)"
+      t.cell(t('.last_connected')) do
+        @user.last_connected_at ? "#{to_localtime(@user.last_connected_at, :datetime)} (#{t('ago_time', time: pretty_elapsed(Time.now - @user.last_connected_at, :num_components => 3))})" : t('.never')
       end
     %>
 
     <% t.edit_cell(:city) { |f| f.text_field :city } %>
 
     <%
-      t.edit_cell("meta[pref_data_provider_id]", :header => "Default Data Provider", :content => link_to_data_provider_if_accessible(DataProvider.find_by_id(@user.meta["pref_data_provider_id"])) ) do
+      t.edit_cell("meta[pref_data_provider_id]", :header => t('.default_data_provider_header'), :content => link_to_data_provider_if_accessible(DataProvider.find_by_id(@user.meta["pref_data_provider_id"])) ) do
         data_provider_select("meta[pref_data_provider_id]",
                                  { :selector =>  @user.meta["pref_data_provider_id"] },
                                  { :include_blank => true } )
@@ -86,7 +86,7 @@
     <% t.edit_cell(:country) { |f| f.text_field :country } %>
 
     <%
-      t.edit_cell("meta[pref_bourreau_id]", :header => "Default Execution Server", :content => link_to_bourreau_if_accessible(Bourreau.find_by_id(@user.meta["pref_bourreau_id"])) ) do
+      t.edit_cell("meta[pref_bourreau_id]", :header => t('.default_execution_server_header'), :content => link_to_bourreau_if_accessible(Bourreau.find_by_id(@user.meta["pref_bourreau_id"])) ) do
         bourreau_select(     "meta[pref_bourreau_id]",
                                  { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all,
                                    :selector => @user.meta["pref_bourreau_id"] },
@@ -95,34 +95,33 @@
     %>
 
     <%
-      t.edit_cell(:time_zone, :content => (@user.time_zone || "(Unset)") ) do |f|
+      t.edit_cell(:time_zone, :content => (@user.time_zone || t('unset')) ) do |f|
         f.select :time_zone, time_zone_options_for_select(@user.time_zone, /canada/i), :include_blank => true
       end
     %>
 
     <% t.edit_cell(:password, :content => "********") do %>
-      <%= link_to "Change Password", change_password_user_path(@user) %>
+      <%= link_to t('.change_password'), change_password_user_path(@user) %>
     <% end %>
 
     <%
       if (current_user.has_role?(:admin_user) || current_user.has_role?(:site_manager)) && not_admin_user(@user)
-        t.boolean_edit_cell('user[account_locked]', (@user.account_locked ? "1" : ""), "1", "0", :header => "Account Locked")
+        t.boolean_edit_cell('user[account_locked]', (@user.account_locked ? "1" : ""), "1", "0", :header => t('.account_locked'))
       end
     %>
 
     <% if current_user.has_role?(:admin_user) %>
-      <% t.edit_cell('meta[ip_whitelist]', :header => 'Source IP Whitelist', :content => @user.meta['ip_whitelist'] || '') do %>
+      <% t.edit_cell('meta[ip_whitelist]', :header => t('.source_ip_whitelist_header'), :content => @user.meta['ip_whitelist'] || '') do %>
         <%= text_field_tag "meta[ip_whitelist]", @user.meta['ip_whitelist'], :size => 40 %><br />
         <div class="field_explanation">
-          Comma-separated list of allowed source IPs (X.X.X.X/XX) for the user to connect from.
+          <%= t('.ip_whitelist_field_explanation_html') %>
         </div>
       <% end %>
 
-      <% t.edit_cell('meta[allowed_globus_provider_names]', :header => "Forced OpenID Providers", :content => @user.meta['allowed_globus_provider_names'] || '') do %>
+      <% t.edit_cell('meta[allowed_globus_provider_names]', :header => t('.forced_openid_providers_header'), :content => @user.meta['allowed_globus_provider_names'] || '') do %>
         <%= text_field_tag "meta[allowed_globus_provider_names]", @user.meta['allowed_globus_provider_names'], :size => 40 %><br />
         <div class="field_explanation">
-          If set, must be a list of OpenID identity provider names separated by commas. A single '*' is
-          also allowed to mean any provider name.
+          <%= t('users.common.openid_field_explanation_html') %>
         </div>
       <% end %>
     <% end %>
@@ -130,17 +129,17 @@
   <% end %>
 
   <%= show_table(@user, :as     => :user,
-                        :header => 'Your System SSH Key',
+                        :header => t('.ssh_key_header'),
                         :url    => push_keys_user_path(@user),
                         :edit_condition => (true || @user.id == current_user.id),
                 ) do |t| %>
 
-    <% t.cell "Created", :show_width => 2 do %>
-      <%= @ssh_key ? "#{to_localtime(@ssh_key.created_at, :datetime)} (#{pretty_elapsed(Time.now - @ssh_key.created_at, :num_components => 3)} ago)" : "(Never)" %>
+    <% t.cell t('created'), :show_width => 2 do %>
+      <%= @ssh_key ? "#{to_localtime(@ssh_key.created_at, :datetime)} (#{t('ago_time', time: pretty_elapsed(Time.now - @ssh_key.created_at, :num_components => 3))})" : t('.never') %>
     <% end %>
 
-    <% t.cell "Public Key", :show_width => 2 do %>
-      <pre class="ssh_key"><%= @ssh_key.try(:public_key) || "None" %></pre>
+    <% t.cell t('.public_key'), :show_width => 2 do %>
+      <pre class="ssh_key"><%= @ssh_key.try(:public_key) || t('none') %></pre>
     <% end %>
 
     <%
@@ -149,21 +148,21 @@
        installed_links    = installed_sites.map { |s| link_to_bourreau_if_accessible(s) }.join(", ")
        all_bourreaux      = Bourreau.find_all_accessible_by_user(@user).order(:online, :name)
     %>
-    <% t.edit_cell "Installation Sites", :show_with => 2, :content => installed_links.html_safe do %>
+    <% t.edit_cell t('.installation_sites'), :show_with => 2, :content => installed_links.html_safe do %>
       <%= hidden_field_tag 'user[dummy]', "dummy" %>
       <%= array_to_table(all_bourreaux, :table_class => 'simple bordered', :fill_by_columns => true, :cols => 1) do |b,r,c| %>
         <% date = @user.get_ssh_key_install_date(b.id) %>
         <%= link_to_bourreau_if_accessible(b) %>
         </td>
-        <td>Last pushed: <%= date || 'Never' %></td>
-        <td>Push:
+        <td><%= t('.last_pushed', date: date || t('.never')) %></td>
+        <td><%= t('.push') %>
         <%= check_box_tag('push_keys_to[]', b.id.to_s, installed_site_ids.include?(b.id.to_s), :disabled => (!b.online || date.present?)) %>
       <% end %>
     <% end %>
 
   <% end %>
 
-  <%= show_table(@user, :as => :user, :header => 'Linked Identities') do |t| %>
+  <%= show_table(@user, :as => :user, :header => t('.linked_identities')) do |t| %>
 
     <% @oidc_configs.each do |oidc| %>
       <%
@@ -171,23 +170,23 @@
         prov_id, prov_name, prov_user = oidc.linked_oidc_info(@user)
       %>
 
-      <% t.cell "#{oidc.name} Provider", :show_width => 2 do %>
+      <% t.cell t('.provider_label', name: oidc.name), :show_width => 2 do %>
         <% if oidc_login_uri %>
           <% if prov_id %>
-            <strong>Provider name:</strong> <%= prov_name %><br>
-            <strong>Provider user:</strong> <%= prov_user %><br>
+            <strong><%= t('.provider_name') %></strong> <%= prov_name %><br>
+            <strong><%= t('.provider_user') %></strong> <%= prov_user %><br>
             <% if @user.id == current_user.id %>
-              <%= link_to("Unlink this #{oidc.name} identity", unlink_oidc_path(:oidc_name => oidc.name),
+              <%= link_to(t('.unlink_identity', name: oidc.name), unlink_oidc_path(:oidc_name => oidc.name),
                             :class  => "button",
                             :method => :post,
-                            :data   => { :confirm => "Are you sure you want to unlink your account with this #{oidc.name} identity?" }
+                            :data   => { :confirm => t('.unlink_confirm', name: oidc.name) }
                           )
               %>
              <% end %>
           <% else %>
-            (No <%= oidc.name %> identity linked to your account)<br>
+            <%= t('.no_identity', name: oidc.name) %><br>
             <% if @user.id == current_user.id  # OIDC button works only on user own account %>
-              <%= link_to "Link a #{oidc.name} identity", oidc_login_uri, :class => 'button globus_button' %>
+              <%= link_to t('.link_identity', name: oidc.name), oidc_login_uri, :class => 'button globus_button' %>
             <% end %>
           <% end %>
         <% end %>
@@ -197,30 +196,30 @@
     <%
       # Note: should be in a if/end block testing for the configuration of orcid_uri, like in NeuroHub
     %>
-    <% t.cell "ORCID Identity", :show_width => 2 do %>
+    <% t.cell t('.orcid_identity'), :show_width => 2 do %>
       <% orcid_id = @user.meta["orcid"] %>
       <% if orcid_id %>
-         <strong>ORCID ID:</strong> <%= orcid_id %>
+         <strong><%= t('.orcid_id') %></strong> <%= orcid_id %>
        <% else %>
-         (No ORCID identity linked to your account)
+         <%= t('.no_orcid') %>
        <% end %>
-       <br><small><strong>Note:</strong> Use the <%= link_to "NeuroHub interface", myaccount_path %> to manage the ORCID identity link</small>
+       <br><small><%= t('.orcid_note_html', link: link_to(t('.neurohub_interface'), myaccount_path)) %></small>
     <% end %>
 
   <% end %>
 
-  <%= show_table(@user, :as => :user, :header => 'Sessions And Tokens', :edit_condition => false) do |t| %>
-    <% t.cell "Active Sessions", :show_width => 2 do %>
+  <%= show_table(@user, :as => :user, :header => t('.sessions_tokens_header'), :edit_condition => false) do |t| %>
+    <% t.cell t('.active_sessions'), :show_width => 2 do %>
 
        <table class="simple">
          <tr>
-           <th>IP</th><th>Last access</th>
+           <th><%= t('.ip') %></th><th><%= t('.last_access') %></th>
          </tr>
          <% @active_sessions.to_a.each do |sess| %>
          <tr>
-           <td><%= sess.data[:guessed_remote_ip].presence || '(None yet)' %></td>
+           <td><%= sess.data[:guessed_remote_ip].presence || t('.no_ip_yet') %></td>
            <td>
-             <%= to_localtime(sess.updated_at, :datetime) %> (<%= pretty_elapsed(Time.now - sess.updated_at, :num_components => 3) %> ago)
+             <%= to_localtime(sess.updated_at, :datetime) %> (<%= t('ago_time', time: pretty_elapsed(Time.now - sess.updated_at, :num_components => 3)) %>)
            </td>
          </tr>
          <% end %>
@@ -228,66 +227,64 @@
 
        <% if @user.id == current_user.id %>
          <p>
-         <%= link_to('Generate new API token', new_token_users_path, :class => "button", :method => :post ) %>
+         <%= link_to(t('.generate_api_token'), new_token_users_path, :class => "button", :method => :post ) %>
        <% end %>
     <% end %>
   <% end %>
 
-  <%= show_table(@user, :as => :user, :header => 'Zenodo Publishing', :edit_condition => edit_permission?(@user)) do |t| %>
+  <%= show_table(@user, :as => :user, :header => t('.zenodo_publishing_header'), :edit_condition => edit_permission?(@user)) do |t| %>
 
     <% t.edit_cell(:zenodo_sandbox_token,
-                   :header     => 'Zenodo Sandbox Token',
+                   :header     => t('.zenodo_sandbox_token_header'),
                    :content    => (@user.zenodo_sandbox_token.blank? ? "" : ("*" * 60)),
                    :show_width => 2 ) do |f| %>
       <%= f.password_field :zenodo_sandbox_token, :size => 62 %><br>
       <div class="wide_field_explanation">
-        This token can be used for creating <strong>temporary/test</strong> Zenodo data deposits.<p>
-        You can create a token at <a href="https://sandbox.zenodo.org/account/settings/applications/" target="_blank">https://sandbox.zenodo.org/account/settings/applications/</a>.
+        <%= t('.zenodo_sandbox_field_explanation_html') %>
       </div>
     <% end %>
 
     <% t.edit_cell(:zenodo_main_token,
-                   :header     => 'Zenodo Official Token',
+                   :header     => t('.zenodo_official_token_header'),
                    :content    => (@user.zenodo_main_token.blank? ? "" : ("*" * 60)),
                    :show_width => 2 ) do |f| %>
       <%= f.password_field :zenodo_main_token, :size => 62 %>
       <div class="wide_field_explanation">
-        This token can be used for creating <strong>real, official and permanent</strong> Zenodo data deposits.<p>
-        You can create a token at <a href="https://zenodo.org/account/settings/applications/" target="_blank">https://zenodo.org/account/settings/applications/</a>.
+        <%= t('.zenodo_official_field_explanation_html') %>
       </div>
     <% end %>
 
   <% end %>
 
   <% if @user.signed_license_agreements.present? %>
-    <%= show_table(@user, :as => :user, :header => "License Agreements", :width => 3) do |t| %>
+    <%= show_table(@user, :as => :user, :header => t('.license_agreements_header'), :width => 3) do |t| %>
       <% @user.signed_license_agreements.each  do |la| %>
         <% t.cell("", :no_header => true) { link_to la, "/show_license/#{la}" } %>
       <% end  %>
     <% end %>
   <% end %>
 
-  <%= show_table(@user, :as => :user, :header => 'Resources') do |t| %>
+  <%= show_table(@user, :as => :user, :header => t('activerecord.models.resource.other')) do |t| %>
 
-    <% t.cell("Files") do
+    <% t.cell(t('activerecord.models.file.other')) do
          size = Userfile.where(:user_id => @user.id).sum(:size)
          index_count_filter(@user.userfiles.count, :userfiles, { :user_id => @user.id }, :show_zeros => true ) +
-         ( (size > 0) ? " (#{colored_pretty_size(size)} used)" : "" ).html_safe
+         ( (size > 0) ? " (#{t('users.common.used', size: colored_pretty_size(size))})" : "" ).html_safe
        end
     %>
 
-    <% t.cell("Tasks") do
+    <% t.cell(t('activerecord.models.cbrain_task.other')) do
          size = CbrainTask.real_tasks.where(:user_id => @user.id).sum(:cluster_workdir_size)
          unk  = CbrainTask.real_tasks.where(:user_id => @user.id, :cluster_workdir_size => nil).where("cluster_workdir IS NOT NULL").count
          index_count_filter(@user.cbrain_tasks.real_tasks.count, :tasks, {:user_id => @user.id}, :show_zeros => true ) +
-         ( (size  > 0 && unk  > 0) ? " (#{colored_pretty_size(size)} used, #{unk} unkn)" :
-           (size  > 0 && unk == 0) ? " (#{colored_pretty_size(size)} used)" :
-           (size == 0 && unk  > 0) ? " (#{unk} unkn)" : ""
+         ( (size  > 0 && unk  > 0) ? " (#{t('users.common.used', size: colored_pretty_size(size))}, #{t('users.common.unkn', count: unk)})" :
+           (size  > 0 && unk == 0) ? " (#{t('users.common.used', size: colored_pretty_size(size))})" :
+           (size == 0 && unk  > 0) ? " (#{t('users.common.unkn', count: unk)})" : ""
          ).html_safe
        end
     %>
 
-    <% t.cell("Historical Storage") do
+    <% t.cell(t('.historical_storage')) do
          plus  =   SpaceResourceUsageForUserfile.where(:user_id => @user.id).where("value > 0").sum(:value)
          minus = - SpaceResourceUsageForUserfile.where(:user_id => @user.id).where("value < 0").sum(:value)
          pretty_plus    = plus  > 0 ? colored_pretty_size(plus)  : nil
@@ -295,22 +292,22 @@
          pretty_plus  &&= "<span style=\"color: green\">&plus;</span>#{pretty_plus}".html_safe
          pretty_minus &&= "<span style=\"color: red\">&minus;</span>#{pretty_minus}".html_safe
          pretty = (pretty_plus.to_s + " " + pretty_minus.to_s).html_safe
-         pretty = "(none)" if pretty.blank?
+         pretty = "(#{t('none')})" if pretty.blank?
          index_count_filter(pretty, :resource_usage, { :type => 'SpaceResourceUsageForUserfile'}, :show_zeros => true)
        end
     %>
 
-    <% t.cell("Historical CPU Time") do
+    <% t.cell(t('.historical_cpu_time')) do
          pretty_val = pretty_elapsed(CputimeResourceUsageForCbrainTask.where(:user_id => @user.id).sum(:value), :num_components => 3)
          index_count_filter(pretty_val, :resource_usage, { :type => 'CputimeResourceUsageForCbrainTask'}, :show_zeros => true)
        end
     %>
 
     <% if current_user.has_role?(:admin_user) %>
-      <% t.cell("Tools")          { index_count_filter @user.tools.count,                             :tools,          {:user_id => @user.id} } %>
-      <% t.cell("Data Providers") { index_count_filter @user.data_providers.count,                    :data_providers, {:user_id => @user.id} } %>
-      <% t.cell("Portal")         { index_count_filter BrainPortal.where(:user_id => @user.id).count, :bourreaux,      {:user_id => @user.id, :type => "BrainPortal"} } %>
-      <% t.cell("Execution")      { index_count_filter Bourreau.where(:user_id => @user.id).count,    :bourreaux,      {:user_id => @user.id, :type => "Bourreau"} } %>
+      <% t.cell(t('activerecord.models.tool.other'))          { index_count_filter @user.tools.count,                             :tools,          {:user_id => @user.id} } %>
+      <% t.cell(t('activerecord.models.data_provider.other')) { index_count_filter @user.data_providers.count,                    :data_providers, {:user_id => @user.id} } %>
+      <% t.cell(t('activerecord.models.portal'))              { index_count_filter BrainPortal.where(:user_id => @user.id).count, :bourreaux,      {:user_id => @user.id, :type => "BrainPortal"} } %>
+      <% t.cell(t('activerecord.models.execution'))           { index_count_filter Bourreau.where(:user_id => @user.id).count,    :bourreaux,      {:user_id => @user.id, :type => "Bourreau"} } %>
     <% end %>
 
   <% end %>
@@ -321,10 +318,10 @@
                               .order('access_profiles.name')
                               .map { |ap| access_profile_label(ap, :with_link => true) }
                               .join("").html_safe
-       user_access_profiles = "(None)" if user_access_profiles.blank?
+       user_access_profiles = "(#{t('none')})" if user_access_profiles.blank?
     %>
 
-    <%= show_table(@user, :as => :user, :header => 'Access Profiles', :edit_condition => true) do |t| %>
+    <%= show_table(@user, :as => :user, :header => t('activerecord.models.access_profile.other'), :edit_condition => true) do |t| %>
       <% t.edit_cell(:access_profile_ids, :show_width => 2, :no_header => true, :content => user_access_profiles ) do %>
 
         <%= render :partial => 'shared/access_profile_checkbox_table',
@@ -347,12 +344,12 @@
      <table class="resource_list">
         <tr>
           <th colspan="3">
-            Projects
+            <%= t('activerecord.models.group.other') %>
             <% if current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user) %>
-              <%= overlay_content_link "(Update)", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span" do %>
+              <%= overlay_content_link "(#{t('update')})", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span" do %>
                 <%= form_for @user, :as => :user, :url => { :action => "update" } do |f| -%>
                   <%= render :partial => 'shared/group_tables', :locals => {:model => @user} %><br>
-                  <%= submit_tag 'Update Projects' %>
+                  <%= submit_tag t('.update_projects') %>
                 <% end %>
               <% end %>
             <% end %>
@@ -360,9 +357,9 @@
         </tr>
 
         <tr>
-          <th>Project Name</th>
-          <th>Project Type</th>
-          <th>Members</th>
+          <th><%= t('.project_name') %></th>
+          <th><%= t('.project_type') %></th>
+          <th><%= t('.members') %></th>
         </tr>
 
      <% (@user.assignable_groups.sort { |g1,g2| g1.name.casecmp(g2.name) }).each do |group| %>
@@ -383,6 +380,6 @@
   <% end %>
 
   <p>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>
+  <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => t('.user_activity_report') } %>
 </div>
 

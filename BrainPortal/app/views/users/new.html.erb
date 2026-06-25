@@ -22,9 +22,9 @@
 #
 -%>
 
-<% title 'Add New User' %>
+<% title t('.title') %>
 
-<h2>Add New User</h2>
+<h2><%= t('.title') %></h2>
 
 <%= error_messages_for @user %>
 
@@ -32,40 +32,40 @@
 
   <div class="generalbox">
 
-    <h5>Basic Information</h5>
+    <h5><%= t('.basic_information') %></h5>
 
     <p>
-    <%= f.label :full_name, "Full Name" %><br/>
+    <%= f.label :full_name, t('activerecord.attributes.user.full_name') %><br/>
     <%= f.text_field :full_name %>
 
     <p>
-    <%= f.label :login, "Login" %><br/>
+    <%= f.label :login, t('login') %><br/>
     <%= f.text_field :login %><br>
-    <span class="field_explanation">For <strong>Tom Jones</strong>, use <strong>tjones</strong>, not 'tom' or 'jones'.</span>
+    <span class="field_explanation"><%= t('.login_field_explanation_html') %></span>
 
     <p>
-    <%= f.label :email, "Email" %><br/>
+    <%= f.label :email, t('activerecord.attributes.user.email') %><br/>
     <%= f.text_field :email %>
 
     <p>
-    <%= f.label :position, "Position" %><br/>
+    <%= f.label :position, t('activerecord.attributes.user.position') %><br/>
     <%= f.text_field :position %>
 
 
     <p>
-    <%= f.label :affiliation, "Affiliation" %><br/>
+    <%= f.label :affiliation, t('activerecord.attributes.user.affiliation') %><br/>
     <%= f.text_field :affiliation %>
 
     <p>
-    <%= f.label :city, "City" %><br/>
+    <%= f.label :city, t('activerecord.attributes.user.city') %><br/>
     <%= f.text_field :city %>
 
     <p>
-    <%= f.label :country, "Country" %><br/>
+    <%= f.label :country, t('activerecord.attributes.user.country') %><br/>
     <%= f.text_field :country %>
 
     <p>
-    <%= f.label :time_zone, "Time Zone" %><br/>
+    <%= f.label :time_zone, t('time_zone') %><br/>
     <%= f.time_zone_select :time_zone,
         ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
         { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
@@ -73,42 +73,41 @@
     %>
 
     <p>
-    <%= f.label :type, "Type" %><br/>
+    <%= f.label :type, t('activerecord.attributes.user.type') %><br/>
     <%= f.select :type, roles_for_user(current_user) %>
 
     <% if current_user.has_role? :admin_user %>
       <p>
-      <%= f.label :site_id, "Site" %><br/>
-      <%= site_select "user[site_id]",{}, :prompt => "(Select a site)" %>
+      <%= f.label :site_id, t('activerecord.attributes.user.site') %><br/>
+      <%= site_select "user[site_id]",{}, :prompt => t('users.common.select_site') %>
     <% end %>
 
     <p>
-    <%= label_tag 'meta_pref_data_provider_id', "Default Data Provider" %>
+    <%= label_tag 'meta_pref_data_provider_id', t('.default_data_provider') %>
     <%= data_provider_select("meta[pref_data_provider_id]",
                              { :selector => (params[:meta] || {})[:pref_data_provider_id] },
                              { :include_blank => true } ) %>
     <br>
-    <span class="field_explanation">If set, make sure it is a Data Provider that will be accessible to the user</span>
+    <span class="field_explanation"><%= t('.dp_field_explanation_html') %></span>
 
     <p>
-    <%= label_tag 'meta_allowed_globus_provider_names', "Forced OpenID Identity Providers" %>
+    <%= label_tag 'meta_allowed_globus_provider_names', t('.forced_openid_providers') %>
     <%= text_field_tag("meta[allowed_globus_provider_names]", (params[:meta] || {})[:allowed_globus_provider_names], :size => 30) %>
     <br>
     <span class="field_explanation">
-      If set, must be exact OpenID identity provider names separated by commas
-      A single '*' is also allowed to mean any provider name.
+      <%= t('users.common.openid_field_explanation_html') %>
     </span>
 
     <p>
-    <%= f.label :password, "Password" %><br/>
+    <%= f.label :password, t('.password') %><br/>
     <%= f.password_field :password, :value => @random_pass, :autocomplete => "new-password" %>
 
     <p>
-    <%= f.label :password_confirmation, "Confirm Password" %><br/>
+    <%= f.label :password_confirmation, t('.confirm_password') %><br/>
     <%= f.password_field :password_confirmation, :value => @random_pass, :autocomplete => "new-password" %>
 
     <p>
-    <label for="no_password_reset_needed">No need to reset initial password:</label>
+    <label for="no_password_reset_needed"><%= t('.no_password_reset') %></label>
     <%= check_box_tag :no_password_reset_needed, "1", params[:no_password_reset_needed] == "1" %>
 
     <%= hidden_field_tag :signup_id, params[:signup_id] %>
@@ -123,14 +122,14 @@
   <div class="box_spacer"></div>
 
   <div class="generalbox">
-    <h5>Project Membership</h5>
+    <h5><%= t('.project_membership') %></h5>
     <%= render :partial => 'shared/group_tables', :locals => {:model => @user} %>
   </div>
 
   <div class="box_spacer"></div>
 
   <div class="generalbox">
-    <h5>Access Profiles</h5>
+    <h5><%= t('activerecord.models.access_profile.other') %></h5>
     <% AccessProfile.order(:name).all.each do |access_profile| %>
       <%= check_box_tag "user[access_profile_ids][]", access_profile.id, false, :id => "ap_#{access_profile.id}" %>
       <label for="<%= "ap_#{access_profile.id}" %>"><%= access_profile_label(access_profile) %></label>
@@ -139,7 +138,7 @@
   </div>
 
   <p>
-  <%= submit_tag 'Create User' %>
+  <%= submit_tag t('.create_user') %>
 
 <% end %>
 

@@ -23,7 +23,7 @@
 -%>
 
 <div class="menu_bar">
-  <%= link_to 'Create User', new_user_path, :class => "button menu_button" %>
+  <%= link_to t('.create_user'), new_user_path, :class => "button menu_button" %>
 </div>
 
 <%=
@@ -36,10 +36,10 @@
 <div class="pagination">
   <div class="pagination_center">
     (
-      <%= pluralize @users.total_entries, "user" %>
+      <%= t('.user_count', count: @users.total_entries) %>
       <% if @unlocked_users_count > 0 %>,
         <%=
-          scope_filter_link("#{@unlocked_users_count} active",
+            scope_filter_link(t('.active_count', count: @unlocked_users_count),
             @scope, :set, { :a => 'account_locked', :v => 0 },
             link: { :ajax => true }
           )
@@ -47,7 +47,7 @@
       <% end %>
       <% if @locked_users_count > 0 %>,
         <%=
-          scope_filter_link("#{@locked_users_count} locked",
+          scope_filter_link(t('.locked_count', count: @locked_users_count),
             @scope, :set, { :a => 'account_locked', :v => 1 },
             link: { :ajax => true }
           )
@@ -56,7 +56,7 @@
     )
   </div>
   <div class="pagination_right_side">
-    Search by name: <%= ajax_search_box "name_like", users_path %>
+    <%= t('search_by_name') %> <%= ajax_search_box "name_like", users_path %>
   </div>
 </div>
 
@@ -78,16 +78,16 @@
   <%
     t.pagination
 
-    t.column("Login", :login,
+    t.column(t('login'), :login,
       :sortable => true,
       :filters  => scoped_filters_for(
         @base_scope, @scope, :account_locked,
         format: lambda do |format_info|
           value, label, base, view = *format_info
-          label = (!value || value == 0 ? 'Unlocked' : 'Locked')
+          label = (!value || value == 0 ? t('.unlocked') : t('.locked'))
           {
             :value     => value,
-            :label     => "#{label} (of #{base})",
+            :label     => t('.label_of', label: label, base: base),
             :indicator => view,
             :empty     => view == 0
           }
@@ -99,30 +99,30 @@
       )
     end
 
-    t.column("Full name", :full_name,
+    t.column(t('activerecord.attributes.user.full_name'), :full_name,
       :sortable => true
     )
 
-    t.column("Email", :email,
+    t.column(t('activerecord.attributes.user.email'), :email,
       :sortable => true
     ) { |u| mail_to u.email }
 
-    t.column("Position", :position,
+    t.column(t('activerecord.attributes.user.position'), :position,
       :sortable => true
     )
 
-    t.column("Affiliation", :affiliation,
+    t.column(t('activerecord.attributes.user.affiliation'), :affiliation,
       :sortable => true
     )
 
-    t.column("Last Connection", :last_connection,
+    t.column(t('.last_connection'), :last_connection,
       :sortable => true
-    ) { |u| u.last_connected_at ? to_localtime(u.last_connected_at, :datetime) : "Unknown" }
+    ) { |u| u.last_connected_at ? to_localtime(u.last_connected_at, :datetime) : t('unknown') }
 
-    t.column("Projects", :groups) do |u|
+    t.column(t('activerecord.models.group.other'), :groups) do |u|
       group_names = u.assignable_groups.order(:name).pluck(:name).reject { |n| n == u.login }
       if group_names.size > 1 && group_names.size < 40
-        html_tool_tip(pluralize(group_names.size, "project"), :offset_x => 60) do
+        html_tool_tip(t('.project_count', count: group_names.size), :offset_x => 60) do
           array_to_table(group_names,
             :table_class     => 'simple',
             :ratio           => "3:1",
@@ -130,57 +130,57 @@
           ) { |name,r,c| name }
         end.html_safe
       elsif group_names.size > 1
-        pluralize(group_names.size, "project")
+        t('.project_count', count: group_names.size)
       end
     end
 
-    t.column("Role", :type,
+    t.column(t('.role'), :type,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, :type)
     ) { |u| u.type.underscore.titleize }
 
-    t.column("Site", :site,
+    t.column(t('activerecord.models.site.one'), :site,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, Site)
     ) { |u| link_to_site_if_accessible(u.site) }
 
-    t.column("City", :city,
+    t.column(t('activerecord.attributes.user.city'), :city,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, :city)
     )
 
-    t.column("Country", :country,
+    t.column(t('activerecord.attributes.user.country'), :country,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, :country)
     )
 
-    t.column("Time Zone", :time_zone,
+    t.column(t('time_zone'), :time_zone,
       :sortable => true,
-    ) { |u| u.time_zone || "(Unset)" }
+    ) { |u| u.time_zone || t('unset') }
 
-    t.column("Files", :files) do |u|
+    t.column(t('activerecord.models.file.other'), :files) do |u|
       size = Userfile.where(:user_id => u.id).sum(:size)
       index_count_filter(@users_file_counts[u.id], :userfiles, { :user_id => u.id }, :show_zeros => 1) +
-      (size > 0 ? " (#{colored_pretty_size(size)} used)" : "").html_safe
+      (size > 0 ? " (#{t('users.common.used', size: colored_pretty_size(size))})" : "").html_safe
     end
 
-    t.column("Tasks", :tasks) do |u|
+    t.column(t('activerecord.models.cbrain_task.other'), :tasks) do |u|
       size = CbrainTask.real_tasks.where(:user_id => u.id).sum(:cluster_workdir_size)
       unk  = CbrainTask.real_tasks.where(:user_id => u.id, :cluster_workdir_size => nil).where("cluster_workdir IS NOT NULL").count
       index_count_filter(@users_task_counts[u.id], :tasks, { :user_id => u.id }, :show_zeros => 1) +
-      ( (size  > 0 && unk  > 0) ? " (#{colored_pretty_size(size)} used, #{unk} unkn)" :
-        (size  > 0 && unk == 0) ? " (#{colored_pretty_size(size)} used)" :
-        (size == 0 && unk  > 0) ? " (#{unk} unkn)" : ""
+      ( (size  > 0 && unk  > 0) ? " (#{t('users.common.used', size: colored_pretty_size(size))}, #{t('users.common.unkn', count: unk)})" :
+        (size  > 0 && unk == 0) ? " (#{t('users.common.used', size: colored_pretty_size(size))})" :
+        (size == 0 && unk  > 0) ? " (#{t('users.common.unkn', count: unk)})" : ""
       ).html_safe
     end
 
-    t.column("Switch", :switch) do |u|
-      link_to 'Switch', switch_user_path(u), :class => 'action_link', :method  => :post if u != User.admin
+    t.column(t('switch'), :switch) do |u|
+      link_to t('switch'), switch_user_path(u), :class => 'action_link', :method  => :post if u != User.admin
     end
 
     if current_user.has_role? :admin_user
-      t.column("Access", :access) do |u|
-        link_to 'Access?',
+      t.column(t('.access'), :access) do |u|
+        link_to t('.access_q'),
           {
             :controller => :tool_configs,
             :action     => :report,

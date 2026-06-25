@@ -22,48 +22,41 @@
 #
 -%>
 
-<% title 'New API Token' %>
+<% title t('.title') %>
 
-<h2>New API Token</h2>
+<h2><%= t('.title') %></h2>
 
-We have just generated a new API token for you.
+<%= t('.generated_intro') %>
 <p>
   <code class="copy-text"><%= @new_token %></code>
   <%= copy_to_clipboard_button(
      @new_token,
-     label: "copy",
-     title: "Click this button to copy the API token to the clipboard")
-  %>
+     label: t('.copy'),
+     title: t('.copy_tooltip'))  %>
 <p>
 
-If you are a developer and want to automate working
-with CBRAIN or NeuroHub, this token will be needed
-to access the APIs.
+<%= t('.developer_info_html') %>
 <p>
-Refer to the CBRAIN API documentation
-for more information.
+<%= t('.api_docs_html') %>
 <p>
-<strong>A few notes about this token</strong>:
+<strong><%= t('.notes_title') %></strong>:
 
 <% pretty_how_long = SessionHelpers::SESSION_API_TOKEN_VALIDITY.inspect %>
 <ul>
   <li>
-    This token will only be valid for <%= pretty_how_long %>.
+    <%= t('.note_validity', duration: pretty_how_long) %>
   </li>
   <li>
-    Every time a request is made with it, it becomes valid for another <%= pretty_how_long %>.
+    <%= t('.note_renewal', duration: pretty_how_long) %>
   </li>
   <li>
-    The first time it is used, the IP address of the connecting client will be
-    recorded and only connections from that IP address will be valid.
+    <%= t('.note_ip_lock') %>
   </li>
   <li>
-    If a subsequent connection comes from any other IP address at any time,
-    the token will immediately be invalidated.
+    <%= t('.note_ip_invalid') %>
   </li>
   <li>
-    To copy the token to your clipboard, simply click the copy button located to the right of the token. The token will be saved to your clipboard.
-    Please do not forget to paste and save the token. You will not be able to see it again.
+    <%= t('.note_copy') %>
   </li>
 </ul>
 
