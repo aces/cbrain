@@ -1,0 +1,97 @@
+
+<!--
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-->
+
+<!-- TODO: This page is not translated yet. It is a simple copy of the English version. -->
+
+<h1>How to Register Files on CBRAIN</h1>
+
+A Data Provider is a data storage area that CBRAIN is aware of.
+A typical user has access to two data providers named MainStore and
+MindStore as well as two "incoming data providers". An "incoming
+data provider" is a provider set up by the network administrator
+that can be accessed through another protocol outside of the CBRAIN
+framework. The two "incoming data providers" currently set up are
+named "SFTP-Incoming" and "SFTP-Brainstorm", and are accessed using SFTP
+(Secure File Transfer Protocol).
+
+<p>
+Data files can be uploaded to CBRAIN using SFTP client programs on your computer.
+You may connect using any SFTP client for UNIX, Mac or
+Windows on host mindstorm.cbrain.mcgill.ca or brainstorm.cbrain.mcgill.ca
+using the port number 7500. Your username and password are those
+of the CBRAIN website. Files uploaded to <em>mindstorm</em> will appear in CBRAIN with
+the "browse" button of the "SFTP-Incoming" Data Provider, while files
+uploaded to <em>brainstorm</em> will appear in the "SFTP-Brainstorm" Data Provider.
+
+<p>
+
+<b>Recommended SFTP Clients:</b>
+<br>
+<ul>
+    <li><b>Command Line SFTP on Unix:</b></li>
+        <ul>
+            <li>sftp -o port=7500 username@mindstorm.cbrain.mcgill.ca</li>
+            <li>Options can be displayed by entering help into the command line</li>
+        </ul>
+    <li><b>SFTP client available for Mac and Windows: FileZilla</b></li>
+            <ul>
+                <li>Select File -> Site Manager</li>
+                <li>Select New Site</li>
+                <li>Under the General Tab in the Site Manager</li>
+                <ul>
+                    <li>Enter the hostname: mindstorm.cbrain.mcgill.ca</li>
+                    <li>Enter the port number: 7500</li>
+                    <li>Select the Server Type: <b>SFTP - SSH File Transfer</b> Protocol</li>
+                    <li>Select the Logon Type: Normal</li>
+                    <li>Enter the username for your CBRAIN account</li>
+                    <li>Enter the password for your CBRAIN account</li>
+                </ul>
+                <li>Under the Advanced Tab</li>
+                <ul>
+                    <li>Select the Server Type as Unix</li>
+                    <li>Select Bypass proxy</li>
+                </ul>
+                <li>Click connect</li>
+                <li>Files on your local computer are listed on the left.</li>
+                <li>File on the remote computer are listed on the right.</li>
+                <ul>
+                    <li>Files may be dragged to move them to and from the remote and local computers.</li>
+                    <li>Options for managing files are displayed by selecting the file and right clicking on that file.</li>
+                </ul>
+    </ul>
+        <li><b>SFTP Client available on Mac: Cyberduck:</b></li>
+        <ul>
+            <li>Select Open Connection</li>
+            <li>Select <b>SFTP</b> as the file transfer protocol.</li>
+            <li>List the server as mindstorm.cbrain.mcgill.ca with your username and password for CBRAIN and list the port as 7500.</li>
+            <li>Files displayed in the drawer that appears are those files on the remote computer</ili>
+            <li>Right click in the drawer that appears and select Upload to upload files from your local computer to the remote computer</li>
+            <li>Select a file and right click to download the file to your local computer</li>
+        </ul>
+    </ul>
+</ul>
+<br>
+Upload and download your files as needed from the configured client.  Then go to the Data Providers tab, find the "incoming data provider" and click on it's "Browse" link.  Register your files on CBRAIN, and they will appear in the file manager.  You should MOVE these files to one of the official CBRAIN Data Providers. When registering files can be automatically assigned to a project and either moved or copied to the selected data provider.</p>
+<br><br>
+
