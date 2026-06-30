@@ -1,0 +1,29 @@
+en:
+  sites:
+    common:
+      managers: "Managers"
+      regular_user: "Regular User"
+      site_manager: "Site Manager"
+      brief_description: "The first line should be a short summary, and the rest are for any special notes for the users."
+
+
+    sites_table:
+      create_new_site: "Create new site"
+      number_of_users: "Number of Users"
+      number_of_projects: "Number of Projects"
+
+    index:
+      title: "Sites"
+
+    new:
+      title: "Add New Site"
+      brief_description_title: "Brief description of the site."
+      hide: "(Hide)"
+
+    show:
+      title: "Site"
+      could_not_be_updated: "Site could not be updated."
+      resources: "Resources"
+      update_users: "Update Users"
+      update_projects: "Update Projects"
+      site_log: "Site Log"

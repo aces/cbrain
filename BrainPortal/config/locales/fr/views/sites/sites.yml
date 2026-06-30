@@ -1,0 +1,29 @@
+fr:
+  sites:
+    common:
+      managers: "Gestionnaires"
+      regular_user: "Utilisateur régulier"
+      site_manager: "Gestionnaire de site"
+      brief_description: "La première ligne doit être un court résumé, et le reste sont pour toutes les notes spéciales pour les utilisateurs."
+
+    sites_table:
+      create_new_site: "Créer un nouveau site"
+      number_of_users: "Nombre d'utilisateurs"
+      number_of_projects: "Nombre de projets"
+
+
+    index:
+      title: "Sites"
+
+    new:
+      title: "Ajouter un nouveau site"
+      brief_description_title: "Brève description du site."
+      hide: "(Cacher)"
+
+    show:
+      title: "Site"
+      could_not_be_updated: "Le site n'a pas pu être mis à jour."
+      resources: "Ressources"
+      update_users: "Mettre à jour les utilisateurs"
+      update_projects: "Mettre à jour les projets"
+      site_log: "Journal du site"

@@ -1,0 +1,10 @@
+en:
+  cbrain_mailer:
+
+    forgotten_password:
+
+    registration_confirmation:
+
+    signup_notify_admin:
+
+    signup_request_confirmation:

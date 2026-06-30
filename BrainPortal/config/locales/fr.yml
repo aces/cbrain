@@ -1,0 +1,76 @@
+# Files in the config/locales directory are used for internationalization
+# and are automatically loaded by Rails. If you want to use locales other
+# than English, add the necessary files in this directory.
+#
+# To use the locales, use `I18n.t`:
+#
+#     I18n.t 'hello'
+#
+# In views, this is aliased to just `t`:
+#
+#     <%= t('hello') %>
+#
+# To use a different locale, set it with `I18n.locale`:
+#
+#     I18n.locale = :es
+#
+# This would use the information in config/locales/es.yml.
+#
+# To learn more, please read the Rails Internationalization guide
+# available at http://guides.rubyonrails.org/i18n.html.
+
+fr:
+  activerecord:
+    attributes:
+      id: "Identifiant"
+      created_at: "Créé le"
+      updated_at: "Mis à jour le"
+      name: "Nom"
+      description: "Description"
+      type: "Type"
+      status: "Statut"
+      user_id: &user "Utilisateur"
+      user: *user
+      group_id: &group "Groupe"
+      group: *group
+      active_record_log:
+        ar_id: &ar_id                "ID ActiveRecord"
+        ar_table_name: &ar_table_name "Nom de la table ActiveRecord"
+      cbrain_task:
+        cluster_jobid:               "ID du job sur le cluster"
+        cluster_workdir:             "Dossier de travail sur le cluster"
+        share_wd_tid:                "Dossier de travail partagé avec la tâche"
+        cluster_workdir_size:        "Taille du dossier de travail sur le cluster"
+        workdir_archive_userfile_id: "Archive du dossier de travail"
+      data_provider:
+        remote_dir:                  "Dossier distant"
+      meta_data_store:
+        ar_id: *ar_id
+        ar_table_name: *ar_table_name
+        meta_key:                    "Clé de métadonnée"
+        meta_value:                  "Valeur de métadonnée"
+      remote_resource:
+        ssh_control_rails_dir:       "Dossier racine Rails"
+        dp_cache_dir:                "Dossier de cache du fournisseur de données"
+        dp_ignore_patterns:          &ignore_patterns "Motifs de fichiers à ignorer"
+        spaced_dp_ignore_patterns:   *ignore_patterns
+        cms_extra_qsub_args:         "Options qsub supplémentaires"
+        cms_shared_dir:              "Dossier partagé CMS"
+        workers_chk_time:            "Intervalle de vérification des workers"
+        rr_timeout:                  "Délai d'expiration de la ressource distante"
+      tool_config:
+        env_array:                   "Tableau de variables d'environnement"
+        ncpus:                       "Nombre de processeurs (CPU)"
+      tool:
+        select_menu_text:            "Texte de la liste déroulante"
+      userfile:
+        num_files:                   "Nombre de fichiers dans la collection"
+      user:
+        email:                       "Adresse e-mail"
+      signup:
+        first:                       "Prénom"
+        last:                        "Nom"
+  will_paginate:
+    previous_label: "&larr; Précédent"
+    next_label: "Suivant &rarr;"
+

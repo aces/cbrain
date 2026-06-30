@@ -1,0 +1,34 @@
+fr:
+  cbrain_mailer:
+
+    common: 
+      closing: "Sincerely,"
+      admins: "The %{service} administrators."
+      thank_you: "Thank you,"
+
+    forgotten_password:
+      greeting: "Dear %{name},"
+      password_reset: "Your %{service} password has been reset to the following:"
+      temporary_notice: "This is a TEMPORARY password, only valid for your next login. Upon logging in, you will immediately be directed to your account page where you must create a new password."
+      access_service: "Access %{service} here:"
+
+    registration_confirmation:
+      welcome: "Welcome to %{service}, %{name},"
+      account_set_up: "Your account has been set up."
+      access_service: "Access %{service} here:"
+      username: "Your username for logging in is:"
+      temporary_password: "Your temporary password is:"
+      password_change_notice: "You will be asked to change your password upon first log in."
+
+    signup_notify_admin:
+      someone_asking: "Someone is asking for a new %{service} account:"
+      none_provided: "(None provided)"
+      comments_intro: "The requester provided some comments:"
+      review_application: "As an administrator, you can review the full application here:"
+      system_signature: "The %{service} system."
+
+    signup_request_confirmation:
+      automated_message: "This is automated message from the %{service} signup system."
+      confirm_email: "Please confirm your email address by clicking the link below."
+      disregard: "If you did not request an account, you can disregard this message."
+      once_confirmed: "Once confirmed, the administrators will be notified, will evaluate your request, and notify you if your application has been approved."

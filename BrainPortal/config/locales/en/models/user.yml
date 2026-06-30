@@ -4,5 +4,19 @@ en:
         user:
           one: "User"
           other: "Users"
+      attributes:
+        user:
+          login: "Login"
+          full_name: "Full Name"
+          email: "Email"
+          position: "Position"
+          affiliation: "Affiliation"
+          institution: "Institution"
+          city: "City"
+          country: "Country"
+          type: "Type"
+          site: "Site"
+          default_data_provider: "Default Data Provider"
+          forced_openid_providers: "Forced OpenID Identity Providers"
 
 
