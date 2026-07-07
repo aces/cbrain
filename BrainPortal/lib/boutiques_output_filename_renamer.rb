@@ -95,7 +95,7 @@
 #           }
 module BoutiquesOutputFilenameRenamer
 
-    # Note: to access the revision info of the module,
+  # Note: to access the revision info of the module,
   # you need to access the constant directly, the
   # object method revision_info() won't work.
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -206,10 +206,6 @@ module BoutiquesOutputFilenameRenamer
         params_errors.add(outnameinputid, "is a pattern that seems to have unreplaced components")
       end
     end
-
-    # check_for_overwriting_output_files(config_map)
-    # msg = "BoutiquesOutputFilenameRenamer module require actual pattern with {task_id}, {full} or {full_ex} is not compatible with batch tasks"
-    # raise exception msg unless self.has_pattern?
     message
   end
 
