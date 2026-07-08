@@ -217,7 +217,7 @@ module BoutiquesOutputFilenameRenamer
   def final_task_list
     tasklist = super
     if tasklist.length > 1 && tasklist.last.is_a?(CbrainTask)
-      descriptor = descriptor_for_after_form
+      descriptor = descriptor_for_final_task_list
       config_map = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer') || {}
 
       # check that the output file names are unique at least for same output id
@@ -225,17 +225,17 @@ module BoutiquesOutputFilenameRenamer
 
       config_map.each do |_, pair|
         fileinputid, outnameinputid = *pair
-        outname_pattern             = invoke_params[outnameinputid].gsub('{time}', 'timestamp') # timestamp is unreliable
-        next if outname_pattern.include?('{task_id}') # enough for unique output names for input
+        original_outname_pattern    = invoke_params[outnameinputid]
+        next if original_outname_pattern.include?('{task_id}') # usually enough for unique output names for input
+        outname_pattern          = original_outname_pattern.gsub('{time}', '12:23:45') # time is not very reliable
         outnames                 = {}
         outname = input_userfile = nil
-        t, _     = tasklist.each_with_index.detect do |t, i|
-
+        t, _    = tasklist.each_with_index.detect do |t, i|
           input_userfile_id = t.invoke_params[fileinputid]
           input_userfile    = Userfile.find(input_userfile_id)
           outname           = t.output_name_from_pattern(outname_pattern, input_userfile.name) # expected output file name
-          outnames[outname] ||= i # index of the first task in the tasklist, resulting in that output file name
-          outnames[outname] < i   # same outname in two tasks
+          outnames[outname] ||= i  # index of the first task in the tasklist, resulting in output file name 'outname'
+          outnames[outname] < i    # the file name could be generate both by  i-th and one of previous tasks
         end
 
         if !t.nil?
@@ -245,7 +245,7 @@ module BoutiquesOutputFilenameRenamer
 
           msg = ":BoutiquesOutputFilenameRenamer module require unique output names for batch tasks," +
                 "yet input files '#{input_userfile.name}' and '#{input_userfile_1.name}' result in the same output file " +
-                " '#{outname}' for output file pattern #{outname_pattern} ."
+                " '#{outname}' for output file pattern '#{original_outname_pattern}'."
 
           self.errors.add(outnameinputid,  ": Add a pattern that may result in different files names, such a {full} or {task} to '#{outname_pattern}' ")
           t.errors.add(outnameinputid, msg)
