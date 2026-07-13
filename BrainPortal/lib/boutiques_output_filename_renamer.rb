@@ -212,8 +212,8 @@ module BoutiquesOutputFilenameRenamer
 
 
   # checking that output patterns actually provided in the case of batch tasks
-  # because this module disables CBRAIN standards output suffixes that aim at aprevenitn
-  # from overwriting the output files
+  # because this module disables CBRAIN standards output suffixes that aim at avoiding
+  # unintended overwriting the output files
   def final_task_list
     tasklist = super
     if tasklist.length > 1 && tasklist.last.is_a?(CbrainTask)
@@ -243,11 +243,11 @@ module BoutiquesOutputFilenameRenamer
           input_userfile_id_1 = t_1.invoke_params[fileinputid]     # input file id resulting in duplicated output file name
           input_userfile_1    = Userfile.find(input_userfile_id_1)
 
-          msg = ":BoutiquesOutputFilenameRenamer module require unique output names for batch tasks," +
+          msg = ":BoutiquesOutputFilenameRenamer module require unique output names for batch tasks, " +
                 "yet input files '#{input_userfile.name}' and '#{input_userfile_1.name}' result in the same output file " +
                 " '#{outname}' for output file pattern '#{original_outname_pattern}'."
 
-          self.errors.add(outnameinputid,  ": Add a pattern that may result in different files names, such a {full} or {task} to '#{outname_pattern}' ")
+          self.errors.add(outnameinputid,  ": Add a pattern that may result in different files names, such a {full} or {task_id} to '#{outname_pattern}' ")
           t.errors.add(outnameinputid, msg)
         end
       end
