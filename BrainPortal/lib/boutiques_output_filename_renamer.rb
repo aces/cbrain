@@ -211,47 +211,56 @@ module BoutiquesOutputFilenameRenamer
 
 
 
-  # checking that output patterns actually provided in the case of batch tasks
-  # because this module disables CBRAIN standards output suffixes that aim at avoiding
-  # unintended overwriting the output files
+  # Validates that batch tasks will not produce duplicate output file names.
+  # This is necessary because this module disables CBRAIN's standard output
+  # suffixes that normally prevent overwriting existing files.
+  # The collision between different kinds of outputs is possible but seldom occurs,
+  # so it is never validated.
   def final_task_list
     tasklist = super
-    if tasklist.length > 1 && tasklist.last.is_a?(CbrainTask)
-      descriptor = descriptor_for_final_task_list
-      config_map = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer') || {}
+    return tasklist unless tasklist.length > 1 && tasklist.last.is_a?(CbrainTask)
 
-      # check that the output file names are unique at least for same output id
-      # (still there could be overwriting for different output ids)
+    descriptor = descriptor_for_final_task_list
+    config_map = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer') || {}
+    current_date = Time.now.strftime("%Y-%m-%d")
+    current_time = Time.now.strftime("%H:%M:%S")
 
-      config_map.each do |_, pair|
-        fileinputid, outnameinputid = *pair
-        original_outname_pattern    = invoke_params[outnameinputid]
-        next if original_outname_pattern.include?('{task_id}') # usually enough for unique output names for input
-        outname_pattern          = original_outname_pattern.gsub('{time}', '12:23:45') # time is not very reliable
-        outnames                 = {}
-        outname = input_userfile = nil
-        t, _    = tasklist.each_with_index.detect do |t, i|
-          input_userfile_id = t.invoke_params[fileinputid]
-          input_userfile    = Userfile.find(input_userfile_id)
-          outname           = t.output_name_from_pattern(outname_pattern, input_userfile.name) # expected output file name
-          outnames[outname] ||= i  # index of the first task in the tasklist, resulting in output file name 'outname'
-          outnames[outname] < i    # the file name could be generate both by  i-th and one of previous tasks
+    config_map.each do |_, pair|
+      fileinputid, outnameinputid = *pair
+      original_outname_pattern = invoke_params[outnameinputid]
+      next if original_outname_pattern.include?('{task_id}') # task_id is unique per task, so the resulting name
+
+      # Replace {time} with a fixed value. The real time flow is unpredictable and cannot be relied upon in long loops
+      outname_pattern = original_outname_pattern.gsub('{time}', current_time).gsub('{date}', current_date)
+
+      # load all userfiles for this input in one shot
+      userfile_ids    = tasklist.map { |t| t.invoke_params[fileinputid] }
+      userfiles_by_id = Userfile.where(id: userfile_ids).index_by(&:id)  # access rights validated by the parent
+
+      # Loop and stop at the first collision
+      seen = {} # outname => [task_index, userfile]
+      tasklist.each_with_index do |t, i|
+        userfile = userfiles_by_id[t.invoke_params[fileinputid]]
+        outname  = t.output_name_from_pattern(outname_pattern, userfile.name)
+
+        if seen.key?(outname)
+          _, first_userfile = seen[outname]
+
+          msg  = "BoutiquesOutputFilenameRenamer requires unique output names for batch tasks."
+          msg += " Yet input files '#{userfile&.name}' and '#{first_userfile&.name}' both produce " \
+                "'#{outname}' for pattern '#{original_outname_pattern}'."
+          t.errors.add(:base, msg)
+          # just in case, the above message could be enough
+          add_invoke_params_error(outnameinputid, ": create a pattern that produces distinct names, " \
+                                          "such as {full} or {task_id}, to '#{original_outname_pattern}' output pattern")
+
+          break
         end
 
-        if !t.nil?
-          t_1                 = tasklist[outnames[outname]]
-          input_userfile_id_1 = t_1.invoke_params[fileinputid]     # input file id resulting in duplicated output file name
-          input_userfile_1    = Userfile.find(input_userfile_id_1)
-
-          msg = ":BoutiquesOutputFilenameRenamer module require unique output names for batch tasks, " +
-                "yet input files '#{input_userfile.name}' and '#{input_userfile_1.name}' result in the same output file " +
-                " '#{outname}' for output file pattern '#{original_outname_pattern}'."
-
-          self.errors.add(outnameinputid,  ": Add a pattern that may result in different files names, such a {full} or {task_id} to '#{outname_pattern}' ")
-          t.errors.add(outnameinputid, msg)
-        end
+        seen[outname] = [i, userfile]
       end
     end
+
     tasklist
   end
 
@@ -284,7 +293,7 @@ module BoutiquesOutputFilenameRenamer
 
   # This overrides the BoutiquesClusterTask method and replaces
   # the default behavor of adding an extension "-taskid" to output
-  # filenames. Instead, we trust the user to have generated a proper filename
+  # filenames. Instead, we expect the user to have generated a proper filename
   # with the pattern system. The "type" value returned is the same as
   # whatever "super" method returned.
   def name_and_type_for_output_file(output, pathname)
