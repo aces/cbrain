@@ -209,8 +209,6 @@ module BoutiquesOutputFilenameRenamer
     message
   end
 
-
-
   # Validates that batch tasks will not produce duplicate output file names.
   # This is necessary because this module disables CBRAIN's standard output
   # suffixes that normally prevent overwriting existing files.
@@ -218,26 +216,37 @@ module BoutiquesOutputFilenameRenamer
   # so it is never validated.
   def final_task_list
     tasklist = super
-    return tasklist unless tasklist.length > 1 && tasklist.last.is_a?(CbrainTask)
+    return tasklist if tasklist.length < 2  # single task
+
+    # addressing a corner case
+    list_plus_message = tasklist  # [t,t,t]    OR   [ [t,t,t], message ]
+    if list_plus_message.size == 2 && list_plus_message[0].is_a?(Array) # rare case when an optional message is present
+      tasklist,message = list_plus_message
+    else # standard case
+      tasklist = list_plus_message
+      message  = nil
+    end
 
     descriptor = descriptor_for_final_task_list
     config_map = descriptor.custom_module_info('BoutiquesOutputFilenameRenamer') || {}
+
     current_date = Time.now.strftime("%Y-%m-%d")
     current_time = Time.now.strftime("%H:%M:%S")
 
     config_map.each do |_, pair|
       fileinputid, outnameinputid = *pair
       original_outname_pattern = invoke_params[outnameinputid]
-      next if original_outname_pattern.include?('{task_id}') # task_id is unique per task, so the resulting name
+      next if original_outname_pattern.blank?
+      next if original_outname_pattern.include?('{task_id}') # task_id is unique per task, hence should be sufficient
 
-      # Replace {time} with a fixed value. The real time flow is unpredictable and cannot be relied upon in long loops
+      # Replace {time} with a fixed value. The real time flow cannot be relied upon in long loops
       outname_pattern = original_outname_pattern.gsub('{time}', current_time).gsub('{date}', current_date)
 
-      # load all userfiles for this input in one shot
+      # load all userfiles for this input
       userfile_ids    = tasklist.map { |t| t.invoke_params[fileinputid] }
-      userfiles_by_id = Userfile.where(id: userfile_ids).index_by(&:id)  # access rights validated by the parent
+      userfiles_by_id = Userfile.where(id: userfile_ids).index_by(&:id)  # access rights are already validated by the parent method
 
-      # Loop and stop at the first collision
+      # Loop and stop at the first found collision
       seen = {} # outname => [task_index, userfile]
       tasklist.each_with_index do |t, i|
         userfile = userfiles_by_id[t.invoke_params[fileinputid]]
@@ -246,14 +255,13 @@ module BoutiquesOutputFilenameRenamer
         if seen.key?(outname)
           _, first_userfile = seen[outname]
 
-          msg  = "BoutiquesOutputFilenameRenamer requires unique output names for batch tasks."
-          msg += " Yet input files '#{userfile&.name}' and '#{first_userfile&.name}' both produce " \
-                "'#{outname}' for pattern '#{original_outname_pattern}'."
+          msg  = "BoutiquesOutputFilenameRenamer requires unique output names for batch tasks." \
+                 " Yet input files '#{userfile.name}' and '#{first_userfile.name}' both produce " \
+                 "'#{outname}' for pattern '#{original_outname_pattern}'."
           t.errors.add(:base, msg)
-          # just in case, the above message could be enough
+          # another hint just in case, the above message could be enough
           add_invoke_params_error(outnameinputid, ": create a pattern that produces distinct names, " \
-                                          "such as {full} or {task_id}, to '#{original_outname_pattern}' output pattern")
-
+                     "such as {full} or {task_id}, to '#{original_outname_pattern}' output pattern")
           break
         end
 
@@ -261,8 +269,9 @@ module BoutiquesOutputFilenameRenamer
       end
     end
 
-    tasklist
+    return tasklist,message
   end
+
 
 
   ##################################################
