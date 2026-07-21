@@ -72,11 +72,46 @@ class FileCollection < Userfile
 
     self.remove_unwanted_files
 
+    # flatten directory if archive file names coincide with only entry
+
+    if likely_has_extra_nexting? # archive name is same as its only 1st level entry
+      basename = File.basename(directory)
+      self.addlog("only directory #{basename} inside similarily named archive #{archive_file_name}, reducing nesting.")
+      subdir = File.join(directory, basename)
+
+      # system("mv #{escaped_subdir}/* #{escaped_directory}") would fail on 3ple nested folder subx/subx/subx
+      # it is easier to work with ruby globing than bash
+      Dir.glob(File.join(subdir, "*"), File::FNM_DOTMATCH).each do |entry|
+        base = File.basename(entry)
+        next if base == "." || base == ".."
+        FileUtils.mv(entry, directory)
+      end
+      begin
+        Dir.rmdir(subdir)
+      rescue Errno::ENOTEMPTY
+        self.addlog('fail removed nested subdirectory, likely triple nesting.')
+      end
+      self.remove_unwanted_files
+
+    end
+
     self.sync_to_provider
     self.set_size!
     self.save
 
     true
+  end
+
+  # Detect a file collection with only dir, which has the same name as the collection.
+  # CBRAIN currently creates a FileCollection with the name of the ZIP file and puts
+  # in it the results of extracting the archive. What often happens then is that the
+  # resulting unintended level, e.g. for "sub-01.zip" we
+  # get "sub-01/sub-01/...". Works on cache
+  def likely_has_extra_nexting?
+    directory = self.cache_full_path
+    basename  = File.basename(directory)
+    entries   = Dir.entries(directory) - %w( . .. )
+    return entries.size == 1 && File.directory?(File.join(directory, basename))
   end
 
   # Calculates and sets the size attribute (active recount forced)
@@ -409,5 +444,3 @@ class FileCollection < Userfile
   end
 
 end
-
-
