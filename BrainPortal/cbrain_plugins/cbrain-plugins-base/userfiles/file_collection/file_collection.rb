@@ -47,7 +47,6 @@ class FileCollection < Userfile
   # The user_id, provider_id and name attributes must already be
   # set at this point.
   def extract_collection_from_archive_file(archive_file_name)
-
     self.cache_prepare
     directory = self.cache_full_path
     Dir.mkdir(directory) unless File.directory?(directory)
@@ -74,7 +73,7 @@ class FileCollection < Userfile
 
     # flatten directory if archive file names coincide with only entry
 
-    if likely_has_extra_nexting? # archive name is same as its only 1st level entry
+    if extra_nexting? # archive name is same as its only 1st level entry
       basename = File.basename(directory)
       self.addlog("only directory #{basename} inside similarily named archive #{archive_file_name}, reducing nesting.")
       subdir = File.join(directory, basename)
@@ -107,11 +106,13 @@ class FileCollection < Userfile
   # in it the results of extracting the archive. What often happens then is that the
   # resulting unintended level, e.g. for "sub-01.zip" we
   # get "sub-01/sub-01/...". Works on cache
-  def likely_has_extra_nexting?
+  def extra_nexting?
     directory = self.cache_full_path
     basename  = File.basename(directory)
     entries   = Dir.entries(directory) - %w( . .. )
     return entries.size == 1 && File.directory?(File.join(directory, basename))
+  rescue
+    return false
   end
 
   # Calculates and sets the size attribute (active recount forced)
