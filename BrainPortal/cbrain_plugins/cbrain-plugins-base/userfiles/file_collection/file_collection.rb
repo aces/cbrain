@@ -47,6 +47,7 @@ class FileCollection < Userfile
   # The user_id, provider_id and name attributes must already be
   # set at this point.
   def extract_collection_from_archive_file(archive_file_name)
+
     self.cache_prepare
     directory = self.cache_full_path
     Dir.mkdir(directory) unless File.directory?(directory)

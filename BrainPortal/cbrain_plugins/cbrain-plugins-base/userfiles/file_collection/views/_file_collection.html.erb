@@ -29,8 +29,6 @@
   base_dir = base_directory rescue params[:base_directory]
 %>
 
-
-
 <%= render :file   => FileCollection.view_path(:file_collection_form),
            :locals => { :base_directory => base_dir } %>
 
