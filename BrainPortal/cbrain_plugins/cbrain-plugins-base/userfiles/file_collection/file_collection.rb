@@ -71,29 +71,25 @@ class FileCollection < Userfile
 
     self.remove_unwanted_files
 
-    # flatten directory if archive file names coincide with only entry
-
-    if extra_nexting? # archive name is same as its only 1st level entry
+    # we flatten directory if archive file names coincide with only entry
+    if extra_nesting? # archive name/dir is same as its only 1st level entry, and is dir e.g. subx archive has only subx folder
       basename = File.basename(directory)
-      self.addlog("only directory #{basename} inside similarily named archive #{archive_file_name}, reducing nesting.")
+      self.addlog_context(self, "The only directory #{basename} inside similarly named archive #{archive_file_name}, reducing nesting by one level.")
       subdir = File.join(directory, basename)
 
-      # system("mv #{escaped_subdir}/* #{escaped_directory}") would fail on 3ple nested folder subx/subx/subx
-      # it is easier to work with ruby globing than bash
-      Dir.glob(File.join(subdir, "*"), File::FNM_DOTMATCH).each do |entry|
-        base = File.basename(entry)
-        next if base == "." || base == ".."
-        FileUtils.mv(entry, directory)
+      # simple system("mv #{escaped_subdir}/* #{escaped_directory}") would fail on 3ple nested folder subx/subx/subx
+      #
+      tmpdir  = File.join(directory, ".tmp_#{basename}_#{Time.now.strftime('%Y%m%d%H%M%S%N')}_#{rand(1_000_000_000)}")
+      # todo consider a safer tmp dir solution - require 'mkmpdir'; Dir.mktmpdir(".tmp_#{basename}_", directory)
+      FileUtils.mv(subdir, tmpdir)
+      # Move tmpdir's children up into directory
+      Dir.children(tmpdir).map do |f|
+        FileUitls.mv(File.join(tmpdir, f), directory)
       end
-      begin
-        Dir.rmdir(subdir)
-      rescue Errno::ENOTEMPTY
-        self.addlog('fail removed nested subdirectory, likely triple nesting.')
-      end
+
       self.remove_unwanted_files
-
     end
-
+    @dir_list = nil
     self.sync_to_provider
     self.set_size!
     self.save
@@ -105,14 +101,12 @@ class FileCollection < Userfile
   # CBRAIN currently creates a FileCollection with the name of the ZIP file and puts
   # in it the results of extracting the archive. What often happens then is that the
   # resulting unintended level, e.g. for "sub-01.zip" we
-  # get "sub-01/sub-01/...". Works on cache
-  def extra_nexting?
+  # get "sub-01/sub-01/...".
+  def extra_nesting?
     directory = self.cache_full_path
     basename  = File.basename(directory)
     entries   = Dir.entries(directory) - %w( . .. )
     return entries.size == 1 && File.directory?(File.join(directory, basename))
-  rescue
-    return false
   end
 
   # Calculates and sets the size attribute (active recount forced)
@@ -171,7 +165,6 @@ class FileCollection < Userfile
 
   # Mathieu Desrosiers
   # Returns an array of the relative paths to first level subdirectories contained in this collection.
-  # this function only for usage in spmbatch, feel free to contact me if you would like to remove it.
   def list_first_level_dirs
     return @dir_list if @dir_list
     Dir.chdir(self.cache_full_path.parent) do

@@ -86,6 +86,7 @@ describe FileCollection do
       allow(file_collection).to receive(:sync_to_provider)
       allow(file_collection).to receive(:set_size!)
       allow(file_collection).to receive(:save)
+      allow(file_collection).to receive(:extra_nesting?)
     end
 
     it "should execute 'gunzip' if archive is a *.tar.gz" do
@@ -224,4 +225,3 @@ describe FileCollection do
   end
 
 end
-
