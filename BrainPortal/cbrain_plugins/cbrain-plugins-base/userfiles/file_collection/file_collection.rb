@@ -74,7 +74,7 @@ class FileCollection < Userfile
     # we flatten directory if archive file names coincide with only entry
     if extra_nesting? # archive name/dir is same as its only 1st level entry, and is dir e.g. subx archive has only subx folder
       basename = File.basename(directory)
-      self.addlog_context(self, "The only directory #{basename} inside similarly named archive #{archive_file_name}, reducing nesting by one level.")
+      self.addlog_context(self, "The only directory #{basename} inside similarly named archive, reducing nesting by one level.")
       subdir = File.join(directory, basename)
 
       # simple system("mv #{escaped_subdir}/* #{escaped_directory}") would fail on 3ple nested folder subx/subx/subx
@@ -83,8 +83,8 @@ class FileCollection < Userfile
       # todo consider a safer tmp dir solution - require 'mkmpdir'; Dir.mktmpdir(".tmp_#{basename}_", directory)
       FileUtils.mv(subdir, tmpdir)
       # Move tmpdir's children up into directory
-      Dir.children(tmpdir).map do |f|
-        FileUitls.mv(File.join(tmpdir, f), directory)
+      Dir.children(tmpdir).each do |f|
+        FileUtils.mv(File.join(tmpdir, f), directory)
       end
 
       self.remove_unwanted_files
