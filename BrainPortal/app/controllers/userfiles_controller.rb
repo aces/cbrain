@@ -505,6 +505,7 @@ class UserfilesController < ApplicationController
 
     flash[:error]     ||= ""
     flash[:notice]    ||= ""
+
     # Mode of upload; this is determined by the values of the
     # params :_do_extract, and :_up_ex_mode
     mode = :save           # standard upload of one file
