@@ -1,7 +1,7 @@
 
 <%-
 #
-# NeuroHub Project
+# CBRAIN Project
 #
 # Copyright (C) 2020
 # The Royal Institution for the Advancement of Learning
@@ -24,25 +24,30 @@
 
 <% title "Add License", "" %>
 
-<div id="nh_new_license" class="nh_content">
-  <div class="nh_form">
-    <%= form_tag add_license_nh_project_path(@nh_project) do %>
-      <div class="nh_form_title">
-        Add License
-        <p class="field_note"><b>Important:</b> All members of the project will be required to sign the agreement in order to access the project. You, as the author, will be considered as having signed it implicitly.</p>
-      </div>
-      <fieldset>
-        <label>Enter the text of the license agreement for : <%= @nh_project.name %></label>
-        <%= text_area_tag "license_text", "", :required => true, :rows => 20, :cols => 60 %>
+<h2>Add New Licence to Project <%= @group.name %> </h2>
 
-      </fieldset>
-      <div class="btn-section">
-        <%= submit_tag "Add License", :name => :add_license, :class => "btn-solid primary" %>
+<div id="new_license" >
+  <%= form_tag add_license_group_path(@group) do %>
+    <div class="generalbox">
+       <div class="field_note"><b>Important:</b>
+          All members of the project will be required to sign the agreement in order to access the project.
+          You, as the author, will be be considered as having signed it implicitly.
+       </div>
+
+      <p>
+        <label>Enter license text: </label>
+      </p>
+      <p>
+        <%= text_area_tag "license_text", "", :required => true, :rows => 20, :class => "whole_width" %>
+
+      </p>
+      <div>
+        <%= submit_tag "Add License", :name => :add_license, :class => "button" %>
         <span class="field_note">
           You can assign additional license agreements at any time.
         </span>
       </div>
-    <% end %>
-  </div>
+    </div>
+  <% end %>
 </div>
 
