@@ -22,11 +22,25 @@
 #
 -%>
 
+
 <% title 'Data Provider Info' %>
 
 <% has_owner_access = (check_role(:admin_user) || @provider.user_id == current_user.id) %>
 <% is_userkey_dp    = @provider.is_a?(UserkeyFlatDirSshDataProvider) %>
 <% needs_ssh_config = @provider.is_a?(SshDataProvider) || @provider.is_a?(SmartDataProviderInterface) %>
+
+<%
+    # tribox method creates tristate checkbox for table, to be used with meta data store
+    # meta_value can have values allowed, disabled and empty (=indetermiate state)
+    def tribox(t, model, meta_key, meta_value, default_value, cls)
+     if meta_value.present?
+       t.boolean_edit_cell("meta[#{meta_key}]", meta_value, "allowed", "disabled", :header => "#{model.name}", :class => 'checkbox_label', :input_options => { class: cls } )
+     else
+       t.boolean_edit_cell("meta[#{meta_key}]", default_value, "allowed", "disabled", :header => "<em>#{model.name}</em>".html_safe, :class => 'checkbox_label indeterminate_box_label', :input_options => { class: "#{cls} indeterminate" } )
+     end
+  end
+%>
+
 
 <div class="menu_bar">
 
@@ -224,20 +238,43 @@
 
     <%= show_table(@provider, :as => :data_provider, :width => 5, :header => 'Files can be copied or moved to these other Data Providers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
       <% if dps_by_category[:official] %>
-        <% t.row(:class => 'subheader') { "<strong>Official Storage</strong>".html_safe } %>
+
+        <% t.row(:class => 'subheader') do %>
+          <strong>Mass controls </strong>
+        <% end %>
+        <% t.boolean_edit_cell("Unsaved toggle", "", "", "", :header => "Reset old to", :class => 'checkbox_label') do %>
+          <%#= select_all_checkbox("dp_box", :persistant_name => meta_key, :id => :dp_select_all) %>
+          <%= select_all_checkbox("dp_box", :id => :dp_select_all) %>
+        <% end %>
+        <% default_key = "dp_no_copy_default" %>
+        <!-- copy to new dataproviders allowed by default   -->
+        <% default_value = @provider.meta[default_key] || "allowed" %>
+        <% t.boolean_edit_cell("meta[#{default_key}]", default_value, "allowed", "disabled",  :header => "Default to", :class => 'checkbox_label')  %>
+        <% t.cell("on all future providers",  :no_header => "explanations", :class => "indeterminate_box_label") do %>
+          &nbsp on new and future providers
+        <% end %>
+        <% t.blank_row %>
+        <% t.row(:class => 'subheader') do %>
+           <strong>Official Storage </strong>
+        <% end %>
+
         <% dps_by_category[:official].sort_by(&:name).each do |dp| %>
           <% meta_key = "dp_no_copy_#{dp.id}" %>
-          <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "disabled", :header => "#{dp.name}", :class => 'checkbox_label') %>
+          <% meta_value = @provider.meta[meta_key] %>
+          <% tribox(t, dp, meta_key, meta_value, default_value, "dp_box" ) %>
         <% end%>
+
       <% end%>
 
       <% t.blank_row %>
+
 
       <% if dps_by_category[:user] %>
         <% t.row(:class => 'subheader') { "<strong>User or Site Storage</strong>".html_safe } %>
         <% dps_by_category[:user].sort_by(&:name).each do |dp| %>
           <% meta_key = "dp_no_copy_#{dp.id}" %>
-          <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "disabled", :header => "#{dp.name}", :class => 'checkbox_label') %>
+          <% meta_value = @provider.meta[meta_key] %>
+          <% tribox(t, dp, meta_key, meta_value, default_value, "dp_box" ) %>
         <% end%>
       <% end%>
     <% end%>
@@ -249,11 +286,28 @@
   <% if other_rrs.size > 0 %>
 
     <%= show_table(@provider, :as => :data_provider, :width => 5, :header => 'File contents can be accessed by these Servers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+
+      <% t.row(:class => 'subheader') do %>
+        <strong>Mass controls </strong>
+      <% end %>
+      <% t.boolean_edit_cell("Unsaved toggle", "", "", "", :header => "Reset old to", :class => 'checkbox_label') do %>
+        <%= select_all_checkbox("rr_box", :id => :rr_select_all) %>
+      <% end %>
+      <% default_key = "rr_no_sync_default" %>
+      <!-- sycn to new Remote Resources allowed by default   -->
+      <% default_value = @provider.meta[default_key] || "allowed" %>
+      <% t.boolean_edit_cell("meta[#{default_key}]", default_value, "allowed", "disabled",  :header => "Default to", :class => 'checkbox_label')  %>
+      <% t.cell("on all future servers",  :no_header => "explanations", :class => "indeterminate_box_label") do %>
+        &nbsp on new and future servers
+      <% end %>
+      <% t.blank_row %>
+
       <% if rrs_by_category[:portal] %>
         <% t.row(:class => 'subheader') { "<strong>Portals<strong>".html_safe } %>
         <% rrs_by_category[:portal].sort_by(&:name).each do |rr| %>
           <% meta_key = "rr_no_sync_#{rr.id}" %>
-          <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "#{rr.name} cannot sync #{@provider.name}", :header => "#{rr.name}", :class => 'checkbox_label') %>
+          <% meta_value = "disabled" if @provider.meta[meta_key]&.length&.> 7 # to avoid migration, works with old and new value %>
+          <% tribox(t, rr, meta_key, meta_value, default_value, "rr_box" ) %>
         <% end%>
       <% end%>
 
@@ -263,7 +317,9 @@
         <% t.row(:class => 'subheader') { "<strong>Execution Servers<strong>".html_safe } %>
         <% rrs_by_category[:bourreau].sort_by(&:name).each do |rr| %>
           <% meta_key = "rr_no_sync_#{rr.id}" %>
-          <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "#{rr.name} cannot sync #{@provider.name}", :header => "#{rr.name}", :class => 'checkbox_label') %>
+          <% meta_value = @provider.meta[meta_key] %>
+          <% meta_value = "disabled" if @provider.meta[meta_key]&.length&.> 7 # to avoid migration%>
+          <% tribox(t, rr, meta_key, meta_value, default_value, "rr_box" ) %>
         <% end%>
       <% end%>
     <% end%>
@@ -289,5 +345,9 @@
   <p>
 
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @provider.getlog, :title => "Data Provider Log" } %>
+<% end %>
+
+<% content_for :scripts do %>
+  <%= javascript_include_tag 'cbrain/data_providers/tribox' %>
 <% end %>
 

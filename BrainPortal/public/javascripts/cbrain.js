@@ -666,6 +666,8 @@
 
       $('.' + checkbox_class).each(function(index, element) {
         element.checked = header_box.prop('checked');
+        // todo add artificial event, e.g. to propagage changes with tri-state checkboxes
+        // smth like element.trigger("code-change")
       });
     };
 
