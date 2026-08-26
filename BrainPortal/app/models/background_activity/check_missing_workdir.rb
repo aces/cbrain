@@ -47,6 +47,11 @@ class BackgroundActivity::CheckMissingWorkdir < BackgroundActivity
     .save!
   end
 
+  def targets_model
+    CbrainTask
+  end
+
+
   def process(task_id)
     task = CbrainTask.where(:bourreau_id => self.remote_resource_id).find(task_id)
     full = task.full_cluster_workdir

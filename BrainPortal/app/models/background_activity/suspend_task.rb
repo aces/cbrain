@@ -37,6 +37,7 @@ class BackgroundActivity::SuspendTask < BackgroundActivity
 
   before_save :must_be_on_bourreau!
 
+
   def process(item)
     task  = CbrainTask.where(:bourreau_id => CBRAIN::SelfRemoteResourceId).find(item)
     ok    = task.suspend
