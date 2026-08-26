@@ -37,9 +37,15 @@
 </fieldset>
 
 <fieldset>
-  <legend>Extraction patterns:</legend>
+  <legend>Patterns to match and place files </legend>
   <% 10.times do |i| %>
-    <%= form.params_text_field "patterns[#{i}]", :size => 120 %><p>
+    <%= form.label "patterns[#{i}]", "Match pattern # #{i}"%>
+    <%= form.params_text_field "patterns[#{i}]", :size => 100 %> <p>
+    <%= form.label "replace_paths[#{i}]", "Substitute" %>
+    <%= form.params_text_field "replace_paths[#{i}]", :size => 100 %> <p></p>
+    <%= form.label "folders[#{i}]", "Extract folders?" %>
+    <%= form.params_check_box "folders[#{i}]" %> <p>
+    <hr>
   <% end %>
   <p>
   <strong>About these patterns:</strong>
@@ -62,6 +68,10 @@
     Typically, all patterns will start with <em>*/</em> because the first component must match
     the names of the FileCollections themselves.
     <p>
+    If you like you can provide a replace pattern, that can include \1, \2, to reference the 1rst, 2nd, etc. matched
+      wildcards (* or ?).
+    . \+ stands for the last  and \0 stands for the entire path
+
     See the 'help' link above for more information and examples.
   </div>
 </fieldset>
@@ -70,4 +80,3 @@
   <legend>Output name</legend>
   <%= form.params_text_field :output_file_name, :size => 40 %>
 </fieldset>
-
