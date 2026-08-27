@@ -1,4 +1,3 @@
-
 <%
 #
 # CBRAIN Project
@@ -22,29 +21,68 @@
 #
 %>
 
-<% if params[:new_tab].blank? # show only on userfile page %>
+This HTML document is not part of CBRAIN. <em> You should <strong>not</strong> view or
+  interact with it unless you fully trust it. </em> (Forms and external links are disabled.)
+<br>
+
+<% if params[:new_tab].blank?
+     # show only on userfile page %>
   <%= link_to(
-      "Open in a separate tab",
-      display_userfile_url(@userfile,
-        :viewer                => :html,
-        :content_viewer        => "on",
-        :file_name             => @userfile.name,
-        :viewer_userfile_class => "HtmlFile",
-        :new_tab               => "yes"
-      ),
-      :target => "_blank"
-    ) %>
+        "Open in a separate tab",
+        display_userfile_url(@userfile,
+          :viewer                => :html,
+          :content_viewer        => "on",
+          :file_name             => @userfile.name,
+          :viewer_userfile_class => "HtmlFile",
+          :new_tab => "yes"
+        ),
+        :target => "_blank"
+      )
+  %>
 <% end %>
 <br>
-The HTML document previewed in the frame below is not part of CBRAIN. <em> You should <strong>not</strong> open it or
-interact with it unless you fully trust it. </em> Forms and external links are disabled.
+
+<%# -- for other user's files ask confirmation, unless user of files is marked as trusted %>
+<% hide_frame = params[:new_tab].blank? && current_user.id != @userfile.user_id %>
+<% hide_frame &&= !cbrain_session[:trust_user_files]&.include?(@userfile.user_id) %>
+<% hide_frame &&= !cbrain_session[:trust_userfiles]&.include?(@userfile.id) %>
+<% if hide_frame %>
+  <div class="trust-file-btn">
+
+    <%= link_to "I trust all #{@userfile.user.login}'s  files,",
+                trust_creator_userfile_path(@userfile),
+                method: :post,
+                remote: true
+    %>
+    show them without warnings during this session
+  </div>
+  <div class="trust-file-btn">
+    <%= link_to "Show just this userfile",
+                trust_userfile_path(@userfile),
+                method: :post,
+                remote: true
+    %>
+  </div>
+<% end %>
+
 <br>
-<iframe sandbox="allow-scripts allow-same-origin"
-    src="<%= stream_userfile_path(@userfile, :disposition => 'inline')%>"
-    class="full-frame"
-    <% if params[:new_tab].present? # workaround to wide frame in a new tab %>
-      style="height: 100%; width: 100%;"
+
+<div class="iframe-container" id="iframe-container"
+    <% if hide_frame %>
+      hidden
     <% end %>
- >
+>
+  <iframe sandbox="allow-scripts allow-same-origin"
+      data-frame-url="<%= stream_userfile_path(@userfile, :disposition => 'inline') %>"
+      <% unless hide_frame %>
+        src="<%= stream_userfile_path(@userfile, :disposition => 'inline') %>"
+      <% end %>
+        class="full-frame html-viewer"
+      <% if params[:new_tab].present?
+        # workaround to wide frame in a new tab %>
+        style="height: 100%; width: 100%;"
+      <% end %>
+  >
     HTML Viewer
-</iframe>
+  </iframe>
+</div>
