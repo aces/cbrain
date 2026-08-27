@@ -51,6 +51,7 @@ Rails.application.routes.draw do
   resources :quotas,          :only   => [ :new, :index, :show, :create, :destroy, :update ] do
     collection do
       get 'report'
+      get 'report_almost'
     end
   end
 

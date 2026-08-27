@@ -22,15 +22,13 @@
 #
 -%>
 
-<% title "Exceeded Disk Quotas" %>
+<% title 'Almost Exceeded Quotas' %>
 
 <div class="menu_bar">
+  <%= link_to "Back to Exceeded Quotas Report", report_quotas_path(:mode => :disk), :class => :button %>
   <%= link_to "Back To Disk Quotas",  quotas_path(:mode => :disk), :class => :button %>
-  <%= link_to "Close to Quotas", report_almost_quotas_path(:mode => :disk), :class => :button %>
   <p>
 </div>
-
-<p>
 
 <table>
   <tr>
@@ -40,7 +38,8 @@
     <th>Size quota</th>
     <th>Number of files</th>
     <th>Number of files quota</th>
-    <th>Situation</th>
+    <th>Close to Quota</th>
+    <th>Exceeded</th>
     <th>Details</th>
     <th>Quota record</th>
   <tr>
@@ -51,12 +50,18 @@
     # at some point I enhance the controller code to show 'nearly exceeded' quotas
     # and then we should remove it.
   %>
-  <% situation = quota.exceeded?(user_id) %>
-  <% next unless situation.present? %>
-  <% user_class = quota.is_for_user?         ? 'class="quota_user_quota_highlight"'.html_safe : "" %>
-  <% dp_class   = quota.is_for_resource?     ? 'class="quota_resource_quota_highlight"'.html_safe   : "" %>
-  <% bytes_class = situation.to_s =~ /bytes/ ? 'class="quota_exceeded"'.html_safe : "" %>
-  <% files_class = situation.to_s =~ /files/ ? 'class="quota_exceeded"'.html_safe : "" %>
+  <% exceeded  = quota.exceeded?(user_id) %>
+  <% almost    = quota.almost_exceeded?(user_id) unless exceeded %>
+
+  <% next unless almost || exceeded %>
+  <% user_class  = quota.is_for_user?         ? 'class="quota_user_quota_highlight"'.html_safe : "" %>
+  <% dp_class    = quota.is_for_resource?     ? 'class="quota_dp_quota_highlight"'.html_safe   : "" %>
+  <% bytes_class = almost.to_s =~ /bytes/ ? 'class="quota_almost_exceeded"'.html_safe : "" %>
+  <% bytes_class = 'class="quota_exceeded"'.html_safe if exceeded.to_s  =~ /bytes/ %>
+  <% files_class = almost.to_s =~ /files/ ? 'class="quota_almost_exceeded"'.html_safe : "" %>
+  <% files_class = 'class="quota_exceeded"'.html_safe if exceeded.to_s  =~ /files/ %>
+
+
   <tr>
     <td <%= user_class %>><%= link_to_user_if_accessible(user_id) %></td>
     <td <%= dp_class %>><%= link_to_data_provider_if_accessible(quota.data_provider_id) %></td>
@@ -64,7 +69,8 @@
     <td><%= pretty_quota_max_bytes(quota) %></td>
     <td <%= files_class %>><%= number_with_commas(quota.curfiles) %></td>
     <td><%= pretty_quota_max_files(quota) %></td>
-    <td><%= situation.to_s.humanize %></td>
+    <td><%= almost.to_s.humanize %></td>
+    <td><%= exceeded.to_s.humanize %></td>
     <td><%=
       link_to 'Table',
               report_path(
@@ -78,7 +84,7 @@
       %>
     </td>
     <td>
-      <% label = quota.is_for_user? ? "(User Quota)" : "(DP Quota)" %>
+      <% label = quota.is_for_resource? ? "(DP Quota)" : "(User Quota)" %>
       <%= link_to("Show/Edit #{label}", quota_path(quota), :class => "action_link") %>
     </td>
   </tr>
