@@ -1351,6 +1351,7 @@ class TasksController < ApplicationController
       :user_id, :group_id, :description, :status,
       :bourreau_id, :tool_config_id,
       :batch_id,
+      :success_cleanup_policy, :failure_cleanup_policy,
       :results_data_provider_id, :params => {}
     )
     # There are way too many 'params' in the next bit of code. Two different
