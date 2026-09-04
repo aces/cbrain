@@ -102,7 +102,7 @@
 
     <% t.cell(t('.cells.userfiles')) { index_count_filter @group.userfiles.count, :userfiles, {:group_id => @group.id}, :show_zeros => true } %>
 
-    <% t.cell(t('.cells.cbrain_tasks')) { index_count_filter @group.cbrain_tasks.count, :tasks, {:group_id => @group.id}, :show_zeros => true } %>
+    <% t.cell(t('.cells.tasks')) { index_count_filter @group.cbrain_tasks.count, :tasks, {:group_id => @group.id}, :show_zeros => true } %>
 
     <% if current_user.has_role?(:admin_user) %>
       <% t.cell(t('.cells.tools')) { index_count_filter @group.tools.count, :tools, {:group_id => @group.id} }%>

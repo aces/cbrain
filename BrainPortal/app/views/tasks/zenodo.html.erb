@@ -75,9 +75,9 @@
           <% end %>
         <% elsif userfile.zenodo_deposit_id.present? %>
           <% if userfile.zenodo_deposit_id == @task.zenodo_deposit_id %>
-            <%= status_label.("zenodo_complete", t('upload_colon')) %>
+            <%= status_label.("zenodo_complete", t('labels.upload_colon')) %>
           <% else %>
-            <%= status_label.("zenodo_incomplete", t('conflict_colon')) %>
+            <%= status_label.("zenodo_incomplete", t('labels.conflict_colon')) %>
           <% end %>
         <% else %>
           <%= status_label.("zenodo_inprogress", t('.prepare.scheduled_for_upload')) %>
@@ -115,19 +115,19 @@
   <p>
   <% if step_1_status == "zenodo_complete" && step_2_status == "zenodo_complete" %>
     <% if @task.zenodo_doi.present? %>
-      <%= t('.publish.doi_1_html', doi: @task.zenodo_doi) %>
+      <%= t('.paragraphs.publish.doi_1_html', doi: @task.zenodo_doi) %>
       <p>
       <%= link_to_zenodo_doi(@task.zenodo_doi) %>
       <p>
-      <%= t('.publish.doi_2_html', link: link_to_deposit(@task.zenodo_deposit_id)) %>
+      <%= t('.paragraphs.publish.doi_2_html', link: link_to_deposit(@task.zenodo_deposit_id)) %>
     <% else %>
-      <%= t('.publish.no_doi_1_html', link: link_to_deposit(@task.zenodo_deposit_id)) %>
+      <%= t('.paragraphs.publish.no_doi_1_html', link: link_to_deposit(@task.zenodo_deposit_id)) %>
       <p>
       <% refresh_link = link_to t('.links.refresh_message'), zenodo_task_path(@task) %>
-      <%= t('.publish.no_doi_2_html', link: refresh_link) %>
+      <%= t('.paragraphs.publish.no_doi_2_html', link: refresh_link) %>
     <% end %>
   <% else %>
-    <%= t('.publish.waiting') %>
+    <%= t('.paragraphs.publish.waiting') %>
   <% end %>
 </fieldset>
 
@@ -143,16 +143,16 @@
 
   <fieldset class="zenodo_incomplete">
     <legend><%= t('.legends.reset_deposit_html') %></legend>
-    <%= t('.reset.deposit_1_description_html') %>
+    <%= t('.paragraphs.reset.deposit_1_description_html') %>
     <p>
-    <%= t('.reset.deposit_2_description_html') %>
+    <%= t('.paragraphs.reset.deposit_2_description_html') %>
     <p>
     <%= link_to t('.links.reset_deposit'), reset_zenodo_task_path(@task.id),
           {
             :class  => "button menu_button",
             :method => :post,
             :data   => {
-              :confirm => t('.reset.deposit_confirmation')
+              :confirm => t('.paragraphs.reset.deposit_confirmation')
             },
           }
     %>
@@ -168,4 +168,3 @@
 <% if @task.zenodo_deposit_id.blank? %>
   <%= render :partial => 'zenodo_deposit_form' %>
 <% end %>
-

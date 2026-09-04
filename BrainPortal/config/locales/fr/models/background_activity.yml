@@ -2,5 +2,5 @@ fr:
   activerecord:
       models:
         background_activity:
-          one: ""
-          other: ""
+          one: "Activité en arrière-plan"
+          other: "Activités en arrière-plan"

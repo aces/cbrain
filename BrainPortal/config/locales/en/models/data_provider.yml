@@ -19,3 +19,4 @@ en:
         cloud_storage_client_token: "Client Token"
         datalad_repository_url: "Datalad URL"
         datalad_relative_path: "Datalad Relative Path"
+        license_agreements: "License Agreements"

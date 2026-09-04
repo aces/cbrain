@@ -11,3 +11,8 @@ en:
       type: "Type"
       size: "Size"
       color: "Color"
+      time_zone: "Time Zone"
+      name: "Name"
+      description: "Description"
+      license_agreements: "License Agreements"
+

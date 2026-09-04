@@ -74,7 +74,7 @@ fr:
         time_zone: "Fuseau horaire"
         type: "Type"
         site: "Site"
-        pref_data_provider_id: "Fournisseur de données par défaut"
+        pref_data_provider_id: "Serveur de stockage par défaut"
         allowed_globus_provider_names: "Fournisseurs d'identité OpenID forcés"
         password: "Mot de passe"
         confirm_password: "Confirmer le mot de passe"
@@ -86,7 +86,7 @@ fr:
           </span>
         dp_html: |
           <span class="field_explanation">
-            Si défini, assurez-vous qu'il s'agit d'un fournisseur de données auquel l'utilisateur pourra accéder.
+            Si défini, assurez-vous qu'il s'agit d'un serveur de stockage auquel l'utilisateur pourra accéder.
           </span>
         openid_html: |
           <span class="field_explanation">
@@ -145,15 +145,16 @@ fr:
       prompts:
         select_site: "(Sélectionner un site)"
       cells:
+        login: "Utilisateur"
         last_connected: "Dernière connexion"
         never: "(Jamais)"
         public_key: "Clé publique"
-        provider: "Fournisseur %{name}"
+        provider: "Serveur %{name}"
         orcid_identity: "Identité ORCID"
         active_sessions: "Sessions actives"
         files: "Fichiers"
         tasks: "Tâches"
-        data_providers: "Fournisseurs de données"
+        data_providers: "Serveurs de stockage"
         historical_storage: "Stockage historique"
         historical_cpu_time: "Temps CPU historique"
         tools: "Outils"
@@ -162,8 +163,8 @@ fr:
         installation_sites: "Sites d'installation"
       headings:
         message: "L'utilisateur n'a pas pu être mis à jour."
-        pref_data_provider_id: "Fournisseur de données par défaut"
-        pref_bourreau_id: "Bourreau par défaut"
+        pref_data_provider_id: "Serveur de stockage par défaut"
+        pref_bourreau_id: "Serveur de calcul par défaut"
         account_locked: "Compte verrouillé"
         ip_whitelist: "Liste blanche des IP sources"
         allowed_globus_provider_names: "Fournisseurs OpenID forcés"
@@ -172,10 +173,10 @@ fr:
         zenodo_publishing: "Publication Zenodo"
         zenodo_sandbox_token: "Jeton Sandbox Zenodo"
         zenodo_official_token: "Jeton officiel Zenodo"
-        license_agreements: "Accords de licence"
+        license_agreements: "Licence"
         linked_identities: "Identités liées"
-        provider_name: "Nom du fournisseur :"
-        provider_user: "Utilisateur du fournisseur :"
+        provider_name: "Nom du serveur :"
+        provider_user: "Utilisateur du serveur :"
         ip: "IP"
         last_access: "Dernier accès"
         resources: "Ressources"

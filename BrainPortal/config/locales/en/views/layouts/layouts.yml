@@ -59,7 +59,7 @@ en:
           select_project: "(Click here to select a Project and access Files and Tasks)"
           profiles: "Profiles"
           data_providers: "Data providers"
-          bourreau: "Execution Server"
+          bourreaux: "Servers"
           tools: "Tools"
           tool_configs: "Tool Configurations"
           users: "Users"
@@ -74,4 +74,3 @@ en:
         labels:
           signups: "Signups"
           ongoing: "Ongoing"
-

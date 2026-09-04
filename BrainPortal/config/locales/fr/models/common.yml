@@ -11,3 +11,7 @@ fr:
       type: "Type"
       size: "Taille"
       color: "Couleur"
+      time_zone: "Fuseau horaire"
+      name: "Nom"
+      description: "Description"
+      license_agreements: "Licences"

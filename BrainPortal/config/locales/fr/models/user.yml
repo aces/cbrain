@@ -1,8 +1,24 @@
 fr:
   activerecord:
-      models:
-        user:
-          one: "Utilisateur"
-          other: "Utilisateurs"
-
+    models:
+      user:
+        one: "Utilisateur"
+        other: "Utilisateurs"
+    attributes:
+      user:
+        login: "Identifiant"
+        full_name: "Nom complet"
+        email: "Courriel"
+        position: "Fonction"
+        department: "Département"
+        affiliation: "Affiliation"
+        institution: "Établissement"
+        city: "Ville"
+        country: "Pays"
+        type: "Type"
+        site: "Site"
+        default_data_provider: "Serveur de stockage par défaut"
+        forced_openid_providers: "Fournisseurs d'identité OpenID imposés"
+        password: "Mot de passe"
+        time_zone: "Fuseau horaire"
 

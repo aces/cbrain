@@ -146,6 +146,7 @@ en:
       prompts:
         select_site: "(Select a site)"
       cells:
+        login: "Login"
         last_connected: "Last Connected"
         never: "(Never)"
         public_key: "Public Key"

@@ -98,6 +98,8 @@ en:
       tasks: "Tasks:"
       spans:
         creator: "Creator:"
+        files: "Files:"
+        tasks: "Tasks:"
         user_count:
           one: "1 user"
           other: "%{count} users"
@@ -180,6 +182,7 @@ en:
         members: "Members"
         track_usage: "Track Usage"
         not_assignable: "Not Assignable"
+        public: "Public"
       paragraphs:
         creator_html: |
           <div class="field_explanation">

@@ -159,7 +159,7 @@
     ) { |r| overlay_description(r.description) }
 
     t.column(t('.columns.status_page_url'), :status_url) do |r|
-      link_to(t('status_colon'), r.external_status_page_url, :class => "action_link", :target => "_blank") if
+      link_to(t('labels.status_colon'), r.external_status_page_url, :class => "action_link", :target => "_blank") if
         r.is_a?(Bourreau) && ! r.external_status_page_url.blank?
     end
 

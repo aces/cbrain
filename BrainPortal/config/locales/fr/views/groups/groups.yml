@@ -1,209 +1,212 @@
-en:
+fr:
   groups:
 
-common:
+    common:
       creator: "Créateur"
       select_site: "(Sélectionner un site)"
 
-      groups_table:
-        links:
-          create_project: "Créer un projet"
-          large_buttons: "Grands boutons"
-          small_buttons: "Petits boutons"
-          project_count:
-            one: "1 projet"
-            other: "%{count} projets"
-        buttons:
-          switch_to_list_view: "Passer en vue liste"
-          switch_to_button_view: "Passer en vue boutons"
+    groups_table:
+      links:
+        create_project: "Créer un projet"
+        large_buttons: "Grands boutons"
+        small_buttons: "Petits boutons"
+        project_count:
+          one: "1 projet"
+          other: "%{count} projets"
+      buttons:
+        switch_to_list_view: "Passer en vue liste"
+        switch_to_button_view: "Passer en vue boutons"
 
-      users_form:
-        active_users: "Utilisateurs actifs"
-        locked_users: "Utilisateurs verrouillés"
-        labels:
-          quick_select_work: "Sélection rapide basée sur d'autres projets de travail"
-          quick_select_site: "Sélection rapide basée sur d'autres projets de site"
+    users_form:
+      active_users: "Utilisateurs actifs"
+      locked_users: "Utilisateurs verrouillés"
+      labels:
+        quick_select_work: "Sélection rapide basée sur d'autres projets de travail"
+        quick_select_site: "Sélection rapide basée sur d'autres projets de site"
 
-      view_buttons:
-        paragraphs:
-          description_html: |
-            <div class="medium_paragraphs">
-              Un projet permet de regrouper sous un même nom un ensemble
-              de fichiers et de tâches CBRAIN. Un projet <em>n'est pas un dossier</em>.
-              Passer à un projet le rend 'actif'. Lorsqu'un
-              projet est actif, un filtre implicite automatique sera appliqué
-              de sorte que seuls les fichiers et tâches assignés au projet sera affichés
-              dans le gestionnaire de fichiers ou de tâches.
-            </div>
-          my_private_projects_html: |
-            <p class="medium_paragraphs">
-              Ces projets sont visibles uniquement par vous. Il existe un projet particulier
-              nommé <strong>%{name}</strong> créé automatiquement
-              par le système pour vous par défaut, et qui ne peut pas être supprimé. Chacun
-              de ces projets peut devenir un projet partagé en invitant d'autres
-              utilisateurs à le rejoindre. Dans ce cas, les projets apparaîtront dans un onglet séparé.
-            </p>
-          my_shared_projects_html: |
-            <p class="medium_paragraphs">
-              Ce sont des projets que vous avez créés et qui sont partagés avec d'autres utilisateurs.
-              Les fichiers et tâches assignés à un projet sont visibles par tous les membres de ce projet.
-            </p>
-          projects_shared_with_me_html: |
-            <p class="medium_paragraphs">
-              Ce sont des projets créés par d'autres utilisateurs qui vous ont invité à les rejoindre.
-              Les fichiers et tâches assignés à un projet sont visibles par tous les membres de ce projet.
-            </p>
-          public_projects_html: |
-            <p class="medium_paragraphs">
-              Ce sont des projets publics. Tous les fichiers et tâches qui leur sont assignés sont visibles par tous les utilisateurs !
-            </p>
-          site_projects_html: |
-            <p class="medium_paragraphs">
-              Ce sont des projets de site. Ils peuvent être utilisés pour partager fichiers et tâches entre l'ensemble des utilisateurs
-              appartenant au Site associé.
-            </p>
-          admin_only_html: |
-            <p class="medium_paragraphs">Administrateurs seulement</p>
-          special_all_project_html: |
-            <p class="medium_paragraphs">
-              Ce projet spécial <strong>TOUS</strong> n'est en fait pas un
-              projet. Le sélectionner comme projet 'actif'
-              désactivera tout filtrage par projet, vous permettant de voir
-              ensemble <strong>tous</strong> les fichiers et tâches.
-              Le gestionnaire de fichiers et le gestionnaire de tâches afficheront une nouvelle
-              colonne où vous pourrez filtrer par projet directement.
-              Sélectionner le projet <strong>TOUS</strong> est utile lorsque vous devez gérer ou parcourir des fichiers et tâches
-              répartis dans plusieurs projets.
-            </p>
-          other_projects_html: |
-            <p class="medium_paragraphs">
-              Projets qui, pour une raison quelconque, ne sont pas assignés à d'autres onglets
-            </p>
-        tabs:
-          my_private_projects: "Mes projets privés"
-          my_shared_projects: "Mes projets partagés"
-          projects_shared_with_me: "Projets partagés avec moi"
-          public_projects: "Projets publics"
-          site_projects: "Projets du site"
-          other_users_system_projects: "Projets système d'autres utilisateurs"
-          other_users_private_projects: "Projets privés d'autres utilisateurs"
-          other_projects: "Autres projets"
-          special_all_project: "Projet spécial 'TOUS'"
+    view_buttons:
+      paragraphs:
+        description_html: |
+          <div class="medium_paragraphs">
+            Un projet permet de regrouper sous un même nom un ensemble
+            de fichiers et de tâches CBRAIN. Un projet <em>n'est pas un dossier</em>.
+            Passer à un projet le rend 'actif'. Lorsqu'un
+            projet est actif, un filtre implicite automatique sera appliqué
+            de sorte que seuls les fichiers et tâches assignés au projet sera affichés
+            dans le gestionnaire de fichiers ou de tâches.
+          </div>
+        my_private_projects_html: |
+          <p class="medium_paragraphs">
+            Ces projets sont visibles uniquement par vous. Il existe un projet particulier
+            nommé <strong>%{name}</strong> créé automatiquement
+            par le système pour vous par défaut, et qui ne peut pas être supprimé. Chacun
+            de ces projets peut devenir un projet partagé en invitant d'autres
+            utilisateurs à le rejoindre. Dans ce cas, les projets apparaîtront dans un onglet séparé.
+          </p>
+        my_shared_projects_html: |
+          <p class="medium_paragraphs">
+            Ce sont des projets que vous avez créés et qui sont partagés avec d'autres utilisateurs.
+            Les fichiers et tâches assignés à un projet sont visibles par tous les membres de ce projet.
+          </p>
+        projects_shared_with_me_html: |
+          <p class="medium_paragraphs">
+            Ce sont des projets créés par d'autres utilisateurs qui vous ont invité à les rejoindre.
+            Les fichiers et tâches assignés à un projet sont visibles par tous les membres de ce projet.
+          </p>
+        public_projects_html: |
+          <p class="medium_paragraphs">
+            Ce sont des projets publics. Tous les fichiers et tâches qui leur sont assignés sont visibles par tous les utilisateurs !
+          </p>
+        site_projects_html: |
+          <p class="medium_paragraphs">
+            Ce sont des projets de site. Ils peuvent être utilisés pour partager fichiers et tâches entre l'ensemble des utilisateurs
+            appartenant au Site associé.
+          </p>
+        admin_only_html: |
+          <p class="medium_paragraphs">Administrateurs seulement</p>
+        special_all_project_html: |
+          <p class="medium_paragraphs">
+            Ce projet spécial <strong>TOUS</strong> n'est en fait pas un
+            projet. Le sélectionner comme projet 'actif'
+            désactivera tout filtrage par projet, vous permettant de voir
+            ensemble <strong>tous</strong> les fichiers et tâches.
+            Le gestionnaire de fichiers et le gestionnaire de tâches afficheront une nouvelle
+            colonne où vous pourrez filtrer par projet directement.
+            Sélectionner le projet <strong>TOUS</strong> est utile lorsque vous devez gérer ou parcourir des fichiers et tâches
+            répartis dans plusieurs projets.
+          </p>
+        other_projects_html: |
+          <p class="medium_paragraphs">
+            Projets qui, pour une raison quelconque, ne sont pas assignés à d'autres onglets
+          </p>
+      tabs:
+        my_private_projects: "Mes projets privés"
+        my_shared_projects: "Mes projets partagés"
+        projects_shared_with_me: "Projets partagés avec moi"
+        public_projects: "Projets publics"
+        site_projects: "Projets du site"
+        other_users_system_projects: "Projets système d'autres utilisateurs"
+        other_users_private_projects: "Projets privés d'autres utilisateurs"
+        other_projects: "Autres projets"
+        special_all_project: "Projet spécial 'TOUS'"
 
-      view_buttons_tab:
-        headings:
-          all: "Tous"
+    view_buttons_tab:
+      headings:
+        all: "Tous"
+      files: "Fichiers :"
+      tasks: "Tâches :"
+      spans:
+        creator: "Créateur :"
         files: "Fichiers :"
         tasks: "Tâches :"
-        spans:
-          creator: "Créateur :"
-          user_count:
-            one: "1 utilisateur"
-            other: "%{count} utilisateurs"
+        user_count:
+          one: "1 utilisateur"
+          other: "%{count} utilisateurs"
 
-      view_list:
-        row_contents:
-          represents_all_projects: "Représente tous les projets"
-          all_projects: "Tous les projets"
-        columns:
-          name: "Nom"
-          description: "Description"
-          type: "Type de projet"
-          site: "Site"
-          creator: "Créateur"
-          users: "Utilisateurs"
-          files: "Fichiers"
-          tasks: "Tâches"
-          switch: "Basculer"
-        links:
-          switch: "Basculer"
+    view_list:
+      row_contents:
+        represents_all_projects: "Représente tous les projets"
+        all_projects: "Tous les projets"
+      columns:
+        name: "Nom"
+        description: "Description"
+        type: "Type de projet"
+        site: "Site"
+        creator: "Créateur"
+        users: "Utilisateurs"
+        files: "Fichiers"
+        tasks: "Tâches"
+        switch: "Basculer"
+      links:
+        switch: "Basculer"
 
-      index:
-        title: "Projets"
+    index:
+      title: "Projets"
 
-      new:
-        title: "Nouveau projet"
-        headings:
-          main: "Nouveau projet"
-        labels:
-          name: "Nom"
-          description: "Description"
-          site: "Site"
-        paragraphs:
-          description_html: |
-            <div class="field_explanation">
-              La première ligne doit être un résumé court, le reste servant pour des détails.
-            </div>
-          invisible_html: |
-            <p>
-            Rendre ce groupe système invisible pour les utilisateurs normaux :
-          track_usage_html: |
-            <p>
-            Activer le suivi d'utilisation pour les fichiers de ce projet :
-          not_assignable_html: |
-            <p>
-            Les membres normaux ne pourront pas assigner de fichiers ou autres ressources
-            à ce projet (mais les éditeurs le peuvent toujours) :
-          public_html: |
-            <p>
-            Rendre le projet public, de sorte que tous les utilisateurs puissent accéder aux fichiers. Soyez prudent avec cette option ! Vous pouvez toujours rendre le projet public plus tard :
-        prompts:
-          site: "(Sélectionner un site)"
-        submit: "Créer"
+    new:
+      title: "Nouveau projet"
+      headings:
+        main: "Nouveau projet"
+      labels:
+        name: "Nom"
+        description: "Description"
+        site: "Site"
+      paragraphs:
+        description_html: |
+          <div class="field_explanation">
+            La première ligne doit être un résumé court, le reste servant pour des détails.
+          </div>
+        invisible_html: |
+          <p>
+          Rendre ce groupe système invisible pour les utilisateurs normaux :
+        track_usage_html: |
+          <p>
+          Activer le suivi d'utilisation pour les fichiers de ce projet :
+        not_assignable_html: |
+          <p>
+          Les membres normaux ne pourront pas assigner de fichiers ou autres ressources
+          à ce projet (mais les éditeurs le peuvent toujours) :
+        public_html: |
+          <p>
+          Rendre le projet public, de sorte que tous les utilisateurs puissent accéder aux fichiers. Soyez prudent avec cette option ! Vous pouvez toujours rendre le projet public plus tard :
+      prompts:
+        site: "(Sélectionner un site)"
+      submit: "Créer"
 
-      show:
-        title: "Informations du projet"
-        titles:
-          project_log: "Journal du projet"
-        links:
-          leave_project: "Quitter le projet"
-          invite: "Inviter d'autres utilisateurs"
-          remove: " : Supprimer"
-        headings:
-          message_1: "Le projet n'a pas pu être mis à jour."
-          message_2: "Les URLs sont cliquables "
-          message_3: "Assigné aux profils d'accès"
-          creator: "Responsable"
-          resources: "Ressources"
-          members: "Membres"
-          pending_invitations: "Invitations en attente"
-        cells:
-          type: "Type"
-          invisible: "Invisible"
-          userfiles: "Fichiers"
-          tasks: "Tâches"
-          tools: "Outils"
-          data_providers: "Fournisseurs de données"
-          portal: "Portail"
-          execution: "Exécution"
-          members: "Membres"
-          track_usage: "Suivi d'utilisation"
-          not_assignable: "Non assignable"
-        paragraphs:
-          creator_html: |
-            <div class="field_explanation">
-              <span class="warning">Attention</span> : Si vous changez le responsable pour une autre personne, vous ne pourrez plus modifier ce projet
-            </div>
-          description_html: |
-            <div class="field_explanation">
-              La première ligne doit être un résumé court, le reste servant pour des détails.
-            </div>
-          not_assignable_html: |
-            <div class="field_explanation">
-              Si coché, les membres normaux ne pourront pas assigner de fichiers ou autres
-              ressources de ce projet (mais les éditeurs le peuvent toujours).
-            </div>
-          public_html: |
-            <div class="field_explanation">
-              Si coché, un projet public rend tous ses fichiers visibles à tous les utilisateurs. <span class="warning">Soyez prudent</span>
-              avec cette option !
-            </div>
-          invisible_html: |
-            <div class="field_explanation">
-                Si coché, le projet ne sera pas affiché dans la liste des projets.
-              </div>
-            track_usage_html: |
-              <div class="field_explanation">
-                Si coché, le système suivra l'utilisation globale des fichiers dans ce projet
-                (vues, téléchargements, etc.) par mois.
-              </div>
+    show:
+      title: "Informations du projet"
+      titles:
+        project_log: "Journal du projet"
+      links:
+        leave_project: "Quitter le projet"
+        invite: "Inviter d'autres utilisateurs"
+        remove: " : Supprimer"
+      headings:
+        message_1: "Le projet n'a pas pu être mis à jour."
+        message_2: "Les URLs sont cliquables "
+        message_3: "Assigné aux profils d'accès"
+        creator: "Responsable"
+        resources: "Ressources"
+        members: "Membres"
+        pending_invitations: "Invitations en attente"
+      cells:
+        type: "Type"
+        invisible: "Invisible"
+        userfiles: "Fichiers"
+        tasks: "Tâches"
+        tools: "Outils"
+        data_providers: "Serveurs de stockage"
+        portal: "Portail"
+        execution: "Exécution"
+        members: "Membres"
+        track_usage: "Suivi d'utilisation"
+        not_assignable: "Non assignable"
+        public: "Public"
+      paragraphs:
+        creator_html: |
+          <div class="field_explanation">
+            <span class="warning">Attention</span> : Si vous changez le responsable pour une autre personne, vous ne pourrez plus modifier ce projet
+          </div>
+        description_html: |
+          <div class="field_explanation">
+            La première ligne doit être un résumé court, le reste servant pour des détails.
+          </div>
+        not_assignable_html: |
+          <div class="field_explanation">
+            Si coché, les membres normaux ne pourront pas assigner de fichiers ou autres
+            ressources de ce projet (mais les éditeurs le peuvent toujours).
+          </div>
+        public_html: |
+          <div class="field_explanation">
+            Si coché, un projet public rend tous ses fichiers visibles à tous les utilisateurs. <span class="warning">Soyez prudent</span>
+            avec cette option !
+          </div>
+        invisible_html: |
+          <div class="field_explanation">
+            Si coché, le projet ne sera pas affiché dans la liste des projets.
+          </div>
+        track_usage_html: |
+          <div class="field_explanation">
+            Si coché, le système suivra l'utilisation globale des fichiers dans ce projet
+            (vues, téléchargements, etc.) par mois.
+          </div>

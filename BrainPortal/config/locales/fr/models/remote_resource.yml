@@ -1,11 +1,14 @@
 fr:
   activerecord:
-      models:
-        remote_resource:
-          one: "Serveur"
-          other: "Serveurs"
-        portal: "Portail"
-        execution: "Exécution"
-        execution_server: "Serveur d'exécution"
-
-
+    models:
+      remote_resource:
+        one: "Serveur"
+        other: "Serveurs"
+      portal: "Portail"
+      execution: "Exécution"
+      execution_server:
+        one: "Serveur de calcul"
+        other: "Serveurs de calcul"
+      resource:
+        one: "Ressource"
+        other: "Ressources"

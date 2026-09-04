@@ -12,11 +12,10 @@ fr:
         belongs_to: "Appartient à"
         available_to_project: "Disponible pour les membres du projet"
         category: "Catégorie"
-        license_agreements: "Accords de licence"
         description: "Description"
         package_name: "Nom du package"
         tool_type: "Type d'outil"
-        comma_separated_tags: "Étiquettes séparées par des virgules"
+        comma_separated_tags: "Labels séparées par des virgules"
         url: "URL de l'outil"
         select_menu_text: "Texte pour la boîte de sélection sur la page des fichiers utilisateur"
       cells:
@@ -83,6 +82,8 @@ fr:
       title: "Informations sur l'outil"
       titles:
         log_title: "Journal de l'outil"
+      headings:
+        license_agreements: "Licence"
 
     index:
       title: "Outils"
@@ -99,11 +100,10 @@ fr:
         belongs_to: "Appartient à :"
         group: "Disponible pour les membres du projet :"
         category: "Catégorie :"
-        license_agreements: "Accords de licence :"
         description: "Description :"
         package_name: "Nom du package :"
         tool_type: "Type d'outil :"
-        application_tags: "Étiquettes séparées par des virgules :"
+        application_tags: "Labels séparées par des virgules :"
         url: "URL de l'outil :"
         select_menu_text: "Texte pour la boîte de sélection sur la page des fichiers utilisateur :"
       paragraphs:

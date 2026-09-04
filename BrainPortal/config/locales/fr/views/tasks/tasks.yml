@@ -7,7 +7,7 @@ fr:
       server_version_html: "Serveur&nbsp;&amp;&nbsp;version:"
       select_server_version: "Sélectionner le serveur et la version"
       save_results_to_html: "Enregistrer&nbsp;les&nbsp;résultats&nbsp;dans:"
-      select_data_provider: "(Sélectionner un fournisseur de données pour vos résultats)"
+      select_data_provider: "(Sélectionner un serveur de stockage pour vos résultats)"
       description_note: "(La première ligne doit être un court résumé, et les suivantes vos notes.)"
 
     output_renaming_fieldset:
@@ -71,11 +71,11 @@ fr:
       paragraphs:
         for_failed_tasks_html: "Ce panneau vous permet d'agir sur les tâches ayant échoué, d'une manière ou d'une autre.<br />La tentative de récupération après une erreur déclenchera le code de nettoyage ainsi qu'un redémarrage au<br />dernier stade de traitement réussi avant l'échec. Cela ne fonctionne pas toujours,<br />mais il est souvent utile d'essayer au moins une fois!"
         for_completed_tasks_intro_html: "Ce panneau vous permet d'agir sur les tâches terminées avec succès.<br />Vous pouvez essayer de les redémarrer à trois étapes différentes de leur cycle de vie:"
-        for_completed_tasks_list_html: "<ul><li>À l'étape <strong>Configuration</strong>, lorsque les fichiers de données d'entrée<br />sont synchronisés sur le bourreau et que les<br />scripts de traitement sont créés.</li><li>À l'étape <strong>Cluster</strong>, lorsque les scripts scientifiques<br />sont exécutés sur les nœuds du bourreau.</li><li>À l'étape <strong>Post-traitement</strong>, lorsque les fichiers de sortie<br/>résultants sont renvoyés vers les fournisseurs de données de CBRAIN.</li></ul>"
-        for_completed_tasks_note_html: "Vous pouvez également dupliquer des tâches et les recréer sur un autre<br />bourreau. Avant de les redémarrer, assurez-vous toutefois d'ajuster<br />la version de leur outil."
+        for_completed_tasks_list_html: "<ul><li>À l'étape <strong>Configuration</strong>, lorsque les fichiers de données d'entrée<br />sont synchronisés sur le serveur de calcul et que les<br />scripts de traitement sont créés.</li><li>À l'étape <strong>Cluster</strong>, lorsque les scripts scientifiques<br />sont exécutés sur les nœuds du serveur de calcul.</li><li>À l'étape <strong>Post-traitement</strong>, lorsque les fichiers de sortie<br/>résultants sont renvoyés vers les fournisseurs de données de CBRAIN.</li></ul>"
+        for_completed_tasks_note_html: "Vous pouvez également dupliquer des tâches et les recréer sur un autre<br />serveur de calcul. Avant de les redémarrer, assurez-vous toutefois d'ajuster<br />la version de leur outil."
         terminating_and_cleaning_up_html: "Ce panneau vous permet d'agir sur les tâches dont vous n'avez plus besoin.<br />Vous pouvez interrompre des tâches à n'importe quelle étape de leur cycle de vie, même<br />celles ayant échoué. Les tâches marquées <strong>Terminées</strong> peuvent être redémarrées<br />ultérieurement."
-        remove_work_directories_note_html: "Il est également possible de supprimer les répertoires de travail des tâches<br />sur le bourreau tout en conservant le reste des<br />informations des tâches. Cela est utile pour libérer de l'espace sur le serveur<br />ou lorsque les tâches ont traité des données confidentielles que<br />vous préférez ne pas laisser sur le serveur. Le panneau <em>Archivage</em><br />à gauche offre d'autres options pour gérer les<br />répertoires de travail des tâches."
-        remove_tasks_html: "Enfin, vous pouvez supprimer complètement des tâches. Cela effacera le répertoire de travail de la tâche<br />sur le bourreau, y compris les fichiers de données temporaires, mais n'effacera pas<br />les fichiers de sortie d'une tâche terminée avec succès. Cela est utile si vous avez,<br />par exemple, des données confidentielles. La suppression d'une tâche <strong>supprimera</strong> également toute<br />archive du répertoire de travail de cette tâche, le cas échéant (comme indiqué par<br />les symboles %{workdir_status} et<br />%{userfile_status} dans la colonne « Taille du répertoire de travail »)."
+        remove_work_directories_note_html: "Il est également possible de supprimer les répertoires de travail des tâches<br />sur le serveur de calcul tout en conservant le reste des<br />informations des tâches. Cela est utile pour libérer de l'espace sur le serveur<br />ou lorsque les tâches ont traité des données confidentielles que<br />vous préférez ne pas laisser sur le serveur. Le panneau <em>Archivage</em><br />à gauche offre d'autres options pour gérer les<br />répertoires de travail des tâches."
+        remove_tasks_html: "Enfin, vous pouvez supprimer complètement des tâches. Cela effacera le répertoire de travail de la tâche<br />sur le serveur de calcul, y compris les fichiers de données temporaires, mais n'effacera pas<br />les fichiers de sortie d'une tâche terminée avec succès. Cela est utile si vous avez,<br />par exemple, des données confidentielles. La suppression d'une tâche <strong>supprimera</strong> également toute<br />archive du répertoire de travail de cette tâche, le cas échéant (comme indiqué par<br />les symboles %{workdir_status} et<br />%{userfile_status} dans la colonne « Taille du répertoire de travail »)."
         archiving_1_html: "Ce panneau vous permet d'archiver le contenu du répertoire de travail<br />de vos tâches. Cela ne peut être effectué que pour les tâches dans un état<br />final, comme <strong>Terminée</strong>, <strong>Échec</strong> ou <strong>Interrompue</strong>."
         archiving_2_html: "Le processus peut prendre beaucoup de temps pour chaque tâche archivée ou restaurée.<br />Veuillez donc patienter et ne demandez pas cette action plusieurs fois en parallèle."
         archiving_3_html: "Il existe deux différents « niveaux » d'archivage:<br/>\n<ul>\n  <li class=\"dropmenu_info\">\n    L'archivage <em>sur le cluster</em> signifie que les fichiers de la tâche seront compressés et archivés, mais resteront sur le cluster. Ces tâches sont indiquées par le symbole %{workdir_status} dans la table d'index.\n  </li>\n  <li class=\"dropmenu_info\">\n    L'archivage <em>comme fichier</em> signifie que l'archive sera rapatriée dans votre gestionnaire de fichiers sous la forme d'un fichier « %{type} » et qu'aucune donnée ne restera sur le cluster. Ces tâches sont indiquées par le symbole %{userfile_status} dans la table d'index.\n  </li>\n</ul>"
@@ -84,13 +84,13 @@ fr:
       change:
         owner: "Changer le propriétaire :"
         group: "Changer le projet :"
-        data_provider: "Changer le fournisseur de données des résultats :"
+        data_provider: "Changer le serveur de stockage des résultats :"
         tool_version: "Changer la version de l'outil :"
 
       blanks:
         select_another_owner: "(Sélectionner un autre propriétaire)"
         select_another_group:  "(Sélectionner un autre projet)"
-        select_another_data_provider: "(Sélectionner un autre fournisseur de données)"
+        select_another_data_provider: "(Sélectionner un autre serveur de stockage)"
         select_another_tool_version: "(Sélectionner une autre version de l'outil)"
 
       hijacker:
@@ -112,8 +112,8 @@ fr:
         remove_tasks: "Êtes-vous certain de vouloir supprimer les tâches sélectionnées?\n\nREMARQUE IMPORTANTE: Cela supprimera également leurs répertoires de travail archivés, le cas échéant."
 
       restart_at: "Redémarrer à :"
-      on_execution_server: "sur le bourreau : "
-      optional_destination_dp_html: "Facultatif : lors de l'archivage <em>comme fichier</em>, choisissez un fournisseur de données de destination:<br />"
+      on_execution_server: "sur le serveur de calcul : "
+      optional_destination_dp_html: "Facultatif : lors de l'archivage <em>comme fichier</em>, choisissez un serveur de stockage de destination:<br />"
       do_not_compress: "Ne pas compresser lors de l'archivage"
 
     tasks_display:
@@ -132,7 +132,7 @@ fr:
         description: "Description"
         owner: "Propriétaire"
         project: "Projet"
-        server: "Bourreau"
+        server: "Serveur de calcul"
         current_status: "État actuel"
         run_number: "Numéro d'exécution"
         workdir_size: "Taille du répertoire de travail"
@@ -219,18 +219,19 @@ fr:
       cells:
         task_name: "Nom de la tâche"
         task_description: "Description de la tâche"
-        execution_server: "bourreau"
+        execution_server: "Serveur de calcul"
         owner: "Propriétaire"
         tool_version: "Version de l'outil"
         group: "Projet"
         current_status: "État actuel"
         time_submitted: "Date de soumission"
-        data_provider_for_results: "Fournisseur de données pour les résultats"
+        data_provider_for_results: "serveur de stockage pour les résultats"
         zenodo_publication: "Publication Zenodo"
         cluster_job_work_directory: "Répertoire de travail du travail sur le cluster"
         not_yet_created_or_erased: "(Pas encore créé ou supprimé)"
         size_of_work_directory: "Taille du répertoire de travail"
         archiving_status: "État de l'archivage"
+        last_updated: "Dernière mise à jour"
 
       zenodo_publication:
         published: "Publié"

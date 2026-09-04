@@ -44,7 +44,7 @@
 <div class="display_inline_block" style="min-width: 50%">
   <%= show_table(@user, :as => :user, :edit_condition => edit_permission?(@user)) do |t| %>
 
-    <% t.attribute_cell(:login) %>
+    <% t.attribute_cell(:login, :header => t('.cells.login')) %>
 
     <%
       t.edit_cell(:type, :content => @user.type.underscore.titleize, :disabled => !((current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)) && not_admin_user(@user))) do |f|

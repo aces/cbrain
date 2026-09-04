@@ -94,7 +94,7 @@
     <!-- Create full report for resource with versus having at least one tool_config -->
     <% if versus_with_tcs.present? %>
       <tr>
-        <th><%= for_tool ? t('.headings.execution_server') : t('.headings.tools') %> </th>
+        <th><%= for_tool ? t('.headings.execution_servers') : t('.headings.tools') %> </th>
         <th><%= t('.headings.versions_configured') %></th>
         <th><%= t('.headings.projects_in_effect') %></th>
         <th class="left_align"><%= t('.headings.users_access_summary') %> </th>
@@ -167,4 +167,3 @@
   </table>
 
 </fieldset>
-

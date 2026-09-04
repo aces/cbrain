@@ -116,7 +116,7 @@ fr:
         remove_task_workdirs: "Supprimer les répertoires de travail des tâches"
         file_custom_filter: "Filtre personnalisé de fichiers :"
         task_custom_filter: "Filtre personnalisé de tâches :"
-        clean_cache: "Nettoyer les caches des Data Providers"
+        clean_cache: "Nettoyer les caches des serveurs de stockage"
         last_accessed: "Fichiers consultés pour la dernière fois au moins :"
         belonging_users: "Appartenant aux utilisateurs :"
         not_users: "Mais pas aux utilisateurs :"
@@ -124,7 +124,7 @@ fr:
         not_type: "Mais pas de type :"
         erase_bacs: "Effacer les activités en arrière-plan"
         finished_older: "Activités terminées plus anciennes que :"
-        verify_dp: "Vérifier la connectivité des Data Providers"
+        verify_dp: "Vérifier la connectivité des serveurs de stockage"
         fake_activity: "Tests d'activité factices"
         min_seconds: "Secondes minimales :"
         max_seconds: "Secondes maximales :"
@@ -147,9 +147,9 @@ fr:
 
 
       selects:
-        data_provider: "(Sélectionner un Data Provider)"
+        data_provider: "(Sélectionner un serveur de stockage)"
         filter: "(Sélectionner un filtres)"
-        dps: "(Sélectionner des Data Providers)"
+        dps: "(Sélectionner des serveurs de stockage)"
 
       paragraphs:
         remember_file_filter_html: |
@@ -192,8 +192,8 @@ fr:
       repeat_at_html: "(Pour <strong>à...</strong> :"
 
       days_ago: "jours"
-      system_dps: "Data Providers système :"
-      user_dps: "Data Providers utilisateur :"
+      system_dps: "Serveurs de stockage système :"
+      user_dps: "Serveurs de stockage utilisateur :"
       submit: "Planifier la nouvelle activité"
 
     show:
@@ -203,7 +203,7 @@ fr:
         type: "Type"
         status: "Statut"
         user: "Utilisateur"
-        execution_server: "Serveur d'exécution"
+        execution_server: "Serveur de calcul"
         total_items: "Nombre total d'éléments"
         num_successes: "Nombre de succès"
         num_processed: "Nombre d'éléments traités"

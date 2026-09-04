@@ -260,318 +260,319 @@ fr:
         up_since: "En fonctionnement depuis : %{time}"
         for: "pour : %{duration}"
 
-      index:
-        title: "Bourreaux"
+    index:
+      title: "Bourreaux"
 
-      new:
-        title: "Ajouter un nouveau serveur"
+    new:
+      title: "Ajouter un nouveau serveur"
 
-        headings:
-          main: "Ajouter un nouveau serveur"
+      headings:
+        main: "Ajouter un nouveau serveur"
 
-        divs:
-          name_html: |
-            <div class="field_explanation">
-              Remarque importante : ce nom doit également être modifié en conséquence dans le fichier de configuration
-              <em>Bourreau/config/initializers/config_bourreau.rb</em>
-              pour que ce serveur puisse redémarrer correctement par la suite.
-            </div>
-          system_from_email_html: |
-            <div class="field_explanation">
-              Si défini, les messages envoyés automatiquement par ce système contiendront cette adresse de retour.
-            </div>
-          description_html: |
-            <div class="field_explanation">
-              La première ligne doit être un résumé court, le reste servant pour des notes particulières destinées aux utilisateurs.
-            </div>
-          dp_cache_dir_html: |
-            <div class="field_explanation">
-              Attention ! Modifier ce champ réinitialisera le statut de synchronisation de tous les fichiers de tous les Data Providers ! De plus, l'application Rails devra être redémarrée et tous les fichiers de ce répertoire seront effacés !
-            </div>
-          spaced_dp_ignore_patterns_html: |
-            <div class="field_explanation">
-              Séparez plusieurs motifs par des espaces ; chaque motif peut contenir des '*' simples, mais pas de '/' ni de caractères spéciaux.
-            </div>
-          cache_trust_expire_html: |
-            <div class="field_explanation">
-              Cela signifie que, dans le cache du bourreau, les fichiers marqués comme 'InSync' mais dont le dernier accès remonte à plus de ce délai seront considérés comme non fiables et seront resynchronisés lors du prochain accès. Réglez ceci sur une valeur inférieure à <em>N</em> si la politique de fichiers du cluster supprime par exemple tous les fichiers temporaires âgés de plus de <em>N</em> jours.
-            </div>
-          cms_shared_dir_html: |
-            <div class="field_explanation">
-              Obligatoire. Ce répertoire doit être visible et modifiable depuis tous les nœuds.
-              C'est ici que seront créés les sous-répertoires de travail pour toutes les tâches.
-            </div>
-          cms_default_queue_html: |
-            <div class="field_explanation">
-              Optionnel.
-            </div>
-          cms_extra_qsub_args_html: |
-            <div class="field_explanation">
-              Optionnel. Attention : ceci est inséré tel quel dans la ligne de commande de soumission des jobs.
-            </div>
-          workers_verbose_html: |
-            <div class="field_explanation">
-              Cette option n'a aucun effet si les logs sont envoyés dans le log RAILS.
-            </div>
+      cms_class_select:
+        unconfigured: "(Non configuré)"
+        scir_sge: "Sun GridEngine"
+        scir_pbs: "PBS"
+        scir_moab: "MOAB"
+        scir_sharcnet: "Sharcnet custom"
+        scir_lsf: "LSF"
+        scir_slurm: "SLURM"
+        scir_gcloud_batch: "Google Cloud"
+        scir_unix: "Processus UNIX"
 
-        labels:
-          system_from_email: "Adresse d'envoi du système"
-          owner: "Propriétaire"
-          group: "Projet"
-          status: "Statut"
-          rr_timeout: "Timeout pour le test 'is alive' (secondes)"
-          time_zone: "Fuseau horaire"
-          ssh_control_host: "Nom d'hôte"
-          ssh_control_user: "Nom d'utilisateur"
-          ssh_control_port: "Numéro de port"
-          ssh_control_rails_dir: "Répertoire du serveur Rails"
-          jump_host: "Nom d'hôte du JumpHost"
-          jump_user: "Utilisateur du JumpHost"
-          jump_port: "Port du JumpHost"
-          spaced_dp_ignore_patterns: "Motifs de noms de fichiers à ignorer"
-          dp_cache_dir: "Chemin vers les caches des Data Providers"
-          cms_class: "Type de cluster"
-          cms_shared_dir: "Chemin vers le répertoire de travail partagé"
-          cms_default_queue: "Nom de la queue par défaut"
-          cms_extra_qsub_args: "Options supplémentaires de soumission au cluster"
-          cache_trust_expire: "Timeout d'expiration du cache"
-          workers_instances: "Nombre de Workers"
-          workers_chk_time: "Intervalle de vérification"
-          workers_log_to: "Destination des logs"
-          workers_verbose: "Verbosity des logs"
+      divs:
+        name_html: |
+          <div class="field_explanation">
+            Remarque importante : ce nom doit également être modifié en conséquence dans le fichier de configuration
+            <em>Bourreau/config/initializers/config_bourreau.rb</em>
+            pour que ce serveur puisse redémarrer correctement par la suite.
+          </div>
+        system_from_email_html: |
+          <div class="field_explanation">
+            Si défini, les messages envoyés automatiquement par ce système contiendront cette adresse de retour.
+          </div>
+        description_html: |
+          <div class="field_explanation">
+            La première ligne doit être un résumé court, le reste servant pour des notes particulières destinées aux utilisateurs.
+          </div>
+        dp_cache_dir_html: |
+          <div class="field_explanation">
+            Attention ! Modifier ce champ réinitialisera le statut de synchronisation de tous les fichiers de tous les Data Providers ! De plus, l'application Rails devra être redémarrée et tous les fichiers de ce répertoire seront effacés !
+          </div>
+        spaced_dp_ignore_patterns_html: |
+          <div class="field_explanation">
+            Séparez plusieurs motifs par des espaces ; chaque motif peut contenir des '*' simples, mais pas de '/' ni de caractères spéciaux.
+          </div>
+        cache_trust_expire_html: |
+          <div class="field_explanation">
+            Cela signifie que, dans le cache du bourreau, les fichiers marqués comme 'InSync' mais dont le dernier accès remonte à plus de ce délai seront considérés comme non fiables et seront resynchronisés lors du prochain accès. Réglez ceci sur une valeur inférieure à <em>N</em> si la politique de fichiers du cluster supprime par exemple tous les fichiers temporaires âgés de plus de <em>N</em> jours.
+          </div>
+        cms_shared_dir_html: |
+          <div class="field_explanation">
+            Obligatoire. Ce répertoire doit être visible et modifiable depuis tous les nœuds.
+            C'est ici que seront créés les sous-répertoires de travail pour toutes les tâches.
+          </div>
+        cms_default_queue_html: |
+          <div class="field_explanation">
+            Optionnel.
+          </div>
+        cms_extra_qsub_args_html: |
+          <div class="field_explanation">
+            Optionnel. Attention : ceci est inséré tel quel dans la ligne de commande de soumission des jobs.
+          </div>
+        workers_verbose_html: |
+          <div class="field_explanation">
+            Cette option n'a aucun effet si les logs sont envoyés dans le log RAILS.
+          </div>
 
-        status:
-          online: "En ligne"
-          offline: "Hors ligne"
-          prompt: "Sélectionner le statut"
+      labels:
+        system_from_email: "Adresse d'envoi du système"
+        owner: "Propriétaire"
+        group: "Projet"
+        status: "Statut"
+        rr_timeout: "Timeout pour le test 'is alive' (secondes)"
+        time_zone: "Fuseau horaire"
+        ssh_control_host: "Nom d'hôte"
+        ssh_control_user: "Nom d'utilisateur"
+        ssh_control_port: "Numéro de port"
+        ssh_control_rails_dir: "Répertoire du serveur Rails"
+        jump_host: "Nom d'hôte du JumpHost"
+        jump_user: "Utilisateur du JumpHost"
+        jump_port: "Port du JumpHost"
+        spaced_dp_ignore_patterns: "Motifs de noms de fichiers à ignorer"
+        dp_cache_dir: "Chemin vers les cachesdes serveurs de stockage"
+        cms_class: "Type de cluster"
+        cms_shared_dir: "Chemin vers le répertoire de travail partagé"
+        cms_default_queue: "Nom de la queue par défaut"
+        cms_extra_qsub_args: "Options supplémentaires de soumission au cluster"
+        cache_trust_expire: "Timeout d'expiration du cache"
+        workers_instances: "Nombre de Workers"
+        workers_chk_time: "Intervalle de vérification"
+        workers_log_to: "Destination des logs"
+        workers_verbose: "Verbosity des logs"
 
-        titles:
-          time_zone: "Fuseau horaire du serveur."
+      status:
+        online: "En ligne"
+        offline: "Hors ligne"
+        prompt: "Sélectionner le statut"
 
-        legends:
-          ssh_remote_control_configuration: "Configuration SSH de contrôle à distance"
-          optional_ssh_jump_host_configuration: "Configuration optionnelle SSH JumpHost"
-          cache_management_configuration: "Configuration de gestion du cache"
-          tool_version_configuration: "Configuration des versions des outils"
-          cluster_management_system_configuration: "Configuration du système de gestion de cluster"
-          task_workers_configuration: "Configuration des Task Workers"
-          task_limits: "Nombre de tâches maximum par utilisateur"
+      titles:
+        time_zone: "Fuseau horaire du serveur."
 
-        tool_version_configuration_explanation: "Une configuration d'outil pour ce bourreau peut être créée une fois le serveur créé."
-        task_limits_explanation: "Les limites de tâches peuvent être définies une fois que le bourreau est créé."
+      legends:
+        ssh_remote_control_configuration: "Configuration SSH de contrôle à distance"
+        optional_ssh_jump_host_configuration: "Configuration optionnelle SSH JumpHost"
+        cache_management_configuration: "Configuration de gestion du cache"
+        tool_version_configuration: "Configuration des versions des outils"
+        cluster_management_system_configuration: "Configuration du système de gestion de cluster"
+        task_workers_configuration: "Configuration des Task Workers"
+        task_limits: "Nombre de tâches maximum par utilisateur"
 
-        cms_class_select:
-          unconfigured: "(Non configuré)"
-          scir_sge: "Sun GridEngine"
-          scir_pbs: "PBS"
-          scir_moab: "MOAB"
-          scir_sharcnet: "Sharcnet custom"
-          scir_lsf: "LSF"
-          scir_slurm: "SLURM"
-          scir_gcloud_batch: "Google Cloud"
-          scir_unix: "Processus UNIX"
+      tool_version_configuration_explanation: "Une configuration d'outil pour ce bourreau peut être créée une fois le serveur créé."
+      task_limits_explanation: "Les limites de tâches peuvent être définies une fois que le bourreau est créé."
 
-        submit: "Créer un nouveau serveur"
+      submit: "Créer un nouveau serveur"
 
-      rr_access_dp:
-        title: "Accès des serveurs aux Data Providers"
-        headings:
-          main: "Accès des serveurs aux Data Providers"
-          servers: "Serveurs"
-          data_providers: "Data Providers"
-          name: "Nom"
-          type: "Type"
-          last_checked: "Dernière vérification"
+    rr_access_dp:
+      title: "Accès des serveurs aux Data Providers"
+      headings:
+        main: "Accès des serveurs aux Data Providers"
+        servers: "Serveurs"
+        data_providers: "Data Providers"
+        name: "Nom"
+        type: "Type"
+        last_checked: "Dernière vérification"
 
-        paragraphs:
-          rr_access_explanation_html: |
-            <p class="medium_paragraphs">
-            Cette page montre quels Serveurs (lignes) peuvent accéder à quels Data Providers (colonnes).
-            </p>
-            <p class="medium_paragraphs">
-            Si vous souhaitez lancer des tâches sur un bourreau particulier, assurez-vous qu'il est
-            configuré pour accéder aux fichiers des Data Providers marqués par des cercles verts (&nbsp;%{o_icon}&nbsp;).
-            </p>
-            <p class="medium_paragraphs">
-            Les Data Providers identifiés sous leur nom par %{not_syncable}
-            indiquent que leurs fichiers peuvent encore être accédés via des API de streaming, mais ne pourront jamais être entièrement
-            synchronisés sur un serveur.
-            </p>
-            <p class="medium_paragraphs">
-            Les cellules marquées par %{no_access}
-            indiquent des serveurs qui ne sont pas autorisés à accéder aux fichiers du Data Provider
-            de quelque manière que ce soit (streaming ou synchronisation), même si le Data Provider semble en vie.
-            </p>
-        links:
-          refresh_all: "Rafraîchir tout"
-        status:
-          offline: "(hors ligne)"
-          not_syncable: "(non synchronisable)"
-          read_only: "(lecture seule)"
-          no_access: "(pas d'accès)"
-          alive: "en ligne"
-          down: "down"
-        legends:
-          data_provider_status: "Statut du Data Provider :"
-        data_providers_offline: "Data Providers hors ligne :"
-        note_html: |
-          <strong>Note : </strong>Cliquez sur <em>Rafraîchir</em> lance un processus en arrière-plan sur le serveur
-          qui interrogera chaque Data Provider ; cela peut prendre plusieurs minutes.
+      paragraphs:
+        rr_access_explanation_html: |
+          <p class="medium_paragraphs">
+          Cette page montre quels Serveurs (lignes) peuvent accéder à quels Data Providers (colonnes).
+          </p>
+          <p class="medium_paragraphs">
+          Si vous souhaitez lancer des tâches sur un bourreau particulier, assurez-vous qu'il est
+          configuré pour accéder aux fichiersdes serveurs de stockage marqués par des cercles verts (&nbsp;%{o_icon}&nbsp;).
+          </p>
+          <p class="medium_paragraphs">
+          Les Data Providers identifiés sous leur nom par %{not_syncable}
+          indiquent que leurs fichiers peuvent encore être accédés via des API de streaming, mais ne pourront jamais être entièrement
+          synchronisés sur un serveur.
+          </p>
+          <p class="medium_paragraphs">
+          Les cellules marquées par %{no_access}
+          indiquent des serveurs qui ne sont pas autorisés à accéder aux fichiers du Data Provider
+          de quelque manière que ce soit (streaming ou synchronisation), même si le Data Provider semble en vie.
+          </p>
+      links:
+        refresh_all: "Rafraîchir tout"
+      status:
+        offline: "(hors ligne)"
+        not_syncable: "(non synchronisable)"
+        read_only: "(lecture seule)"
+        no_access: "(pas d'accès)"
+        alive: "en ligne"
+        down: "down"
+      legends:
+        data_provider_status: "Statut du Data Provider :"
+      data_providers_offline: "Data Providers hors ligne :"
+      note_html: |
+        <strong>Note : </strong>Cliquez sur <em>Rafraîchir</em> lance un processus en arrière-plan sur le serveur
+        qui interrogera chaque Data Provider ; cela peut prendre plusieurs minutes.
 
-      rr_access:
-        title: "Accès au bourreau"
-        headings:
-          main: "Rapport d'accès au bourreau"
-        legends:
-          accessible: "accessible"
-          not_accessible: "non accessible"
+    rr_access:
+      title: "Accès au bourreau"
+      headings:
+        main: "Rapport d'accès au bourreau"
+      legends:
+        accessible: "accessible"
+        not_accessible: "non accessible"
 
-      rr_disk_usage:
-        title: "Utilisation des caches"
-        titles:
-          server_log: "Log du serveur"
-        headings:
-          main: "Statistiques d'utilisation disque des caches des Data Providers du serveur"
-          no_entries: "(Il n'y a pas d'entrées dans ce rapport)"
-          filter: "Filtrer ce rapport : fichiers rapportés au-dessus..."
-        entry:
-          one: "1 entrée"
-          other: "%{count} entrées"
-        file:
-          one: "1 fichier"
-          other: "%{count} fichiers"
-        entries_and_files_html: "%{entries}&nbsp;/&nbsp;%{files}"
-        unknown_count:
-          one: "%{count} inconnu"
-          other: "%{count} inconnus"
-        active_task:
-          one: "Danger ! %{count} tâche active !"
-          other: "Danger ! %{count} tâches actives !"
-        all_on: "Tous sur %{name} : "
-        submits:
-          cleanup_selected: "Nettoyer les caches sélectionnés"
-        of_type: "... sont de type :"
-        none_means_any_html: "(Aucun sélectionné signifie <em>n'importe lequel</em>)"
-        last_accessed: "... ont été accédés pour la dernière fois :"
-        submit: "Rafraîchir le rapport"
+    rr_disk_usage:
+      title: "Utilisation des caches"
+      titles:
+        server_log: "Log du serveur"
+      headings:
+        main: "Statistiques d'utilisation disque des cachesdes serveurs de stockage du serveur"
+        no_entries: "(Il n'y a pas d'entrées dans ce rapport)"
+        filter: "Filtrer ce rapport : fichiers rapportés au-dessus..."
+      entry:
+        one: "1 entrée"
+        other: "%{count} entrées"
+      file:
+        one: "1 fichier"
+        other: "%{count} fichiers"
+      entries_and_files_html: "%{entries}&nbsp;/&nbsp;%{files}"
+      unknown_count:
+        one: "%{count} inconnu"
+        other: "%{count} inconnus"
+      active_task:
+        one: "Danger ! %{count} tâche active !"
+        other: "Danger ! %{count} tâches actives !"
+      all_on: "Tous sur %{name} : "
+      submits:
+        cleanup_selected: "Nettoyer les caches sélectionnés"
+      of_type: "... sont de type :"
+      none_means_any_html: "(Aucun sélectionné signifie <em>n'importe lequel</em>)"
+      last_accessed: "... ont été accédés pour la dernière fois :"
+      submit: "Rafraîchir le rapport"
 
-      show:
-        titles:
-          portal: "Infos du portail"
-          execution_server: "Infos du bourreau"
+    show:
+      titles:
+        portal: "Infos du portail"
+        execution_server: "Infos du bourreau"
+        server_log: "Log du serveur"
 
-        links:
-          task_stats_by_status: "Statistiques des tâches par statut"
-          task_stats_by_type: "Statistiques des tâches par type"
-          no_tool_config: "Pas de configuration d'outil"
+      links:
+        task_stats_by_status: "Statistiques des tâches par statut"
+        task_stats_by_type: "Statistiques des tâches par type"
+        no_tool_config: "Pas de configuration d'outil"
 
-        headings:
-          cache_expiration: "Timeout d'expiration du cache (en secondes)"
-          workers_instances: "Nombre de Workers"
-          workers_chk_time: "Intervalle de vérification"
-          workers_log_to: "Destination des logs"
-          workers_verbose: "Verbosité des logs"
-          message_update_error: "Le serveur n'a pas pu être mis à jour."
-          external_status_page_url: "URL de la page d'état externe"
-          base_portal_url: "URL de base du portail"
-          user_manual_url: "URL du manuel utilisateur"
-          neurohub_base_url: "URL de base du NeuroHub"
-          small_logo: "Petit logo"
-          large_logo: "Grand logo"
-          large_upload_url: "URL d'aide pour les téléchargements volumineux"
-          upload_size_limit: "Limite de taille de fichier pour l'upload (MB)"
-          mail_configuration: "Configuration mail"
-          support_email: "Adresse email de support"
-          system_from_email: "Adresse 'From' du système"
-          nh_support_email: "Adresse email de support NeuroHub"
-          nh_system_from_email: "Adresse 'From' du système NeuroHub"
-          error_notifications: "Notifications d'erreur envoyées aux membres du projet"
-          ssh_connection_config: "Configuration de connexion SSH"
-          ssh_hostname: "Nom d'hôte SSH"
-          rails_server_directory: "Répertoire du serveur Rails"
-          ssh_user: "Utilisateur SSH"
-          ssh_port: "Port SSH"
-          local_control_port: "Port de contrôle local"
-          ssh_jumphost: "Configuration SSH JumpHost optionnelle"
-          jumphost_hostname: "Nom d'hôte du JumpHost"
-          jumphost_user: "Utilisateur du JumpHost"
-          jumphost_port: "Port du JumpHost"
-          reverse_service_config: "Configuration optionnelle de connexion de service inverse"
-          use_reverse_service: "Utiliser le service SSH inverse"
-          reverse_service_hostname: "Nom d'hôte du service inverse"
-          reverse_service_port: "Port du service inverse"
-          reverse_service_user: "Utilisateur du service inverse"
-          reverse_service_db_socket: "Chemin du socket DB du service inverse"
-          reverse_service_ssh_agent: "Chemin du socket de l'agent SSH du service inverse"
-          activity_workers_config: "Configuration des Activity Workers"
-          activity_workers_number: "Nombre de Workers"
-          cache_management: "Configuration de gestion du cache"
-          path_to_dp_caches: "Chemin vers les caches des Data Providers"
-          ignore_patterns: "Motifs de noms de fichiers à ignorer"
-          dp_options: "Options des Data Providers"
-          persistent_ssh_masters: "Utiliser des masters SSH persistants pour les DataProviders basés sur SSH"
-          cluster_config: "Configuration du cluster"
-          type_of_cluster: "Type de cluster"
-          default_queue_name: "Nom de la queue par défaut"
-          extra_qsub_args: "Options supplémentaires de soumission au cluster (sbatch, qsub)"
-          path_shared_work_dir: "Chemin vers le répertoire de travail partagé"
-          task_workers_config: "Configuration des Task Workers"
-          number_of_workers: "Nombre de Workers"
-          container_config: "Configuration des conteneurs"
-          docker_executable_name: "Exécutable Docker"
-          singularity_executable_name: "Exécutable Singularity"
+      headings:
+        cache_expiration: "Timeout d'expiration du cache (en secondes)"
+        workers_instances: "Nombre de Workers"
+        workers_chk_time: "Intervalle de vérification"
+        workers_log_to: "Destination des logs"
+        workers_verbose: "Verbosité des logs"
+        message_update_error: "Le serveur n'a pas pu être mis à jour."
+        external_status_page_url: "URL de la page d'état externe"
+        base_portal_url: "URL de base du portail"
+        user_manual_url: "URL du manuel utilisateur"
+        neurohub_base_url: "URL de base du NeuroHub"
+        small_logo: "Petit logo"
+        large_logo: "Grand logo"
+        large_upload_url: "URL d'aide pour les téléchargements volumineux"
+        upload_size_limit: "Limite de taille de fichier pour l'upload (MB)"
+        mail_configuration: "Configuration mail"
+        support_email: "Adresse email de support"
+        system_from_email: "Adresse 'From' du système"
+        nh_support_email: "Adresse email de support NeuroHub"
+        nh_system_from_email: "Adresse 'From' du système NeuroHub"
+        error_notifications: "Notifications d'erreur envoyées aux membres du projet"
+        ssh_connection_config: "Configuration de connexion SSH"
+        ssh_hostname: "Nom d'hôte SSH"
+        rails_server_directory: "Répertoire du serveur Rails"
+        ssh_user: "Utilisateur SSH"
+        ssh_port: "Port SSH"
+        local_control_port: "Port de contrôle local"
+        ssh_jumphost: "Configuration SSH JumpHost optionnelle"
+        jumphost_hostname: "Nom d'hôte du JumpHost"
+        jumphost_user: "Utilisateur du JumpHost"
+        jumphost_port: "Port du JumpHost"
+        reverse_service_config: "Configuration optionnelle de connexion de service inverse"
+        use_reverse_service: "Utiliser le service SSH inverse"
+        reverse_service_hostname: "Nom d'hôte du service inverse"
+        reverse_service_port: "Port du service inverse"
+        reverse_service_user: "Utilisateur du service inverse"
+        reverse_service_db_socket: "Chemin du socket DB du service inverse"
+        reverse_service_ssh_agent: "Chemin du socket de l'agent SSH du service inverse"
+        activity_workers_config: "Configuration des Activity Workers"
+        activity_workers_number: "Nombre de Workers"
+        cache_management: "Configuration de gestion du cache"
+        path_to_dp_caches: "Chemin vers les cachesdes serveurs de stockage"
+        ignore_patterns: "Motifs de noms de fichiers à ignorer"
+        dp_options: "Optionsdes serveurs de stockage"
+        persistent_ssh_masters: "Utiliser des masters SSH persistants pour les DataProviders basés sur SSH"
+        cluster_config: "Configuration du cluster"
+        type_of_cluster: "Type de cluster"
+        default_queue_name: "Nom de la queue par défaut"
+        extra_qsub_args: "Options supplémentaires de soumission au cluster (sbatch, qsub)"
+        path_shared_work_dir: "Chemin vers le répertoire de travail partagé"
+        task_workers_config: "Configuration des Task Workers"
+        number_of_workers: "Nombre de Workers"
+        container_config: "Configuration des conteneurs"
+        docker_executable_name: "Exécutable Docker"
+        singularity_executable_name: "Exécutable Singularity"
 
-        cells:
-          status: "Statut"
-          owner: "Propriétaire"
-          unset: "(Non défini)"
-          group: "Projet"
-          revision_info_client: "Info de révision (côté client)"
-          common_config_all_tasks: "Configuration commune pour toutes les tâches"
+      cells:
+        status: "Statut"
+        owner: "Propriétaire"
+        unset: "(Non défini)"
+        group: "Projet"
+        revision_info_client: "Info de révision (côté client)"
+        common_config_all_tasks: "Configuration commune pour toutes les tâches"
 
-        field_explanations:
-          description: "La première ligne doit être un résumé court, le reste servant pour des notes particulières destinées aux utilisateurs."
-          system_from_email: "Si défini, les messages envoyés automatiquement par ce système contiendront cette adresse de retour."
-          cms_shared_dir_html: "Obligatoire. Ce répertoire doit être visible et modifiable depuis tous les nœuds.<br />C'est ici que seront créés les sous-répertoires de travail pour toutes les tâches."
-          cms_default_queue: "Optionnel."
-          cms_extra_qsub_args: "Optionnel. Attention : ceci est inséré tel quel dans la ligne de commande de soumission des jobs."
-          dp_cache_warning: "Attention ! Modifier ce champ réinitialisera le statut de synchronisation de tous les fichiers de tous les Data Providers ! De plus, l'application Rails devra être redémarrée et tous les fichiers de ce répertoire seront effacés !"
-          ignore_patterns: "Séparez plusieurs motifs par des espaces ; chaque motif peut contenir des '*' simples, mais pas de '/' ni de caractères spéciaux."
-          name_note_bourreau_html: "Remarque importante : ce nom doit également être modifié en conséquence dans le fichier de configuration <em>Bourreau/config/initializers/config_bourreau.rb</em> pour que ce serveur puisse redémarrer correctement par la suite."
-          name_note_portal_html: "Remarque importante : ce nom doit également être modifié en conséquence dans le fichier de configuration <em>BrainPortal/config/initializers/config_portal.rb</em> pour que ce serveur puisse redémarrer correctement par la suite."
-          license_agreements: "Saisissez un nom de licence par ligne. Notez que seuls les caractères alphanumériques, les underscores (_) et les tirets (-) sont acceptés."
-          external_status_page: "Lien vers la page d'état externe du serveur."
-          user_manual_url: "Si défini, le portail affichera un lien appelé 'Manuel utilisateur' dans la barre de compte en haut."
-          base_portal_url_html: "Requis pour diriger les nouveaux utilisateurs vers le portail, ceci doit être rempli avec l'URL <em>de base</em> du portail"
-          neurohub_base_url_html: "Requis pour diriger les nouveaux utilisateurs vers le portail NeuroHub, ceci doit être rempli avec l'URL <em>de base</em> du portail"
-          large_upload_url: "Si défini, le portail affichera un lien intitulé « Datasets volumineux? » dans le panneau d'upload, renvoyant les utilisateurs vers une page personnalisée où vous pouvez fournir des explications pour des méthodes alternatives d'upload."
-          upload_size_limit: "Si défini (et numérique), le portail affichera un avertissement lors du téléchargement de fichiers sur la taille maximale autorisée pour les uploads. Notez que cette limite doit être appliquée manuellement sur le serveur web hébergeant ce portail."
-          support_email_html: "Si défini, le portail affichera un lien <em>mailto:</em> permettant aux utilisateurs de contacter le support."
-          nh_support_email_html: "Si défini, le portail affichera un lien <em>mailto:</em> permettant aux utilisateurs de contacter le support NeuroHub."
-          nh_system_from_email: "Si défini, les messages NeuroHub envoyés automatiquement par ce système contiendront cette adresse de retour."
-          activity_workers_explanation_html: "En environnement de développement %{env_note} un seul Activity Worker suffit souvent. En production, un portail occupé peut nécessiter plus d'un Worker, mais un bourreau peut fonctionner correctement avec un seul."
-          cache_expiration_html: "Cela signifie que, dans le cache du bourreau, les fichiers marqués comme 'InSync' mais dont le dernier accès remonte à plus de ce délai seront considérés comme non fiables et seront resynchronisés lors du prochain accès. Réglez ceci sur une valeur inférieure à <em>N</em> si la politique de fichiers du cluster supprime par exemple tous les fichiers temporaires âgés de plus de <em>N</em> jours."
-          docker_executable_name: "Nom de l'exécutable Docker disponible sur les machines où les tâches s'exécuteront. Il doit toujours être défini si Docker est présent."
-          singularity_executable_name: "Nom de l'exécutable Singularity disponible sur les machines où les tâches s'exécuteront. Il doit toujours être défini si Singularity est présent."
+      field_explanations:
+        description: "La première ligne doit être un résumé court, le reste servant pour des notes particulières destinées aux utilisateurs."
+        system_from_email: "Si défini, les messages envoyés automatiquement par ce système contiendront cette adresse de retour."
+        cms_shared_dir_html: "Obligatoire. Ce répertoire doit être visible et modifiable depuis tous les nœuds.<br />C'est ici que seront créés les sous-répertoires de travail pour toutes les tâches."
+        cms_default_queue: "Optionnel."
+        cms_extra_qsub_args: "Optionnel. Attention : ceci est inséré tel quel dans la ligne de commande de soumission des jobs."
+        dp_cache_warning: "Attention ! Modifier ce champ réinitialisera le statut de synchronisation de tous les fichiers de tous les Data Providers ! De plus, l'application Rails devra être redémarrée et tous les fichiers de ce répertoire seront effacés !"
+        ignore_patterns: "Séparez plusieurs motifs par des espaces ; chaque motif peut contenir des '*' simples, mais pas de '/' ni de caractères spéciaux."
+        name_note_bourreau_html: "Remarque importante : ce nom doit également être modifié en conséquence dans le fichier de configuration <em>Bourreau/config/initializers/config_bourreau.rb</em> pour que ce serveur puisse redémarrer correctement par la suite."
+        name_note_portal_html: "Remarque importante : ce nom doit également être modifié en conséquence dans le fichier de configuration <em>BrainPortal/config/initializers/config_portal.rb</em> pour que ce serveur puisse redémarrer correctement par la suite."
+        license_agreements: "Saisissez un nom de licence par ligne. Notez que seuls les caractères alphanumériques, les underscores (_) et les tirets (-) sont acceptés."
+        external_status_page: "Lien vers la page d'état externe du serveur."
+        user_manual_url: "Si défini, le portail affichera un lien appelé 'Manuel utilisateur' dans la barre de compte en haut."
+        base_portal_url_html: "Requis pour diriger les nouveaux utilisateurs vers le portail, ceci doit être rempli avec l'URL <em>de base</em> du portail"
+        neurohub_base_url_html: "Requis pour diriger les nouveaux utilisateurs vers le portail NeuroHub, ceci doit être rempli avec l'URL <em>de base</em> du portail"
+        large_upload_url: "Si défini, le portail affichera un lien intitulé « Datasets volumineux? » dans le panneau d'upload, renvoyant les utilisateurs vers une page personnalisée où vous pouvez fournir des explications pour des méthodes alternatives d'upload."
+        upload_size_limit: "Si défini (et numérique), le portail affichera un avertissement lors du téléchargement de fichiers sur la taille maximale autorisée pour les uploads. Notez que cette limite doit être appliquée manuellement sur le serveur web hébergeant ce portail."
+        support_email_html: "Si défini, le portail affichera un lien <em>mailto:</em> permettant aux utilisateurs de contacter le support."
+        nh_support_email_html: "Si défini, le portail affichera un lien <em>mailto:</em> permettant aux utilisateurs de contacter le support NeuroHub."
+        nh_system_from_email: "Si défini, les messages NeuroHub envoyés automatiquement par ce système contiendront cette adresse de retour."
+        activity_workers_explanation_html: "En environnement de développement %{env_note} un seul Activity Worker suffit souvent. En production, un portail occupé peut nécessiter plus d'un Worker, mais un bourreau peut fonctionner correctement avec un seul."
+        cache_expiration_html: "Cela signifie que, dans le cache du bourreau, les fichiers marqués comme 'InSync' mais dont le dernier accès remonte à plus de ce délai seront considérés comme non fiables et seront resynchronisés lors du prochain accès. Réglez ceci sur une valeur inférieure à <em>N</em> si la politique de fichiers du cluster supprime par exemple tous les fichiers temporaires âgés de plus de <em>N</em> jours."
+        docker_executable_name: "Nom de l'exécutable Docker disponible sur les machines où les tâches s'exécuteront. Il doit toujours être défini si Docker est présent."
+        singularity_executable_name: "Nom de l'exécutable Singularity disponible sur les machines où les tâches s'exécuteront. Il doit toujours être défini si Singularity est présent."
 
-        all_admins: "Tous les admins"
+      all_admins: "Tous les admins"
 
-        paragraphs:
-          reverse_service_description_html: "Ceci est un mécanisme alternatif pour fournir au Bourreau une connexion distincte à la base de données et à l'agent SSH. Pour que cela fonctionne, un serveur accessible en SSH (fourni par nom d'hôte, numéro de port et nom d'utilisateur) doit être configuré pour accepter la clé principale du portail CBRAIN, et être visible depuis le Bourreau. Ce serveur doit disposer d'un agent SSH fournissant des clés sur un socket de domaine UNIX, et d'une connexion de base de données pour CBRAIN. La spécification de la connexion à la base de données peut être fournie soit comme chemin complet vers un socket de domaine UNIX, soit comme <em>localhost:port</em>."
-          reverse_service_defaults_html: "Certaines <strong>valeurs par défaut</strong> affichées sous les zones de saisie sont des <em>estimations</em> basées sur le portail actuellement en cours d'exécution. Elles sont utiles si le portail est justement le serveur vers lequel se reconnecter."
-          persistent_ssh_explanation: "Lorsqu'il est réglé sur 'toujours', les connexions SSH vers l'hôte d'un data provider persistent après la première utilisation. Cela rend les transferts de données successifs un peu plus rapides car la connexion n'a pas besoin d'être rouverte à chaque fois. Le comportement par défaut est activé ('toujours') pour les portails et désactivé ('jamais') pour les bourreaux."
+      paragraphs:
+        reverse_service_description_html: "Ceci est un mécanisme alternatif pour fournir au Bourreau une connexion distincte à la base de données et à l'agent SSH. Pour que cela fonctionne, un serveur accessible en SSH (fourni par nom d'hôte, numéro de port et nom d'utilisateur) doit être configuré pour accepter la clé principale du portail CBRAIN, et être visible depuis le Bourreau. Ce serveur doit disposer d'un agent SSH fournissant des clés sur un socket de domaine UNIX, et d'une connexion de base de données pour CBRAIN. La spécification de la connexion à la base de données peut être fournie soit comme chemin complet vers un socket de domaine UNIX, soit comme <em>localhost:port</em>."
+        reverse_service_defaults_html: "Certaines <strong>valeurs par défaut</strong> affichées sous les zones de saisie sont des <em>estimations</em> basées sur le portail actuellement en cours d'exécution. Elles sont utiles si le portail est justement le serveur vers lequel se reconnecter."
+        persistent_ssh_explanation: "Lorsqu'il est réglé sur 'toujours', les connexions SSH vers l'hôte d'un data provider persistent après la première utilisation. Cela rend les transferts de données successifs un peu plus rapides car la connexion n'a pas besoin d'être rouverte à chaque fois. Le comportement par défaut est activé ('toujours') pour les portails et désactivé ('jamais') pour les bourreaux."
 
-        default_value: "Par défaut : %{value}"
+      default_value: "Par défaut : %{value}"
 
-        unknown_check_config: "(Inconnu, vérifiez votre configuration)"
-        activity_workers_number_select:
-          none: "Aucun (pour débogage)"
-          recommended_bourreaux: "1 (recommandé pour les Bourreaux)"
-          recommended_portals: "3 (recommandé pour les Portails)"
-        like_right_now: "(comme maintenant)"
-        options:
-          always: "Toujours"
-          never: "Jamais"
-          unconfigured: "(Non configuré)"
-        content:
-          not_configured: "(Non configuré)"
+      unknown_check_config: "(Inconnu, vérifiez votre configuration)"
+      activity_workers_number_select:
+        none: "Aucun (pour débogage)"
+        recommended_bourreaux: "1 (recommandé pour les Bourreaux)"
+        recommended_portals: "3 (recommandé pour les Portails)"
+      like_right_now: "(comme maintenant)"
+      options:
+        always: "Toujours"
+        never: "Jamais"
+        unconfigured: "(Non configuré)"
+      content:
+        not_configured: "(Non configuré)"

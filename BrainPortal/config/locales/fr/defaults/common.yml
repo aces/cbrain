@@ -17,11 +17,11 @@ fr:
       one: "Outil :"
       other: "Outils :"
     data_provider_colon:
-      one: "Fournisseur de données :"
-      other: "Fournisseurs de données :"
+      one: "Serveur de stockage :"
+      other: "Serveurs de stockage :"
     execution_server_colon:
-      one: "Bourreau :"
-      other: "Bourreaux :"
+      one: "Serveur de calcul :"
+      other: "Serveurs de calcul :"
     type_colon:
       one: "Type :"
       other: "Types :"

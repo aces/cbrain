@@ -13,11 +13,11 @@ fr:
       mode:
         read_only: "Lecture seule"
         read_write: "Lecture/Écriture"
-      create_new_dp: "Créer un nouveau Data Provider"
+      create_new_dp: "Créer un nouveau serveur de stockage"
       field_explanation:
         description: "La première ligne doit être un résumé court, le reste servant pour des notes particulières destinées aux utilisateurs."
-      description: "Brève description du Data Provider."
-      name: "Le nom du Data Provider."
+      description: "Brève description du serveur de stockage."
+      name: "Le nom du serveur de stockage."
       remote_dir: "Répertoire utilisé pour stocker les fichiers"
       cloud_config: "Configuration du stockage cloud"
       containerized_config: "Configuration du stockage conteneurisé"
@@ -29,8 +29,8 @@ fr:
 
     data_providers_table:
       links:
-        create_system_dp: "Créer un Data Provider système"
-        create_personal_dp: "Créer un Data Provider personnel"
+        create_system_dp: "Créer un serveur de stockage système"
+        create_personal_dp: "Créer un serveur de stockage personnel"
         check_all: "Tout vérifier"
         user_access_report: "Rapport d'accès utilisateur"
         transfer_restrictions_report: "Rapport des restrictions de transfert"
@@ -47,7 +47,7 @@ fr:
         explanation_html: |
           <p class="medium_paragraphs">
           Ce panneau vous permet de <strong>supprimer définitivement</strong> des fichiers présents
-          sur le Data Provider distant. Notez que cette opération fonctionnera
+          sur le serveur de stockage distant. Notez que cette opération fonctionnera
           que les fichiers soient enregistrés ou non. S'ils sont enregistrés,
           ils seront d'abord désenregistrés.
           </p>
@@ -55,7 +55,7 @@ fr:
 
     dp_browse_table:
       headings:
-        main: "Fichiers disponibles sur le Data Provider distant '%{name}'"
+        main: "Fichiers disponibles sur le serveur de stockage distant '%{name}'"
         browsing_as_html: "(Navigation en tant qu'utilisateur '%{login}')"
       links:
         registered: "Enregistré"
@@ -90,7 +90,7 @@ fr:
 
     dp_types_explained:
       content_html: |
-        Ce document décrit les différents types de Data Privider
+        Ce document décrit les différents types de serveurs de stockage
         implémentés dans CBRAIN. Ils ne sont pas tous utiles dans tous les cas. En production,
         le type recommandé est <strong>EnCbrainSmartDataProvider</strong>
         pour le stockage de données officiel et <strong>FlatDirSshDataProvider</strong> pour le stockage
@@ -104,7 +104,7 @@ fr:
           <dd><em>Type</em><strong>Local</strong>DataProviders
           stockent leurs informations sur le système de fichiers local où réside le service CBRAIN ; cela signifie que les fichiers ne seront pas accessibles depuis
           d'autres composants distants de l'installation CBRAIN, par exemple
-          des bourreaux situés sur d'autres hôtes ou supercalculateurs. Leur
+          des serveurs de calcul situés sur d'autres hôtes ou supercalculateurs. Leur
           avantage est qu'ils sont rapides d'accès, et le portail CBRAIN n'aura
           pas besoin de faire une copie locale des fichiers pour les traiter
           ou les visualiser.
@@ -124,9 +124,9 @@ fr:
           comme une variante <strong>Ssh</strong> du même type. Le choix est effectué par
           chaque composant CBRAIN (Portail, bourreau) indépendamment. Chaque
           composant compare le nom d'hôte où il s'exécute au <em>Remote Hostname</em>
-          configuré pour le fournisseur ; s'ils correspondent, le DataProvider <strong>Smart</strong>
-          se comportera comme un fournisseur <strong>Local</strong>, contournant toute forme
-          de mise en cache. S'ils ne correspondent pas, il se comportera comme un fournisseur <strong>Ssh</strong>,
+          configuré pour le serveur ; s'ils correspondent, le DataProvider <strong>Smart</strong>
+          se comportera comme un serveur <strong>Local</strong>, contournant toute forme
+          de mise en cache. S'ils ne correspondent pas, il se comportera comme un serveur <strong>Ssh</strong>,
           transférant alors les fichiers et les mettant en cache au besoin.
           </dd>
         </dl>
@@ -138,7 +138,7 @@ fr:
         les fichiers des utilisateurs.
 
         <strong>FlatDir*DataProvider :</strong>
-        Les fichiers du data provider sont stockés dans un répertoire plat, d'un
+        Les fichiers du serveur sont stockés dans un répertoire plat, d'un
         seul niveau, spécifié directement par l'attribut <em>Remote Directory</em> de l'objet. Le fichier "hello" est stocké dans un chemin de ce type :
         <pre>    /remote_dir/hello</pre>
         Notez que pour des raisons historiques, <strong>SshDataProvider</strong>
@@ -151,8 +151,9 @@ fr:
         l'ID du fichier. Un fichier nommé "hello" avec l'ID 41233 sera stocké
         ainsi :
         <pre>    /root_dir/04/12/33/hello</pre>
-        Ces data providers ont l'avantage que les fichiers peuvent être renommés et
-        réaffectés à de nouveaux propriétaires avec des modifications minimales de la structure du système de fichiers. Les EnCbrain*DataProviders sont les fournisseurs
+        Ces serveurs ont l'avantage que les fichiers peuvent être renommés et
+        réaffectés à de nouveaux propriétaires avec des modifications minimales de la structure du système de fichiers.
+        Les EnCbrain*DataProviders sont les serveurs
         recommandés pour les déploiements en production. Le répertoire de données où
         les fichiers sont stockés <em>n'est pas destiné à être consulté ou modifié par
         des moyens externes</em>, c'est-à-dire qu'aucun utilisateur ne devrait accéder
@@ -160,12 +161,12 @@ fr:
         <p>
 
         <strong>Vault*DataProvider :</strong>
-        Les fichiers du data provider sont stockés dans un répertoire plat, deux niveaux
+        Les fichiers du serveur sont stockés dans un répertoire plat, deux niveaux
         de profondeur, spécifié par l'attribut <em>Remote Directory</em>
         de l'objet et par le nom de connexion de l'utilisateur. Le fichier "hello"
         de l'utilisateur "myuser" est donc stocké à un chemin de ce type :
         <pre>    /remote_dir/myuser/hello</pre>
-        Sur ce type de data provider, il n'est pas possible de réaffecter la propriété
+        Sur ce type de serveur, il n'est pas possible de réaffecter la propriété
         d'un fichier.
         <p>
 
@@ -175,14 +176,14 @@ fr:
         visible. Idéal pour accéder à un <em>Remote Directory</em> en zone restreinte pour du contenu entrant, où les utilisateurs
         peuvent téléverser des fichiers dans ces sous-répertoires par d'autres canaux. Une configuration typique
         utiliserait également le <em>Remote Directory</em> comme racine pour
-        un serveur SFTP ou FTP entrant (c'est en fait la raison du nom de ce type).
+        un serveur SFTP ou FTP entrant (c'est en fait la raison du nom de ce type de serveur).
         <p>
 
         <strong>S3DataProvider :</strong> Cette classe se connecte au service de stockage cloud S3 d'Amazon.
         Les fichiers seront stockés dans un bucket nommé
-        "gbrain_{nom}" où nom est le nom du data provider.
-        L'utilisation de ce data provider nécessite d'obtenir une clé d'accès
-        et un token secret. Ne renommez pas ce fournisseur si des fichiers
+        "gbrain_{nom}" où nom est le nom du serveur.
+        L'utilisation de ce serveur nécessite d'obtenir une clé d'accès
+        et un token secret. Ne renommez pas ce serveur si des fichiers
         y sont enregistrés, sauf si vous renommez également le bucket ! Toutes
         les FileCollections sont uploadées et téléchargées en .tar.gz, donc
         ce DP n'est pas particulièrement efficace pour les grands jeux de données.
@@ -192,11 +193,11 @@ fr:
         <strong>S3FlatDataProvider :</strong> C'est une classe qui se connecte au
         service de stockage cloud S3 d'Amazon en utilisant le nouveau SDK AWS pour S3 Version 3.0.
         Un bucket et un chemin de départ doivent être spécifiés et avoir été créés
-        via AWS. L'utilisation de ce Data Provider nécessite également une clé d'accès
+        via AWS. L'utilisation de ce serveur nécessite également une clé d'accès
         et un token secret pour Amazon Web Services. Pour plus d'informations, veuillez visiter
         <a href="https://aws.amazon.com" title="Amazon AWS">https://aws.amazon.com</a>.
-        Les fichiers seront stockés en tant qu'objets dans le magasin S3Object et le fournisseur se comportera essentiellement
-        comme un FlatDataProvider.
+        Les fichiers seront stockés en tant qu'objets dans le magasin S3Object et le serveur se comportera essentiellement
+        comme un serveur FlatDataProvider.
 
         <p>
 
@@ -221,7 +222,7 @@ fr:
         report: "Rapport"
         browse: "Parcourir"
       columns:
-        name: "Nom du fournisseur"
+        name: "Nom du serveur"
         type: "Type"
         owner: "Propriétaire"
         group: "Projet"
@@ -241,22 +242,22 @@ fr:
         register_html: |
           <p class="medium_paragraphs">
           Ce panneau vous permet d' <strong>enregistrer</strong> des fichiers présents
-          sur le data provider distant mais encore inconnus de l'interface CBRAIN.
+          sur le serveur distant mais encore inconnus de l'interface CBRAIN.
           Une fois enregistrés, les fichiers seront visibles dans
           le gestionnaire de<strong>Fichiers</strong>, et pourront être utilisés pour lancer
           des tâches.
           </p>
 
           <p class="medium_paragraphs">
-          Nous recommandons d'utiliser ce data provider uniquement pour
+          Nous recommandons d'utiliser ce serveur uniquement pour
           transférer des données vers et depuis CBRAIN. Lors de l'enregistrement,
           comme vous pouvez le voir ci‑dessous, vous pouvez les faire automatiquement déplacer
-          ou copier vers un autre data provider officiel CBRAIN.
+          ou copier vers un autre serveur officiel CBRAIN.
         must_move_html: |
-          <strong>Ce data provider ne vous laisse pas le choix</strong>
-          et vous DEVEZ sélectionner un autre data provider vers lequel vos fichiers seront copiés ou déplacés.
+          <strong>Ce serveur ne vous laisse pas le choix</strong>
+          et vous DEVEZ sélectionner un autre serveur vers lequel vos fichiers seront copiés ou déplacés.
         cleanup_html: |
-          Une fois les fichiers copiés vers un autre data provider officiel, nous recommandons
+          Une fois les fichiers copiés vers un autre serveur officiel, nous recommandons
           de nettoyer les fichiers ici en utilisant le panneau <strong>Delete Files</strong>, situé plus à droite.
       headings:
         when_registering: "Lors de l'enregistrement, automatiquement..."
@@ -264,22 +265,22 @@ fr:
         assign_project: "Affecter les fichiers à un projet"
         move_or_copy: "Déplacer ou copier les fichiers"
         to: "vers"
-        move_option: "... DÉPLACER les fichiers vers le fournisseur ->"
-        copy_option: "... COPIER les fichiers vers le fournisseur ->"
+        move_option: "... DÉPLACER les fichiers vers le serveur ->"
+        copy_option: "... COPIER les fichiers vers le serveur ->"
         do_nothing: "... ne rien faire d'autre !"
       tool_tips:
         info: "(info)"
       include_blanks:
         select_project: "(Sélectionner un projet)"
-        select_another_dp: "(Sélectionner un autre data provider)"
+        select_another_dp: "(Sélectionner un autre serveur de stockage)"
       notes:
         title_html: "<strong>Remarques importantes sur la copie et le déplacement automatiques de fichiers :</strong>"
         start: "L'opération de MOVE ou COPY commencera en arrière-plan dès que vous cliquerez sur 'Register files'."
-        no_modify: "Pendant que l'opération est en cours, ne modifiez pas les fichiers sur le data provider distant !"
-        copy_progress_html: "<strong>Lorsqu'une opération de COPY est en cours</strong>, il semblera y avoir deux versions enregistrées du fichier dans le gestionnaire de fichiers (une pour chaque data provider)."
+        no_modify: "Pendant que l'opération est en cours, ne modifiez pas les fichiers sur le serveur de stockage distant !"
+        copy_progress_html: "<strong>Lorsqu'une opération de COPY est en cours</strong>, il semblera y avoir deux versions enregistrées du fichier dans le gestionnaire de fichiers (une pour chaque serveur de stockage)."
         copy_done_html: "<strong>Après la fin d'une opération de COPY</strong>, les fichiers resteront visibles ici et ne sembleront plus être enregistrés."
         move_done: "Après la fin d'une opération de MOVE, les fichiers auront été effacés d'ici."
-        ignored: "Les tentatives de COPY ou MOVE vers des data providers où des fichiers portant le même nom existent déjà seront ignorées silencieusement."
+        ignored: "Les tentatives de COPY ou MOVE vers des serveurs de stockage où des fichiers portant le même nom existent déjà seront ignorées silencieusement."
       button: "Enregistrer les fichiers"
       submit: "Enregistrer les fichiers !"
 
@@ -291,8 +292,8 @@ fr:
         ssh_configuration_html: |
           <tr><td class="left_align medium_paragraphs">
             La zone ci‑dessous affiche votre clé SSH publique personnelle que le système CBRAIN utilisera
-            pour se connecter à votre data provider. Il s'agit d'une seule ligne de texte à installer
-            dans votre répertoire personnel sur la machine distante configurée pour votre data provider.
+            pour se connecter à votre serveur de stockage. Il s'agit d'une seule ligne de texte à installer
+            dans votre répertoire personnel sur la machine distante configurée pour votre serveur de stockage.
             <p>
             <strong>Pour les experts :</strong> si vous maîtrisez déjà ce type de configuration, vous pouvez simplement couper-coller
             la clé avec un éditeur de texte dans le fichier <em>.ssh/authorized_keys</em> sur le système distant.
@@ -318,11 +319,11 @@ fr:
         unregister_html: |
           <p class="medium_paragraphs">
             Ce panneau vous permet de <strong>désenregistrer</strong> des fichiers présents
-            sur le data provider distant et qui ont déjà été enregistrés par
+            sur le serveur de stockage distant et qui ont déjà été enregistrés par
             l'interface CBRAIN. Une fois désenregistré, un fichier ne sera plus
             visible dans le gestionnaire <strong>Fichiers</strong>, mais restera
             sur le disque du site distant. Vous devrez supprimer les données manuellement
-            si vous avez un accès externe aux fichiers distants, ou vous pouvez utiliser le panneau <strong>Delete Files</strong>
+            si vous avez un accès externe aux fichiers distants, ou vous pouvez utiliser le panneau <strong>Supprimer les fichiers</strong>
             indiqué plus à droite.
           </p>
       submit: "Désenregistrer les fichiers !"
@@ -332,14 +333,14 @@ fr:
       browse_as_another_user: "Parcourir en tant qu'un autre utilisateur :"
 
     browse:
-      title: "Parcourir le data provider"
+      title: "Parcourir le serveur de stockage"
       links:
         refresh_list: "Rafraîchir la liste des fichiers"
 
     dp_access:
-      title: "Accès au data provider"
+      title: "Accès au serveur de stockage"
       headings:
-        main: "Rapport d'accès utilisateur au data provider"
+        main: "Rapport d'accès utilisateur au serveur de stockage"
       legends:
         accessible: "accessible"
         not_accessible: "non accessible"
@@ -347,25 +348,25 @@ fr:
     dp_transfers:
       title: "Restrictions de transfert"
       headings:
-        main: "Rapport des restrictions de transfert des data providers"
-        destination_dp: "Fournisseur de destination"
-        source_dp: "Fournisseur source"
+        main: "Rapport des restrictions de transfert des serveurs de stockage"
+        destination_dp: "serveur de stockage de destination"
+        source_dp: "serveur de stockage source"
       paragraphs:
         intro_html: |
           <p class="medium_paragraphs">
-            Ce tableau montre quels transferts de fichiers sont autorisés entre data providers. Chaque cellule du tableau contient deux symboles, où %{ok} signifie <em>autorisé</em> et %{no} signifie <em>non autorisé</em>. Les transferts réussiront si <strong>les deux</strong> symboles apparaissent comme %{ok}&nbsp;%{ok}.
+            Ce tableau montre quels transferts de fichiers sont autorisés entre serveurs de stockage. Chaque cellule du tableau contient deux symboles, où %{ok} signifie <em>autorisé</em> et %{no} signifie <em>non autorisé</em>. Les transferts réussiront si <strong>les deux</strong> symboles apparaissent comme %{ok}&nbsp;%{ok}.
           </p>
           <p class="medium_paragraphs">
-            Le premier symbole indique les restrictions pour le transfert de fichiers entre paires de data providers, indépendamment de l'état d'autres ressources. Les restrictions ne sont pas nécessairement symétriques : il est possible de configurer A -> B autorisé (%{ok}) alors que B -> A ne l'est pas (%{no}).
+            Le premier symbole indique les restrictions pour le transfert de fichiers entre paires de serveurs de stockage, indépendamment de l'état d'autres ressources. Les restrictions ne sont pas nécessairement symétriques : il est possible de configurer A -> B autorisé (%{ok}) alors que B -> A ne l'est pas (%{no}).
           </p>
           <p class="medium_paragraphs">
             Le second symbole tient compte de trois autres facteurs :
             <ul>
-              <li>si les data providers sont <em>en ligne</em> ou <em>hors ligne</em> ;</li>
-              <li>si les data providers sont <em>lecture/écriture</em> ou <em>lecture seule</em> ;</li>
-              <li>si le portail courant a lui‑même accès à chaque data provider.</li>
+              <li>si les serveurs de stockage sont <em>en ligne</em> ou <em>hors ligne</em> ;</li>
+              <li>si les serveurs de stockage sont <em>lecture/écriture</em> ou <em>lecture seule</em> ;</li>
+              <li>si le portail courant a lui‑même accès à chaque serveur de stockage.</li>
             </ul>
-            Dans de tels cas, les data providers seront annotés avec %{offline}, %{read_only} et/ou %{no_access}. Si les trois propriétés permettent le transfert, le second symbole sera %{ok} ; sinon il sera %{no}.
+            Dans de tels cas, les serveurs de stockage seront annotés avec %{offline}, %{read_only} et/ou %{no_access}. Si les trois propriétés permettent le transfert, le second symbole sera %{ok} ; sinon il sera %{no}.
           </p>
       access:
         offline: "(hors ligne)"
@@ -377,12 +378,12 @@ fr:
         not_allowed: "non autorisé"
 
     index:
-      title: "Data Providers"
+      title: "Serveurs de stockage"
 
     new_personal:
-      title: "Ajouter un nouveau data provider personnel"
+      title: "Ajouter un nouveau serveur de stockage personnel"
       headings:
-        main: "Ajouter un nouveau data provider personnel"
+        main: "Ajouter un nouveau serveur de stockage personnel"
       field_explanation:
         name: "Cela devrait être un identifiant simple sans caractères spéciaux ni espaces"
         group_html: "Contrôle quels utilisateurs dans CBRAIN peuvent voir et accéder aux fichiers sur votre stockage. Le projet par défaut recommandé est votre projet privé, '%{group}'."
@@ -401,11 +402,11 @@ fr:
         cloud_storage_client_identifier: "Identifiant client"
         cloud_storage_client_token: "Token secret client"
       titles:
-        name: "Le nom du data provider."
-        description: "Brève description du data provider."
-        group: "Propriété du projet pour ce fournisseur. Les membres du projet auront accès au fournisseur, mais ne pourront pas le configurer."
-        remote_host: "Nom de la machine distante où se trouve le data provider."
-        remote_user: "Nom d'utilisateur sur la machine distante où se trouve le data provider."
+        name: "Le nom du serveur de stockage."
+        description: "Brève description du serveur de stockage."
+        group: "Propriété du projet pour ce serveur. Les membres du projet auront accès au serveur, mais ne pourront pas le configurer."
+        remote_host: "Nom de la machine distante où se trouve le serveur de stockage."
+        remote_user: "Nom d'utilisateur sur la machine distante où se trouve le serveur de stockage."
         remote_port: "Numéro de port utilisé pour accéder à la machine distante."
         remote_dir: "Répertoire utilisé pour stocker les fichiers"
         cloud_storage_endpoint: "Point de terminaison S3"
@@ -416,8 +417,8 @@ fr:
         cloud_storage_path_start: "Préfixe de chemin (optionnel)"
         cloud_storage_client_identifier: "Identifiant client"
         cloud_storage_client_token: "Token secret client"
-        ssh_tab: "Fournisseur SSH"
-        s3_tab: "Fournisseur S3"
+        ssh_tab: "serveur SSH"
+        s3_tab: "serveur S3"
       paragraphs:
         name_html: |
           <div class="field_explanation">
@@ -425,18 +426,18 @@ fr:
           </div>
         description_html: |
           <div class="field_explanation">
-            Cela contrôle quels utilisateurs dans CBRAIN peuvent voir et accéder aux fichiers sur votre stockage. Le projet par défaut et recommandé est votre projet privé, '<%= current_user.own_group.name %>'.
+            Cela contrôle quels utilisateurs dans CBRAIN peuvent voir et accéder aux fichiers sur votre stockage. Le projet par défaut et recommandé est votre projet privé, '#{group}'.
           </div>
         group_html: |
             <div class="field_explanation">
-              Cela contrôle quels utilisateurs dans CBRAIN peuvent voir et accéder aux fichiers sur votre stockage. Le projet par défaut et recommandé est votre projet privé, '<%= current_user.own_group.name %>'.
+              Cela contrôle quels utilisateurs dans CBRAIN peuvent voir et accéder aux fichiers sur votre stockage. Le projet par défaut et recommandé est votre projet privé, '#{group}'.
             </div>
-        before_ssh_dp_html: |
+        before_ssh_dp: |
           Utilisez ce type :
         ssh_dp_html: |
           <p class="medium_paragraphs">
 
-            Un data provider SSH se connecte à un serveur UNIX via SSH et
+            Un serveur de stockage SSH se connecte à un serveur UNIX via SSH et
             transfère des fichiers en utilisant la commande 'rsync' et parfois
             d'autres commandes basiques comme "mkdir", en mode non interactif. Pour que cela
             fonctionne, vous devez vous assurer que :
@@ -464,25 +465,25 @@ fr:
         ssh_params: "Paramètres SSH"
         s3_params: "Paramètres de connexion S3"
 
-      submit: "Créer le data provider"
+      submit: "Créer le serveur de stockage"
 
     new:
-      title: "Ajouter un nouveau data provider"
+      title: "Ajouter un nouveau serveur de stockage"
       headings:
-        main: "Ajouter un nouveau data provider"
+        main: "Ajouter un nouveau serveur de stockage"
         supertitle: "Clé SSH publique pour ce portail CBRAIN"
       titles:
-        name: "Le nom du data provider."
-        description: "Brève description du data provider."
-        time_zone: "Fuseau horaire où se trouve ce data provider."
-        type: "Type de data provider."
-        owner: "Propriétaire de ce data provider. Le propriétaire a tous les droits pour configurer et utiliser le data provider."
-        group: "Propriété du projet pour ce data provider. Les membres du projet auront accès au data provider, mais ne pourront pas le configurer."
-        online: "Ce data provider est-il actuellement disponible ?"
-        read_only: "Ce data provider est-il en lecture seule ?"
-        not_syncable: "Ce data provider est-il synchronisable ?"
-        remote_host: "Nom de la machine distante où se trouve le fournisseur."
-        alternate_host: "Noms d'hôtes alternatifs (séparés par des virgules) de la machine distante (nécessaire uniquement pour les Smart data providers)."
+        name: "Le nom du serveur de stockage."
+        description: "Brève description du serveur de stockage."
+        time_zone: "Fuseau horaire où se trouve ce serveur de stockage."
+        type: "Type de serveur de stockage."
+        owner: "Propriétaire de ce serveur de stockage. Le propriétaire a tous les droits pour configurer et utiliser le serveur de stockage."
+        group: "Propriété du projet pour ce serveur de stockage. Les membres du projet auront accès au serveur de stockage, mais ne pourront pas le configurer."
+        online: "Ce serveur de stockage est-il actuellement disponible ?"
+        read_only: "Ce serveur de stockage est-il en lecture seule ?"
+        not_syncable: "Ce serveur de stockage est-il synchronisable ?"
+        remote_host: "Nom de la machine distante où se trouve le serveur."
+        alternate_host: "Noms d'hôtes alternatifs (séparés par des virgules) de la machine distante (nécessaire uniquement pour les serveurs de stockage Smart)."
         remote_user: "Nom d'utilisateur sur la machine distante."
         remote_port: "Numéro de port distant."
         remote_dir: "Chemin complet du répertoire"
@@ -523,13 +524,13 @@ fr:
         cloud_storage_region: "Région (nécessaire uniquement pour S3FlatDataProvider)"
         datalad_repository_url: "URL du dépôt Datalad"
         datalad_relative_path: "Chemin relatif Datalad"
-        meta_must_move: "Les fichiers doivent être copiés/déplacés à l'enregistrement (fournisseurs navigables seulement) :"
-        meta_browse_gid: "Les fichiers ne peuvent être parcourus que par les membres de ce projet (fournisseurs navigables seulement) :"
+        meta_must_move: "Les fichiers doivent être copiés/déplacés à l'enregistrement (serveurs navigables seulement) :"
+        meta_browse_gid: "Les fichiers ne peuvent être parcourus que par les membres de ce projet (serveurs navigables seulement) :"
         meta_no_uploads: "Ne peut pas être utilisé pour téléverser des fichiers depuis le gestionnaire de fichiers :"
         meta_no_viewers: "Les fichiers ne peuvent pas être visualisés dans le gestionnaire de fichiers :"
       legends:
-        ssh_params: "Paramètres SSH pour les data providers distants"
-        datalad_config: "Configuration du dépôt Datalad"
+        ssh_params: "Paramètres SSH pour les serveurs de stockage distants"
+        datalad_config: "Configuration du dépôt Datalad pour le serveur de stockage"
         other_properties: "Autres propriétés"
         cloud_storage_config: "Configuration du stockage cloud"
       datas:
@@ -537,13 +538,13 @@ fr:
       field_explanations:
         description: "La première ligne doit être un résumé court, le reste servant pour des notes particulières destinées aux utilisateurs."
         cloud_storage_client_bucket_name: "Gardez à l'esprit que le nom du bucket doit être suffisamment spécifique pour être unique sur AWS."
-        type_info_toggle: "(Informations sur le type de data provider)"
-      select_provider_type: "Sélectionner le type de fournisseur"
-      portal_key_note: "Cette clé doit être installée sur les machines hôtes des fournisseurs SSH ou Smart pour permettre l'accès distant."
-      submit: "Créer un nouveau data provider"
+        type_info_toggle: "(Informations sur le type de serveur de stockage)"
+      select_provider_type: "Sélectionner le type de serveur"
+      portal_key_note: "Cette clé doit être installée sur les machines hôtes des serveurs SSH ou Smart pour permettre l'accès distant."
+      submit: "Créer un nouveau serveur de stockage"
 
     report:
-      title: "Rapport du data provider"
+      title: "Rapport du serveur de stockage"
       headings:
         main: "%{name} - Rapport d'incohérences"
       links:
@@ -551,9 +552,9 @@ fr:
       submit: "Réparer les problèmes sélectionnés"
 
     show:
-      title: "Informations du data provider"
+      title: "Informations du serveur de stockage"
       titles:
-        log: "Journal du data provider"
+        log: "Journal du serveur de stockage"
       links:
         inconsistency_report: "Rapport d'incohérence"
         file_registration_statistics: "Statistiques d'enregistrement des fichiers"
@@ -566,10 +567,10 @@ fr:
         read_write: "Lecture/Écriture"
         not_syncable: "NON synchronisable"
         fully_syncable: "Entièrement synchronisable"
-        revision_info_dp: "Info de révision (data provider)"
+        revision_info_dp: "Info de révision (serveur de stockage)"
         revision_info_type_html: "Info de révision (%{type})"
       headings:
-        update_error: "Le data provider n'a pas pu être mis à jour."
+        update_error: "Le serveur de stockage n'a pas pu être mis à jour."
         mode: "Mode"
         group: "Projet"
         physical_data_location: "Emplacement physique des données"
@@ -583,7 +584,7 @@ fr:
         no_uploads: "Ne peut pas être utilisé pour téléverser des fichiers dans le gestionnaire de fichiers"
         no_viewers: "Les fichiers ne peuvent pas être visualisés dans le gestionnaire de fichiers"
         must_move: "Les fichiers doivent être copiés/déplacés lors de l'enregistrement"
-        copy_move_targets: "Les fichiers peuvent être copiés ou déplacés vers ces autres data providers"
+        copy_move_targets: "Les fichiers peuvent être copiés ou déplacés vers ces autres serveurs de stockage"
         browse_gid: "Les fichiers ne peuvent être parcourus que par les membres de ce projet"
         accessed_by_servers: "Le contenu des fichiers peut être accédé par ces serveurs"
         ssh_params: "Paramètres SSH"
@@ -599,7 +600,7 @@ fr:
         official_storage_html: "<strong>Stockage officiel</strong>"
         user_site_storage_html: "<strong>Stockage utilisateur ou site</strong>"
         portals_html: "<strong>Portails</strong>"
-        execution_servers_html: "<strong>Bourreaux</strong>"
+        execution_servers_html: "<strong>Serveurs de calcul</strong>"
         public_ssh_key_note: "Clé SSH publique pour ce portail CBRAIN"
       field_explanations:
         license_agreements: "Saisissez un identifiant de licence par ligne. Notez que seuls les caractères alphanumériques, l'underscore (_) et les tirets (-) sont autorisés."
@@ -607,5 +608,5 @@ fr:
       include_blanks:
         any_users: "(Tous les utilisateurs)"
       datas:
-        portal_key_note: "Cette clé doit être installée sur la machine hôte de ce data provider pour permettre l'accès distant."
+        portal_key_note: "Cette clé doit être installée sur la machine hôte de ce serveur de stockage pour permettre l'accès distant."
         unknown_key: "Inconnu ! Contactez l'administrateur système !"

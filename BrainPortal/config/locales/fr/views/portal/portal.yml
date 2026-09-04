@@ -80,6 +80,7 @@ fr:
           à l'Université McGill pour leurs précieux commentaires et leur soutien.
 
     portal_log:
+      title: "Journaux du portail"
       filters:
         lines_to_show_html: "Nombre de lignes à afficher : %{dropdown}"
         min_request_time_html: "Temps minimal de la requête : %{dropdown} ms"
@@ -231,7 +232,7 @@ fr:
       headings:
         main: "Statistiques du service Web de CBRAIN"
         by_client: "Totaux par type de client"
-        by_controller: "Totaux par controller &amp; action"
+        by_controller_html: "Totaux par controller &amp; action"
         by_status: "Totaux par code d'état HTTP"
 
       columns:
@@ -265,27 +266,28 @@ fr:
     swagger:
       title: "API de CBRAIN"
 
-      content_html: |
-        <div class="generalbox">
-        <big><strong>Cette page décrit l'API de CBRAIN</strong></big>
+      paragraphs:
+        api_html: |
+          <div class="generalbox">
+          <big><strong>Cette page décrit l'API de CBRAIN</strong></big>
 
-        <p class="medium_paragraphs">
-        Pour en savoir plus sur les travaux en cours concernant l'API, veuillez consulter le
-        <a href="https://github.com/aces/cbrain/issues?q=is%3Aopen+is%3Aissue+label%3AAPI">API issues</a>
-        sur
-        <a href="https://github.com/aces/cbrain">CBRAIN's GitHub repository</a>.
+          <p class="medium_paragraphs">
+          Pour en savoir plus sur les travaux en cours concernant l'API, veuillez consulter le
+          <a href="https://github.com/aces/cbrain/issues?q=is%3Aopen+is%3Aissue+label%3AAPI">API issues</a>
+          sur
+          <a href="https://github.com/aces/cbrain">CBRAIN's GitHub repository</a>.
 
-        <p class="medium_paragraphs">.
-        Les fichiers <a href="/swagger.yaml">YAML</a> ou <a href="/swagger.json">JSON</a> de cette spécification peuvent
-        être ouverts dans <a href="https://app.swaggerhub.com/home">SwaggerHUB</a>.
+          <p class="medium_paragraphs">.
+          Les fichiers <a href="/swagger.yaml">YAML</a> ou <a href="/swagger.json">JSON</a> de cette spécification peuvent
+          être ouverts dans <a href="https://app.swaggerhub.com/home">SwaggerHUB</a>.
 
-        <p class="medium_paragraphs">
-        Vous pourrez ainsi générer du code client et consulter la même documentation que celle présentée ici.
-        En particulier, cela vous permettra de générer des bibliothèques clientes dans une grande variété de langages,
-        tels que <em>Python</em>, <em>Perl</em>, <em>Java</em>, <em>Swift</em> et même <em><strong>Ruby</strong></em>.
-        <p class="medium_paragraphs">
-        Voici un lien direct vers la <a href="https://app.swaggerhub.com/apis/prioux/CBRAIN/%{spec_version}">dernière version sur SwaggerHub</a>.
-        </div>
+          <p class="medium_paragraphs">
+          Vous pourrez ainsi générer du code client et consulter la même documentation que celle présentée ici.
+          En particulier, cela vous permettra de générer des bibliothèques clientes dans une grande variété de langages,
+          tels que <em>Python</em>, <em>Perl</em>, <em>Java</em>, <em>Swift</em> et même <em><strong>Ruby</strong></em>.
+          <p class="medium_paragraphs">
+          Voici un lien direct vers la <a href="https://app.swaggerhub.com/apis/prioux/CBRAIN/%{spec_version}">dernière version sur SwaggerHub</a>.
+          </div>
 
     welcome:
       title: "Bienvenue"

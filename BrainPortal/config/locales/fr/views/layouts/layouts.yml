@@ -14,7 +14,7 @@ fr:
           projects: "Projets"
           resource: "Ressource"
           messages: "Messages"
-          data_providers: "Data providers"
+          data_providers: "Serveurs de stockage"
           quotas: "Quotas"
           servers: "Serveurs"
           tools: "Outils"
@@ -58,8 +58,8 @@ fr:
           full_project_list: "(Liste complète des projets)"
           select_project: "(Cliquez ici pour sélectionner un projet et accéder aux fichiers et aux tâches.)"
           profiles: "Profils"
-          data_providers: "Data providers"
-          bourreau: "Exécution serveur"
+          data_providers: "Serveurs de stockage"
+          bourreaux: "Serveurs de calcul"
           tools: "Outils"
           tool_configs: "Configurations d'outils"
           users: "Utilisateurs"
@@ -75,4 +75,3 @@ fr:
         labels:
           signups: "Inscriptions"
           ongoing: "En cours"
-

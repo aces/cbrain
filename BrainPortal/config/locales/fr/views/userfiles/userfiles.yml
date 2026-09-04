@@ -41,6 +41,15 @@ fr:
         file_type: "Un type de fichier..."
         keep_current: "Conserver %{attribute} actuel"
 
+      actions:
+        proceed: "Continuer"
+
+      autodetect: "(détecté automatiquement)"
+      invalid: "Non valide!"
+      new_collection: "Nouvelle collection"
+      qc_note: "Notez que le contrôle qualité (CQ) nécessite d'abord que les fichiers soient synchronisés localement."
+      unknown_file_type: "Type de fichier inconnu!"
+
       labels:
         extract: "Extraire"
         as_single_collection: "Comme une seule collection"
@@ -53,24 +62,16 @@ fr:
         hidden_html: "Masqué (<span class='pp-hid-ind'>H</span>)"
         locked_html: "Verrouillé (<span class='pp-ro-ind'>I</span>)"
 
-      hidden_html: |
-        Les fichiers masqués sont invisibles par défaut et sont généralement réservés
-        à des fins de maintenance, d'utilisation interne et d'archivage.
-      locked: |
-          Les fichiers verrouillés ne peuvent pas être modifiés ou déplacés entre les fournisseurs de données.
+      divs:
+        hidden_html: |
+          Les fichiers masqués sont invisibles par défaut et sont généralement réservés
+          à des fins de maintenance, d'utilisation interne et d'archivage.
+        locked: |
+            Les fichiers verrouillés ne peuvent pas être modifiés ou déplacés entre les fournisseurs de données.
 
-    confirmations:
-      delete_file_html: "Êtes-vous certain de vouloir supprimer ces <span class='dlg-cfrm-cnt'></span> fichier(s)?"
-      delete_tag_html: "Êtes-vous certain de vouloir supprimer le label <span class='dlg-cfrm-obj'></span> ?"
-
-    actions:
-      proceed: "Continuer"
-
-    new_collection: "Nouvelle collection"
-    autodetect: "(détecté automatiquement)"
-    unknown_file_type: "Type de fichier inconnu!"
-    qc_note: "Notez que le contrôle qualité (CQ) nécessite d'abord que les fichiers soient synchronisés localement."
-    invalid: "Non valide!"
+      confirmations:
+        delete_file_html: "Êtes-vous certain de vouloir supprimer ces <span class='dlg-cfrm-cnt'></span> fichier(s)?"
+        delete_tag_html: "Êtes-vous certain de vouloir supprimer le label <span class='dlg-cfrm-obj'></span> ?"
 
     file_menu:
       static_actions:
@@ -218,7 +219,8 @@ fr:
         modified_at: "Modifié le"
         immutable_file: "Fichier immuable"
         hidden_file: "Fichier masqué"
-
+        remote_full_path: "Chemin du repertoire distant"
+ 
       zenodo_publication:
         published: "Publié: %{link}"
         in_progress: "En cours: %{link}"

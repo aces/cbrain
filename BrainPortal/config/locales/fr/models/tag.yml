@@ -4,3 +4,6 @@ fr:
         tag:
           one: "Label"
           other: "Labels"
+        tag_downcase:
+          one: "label"
+          other: "labels"

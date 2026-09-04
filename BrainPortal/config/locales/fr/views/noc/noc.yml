@@ -17,7 +17,7 @@ fr:
         files_deltas: "Variations de fichiers"
         exceptions: "Exceptions"
         servers: "Caches et tâches des bourreaux"
-        dp: "Fichiers mis à jour des data providers"
+        dp: "Fichiers mis à jourdes serveurs de stockage"
       legends:
         portal_suffix: " (Portail)"
       labels:

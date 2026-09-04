@@ -255,7 +255,7 @@ en:
 
     runtime_info:
       headings:
-       runtime_information: "Runtime Information"
+        runtime_information:       "Runtime Information"
       cells:
         rails_environment: "Rails Environment"
         rails_revision: "Rails Revision"
@@ -295,6 +295,17 @@ en:
 
       headings:
         main: "Add New Server"
+
+      cms_class_select:
+        unconfigured: "(Unconfigured)"
+        scir_sge: "Sun GridEngine"
+        scir_pbs: "PBS"
+        scir_moab: "MOAB"
+        scir_sharcnet: "Sharcnet custom"
+        scir_lsf: "LSF"
+        scir_slurm: "SLURM"
+        scir_gcloud_batch: "Google Cloud"
+        scir_unix: "UNIX processes"
 
       divs:
         name_html: |
@@ -392,18 +403,6 @@ en:
       tool_version_configuration_explanation: "A tool configuration for this Execution Server can be made once the server is created."
       task_limits_explanation: "Task limits can be set once the Execution Server is created."
 
-      cms_class_select:
-        unconfigured: "(Unconfigured)"
-        scir_sge: "Sun GridEngine"
-        scir_pbs: "PBS"
-        scir_moab: "MOAB"
-        scir_sharcnet: "Sharcnet custom"
-        scir_lsf: "LSF"
-        scir_slurm: "SLURM"
-        scir_gcloud_batch: "Google Cloud"
-        scir_unix: "UNIX processes"
-
-
       submit: "Create New Server"
 
     rr_access_dp:
@@ -492,6 +491,7 @@ en:
       titles:
         portal: "Portal Info"
         execution_server: "Execution Server Info"
+        server_log: "Server Log"
 
       links:
         task_stats_by_status: "Task Statistics By Status"

@@ -182,9 +182,9 @@
 
 
     <% if current_user.has_role? :admin_user %>
-      <% t.attribute_cell(:, :header => t('.headings.provider_full_path'), :show_width => 2) %>
+      <% t.attribute_cell(:cache_full_path, :header => t('.cells.provider_full_path'), :show_width => 2) %>
       <% if @userfile.data_provider.respond_to?(:provider_full_path) %>
-        <% t.cell(t('.cells.provider_full_path'), :show_width => 2) do %>
+        <% t.cell(t('.cells.remote_full_path'), :show_width => 2) do %>
           <%= @userfile.data_provider.provider_full_path(@userfile) %>
         <% end %>
       <% end %>

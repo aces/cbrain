@@ -15,12 +15,12 @@ fr:
     by_resource:
       labels:
         tool: "Outil :"
-        execution_server: "Bourreau :"
+        execution_server: "Serveur de calcul :"
       no_versions:
         for_servers: "Aucune version configurée pour ces serveurs : "
         for_tools: "Aucune version configurée pour ces outils : "
       headings:
-        execution_servers: "Bourreaux"
+        execution_servers: "Serveurs de calcul"
         tools: "Outils"
         versions_configured: "Versions configurées"
         projects_in_effect: "Projets concernés"
@@ -32,11 +32,11 @@ fr:
       legends:
         user: "Utilisateur :"
       member_of_projects: "Membre de projets éditables :"
-      execution_servers_access: "Accès aux bourreaux :"
+      execution_servers_access: "Accès aux serveurs de calcul :"
       tool_access_summary: "Résumé d'accès aux outils :"
       tool_versions_access_details: "Détails d'accès aux versions des outils :"
       headings:
-        execution_server: "Bourreau"
+        execution_server: "Serveur de calcul"
         tool: "Outil"
         servers_project: "Projet du serveur"
         accessible_to_user: "Accessible pour l'utilisateur ?"
@@ -49,7 +49,7 @@ fr:
       n_no: "%{count} NON"
 
       tooltip:
-        server_project_html: "* Projet du bourreau<br/>"
+        server_project_html: "* Projet du serveur de calcul<br/>"
         tool_project_html: "* Projet de l'outil<br/>"
         version_project_html: "* Projet de la configuration de version<br/>"
 
@@ -67,7 +67,7 @@ fr:
         description: "Description"
         inputs_readonly: "Ne modifie pas ses fichiers d'entrée"
         boutiques_path: "Chemin vers le descripteur Boutiques"
-        exec_server_control: "Contrôle du bourreau"
+        exec_server_control: "Contrôle du serveur de calcul"
         extra_qsub: "Options supplémentaires de soumission au cluster (sbatch, qsub)"
         env_vars: "Variables d'environnement"
         bash_prologue: "Prologue d'initialisation BASH"
@@ -90,13 +90,13 @@ fr:
         boutiques_path_html: |
           Vous pouvez utiliser ce champ pour fournir un chemin explicite vers un descripteur Boutiques ; un chemin absolu sera utilisé tel quel, tandis qu'un chemin relatif sera résolu relativement au dossier <em>boutiques_descriptor</em> dans le sous-répertoire des plugins installés. La page indique l'emplacement source du descripteur effectif : 'Automatic' signifie que la configuration a été mappée automatiquement sur un descripteur installé, 'Manual' signifie que la valeur saisie ici est utilisée, et 'Overriden' signifie que les deux valeurs existent, mais que la version 'Manual' est en vigueur.
         extra_qsub_html: |
-          <b>Remarque :</b> Cette chaîne sera ajoutée à l'option supplémentaire 'qsub' définie au niveau du bourreau.
+          <b>Remarque :</b> Cette chaîne sera ajoutée à l'option supplémentaire 'qsub' définie au niveau du serveur de calcul.
         container_index_html: |
           L'index (URL) où l'image du conteneur est disponible.
           Exemples pour Docker : quay.io, index.docker.io (par défaut).
           Exemples pour Singularity : docker://, shub:// (par défaut).
         container_image_name: |
-          Le nom et le tag de l'image du conteneur contenant l'outil, par exemple "centos:latest". Ce nom fait référence à l'index Docker/Singularity accessible depuis le bourreau, qui est configuré manuellement sur celui-ci pour l'instant.
+          Le nom et le tag de l'image du conteneur contenant l'outil, par exemple "centos:latest". Ce nom fait référence à l'index Docker/Singularity accessible depuis le serveur de calcul, qui est configuré manuellement sur celui-ci pour l'instant.
         container_image_id: |
           Le numéro d'ID de l'image du conteneur dans laquelle l'outil est installé.
           Cet ID fait référence à un fichier image proprement enregistré dans CBRAIN par l'administrateur.
@@ -111,11 +111,11 @@ fr:
           <li>un chemin complet (ex. <em>file:/a/b/data.squashfs</em>),</li>
           <li>un chemin avec motif (ex. <em>file:/a/b/data*.squashfs</em>),</li>
           <li>un fichier enregistré identifié par ID (ex. <em>userfile:123</em>),</li>
-          <li>un Data Provider SquashFS identifié par son ID ou son nom (ex. <em>dp:123</em>, <em>dp:NomDP</em>),</li>
+          <li>un Serveur de Stockage SquashFS identifié par son ID ou son nom (ex. <em>dp:123</em>, <em>dp:NomDP</em>),</li>
           <li>ou un basename d'overlay ext3capture (ex. <em>ext3capture:basename=SIZE</em> où SIZE est <em>12G</em> ou <em>12M</em>).</li>
           </ul>
           <p>
-          Dans le cas d'un Data Provider, les overlays seront les fichiers SquashFS utilisés par le fournisseur pour son stockage. Le fournisseur doit bien sûr être local au bourreau courant.
+          Dans le cas d'un Serveur de Stockage, les overlays seront les fichiers SquashFS utilisés par le fournisseur pour son stockage. Le fournisseur doit bien sûr être local au serveur de calcul.
           <p>
           Une spécification de bindmount est l'une des formes suivantes :
           <ul>
@@ -167,7 +167,7 @@ fr:
       columns:
         access: "Accès ?"
         tool_name: "Nom de l'outil"
-        execution_server: "Bourreau"
+        execution_server: "Serveur de calcul"
         tool_project: "Projet de l'outil"
         version: "Version"
         version_project: "Projet de la version"
@@ -180,8 +180,8 @@ fr:
 
     boutiques_descriptor:
       title: "Descripteur Boutiques"
-      present_html: "Ceci est le descripteur Boutiques pour l'outil <strong>%{tool}</strong> sur le bourreau <strong>%{server}</strong>."
-      absent_html: "Il n'y a pas de descripteur Boutiques pour l'outil <strong>%{tool}</strong> sur le bourreau <strong>%{server}</strong>."
+      present_html: "Ceci est le descripteur Boutiques pour l'outil <strong>%{tool}</strong> sur le serveur de calcul<strong>%{server}</strong>."
+      absent_html: "Il n'y a pas de descripteur Boutiques pour l'outil <strong>%{tool}</strong> sur le serveur de calcul<strong>%{server}</strong>."
 
     index:
       title: "Outils et leurs versions"
@@ -200,17 +200,17 @@ fr:
         user: "Par utilisateur"
       submit: "Générer le rapport !"
       headings:
-        execution_server: "Bourreau"
+        execution_server: "Serveur de calcul"
         tool: "Outil"
         by: "Rapport d'accès, par %{type}"
         access_by_user: "Rapport d'accès aux outils, par utilisateur"
-        by_server_html: "Par bourreau (ou %{link})"
+        by_server_html: "Par serveur de stockage(ou %{link})"
         by_tool_html: "Par outil (ou %{link})"
         quick_links: "Liens rapides vers les rapports d'accès individuels"
         by_user: "Par utilisateur"
         by_combination: "Par combinaison plus spécifique de ressources"
       labels:
-        execution_server: "Bourreau :"
+        execution_server: "Serveur de calcul :"
         tool: "Outil :"
         user: "Utilisateur :"
         view_by: "Afficher par :"
@@ -225,7 +225,7 @@ fr:
       applies_to_all_tools_html: "Ce formulaire s'applique à <strong>TOUS les outils</strong>"
 
       running_on_all_servers_html: "s'exécutant sur <strong>TOUS les bourreaux</strong>."
-      running_on_server_html: "s'exécutant sur le bourreau <strong>%{server}</strong>."
+      running_on_server_html: "s'exécutant sur le serveur de calcul<strong>%{server}</strong>."
 
       common_config_tool: "Configuration commune pour l'outil %{tool} sur TOUS les serveurs"
       common_config_server: "Configuration commune pour TOUS les outils sur le serveur %{server}"
@@ -237,6 +237,6 @@ fr:
         order: "Les commandes sont affichées dans l'ordre d'exécution."
 
       log:
-        global_bourreau: "Journal de la configuration globale du bourreau #%{id}"
+        global_bourreau: "Journal de la configuration globale du serveur de calcul#%{id}"
         global_tool: "Journal de la configuration globale d'outil #%{id}"
         specific: "Journal de la configuration spécifique #%{id}"

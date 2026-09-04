@@ -51,7 +51,7 @@ fr:
         resources: "Ressources"
         groups: "Projets"
         users: "Utilisateurs"
-        data_providers: "Data providers"
+        data_providers: "Serveurs de stockage"
         remote_resources: "Ressources distantes"
       paragraphs:
         description_html: |
@@ -63,7 +63,7 @@ fr:
         users: "Utilisateurs"
         groups: "Projets"
         userfiles: "Fichiers"
-        data_providers: "Data Providers"
+        data_providers: "Serveurs de stockage"
         remote_resources: "Ressources distantes"
       datas:
         login: "Login"
