@@ -20,7 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'readline'
 require 'reline'   # Readline.get_screen_size fails me
 
 # We need some sort of constant to refer to the console's
@@ -123,7 +122,7 @@ Operations Mode : #{
       OPERATIONS
 
       userinput     = initial_command.presence
-      userinput   ||= Readline.readline("Do something (h for help): ",false)
+      userinput   ||= Reline.readline("Do something (h for help): ",false)
       userinput     = "Q" if userinput.nil?
       inputkeywords = userinput.downcase.split(/\W+/).map(&:presence).compact
 
@@ -134,7 +133,7 @@ Operations Mode : #{
       end
       puts "" if initial_command.nil?
       if dowait && initial_command.blank?
-        Readline.readline("Press RETURN to continue: ",false)
+        Reline.readline("Press RETURN to continue: ",false)
         puts ""
       end
       initial_command &&= ""  # nil means no command ever provided; "" means a command was provided
@@ -423,7 +422,7 @@ Operations Mode : #{
       puts " * @r@ will be substituted by the Bourreau's RAILS root path"
       puts " * @d@ will be substituted by the Bourreau's DP cache dir path"
       puts " * @g@ will be substituted by the Bourreau's gridshare dir path"
-      comm = Readline.readline("Bash command: ")
+      comm = Reline.readline("Bash command: ")
       bash_command_on_bourreaux(comm)
       return true
     end
