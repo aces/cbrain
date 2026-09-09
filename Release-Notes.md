@@ -1,6 +1,170 @@
 
 ## CBRAIN/NeuroHub Release Notes
 
+#### Version 7.1.0 Released 2026-09-09
+
+This release covers about 15 months of code improvements,
+bug fixes, and new features.
+
+###### GitHub changes
+
+* Added CODE_OF_CONDUCT.md
+* Added CONTRIBUTING.md
+
+###### Old Boutiques integrators completely removed
+
+Up to version 7.0.0, CBRAIN had two distinct task
+integrators based on the Boutiques framework. Internally
+we called them the 'old' integrator and the 'new' one.
+The 'old' integrator has been completely removed and
+all CBRAIN plugins repos have been adjusted such that
+tasks defined in them now use the 'new' integrator.
+
+Of interest, almost the entire test suite that was used
+with the old integrator was adjusted to apply to the new
+integrator. It's a big of a kludge, but it works.
+
+###### New 'reverse tunnel' feature for Bourreaux
+
+When configuring a Bourreau, the admin has the option
+to set it up such that the Bourreau will start its own
+SSH tunnel, back to distinct server that will provide
+both the database connection and the system's SSH agent.
+
+###### New 'jump host' feature for Bourreaux
+
+In the same vein, admins can configure a Bourreau to go
+through a SSH jumphost, ensuring the Bourreau starts on
+a deterministically chosen host.
+
+This is convenient when trying to configure a Bourreau
+on a remote system where the physical host is chosen at random.
+
+###### User support and user interface changes:
+
+* Normal users can configure their own S3 DataProvider; this used
+  to be limited to admin users.
+* When launching tasks that use files stored on private data providers,
+  users will be warned if the DP is likely not accessible on the selected
+  execution server (e.g. the SSH key has not been pushed).
+* A warning is printed if renaming a file fails, in the interface.
+* Pesky ASCII progress bars are hidden when viewing raw task outputs.
+* Users can see tags created and shared by admins.
+* Removed old warnings about Internet Explorer.
+* Uploading a ZIP file and selecting auto-extract will trigger a bit
+  of logic to remove one unwanted level of folder nesting, as necessary.
+
+###### API improvements:
+
+* An API endpoint was added for the BackgroundActivity 'show' action.
+* API requests to add or remove users from a group have been improved.
+  The requests no longer have to provide a list of all users, but can
+  just specify directly which users to add or remove.
+* The form to invite other users to join your project has been improved;
+  there no longer is a large checkbox grid, and users can just enter
+  a username or an email address.
+* An logged-in API user can request a fresh new CBRAIN token.
+* An non logged-in API user can request a token by providing a JWT
+  that contains a shared secret, as configured by an admin. The
+  action is named 'new_token_from_jwt'.
+* When fetching userfiles, JSON records now contain the list of
+  tag names and tag IDs associated with each file.
+* The CbSerializer task can now be launched using API requests.
+* Removed an old 'cache_disk_usage' API endpoint that was never used.
+* Queries using '_simple_filters' can now provide array values
+  to perform "in ()" queries.
+* Queries using '_simple_filters' can now provide string values
+  formatted as ">1", "<5", "<=3 or ">=9" to make numeric comparisons.
+  Also works on datetimes with strings like ">2026-09-01 10:00:00".
+
+###### Administrative functions or configuration changes:
+
+* All controller actions now have the ability to allowlist
+  a series of parameters for their actions, and if a controller
+  receives more extra parameters than are expected, the
+  IP banning code will be invoked.
+* CpuQuota records now include a maximum number of active tasks
+  that can be configured by an admin.
+* The old form elements to set those maximum active tasks
+  have been removed from the Bourreau 'show' page.
+* The names of log files for workers have been adjusted for clarity.
+* Task 'runtime info' gathering has been moved into the tool's
+  execution layer, so the information is obtained even after
+  containerization.
+* Admins can configure explicit 'bindmounts' mountpoints for
+  containerized tools.
+* DiskQuota convention changed: 0 now means no files allowed.
+* Added two sample Boutiques task (mostly for admins and testing).
+* Performance improvements for the ToolConfigurator.
+* The console's 'pretty_view' report for DPs now show a better 'path'
+  depending on the DP type.
+* A rake task 'db:mysql:dump' was created to help developers dump
+  their DB.
+* Two rake tasks 'cbrain:integrators:migrate' and 'cbrain:integrator:relink'
+  were added to help installation migrate their tools from the old
+  integrator to the new one. Use with caution.
+
+###### New Boutiques integrator modules:
+
+* BoutiquesOutputTagger:
+  Output files can now automatically be tagged within CBRAIN.
+* BoutiquesResourceManager:
+  Allow dynamic adjustements to resources such as walltime, memory
+  and number of cores, based on the tool's inputs.
+* BoutiquesZenodoPusher:
+  Output files can be selected to be pushed to Zenodo using
+  CBRAIN's built-in Zenodo deposit mechanism.
+
+###### BackgroundActivity subsystem:
+
+* Cache cleanup operations are now performed by creating BACs.
+  The old cache cleanup operation code on the Bourreau side has been
+  entirely removed.
+* The 'repeat' column for BACs is now colorized.
+* BACs are now allowed to destroy themselves in the after_last_item
+  callback; this is useful to remove from the table BAC objects
+  that have done their job but we don't need to keep around, like
+  regular checkers.
+* The 'RemoveTaskWorkdir' BAC will no longer consider it an error
+  to remove a workdir from a task that doesn't have one. It will make
+  a note of it in the messages, though.
+* A 'show' page was added for BAC objects; only available to admins.
+* The RubyRunner BAC will show the code associated with its callbacks.
+
+###### Code refactoring or other code changes:
+
+* The GitHub workflow was adjusted slightly.
+* We no longer use the Wirble gem.
+* The scheduling within TaskWorker has been improved.
+* TaskWorkers now respect the max_active_task limit from CpuQuotas.
+* Boot messages are prefixed with special letters, C, V, P etc,
+  that identify which boot system is generating the message.
+* Validation of task objects is performed through a second round
+  after a task array is created.
+* Zenodo file uploads adjusted to make sure filenames for collections
+  are correct.
+* A bunch of useless attributes in the ToolConfig model have been cleaned up.
+* The Boutiques integrator now respects the flag 'uses-absolute-path'
+  when building the JSON record for the tool's parameters.
+* The Boutiques integrator adds environment variables as specified in the descriptor.
+* Default string validations have been strengthened for BTQ tasks; custom
+  overrides can be added by admins.
+* An old 'progress bar' mechanism for the task 'show' page has been removed.
+* When queried for their 'info', Bourreaux now return both the number of
+  expected BAC workers, but also the number of running ones.
+* Boutiques tools can now be renamed by an admin; the original name is kept
+  in a separate attribute, which allows the framework to make its lookups
+  properly.
+* The User model now has a method to get and set shared secrets.
+* Removed dependencies on the Readline library, now we use Reline.
+* The 'addlog' general method now has the option to log the class or
+  module name of the callee.
+* All Boutiques integrator modules now let the framework log their version
+  numbers, instead of each of them doing it.
+* Fixed the OIDC module to generate state strings with SHA256.
+* The ScirUnix execution layer will now impose a memory limit using
+  the command "ulimit -v", as needed.
+
 #### Version 7.0.0 Released 2025-05-26
 
 It has been two years since the previous release, and enough
