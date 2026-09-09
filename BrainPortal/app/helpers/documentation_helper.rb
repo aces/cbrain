@@ -31,7 +31,7 @@ module DocumentationHelper
   # The core admin can modify the documentation displayed through the
   # shown documentation page.
   # See the help_document views for more details.
-  def help_button(key, display = "Help")
+  def help_button(key, display = t('help'))
     doc = HelpDocument.find_by_key(key) || HelpDocument.from_existing_file!(key)
     if doc
       overlay_ajax_link display, doc_path(doc), :class  => "button"

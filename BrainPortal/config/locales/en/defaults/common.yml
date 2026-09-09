@@ -1,5 +1,8 @@
 en:
 
+  will_paginate:
+    page_gap: "…"
+
   labels:
     user_colon:
       one: "User:"
@@ -44,6 +47,7 @@ en:
   date: "Date"
   ago_time: "%{time} ago"
 
+  more_parentheses: "(more)"
   unknown: "Unknown"
   unknown_parentheses: "(Unknown)"
   unset_parentheses: "(Unset)"
@@ -64,6 +68,9 @@ en:
   clear: "Clear"
   refresh: "Refresh"
   select_placeholder: "..."
+  info_parentheses: "(info)"
+  no_description_parentheses: "(No description)"
+  everyone: everyone
 
   no_information: "There is no information to show at this time."
 
@@ -72,6 +79,7 @@ en:
 
   delete: "Delete"
   deleted: "Deleted"
+  deleted_non_existing_parentheses: "(Deleted/Non-existing)"
 
   save: "Save"
   saved: "Saved"
@@ -167,3 +175,12 @@ en:
       almost_x_years:
         one: "almost 1 year"
         other: "almost %{count} years"
+
+  chosen:
+    single:     "Select an Option"
+    multiple:   "Select Some Options"
+    no_results: "No results match"
+    add_tag:    "Press Enter to add: "
+
+
+

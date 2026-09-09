@@ -38,8 +38,8 @@ module ZenodoHelper
   # +depid+ parameter is like in url_for_deposit().
   def link_to_deposit(depid)
     zsite, id = depid.split("-")
-    label  = "Deposit ##{id}"
-    label += " (sandbox)" if zsite == 'sandbox'
+    label  = t('zenodo.deposit', id: id)
+    label += t('zenodo.sandbox') if zsite == 'sandbox'
     link_to label, url_for_deposit(depid), :target => '_blank'
   end
 
