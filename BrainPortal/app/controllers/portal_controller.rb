@@ -27,7 +27,7 @@ class PortalController < ApplicationController
 
   include DateRangeRestriction
 
-  api_available :only => [ :swagger, :stats ] # GET /swagger returns the .json specification
+  api_available :only => [ :swagger, :stats, :available ] # GET /swagger returns the .json specification
 
   before_action :login_required, :except => [ :credits, :about_us, :welcome, :swagger, :available, :stats ]  # welcome is here so that the redirect to the login page doesn't show the error message
   before_action :admin_role_required, :only => :portal_log
@@ -255,11 +255,14 @@ class PortalController < ApplicationController
 
   # Publicly shows a list of tools and datasets available
   def available #:nodoc:
-    # This is used to recognize public tools in the view template
-    @everyone_gid = EveryoneGroup.first.id
+
+    # Quick validation of the source. For the moment we just need something provided.
+    if api_request? && params[:service_name].blank?
+       return access_error(:unauthorized)
+    end
 
     # The tools we list. They must have at least one ToolConfig.
-    @tools = Tool
+    tools = Tool
              .all
              .order(:name)
              .to_a
@@ -272,16 +275,57 @@ class PortalController < ApplicationController
              }
 
     # The groups we list.
-    @groups = WorkGroup
+    groups = WorkGroup
               .where(:public => true)
               .to_a
 
     # The AccessProfile named 'Restricted Datasets' must be created be the admin;
     # generally it won't contain any users, just groups.
     dataset_access_profile = AccessProfile.where(:name => 'Restricted Datasets').first
-    @groups |= dataset_access_profile.groups.to_a if dataset_access_profile
+    groups |= dataset_access_profile.groups.to_a if dataset_access_profile
 
-    @groups.sort_by! { |g| g.name.downcase }
+    groups.sort_by! { |g| g.name.downcase }
+
+    # Split the tools into two categories
+    everyone_gid = EveryoneGroup.first.id
+    @open_tools       = tools.select do |tool| # tools that are open with at least one open tool_config
+      (tool.group_id == everyone_gid) && tool.tool_configs.where(:group_id => everyone_gid).exists?
+    end
+    @restricted_tools = tools - @open_tools # all the other tools have some form of restriction
+
+    # Split the datasets into two categories
+    @public_groups  = groups.select(&:public?)
+    @private_groups = groups.reject(&:public?)
+
+    # Prepare JSON response for API requests
+    if api_request?
+      tversions = ->(tool) {
+            tool.tool_configs
+            .to_a
+            .select { |tc| tc.bourreau_id.present?  }
+            .select { |tc| tc.bourreau_id > 0       }
+            .map(&:version_name)
+            .map(&:presence)
+            .compact
+            .uniq.sort
+      }
+      #tcatts = ->(tc) { [ tc.id, tc.version_name, tc.group_id == everyone_gid ? "open" : "restricted" ] }
+      tatts = ->(tool)  { { :id => tool.id,  :name => tool.name, :versions => tversions.(tool) } }
+      gatts = ->(group) { { :id => group.id, :name => group.name, } }
+      jreport = {
+        :public_tools         => @open_tools.map       { |tool| ta = tatts.(tool); ta[:versions].presence && ta }.compact,
+        :restricted_tools     => @restricted_tools.map { |tool| ta = tatts.(tool); ta[:versions].presence && ta }.compact,
+        :public_datasets      => @public_groups.map    { |group| gatts.(group) },
+        :restricted_datasets  => @private_groups.map   { |group| gatts.(group) },
+      }
+    end
+
+    # Yé on a fini
+    respond_to do |format|
+      format.html
+      format.json { render :json => jreport }
+      format.any  { head   :unauthorized }
+    end
   end
 
   # Report maker
