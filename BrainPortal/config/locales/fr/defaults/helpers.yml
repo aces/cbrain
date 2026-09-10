@@ -1,0 +1,94 @@
+fr:
+
+  background_activities:
+    failed: "Échec"
+    one_shot: "Exécution unique"
+    every_X: "Tous les %{count}"
+
+  access_profiles:
+    white: "blanc"
+
+  ajax_widget:
+    loading: "Chargement..."
+
+  date_range:
+    attributes:
+      by_creation_date: "Par date de création"
+      by_update_date: "Par date de mise à jour"
+    groups:
+      past_24_hours: "Dernières 24 heures"
+      days: "Jours"
+      weeks: "Semaines"
+      months: "Mois"
+      years: "Années"
+    offsets:
+      right_now: "À l'instant"
+      big_bang: "Le Big Bang"
+      hours_ago:
+        one: "Il y a 1 heure"
+        other: "Il y a %{count} heures"
+      days_ago:
+        one: "Il y a 1 jour"
+        other: "Il y a %{count} jours"
+      weeks_ago:
+        one: "Il y a 1 semaine"
+        other: "Il y a %{count} semaines"
+      months_ago:
+        one: "Il y a 1 mois"
+        other: "Il y a %{count} mois"
+      years_ago:
+        one: "Il y a 1 an"
+      other: "Il y a %{count} ans"
+
+  abbreviations:
+    A: "A"
+    H: "M"
+    I: "I"
+
+  quotas:
+    none_allowed: "Aucun autorisé"
+    last_week: "la semaine dernière;"
+    last_month: "le mois dernier;"
+    total: "total"
+    unlimited: "(Illimité)"
+    one_task: "1 tâche"
+    multiple_tasks: "%{count} tâches"
+
+  resource_usage:
+    second: "seconde"
+
+  resource_link:
+    error: "Cette méthode requiert que le premier argument soit un objet User."
+    last_activity: "Dernière activité"
+
+  dynamic_table:
+    raise: "Impossible de récupérer le champ %{field_name} de %{obj}"
+
+  zenodo:
+    deposit: "Dépôt %{id}"
+    sandbox_deposit: " (sandbox)"
+
+  rich_ui:
+    copied: "Copié !"
+    copy_to_clipboard: "copier dans le presse-papiers"
+
+  show_table:
+    info: "Info"
+    initial_error: "Erreur : le form helper fourni n'est pas associé à notre objet !"
+
+  userfiles:
+    count: " (%{count} fichiers)"
+
+  users:
+    normal: "Utilisateur standard"
+    site_manager: "Gestionnaire du site"
+    admin: "Administrateur"
+    automated: "Utilisateur automatisé"
+
+  task_form:
+    date: "La date actuelle au format : YYYY-MM-DD"
+    time: "L'heure actuelle au format : HH:MM:SS"
+    task_id: "Un identifiant numérique pour la tâche, qui ne change pas si la tâche est relancée"
+    run_number: "Un identifiant numérique qui augmente à chaque fois que la tâche est relancée, initialement défini à '1'"
+    cluster: "Le nom du serveur d'exécution"
+

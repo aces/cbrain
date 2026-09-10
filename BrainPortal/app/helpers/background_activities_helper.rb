@@ -50,10 +50,10 @@ module BackgroundActivitiesHelper
   # Returns a colorized pretty version of the "repeat" keyword.
   def bac_pretty_repeat(repeat)
     return "" if repeat.blank?
-    return html_colorize("One shot","black") if repeat == "one_shot"
+    return html_colorize(t('background_activities.one_shot'),"black") if repeat == "one_shot"
     if repeat =~ /start\+(\d+)/
       mins = Regexp.last_match[1]
-      return html_colorize("Every #{pretty_elapsed(60*mins.to_i)}","orange")
+      return html_colorize(t('background_activities.every', time: pretty_elapsed(60*mins.to_i)),"orange")
     end
     if repeat =~ /(\S+)@(\d\d:\d\d)/
       keyword = Regexp.last_match[1].capitalize

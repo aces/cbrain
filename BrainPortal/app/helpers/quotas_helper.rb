@@ -27,12 +27,12 @@ module QuotasHelper
 
   # Returns a DiskQuota max_bytes in pretty form: 'None allowed' in red, or '126 MB' etc (colored)
   def pretty_quota_max_bytes(quota)
-    quota.none_allowed? ? red_if(true, 'None allowed') : colored_pretty_size(quota.max_bytes)
+    quota.none_allowed? ? red_if(true, t('quotas.none_allowed')) : colored_pretty_size(quota.max_bytes)
   end
 
   # Returns a DiskQuota max_files in pretty form: 'None allowed' in red, or just a number
   def pretty_quota_max_files(quota)
-    quota.none_allowed? ? red_if(true, 'None allowed') : number_with_commas(quota.max_files)
+    quota.none_allowed? ? red_if(true, t('quotas.none_allowed')) : number_with_commas(quota.max_files)
   end
 
   # Show a time used, with two components, e.g.
@@ -40,8 +40,8 @@ module QuotasHelper
   # When as_limit is true, it will return the
   # string "none allowed" if the value is 0.
   def pretty_quota_cputime(time, as_limit = false)
-    return "(Unknown)" if time.blank?
-    return red_if(true, 'None allowed') if time <= 0 && as_limit
+    return t('unknown_parentheses') if time.blank?
+    return red_if(true, t('quotas.none_allowed')) if time <= 0 && as_limit
     return pretty_elapsed(time, :num_components => 2)
   end
 
@@ -55,20 +55,20 @@ module QuotasHelper
     week  &&= pretty_elapsed(week,  :num_components => 2)
     month &&= pretty_elapsed(month, :num_components => 2)
     ever  &&= pretty_elapsed(ever,  :num_components => 2)
-    week  ||= "(Unknown)"
-    month ||= "(Unknown)"
-    ever  ||= "(Unknown)"
-    "#{week} last week; #{month} last month; #{ever} total"
+    week  ||= t('unknown_parentheses')
+    month ||= t('unknown_parentheses')
+    ever  ||= t('unknown_parentheses')
+    "#{week} #{t('quotas.last_week')} #{month} #{t('quotas.month')} #{ever} #{t('quotas.total')}"
   end
 
   # Renders the max number of active tasks
   # in pretty form, e.g. "(Unlimited)", "(None allowed)" or "3 tasks".
   def pretty_max_active_tasks(quota)
     mat = quota.max_active_tasks
-    return "(Unlimited)"    if mat.nil?
-    return "(None allowed)" if mat < 1
-    return "1 task"         if mat == 1
-    return "#{mat} tasks"
+    return t('quotas.unlimited')    if mat.nil?
+    return t('quotas.none_allowed') if mat < 1
+    return t('quotas.one_task')     if mat == 1
+    return t('quotas.multiple_tasks', count: mat)
   end
 
 end

@@ -34,7 +34,7 @@ fr:
     tags_colon:
       one: "Label :"
       other: "Labels :"
-
+    conflict_colon: "Conflit :"
     created_colon: "Créé :"
     updated_colon: "Mis à jour :"
     owner_colon: "Propriétaire :"
@@ -48,6 +48,7 @@ fr:
   date: "Date"
   ago_time: "il y a %{time}"
 
+  more_parentheses: "(plus)"
   unknown: "Inconnu"
   unknown_parentheses: "(Inconnu)"
   unset_parentheses: "(Non défini)"
@@ -68,6 +69,9 @@ fr:
   clear: "Effacer"
   refresh: "Rafraîchir"
   select_placeholder: "..."
+  info_parentheses: "(info)"
+  no_description_parentheses: "(Pas de description)"
+  everyone: "Tout le monde"
 
   no_information: "Il n'y a aucune information à afficher pour le moment."
 
@@ -76,6 +80,7 @@ fr:
 
   delete: "Supprimer"
   deleted: "Supprimé"
+  deleted_non_existing_parentheses: "(Supprimé/Non existant)"
 
   save: "Enregistrer"
   saved: "Enregistré"
@@ -171,3 +176,9 @@ fr:
       almost_x_years:
         one: "presqu'un an"
         other: "presque %{count} ans"
+
+  chosen:
+    single:     "Choisir une option"
+    multiple:   "Choisir des options"
+    no_results: "Aucun résultat pour"
+    add_tag:    "Appuyez sur Entrée pour ajouter : "

@@ -77,7 +77,7 @@ module ShowTableHelper
       @cells           = []
 
       # Appearance
-      @header          = options[:header].presence || "Info"
+      @header          = options[:header].presence || I18n.t('show_table.info')
 
       # Form information; this will be provided to Rails' FormBuilder if the
       # ShowTable helpers are used with blocks that receive an argument.
@@ -97,7 +97,7 @@ module ShowTableHelper
 
       # Safety check to prevent devs from mixing up forms and objects
       if @form_helper && @form_helper.object != @object
-        raise "Error: the form helper provided is not associated with our object!"
+        raise t('show_table.initial_error')
       end
 
       # Template code

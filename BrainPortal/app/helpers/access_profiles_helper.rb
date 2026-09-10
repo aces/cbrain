@@ -31,7 +31,7 @@ module AccessProfilesHelper
       return ''
     end
 
-    color  = access_profile.color.presence || "white";
+    color  = access_profile.color.presence || t('access_profiles.white');
     label  = "<span class=\"access_profile_label\" style=\"background: #{color}\">"
     label += options[:with_link] ? link_to_access_profile_if_accessible(access_profile) : access_profile.name
     label += "</span>"

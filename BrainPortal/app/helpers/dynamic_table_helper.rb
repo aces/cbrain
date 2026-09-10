@@ -120,6 +120,9 @@ module DynamicTableHelper
       @template   = template
       @components = {}
 
+      # To support lazzy lookup of i18n
+      @virtual_path = template.instance_variable_get(:@virtual_path)
+
       @attributes = attributes || {}
       @targets    = targets    || {}
     end
@@ -296,7 +299,7 @@ module DynamicTableHelper
 
       # Default formatting procedure
       index  = @columns.length
-      format = block || Proc.new do |obj|
+      format = Proc.new do |obj|
         if obj.respond_to?(field_name)
           obj.send(field_name)
         elsif obj.respond_to?(:[]) && (obj[field_name] rescue nil)
@@ -304,7 +307,14 @@ module DynamicTableHelper
         elsif obj.is_a?(Enumerable) && ! obj.is_a?(ActiveRecord::Relation)
           obj.to_a[index]
         else
-          raise "Cannot fetch field #{field_name} from #{obj}"
+          raise t('dynamic_table.raise', field_name: field_name, obj: obj)
+        end
+      end
+
+      if block
+        template, virtual_path = @template, @virtual_path
+        format = Proc.new do |obj|
+          ShowTableHelper.with_virtual_path(template, virtual_path) { block.call(obj) }
         end
       end
 

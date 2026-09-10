@@ -81,7 +81,8 @@
         <%= red_if( !dp.is_alive_with_caching?, t('yes_word'), t('data_providers.common.no_word')) %>
       <% else %>
         <span class="dp_alive_btn" id="<%= "alive" + h(dp.id) %>">
-          <%= on_click_ajax_replace( { :element   => "span",
+          <%= on_click_ajax_replace( {
+                                :element   => "span",
                                 :url       => url_for(:controller => :data_providers, :action  => :is_alive, :id => dp.id),
                                 :replace   => "alive" + h(dp.id)
                               },
@@ -92,7 +93,7 @@
                             ) do %>
             <a href="#" class="action_link"><%= t('.links.check') %></a>
           <% end %>
-        </span>    
+        </span>
       <% end %>
     <% else %>
       <%= t('data_providers.common.no_word') %>
