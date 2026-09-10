@@ -34,7 +34,7 @@
     name        = group.name
     description = (group.description.presence || "").strip
     description = "" if description.downcase == name.strip.downcase
-    if (group.public?)
+    if category == :open
       access = html_colorize('Generally open', 'green')
     else
       access = html_colorize('Restricted/on demand', 'red')
