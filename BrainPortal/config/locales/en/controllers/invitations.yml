@@ -1,0 +1,17 @@
+en:
+  invitations:
+
+    errors:
+      no_recipient:              "Please specify at least one email address or username"
+
+    flash:
+      no_permission:             "You don't have permission send invitations for this project."
+      users_not_found:           "We are not able to invite user(s) identified by: %{specs}.\nAt the moment users are matched by emails or usernames.\nPlease confirm with your collaborators which email or username they use in CBRAIN.\n"
+      already_invited:           "Already invited: %{logins}"
+      sent:
+        one:                     "Your invitation was successfully sent to %{count} user"
+        other:                   "Your invitation was successfully sent to %{count} users"
+      no_new_users:              "No new users were found to invite."
+      already_used:              "This invitation has already been used.\nPlease contact the project owner if you wish to be invited again."
+      added_to_project:          "You have been added to project %{name}."
+      canceled:                  "Invitation to %{login} has been canceled."

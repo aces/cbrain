@@ -1,0 +1,9 @@
+en:
+  messages:
+
+    flash:
+      sent:           "Message was successfully sent."
+      update_failed:  "Problem updating message."
+      deleted:
+        one:          "%{count} item deleted.\n"
+        other:        "%{count} items deleted.\n"

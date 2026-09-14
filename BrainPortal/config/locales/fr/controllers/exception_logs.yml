@@ -1,0 +1,7 @@
+fr:
+  exception_logs:
+
+    flash:
+      deleted:
+        one:   "%{count} exception supprimée."
+        other: "%{count} exceptions supprimées."

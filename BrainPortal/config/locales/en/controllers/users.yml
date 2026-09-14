@@ -1,0 +1,32 @@
+en:
+  users:
+
+    errors:
+      no_view_permission:        "You don't have permission to view this user."
+      no_page_permission:        "You don't have permission to view this page."
+      openid_only_no_password:   "Your account can only authenticate with an OpenID identities providers."
+      no_update_permission:      "You don't have permission to update this user."
+      invalid_whitelist_ip:      "Invalid whitelist IP address: %{ip}"
+      no_servers_selected:       "No servers selected (or accessible by user)."
+      no_ssh_key:                "No user SSH key exists yet."
+
+    flash:
+      filled_from_signup:        "Fields have been filled from a signup request.\n"
+      signup_portal:             "That request was performed on portal '%{portal}'.\n"
+      signup_form:               "The form used for the request was '%{form}'.\n"
+      created:                   "User successfully created.\n"
+      no_welcome_email:          "Since this user has no proper email address, no welcome email was sent."
+      welcome_email_sent:        "A welcome email is being sent to '%{email}'."
+      welcome_email_failed:      "Could not send email to '%{email}' informing them that their account was created."
+      updated:                   "User %{login} was successfully updated."
+      destroyed:                 "User '%{login}' destroyed"
+      destroy_failed:            "User not destroyed: %{message}"
+      openid_only_reset_denied:  "Your account can only authenticate with OpenID identities. Thus you are not allowed to use or reset password. Please contact %{contact} for help."
+      account_locked:            "This account is locked, please write to %{contact} to get this account unlocked."
+      password_sent:             "%{full_name}, your new password has been sent to you via e-mail. You should receive it shortly."
+      password_sent_delay_note:  "\nIf you do not receive your new password within 24hrs, please contact your admin."
+      password_email_failed:     "Could not send an email with the reset password!\nPlease contact your admin."
+      reset_failed:              "Unable to reset password.\nPlease contact your admin."
+      user_not_found:            "Unable to find user with login %{login} and email %{email}.\nPlease contact your admin."
+      keys_pushed:               "Pushed user SSH keys to: %{names}"
+      keys_push_failed:          "Failed to push user SSH keys to: %{names}"

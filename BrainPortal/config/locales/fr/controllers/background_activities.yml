@@ -1,0 +1,9 @@
+fr:
+  background_activities:
+
+    errors:
+      unknown_operation: "Opération inconnue"
+
+    flash:
+      affected:          "%{count} activités concernées par '%{action}'."
+      none_affected:     "Aucune activité concernée."

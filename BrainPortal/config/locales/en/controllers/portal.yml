@@ -1,0 +1,9 @@
+en:
+  portal:
+
+    flash:
+      locked:                    "This portal has been locked."
+      unlocked:                  "This portal has been unlocked."
+      eula_required:             "CBRAIN cannot be used without signing the End User Licence Agreement."
+      eula_incomplete:           "There was a problem with your submission. Please read the agreement and check all checkboxes."
+      swagger_not_found:         "Cannot find SWAGGER specification for the service. Sorry."

@@ -1,0 +1,9 @@
+fr:
+  application:
+
+    errors:
+      not_application_controller: "Le contrôleur n'est pas un ApplicationController ?"
+      block_needed:              "Un bloc est requis."
+
+    flash:
+      password_reset_required:   "Veuillez réinitialiser votre mot de passe."

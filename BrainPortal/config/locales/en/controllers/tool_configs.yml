@@ -1,0 +1,12 @@
+en:
+  tool_configs:
+
+    errors:
+      need_tool_or_bourreau: "Need at least one of tool ID or bourreau ID."
+
+    flash:
+      appended_info:         "Appended info from another Tool Config."
+      no_changes:            "No changes made."
+      created:               "Tool configuration is successfully created."
+      updated:               "Tool configuration was successfully updated."
+      deleted:               "Tool configuration deleted."

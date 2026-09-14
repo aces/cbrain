@@ -1,0 +1,6 @@
+en:
+  tags:
+
+    flash:
+      created: "Tag was successfully created."
+      updated: "Tag was successfully updated."

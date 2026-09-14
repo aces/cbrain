@@ -1,0 +1,32 @@
+fr:
+  users:
+
+    errors:
+      no_view_permission:        "Vous n'avez pas la permission de consulter cet utilisateur."
+      no_page_permission:        "Vous n'avez pas la permission de consulter cette page."
+      openid_only_no_password:   "Votre compte ne peut s'authentifier qu'avec un fournisseur d'identités OpenID."
+      no_update_permission:      "Vous n'avez pas la permission de mettre à jour cet utilisateur."
+      invalid_whitelist_ip:      "Adresse IP autorisée invalide : %{ip}"
+      no_servers_selected:       "Aucun serveur sélectionné (ou accessible par l'utilisateur)."
+      no_ssh_key:                "Aucune clé SSH utilisateur n'existe encore."
+
+    flash:
+      filled_from_signup:        "Les champs ont été remplis à partir d'une demande de compte.\n"
+      signup_portal:             "Cette demande a été effectuée sur le portail '%{portal}'.\n"
+      signup_form:               "Le formulaire utilisé pour la demande était '%{form}'.\n"
+      created:                   "Utilisateur créé avec succès.\n"
+      no_welcome_email:          "Cet utilisateur n'ayant pas d'adresse e-mail valide, aucun e-mail de bienvenue n'a été envoyé."
+      welcome_email_sent:        "Un e-mail de bienvenue est en cours d'envoi à '%{email}'."
+      welcome_email_failed:      "Impossible d'envoyer un e-mail à '%{email}' pour l'informer de la création de son compte."
+      updated:                   "L'utilisateur %{login} a été mis à jour avec succès."
+      destroyed:                 "Utilisateur '%{login}' supprimé"
+      destroy_failed:            "Utilisateur non supprimé : %{message}"
+      openid_only_reset_denied:  "Votre compte ne peut s'authentifier qu'avec des identités OpenID. Vous n'êtes donc pas autorisé à utiliser ou à réinitialiser un mot de passe. Veuillez contacter %{contact} pour obtenir de l'aide."
+      account_locked:            "Ce compte est verrouillé, veuillez écrire à %{contact} pour le faire déverrouiller."
+      password_sent:             "%{full_name}, votre nouveau mot de passe vous a été envoyé par e-mail. Vous devriez le recevoir sous peu."
+      password_sent_delay_note:  "\nSi vous ne recevez pas votre nouveau mot de passe dans les 24 heures, veuillez contacter votre administrateur."
+      password_email_failed:     "Impossible d'envoyer l'e-mail de réinitialisation du mot de passe !\nVeuillez contacter votre administrateur."
+      reset_failed:              "Impossible de réinitialiser le mot de passe.\nVeuillez contacter votre administrateur."
+      user_not_found:            "Impossible de trouver un utilisateur avec le nom d'utilisateur %{login} et l'adresse e-mail %{email}.\nVeuillez contacter votre administrateur."
+      keys_pushed:               "Clés SSH utilisateur transmises à : %{names}"
+      keys_push_failed:          "Échec de la transmission des clés SSH utilisateur à : %{names}"

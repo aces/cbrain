@@ -1,0 +1,34 @@
+en:
+  data_providers:
+
+    notices:
+      not_accessible:              "Provider not accessible by current user."
+
+    errors:
+      invalid_browse_path:         "Browse path is invalid"
+
+    flash:
+      created:                     "Provider successfully created."
+      created_test_configuration:  " Please click the Test Configuration button. This will run tests on the current storage configuration. Note that if these tests fail, the storage will be marked 'offline'."
+      cannot_edit_not_owner:       "You cannot edit a provider that you do not own."
+      updated:                     "Provider successfully updated."
+      deleted:                     "Provider successfully deleted."
+      delete_failed:               "Provider not destroyed: %{reason}"
+      cannot_browse:               "You cannot browse Data Provider '%{name}'.\n"
+      marked_offline:              "It is currently marked as 'offline'."
+      list_files_failed:           "Cannot get list of files. Maybe the remote directory does not exist or is locked?"
+      cannot_register:             "You cannot register files from this provider."
+      missing_destination:         "Missing destination data provider for copy or move."
+      registering_as_other_user:   "Important note! Since you were browsing as user '%{login}', the files will be registered as belonging to that user instead of you!\n"
+      ignoring_missing_types:      "Ignoring these file names because no types were provided for them: %{names}"
+      registering:                 "Registering %{count} userfile(s) in background.\n"
+      cannot_unregister:           "You cannot unregister files from this provider."
+      unregistering:               "Unregistering %{count} userfile(s) in background.\n"
+      cannot_delete:               "You cannot delete files from this provider."
+      deleting_userfiles:          "Deleting %{count} userfile(s) in background.\n"
+      deleting_unregistered:       "Deleting %{count} unregistered file(s) in background.\n"
+      no_files_to_delete:          "No files selected, or that can be deleted."
+      cannot_check_not_owner:      "You cannot check a provider that you do not own."
+      check_ssh_only:              "Presently, detailed check is only available to ssh providers."
+      check_ok:                    "The configuration was tested and seems to be operational."
+      check_failed_offline:        "\nThis storage is marked as 'offline' until this test pass."

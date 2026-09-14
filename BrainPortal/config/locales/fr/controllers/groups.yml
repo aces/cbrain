@@ -1,0 +1,13 @@
+fr:
+  groups:
+
+    errors:
+      not_creator:               "Impossible de supprimer ce projet : vous n'en êtes pas le créateur."
+
+    flash:
+      created:                   "Le projet a été créé avec succès."
+      no_edit_permission:        "Vous n'avez pas la permission de modifier ce projet."
+      updated:                   "Le projet a été mis à jour avec succès."
+      cannot_unregister_creator: "Vous ne pouvez pas vous désinscrire d'un projet que vous avez créé."
+      unregistered:              "Vous avez été désinscrit du projet %{name}."
+      license_blocked:           "L'accès au projet %{name} est bloqué pour des raisons de licence. Veuillez contacter le responsable du projet ou le support pour plus de détails"

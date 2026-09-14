@@ -1,0 +1,48 @@
+fr:
+  bourreaux:
+
+    notices:
+      not_accessible:            "Serveur de calcul non accessible par l'utilisateur courant."
+      not_accessible_by_you:     "Ce %{type} ne vous est pas accessible."
+      not_accessible_named:      "Serveur de calcul '%{name}' non accessible par l'utilisateur courant."
+      no_ssh_control:            "Le serveur de calcul '%{name}' n'est pas encore configuré pour le contrôle à distance."
+      already_alive:             "Le serveur de calcul '%{name}' est déjà actif depuis %{elapsed}."
+
+    errors:
+      ssh_master_failed_named:   "Impossible de démarrer la connexion SSH maîtresse et les tunnels pour '%{name}'."
+      not_allowed_for_portal:    "Opération non autorisée pour un portail."
+      ssh_master_failed:         "Impossible de démarrer la connexion SSH maîtresse et les tunnels."
+      start_bourreau_failed:     "Impossible de démarrer le Bourreau.\n%{messages}"
+      start_task_workers_failed: "Impossible de démarrer les workers TASK."
+      start_bac_workers_failed:  "Impossible de démarrer les workers BAC."
+      stop_tunnels_failed:       "Impossible d'arrêter les tunnels."
+      stop_bourreau_failed:      "Impossible d'arrêter le Bourreau."
+      stop_task_workers_failed:  "Impossible d'arrêter les workers TASK."
+      stop_bac_workers_failed:   "Impossible d'arrêter les workers BAC."
+      dp_not_available:          "Serveur de stockage non disponible"
+      no_files_selected:         "Aucun fichier sélectionné"
+      no_bourreaux_available:    "Aucun bourreau disponible"
+
+    flash:
+      created:                   "Serveur de calcul créé avec succès."
+      updated:                   "%{type} %{name} mis à jour avec succès"
+      deleted:                   "Serveur de calcul supprimé avec succès."
+      delete_failed:             "Échec de la suppression du serveur de calcul : %{reason}."
+      started:                   "Serveur de calcul '%{name}' démarré."
+      started_no_reply:          "Le serveur de calcul '%{name}' a été démarré mais n'a pas répondu à la première requête :"
+      start_failed:              "Le serveur de calcul '%{name}' n'a pas pu être démarré."
+      workers_started:           "\nLes workers du serveur de calcul '%{name}' ont démarré."
+      workers_start_failed:      "Nous n'avons cependant pas pu démarrer les workers."
+      workers_stopped:           "Les workers du serveur de calcul '%{name}' ont été arrêtés."
+      workers_stop_failed:       "Il semble que nous n'ayons pas pu arrêter les workers du serveur de calcul '%{name}'. Ils s'arrêteront probablement d'eux-mêmes."
+      stopped:                   "\nServeur de calcul '%{name}' arrêté."
+      ssh_control_stopped:       "\nConnexion SSH de contrôle arrêtée."
+      stop_rails_failed:         "\nÉchec de l'arrêt de l'application Rails pour '%{name}'."
+      ssh_control_stop_failed:   "\nÉchec de l'arrêt de la connexion SSH de contrôle."
+      operation_success:         "%{name} : succès pour '%{action}'\n"
+      operation_failure:         "%{name} : échec pour '%{action}' : %{message}\n"
+      operation_exception:       "%{name} : exception pour '%{action}' : %{exception} : %{message}\n"
+      nothing_selected:          "Aucune sélection, donc aucune opération effectuée.\n"
+      clean_cache_requested:     "Création d'une demande d'opération CleanCache en arrière-plan pour %{name}."
+      refresh_sent:              "Une demande de vérification des serveurs de stockage a été envoyée à ces serveurs : %{names}\nCela se fera en arrière-plan et peut prendre plusieurs minutes avant que les rapports soient prêts."
+      refresh_not_needed:        "Aucun rafraîchissement nécessaire, les informations d'accès sont suffisamment récentes."

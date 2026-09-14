@@ -1,0 +1,12 @@
+en:
+  tools:
+
+    flash:
+      created:               "Tool was successfully created."
+      updated:               "Tool was successfully updated."
+      not_added:             "%{class_name} could not be added.\n"
+      registered:
+        one:                 "%{count} tool successfully registered:\n"
+        other:               "%{count} tools successfully registered:\n"
+      registered_line:       "Name: %{name} Class: %{class_name}\n"
+      none_unregistered:     "No unregistered tools found."
