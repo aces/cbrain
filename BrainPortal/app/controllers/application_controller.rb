@@ -72,11 +72,21 @@ class ApplicationController < ActionController::Base
 
   private
 
+  def supported_locale(locale) #:nodoc:
+    locale = locale.to_s.presence&.to_sym
+
+    if locale && I18n.available_locales.include?(locale)
+      return locale
+    else
+      nil
+    end
+  end
+
   # Extract the locale from HTTP_ACCEPT_LANGUAGE
   def extract_locale_from_request #:nodoc:
-    locale_from_cookies = cookies[:locale]&.to_sym
+    locale_from_cookies = supported_locale(cookies[:locale])
 
-    return locale_from_cookies if locale_from_cookies.presence && I18n.available_locales.include?(locale_from_cookies)
+    return locale_from_cookies if locale_from_cookies
 
     http_request_languages = request.env['HTTP_ACCEPT_LANGUAGE']
     return nil unless http_request_languages
@@ -89,24 +99,28 @@ class ApplicationController < ActionController::Base
 
   # Use the parameter from the URL if it exist
   def set_locale
-    return true if api_request?
+    if api_request?
+      I18n.locale = I18n.default_locale
+      return true
+    end
 
-    locale_param        = params[:locale]&.to_sym
+    locale_param        = supported_locale(params[:locale])
 
-    if locale_param.presence && I18n.available_locales.include?(locale_param) && current_user
-      if current_user.meta[:locale] != locale_param
+    if locale_param
+      I18n.locale      = locale_param
+      cookies[:locale] = locale_param
+      if current_user && current_user.meta[:locale] != locale_param
         current_user.meta[:locale] = locale_param
         current_user.save
       end
-      cookies[:locale] = locale_param
-      redirect_to url_for(request.query_parameters.except(:locale))
+      redirect_to url_for(request.query_parameters.except(:locale)) if request.get?
       return
-    elsif current_user && current_user&.meta[:locale]
-      I18n.locale = current_user&.meta[:locale]
-    else
-      I18n.locale = locale_param || extract_locale_from_request() ||
-                    I18n.default_locale
     end
+
+    user_locale = current_user && current_user.meta[:locale]
+    I18n.locale = supported_locale(user_locale) ||
+                  extract_locale_from_request() ||
+                  I18n.default_locale
   end
 
   # Re-compute the host and IP from the request (when not logged in, or changed)

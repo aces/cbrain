@@ -12,4 +12,11 @@ en:
     color: "Color"
     time_zone: "Time Zone"
     license_agreements: "License Agreements"
-
+    id: "ID"
+    created_at: "Created At"
+    updated_at: "Updated At"
+    user_id: &user "User"
+    user: *user
+    group_id: &group "Project"
+    group: *group
+    online: "Online"

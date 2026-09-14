@@ -43,7 +43,6 @@ fr:
     dates_colon: "Dates :"
     search_colon: "Recherche :"
     upload_colon: "Téléverser :"
-    conflict_colon: "Conflit :"
 
   date: "Date"
   ago_time: "il y a %{time}"

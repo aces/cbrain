@@ -19,4 +19,3 @@ fr:
           cloud_storage_client_token: "Jeton du client de stockage cloud"
           datalad_repository_url: "URL du dépôt Datalad"
           datalad_relative_path: "Chemin relatif Datalad"
-          online: "En ligne"

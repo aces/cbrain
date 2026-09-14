@@ -90,7 +90,7 @@ class InvitationsController < ApplicationController
     rejected_ids    = user_ids & already_sent_to
     if rejected_ids.present?
       already_logins = User.where(:id => rejected_ids).pluck(:login).join(", ")
-      flash_errors.push(t('invitations.flash.already_invited', logins: already_logins)
+      flash_errors.push(t('invitations.flash.already_invited', logins: already_logins))
     end
 
     # List of newly invited users

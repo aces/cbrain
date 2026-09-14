@@ -212,7 +212,7 @@ class BourreauxController < ApplicationController
       format.xml  { head :ok }
     end
   rescue ActiveRecord::DeleteRestrictionError => e
-    flash[:error] = t('bourreaux.flash.delete_failed' , reason: e.message.humanize"
+    flash[:error] = t('bourreaux.flash.delete_failed' , reason: e.message.humanize)
 
     respond_to do |format|
       format.html { redirect_to :action => :index}

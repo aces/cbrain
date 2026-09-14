@@ -22,17 +22,6 @@
 fr:
   activerecord:
     attributes:
-      id: "Identifiant"
-      created_at: "Créé le"
-      updated_at: "Mis à jour le"
-      name: "Nom"
-      description: "Description"
-      type: "Type"
-      status: "Statut"
-      user_id: &user "Utilisateur"
-      user: *user
-      group_id: &group "Groupe"
-      group: *group
       active_record_log:
         ar_id: &ar_id                "ID ActiveRecord"
         ar_table_name: &ar_table_name "Nom de la table ActiveRecord"

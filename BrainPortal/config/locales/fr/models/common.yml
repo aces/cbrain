@@ -12,3 +12,11 @@ fr:
     time_zone: "Fuseau horaire"
     name: "Nom"
     license_agreements: "Licences"
+    id: "Identifiant"
+    created_at: "Créé le"
+    updated_at: "Mis à jour le"
+    user_id: &user "Utilisateur"
+    user: *user
+    group_id: &group "Groupe"
+    group: *group
+    online: "En ligne"

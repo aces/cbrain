@@ -446,11 +446,7 @@ class TasksController < ApplicationController
     # Create a bunch of tasks and launch them, either in background or in foreground
     tl_messages = create_tasklist_from_initial_task(@task,tasklist)
 
-    if tasklist.size == 1
-      flash[:notice] += t('tasks.flash.launching.one', pretty_name: @task.pretty_name)
-    else
-      flash[:notice] += t('tasks.flash.launching', pretty_name: @task.pretty_name), count: tasklist.size)
-    end
+    flash[:notice] += t('tasks.flash.launching', pretty_name: @task.pretty_name, count: tasklist.size)
     flash[:notice] += "\n#{af_messages.strip}" if af_messages.present?
     flash[:notice] += "\n#{ftl_message.strip}" if ftl_message.present?
     flash[:notice] += "\n#{tl_messages.strip}" if tl_messages.present?
