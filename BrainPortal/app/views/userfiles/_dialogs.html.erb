@@ -254,13 +254,13 @@
 
     <br />
 
-    <label for="pp-type" class="dlg-fld-lbl"><%= t('activerecord.attributes.type') %></label>
+    <label for="pp-type" class="dlg-fld-lbl"><%= t('attributes.type') %></label>
     <%=
       userfile_type_select(:type, { :selector => nil }, {
         :id       => 'pp-type',
         :class    => 'dlg-fld',
-        :include_blank     => t('.blanks.keep_current_parentheses', attribute: t('activerecord.attributes.type').downcase),
-        'data-placeholder' => t('.placeholders.keep_current',       attribute: t('activerecord.attributes.type').downcase)
+        :include_blank     => t('.blanks.keep_current_parentheses', attribute: t('attributes.type').downcase),
+        'data-placeholder' => t('.placeholders.keep_current',       attribute: t('attributes.type').downcase)
       })
     %>
     <br />
@@ -321,7 +321,7 @@
 
 <div id="collection-dialog" class="dlg-dialog" title="<%= t('.titles.new_collection') %>">
   <form action="<%= create_collection_userfiles_path %>" method="post">
-    <label for="co-name" class="dlg-fld-lbl"><%= t('activerecord.attributes.name') %></label>
+    <label for="co-name" class="dlg-fld-lbl"><%= t('attributes.name') %></label>
     <input id="co-name"
       class="dlg-fld"
       type="text"

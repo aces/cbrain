@@ -205,7 +205,7 @@ class UserfilesController < ApplicationController
     child_ids = params[:child_ids]
 
     if child_ids.blank?
-      flash[:error] = "Must have at least one file selected for this operation."
+      flash[:error] = t('userfiles.flash.at_least_one_file')
     else
       child_ids.delete(parent_id)
       @children = Userfile.find_accessible_by_user(params[:child_ids], current_user)
@@ -460,7 +460,7 @@ class UserfilesController < ApplicationController
           redirect_to :action  => :index
         end
         format.json do
-           render :json   => { :notice => "Marked #{updated} files as newer on provider" },
+           render :json   => { :notice => t('userfiles.flash.marked_newer', count: updated ) },
                   :status => :ok
         end
       end
@@ -469,7 +469,7 @@ class UserfilesController < ApplicationController
 
     bac = BackgroundActivity::SyncFile.setup!(current_user.id, @userfiles.map(&:id))
 
-    flash[:notice] = "Synchronization started in background. Files that cannot be synchronized will be skipped."
+    flash[:notice] = t('userfiles.flash.sync_started')
 
     respond_to do |format|
       format.html do
@@ -558,12 +558,12 @@ class UserfilesController < ApplicationController
         current_user.assignable_group_ids.include?(userfile.group_id.to_i)
 
       if !userfile.save
-        flash[:error]  += "File '#{basename}' could not be added.\n"
+        flash[:error]  += t('userfiles.flash.file_not_added', name: basename)
         userfile.errors.each do |field, error|
-          flash[:error] += "#{field.to_s.capitalize} #{error}.\n"
+          flash[:error] += t('userfiles.flash.field_error', field: field.to_s.capitalize, error: error)
         end
         if flash[:error].include? "Name has already been taken"
-          flash[:error] += "\nNote: a Data Provider cannot have two files with the same name. It might help to rename the file before uploading it, or upload it to a different Data Provider.\n"
+          flash[:error] += t('userfiles.flash.duplicate_name_note')
         end
         respond_to do |format|
           format.html { redirect_to redirect_path }
@@ -575,7 +575,7 @@ class UserfilesController < ApplicationController
         return
       end
 
-      flash[:notice] += "File '#{basename}' being added in background."
+      flash[:notice] += t('userfiles.flash.file_being_added', name: basename )
 
       system("cp #{rack_tempfile_path.to_s.bash_escape} #{tmpcontentfile.to_s.bash_escape}") # fast, hopefully; maybe 'mv' would work?
       CBRAIN.spawn_with_active_records(current_user,"Upload of SingleFile") do
@@ -607,7 +607,7 @@ class UserfilesController < ApplicationController
     # We will be processing some archive file.
     # First, check for supported extensions
     if basename !~ /(\.tar|\.tgz|\.tar.gz|\.zip)\z/i
-      flash[:error] += "Error: file #{basename} does not have one of the supported extensions: .tar, .tar.gz, .tgz or .zip.\n"
+      flash[:error] += t('userfiles.flash.unsupported_extension', name: basename)
       respond_to do |format|
         format.html { redirect_to redirect_path }
         format.json { render :json => flash[:error], :status  => :unprocessable_entity}
@@ -621,7 +621,7 @@ class UserfilesController < ApplicationController
 
       collection_name = basename.split('.')[0]  # "abc"
       if current_user.userfiles.exists?(:name => collection_name, :data_provider_id => data_provider_id)
-        flash[:error] = "Collection '#{collection_name}' already exists.\n"
+        flash[:error] = t('userfiles.flash.collection_exists', name: collection_name)
         respond_to do |format|
           format.html { redirect_to redirect_path }
           format.json { render :json => flash[:error], :status  => :unprocessable_entity}
@@ -664,7 +664,7 @@ class UserfilesController < ApplicationController
           end
         end # spawn
 
-        flash[:notice] = "Collection '#{collection_name}' created."
+        flash[:notice] = t('userfiles.flash.collection_created', name: collection_name)
         current_user.addlog_context(self,"Uploaded #{collection.class} '#{collection_name}'")
         respond_to do |format|
           format.html { redirect_to redirect_path }
@@ -672,7 +672,7 @@ class UserfilesController < ApplicationController
           format.xml  { render :xml  => {:notice => "Collection Uploaded" } }
         end
       else
-        flash[:error] = "Collection '#{collection_name}' could not be created.\n"
+        flash[:error] = t('userfiles.flash.collection_not_created', name: collection_name)
         collection.errors.each do |field, error|
           flash[:error] += field.to_s.capitalize + " " + error + ".\n"
         end
@@ -686,7 +686,7 @@ class UserfilesController < ApplicationController
     end
 
     # At this point, create a bunch of userfiles from the archive
-    cb_error "Unknown upload mode '#{mode}'" if mode != :extract
+    cb_error t('userfiles.errors.unknown_upload_mode', mode: mode) if mode != :extract
 
     # Common attributes to all files
     attributes = userfile_params.merge({
@@ -705,7 +705,7 @@ class UserfilesController < ApplicationController
       end
     end # spawn
 
-    flash[:notice] += "Your files are being extracted and added in background."
+    flash[:notice] += t('userfiles.flash.extracting_in_background')
     respond_to do |format|
       format.html { redirect_to redirect_path }
       format.json { render :json => {:notice => "Archive Uploaded" } }
@@ -745,7 +745,7 @@ class UserfilesController < ApplicationController
             @userfile.addlog("Renamed by #{current_user.login}: #{old_name} -> #{new_name}")
           else
             @userfile.errors.add(:name, "could not be changed on the storage provider. A file with that name likely already exists.")
-          end    
+          end
         end
       end
     end
@@ -753,7 +753,7 @@ class UserfilesController < ApplicationController
     @userfile.set_tags_for_user(current_user, params[:tag_ids])
     respond_to do |format|
       if @userfile.errors.empty?
-        flash[:notice] += "#{@userfile.name} successfully updated."
+        flash[:notice] += t('userfiles.flash.updated', name: @userfile.name)
         format.html { redirect_to(:action  => 'show') }
         format.xml  { head :ok }
         format.json { head :ok }
@@ -791,7 +791,7 @@ class UserfilesController < ApplicationController
     # Pre-spawn checks; tags, project and owner
     if changes.has_key?(:tags)
       available_tags = current_user.available_tags.ids
-      flash[:error] += "You do not have access to all tags you want to update.\n" unless
+      flash[:error] += t('userfiles.flash.no_access_tags') unless
         (changes[:tags] - available_tags).blank?
       changes[:tags] &= available_tags
     end
@@ -803,7 +803,7 @@ class UserfilesController < ApplicationController
         .where(:id => changes[:group_id].to_i)
         .exists?
     )
-      flash[:error] += "You do not have access to the project you want to update.\n"
+      flash[:error] += t('userfiles.flash.no_access_project')
       changes.delete(:group_id)
     end
 
@@ -814,13 +814,13 @@ class UserfilesController < ApplicationController
         .where(:id => changes[:user_id].to_i)
         .exists?
     )
-      flash[:error] += "You do not have access to the file owner you want to update.\n"
+      flash[:error] += t('userfiles.flash.no_access_owner')
       changes.delete(:user_id)
     end
 
     # Ensure there is actually something left to update
     if file_ids.blank? || changes.blank?
-      flash[:notice] += "Nothing to update.\n"
+      flash[:notice] += t('userfiles.flash.nothing_to_update')
       redirect_to(params[:redirect_action] || { :action => :index })
       return
     end
@@ -911,13 +911,11 @@ class UserfilesController < ApplicationController
 
     # Sync notification
     if within_spawn
-      flash[:notice] += "The files are being updated in background.\n"
+      flash[:notice] += t('userfiles.flash.updating_in_background')
     else
-      flash[:notice] += "Update successful for #{view_pluralize(succeeded.count, "file")}.\n" if
-        succeeded.present?
+      flash[:notice] += t('userfiles.flash.update_succeeded', count: succeeded.count)          if succeeded.present?
 
-      flash[:error]  += "Update failed for #{view_pluralize(failed.sum { |k,v| v.size }, "file")}.\n" if
-        failed.present?
+      flash[:error]  += t('userfiles.flash.update_failed', count: failed.sum { |k,v| v.size }) if failed.present?
     end
 
     redirect_to(params[:redirect_action] || { :action => :index })
@@ -998,7 +996,7 @@ class UserfilesController < ApplicationController
     file_group       = current_assignable_group.id
 
     if data_provider_id.blank?
-      flash[:error] = "No data provider selected.\n"
+      flash[:error] = t('userfiles.flash.no_data_provider')
       redirect_to :action => :index
       return
     end
@@ -1013,20 +1011,20 @@ class UserfilesController < ApplicationController
     end
 
     if ! Userfile.is_legal_filename?(collection_name)
-      flash[:error] = "Error: collection name '#{collection_name}' is not acceptable (illegal characters?)."
+      flash[:error] = t('userfiles.flash.collection_name_invalid', name: collection_name)
       redirect_to :action => :index
       return
     end
 
     # Check if the collection name chosen by the user already exists for this user on the data_provider
     if current_user.userfiles.exists?(:name => collection_name, :data_provider_id => data_provider_id)
-      flash[:error] = "Error: collection with name '#{collection_name}' already exists."
+      flash[:error] = t('userfiles.flash.collection_name_exists', name:collection_name)
       redirect_to :action => :index
       return
     end
 
     if Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read).count == 0
-      flash[:error] = "Error: No accessible files selected."
+      flash[:error] = t('userfiles.flash.no_accessible_files')
       redirect_to :action => :index
       return
     end
@@ -1065,7 +1063,7 @@ class UserfilesController < ApplicationController
       end
     end # spawn
 
-    flash[:notice] = "Collection #{collection.name} is being created in background."
+    flash[:notice] = t('userfiles.flash.collection_creating', name: collection.name)
     redirect_to :action => :index
 
   end
@@ -1075,9 +1073,9 @@ class UserfilesController < ApplicationController
 
     # Destination provider
     data_provider_id = params[:data_provider_id_for_mv_cp]
-    cb_error "No data provider selected." if data_provider_id.blank?
+    cb_error t('userfiles.errors.no_data_provider') if data_provider_id.blank?
     new_provider     = DataProvider.find_all_accessible_by_user(current_user).where( :id => data_provider_id, :online => true, :read_only => false ).first
-    cb_error "Data provider #{data_provider_id} not accessible." unless new_provider
+    cb_error t('userfiles.errors.data_provider_not_accessible', id: data_provider_id) unless new_provider
 
     # Option for move or copy.
     crush_destination = (params[:crush_destination].to_s =~ /crush/i) ? true : false
@@ -1094,7 +1092,7 @@ class UserfilesController < ApplicationController
        Userfile.find_accessible_by_user(id, current_user, :access_requested => access_needed).id rescue nil
     end.compact
 
-    cb_error "No appropriate files selected to #{task}" if selected_ids.size == 0
+    cb_error t('userfiles.errors.no_files_for_action', action: task) if selected_ids.size == 0
 
     if task == :copy
       my_group_id  = current_assignable_group.id
@@ -1108,7 +1106,7 @@ class UserfilesController < ApplicationController
       )
     end
 
-    flash[:notice] = "Your files are being #{word_moved} in the background.\n"
+    flash[:notice] = t('userfiles.flash.files_being_transferred', action: word_moved)
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
@@ -1124,12 +1122,12 @@ class UserfilesController < ApplicationController
     to_delete_ids = Userfile.accessible_for_user(current_user, :access_requested => :write).where(:id => filelist).pluck(:id)
     not_accessible_count = filelist.size - to_delete_ids.size
 
-    flash[:error] = "You do not have access to #{not_accessible_count} of #{filelist.size} file(s)." if not_accessible_count > 0
+    flash[:error] = t('userfiles.flash.no_access_some_files', count: not_accessible_count, total: filelist.size) if not_accessible_count > 0
 
-    cb_error "No appropriate files selected to delete" if to_delete_ids.size == 0
+    cb_error t('userfiles.errors.no_files_to_delete') if to_delete_ids.size == 0
     bac = BackgroundActivity::DestroyFile.setup!(current_user.id, to_delete_ids)
 
-    flash[:notice] = "Your files are being deleted in background."
+    flash[:notice] = t('userfiles.flash.files_being_deleted')
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
@@ -1157,7 +1155,7 @@ class UserfilesController < ApplicationController
     if ! specified_filename.blank?
       specified_filename.sub!(/(\.tar)?(\.g?z)?\z/i,"")
       if ! Userfile.is_legal_filename?(specified_filename)
-          flash[:error] = "Error: filename '#{specified_filename}' is not acceptable (illegal characters?)."
+          flash[:error] = t('userfiles.flash.filename_invalid', name: specified_filename)
           respond_to do |format|
             format.html { redirect_to :action => :index }
             format.json { render :json => { :error => flash[:error] } }
@@ -1178,8 +1176,7 @@ class UserfilesController < ApplicationController
     # and potentially prohibitively large size
     unsized = userfiles_list.detect { |u| u.size.nil? }
     if unsized
-      flash[:error] = "Size of the file #{unsized.name} is not yet determined." +
-                      " Please try again latter.\n"
+      flash[:error] = t('userfiles.flash.size_not_determined', name: unsized.name)
       respond_to do |format|
         format.html { redirect_to :action => :index }
         format.json { render :json => { :error => flash[:error] } }
@@ -1191,8 +1188,7 @@ class UserfilesController < ApplicationController
 
     # Check size limit
     if tot_size > MAX_DOWNLOAD_MEGABYTES.megabytes
-      flash[:error] = "You cannot download data that exceeds #{MAX_DOWNLOAD_MEGABYTES} megabytes using a browser.\n" +
-                      "Consider using an externally accessible Data Provider (ask the admins for more info).\n"
+      flash[:error] = t('userfiles.flash.download_too_large', max: MAX_DOWNLOAD_MEGABYTES)
       respond_to do |format|
           format.html { redirect_to :action => :index }
           format.json { render :json => { :error => flash[:error] } }
@@ -1203,7 +1199,7 @@ class UserfilesController < ApplicationController
     # Check duplicate names when downloading many files
     name_list = userfiles_list.map(&:name)
     if name_list.size != name_list.uniq.size
-      flash[:error] = "Some files have the same names and cannot be downloaded together. Use separate downloads."
+      flash[:error] = t('userfiles.flash.duplicate_names')
       respond_to do |format|
           format.html { redirect_to :action => :index }
           format.json { render :json => { :error => flash[:error] } }
@@ -1255,7 +1251,7 @@ class UserfilesController < ApplicationController
     success = failure = 0
 
     unless params[:file_names] && params[:file_names].size > 0
-      flash[:notice] = "No files selected for extraction"
+      flash[:notice] = t('userfiles.flash.no_files_for_extraction')
       redirect_to :action  => :show
       return
     end
@@ -1265,7 +1261,7 @@ class UserfilesController < ApplicationController
     data_provider    = collection.data_provider
 
     if data_provider.read_only?
-      flash[:error] = "Unfortunately this file is located on a DataProvider that is not writable, so we can't extract its internal files."
+      flash[:error] = t('userfiles.flash.dp_not_writable_extract')
       redirect_to :action => :show
       return
     end
@@ -1308,10 +1304,10 @@ class UserfilesController < ApplicationController
     success = results.count { |x| x == :ok }
     failure = results.size - success
     if success > 0
-      flash[:notice] = "#{success} files were successfully extracted."
+      flash[:notice] = t('userfiles.flash.extracted', count: success)
     end
     if failure > 0
-      flash[:error] =  "#{failure} files could not be extracted."
+      flash[:error] =  t('userfiles.flash.extract_failed', count: failure)
       # TODO report prettily the failure keywords?
       #flash[:error] += "\n#{results.join(" ")}"
     end
@@ -1359,8 +1355,7 @@ class UserfilesController < ApplicationController
     dest_dp_id ||= DataProvider.find_all_accessible_by_user(current_user).where(:online => true).first.try(:id)
 
     if !dest_dp_id
-      flash[:error] = "For this feature to work you need access to an online Data Provider; you can select " +
-                      "your favorite one in your account preferences."
+      flash[:error] = t('userfiles.flash.no_online_data_provider')
       redirect_to(:action => :index)
       return
     end
@@ -1371,7 +1366,7 @@ class UserfilesController < ApplicationController
       .where(:id => file_ids).all.to_a
 
     if userfiles.empty?
-      flash[:error] = "You need to select some files first."
+      flash[:error] = t('userfiles.flash.select_files_first')
       redirect_to(:action => :index)
       return
     end
@@ -1392,13 +1387,10 @@ class UserfilesController < ApplicationController
       file_list.addlog(typereport)
       csv_text = CbrainFileList.create_csv_file_from_userfiles(userfiles)
       file_list.cache_writehandle { |fh| fh.write(csv_text) }
-      flash[:notice] = <<~NOTICE
-        Created file list named '#{file_list.name}' in '#{file_list.group.name}' project.
-        Make sure that it is what you want and, if needed, change any attributes below.
-      NOTICE
+      flash[:notice] = t('userfiles.flash.file_list_created', name: file_list.name, project: file_list.group.name)
       redirect_to(:controller => :userfiles, :action => :show, :id => file_list.id)
     else
-      flash[:error] = "Could not create file list. Contact the admins."
+      flash[:error] = t('userfiles.flash.file_list_failed')
       redirect_to(:action => :index)
     end
 
@@ -1459,12 +1451,12 @@ class UserfilesController < ApplicationController
     # Skipped files notification
     flash[:error] = skipped
       .reject { |reason, count| count == 0 }
-      .map { |reason, count| "#{count} files skipped: #{reason}" }
+      .map { |reason, count| t('userfiles.flash.files_skipped', count: count, reason: reason) }
       .join('\n')
 
     # Ensure there is actually something left to compress/uncompress
     if userfiles.count == 0
-      flash[:notice] = "Nothing to #{operation.to_s}"
+      flash[:notice] = t('userfiles.flash.nothing_to_do', action: operation.to_s)
       return
     end
 
@@ -1473,7 +1465,7 @@ class UserfilesController < ApplicationController
     klass = compressing ? BackgroundActivity::CompressFile : BackgroundActivity::UncompressFile
     bac=klass.setup!(current_user.id, userfile_ids)
 
-    flash[:notice] = "#{view_pluralize(userfiles.count, "file")} being #{operation.to_s}ed in background.\n"
+    flash[:notice] = t('userfiles.flash.compression_in_background', count: userfiles.count, operation: operation.to_s)
     return bac
   end
 
@@ -1502,7 +1494,7 @@ class UserfilesController < ApplicationController
   def permission_check #:nodoc:
 
     if params[:file_ids].blank?
-      flash[:error] = "No files selected? Selection cleared.\n"
+      flash[:error] = t('userfiles.flash.no_files_selected')
       redirect_to :action => :index
       return
     end
@@ -1511,7 +1503,7 @@ class UserfilesController < ApplicationController
   rescue ActiveRecord::RecordNotFound
     flash[:error]  += "\n" unless flash[:error].blank?
     flash[:error] ||= ""
-    flash[:error]  += "You don't have appropriate permissions to apply the selected action to this set of files."
+    flash[:error]  += t('userfiles.flash.no_permission')
 
     redirect_to :action => :index
   end
@@ -1527,11 +1519,11 @@ class UserfilesController < ApplicationController
     # Check for required attributes
     data_provider_id    = attributes["data_provider_id"] ||
                           attributes[:data_provider_id]
-    cb_error "No data provider ID supplied." unless data_provider_id
+    cb_error t('userfiles.errors.no_data_provider_id') unless data_provider_id
 
     user_id             = attributes["user_id"]  ||
                           attributes[:user_id]
-    cb_error "No user ID supplied." unless user_id
+    cb_error t('userfiles.errors.no_user_id') unless user_id
 
     # Create content list
     all_files        = []
@@ -1542,13 +1534,13 @@ class UserfilesController < ApplicationController
     elsif archive_file_name =~ /\.zip/i
       all_files = IO.popen("unzip -l #{escaped_archivefile}") { |fh| fh.readlines.map(&:chomp)[3..-3].map{ |line|  line.split[3]} }
     else
-      cb_error "Cannot process file with unknown extension: #{archive_file_name}"
+      cb_error t('userfiles.errors.unknown_archive_extension', name: archive_file_name)
     end
 
     count = all_files.select{ |f| f !~ /\// }.size
 
     #max of 50 files can be added to the file list at a time.
-    cb_error "Overflow: more than 50 files found in archive." if count > 50
+    cb_error t('userfiles.errors.archive_overflow') if count > 50
 
     workdir = "/tmp/filecollection.#{Process.pid}"
     Dir.mkdir(workdir)
@@ -1561,7 +1553,7 @@ class UserfilesController < ApplicationController
         system("cd #{workdir} ; unzip #{escaped_archivefile}")
       else
         FileUtils.remove_dir(workdir, true)
-        cb_error "Cannot process file with unknown extension: #{archive_file_name}"
+        cb_error t('userfiles.errors.unknown_archive_extension', name: archive_file_name)
       end
     # end
 
@@ -1661,7 +1653,7 @@ class UserfilesController < ApplicationController
 
     system("tar -cf - #{tar_cd_arg_list.join(" ")} 2> #{errfile.to_s.bash_escape} | gzip -c > #{tarfilename.to_s.bash_escape}")
     err = File.read(errfile) rescue "Oops, the error file has disappeared..."
-    cb_error "Error creating the download file. The file list might be too long, or some files are missing. Sorry." if err.present?
+    cb_error t('userfiles.errors.download_file_creation_failed') if err.present?
 
     return tarfilename
   ensure
@@ -2028,7 +2020,7 @@ class UserfilesController < ApplicationController
 
     # Find the class for the new userfile object that will be used for viewing
     viewer_userfile_class = viewer_class_name.try(:constantize) || @top_userfile.class
-    cb_error "Invalid params viewer_userfile_class #{viewer_class_name}" if !(viewer_userfile_class < Userfile)
+    cb_error t('userfiles.errors.invalid_viewer_class', class: viewer_class_name)} if !(viewer_userfile_class < Userfile)
 
     # Instanciate the userfile object with the class appropiate for the sub file.
     viewer_userfile_class.new(

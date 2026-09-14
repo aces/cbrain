@@ -1,5 +1,8 @@
 en:
   activerecord:
+    attributes:
+      cbrain_task:
+        run_number: "Run number"
     models:
       cbrain_task:
         one: "Task"

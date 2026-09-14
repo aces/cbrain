@@ -32,7 +32,7 @@ class InvitationsController < ApplicationController
     @group = Group.find(params[:group_id])
 
     unless @group.can_be_edited_by?(current_user)
-       flash[:error] = "You don't have permission send invitations for this project."
+       flash[:error] = t('invitations.flash.no_permission')
        respond_to do |format|
         format.html { redirect_to group_path(@group) }
         format.xml  { head :forbidden }
@@ -50,7 +50,7 @@ class InvitationsController < ApplicationController
     @group          = Group.find(params[:group_id])
 
     unless @group.can_be_edited_by?(current_user)
-       flash[:error] = "You don't have permission send invitations for this project."
+       flash[:error] = t('invitations.flash.no_permission')
        respond_to do |format|
         format.html { redirect_to group_path(@group) }
         format.xml  { head :forbidden }
@@ -64,7 +64,7 @@ class InvitationsController < ApplicationController
     user_specs      = user_specs.map(&:presence).compact
 
     if user_specs.empty?
-      cb_error "Please specify at least one email address or username", :redirect => group_path(@group)
+      cb_error t('invitations.errors.no_recipient'), :redirect => group_path(@group)
     end
 
     # Fetch the users
@@ -82,11 +82,7 @@ class InvitationsController < ApplicationController
     flash_notice = []
     flash_errors = []
     if not_found_specs.present?
-      flash_errors.push <<-MESSAGE
-        We are not able to invite user(s) identified by: #{not_found_specs.join(", ")}.
-        At the moment users are matched by emails or usernames.
-        Please confirm with your collaborators which email or username they use in CBRAIN.
-      MESSAGE
+      flash_errors.push(t('invitations.flash.users_not_found', specs: not_found_specs.join(", ")))
     end
 
     # Which invitations are pending?
@@ -94,16 +90,16 @@ class InvitationsController < ApplicationController
     rejected_ids    = user_ids & already_sent_to
     if rejected_ids.present?
       already_logins = User.where(:id => rejected_ids).pluck(:login).join(", ")
-      flash_errors.push "Already invited: #{already_logins}"
+      flash_errors.push(t('invitations.flash.already_invited', logins: already_logins)
     end
 
     # List of newly invited users
     invited_users = User.find(user_ids - already_sent_to - @group.user_ids)
     if invited_users.present?
       Invitation.send_out(current_user, @group, invited_users)
-      flash_notice.push "Your invitation was successfully sent to #{view_pluralize(invited_users.size,"user")}"
+      flash_notice.push(t('invitations.flash.sent', count: invited_users.size))
     else
-      flash_errors.push "No new users were found to invite."
+      flash_errors.push(t('invitations.flash.no_new_users'))
     end
 
     flash[:notice]  = flash_notice.join "\n" if flash_notice.present?
@@ -117,7 +113,7 @@ class InvitationsController < ApplicationController
     @invitation = Invitation.where(user_id: current_user.id).find(params[:id])
 
     unless @invitation.try(:active?)
-      flash[:error] = "This invitation has already been used.\nPlease contact the project owner if you wish to be invited again."
+      flash[:error] = t('invitations.flash.already_used')
       respond_to do |format|
        format.html { redirect_to groups_path }
        format.xml  { head :forbidden }
@@ -134,7 +130,7 @@ class InvitationsController < ApplicationController
     @invitation.active = false
     @invitation.save
 
-    flash[:notice] = "You have been added to project #{@group.name}."
+    flash[:notice] = t('invitations.flash.added_to_project', name: @group.name)
 
     Message.send_message(@invitation.sender,
                          :message_type   => 'notice',
@@ -156,7 +152,7 @@ class InvitationsController < ApplicationController
 
     @invitation.destroy
 
-    flash[:notice] = "Invitation to #{@user.login} has been canceled."
+    flash[:notice] = t('invitations.flash.canceled', login: @user.login)
     respond_to do |format|
       format.html { redirect_to group_path(@group) }
       format.xml  { head :ok }

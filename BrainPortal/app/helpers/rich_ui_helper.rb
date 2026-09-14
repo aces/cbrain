@@ -39,7 +39,7 @@ module RichUiHelper
     return h(cropped_header) if cropped_header.present? && body.present? && (cropped_header == body)
 
     link = h(cropped_header) + " " +
-      html_tool_tip(link_to(t('more'), "#"), :offset_x => 0, :offset_y => 20) do
+      html_tool_tip(link_to(t('more_parentheses'), "#"), :offset_x => 0, :offset_y => 20) do
         pre_body = body.blank? ? "" : "\n<pre>" + h(body) + "</pre>"
         ("<h4>#{h(header)}</h4>#{pre_body}").html_safe
       end

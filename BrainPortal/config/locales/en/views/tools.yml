@@ -52,8 +52,7 @@ en:
         no_online_server: "No online server for this tool!"
         select_server_version: "Select Server & Version"
       labels:
-        server_version_html:
-          "Server & Version:"
+        server_version_html: "Server & Version:"
       submits:
         launch: "Launch %{name}"
 

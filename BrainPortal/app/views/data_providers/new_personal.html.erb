@@ -51,7 +51,7 @@
     <div title=<%= t('.titles.group') %>>
       <%= f.label :group_id, t('.labels.group') %><br>
       <%= group_select("data_provider[group_id]", { :groups => @groups, :selector => @provider.group_id.to_s }) %>
-      <%= t('.paragraphs.group_html,  group: current_user.own_group.name') %>
+      <%= t('.paragraphs.group_html',  group: current_user.own_group.name) %>
     </div>
 
     <p>

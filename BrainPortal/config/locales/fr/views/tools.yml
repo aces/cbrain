@@ -12,6 +12,7 @@ fr:
         belongs_to: "Appartient à"
         available_to_project: "Disponible pour les membres du projet"
         category: "Catégorie"
+        license_agreements: "Accords de licence"
         description: "Description"
         package_name: "Nom du package"
         tool_type: "Type d'outil"
@@ -82,8 +83,6 @@ fr:
       title: "Informations sur l'outil"
       titles:
         log_title: "Journal de l'outil"
-      headings:
-        license_agreements: "Licence"
 
     index:
       title: "Outils"
@@ -100,6 +99,7 @@ fr:
         belongs_to: "Appartient à :"
         group: "Disponible pour les membres du projet :"
         category: "Catégorie :"
+        license_agreements: "Licences :"
         description: "Description :"
         package_name: "Nom du package :"
         tool_type: "Type d'outil :"

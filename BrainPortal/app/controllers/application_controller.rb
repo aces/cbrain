@@ -209,7 +209,7 @@ class ApplicationController < ActionController::Base
   def check_password_reset #:nodoc:
     if current_user.password_reset
       unless params[:controller] == "users" && (params[:action] == "change_password" || params[:action] == "update")
-        flash[:error] = "Please reset your password."
+        flash[:error] = t('application.flash.password_reset_required')
         redirect_to change_password_user_path(current_user)
         return false
       end
@@ -442,8 +442,8 @@ class ApplicationController < ActionController::Base
 
   # Messy utility, poking through layers. Tricky and brittle.
   def eval_in_controller(mycontroller, options={}, &block) #:nodoc:
-    cb_error "Controller is not a ApplicationController?" unless mycontroller < ApplicationController
-    cb_error "Block needed." unless block_given?
+    cb_error t('application.errors.not_application_controller') unless mycontroller < ApplicationController
+    cb_error t('application.errors.block_needed') unless block_given?
     context = mycontroller.new
     context.request = self.request
     if options.has_key?(:define_current_user)

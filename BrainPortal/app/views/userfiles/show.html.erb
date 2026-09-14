@@ -64,7 +64,7 @@
       (<%= t('ago_time', time: pretty_elapsed(Time.now - @userfile.created_at, :num_components => 3)) %>)
     <% end %>
 
-    <% t.cell(t('activerecord.attributes.type')) do %>
+    <% t.cell(t('attributes.type')) do %>
       <%= inline_edit_field(@userfile, :type, :content => @userfile.pretty_type, :disabled => !@userfile.has_owner_access?(current_user)) do %>
         <% u_type = @userfile.is_a?(SingleFile) ? ["SingleFile"] : ["FileCollection"] %>
         <%= userfile_type_select("userfile[type]", {:userfile_types => u_type, :selector => @userfile.class.name}) %>
@@ -80,7 +80,7 @@
       (<%= t('ago_time', time: pretty_elapsed(Time.now - @userfile.updated_at, :num_components => 3)) %>)
     <% end %>
 
-    <% t.cell(t('activerecord.attributes.size')) do %>
+    <% t.cell(t('attributes.size')) do %>
       <% if @userfile.archived? %>
         <!-- Information after compression -->
         <%= archived_icon %>

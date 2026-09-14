@@ -153,7 +153,7 @@ class TasksController < ApplicationController
              ActiveResource::TimeoutError,
              ActiveResource::MethodNotAllowed,
              ActiveResource::ResourceNotFound
-        flash.now[:notice] = "Warning: the Execution Server '#{@task.bourreau.name}' for this task is not available right now."
+        flash.now[:notice] = t('tasks.flash.bourreau_not_available', name: @task.bourreau.name )
         @task.cluster_stdout = "Execution Server is DOWN!"
         @task.cluster_stderr = "Execution Server is DOWN!"
         @task.script_text    = nil
@@ -193,7 +193,7 @@ class TasksController < ApplicationController
       end
     else # Try to propose a version; usually that's when we get just a tool_id
       if tool_id.blank?
-        flash[:error] = "Please select a tool to run."
+        flash[:error] = t('tasks.flash.select_a_tool')
         redirect_to :controller  => :userfiles, :action  => :index
         return
       end
@@ -208,7 +208,7 @@ class TasksController < ApplicationController
       ).order(:created_at).to_a
       toolconfigs.reject! { |tc| ! tc.can_be_accessed_by?(current_user) }
       if toolconfigs.empty?
-        flash[:error] = "We can't find any versions of the tool #{tool.name} available right now."
+        flash[:error] = t('tasks.flash.no_tool_versions', name: tool.name)
         redirect_to :controller  => :userfiles, :action  => :index
         return
       end
@@ -243,7 +243,7 @@ class TasksController < ApplicationController
     end
     @files   = Userfile.find_accessible_by_user(file_ids, current_user, :access_requested => access) rescue []
     if @files.count == 0
-      flash[:error] = "You must select at least one file to which you have write access."
+      flash[:error] = t('tasks.flash.select_writable_file')
       redirect_to :controller  => :userfiles, :action  => :index
       return
     end
@@ -256,21 +256,17 @@ class TasksController < ApplicationController
       end
       if bad_dps.present?
         bad_dp_report = # this report should be made into a view code partial or something, this code is ugly
-          "Some selected files are stored on Data Providers that are\n" +
-          "not accessible from execution server #{@task.bourreau.name}:\n\n"
+          t('tasks.flash.bad_dp_report_header', name: @task.bourreau.name )
         bad_dps.each do |dp|
           num_files =  @files.count { |f| f.data_provider_id == dp.id }
           bad_dp_report +=
-            "Data Provider '#{dp.name}' : #{view_pluralize(num_files, "file")}\n"
+            t('tasks.flash.bad_dp_report_line', name: dp.name, count: num_files)
         end
         bad_dps.select { |dp|
           dp.is_a?(UserkeyFlatDirSshDataProvider) &&
           dp.user.get_ssh_key_install_date(@task.bourreau_id).blank?
         }.each { |dp|
-          bad_dp_report +=
-          "\nNote: DataProvider '#{dp.name}' is a private SSH belonging to user '#{dp.user.login}',\n" +
-          "but that user has not yet pushed the key to the Execution Server.\n" +
-          "This is performed in the user's 'MyAccount' page.\n"
+          bad_dp_report += t('tasks.flash.bad_dp_report_ssh_note', name: dp.name, login: dp.user.login)
         }
         flash[:error] = bad_dp_report
         redirect_to :controller  => :userfiles, :action  => :index
@@ -297,13 +293,13 @@ class TasksController < ApplicationController
     archived_files = @files.select { |f| f.is_a?(FileCollection) && f.archived? }
     if archived_files.present?
         flash.now[:notice] ||= ""
-        flash.now[:notice]  += "\nWarning: some of the files you selected are currently archived. This is probably not how you want to process them. Consider unarchiving them before launching this task. Archived files: #{archived_files.map(&:name).join(", ")}"
+        flash.now[:notice]  += t('tasks.flash.archived_files_warning', name: archived_files.map(&:name).join(", "))
     end
 
     # Print message of the tool config was 'guessed'
     if autoconfig
       flash.now[:notice] ||= ""
-      flash.now[:notice]  += "\nWe have automatically chosen the latest version and execution server for this tool (version #{@tool_config.version_name} on #{@task.bourreau.name}), please double-check this configuration."
+      flash.now[:notice]  += t('tasks.flash.autoconfig_chosen', version: @tool_config.version_name, name: @task.bourreau.name)
       #@task.errors.add(:tool_config_id, "was chosen for you, make sure this is what you want.")
     end
 
@@ -327,13 +323,13 @@ class TasksController < ApplicationController
     @tool_config = @task.tool_config
 
     if @task.class.properties[:cannot_be_edited]
-      flash[:error] = "This task is not meant to be edited.\n"
+      flash[:error] = t('tasks.flash.not_editable')
       redirect_to :action => :show, :id => params[:id]
       return
     end
 
     if @task.status !~ /Completed|Failed|Duplicated|Terminated/
-      flash[:error] = "You cannot edit the parameters of an active task.\n"
+      flash[:error] = t('tasks.flash.active_not_editable')
       redirect_to :action => :show, :id => params[:id]
       return
     end
@@ -451,9 +447,9 @@ class TasksController < ApplicationController
     tl_messages = create_tasklist_from_initial_task(@task,tasklist)
 
     if tasklist.size == 1
-      flash[:notice] += "Launching a #{@task.pretty_name} task in background."
+      flash[:notice] += t('tasks.flash.launching.one', pretty_name: @task.pretty_name)
     else
-      flash[:notice] += "Launching #{tasklist.size} #{@task.pretty_name} tasks in background."
+      flash[:notice] += t('tasks.flash.launching', pretty_name: @task.pretty_name), count: tasklist.size)
     end
     flash[:notice] += "\n#{af_messages.strip}" if af_messages.present?
     flash[:notice] += "\n#{ftl_message.strip}" if ftl_message.present?
@@ -552,7 +548,7 @@ class TasksController < ApplicationController
     @task.save_with_logging(current_user, %w( results_data_provider_id ))
 
     flash[:notice] += messages + "\n" unless messages.blank?
-    flash[:notice] += "New task parameters saved. See the logs for changes, if any.\n"
+    flash[:notice] += t('tasks.flash.params_saved')
     redirect_to :action => :show, :id => @task.id
   end
 
@@ -571,7 +567,7 @@ class TasksController < ApplicationController
 
     # If commit_name undef
     unless commit_name.present?
-      flash[:error] = "No operation to perform."
+      flash[:error] = t('tasks.flash.no_operation')
       redirect_to :action => :index, :format  => request.format.to_sym
       return
     end
@@ -605,14 +601,14 @@ class TasksController < ApplicationController
       end
 
     if unable_to_update.present?
-      flash[:error] = "You do not have access to this #{unable_to_update}."
+      flash[:error] = t('tasks.flash.no_access_to', type: unable_to_update )
       redirect_to :action => :index, :format  => request.format.to_sym
       return
     end
 
     # For unknown field
     if field_to_update == :unknown
-      flash[:error] = "Unknown field to update."
+      flash[:error] = t('tasks.flash.unknown_field')
       redirect_to :action => :index, :format  => request.format.to_sym
       return
     end
@@ -699,12 +695,12 @@ class TasksController < ApplicationController
     end # End of spawn_if block
 
     if do_in_spawn
-      flash[:notice] = "The tasks are being updated in background."
+      flash[:notice] = t('tasks.flash.updating_in_background')
     else
-     flash[:notice] = "Successfully updated #{view_pluralize(success_list.count, "task")}." if success_list.present?
+     flash[:notice] = t('tasks.flash.updated', count: success_list.count ) if success_list.present?
      failure_count  = 0
      failed_list.each_value { |v| failure_count += v.size }
-     flash[:error]  = "Failed to update #{view_pluralize(failure_count, "task")}." if failure_count > 0
+     flash[:error]  = t('tasks.flash.update_failed', count: failure_count) if failure_count > 0
     end
 
     redirect_to :action => :index, :format  => request.format.to_sym
@@ -725,7 +721,7 @@ class TasksController < ApplicationController
     # Validate the presence of operation
     operation  = params[:operation]
     if operation.nil? || operation.empty? || (! operation.is_a?(String))
-      flash[:notice] = "Task list has been refreshed."
+      flash[:notice] = t('tasks.flash.list_refreshed')
       respond_to do |format|
         format.html { redirect_to :action => :index }
         format.json { render :json => { :message => 'No operation selected' } }
@@ -746,7 +742,7 @@ class TasksController < ApplicationController
       .compact
 
     if tasklist.empty?
-      flash[:error] = "No tasks selected?"
+      flash[:error] = t('tasks.flash.no_tasks_selected')
       respond_to do |format|
         format.html { redirect_to :action => :index }
         format.json { render :json => { :message => 'No tasks selected' } }
@@ -778,8 +774,8 @@ class TasksController < ApplicationController
     failed_list.each_value  { |v| failure_size += v.size }
     skipped_size  = 0
     skipped_list.each_value { |v| skipped_size += v.size }
-    flash[:notice]  = "Number of tasks notified: #{success_list.size} OK, #{skipped_size} skipped, #{failure_size} failed.\n"
-    flash[:notice] += "See also the Ongoing tab for tracking the progress of these changes.\n" if results[:bac_ids].present?
+    flash[:notice]  = t('tasks.flash.tasks_notified', ok: success_list.size, skipped: skipped_size, failed: failure_size )
+    flash[:notice] += t('tasks.flash.see_ongoing_tab') if results[:bac_ids].present?
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
@@ -884,7 +880,7 @@ class TasksController < ApplicationController
           end
           if oktasks.size > 0
             bac_klass = operation_to_bac[operation]
-            cb_error "Cannot find BackgroundActivity class required for '#{operation}'" if ! bac_klass
+            cb_error t('tasks.errors.no_bac_class_for_operation', operation: operation ) if ! bac_klass
 
             bac = bac_klass.local_new(current_user.id, oktasks.map(&:id), bid, {})
             bac.options[:nozip]                    = nozip           if nozip && operation =~ /^archive(_file)?$/
@@ -930,15 +926,15 @@ class TasksController < ApplicationController
     @task = current_user.available_tasks.find(task_id)
 
     # Check stuff
-    cb_error "This task doesn't have the capabilities to publish to Zenodo.", :redirect => task_path(@task) unless
+    cb_error t('tasks.errors.zenodo_not_capable'), :redirect => task_path(@task) unless
       @task.has_zenodo_capabilities?
-    cb_error "You have not configured any Zenodo token in your account.", :redirect => task_path(@task) unless
+    cb_error t('tasks.errors.zenodo_no_token'), :redirect => task_path(@task) unless
       current_user.has_zenodo_credentials?
-    cb_error "This task is archived, unarchived it first.", :redirect => task_path(@task) if
+    cb_error t('tasks.errors.zenodo_task_archived'), :redirect => task_path(@task) if
       @task.archived_status
-    cb_error "This task is on an execution server that is unavailable.", :redirect => task_path(@task) unless
+    cb_error t('tasks.errors.zenodo_bourreau_unavailable'), :redirect => task_path(@task) unless
       @task.bourreau.is_alive?
-    cb_error "You have to be the owner of the task to publish its outputs.", :redirect => task_path(@task) if
+    cb_error t('tasks.errors.zenodo_not_owner'), :redirect => task_path(@task) if
       current_user.id != @task.user_id
 
     # Any of these can be nil
@@ -949,7 +945,7 @@ class TasksController < ApplicationController
     zenodo_userfile_ids = @task.zenodo_outputfile_ids
     @zenodo_userfiles   = zenodo_userfiles_from_ids(zenodo_userfile_ids)
     if (@zenodo_userfiles.compact.empty?)
-      cb_error "This task doesn't seem to have produced any publishable outputs.", :redirect => task_path(@task)
+      cb_error t('tasks.errors.zenodo_no_outputs'), :redirect => task_path(@task)
     end
 
     # Figure out at what 'step' of the process we are at:
@@ -972,7 +968,7 @@ class TasksController < ApplicationController
       @zenodo_deposit = find_existing_deposit(deposit_id)
       if @zenodo_deposit.nil?
         # Oh? It must have been deleted? TODO: check if still the case after published?
-        message = "Warning: Deposit ##{deposit_id} (#{zsite}) has disappeared from Zenodo."
+        message = t('tasks.flash.zenodo_deposit_disappeared', id: deposit_id , site: zsite )
 
         # Zap task's deposit info
         @task.zenodo_deposit_id = nil
@@ -1031,9 +1027,9 @@ class TasksController < ApplicationController
     @task   = current_user.available_tasks.find(task_id)
 
     if @task.zenodo_doi.present?
-      cb_error "A deposit has already been published.", :redirect => zenodo_task_path(@task)
+      cb_error t('tasks.errors.zenodo_already_published'), :redirect => zenodo_task_path(@task)
     elsif @task.zenodo_deposit_id.present?
-      cb_error "A deposit has already been created.", :redirect => zenodo_task_path(@task)
+      cb_error t('tasks.errors.zenodo_already_created'), :redirect => zenodo_task_path(@task)
     end
 
     @zenodo_deposit     = ZenodoClient::Deposit.new(         zenodo_deposit_params.to_h          )
@@ -1056,7 +1052,7 @@ class TasksController < ApplicationController
     # many fields are mandatory, they can be left blank during the
     # initial creation.
     if (! @zenodo_deposit.valid?)
-      flash.now[:error] = "The deposit information seems invalid."
+      flash.now[:error] = t('tasks.flash.zenodo_deposit_invalid')
       render :zenodo
       return
     end
@@ -1076,7 +1072,7 @@ class TasksController < ApplicationController
 
   rescue ZenodoClient::ApiError => ex
     if ex.message == 'FORBIDDEN'
-      cb_error "Cannot create the initial Zenodo deposit. It is likely your token is invalid or it doesn't have the proper scopes. Try using a new token.", :redirect => task_path(@task)
+      cb_error t('tasks.errors.zenodo_deposit_create_failed'), :redirect => task_path(@task)
     else
       raise ex
     end
@@ -1091,7 +1087,7 @@ class TasksController < ApplicationController
     @task   = current_user.available_tasks.find(task_id)
 
     if @task.zenodo_doi.present? && ! @task.zenodo_doi.starts_with?(ZenodoHelper::ZenodoSandboxDOIPrefix)
-      cb_error "This task's outputs have already been published and we cannot reset its publication state any more."
+      cb_error t('tasks.errors.zenodo_cannot_reset')
     end
 
     # Remember original IDs
@@ -1291,7 +1287,7 @@ class TasksController < ApplicationController
   end
 
   def upload_text_data_to_deposit(deposit, text, filename) #:nodoc:
-    cb_error "No content provided" if text.blank?
+    cb_error t('tasks.errors.no_content') if text.blank?
 
     # Prep temp file
     tmpdir = "/tmp/zenodo-upload-#{deposit.id}"
@@ -1316,7 +1312,7 @@ class TasksController < ApplicationController
     tmpbase = "#{tmpdir}/#{filecollection.name}.tar.gz"
     Dir.mkdir(tmpdir, 0700) unless Dir.exists?(tmpdir)
     ret     = system "cd #{cache.parent.to_s.bash_escape} && tar -czf #{tmpbase} #{filecollection.name.bash_escape}"
-    cb_error "Cannot create tmp tar file for FileCollection ##{filecollection.id}" unless ret
+    cb_error t('tasks.errors.tmp_tar_failed', id: filecollection.id ) unless ret
     tmpbase
   end
 
@@ -1391,7 +1387,7 @@ class TasksController < ApplicationController
   def create_initial_task_from_form(new_task_info, tool_id = nil) #:nodoc:
 
     # Safety check
-    cb_error "Got argument that is not a ActionController::Parameters set with permitted=true..." unless
+    cb_error t('tasks.errors.bad_params_argument') unless
       new_task_info.is_a?(ActionController::Parameters) and new_task_info.permitted?
 
     # For historical reasons, the web interface sends both a tool_id and a tool_config_id.
@@ -1590,7 +1586,7 @@ class TasksController < ApplicationController
     if commit_name == :load_preset
       preset_id = params[:load_preset_id] # used for delete too
       if (! preset_id.blank?) && preset = CbrainTask.where(:id => preset_id, :status => [ 'Preset', 'SitePreset' ]).first
-        flash[:notice] += "Loaded preset '#{preset.short_description}'.\n"
+        flash[:notice] += t('tasks.flash.preset_loaded', description: preset.short_description)
         old_params = @task.params.clone
         @task.params         = preset.params
         @task.description    = @task.description || ""
@@ -1603,12 +1599,12 @@ class TasksController < ApplicationController
           if preset.tool_config.bourreau.online?
             @task.tool_config = preset.tool_config
           else
-            flash[:error] += "Warning: the preset's version of the tool is on an Execution server that is currently offline. Double-check the version you really need."
+            flash[:error] += t('tasks.flash.preset_bourreau_offline')
           end
         end
         @task.bourreau = @task.tool_config.bourreau if @task.tool_config
       else
-        flash[:notice] += "No preset selected, so parameters are unchanged.\n"
+        flash[:notice] += t('tasks.flash.no_preset_selected')
       end
     end
 
@@ -1617,12 +1613,12 @@ class TasksController < ApplicationController
       if (! preset_id.blank?) && preset = CbrainTask.where(:id => preset_id, :status => [ 'Preset', 'SitePreset' ]).first
         if preset.user_id == current_user.id
           preset.delete
-          flash[:notice] += "Deleted preset '#{preset.short_description}'.\n"
+          flash[:notice] += t('tasks.flash.preset_deleted', description: preset.short_description)
         else
-          flash[:notice] += "Cannot delete a preset that doesn't belong to you.\n"
+          flash[:notice] += t('tasks.flash.preset_delete_not_owner')
         end
       else
-        flash[:notice] += "No preset selected, so parameters are unchanged.\n"
+        flash[:notice] += t('tasks.flash.no_preset_selected')
       end
     end
 
@@ -1635,9 +1631,9 @@ class TasksController < ApplicationController
       else
         preset_id = params[:save_preset_id]
         preset    = CbrainTask.where(:id => preset_id, :status => [ 'Preset', 'SitePreset' ]).first
-        cb_error "No such preset ID '#{preset_id}'" unless preset
+        cb_error t('tasks.errors.no_such_preset', id: preset_id) unless preset
         if preset.user_id != current_user.id
-          flash[:error] += "Cannot update a preset that does not belong to you.\n"
+          flash[:error] += t('tasks.flash.preset_update_not_owner')
           return
         end
         preset.params = @task.params.clone
@@ -1668,7 +1664,7 @@ class TasksController < ApplicationController
 
       preset.save!
 
-      flash[:notice] += "Saved preset '#{preset.short_description}'.\n"
+      flash[:notice] += t('tasks.flash.preset_saved', description: preset.short_description)
     end
   end
 

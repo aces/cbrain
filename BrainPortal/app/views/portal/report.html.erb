@@ -30,14 +30,14 @@
               [ t('activerecord.models.group.other'),           'group_id'         ],
               [ t('activerecord.models.data_provider.other'),   'data_provider_id' ],
               [ t('activerecord.models.remote_resource.other'), 'bourreau_id'      ],
-              [ t('activerecord.attributes.status'),            'status'           ],
-              [ t('activerecord.attributes.type'),              'type'             ],
+              [ t('attributes.status'),                         'status'           ],
+              [ t('attributes.type'),                           'type'             ],
               [ t('activerecord.models.site.other'),            'site_id'          ],
-              [ t('activerecord.attributes.category'),          'category'         ],
+              [ t('attributes.category'),                       'category'         ],
               [ t('activerecord.models.tool.other'),            'tool_id'          ],
-              [ t('activerecord.attributes.city'),              'city'             ],
-              [ t('activerecord.attributes.country'),           'country'          ],
-              [ t('activerecord.attributes.yearmonth'),         'yearmonth'        ],
+              [ t('attributes.city'),                           'city'             ],
+              [ t('attributes.country'),                        'country'          ],
+              [ t('attributes.yearmonth'),                      'yearmonth'        ],
             ]
    #restricted_att_list = @model_atts.blank? ? full_att_list : full_att_list.select { |pair| @model_atts.include?(pair[1].to_sym) }
    restricted_att_list = @model_atts.blank? ? [] : full_att_list.select { |pair| @model_atts.include?(pair[1].to_sym) }
