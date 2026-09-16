@@ -1,21 +1,20 @@
 fr:
   signups:
-
     flash:
-      email_failed:              "Une erreur semble s'être produite. La notification par e-mail n'a probablement pas été envoyée. Nous ne pouvons rien y faire."
-      updated:                   "La demande de compte a été mise à jour."
-      deleted:                   "La demande de compte a été supprimée."
-      confirmation_resent:       "Un nouvel e-mail de confirmation a été envoyé."
-      confirmation_resend_failed: "Une erreur semble s'être produite. La notification par e-mail n'a probablement pas été envoyée. Réessayez plus tard ou contactez les administrateurs."
+      email_failed: "Une erreur semble s'être produite. La notification par courriel n'a probablement pas été envoyée. Nous ne pouvons rien y faire."
+      updated: "La demande de compte a été mise à jour."
+      deleted: "La demande de compte a été supprimée."
+      confirmation_resent: "Un nouvel courriel de confirmation a été envoyé."
+      confirmation_resend_failed: "Une erreur semble s'être produite. La notification par courriel n'a probablement pas été envoyée. Réessayez plus tard ou contactez les administrateurs."
       deleted_records:
-        one:                     "%{count} enregistrement supprimé."
-        other:                   "%{count} enregistrements supprimés."
+        one: "%{count} enregistrement supprimé."
+        other: "%{count} enregistrements supprimés."
       sent_confirmations:
-        one:                     "%{count} e-mail de confirmation envoyé."
-        other:                   "%{count} e-mails de confirmation envoyés."
+        one: "%{count} courriel de confirmation envoyé."
+        other: "%{count} courriels de confirmation envoyés."
       hidden_records:
-        one:                     "%{count} enregistrement masqué"
-        other:                   "%{count} enregistrements masqués"
+        one: "%{count} enregistrement masqué"
+        other: "%{count} enregistrements masqués"
       revealed_records:
-        one:                     "%{count} enregistrement affiché"
-        other:                   "%{count} enregistrements affichés"
+        one: "%{count} enregistrement affiché"
+        other: "%{count} enregistrements affichés"

@@ -1,6 +1,5 @@
 fr:
   quotas:
-
     common:
       config_count:
         one: "1 configuration de quota"
@@ -14,7 +13,6 @@ fr:
       situation: "Situation"
       quota_record: "Entrée de quota"
       confirm_delete_name: "cette entrée de quota"
-
     cpu_quotas_table:
       links:
         config_count:
@@ -36,7 +34,6 @@ fr:
         my_usage: "Ma consommation"
         details: "Détails"
         operations: "Actions"
-
     cpu_report:
       title: "Quotas CPU dépassés"
       links:
@@ -60,7 +57,6 @@ fr:
       data:
         table: "Tableau"
         show_edit_cpu_quota: "Afficher/Modifier le quota CPU"
-
     disk_quotas_table:
       links:
         config_count:
@@ -79,7 +75,6 @@ fr:
         details: "Détails"
         operations: "Actions"
       disk_usage_html: "(%{size} et %{files} fichiers)"
-
     disk_report:
       title: "Quotas disque dépassés"
       links:
@@ -98,8 +93,7 @@ fr:
         num_files_quota: "Quota du nombre de fichiers"
       labels:
         user_quota: "(Quota utilisateur)"
-        dp_quota: "(Quota fournisseur de données)"
-
+        dp_quota: "(Quota serveur de stockage)"
     show_cpu_quota:
       titles:
         create: "Créer un quota CPU"
@@ -164,7 +158,6 @@ fr:
             Le compte administrateur principal est utilisé pour définir un nombre maximum de tâches AU TOTAL pour un bourreau
             (donc aucune limite spécifique à cet admin ne peut être spécifiée ici).
           </div>
-
     show_disk_quota:
       titles:
         create: "Créer un disque quota"
@@ -196,7 +189,6 @@ fr:
           <div class="field_explanation">
             Une valeur de <em>0</em> signifie qu'aucun fichier n'est autorisé.
           </div>
-
     index:
       title: "Configurations de quotas %{mode}"
       mode:

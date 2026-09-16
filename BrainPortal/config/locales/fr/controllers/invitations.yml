@@ -1,17 +1,15 @@
 fr:
   invitations:
-
     errors:
-      no_recipient:              "Veuillez indiquer au moins une adresse e-mail ou un nom d'utilisateur"
-
+      no_recipient: "Veuillez indiquer au moins une adresse e-mail ou un nom d'utilisateur"
     flash:
-      no_permission:             "Vous n'avez pas la permission d'envoyer des invitations pour ce projet."
-      users_not_found:           "Nous ne pouvons pas inviter le ou les utilisateurs identifiés par : %{specs}.\nActuellement, les utilisateurs sont reconnus par leur adresse e-mail ou leur nom d'utilisateur.\nVeuillez confirmer auprès de vos collaborateurs l'adresse e-mail ou le nom d'utilisateur qu'ils utilisent dans CBRAIN.\n"
-      already_invited:           "Déjà invités : %{logins}"
+      no_permission: "Vous n'avez pas la permission d'envoyer des invitations pour ce projet."
+      users_not_found: "Nous ne pouvons pas inviter le ou les utilisateurs identifiés par : %{specs}.\nActuellement, les utilisateurs sont reconnus par leur adresse e-mail ou leur nom d'utilisateur.\nVeuillez confirmer auprès de vos collaborateurs l'adresse e-mail ou le nom d'utilisateur qu'ils utilisent dans CBRAIN.\n"
+      already_invited: "Déjà invités : %{logins}"
       sent:
-        one:                     "Votre invitation a été envoyée avec succès à %{count} utilisateur"
-        other:                   "Votre invitation a été envoyée avec succès à %{count} utilisateurs"
-      no_new_users:              "Aucun nouvel utilisateur à inviter n'a été trouvé."
-      already_used:              "Cette invitation a déjà été utilisée.\nVeuillez contacter le propriétaire du projet si vous souhaitez être invité de nouveau."
-      added_to_project:          "Vous avez été ajouté au projet %{name}."
-      canceled:                  "L'invitation adressée à %{login} a été annulée."
+        one: "Votre invitation a été envoyée avec succès à %{count} utilisateur"
+        other: "Votre invitation a été envoyée avec succès à %{count} utilisateurs"
+      no_new_users: "Aucun nouvel utilisateur à inviter n'a été trouvé."
+      already_used: "Cette invitation a déjà été utilisée.\nVeuillez contacter le propriétaire du projet si vous souhaitez être invité de nouveau."
+      added_to_project: "Vous avez été ajouté au projet %{name}."
+      canceled: "L'invitation adressée à %{login} a été annulée."

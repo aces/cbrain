@@ -1,6 +1,5 @@
 en:
   users:
-
     errors:
       no_view_permission:        "You don't have permission to view this user."
       no_page_permission:        "You don't have permission to view this page."
@@ -9,7 +8,6 @@ en:
       invalid_whitelist_ip:      "Invalid whitelist IP address: %{ip}"
       no_servers_selected:       "No servers selected (or accessible by user)."
       no_ssh_key:                "No user SSH key exists yet."
-
     flash:
       filled_from_signup:        "Fields have been filled from a signup request.\n"
       signup_portal:             "That request was performed on portal '%{portal}'.\n"

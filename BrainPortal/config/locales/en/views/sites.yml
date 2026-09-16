@@ -1,6 +1,5 @@
 en:
   sites:
-
     sites_table:
       links:
         create_new_site: "Create new site"
@@ -15,10 +14,8 @@ en:
         site_manager: "Site Manager"
         number_of_users: "Number of Users"
         number_of_projects: "Number of Projects"
-
     index:
       title: "Sites"
-
     new:
       title: "Add New Site"
       headings:
@@ -41,7 +38,6 @@ en:
         groups: "Projects"
       submit: "Create"
       hide: "(Hide)"
-
     show:
       title: "Site"
       headings:

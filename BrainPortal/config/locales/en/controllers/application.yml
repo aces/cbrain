@@ -1,9 +1,7 @@
 en:
   application:
-
     errors:
       not_application_controller: "Controller is not a ApplicationController?"
       block_needed:              "Block needed."
-
     flash:
       password_reset_required:   "Please reset your password."

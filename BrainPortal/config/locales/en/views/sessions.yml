@@ -1,13 +1,11 @@
 en:
   sessions:
-
     mandatory_oidc:
       title: "Mandatory Identity provider Link"
       headings:
         before_message_html: "Before you can continue, your CBRAIN account <em>must</em> be linked to an identity provider."
         explanations: "Explanations"
         allowed_providers: "The identity providers that are allowed for your account are:"
-
       paragraphs:
         explanations: |
           <p class="short_paragraphs">
@@ -28,16 +26,12 @@ en:
           If you already are logged in using a different identity provider, you
           might want to log out first. This can be accomplished by the button below:
           </p>
-
       any_provider: "(Any identity provider)"
-
       links:
         login_with: "Login with %{name}"
         logout_from: "Logout from %{name}"
-
     new:
       title: "Login"
-
       divs:
         only_available_html: |
           <div class="field_explanation">
@@ -47,15 +41,12 @@ en:
       labels:
         login: "Login"
         password: "Password"
-
       submit:
         sign_in: "Sign in"
-
       links:
         forgot_password: "Forgot your password?"
         sign_in_with: "Sign In With %{name}"
         request_account: "Request an account."
         full_list: "Full list of all tools and datasets"
-
       or: "OR"
       not_a_user: "Not a user?"

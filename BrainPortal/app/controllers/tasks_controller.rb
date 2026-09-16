@@ -293,7 +293,7 @@ class TasksController < ApplicationController
     archived_files = @files.select { |f| f.is_a?(FileCollection) && f.archived? }
     if archived_files.present?
         flash.now[:notice] ||= ""
-        flash.now[:notice]  += t('tasks.flash.archived_files_warning', name: archived_files.map(&:name).join(", "))
+        flash.now[:notice]  += t('tasks.flash.archived_files_warning', names: archived_files.map(&:name).join(", "))
     end
 
     # Print message of the tool config was 'guessed'

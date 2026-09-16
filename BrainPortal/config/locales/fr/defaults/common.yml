@@ -1,8 +1,6 @@
 fr:
-
   will_paginate:
     page_gap: "…"
-
   labels:
     user_colon:
       one: "Utilisateur :"
@@ -43,10 +41,8 @@ fr:
     dates_colon: "Dates :"
     search_colon: "Recherche :"
     upload_colon: "Téléverser :"
-
   date: "Date"
   ago_time: "il y a %{time}"
-
   more_parentheses: "(plus)"
   unknown: "Inconnu"
   unknown_parentheses: "(Inconnu)"
@@ -71,74 +67,52 @@ fr:
   info_parentheses: "(info)"
   no_description_parentheses: "(Pas de description)"
   everyone: "Tout le monde"
-
   no_information: "Il n'y a aucune information à afficher pour le moment."
-
   from: "De"
   to: "À"
-
   delete: "Supprimer"
   deleted: "Supprimé"
   deleted_non_existing_parentheses: "(Supprimé/Non existant)"
-
   save: "Enregistrer"
   saved: "Enregistré"
-
   create: "Créer"
   created: "Créé"
-
   update: "Mettre à jour"
   updated: "Mis à jour"
   last_updated: "Dernière mise à jour"
-
   active_users: "Utilisateurs actifs"
   locked_users: "Utilisateurs verrouillés"
-
   submit: "Soumettre"
-
   status: "Statut"
-
   search_by_name: "Rechercher par nom :"
   confirm_delete: "Êtes-vous sûr de vouloir supprimer %{name} ?"
-
   dataset:
     one: "Jeu de données"
     other: "Jeux de données"
-
   agree: "J'accepte"
-
   clear_options:
-      month: "Il y a un mois"
-      week: "Il y a une semaine"
-      day: "Il y a un jour"
-      hour: "Il y a une heure"
-      now: "Maintenant ! (Y compris le vôtre !)"
-
+    month: "Il y a un mois"
+    week: "Il y a une semaine"
+    day: "Il y a un jour"
+    hour: "Il y a une heure"
+    now: "Maintenant ! (Y compris le vôtre !)"
   login: "Login"
-
   owner: "Propriétaire"
   owner_downcase: "propriétaire"
-
   version:
     one: "Version"
     other: "Versions"
-
   tool_version:
     one: "Version de l'outil"
     other: "Versions de l'outil"
-
   parameters:
     one: "Paramètre"
     other: "Paramètres"
   summary: "Résumé"
-
-
   time_zone: "Fuseau horaire"
   all: "Tous"
-
   show_hide_parentheses: "(afficher/masquer)"
   hidden: "masqué"
-
   datetime:
     distance_in_words:
       half_a_minute: "une demi-minute"
@@ -175,9 +149,8 @@ fr:
       almost_x_years:
         one: "presqu'un an"
         other: "presque %{count} ans"
-
   chosen:
-    single:     "Choisir une option"
-    multiple:   "Choisir des options"
+    single: "Choisir une option"
+    multiple: "Choisir des options"
     no_results: "Aucun résultat pour"
-    add_tag:    "Appuyez sur Entrée pour ajouter : "
+    add_tag: "Appuyez sur Entrée pour ajouter : "

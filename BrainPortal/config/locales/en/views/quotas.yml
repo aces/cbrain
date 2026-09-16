@@ -1,7 +1,5 @@
 en:
-
   quotas:
-
     common:
       config_count:
         one: "1 quota configuration"
@@ -15,7 +13,6 @@ en:
       situation: "Situation"
       quota_record: "Quota record"
       confirm_delete_name: "this quota entry"
-
     cpu_quotas_table:
       links:
         config_count:
@@ -37,7 +34,6 @@ en:
         my_usage: "My Usage"
         details: "Details"
         operations: "Operations"
-
     cpu_report:
       title: "Exceeded CPU Quotas"
       links:
@@ -61,7 +57,6 @@ en:
       data:
         table: "Table"
         show_edit_cpu_quota: "Show/Edit CPU Quota"
-
     disk_quotas_table:
       links:
         config_count:
@@ -80,7 +75,6 @@ en:
         details: "Details"
         operations: "Operations"
       disk_usage_html: "(%{size} and %{files} files)"
-
     disk_report:
       title: "Exceeded Disk Quotas"
       links:
@@ -100,7 +94,6 @@ en:
       labels:
         user_quota: "(User Quota)"
         dp_quota: "(DP Quota)"
-
     show_cpu_quota:
       titles:
         create: "Create CPU Quota"
@@ -165,7 +158,6 @@ en:
             The core Admin account is used to set a maximum number of tasks IN TOTAL for an Execution
             server (thus, no limit specific to that admin user can be specified here).
           </div>
-
     show_disk_quota:
       titles:
         create: "Create Disk Quota"
@@ -197,7 +189,6 @@ en:
           <div class="field_explanation">
             A value of <em>0</em> means no files allowed at all.
           </div>
-
     index:
       title: "%{mode} Quotas Configurations"
       mode:

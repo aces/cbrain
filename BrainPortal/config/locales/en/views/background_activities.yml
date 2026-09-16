@@ -1,13 +1,10 @@
 en:
   background_activities:
-
     common:
       dynamic_items_list: "(Dynamic items list)"
-
     background_activity_table:
       toggles:
         about: "About"
-
       submits:
         cancel_activities: "Cancel Activities"
         suspend_activities: "Suspend Activities"
@@ -15,7 +12,6 @@ en:
         destroy_activities: "Destroy Activities"
         activate_now: "Activate Now!"
         retry_failed: "Retry Failed"
-
       confirms:
         cancel: "Are you sure you want to cancel the selected background activities?"
         suspend: "Are you sure you want to suspend the selected background activities?"
@@ -23,16 +19,13 @@ en:
         destroy: "Are you sure you want to destroy the selected background activities?"
         activate: "Are you sure you want to activate the selected background activities?"
         retry: "Are you sure you want to retry the failed items of the selected background activities?"
-
       links:
         create_scheduled: "Create New Scheduled Activity"
         hide_scheduled: "Hide Scheduled"
         refresh_list: "Refresh This List"
         show: "Show"
-
       legends:
         about: "About Background Activities"
-
       paragraphs:
         about_general_top_html: |
           <p class="long_paragraphs">
@@ -63,7 +56,6 @@ en:
           The progress bars in this page are <strong>not live</strong>, so
           you need to click the <em>Refresh</em> button to get an update
           on the progress of your activities.
-
       columns:
         user: "User"
         server: "Server"
@@ -75,10 +67,8 @@ en:
         last_update: "Last Updated"
         progress: "Progress"
         show: "Show"
-
       labels:
         type_filter: "%{label} (of %{base})"
-
       scheduled_at:
         in_time: "(in %{time})"
         overdue_by: "(overdue by %{time})"
@@ -89,30 +79,23 @@ en:
         next:
           one: "(next with %{count} second delay)"
           other: "(next with %{count} seconds delay)"
-
       on_word: "on"
-
       items_count:
         one: "(%{count} item)"
         other: "(%{count} items)"
-
       tooltips:
         messages: "(Messages)"
-
     RubyRunner:
       legends:
         ruby_code: "Ruby Code"
-
     index:
       title: "Background Activities"
-
     new:
       title: "Schedule Maintenance Activity"
       headings:
         main: "Schedule Maintenance Activity"
       errors:
           activity: "activity"
-
       labels:
         repeat: "Repeat Frequency"
         remove_task_workdirs: "Remove Task Workdirs"
@@ -146,13 +129,10 @@ en:
         archive_task_workdirs: "Archive Task Workdirs"
         compress: "Compress"
         uncompress: "Uncompress"
-
-
       selects:
         data_provider: "(Select a Data Provider)"
         filter: "(Select one of your filters)"
         dps: "(Select Data Providers)"
-
       paragraphs:
         remember_file_filter_html: |
           This activity type is only for experienced CBRAIN system developers
@@ -169,7 +149,6 @@ en:
           Consider adding a short description of what your RubyRunner code does
           on the very first line of comment; this will be shown as a description
           of the BackgroundActivity within the index page.
-
       repeat_options:
         prompt: "(How often and when to repeat)"
         one_shot: "One Shot"
@@ -185,19 +164,15 @@ en:
         friday: "Fridays at..."
         saturday: "Saturdays at..."
         sunday: "Sundays at..."
-
       legends:
         filter: "Dynamic Items Selection: Files or Tasks"
         or_word: "or"
         files: "Files"
-
       repeat_at_html: "(For <strong>at...</strong>:"
-
       days_ago: "days ago"
       system_dps: "System Data Providers:"
       user_dps: "User Data Providers:"
       submit: "Schedule new activity"
-
     show:
       headings:
         main: "Background Activity"

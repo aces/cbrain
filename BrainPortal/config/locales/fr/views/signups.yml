@@ -1,13 +1,10 @@
 fr:
   signups:
-
     common:
       comment: "Commentaires ou demandes spéciales :"
-
     result_action_one:
       headings:
         main: "Résultat pour %{name}, %{institution}"
-
     signups_table:
       links:
         new_request: "Nouvelle demande"
@@ -44,7 +41,6 @@ fr:
       tooltips:
         updated_at: "Mis à jour : %{time}"
       delete_confirm: "Supprimer les demandes d'inscription sélectionnées ?"
-
     status:
       approved_by: "Approuvé par : %{name}"
       approved_at: "Approuvé le : %{time}"
@@ -55,7 +51,6 @@ fr:
         login_conflict: "(Conflit de login)"
       links:
         approve: "(Approuver)"
-
     confirm_button:
       title: "Confirmez votre demande"
       headings:
@@ -70,7 +65,6 @@ fr:
           <p>
       links:
         confirm_request: "Confirmer la demande"
-
     confirm:
       title: "Demande confirmée"
       headings:
@@ -88,12 +82,10 @@ fr:
           En attendant, vous pouvez %{look} votre demande, ou même la %{edit}.
         footer: |
           (Il n'y a rien d'autre à faire ici, profitez-en pour prendre un café et lire les nouvelles)
-
     index:
       title: "Demandes d'inscription"
       headings:
         main: "Demandes d'inscription"
-
     multi_action:
       title: "Résultats d'actions groupées"
       headings:
@@ -101,7 +93,6 @@ fr:
       links:
         go_back_html: "Vous pouvez %{link}."
         back_to_list: "retour à la liste des demandes"
-
     new:
       title: "Nouvelle demande de compte"
       warnings:
@@ -183,7 +174,6 @@ fr:
         request_account: "Demander un compte"
         update_request: "Mettre à jour la demande"
       contact_html: "Pour plus d'informations, contactez %{email}."
-
     show:
       title: "Informations sur la demande de compte"
       headings:

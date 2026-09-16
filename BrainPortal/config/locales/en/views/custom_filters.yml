@@ -1,26 +1,22 @@
 en:
   custom_filters:
-
     common:
       filtering_by_date: "Filtering by date"
       archiving_status: "Archiving status"
       owners: "Owners"
       dont_filter_description: "Don't filter description"
-
       match_type:
         match: "Matches"
         match_exactly: "Match exactly"
         contain: "Contains"
         begin: "Begins with"
         end: "Ends with"
-
       archiving:
         dont_filter: "Don't filter by archiving status"
         archived: "Archived"
         not_archived: "Not archived"
         on_cluster: "Archived on cluster"
         as_file: "Archived as file"
-
       userfile:
         filename: "Filename"
         dont_filter_name: "Don't filter name"
@@ -30,7 +26,6 @@ en:
         lists_parents: "(lists parents)"
         dont_filter_size: "Don't filter size"
         synchronization_status: "Synchronization status"
-
       task:
         work_directory_status: "Work Directory status"
         wd_status:
@@ -39,17 +34,14 @@ en:
           not_shared: "Have own Work Directory"
           exists: "Work Directory exists on cluster"
           none: "Work Directory does not exist on cluster"
-
     custom_filter_li:
       links:
         edit_delete: "Edit/Delete"
-
     custom_filter_list:
       headings:
         by_custom_filter: "By Custom Filter"
       links:
         create_custom_filter: "Create Custom Filter"
-
     new_task_custom_filter:
       by:
         task_types: "Task types"
@@ -61,7 +53,6 @@ en:
         filtering_by_date: "Filtering by date"
         archiving_status: "Archiving status"
         work_directory_status: "Work Directory status"
-
     new_userfile_custom_filter:
       by:
         filename: "Filename"
@@ -76,7 +67,6 @@ en:
         archiving_status: "Archiving status"
         synchronization_status: "Synchronization status"
         tags: "Tags"
-
     new:
       headings:
         main: "New %{type}"
@@ -85,7 +75,6 @@ en:
       errors:
        custom_filter: "custom filter"
       submit: "Create"
-
     task_custom_filter:
       headings:
         types: "Types"
@@ -97,7 +86,6 @@ en:
         archiving_status: "Archiving status"
         work_directory_status: "Work Directory status"
         filtering_by_date: "Filtering by date"
-
     userfile_custom_filter:
       headings:
         filename: "Filename"
@@ -112,7 +100,6 @@ en:
         synchronization_status: "Synchronization status"
         tags: "Tags"
         filtering_by_date: "Filtering by date"
-
     show:
       errors:
         update: "custom filter could not be updated."

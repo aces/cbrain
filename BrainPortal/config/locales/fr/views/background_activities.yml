@@ -1,13 +1,10 @@
 fr:
   background_activities:
-
     common:
       dynamic_items_list: "(Liste d'éléments dynamique)"
-
     background_activity_table:
       toggles:
         about: "À propos"
-
       submits:
         cancel_activities: "Annuler les activités"
         suspend_activities: "Suspendre les activités"
@@ -15,7 +12,6 @@ fr:
         destroy_activities: "Supprimer les activités"
         activate_now: "Activer maintenant !"
         retry_failed: "Relancer les échecs"
-
       confirms:
         cancel: "Êtes-vous sûr de vouloir annuler les activités sélectionnées en arrière-plan ?"
         suspend: "Êtes-vous sûr de vouloir suspendre les activités sélectionnées en arrière-plan ?"
@@ -23,16 +19,13 @@ fr:
         destroy: "Êtes-vous sûr de vouloir supprimer les activités sélectionnées en arrière-plan ?"
         activate: "Êtes-vous sûr de vouloir activer les activités sélectionnées en arrière-plan ?"
         retry: "Êtes-vous sûr de vouloir relancer les éléments échoués des activités sélectionnées en arrière-plan ?"
-
       links:
         create_scheduled: "Créer une nouvelle activité planifiée"
         hide_scheduled: "Masquer les activités planifiées"
         refresh_list: "Rafraîchir cette liste"
         show: "Afficher"
-
       legends:
         about: "À propos des activités en arrière-plan"
-
       paragraphs:
         about_general_top_html: |
           <p class="long_paragraphs">
@@ -61,7 +54,6 @@ fr:
           Les barres de progression de cette page ne sont <strong>pas en direct</strong>, il
           faut cliquer sur le bouton <em>Rafraîchir</em> pour obtenir une mise à jour
           de l'avancement de vos activités.
-
       columns:
         user: "Utilisateur"
         server: "Serveur"
@@ -73,10 +65,8 @@ fr:
         last_update: "Dernière mise à jour"
         progress: "Progression"
         show: "Afficher"
-
       labels:
         type_filter: "%{label} (de %{base})"
-
       scheduled_at:
         in_time: "(dans %{time})"
         overdue_by: "(en retard de %{time})"
@@ -87,30 +77,23 @@ fr:
         next:
           one: "(prochaine dans %{count} seconde)"
           other: "(prochaine dans %{count} secondes)"
-
       on_word: "sur"
-
       items_count:
         one: "(%{count} élément)"
         other: "(%{count} éléments)"
-
       tooltips:
         messages: "(Messages)"
-
     RubyRunner:
       legends:
         ruby_code: "Code Ruby"
-
     index:
       title: "Activités en arrière-plan"
-
     new:
       title: "Planifier une activité de maintenance"
       headings:
         main: "Planifier une activité de maintenance"
       errors:
-          activity: "activité"
-
+        activity: "activité"
       labels:
         repeat: "Fréquence de répétition"
         remove_task_workdirs: "Supprimer les répertoires de travail des tâches"
@@ -134,7 +117,7 @@ fr:
         ruby_runner: "Exécuteur de code Ruby arbitraire"
         prepare: "prepare_dynamic_items() : Obligatoire. Doit définir la liste d'éléments avec self.items=[] ."
         before: "before_first_item() : Optionnel."
-        process_html: "process() : Obligatoire. Doit renvoyer <strong>[ true, nil ]</strong> lorsque quelque chose est traité correctement, et <strong>[ false, message ]</strong> sinon."
+        process_html: "process() : Obligatoire. Doit renvoyer <strong>[ true, nil ]</strong> lorsque quelque chose est traité correctement, et <strong>[ false,  message ]</strong> sinon."
         after: "after_last_item() : Optionnel."
         server: "Portail ou bourreau"
         start_date: "Date de démarrage initiale"
@@ -144,17 +127,12 @@ fr:
         archive_task_workdirs: "Archiver les répertoires de travail des tâches"
         compress: "Compresser"
         uncompress: "Décompresser"
-
-
       selects:
         data_provider: "(Sélectionner un serveur de stockage)"
         filter: "(Sélectionner un filtres)"
         dps: "(Sélectionner des serveurs de stockage)"
-
       paragraphs:
-        remember_file_filter_html: |
-          Ce type d'activité est réservé aux développeurs système CBRAIN expérimentés
-          qui comprennent le framework <strong>BackgroundActivity</strong>.
+        remember_file_filter_html: "Ce type d'activité est réservé aux développeurs système CBRAIN expérimentés\nqui comprennent le framework <strong>BackgroundActivity</strong>.\n"
         move_crush: "Écraser les fichiers à destination s'ils existent :"
         filter_intro: "Ces deux listes déroulantes vous permettent de sélectionner l'un de vos filtres personnalisés, soit pour les fichiers soit pour les tâches."
         for_files_html: "Pour les activités qui concernent les <strong>fichiers</strong> :"
@@ -163,11 +141,7 @@ fr:
         remember_task_filter_html: "N'oubliez pas de sélectionner un filtre personnalisé de <strong>tâche</strong> dans la section Éléments dynamiques ci‑dessous."
         archive_blank_note: "(Laisser vide pour archiver directement dans les répertoires de travail)"
         ruby_runner_intro_html: "Ce type d'activité est réservé aux développeurs système CBRAIN expérimentés qui comprennent le framework <strong>BackgroundActivity</strong>."
-        process_explanation: |
-          Pensez à ajouter une courte description de ce que fait votre code RubyRunner
-          sur la toute première ligne de commentaire ; celle-ci sera affichée comme description
-          de l'activité en arrière-plan dans la page d'index.
-
+        process_explanation: "Pensez à ajouter une courte description de ce que fait votre code RubyRunner\nsur la toute première ligne de commentaire ; celle-ci sera affichée comme description\nde l'activité en arrière-plan dans la page d'index.\n"
       repeat_options:
         prompt: "(À quelle fréquence et quand répéter)"
         one_shot: "Une seule fois"
@@ -183,19 +157,15 @@ fr:
         friday: "Les vendredis à..."
         saturday: "Les samedis à..."
         sunday: "Les dimanches à..."
-
       legends:
         filter: "Sélection d'éléments dynamiques : fichiers ou tâches"
         or_word: "ou"
         files: "Fichiers"
-
       repeat_at_html: "(Pour <strong>à...</strong> :"
-
       days_ago: "jours"
       system_dps: "Serveurs de stockage système :"
       user_dps: "Serveurs de stockage utilisateur :"
       submit: "Planifier la nouvelle activité"
-
     show:
       headings:
         main: "Activité en arrière-plan"

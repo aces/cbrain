@@ -394,7 +394,7 @@ class BourreauxController < ApplicationController
       rescue CbrainException => ex
         flash[:error] += t('bourreaux.flash.operation_failure', name: bourreau.name, action: action.humanize, message: ex.message)
       rescue => ex
-        flash[:error] += t('bourreaux.flash.operation_exception', name: bourreau.name, action: action.humanize, message: ex.message)
+        flash[:error] += t('bourreaux.flash.operation_exception', name: bourreau.name, action: action.humanize, exception: ex.class.name, message: ex.message)
       end
     end
 

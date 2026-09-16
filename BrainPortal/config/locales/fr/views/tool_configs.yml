@@ -1,6 +1,5 @@
 fr:
   tool_configs:
-
     common:
       all_tools: "(Tous les outils)"
       all_servers: "(Tous les serveurs)"
@@ -11,7 +10,6 @@ fr:
       access_yes: "Oui"
       access_no: "NON !"
       container_engine: "Type de conteneur"
-
     by_resource:
       labels:
         tool: "Outil :"
@@ -27,7 +25,6 @@ fr:
         users_access_summary: "Résumé des accès utilisateurs"
       have_access_html: "%{count} utilisateur(s) ont accès,"
       have_no_access_html: "utilisateur(s) n'ont pas d'accès"
-
     by_user:
       legends:
         user: "Utilisateur :"
@@ -47,17 +44,14 @@ fr:
         effective_project: "Projet effectif"
       n_ok: "%{count} OK"
       n_no: "%{count} NON"
-
       tooltip:
         server_project_html: "* Projet du serveur de calcul<br/>"
         tool_project_html: "* Projet de l'outil<br/>"
         version_project_html: "* Projet de la configuration de version<br/>"
-
     env_key_value_pair:
       headings:
         name: "Nom"
         value: "Valeur"
-
     form_fields:
       headings:
         version_config_info: "Informations sur version"
@@ -156,7 +150,6 @@ fr:
         reload_original: "Recharger l'original"
       merge_note: |
         Cliquez d'abord sur « Fusionner la configuration (Aperçu) », vérifiez attentivement le résultat, et seulement si tout est correct, cliquez sur ce bouton ou sur un autre bouton de mise à jour. Les valeurs modifiées seront alors conservées.
-
     tool_configs_table:
       links:
         tool_list: "Retour à la liste des outils"
@@ -177,15 +170,12 @@ fr:
         container_image: "Image du conteneur"
         description: "Description"
         operations: "Actions"
-
     boutiques_descriptor:
       title: "Descripteur Boutiques"
       present_html: "Ceci est le descripteur Boutiques pour l'outil <strong>%{tool}</strong> sur le serveur de calcul<strong>%{server}</strong>."
       absent_html: "Il n'y a pas de descripteur Boutiques pour l'outil <strong>%{tool}</strong> sur le serveur de calcul<strong>%{server}</strong>."
-
     index:
       title: "Outils et leurs versions"
-
     report:
       title: "Résumé des accès"
       all:
@@ -214,28 +204,22 @@ fr:
         tool: "Outil :"
         user: "Utilisateur :"
         view_by: "Afficher par :"
-
     show:
       title:
         create: "Créer une version d'outil"
         edit: "Modifier la version de l'outil"
-
       important_note: "Remarque importante :"
       applies_to_tool_html: "Ce formulaire s'applique à l'outil <strong>%{tool}</strong>"
       applies_to_all_tools_html: "Ce formulaire s'applique à <strong>TOUS les outils</strong>"
-
       running_on_all_servers_html: "s'exécutant sur <strong>TOUS les bourreaux</strong>."
       running_on_server_html: "s'exécutant sur le serveur de calcul<strong>%{server}</strong>."
-
       common_config_tool: "Configuration commune pour l'outil %{tool} sur TOUS les serveurs"
       common_config_server: "Configuration commune pour TOUS les outils sur le serveur %{server}"
-
       bash_wrappers:
         legend: "Wrappers de scripts BASH"
         intro: "Cette section affiche le prologue et l'épilogue complets d'initialisation BASH pour la configuration affichée ci‑dessous."
         surrounded: "Ils sont entourés par les prologues/épilogues BASH d'autres configurations globales pertinentes."
         order: "Les commandes sont affichées dans l'ordre d'exécution."
-
       log:
         global_bourreau: "Journal de la configuration globale du serveur de calcul#%{id}"
         global_tool: "Journal de la configuration globale d'outil #%{id}"

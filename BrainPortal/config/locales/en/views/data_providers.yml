@@ -1,6 +1,5 @@
 en:
   data_providers:
-
     common:
       no_word: "No"
       portal_ssh_key_title: "Public SSH Key for this CBRAIN Portal"
@@ -26,7 +25,6 @@ en:
       ssh_params: "SSH parameters"
       any_users: "(Any Users)"
       unknown_key: "Unknown! Talk to sysadmin!"
-
     data_providers_table:
       links:
         create_system_dp: "Create New System Data Provider"
@@ -39,7 +37,6 @@ en:
       legends:
         official_storage: "Official Data Storage"
         user_site_storage: "User or Site Storage"
-
     delete_button:
       buttons:
         delete_files: "Delete Files"
@@ -52,7 +49,6 @@ en:
           they will be unregistered first.
           </p>
       submit: "Delete the files"
-
     dp_browse_table:
       headings:
         main: "Files Available On Remote Data Provider '%{name}'"
@@ -72,7 +68,6 @@ en:
         last_modified: "Last modified"
         registered: "Registered?"
         note: "Note"
-
     dp_report_table:
       columns:
         type: "Type"
@@ -83,11 +78,9 @@ en:
         user: "User"
       labels:
         of_count: "%{login} (of %{count})"
-
     dp_show_path:
       top: "(top)"
       browse_path: "Browse Path:"
-
     dp_types_explained:
       content_html: |
         This document describes the different types of Data Providers
@@ -217,7 +210,6 @@ en:
         Note that this DP is already 'smart' in that if the <em>Remote Host</em>
         configured for it matches the current host, it will not perform its
         data operation through a SSH master.
-
     one_data_provider_table:
       messages:
         loading: "Loading..."
@@ -240,7 +232,6 @@ en:
         syncability: "Syncability"
         description: "Description"
         browse: "Browse"
-
     register_button:
       paragraphs:
         register_html: |
@@ -288,7 +279,6 @@ en:
         ignored: "Attempts to COPY or MOVE files to Data Providers where identically named files already exist will be ignored silently."
       button: "Register Files"
       submit: "Register the files!"
-
     show_user_key:
       headings:
         instructions: "SSH Key Configuration Instructions"
@@ -318,7 +308,6 @@ en:
         fetching: "Error fetching public key"
       links:
         download: "Download link:"
-
     unregister_button:
       button: "Unregister Files"
       paragraphs:
@@ -334,16 +323,13 @@ en:
             panel, further right.
           </p>
       submit: "Unregister the files!"
-
     view_option_button:
       button: "View Options"
       browse_as_another_user: "Browse as another user:"
-
     browse:
       title: "Browse Data Provider"
       links:
         refresh_list: "Refresh list of files"
-
     dp_access:
       title: "DataProvider Access"
       headings:
@@ -351,7 +337,6 @@ en:
       legends:
         accessible: "accessible"
         not_accessible: "not accessible"
-
     dp_transfers:
       title: "Transfer Restrictions"
       headings:
@@ -383,10 +368,8 @@ en:
         title: "Copying or moving files:"
         allowed: "allowed"
         not_allowed: "not allowed"
-
     index:
       title: "Data Providers"
-
     new_personal:
       title: "Add New Personal Data Provider"
       headings:
@@ -429,11 +412,11 @@ en:
       paragraphs:
         name_html: |
           <div class="field_explanation">
-            The first line should be a short summary, and the rest are for any special notes for the users.
+            This should be a simple identifier with no special characters or spaces
           </div>
         description_html: |
           <div class="field_explanation">
-            This will control which users within CBRAIN can view and access the files on your storage. The default and recommended project is your own private project, '%{group}'.
+            The first line should be a short summary, and the rest are for any special notes for the users.
           </div>
         group_html: |
             <div class="field_explanation">
@@ -467,13 +450,10 @@ en:
           Provide the necessary information to connect to a S3-Compatible bucket.
 
           <p>
-
       legends:
         ssh_params: "SSH parameters"
         s3_params: "S3 Connection Parameters"
-
       submit: "Create New Data Provider"
-
     new:
       title: "Add New Data Provider"
       headings:
@@ -549,7 +529,6 @@ en:
       select_provider_type: "Select Provider Type"
       portal_key_note: "This key should be installed on the host machines of SSH or Smart Data Providers to allow remote access."
       submit: "Create New Data Provider"
-
     report:
       title: "Data Provider Report"
       headings:
@@ -557,7 +536,6 @@ en:
       links:
         reload_report: "Reload report"
       submit: "Repair selected issues"
-
     show:
       title: "Data Provider Info"
       titles:

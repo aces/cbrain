@@ -1,13 +1,11 @@
 en:
   bourreaux:
-
     notices:
       not_accessible:            "Execution Server not accessible by current user."
       not_accessible_by_you:     "This %{type} is not accessible by you."
       not_accessible_named:      "Execution Server '%{name}' not accessible by current user."
       no_ssh_control:            "Execution Server '%{name}' is not yet configured for remote control."
       already_alive:             "Execution Server '%{name}' has already been alive for %{elapsed}."
-
     errors:
       ssh_master_failed_named:   "Could not start master SSH connection and tunnels for '%{name}'."
       not_allowed_for_portal:    "Operation not allowed for a Portal."
@@ -22,7 +20,6 @@ en:
       dp_not_available:          "DataProvider not available"
       no_files_selected:         "No files selected"
       no_bourreaux_available:    "No bourreaux available"
-
     flash:
       created:                   "Execution Server successfully created."
       updated:                   "%{type} %{name} successfully updated"

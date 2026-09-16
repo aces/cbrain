@@ -1,6 +1,5 @@
 en:
   tasks:
-
     errors:
       no_bac_class_for_operation:   "Cannot find BackgroundActivity class required for '%{operation}'"
       zenodo_not_capable:           "This task doesn't have the capabilities to publish to Zenodo."
@@ -17,7 +16,6 @@ en:
       tmp_tar_failed:               "Cannot create tmp tar file for FileCollection #%{id}"
       bad_params_argument:          "Got argument that is not a ActionController::Parameters set with permitted=true..."
       no_such_preset:               "No such preset ID '%{id}'"
-
     flash:
       bourreau_not_available:       "Warning: the Execution Server '%{name}' for this task is not available right now."
       select_a_tool:                "Please select a tool to run."

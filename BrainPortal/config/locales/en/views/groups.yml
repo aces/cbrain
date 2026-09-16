@@ -1,10 +1,8 @@
 en:
   groups:
-
     common:
       creator: "Creator"
       select_site: "(Select a site)"
-
     groups_table:
       links:
         create_project: "Create Project"
@@ -16,14 +14,12 @@ en:
       buttons:
         switch_to_list_view: "Switch to List View"
         switch_to_button_view: "Switch to Button View"
-
     users_form:
       active_users: "Active Users"
       locked_users: "Locked Users"
       labels:
         quick_select_work: "Quick select based on other work Projects"
         quick_select_site: "Quick select based on other site Projects"
-
     view_buttons:
       paragraphs:
         description_html: |
@@ -90,7 +86,6 @@ en:
         other_users_private_projects: "Other Users Private Projects"
         other_projects: "Other Projects"
         special_all_project: "Special 'ALL' Project"
-
     view_buttons_tab:
       headings:
         all: "All"
@@ -103,7 +98,6 @@ en:
         user_count:
           one: "1 user"
           other: "%{count} users"
-
     view_list:
       row_contents:
         represents_all_projects: "Represents all the projects"
@@ -120,10 +114,8 @@ en:
         switch: "Switch"
       links:
         switch: "Switch"
-
     index:
       title: "Projects"
-
     new:
       title: "New Project"
       headings:
@@ -153,7 +145,6 @@ en:
       prompts:
         site: "(Select a site)"
       submit: "Create"
-
     show:
       title: "Project Info"
       titles:

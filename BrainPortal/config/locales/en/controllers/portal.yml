@@ -1,6 +1,5 @@
 en:
   portal:
-
     flash:
       locked:                    "This portal has been locked."
       unlocked:                  "This portal has been unlocked."

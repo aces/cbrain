@@ -1,15 +1,12 @@
 en:
   portal:
-
     common:
       name_description: "Name and description"
       availability: "Availability"
       open: "Generally open"
       restricted: "Restricted/on demand"
-
     logo_footer:
       supported_by: "Supported By The Following Organizations"
-
     about_us:
       title: "About"
       header: "About Us"
@@ -31,19 +28,15 @@ en:
       other_licenses: "Other licenses"
       other_desc_html: "Some packages or libraries developed by external entities<br />are used in the CBRAIN code base; here is a summary of their<br />respective licenses."
       error_getting_license: "Error getting license file."
-
     available:
       title: "List of tools and datasets"
       note_html: "These tables list all tools and datasets configured on this CBRAIN portal.<br />Not all of them are available to all users."
-
     credits:
       title: "Credits"
-
       headings:
         citing: "Citing CBRAIN"
         project_info: "CBRAIN Project Information"
         credits_box: "Software Development Credits"
-
       paragraphs:
         citing_html: |
           Results published from data gathered or processed with a CBRAIN
@@ -79,7 +72,6 @@ en:
           <p>
           The CBRAIN team would like to thank all users of the <strong>original CBRAIN service</strong>
           at McGill for their invaluable feedback and support.
-
     portal_log:
       title: "Portal Logs"
       filters:
@@ -90,7 +82,6 @@ en:
         by_instance_html: "By instance name: %{textfield}"
         by_method_html: "By method: %{dropdown}"
         by_controller_html: "By controller: %{dropdown}"
-
       toggles:
         hide_lines: "Hide lines:"
         started_html: "'Started': %{checkbox}"
@@ -104,13 +95,10 @@ en:
         load_html: "'Load': %{checkbox}"
         exists_html: "'Exists': %{checkbox}"
         cache_html: "'CACHE': %{checkbox}"
-
     provenance:
       title: "Provenance"
-
       headings:
         statement: "CBRAIN Provenance Statement"
-
       paragraphs:
         statement_html: |
           New features and bug fixes are tested and released into the
@@ -141,16 +129,12 @@ en:
           are available in the CBRAIN GitHub repository.
 
           <p>
-
       footer:
         last_updated_html: "<small>Document last updated: %{date}</small>"
-
     report:
       title: "Tabular Reports"
-
       headings:
         main: "Automatic Tabular Report Maker"
-
       paragraphs:
         steps_html: |
           <p class="medium_paragraphs">
@@ -175,7 +159,6 @@ en:
                 modify the report's properties and regenerate it anew any time you want.
             </li>
           </ul>
-
       report_types:
         select: "(Select the report type)"
         files_count: "Files - count"
@@ -195,17 +178,14 @@ en:
         du_downloads: "Data Usage - file downloads"
         du_copies: "Data Usage - file copies"
         du_processed: "Data Usage - processed"
-
       actions:
         lookup_btn: "Lookup columns and rows"
         refresh_btn: "Refresh Report"
         flip_btn: "Flip Rows/Columns"
         generate_btn: "Generate Report"
-
       selectors:
         select_row: "(Select row type)"
         select_col: "(Select column type)"
-
       counters:
         total: "Total"
         entry:
@@ -217,25 +197,20 @@ en:
         file_unk:
           one: "1 file w/ unk size"
           other: "%{count} files w/ unk size"
-
       empty_state:
         no_objects_html: "There are %{no_objects} found for this report.<br />Try with other reporting parameters."
         no_objects_red: "no objects"
         waiting_html: "The report will appear here once you've selected<br /> the proper table content and types for the rows and columns."
-
       notes:
         optional_fix_html: "<strong>Optional:</strong> fix some attributes:"
         date_html: "<small>(Note: the links in the report will NOT include the date restrictions)</small>"
-
     stats:
       title: "Detailed Service Stats"
-
       headings:
         main: "CBRAIN Web Service Statistics"
         by_client: "Totals by client type"
         by_controller_html: "Totals by controller &amp; action"
         by_status: "Totals by HTTP status codes"
-
       columns:
         client_type: "Client Type"
         successes: "Successes"
@@ -244,29 +219,21 @@ en:
         action: "Action"
         status_code: "Status Code"
         count: "Count"
-
       footer:
         last_reset: "Counters last reset:"
-
     search:
       title: "Search"
-
       placeholders:
         search: "Search for anything"
-
       explanations:
         search: "This will search files, tasks, users, tools, projects, etc by ID, by name or by description. %{limit} results shown maximum."
-
       actions:
         switch: "(switch)"
-
       results:
         found: "(found: %{count})"
         registered_files: "Registered files"
-
     swagger:
       title: "CBRAIN API"
-
       paragraphs:
         api_html: |
           <div class="generalbox">
@@ -290,10 +257,8 @@ en:
           <p class="medium_paragraphs">
           Here is a direct link to the developer's <a href="https://app.swaggerhub.com/apis/prioux/CBRAIN/%{spec_version}">latest version on SwaggerHub</a>.
           </div>
-
     welcome:
       title: "Welcome"
-
       headings:
         main: "Welcome to CBRAIN %{name}"
         news: "CBRAIN News"
@@ -303,10 +268,8 @@ en:
         tools_available_info_html: "Tools available to you (%{available} out of %{total}, %{link}):"
         latest_tasks: "Latest Updated Tasks"
         latest_files: "Latest Updated Files"
-
       news:
         posted_at: "Posted: %{created_at}"
-
       system_info:
         instance_name_html: "<strong>Portal instance name:</strong> %{name}"
         unlock: "Unlock this Portal"
@@ -323,12 +286,10 @@ en:
         unknown_os: "unknown OS"
         on_word: "on"
         with: "with"
-
       sessions:
         sessions_count: "There are currently %{count} entries in the sessions table."
         clear_sessions: "Clear sessions older than"
         clear_confirm: "Are you sure you want to clear the sessions?"
-
       exceptions:
         logged: "There are internal exceptions logged:"
         past_day:
@@ -343,30 +304,25 @@ en:
         total:
           one: "1 exception in total."
           other: "%{count} exceptions in total."
-
       account_info:
         login_name: "Your login name:"
         full_name: "Your full name:"
         site_affiliation: "Your site affiliation:"
         time_zone: "Your time zone:"
         current_time: "Your current time:"
-
       defaults:
         projects: "Projects you belong to:"
         provider: "Your default Data Provider:"
         server: "Your default Execution Server:"
-
       latest_tasks:
         active_count: "(%{count} active)"
         none_active: "(None active)"
-
       links:
         system_info:
           view_logs: "(View logs)"
         full_tools_list: "full list of all tools here"
         exceptions:
           show: "Show Exceptions"
-
     show_license:
       error_fetching: "(Error fetching license text)"
       already_signed: "You have already signed this agreement."

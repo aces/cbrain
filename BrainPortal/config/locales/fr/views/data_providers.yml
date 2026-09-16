@@ -1,6 +1,5 @@
 fr:
   data_providers:
-
     common:
       no_word: "Non"
       portal_ssh_key_title: "Clé SSH publique pour ce portail CBRAIN"
@@ -26,7 +25,6 @@ fr:
       ssh_params: "Paramètres SSH"
       any_users: "(Tous les utilisateurs)"
       unknown_key: "Inconnu ! Contactez l'administrateur système !"
-
     data_providers_table:
       links:
         create_system_dp: "Créer un serveur de stockage système"
@@ -39,7 +37,6 @@ fr:
       legends:
         official_storage: "Stockage officiel"
         user_site_storage: "Stockage utilisateur ou site"
-
     delete_button:
       buttons:
         delete_files: "Supprimer les fichiers"
@@ -52,7 +49,6 @@ fr:
           ils seront d'abord désenregistrés.
           </p>
       submit: "Supprimer les fichiers"
-
     dp_browse_table:
       headings:
         main: "Fichiers disponibles sur le serveur de stockage distant '%{name}'"
@@ -72,7 +68,6 @@ fr:
         last_modified: "Dernière modification"
         registered: "Enregistré ?"
         note: "Remarque"
-
     dp_report_table:
       columns:
         type: "Type"
@@ -83,11 +78,9 @@ fr:
         user: "Utilisateur"
       labels:
         of_count: "%{login} (sur %{count})"
-
     dp_show_path:
       top: "(racine)"
       browse_path: "Chemin de navigation :"
-
     dp_types_explained:
       content_html: |
         Ce document décrit les différents types de serveurs de stockage
@@ -213,7 +206,6 @@ fr:
         Notez que ce DP est déjà 'smart' : si le <em>Remote Host</em>
         configuré pour lui correspond à l'hôte courant, il n'effectuera pas son
         opération de données via un master SSH.
-
     one_data_provider_table:
       messages:
         loading: "Chargement..."
@@ -236,7 +228,6 @@ fr:
         syncability: "Synchronisabilité"
         description: "Description"
         browse: "Parcourir"
-
     register_button:
       paragraphs:
         register_html: |
@@ -283,7 +274,6 @@ fr:
         ignored: "Les tentatives de COPY ou MOVE vers des serveurs de stockage où des fichiers portant le même nom existent déjà seront ignorées silencieusement."
       button: "Enregistrer les fichiers"
       submit: "Enregistrer les fichiers !"
-
     show_user_key:
       headings:
         instructions: "Instructions de configuration de la clé SSH"
@@ -312,7 +302,6 @@ fr:
         fetching: "Erreur lors de la récupération de la clé publique"
       links:
         download: "Lien de téléchargement :"
-
     unregister_button:
       button: "Désenregistrer les fichiers"
       paragraphs:
@@ -327,16 +316,13 @@ fr:
             indiqué plus à droite.
           </p>
       submit: "Désenregistrer les fichiers !"
-
     view_option_button:
       button: "Options d'affichage"
       browse_as_another_user: "Parcourir en tant qu'un autre utilisateur :"
-
     browse:
       title: "Parcourir le serveur de stockage"
       links:
         refresh_list: "Rafraîchir la liste des fichiers"
-
     dp_access:
       title: "Accès au serveur de stockage"
       headings:
@@ -344,7 +330,6 @@ fr:
       legends:
         accessible: "accessible"
         not_accessible: "non accessible"
-
     dp_transfers:
       title: "Restrictions de transfert"
       headings:
@@ -376,10 +361,8 @@ fr:
         title: "Copier ou déplacer des fichiers :"
         allowed: "autorisé"
         not_allowed: "non autorisé"
-
     index:
       title: "Serveurs de stockage"
-
     new_personal:
       title: "Ajouter un nouveau serveur de stockage personnel"
       headings:
@@ -422,15 +405,15 @@ fr:
       paragraphs:
         name_html: |
           <div class="field_explanation">
-            La première ligne doit être un résumé court, le reste servant pour des notes particulières destinées aux utilisateurs.
+            Il doit s'agir d'un identifiant simple sans caractères ni espaces spéciaux
           </div>
         description_html: |
           <div class="field_explanation">
-            Cela contrôle quels utilisateurs dans CBRAIN peuvent voir et accéder aux fichiers sur votre stockage. Le projet par défaut et recommandé est votre projet privé, '#{group}'.
+            La première ligne doit être un bref résumé, et le reste est destiné à toutes notes spéciales destinées aux utilisateurs.
           </div>
         group_html: |
             <div class="field_explanation">
-              Cela contrôle quels utilisateurs dans CBRAIN peuvent voir et accéder aux fichiers sur votre stockage. Le projet par défaut et recommandé est votre projet privé, '#{group}'.
+              Cela contrôle quels utilisateurs dans CBRAIN peuvent voir et accéder aux fichiers sur votre stockage. Le projet par défaut et recommandé est votre projet privé, '%{group}'.
             </div>
         before_ssh_dp: |
           Utilisez ce type :
@@ -460,13 +443,10 @@ fr:
           Fournissez les informations nécessaires pour vous connecter à un bucket compatible S3.
 
           <p>
-
       legends:
         ssh_params: "Paramètres SSH"
         s3_params: "Paramètres de connexion S3"
-
       submit: "Créer le serveur de stockage"
-
     new:
       title: "Ajouter un nouveau serveur de stockage"
       headings:
@@ -542,7 +522,6 @@ fr:
       select_provider_type: "Sélectionner le type de serveur"
       portal_key_note: "Cette clé doit être installée sur les machines hôtes des serveurs SSH ou Smart pour permettre l'accès distant."
       submit: "Créer un nouveau serveur de stockage"
-
     report:
       title: "Rapport du serveur de stockage"
       headings:
@@ -550,7 +529,6 @@ fr:
       links:
         reload_report: "Recharger le rapport"
       submit: "Réparer les problèmes sélectionnés"
-
     show:
       title: "Informations du serveur de stockage"
       titles:

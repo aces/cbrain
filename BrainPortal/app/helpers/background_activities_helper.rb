@@ -53,7 +53,7 @@ module BackgroundActivitiesHelper
     return html_colorize(t('background_activities.one_shot'),"black") if repeat == "one_shot"
     if repeat =~ /start\+(\d+)/
       mins = Regexp.last_match[1]
-      return html_colorize(t('background_activities.every_X', time: pretty_elapsed(60*mins.to_i)),"orange")
+      return html_colorize(t('background_activities.every_X', count: pretty_elapsed(60*mins.to_i)),"orange")
     end
     if repeat =~ /(\S+)@(\d\d:\d\d)/
       keyword = Regexp.last_match[1].capitalize

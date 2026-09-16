@@ -293,7 +293,7 @@ class UsersController < ApplicationController
 
     respond_to do |format|
       if success
-        flash[:notice] = t('users.flash.updated')
+        flash[:notice] = t('users.flash.updated', login: @user.login)
         format.html  { redirect_to :action => :show }
         format.xml   { render :xml  => @user.for_api }
         format.json  { render :json => @user.for_api }

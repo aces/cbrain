@@ -1,26 +1,20 @@
 en:
   resource_usage:
-
     common:
       task_walltime: "Task Walltime"
       task_cpu_time: "Task CPU Time"
       task_final_status: "Task Final Status"
-
     index:
       title: "Resource Usage"
-
     resource_usage_table:
       title:
         file_deltas: "File Deltas"
-
       buttons:
         userfile_disk_space: "Userfile Disk Space"
-
       legends:
         table_description: "Table Description"
         usage_summary: "Usage Summary (including filters)"
         additional_filtering: "Additional filtering"
-
       paragraphs:
         description_intro_html: |
           <p class="medium_paragraphs">
@@ -48,16 +42,13 @@ en:
           If a resource was destroyed (e.g. a non-<strong>Cached</strong> column is empty), these stay behind
           and provide filtering options. It makes it possible to gather statistics about
           these deleted resources.
-
       labels:
         only_deleted_items: "Only deleted items"
         positive_size_delta: "With positive size delta"
         negative_size_delta: "With negative size delta"
         task_type: "%{label} (of %{base})"
-
       submits:
         refresh_table: "Refresh Table"
-
       columns:
         date: "Date"
         disk_space: "Disk Space"
@@ -75,7 +66,6 @@ en:
         cached_task_status: "Cached Task Status"
         cached_tool_name: "Cached Tool Name"
         cached_version: "Cached Version"
-
       usage_record_count:
         one: "1 usage record"
         other: "%{count} usage records"

@@ -1,77 +1,66 @@
 fr:
-    layouts:
-
-      common:
+  layouts:
+    common:
+      usage: "Usage"
+    section_account:
+      dropdowns:
+        resource: "Ressource"
+      links:
+        dashboard: "Tableau de bord"
+        my_account: "Mon compte"
+        projects: "Projets"
+        resource: "Ressource"
+        messages: "Messages"
+        data_providers: "Serveurs de stockage"
+        quotas: "Quotas"
+        servers: "Serveurs"
+        tools: "Outils"
+        tool_versions: "Versions des outils"
         usage: "Usage"
-
-      section_account:
-        dropdowns:
-          resource: "Ressource"
-
-        links:
-          dashboard: "Tableau de bord"
-          my_account: "Mon compte"
-          projects: "Projets"
-          resource: "Ressource"
-          messages: "Messages"
-          data_providers: "Serveurs de stockage"
-          quotas: "Quotas"
-          servers: "Serveurs"
-          tools: "Outils"
-          tool_versions: "Versions des outils"
-          usage: "Usage"
-          full_list: "Liste complète des outils et des jeux de données"
-          help_site: "Aide"
-          email_support: "Support e-mail"
-          sign_out: "Se déconnecter"
-          sign_in: "Se connecter"
-
-        labels:
-          unread_message:
-            one: "Message non lu"
-            other: "Messages non lus"
-          revision: "Rev: %{rev}"
-          branch: "Branche : %{name}"
-          last_updated_html: "dernière mise à jour il y a <span class=\"elapsed\">%{time}</span>"
-          as: "Connecté en tant que %{name}"
-
-        tooltips:
-          email_support_html: "Pour obtenir de l'assistance par courriel concernant cette plateforme, y compris de l'aide<br />pour les tâches ayant échoué et le transfert de fichiers, veuillez cliquer ici<br />ou écrire à : %{email}"
-
-      section_cookie_notif:
-        legend: "Notification relative aux cookies"
-        strong: "Ce site utilise un cookie pour se souvenir de vous."
-        small_html: "Ceci est sécuritaire et privé. Les informations du témoin sont échangées uniquement entre votre navigateur et ce site.<br />Aucune information n'est transmise à d'autres sites, personnes ou tiers."
-        unagree: "(Bouton de débogage pour supprimer la licence)"
-
-      section_footer:
-        powered_by: "Propulsé par %{name}"
-        credits: "Credits"
-
-      section_menu:
-        all: "Tous"
-        quick_project_switcher: "Sélecteur rapide de projet"
-
-        links:
-          default_private_project: "%{group_name} (projet privé par défaut)"
-          all_files_tasks: "Tous (aucun projet particulier : voir tous les fichiers et toutes les tâches)"
-          full_project_list: "(Liste complète des projets)"
-          select_project: "(Cliquez ici pour sélectionner un projet et accéder aux fichiers et aux tâches.)"
-          profiles: "Profils"
-          data_providers: "Serveurs de stockage"
-          bourreaux: "Serveurs de calcul"
-          tools: "Outils"
-          tool_configs: "Configurations d'outils"
-          users: "Utilisateurs"
-          quotas: "Quotas"
-          access_profiles: "Profils d'accès"
-          resource_usage: "Utilisation des ressources"
-          sites: "Sites"
-          exception_logs: "Journaux d'exceptions"
-
-        placeholders:
-          search: "Rechercher tout"
-
-        labels:
-          signups: "Inscriptions"
-          ongoing: "En cours"
+        full_list: "Liste complète des outils et des jeux de données"
+        help_site: "Aide"
+        email_support: "Support e-mail"
+        sign_out: "Se déconnecter"
+        sign_in: "Se connecter"
+      labels:
+        unread_message:
+          one: "Message non lu"
+          other: "Messages non lus"
+        revision: "Rev: %{rev}"
+        branch: "Branche : %{name}"
+        last_updated_html: "dernière mise à jour il y a <span class=\"elapsed\">%{time}</span>"
+        as: "Connecté en tant que %{name}"
+      tooltips:
+        email_support_html: "Pour obtenir de l'assistance par courriel concernant cette plateforme, y compris de l'aide<br />pour les tâches ayant échoué et le transfert de fichiers, veuillez cliquer ici<br />ou écrire à : %{email}"
+    section_cookie_notif:
+      legend: "Notification relative aux cookies"
+      strong: "Ce site utilise un cookie pour se souvenir de vous."
+      small_html: "Ceci est sécuritaire et privé. Les informations du témoin sont échangées uniquement entre votre navigateur et ce site.<br />Aucune information n'est transmise à d'autres sites, personnes ou tiers."
+      unagree: "(Bouton de débogage pour supprimer la licence)"
+    section_footer:
+      powered_by: "Propulsé par %{name}"
+      credits: "Credits"
+    section_menu:
+      all: "Tous"
+      quick_project_switcher: "Sélecteur rapide de projet"
+      links:
+        default_private_project: "%{group_name} (projet privé par défaut)"
+        all_files_tasks: "Tous (aucun projet particulier : voir tous les fichiers et toutes les tâches)"
+        full_project_list: "(Liste complète des projets)"
+        select_project: "(Cliquez ici pour sélectionner un projet et accéder aux fichiers et aux tâches.)"
+        profiles: "Profils"
+        data_providers: "Serveurs de stockage"
+        bourreaux: "Serveurs de calcul"
+        tools: "Outils"
+        tool_configs: "Configurations d'outils"
+        users: "Utilisateurs"
+        quotas: "Quotas"
+        access_profiles: "Profils d'accès"
+        resource_usage: "Utilisation des ressources"
+        sites: "Sites"
+        exception_logs: "Journaux d'exceptions"
+      placeholders:
+        search: "Rechercher tout"
+      labels:
+        signups: "Inscriptions"
+        ongoing: "En cours"

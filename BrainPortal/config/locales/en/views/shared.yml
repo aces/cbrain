@@ -1,15 +1,11 @@
 en:
   shared:
-
     common:
       do_not_filter: "Do not filter"
-
     active_filters:
       active_filters: "Active Filters"
-
     date_range_info:
       from_to: "from %{from} to %{to}"
-
     dynamic_table:
       no_records_found: "No records found"
       filter: "Filter - %{name}"
@@ -21,19 +17,15 @@ en:
         report: "Report"
         show: "Show"
         on_word: "on"
-
     error_messages:
       header_message: "%{object_errors} prohibited this %{object_name} from being saved:"
       message: "There were problems with the following fields:"
-
     group_tables:
       labels:
         work_groups: "Work Projects"
         invisible_groups: "Invisible Projects"
-
     persistent_selection:
       currently_selected: "%{item_name} currently selected"
       select_all: "select all"
       select_all_on_all_pages_tooltip: "Select all %{item_name} on all pages"
       clear_tooltip: "Clear selected %{item_name}"
-

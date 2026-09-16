@@ -1,26 +1,20 @@
 fr:
   resource_usage:
-
     common:
       task_walltime: "Temps d'exécution (walltime)"
       task_cpu_time: "Temps CPU de la tâche"
       task_final_status: "Statut final de la tâche"
-
     index:
       title: "Utilisation des ressources"
-
     resource_usage_table:
       title:
         file_deltas: "Variations de fichiers"
-
       buttons:
         userfile_disk_space: "Espace disque des fichiers utilisateur"
-
       legends:
         table_description: "Description du tableau"
         usage_summary: "Résumé d'utilisation (y compris filtres)"
         additional_filtering: "Filtrage additionnel"
-
       paragraphs:
         description_intro_html: |
           <p class="medium_paragraphs">
@@ -48,16 +42,13 @@ fr:
           Si une ressource a été détruite (par ex. une colonne non-<strong>Cached</strong> est vide), ces informations restent
           et permettent des options de filtrage. Cela rend possible la collecte de statistiques sur
           ces ressources supprimées.
-
       labels:
         only_deleted_items: "Uniquement les éléments supprimés"
         positive_size_delta: "Avec variation de taille positive"
         negative_size_delta: "Avec variation de taille négative"
         task_type: "%{label} (de %{base})"
-
       submits:
         refresh_table: "Rafraîchir le tableau"
-
       columns:
         date: "Date"
         disk_space: "Espace disque"
@@ -75,7 +66,6 @@ fr:
         cached_task_status: "Statut de tâche mis en cache"
         cached_tool_name: "Nom de l'outil mis en cache"
         cached_version: "Version mise en cache"
-
       usage_record_count:
         one: "1 enregistrement d'utilisation"
         other: "%{count} enregistrements d'utilisation"

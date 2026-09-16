@@ -1,6 +1,5 @@
 en:
   userfiles:
-
     common:
       download: "Download"
       copy: "Copy"
@@ -20,36 +19,29 @@ en:
       size_bytes: "%{size} bytes"
       created_at: "Created at"
       qc: "Quality Control"
-
     default_qc_panel:
       not_synced: "This file must be synced locally to view QC data."
       no_qc_data: "This file does not seem to contain any QC data, or no template is available to QC this file type."
-
     dialogs:
       titles:
         upload_sf: "Upload - Single file"
         file_properties: "File properties"
         new_collection: "New collection"
-
       blanks:
         keep_current_parentheses: "(Keep current %{attribute})"
-
       placeholders:
         dp: "A data provider..."
         group: "A project..."
         tags: "Some tags..."
         file_type: "A file type..."
         keep_current: "Keep current %{attribute}"
-
       actions:
         proceed: "Proceed"
-
       autodetect: "(autodetected)"
       invalid: "Invalid!"
       new_collection: "NewCollection"
       qc_note: "Note that quality control (QC) requires files to be synchronized locally first."
       unknown_file_type: "Unknown file type!"
-
       labels:
         extract: "Extract"
         as_single_collection: "As a single collection"
@@ -61,26 +53,21 @@ en:
         clear_tags: "Clear tags"
         hidden_html: "Hidden (<span class='pp-hid-ind'>H</span>)"
         locked_html: "Locked (<span class='pp-ro-ind'>I</span>)"
-
       divs:
         hidden_html: |
           Hidden files are invisible by default, and are usually reserved for
           maintenance, internal and archiving purposes.
         locked: |
             Locked files cannot be modified or moved across data providers.
-
       confirmations:
         delete_file_html: "Are you sure you wish to delete these <span class='dlg-cfrm-cnt'></span> file(s)?"
         delete_tag_html: "Are you sure you wish to delete the tag <span class='dlg-cfrm-obj'></span> ?"
-
-
     file_menu:
       static_actions:
         launch: "Launch"
         upload: "Upload"
         show_only_my_files: "Show only my files"
         show_all_files: "Show all files"
-
       dynamic_actions:
         download: "Download"
         copy: "Copy"
@@ -88,7 +75,6 @@ en:
         rename: "Rename"
         compress: "Compress"
         uncompress: "Uncompress"
-
       menu_actions:
         more: "More..."
         custom_filters: "Custom filters"
@@ -101,60 +87,47 @@ en:
         show_hidden_files: "Show hidden files"
         list_view: "List view"
         tree_view: "Tree view"
-
     filter_items:
       new_filter: "New filter"
       has_no_parent: "Has no parent"
       has_no_children: "Has no children"
-
     quality_control_panel:
       legends:
         navigation_info: "Navigation info"
         file_tags: "File tags"
         file_description: "File description"
-
       submit:
         previous_file: "Previous File"
         next_file: "Next File"
         pass  : "Pass"
         fail: "Fail"
-
       error_messages:
         qc_error: "There was an error generating the QC panel for this file. Please talk to the developers."
-
       full_list_of_tags: "Full list of tags:"
-
     resource_usage:
       section:
         disk_space_history: "Disk Space History"
       headings:
         space_delta: "Space Delta"
-
     syncstatus:
       last_synchronized_date: "Last Synchronized Date:"
       last_accessed_date: "Last Accessed Date:"
       transfer_started: "Transfer Started:"
       state_occurred: "State Occurred:"
-
     tags_table:
       placeholders:
         group: "A project..."
-
     tools_interface:
       titles:
         toolsDialog: "Select Tool"
-
       headings:
         no_tools_admin:  "No tools available. New tools may be registered from the Tools index."
         no_tools_others: "No tools available. Contact your admin to have them registered."
-
       labels:
         all_tools: "All tools"
         software_package: "Software Package:"
-
       links:
         tool_website: "Tool Website"
-
     userfiles_display:
       entry:
         one: "1 entry"
@@ -176,15 +149,12 @@ en:
         group: "Project"
         description: "Description"
         data_provider: "Provider"
-
       search_by_name: "Search by name:"
       was_html: "(was: %{size} in %{file_count})"
-
     index:
       title: "Files"
       legends:
         sync_symbols: "Synchronization symbols:"
-
     quality_control:
       title: "Quality Control"
       links:
@@ -193,42 +163,34 @@ en:
         one_panel: "1 panel"
       loading_message:
         loading_panel: "Loading panel..."
-
     show:
       title: "File Info"
       titles:
         file_log: "File Log"
-
       links:
         download_collection: "Download Collection"
         download_file: "Download File"
-
       error_messages:
         suggested_type: "This file appears to be a %{type}."
         update: "%{name} could not be updated."
         viewer: "An error occurred when loading the viewer plugin."
-
       headings:
         provider_full_path: "Local Data Provider (cache) path"
         project_permission: "Project permission on file"
-
       cells:
         zenodo_publication: "Zenodo Publication"
         parent: "Parent"
         children: "Children"
-        provider_full_path: "Local Data Provider (cache) path:"
+        provider_full_path: "Local Data Provider (cache) path"
         remote_full_path: "Remote full path"
         modified_at: "Modified at"
         immutable_file: "Immutable file"
         hidden_file: "Hidden file"
-          
       zenodo_publication:
         published: "Published: %{link}"
         in_progress: "In progress: %{link}"
-
       legends:
         content: "Content"
-
       content:
         archived: "This %{type} has been archived."
         viewers_disabled: "Content viewers are disabled until the file is unarchived."
@@ -271,7 +233,6 @@ en:
           (The contents of this file cannot be viewed: no viewer code available at this moment
           for files of type '%{type}')
         change_view: "Change view:"
-
       was_html: "Was:<br>%{size} in %{file_count}"
       cached: "Cached:"
       here: "here"

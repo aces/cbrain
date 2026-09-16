@@ -1,9 +1,7 @@
 en:
   groups:
-
     errors:
       not_creator:               "Cannot destroy this project: you are not its creator."
-
     flash:
       created:                   "Project was successfully created."
       no_edit_permission:        "You don't have permission to edit this project."

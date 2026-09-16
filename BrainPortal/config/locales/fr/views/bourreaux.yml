@@ -1,6 +1,5 @@
 fr:
   bourreaux:
-
     common:
       cache_trust_expire_select:
         never: "Jamais"
@@ -14,10 +13,8 @@ fr:
         two_months: "Deux mois"
         three_months: "Trois mois"
         six_months: "Six mois"
-
       workers_instances_select:
         none: "Aucun (pour le débogage)"
-
       workers_chk_time_select:
         five_seconds: "Cinq secondes"
         ten_seconds: "Dix secondes"
@@ -27,7 +24,6 @@ fr:
         five_minutes: "Cinq minutes"
         fifteen_minutes: "Quinze minutes"
         one_hour: "Une heure"
-
       workers_log_to_select:
         combined_file: "Fichier combiné (recommandé)"
         separate_files: "Fichiers séparé"
@@ -36,11 +32,9 @@ fr:
         rails_stderr: "Sortie d'erreur standard (stderr) de RAILS"
         rails_stdout_and_stderr: "Sortie standard (stdout) et sortie d'erreur standard (stderr) de RAILS"
         no_logging: "Aucun log"
-
       workers_verbose_select:
         normal: "Normal"
         debug_info: "Informations de débogage"
-
     bourreaux_display:
       columns:
         server_type: "Type de serveur"
@@ -62,32 +56,26 @@ fr:
         uptime: "Temps de fonctionnement"
         task_workers: "Task Workers"
         activity_workers: "Activity Workers"
-
       unk:
         env: "Env inconnu"
         par: " (%{unk} inconnu)"
-
       status:
         open: "Ouvert"
         dead: " HORS SERVICE !"
         down: "Indisponible !"
         since_for: "Depuis %{date} (pendant %{duration})"
-
       task_workers:
         workers: "Workers : %{nworkers} / %{exp_workers} "
         workers_processing: "(%{proc_workers} en cours de traitement) "
-
       activity_workers:
         workers: "Workers : %{nworkers} / %{exp_workers} "
         workers_processing: "(%{proc_workers} en cours de traitement) "
-
       links:
         create_new_server: "Créer un nouveau serveur"
         user_access_report: "Rapport d'accès utilisateur"
         disk_cache_report: "Rapport du cache disque"
         task_workdir_size_report: "Rapport sur la taille du répertoire de travail des tâches"
         access_to_data_providers: "Accès aux fournisseurs de données"
-
       buttons:
         start:
           tunnels: "1. Démarrer les tunnels"
@@ -99,20 +87,15 @@ fr:
           task_workers: "1b. Arrêter les Task Workers"
           execution_server: "2. Arrêter le bourreau"
           tunnels: "3. Arrêter les tunnels"
-
       dropdowns:
         start_services: "Démarrer les services"
         stop_services: "Arrêter les services"
-
       confirms:
         stop:
-          activity_workers: "Êtes-vous sûr de vouloir arrêter les bourreaux ? Ils termineront d'abord ce qu'ils sont en train de faire."
+          activity_workers: "Êtes-vous sûr de vouloir arrêter les bourreaux ? Ilstermineront d'abord ce qu'ils sont en train de faire."
           task_workers: "Êtes-vous sûr de vouloir arrêter les Task Workers ? Ils termineront d'abord ce qu'ils sont en train de faire."
           bourreau: "Êtes-vous sûr ? Notez que les exécuteurs s'arrêteront également une fois leur travail terminé, s'ils sont encore actifs."
           tunnels: "Assurez-vous que les bourreaux, les Task Workers et les Activity Workers sont tous arrêtés !"
-
-      # Start services panel
-      # Panneau démarrage des services
       start_services:
         paragraphs:
           introduction_html: |
@@ -158,7 +141,6 @@ fr:
               sur les portails. Sur les portails, les Workers ne requièrent aucune des autres couches ci‑dessus.
               Sur les bourreaux, ces Workers nécessitent à la fois le tunnel et le bourreau en fonctionnement.
             </p>
-
       stop_services:
         processing_in_orange_text: "Éléments en cours indiqués en orange"
         processing: "en tratitement"
@@ -193,7 +175,6 @@ fr:
             <p class="dropmenu_info">
               Rappelez‑vous qu'il est %{not_safe} d'arrêter les tunnels si des Workers sont actuellement en train de %{processing} quelque chose.
             </p>
-
     load_info:
       delay:
         instant: "instantané"
@@ -209,7 +190,6 @@ fr:
       last_wait_time: "Dernier temps d'attente : %{time} (%{rating})"
       queue_info: "(Cela s'est produit il y a %{time})"
       more_info: "plus d'information"
-
     notes:
       show_configuration_notes: "Afficher les notes de configuration"
       hide_configuration_notes: "Masquer les notes de configuration"
@@ -225,7 +205,6 @@ fr:
             Contrairement au BrainPortal, les connexions HTTP qu'elle attend ne proviennent pas du navigateur d'un utilisateur, mais sont des requêtes XML émises par le BrainPortal via un protocole Rails appelé ActiveResource. Il existe plusieurs manières d'indiquer au BrainPortal comment se connecter au bourreau et le gérer, ce qui explique tous les champs de ce formulaire.
 
         </div>
-
     runtime_info:
       headings:
         runtime_information: "Informations d'exécution"
@@ -259,16 +238,12 @@ fr:
       rails_server_uptime:
         up_since: "En fonctionnement depuis : %{time}"
         for: "pour : %{duration}"
-
     index:
       title: "Bourreaux"
-
     new:
       title: "Ajouter un nouveau serveur"
-
       headings:
         main: "Ajouter un nouveau serveur"
-
       cms_class_select:
         unconfigured: "(Non configuré)"
         scir_sge: "Sun GridEngine"
@@ -279,7 +254,6 @@ fr:
         scir_slurm: "SLURM"
         scir_gcloud_batch: "Google Cloud"
         scir_unix: "Processus UNIX"
-
       divs:
         name_html: |
           <div class="field_explanation">
@@ -324,7 +298,6 @@ fr:
           <div class="field_explanation">
             Cette option n'a aucun effet si les logs sont envoyés dans le log RAILS.
           </div>
-
       labels:
         system_from_email: "Adresse d'envoi du système"
         owner: "Propriétaire"
@@ -350,15 +323,12 @@ fr:
         workers_chk_time: "Intervalle de vérification"
         workers_log_to: "Destination des logs"
         workers_verbose: "Verbosity des logs"
-
       status:
         online: "En ligne"
         offline: "Hors ligne"
         prompt: "Sélectionner le statut"
-
       titles:
         time_zone: "Fuseau horaire du serveur."
-
       legends:
         ssh_remote_control_configuration: "Configuration SSH de contrôle à distance"
         optional_ssh_jump_host_configuration: "Configuration optionnelle SSH JumpHost"
@@ -367,12 +337,9 @@ fr:
         cluster_management_system_configuration: "Configuration du système de gestion de cluster"
         task_workers_configuration: "Configuration des Task Workers"
         task_limits: "Nombre de tâches maximum par utilisateur"
-
       tool_version_configuration_explanation: "Une configuration d'outil pour ce bourreau peut être créée une fois le serveur créé."
       task_limits_explanation: "Les limites de tâches peuvent être définies une fois que le bourreau est créé."
-
       submit: "Créer un nouveau serveur"
-
     rr_access_dp:
       title: "Accès des serveurs aux Data Providers"
       headings:
@@ -382,7 +349,6 @@ fr:
         name: "Nom"
         type: "Type"
         last_checked: "Dernière vérification"
-
       paragraphs:
         rr_access_explanation_html: |
           <p class="medium_paragraphs">
@@ -417,7 +383,6 @@ fr:
       note_html: |
         <strong>Note : </strong>Cliquez sur <em>Rafraîchir</em> lance un processus en arrière-plan sur le serveur
         qui interrogera chaque Data Provider ; cela peut prendre plusieurs minutes.
-
     rr_access:
       title: "Accès au bourreau"
       headings:
@@ -425,13 +390,12 @@ fr:
       legends:
         accessible: "accessible"
         not_accessible: "non accessible"
-
     rr_disk_usage:
       title: "Utilisation des caches"
       titles:
         server_log: "Log du serveur"
       headings:
-        main: "Statistiques d'utilisation disque des cachesdes serveurs de stockage du serveur"
+        main: "Statistiques d'utilisation disque des caches des serveurs de stockage du serveur"
         no_entries: "(Il n'y a pas d'entrées dans ce rapport)"
         filter: "Filtrer ce rapport : fichiers rapportés au-dessus..."
       entry:
@@ -454,18 +418,15 @@ fr:
       none_means_any_html: "(Aucun sélectionné signifie <em>n'importe lequel</em>)"
       last_accessed: "... ont été accédés pour la dernière fois :"
       submit: "Rafraîchir le rapport"
-
     show:
       titles:
         portal: "Infos du portail"
         execution_server: "Infos du bourreau"
         server_log: "Log du serveur"
-
       links:
         task_stats_by_status: "Statistiques des tâches par statut"
         task_stats_by_type: "Statistiques des tâches par type"
         no_tool_config: "Pas de configuration d'outil"
-
       headings:
         cache_expiration: "Timeout d'expiration du cache (en secondes)"
         workers_instances: "Nombre de Workers"
@@ -507,10 +468,10 @@ fr:
         activity_workers_config: "Configuration des Activity Workers"
         activity_workers_number: "Nombre de Workers"
         cache_management: "Configuration de gestion du cache"
-        path_to_dp_caches: "Chemin vers les cachesdes serveurs de stockage"
+        path_to_dp_caches: "Chemin vers les caches des serveurs de stockage"
         ignore_patterns: "Motifs de noms de fichiers à ignorer"
-        dp_options: "Optionsdes serveurs de stockage"
-        persistent_ssh_masters: "Utiliser des masters SSH persistants pour les DataProviders basés sur SSH"
+        dp_options: "Options des serveurs de stockage"
+        persistent_ssh_masters: "Utiliser des masters SSH persistants pour les DataProviders  basés sur SSH"
         cluster_config: "Configuration du cluster"
         type_of_cluster: "Type de cluster"
         default_queue_name: "Nom de la queue par défaut"
@@ -521,7 +482,6 @@ fr:
         container_config: "Configuration des conteneurs"
         docker_executable_name: "Exécutable Docker"
         singularity_executable_name: "Exécutable Singularity"
-
       cells:
         status: "Statut"
         owner: "Propriétaire"
@@ -529,7 +489,6 @@ fr:
         group: "Projet"
         revision_info_client: "Info de révision (côté client)"
         common_config_all_tasks: "Configuration commune pour toutes les tâches"
-
       field_explanations:
         description: "La première ligne doit être un résumé court, le reste servant pour des notes particulières destinées aux utilisateurs."
         system_from_email: "Si défini, les messages envoyés automatiquement par ce système contiendront cette adresse de retour."
@@ -554,16 +513,12 @@ fr:
         cache_expiration_html: "Cela signifie que, dans le cache du bourreau, les fichiers marqués comme 'InSync' mais dont le dernier accès remonte à plus de ce délai seront considérés comme non fiables et seront resynchronisés lors du prochain accès. Réglez ceci sur une valeur inférieure à <em>N</em> si la politique de fichiers du cluster supprime par exemple tous les fichiers temporaires âgés de plus de <em>N</em> jours."
         docker_executable_name: "Nom de l'exécutable Docker disponible sur les machines où les tâches s'exécuteront. Il doit toujours être défini si Docker est présent."
         singularity_executable_name: "Nom de l'exécutable Singularity disponible sur les machines où les tâches s'exécuteront. Il doit toujours être défini si Singularity est présent."
-
       all_admins: "Tous les admins"
-
       paragraphs:
-        reverse_service_description_html: "Ceci est un mécanisme alternatif pour fournir au Bourreau une connexion distincte à la base de données et à l'agent SSH. Pour que cela fonctionne, un serveur accessible en SSH (fourni par nom d'hôte, numéro de port et nom d'utilisateur) doit être configuré pour accepter la clé principale du portail CBRAIN, et être visible depuis le Bourreau. Ce serveur doit disposer d'un agent SSH fournissant des clés sur un socket de domaine UNIX, et d'une connexion de base de données pour CBRAIN. La spécification de la connexion à la base de données peut être fournie soit comme chemin complet vers un socket de domaine UNIX, soit comme <em>localhost:port</em>."
+        reverse_service_description_html: "Ceci est un mécanisme alternatif pour fournirau Bourreau une connexion distincte à la base de données et à l'agent SSH.Pour que cela fonctionne, un serveur accessible en SSH (fourni par nom d'hôte,numéro de port et nom d'utilisateur) doit être configuré pour accepter laclé principale du portail CBRAIN, et être visible depuis le Bourreau. Ceserveur doit disposer d'un agent SSH fournissant des clés sur un socketde domaine UNIX, et d'une connexion de base de données pour CBRAIN. La spécificationde la connexion à la base de données peut être fournie soit comme chemincomplet vers un socket de domaine UNIX, soit comme <em>localhost:port</em>."
         reverse_service_defaults_html: "Certaines <strong>valeurs par défaut</strong> affichées sous les zones de saisie sont des <em>estimations</em> basées sur le portail actuellement en cours d'exécution. Elles sont utiles si le portail est justement le serveur vers lequel se reconnecter."
         persistent_ssh_explanation: "Lorsqu'il est réglé sur 'toujours', les connexions SSH vers l'hôte d'un data provider persistent après la première utilisation. Cela rend les transferts de données successifs un peu plus rapides car la connexion n'a pas besoin d'être rouverte à chaque fois. Le comportement par défaut est activé ('toujours') pour les portails et désactivé ('jamais') pour les bourreaux."
-
       default_value: "Par défaut : %{value}"
-
       unknown_check_config: "(Inconnu, vérifiez votre configuration)"
       activity_workers_number_select:
         none: "Aucun (pour débogage)"

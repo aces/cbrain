@@ -1,6 +1,5 @@
 en:
   sites:
-
     flash:
       created:  "Site was successfully created."
       updated:  "Site was successfully updated."

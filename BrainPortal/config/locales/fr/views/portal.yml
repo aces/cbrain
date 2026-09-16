@@ -1,15 +1,12 @@
 fr:
   portal:
-
     common:
       name_description: "Nom et description"
       availability: "Disponibilité"
       open: "Généralement disponible"
       restricted: "Restreint / sur demande"
-
     logo_footer:
       supported_by: "Soutenu par les organisations suivantes"
-
     about_us:
       title: "À propos"
       header: "À propos de nous"
@@ -31,19 +28,15 @@ fr:
       other_licenses: "Autres licences"
       other_desc_html: "Certains paquets ou bibliothèques développés par des entités externes<br />sont utilisés dans le code source de CBRAIN; voici un résumé de leurs<br />licences respectives."
       error_getting_license: "Erreur lors de la récupération du fichier de licence."
-
     available:
       title: "Liste des outils et des jeux de données"
       note_html: "Cette table répertorie tous les outils et jeux de données configurés sur ce portail CBRAIN.<br />Ils ne sont pas tous disponibles pour tous les utilisateurs."
-
     credits:
       title: "Crédits"
-
       headings:
         citing: "Citer CBRAIN"
         project_info: "Informations sur le projet CBRAIN"
         credits_box: "Crédits"
-
       paragraphs:
         citing_html: |
           Les résultats publiés à partir de données recueillies ou traitées à l'aide d'une installation de CBRAIN doivent citer la référence suivante:
@@ -78,7 +71,6 @@ fr:
           <p>
           L'équipe de CBRAIN tient à remercier tous les utilisateurs du <strong>service CBRAIN original</strong>
           à l'Université McGill pour leurs précieux commentaires et leur soutien.
-
     portal_log:
       title: "Journaux du portail"
       filters:
@@ -89,7 +81,6 @@ fr:
         by_instance_html: "Par nom d'instance : %{textfield}"
         by_method_html: "Par méthode : %{dropdown}"
         by_controller_html: "Par controller : %{dropdown}"
-
       toggles:
         hide_lines: "Masquer les lignes:"
         started_html: "'Démarré': %{checkbox}"
@@ -103,13 +94,10 @@ fr:
         load_html: "'Chargement': %{checkbox}"
         exists_html: "'Existe': %{checkbox}"
         cache_html: "'CACHE': %{checkbox}"
-
     provenance:
       title: "Provenance"
-
       headings:
         statement: "Déclaration de provenance de CBRAIN"
-
       paragraphs:
         statement_html: |
           Les nouvelles fonctionnalités et les corrections de bogues sont testées
@@ -140,16 +128,12 @@ fr:
           sont disponibles dans le dépôt GitHub de CBRAIN.
 
           <p>
-
       footer:
         last_updated_html: "<small>Dernière mise à jour du document: %{date}</small>"
-
     report:
       title: "Rapports tabulaires"
-
       headings:
         main: "Générateur automatique de rapports tabulaires"
-
       paragraphs:
         steps_html: |
           <p class="medium_paragraphs">
@@ -174,7 +158,6 @@ fr:
                 modifier les propriétés du rapport et le régénérer à tout moment.
             </li>
           </ul>
-
       report_types:
         select: "(Sélectionner le type de rapport)"
         files_count: "Fichiers - nombre"
@@ -194,17 +177,14 @@ fr:
         du_downloads: "Utilisation des données - téléchargements de fichiers"
         du_copies: "Utilisation des données - copies de fichiers"
         du_processed: "Utilisation des données - données traitées"
-
       actions:
         lookup_btn: "Rechercher les colonnes et les lignes"
         refresh_btn: "Actualiser le rapport"
         flip_btn: "Inverser les lignes et les colonnes"
         generate_btn: "Générer le rapport"
-
       selectors:
         select_row: "(Sélectionner le type de ligne)"
         select_col: "(Sélectionner le type de colonne)"
-
       counters:
         total: "Total"
         entry:
@@ -216,25 +196,20 @@ fr:
         file_unk:
           one: "1 fichier (taille inconnue"
           other: "%{count} fichiers (taille inconnue)"
-
       empty_state:
         no_objects_html: "%{no_objects} trouvés pour ce rapport.<br />Essayez d'autres paramètres de rapport."
         no_objects_red: "aucun objet"
         waiting_html: "Le rapport s'affichera ici une fois que vous aurez sélectionné<br /> le contenu approprié du tableau ainsi que les types de lignes et de colonnes."
-
       notes:
         optional_fix_html: "<strong>Facultatif :</strong> fixez certains attributs :"
         date_html: "<small>(Remarque : les liens du rapport ne tiendront PAS compte des restrictions de date.)</small>"
-
     stats:
       title: "Statistiques détaillées du service"
-
       headings:
         main: "Statistiques du service Web de CBRAIN"
         by_client: "Totaux par type de client"
         by_controller_html: "Totaux par controller &amp; action"
         by_status: "Totaux par code d'état HTTP"
-
       columns:
         client_type: "Type de client"
         successes: "Succès"
@@ -243,29 +218,21 @@ fr:
         action: "Action"
         status_code: "Code d'état"
         count: "Nombre"
-
       footer:
         last_reset: "Dernière réinitialisation des compteurs :"
-
     search:
       title: "Rechercher"
-
       placeholders:
         search: "Rechercher…"
-
       explanations:
         search: "Cette recherche porte sur les fichiers, les tâches, les utilisateurs, les outils, les projets, etc., par identifiant (ID), nom ou description. Un maximum de %{limit} résultats est affiché."
-
       actions:
         switch: "(Basculer)"
-
       results:
         found: "(trouvés : %{count})"
         registered_files: "Fichiers enregistrés"
-
     swagger:
       title: "API de CBRAIN"
-
       paragraphs:
         api_html: |
           <div class="generalbox">
@@ -288,10 +255,8 @@ fr:
           <p class="medium_paragraphs">
           Voici un lien direct vers la <a href="https://app.swaggerhub.com/apis/prioux/CBRAIN/%{spec_version}">dernière version sur SwaggerHub</a>.
           </div>
-
     welcome:
       title: "Bienvenue"
-
       headings:
         main: "Bienvenue sur CBRAIN %{name}"
         news: "Actualités de CBRAIN"
@@ -301,10 +266,8 @@ fr:
         tools_available_info_html: "Outils à votre disposition (%{available} sur %{total}, %{link}):"
         latest_tasks: "Dernières tâches mises à jour"
         latest_files: "Derniers fichiers mis à jour"
-
       news:
         posted_at: "Publié le : %{created_at}"
-
       system_info:
         instance_name_html: "<strong>Nom de l'instance du portail :</strong> %{name}"
         unlock: "Déverrouiller ce portail"
@@ -321,50 +284,43 @@ fr:
         unknown_os: "système d'exploitation inconnu"
         on_word: "sur"
         with: "avec"
-
       sessions:
         sessions_count: "Il y a actuellement %{count} entrées dans la table des sessions."
         clear_sessions: "Supprimer les sessions datant de plus de"
         clear_confirm: "Êtes-vous certain de vouloir supprimer les sessions?"
-
       exceptions:
         logged: "Exceptions internes enregistrées:"
         past_day:
           one: "1 exception au cours de la dernière journée."
-          other: "1 exception au cours des trois derniers jours."
+          other: "%{count} exceptions de la dernière journée."
         past_three_days:
-          one: "1 exception au cours de la dernière semaine."
-          other: "%{count} exceptions au cours de la dernière semaine."
+          one: "1 exception au cours des trois derniers jours."
+          other: "%{count} exceptions au cours des trois derniers jours."
         past_week:
           one: "1 exception au cours de la dernière semaine."
-          other: "%{count} exceptions au cours de la dernière semaine"
+          other: "%{count} exceptions au cours de la dernière semaine."
         total:
           one: "1 exception au total."
           other: "%{count} exceptions au total."
-
       account_info:
         login_name: "Votre nom d'utilisateur :"
         full_name: "Votre nom complet :"
         site_affiliation: "Votre établissement :"
         time_zone: "Votre fuseau horaire :"
         current_time: "Heure actuelle :"
-
       defaults:
         projects: "Projets auxquels vous appartenez :"
         provider: "Votre data provider par défaut :"
         server: "Votre bourreau par défaut:"
-
       latest_tasks:
         active_count: "(%{count} actives)"
         none_active: "(Aucune active)"
-
       links:
         system_info:
           view_logs: "(Voir les journaux)"
         full_tools_list: "liste complète de tous les outils"
         exceptions:
           show: "Afficher les exceptions"
-
     show_license:
       error_fetching: "(Erreur lors de la récupération du texte de la licence)"
       already_signed: "Vous avez déjà accepté cette licence."

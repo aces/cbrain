@@ -1,9 +1,7 @@
 en:
   custom_filters:
-
     errors:
       class_required: "Filter class required"
-
     flash:
       created:        "Filter successfully created."
       updated:        "Custom filter '%{name}' was successfully updated."

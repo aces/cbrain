@@ -1,6 +1,5 @@
 en:
   tasks:
-
     control:
       headings:
         main: "Task Control:"
@@ -9,27 +8,22 @@ en:
       save_results_to_html: "Save&nbsp;results&nbsp;to:"
       select_data_provider: "(Select a Data Provider for your results)"
       description_note: "(This first line should be a short summary, and the rest are your notes)"
-
     output_renaming_fieldset:
       legends:
         output_filenames_renaming: "Output filenames renaming"
       output_files_pattern: "Output files can be named or renamed automatically using this pattern:"
       leave_blank_html: "<small>(Leave blank to let the program name the files automatically using its own rules)</small>"
       supported_keywords_html: "Patterns can include the following special<br /><em>{keywords}</em> in curly brackets that will be substituted<br />automatically.<br /><p><br />The supported keywords are:"
-
     params:
       headings:
         main: "Task Parameters"
-
     presets:
       headings:
         main: "Preset Management:"
-
       submit_tag:
         load_preset: "Load Preset"
         delete_preset: "Delete Preset"
         save_preset: "Save Preset"
-
       load_preset_configuration: "Load a preset configuration:"
       select_preset: "(Select a preset to load)"
       delete_this_preset: "Delete this preset?"
@@ -37,29 +31,23 @@ en:
       select_preset_to_overwrite: "(Select a preset to overwrite)"
       or_as_new_name: " (or as new name)"
       save_as_site_preset: "Save as site preset:"
-
     resource_usage:
       legends:
         main: "Resource Usage History"
-
       headings:
         task_status: "Task Status"
         usage_type: "Usage Type"
         time_used: "Time Used"
         disk_space_used: "Disk Space Used"
-
       labels:
         cpu: "CPU"
         walltime: "Walltime"
         disk_space: "Disk Space"
-
     show_prereqs:
       other_tasks: "These other tasks..."
       must_be: "...must be in these states"
       destroyed_task_parentheses: "(DestroyedTask)"
-
     task_menu:
-
       dropdown:
         update_attributes: "Update Attributes"
         for_failed_tasks: "For Failed Tasks"
@@ -67,7 +55,6 @@ en:
         terminating_and_cleaning_up: "Terminating And Cleaning Up"
         archiving: "Archiving"
         filters: "Filters"
-
       paragraphs:
         for_failed_tasks_html: "This panel allows you to affect tasks that have failed, one way or another.<br />Trying to recover from errors will trigger cleanup code and a restart at<br />the closest successful processing stage before it failed. It doesn't always<br />work but it's often useful to try at least once!"
         for_completed_tasks_intro_html: "This panel allows you to affect tasks that have completed successfully.<br />You can try to restart them at three different stages in their lifecycle:"
@@ -80,19 +67,16 @@ en:
         archiving_2_html: "The process can take a very long time for each task being archived or restored, so<br />be patient and do not request this action multiple times in parallel."
         archiving_3_html: "There are two different 'levels' of archiving:<br/>\n<ul>\n  <li class=\"dropmenu_info\">\n    Archiving <em>On Cluster</em> means that the task's files will be compressed and archived but will stay on the cluster's side. Such tasks are shown with the symbol %{workdir_status} in the index table.\n  </li>\n  <li class=\"dropmenu_info\">\n    Archiving <em>As File</em> means that the archive will be brought back to your file manager as a '%{type}' file and no data at all will be left on the cluster side. Such tasks are shown with the symbol %{userfile_status} in the index table.\n  </li>\n</ul>"
         archiving_4_html: "The rest of the information about the tasks will not be affected in any way<br />when they are archived. No operation can be performed on archived task, except<br />of course unarchiving them."
-
       change:
         owner: "Change Owner:"
         group: "Change Project:"
         data_provider: "Change Data Provider For Results:"
         tool_version: "Change Tool Version:"
-
       blanks:
         select_another_owner: "(Select another Owner)"
         select_another_group: "(Select another Project)"
         select_another_data_provider: "(Select another Data Provider)"
         select_another_tool_version: "(Select another Tool Version)"
-
       hijacker:
         trigger_error_recovery: "Trigger Error Recovery"
         setup_stage: "'Setup' stage"
@@ -105,26 +89,21 @@ en:
         archive_on_cluster: "Archive On Cluster"
         archive_as_file: "Archive As File"
         unarchive_tasks: "Unarchive Tasks"
-
       confirm:
         terminate_tasks: "Are you sure you want to terminate the selected tasks?"
         remove_work_directories: "Are you sure you want to remove the\nWORK DIRECTORIES of the selected tasks?"
         remove_tasks: "Are you sure you want to remove the selected tasks?\n\nIMPORTANT NOTE: This will also remove their archived work directories, if any."
-
       restart_at: "Restart at:"
       on_execution_server: "on Execution Server: "
       optional_destination_dp_html: "Optional: when archiving <em>As File</em>, choose a destination Data Provider:<br />"
       do_not_compress: "Do not compress while archiving"
-
     tasks_display:
       titles:
         expand_batch: "Expand batch"
         open_batch: "Open batch"
-
       switches:
         switch_to_list_view: "Switch to List View"
         switch_to_batch_view: "Switch to Batch View"
-
       columns:
         batch: "Batch"
         task_type: "Task Type"
@@ -139,15 +118,12 @@ en:
         results_on: "Results On"
         time_submitted: "Time Submitted"
         last_updated: "Last Updated"
-
       legends:
         on_cluster: "On Cluster"
         as_file: "As File"
-
       task_count_colon:
         one: "%{count} task:"
         other: "%{count} tasks:"
-
       total_space_html: "Total space used by tasks: %{space}"
       tasks_without_estimates:
         one: "(1 task without space estimates)"
@@ -155,11 +131,8 @@ en:
       disappeared_tasks: "This batch of tasks has disappeared"
       shared_parentheses: "(Shared)"
       workdir_archiving_status_symbols: "Workdir archiving status symbols:"
-
-
     utility_interface_file_list:
       run_on: "Run %{name} on:"
-
     zenodo_deposit_form:
       legends:
         basic_deposit_information: "Basic Deposit Information"
@@ -173,28 +146,22 @@ en:
         main: "Main"
       explanation_html: "Should be in <em>lastname, firstname</em> format.<br />You can add even more creators later on, once the deposit is created."
       submit: "Create Deposit"
-
     edit:
       edit_task: "Edit Task %{name}"
       submit: "Save modified parameters for this task"
-
     index:
       title: "Tasks"
-
     new:
       title: "Launch %{name}"
       headings:
         main: "Launch %{name} Task"
       submit: "Start %{name}"
-
     show:
       title: "%{name} Task Information"
-
       headings:
         cluster_job_id: "Cluster Job's ID"
         setup_prerequisites: "Setup Prerequisites"
         post_processing_prerequisites: "Post Processing Prerequisites"
-
       links:
         edit_parameters: "Edit Parameters"
         refresh: "Refresh"
@@ -210,13 +177,11 @@ en:
         publish_to_zenodo: "Publish to Zenodo"
         remove_task: "Remove Task"
         list_of_tasks: "List of tasks (%{count})"
-
       confirm:
         terminate_task: "Are you sure you want to terminate this task?"
         remove_work_directory: "Are you sure you want to remove the task's work directory?"
         remove_task: "Are you sure you want to remove this task?"
         remove_task_note: "\n\nIMPORTANT NOTE: This will also remove its archived work directory."
-
       cells:
         task_name: "Task Name"
         task_description: "Task Description"
@@ -233,28 +198,22 @@ en:
         size_of_work_directory: "Size of Work Directory"
         archiving_status: "Archiving Status"
         last_updated: "Last Updated"
-
       zenodo_publication:
         published: "Published"
         in_progress: "In Progress"
         none: "None."
-
       shared_with_task: "Shared with task:"
-
       archiving_status:
         not: "Not archived"
         on_cluster: "Archived on cluster."
         as_file: "Archived as file %{link}"
-
       rescue:
         no_template_html: "<pre>Problem loading summary view (no template provided by task author).</pre>"
         template_error_html: "<pre>Problem loading summary view (template error).</pre>"
         show_summary_of_params_for_task: "Show summary of params for task %{name}"
         error_rendering_yaml: "(Error rendering YAML)"
-
       in_the_task_manager: "In the task manager, you can view the full"
       in_this_batch: "in this batch."
-
       tabs:
         parameters_in_yaml: "Parameters in YAML"
         parameters_in_json: "Parameters in JSON"
@@ -263,7 +222,6 @@ en:
         stderr: "Standard Error"
         script: "Script"
         runtime_info: "RuntimeInfo"
-
       paragraphs:
         parameters_description_html: |
           <p class="medium_paragraphs">
@@ -307,38 +265,30 @@ en:
             at the end of processing and are not required at the time the task is
             submitted.
           </p>
-
       legends:
         processing_log: "Processing Log"
         prerequisites: "Prerequisites"
         cluster_job_captured_output: "Cluster Job's Captured Output"
-
       outputs_not_available: "Since this task is archived, outputs aren't available right now."
       outputs_available: "Outputs are available for several runs:"
-
       stdout_lim: "Only the last %{stdout_lim} lines are shown here. See more lines of Standard Output:"
       stderr_lim: "Only the last %{stderr_lim} lines are shown here. See more lines of Standard Error:"
-
     zenodo:
       title: "%{name} Zenodo Publishing Status"
-
       links:
         task_info: "Task Info"
         zenodo_deposit_editor: "Zenodo Deposit Editor"
         refresh_message: "refresh this page"
         reset_deposit: "Reset Deposition"
-
       status:
         complete: "complete"
         in_progress: "in progress"
         incomplete: "incomplete"
-
       legends:
         prepare: "Step 1: creation of the deposit"
         upload: "Step 2: upload of data files"
         publish: "Step 3: publishing the deposit"
         reset_deposit_html: "Be aware: this deposit is in the <strong>Zenodo Sandbox</strong>"
-
       paragraphs:
         prepare:
           complete_html: "Assuming you are the author, you can review and edit the deposit<br />at this link: %{link}"
@@ -355,7 +305,6 @@ en:
           deposit_1_description_html: "You can erase all recorded information about the Zenodo deposit and publication<br />state in CBRAIN, in order to start over or publish in the main Zenodo site."
           deposit_2_description_html: "Doing this will not erase anything on Zenodo <em>that has been published</em>,<br />but will erase any unpublished deposition and uploads."
           deposit_confirmation: "Are you sure you want to reset the deposition information for this task?"
-
       prepare:
         scheduled_for_upload: "Scheduled for upload:"
         will_be_ignored: "Will be ignored:"

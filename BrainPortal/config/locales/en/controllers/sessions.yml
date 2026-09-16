@@ -1,11 +1,9 @@
 en:
   sessions:
-
     errors:
       oidc_out_of_sync:          "%{name} session is out of sync with CBRAIN"
       oidc_fetch_failed:         "Could not fetch your identity information from %{name}"
       identity_incomplete:       "Identity structure is missing some information. Contact the admins"
-
     flash:
       logged_out:                "You have been logged out."
       oidc_provider_not_allowed: "Error: your account can only authenticate with the following providers: %{providers}"

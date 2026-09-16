@@ -1,6 +1,5 @@
 en:
   quotas:
-
     flash:
       created: "Quota entry was successfully created."
       updated: "Quota entry was successfully updated."

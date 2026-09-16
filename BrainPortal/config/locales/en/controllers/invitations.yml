@@ -1,9 +1,7 @@
 en:
   invitations:
-
     errors:
       no_recipient:              "Please specify at least one email address or username"
-
     flash:
       no_permission:             "You don't have permission send invitations for this project."
       users_not_found:           "We are not able to invite user(s) identified by: %{specs}.\nAt the moment users are matched by emails or usernames.\nPlease confirm with your collaborators which email or username they use in CBRAIN.\n"

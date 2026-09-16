@@ -1,6 +1,5 @@
 en:
   userfiles:
-
     errors:
       unknown_upload_mode:             "Unknown upload mode '%{mode}'"
       no_data_provider:                "No data provider selected."
@@ -13,7 +12,6 @@ en:
       archive_overflow:                "Overflow: more than 50 files found in archive."
       download_file_creation_failed:   "Error creating the download file. The file list might be too long, or some files are missing. Sorry."
       invalid_viewer_class:            "Invalid params viewer_userfile_class %{class}"
-
     flash:
       at_least_one_file:               "Must have at least one file selected for this operation."
       marked_newer:                    "Marked %{count} files as newer on their Data Provider."
@@ -32,7 +30,6 @@ en:
       no_access_project:               "You do not have access to the project you want to update.\n"
       no_access_owner:                 "You do not have access to the file owner you want to update.\n"
       nothing_to_update:               "Nothing to update.\n"
-
       updating_in_background:          "The files are being updated in background.\n"
       update_succeeded:
         one:                           "Update successful for %{count} file.\n"

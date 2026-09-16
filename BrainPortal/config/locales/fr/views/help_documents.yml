@@ -1,6 +1,5 @@
 fr:
   help_documents:
-
     show:
       buttons:
         show: "Afficher"
@@ -12,5 +11,5 @@ fr:
       description_html: |
         Il n'existe actuellement aucune documentation sur ce sujet. <br />
         Ajoutez-en en utilisant le bouton de modification situé dans le coin supérieur gauche.
-    
+
 

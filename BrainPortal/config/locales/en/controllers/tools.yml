@@ -1,6 +1,5 @@
 en:
   tools:
-
     flash:
       created:               "Tool was successfully created."
       updated:               "Tool was successfully updated."

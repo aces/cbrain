@@ -1,10 +1,8 @@
 fr:
   groups:
-
     common:
       creator: "Créateur"
       select_site: "(Sélectionner un site)"
-
     groups_table:
       links:
         create_project: "Créer un projet"
@@ -16,14 +14,12 @@ fr:
       buttons:
         switch_to_list_view: "Passer en vue liste"
         switch_to_button_view: "Passer en vue boutons"
-
     users_form:
       active_users: "Utilisateurs actifs"
       locked_users: "Utilisateurs verrouillés"
       labels:
         quick_select_work: "Sélection rapide basée sur d'autres projets de travail"
         quick_select_site: "Sélection rapide basée sur d'autres projets de site"
-
     view_buttons:
       paragraphs:
         description_html: |
@@ -89,7 +85,6 @@ fr:
         other_users_private_projects: "Projets privés d'autres utilisateurs"
         other_projects: "Autres projets"
         special_all_project: "Projet spécial 'TOUS'"
-
     view_buttons_tab:
       headings:
         all: "Tous"
@@ -102,7 +97,6 @@ fr:
         user_count:
           one: "1 utilisateur"
           other: "%{count} utilisateurs"
-
     view_list:
       row_contents:
         represents_all_projects: "Représente tous les projets"
@@ -119,10 +113,8 @@ fr:
         switch: "Basculer"
       links:
         switch: "Basculer"
-
     index:
       title: "Projets"
-
     new:
       title: "Nouveau projet"
       headings:
@@ -152,7 +144,6 @@ fr:
       prompts:
         site: "(Sélectionner un site)"
       submit: "Créer"
-
     show:
       title: "Informations du projet"
       titles:

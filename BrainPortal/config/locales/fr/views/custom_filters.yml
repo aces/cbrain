@@ -1,26 +1,22 @@
 fr:
   custom_filters:
-
     common:
       filtering_by_date: "Filtrer par date"
       archiving_status: "Statut d'archivage"
       owners: "Propriétaires"
       dont_filter_description: "Ne pas filtrer la description"
-
       match_type:
         match: "Correspond"
         match_exactly: "Correspond exactement"
         contain: "Contient"
         begin: "Commence par"
         end: "Se termine par"
-
       archiving:
         dont_filter: "Ne pas filtrer par statut d'archivage"
         archived: "Archivé"
         not_archived: "Non archivé"
         on_cluster: "Archivé sur le cluster"
         as_file: "Archivé en tant que fichier"
-
       userfile:
         filename: "Nom du fichier"
         dont_filter_name: "Ne pas filtrer le nom"
@@ -30,7 +26,6 @@ fr:
         lists_parents: "(liste les parents)"
         dont_filter_size: "Ne pas filtrer la taille"
         synchronization_status: "Statut de synchronisation"
-
       task:
         work_directory_status: "Statut du répertoire de travail"
         wd_status:
@@ -39,17 +34,14 @@ fr:
           not_shared: "Possède son propre répertoire de travail"
           exists: "Le répertoire de travail existe sur le cluster"
           none: "Le répertoire de travail n'existe pas sur le cluster"
-
     custom_filter_li:
       links:
         edit_delete: "Modifier/Supprimer"
-
     custom_filter_list:
       headings:
         by_custom_filter: "Par filtre personnalisé"
       links:
         create_custom_filter: "Créer un filtre personnalisé"
-
     new_task_custom_filter:
       by:
         task_types: "Types de tâches"
@@ -61,7 +53,6 @@ fr:
         filtering_by_date: "Filtrage par date"
         archiving_status: "Statut d'archivage"
         work_directory_status: "Statut du répertoire de travail"
-
     new_userfile_custom_filter:
       by:
         filename: "Nom du fichier"
@@ -76,16 +67,14 @@ fr:
         archiving_status: "Statut d'archivage"
         synchronization_status: "Statut de synchronisation"
         tags: "Labels"
-
     new:
       headings:
         main: "Nouveau %{type}"
       labels:
         filter_name: "Nom du filtre"
       errors:
-       custom_filter: "filtre personnalisé"
+        custom_filter: "filtre personnalisé"
       submit: "Créer"
-
     task_custom_filter:
       headings:
         types: "Types"
@@ -97,7 +86,6 @@ fr:
         archiving_status: "Statut d'archivage"
         work_directory_status: "Statut du répertoire de travail"
         filtering_by_date: "Filtrage par date"
-
     userfile_custom_filter:
       headings:
         filename: "Nom du fichier"
@@ -112,7 +100,6 @@ fr:
         synchronization_status: "Statut de synchronisation"
         tags: "Labels"
         filtering_by_date: "Filtrage par date"
-
     show:
       errors:
         update: "Le filtre personnalisé n'a pas pu être mis à jour."

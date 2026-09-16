@@ -1,6 +1,5 @@
 fr:
   sites:
-
     sites_table:
       links:
         create_new_site: "Créer un nouveau site"
@@ -15,10 +14,8 @@ fr:
         site_manager: "Responsable du site"
         number_of_users: "Nombre d'utilisateurs"
         number_of_projects: "Nombre de projets"
-
     index:
       title: "Sites"
-
     new:
       title: "Ajouter un nouveau site"
       headings:
@@ -43,7 +40,6 @@ fr:
         groups: "Projets"
       submit: "Créer"
       hide: "(Masquer)"
-
     show:
       title: "Site"
       headings:

@@ -1,6 +1,5 @@
 en:
   tools:
-
     form_fields:
       titles:
         cbrain_task_class_name: "PortalTask subclass which implements this tool."
@@ -55,7 +54,6 @@ en:
         server_version_html: "Server & Version:"
       submits:
         launch: "Launch %{name}"
-
     tools_table:
       links:
         create_new_tool: "Create New Tool"
@@ -78,15 +76,12 @@ en:
         access: "Access?"
         help: "Help"
         info: "Info"
-
     edit:
       title: "Tool Info"
       titles:
         log_title: "Tool Log"
-
     index:
       title: "Tools"
-
     new:
       title: "Add New Tool"
       titles:

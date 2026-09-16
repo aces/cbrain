@@ -1,6 +1,5 @@
 en:
   tool_configs:
-
     common:
       all_tools: "(All tools)"
       all_servers: "(All servers)"
@@ -11,7 +10,6 @@ en:
       access_yes: "Yes"
       access_no: "NO!"
       container_engine: "Container Engine"
-
     by_resource:
       labels:
         tool: "Tool:"
@@ -27,7 +25,6 @@ en:
         users_access_summary: "Users Access Summary"
       have_access_html: "%{count} user(s) have access,"
       have_no_access_html: "user(s) have no access"
-
     by_user:
       legends:
         user: "User:"
@@ -47,17 +44,14 @@ en:
         effective_project: "Effective Project"
       n_ok: "%{count} OK"
       n_no: "%{count} NO"
-
       tooltip:
         server_project_html: "* Execution Server's project<br/>"
         tool_project_html: "* Tool's project<br/>"
         version_project_html: "* Version configuration's project<br/>"
-
     env_key_value_pair:
       headings:
         name: "Name"
         value: "Value"
-
     form_fields:
       headings:
         version_config_info: "Version configuration info"
@@ -173,7 +167,6 @@ en:
       merge_note: |
         You need to first click the Merge Configuration (Preview), carefully check the results, and only if
         everything is ok click this or any other Update button, and the changed values will persist.
-
     tool_configs_table:
       links:
         tool_list: "Back to Tools List"
@@ -194,15 +187,12 @@ en:
         container_image: "Container Image"
         description: "Description"
         operations: "Operations"
-
     boutiques_descriptor:
       title: "Boutiques Descriptor"
       present_html: "This is the Boutiques Descriptor for tool <strong>%{tool}</strong> on Execution Server <strong>%{server}</strong>."
       absent_html: "There is no Boutiques Descriptor for tool <strong>%{tool}</strong> on Execution Server <strong>%{server}</strong>."
-
     index:
       title: "Tools and their versions"
-
     report:
       title: "Access Summary"
       all:
@@ -226,34 +216,27 @@ en:
         quick_links: "Quick Links To Individual Access Reports"
         by_user: "By User"
         by_combination: "By a more specific combinations of resources"
-
       labels:
         execution_server: "Execution Server:"
         tool: "Tool:"
         user: "User:"
         view_by: "View By:"
-
     show:
       title:
         create: "Create Tool Version"
         edit: "Edit Tool Version"
-
       important_note: "Important note:"
       applies_to_tool_html: "This form applies to tool <strong>%{tool}</strong>"
       applies_to_all_tools_html: "This form applies to <strong>ALL tools</strong>"
-
       running_on_all_servers_html: "running on <strong>ALL Execution Servers</strong>."
       running_on_server_html: "running on Execution Server <strong>%{server}</strong>."
-
       common_config_tool: "Common Config for tool %{tool} on ALL Servers"
       common_config_server: "Common Config for ALL tools on %{server} Server"
-
       bash_wrappers:
         legend: "BASH scripts wrappers"
         intro: "This section displays the full BASH initialization prologue and epilogue script for the configuration shown above."
         surrounded: "It is surrounded by the BASH prologues or epilogues of other relevant global configurations."
         order: "The commands are shown in the order of execution."
-
       log:
         global_bourreau: "Log of Global Bourreau Tool Config #%{id}"
         global_tool: "Log of Global Tool Config #%{id}"

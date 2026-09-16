@@ -1,6 +1,5 @@
 en:
   messages:
-
     flash:
       sent:           "Message was successfully sent."
       update_failed:  "Problem updating message."

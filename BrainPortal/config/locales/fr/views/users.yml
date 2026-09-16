@@ -1,11 +1,9 @@
 fr:
   users:
-
     common:
       select_site: "(Sélectionner un site)"
       used: "%{size} utilisés"
       unkn: "%{count} inconnus"
-
     users_table:
       links:
         create_user: "Créer un utilisateur"
@@ -42,7 +40,6 @@ fr:
       role: "Rôle"
       access: "Accès"
       access_q: "Accès ?"
-
     change_password:
       title: "Changer le mot de passe"
       headings:
@@ -52,10 +49,8 @@ fr:
         new_password: "Nouveau mot de passe :"
         confirm_new_password: "Confirmer le nouveau mot de passe :"
         force_password_reset: "L'utilisateur devra réinitialiser son propre mot de passe :"
-
     index:
       title: "Utilisateurs"
-
     new:
       title: "Ajouter un nouvel utilisateur"
       headings:
@@ -119,7 +114,6 @@ fr:
         ip_lock_html: "La première fois qu'il est utilisé, l'adresse IP du client connecté sera<br />enregistrée et seules les connexions depuis cette adresse IP seront valides."
         ip_invalid_html: "Si une connexion ultérieure provient d'une autre adresse IP à un moment quelconque,<br />le jeton sera immédiatement invalidé."
         copy_html: "Pour copier le jeton dans votre presse-papiers, cliquez simplement sur le bouton « copier » situé à droite du jeton. Le jeton sera enregistré dans votre presse-papiers.<br />N'oubliez pas de le coller et de le sauvegarder : vous ne pourrez pas le voir à nouveau."
-
     request_password:
       title: "Mot de passe perdu ?"
       headings:
@@ -128,7 +122,6 @@ fr:
         login: "Login CBRAIN :"
         email: "Adresse e-mail associée à votre compte CBRAIN :"
       submit: "Envoyer"
-
     show:
       title: "Informations du compte"
       titles:

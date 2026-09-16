@@ -1,17 +1,14 @@
 en:
   messages:
-
     common:
       mark_as_html: "Mark&nbsp;as&nbsp;%{state}"
       updating: "Updating..."
       deleting: "Deleting..."
-
       labels:
         system: "System"
         state_read: "Read"
         state_unread: "Unread"
         expiry_date: "Expiration date (current time: %{time})"
-
       time_ago:
         ten_minutes: "Ten minutes"
         one_hour: "One hour"
@@ -21,25 +18,20 @@ en:
         one_month: "One month"
         two_months: "Two months"
         one_year: "One year"
-
       columns:
         sender: "Sender"
         recipient: "Recipient"
         last_updated: "Last Updated"
         operations: "Operations"
-
       message_count:
         one: "1 message"
         other: "%{count} messages"
-
     message_details:
       paragraphs:
         expires: "Expires:"
         no_details: "(No Details)"
-
     message_display:
       rescue: "Oh oh. Talk to devs!"
-
     message_index_display:
       links:
         leave_message: "Leave Message"
@@ -60,13 +52,11 @@ en:
         recipient: "Recipient"
         last_updated: "Last Updated"
         operations: "Operations"
-
     index:
       title: "Messaging Center"
       unread_count:
         one: "1 unread message"
         other: "%{count} unread messages"
-
     new_dashboard:
       title: "Add New Dashboard Message"
       headings:
@@ -79,7 +69,6 @@ en:
           in the page's code. So you can use whatever HTML elements you want, but make sure
           you know what you're doing. For NeuroHub, we recommend surrounding the entire text
           with at least one &lt;P&gt; element.
-
     new:
       title: "Add New Message"
       links:

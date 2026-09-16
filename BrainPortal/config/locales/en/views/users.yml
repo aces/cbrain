@@ -1,11 +1,9 @@
 en:
   users:
-
     common:
       select_site: "(Select a site)"
       used: "%{size} used"
       unkn: "%{count} unkn"
-
     users_table:
       links:
         create_user: "Create User"
@@ -42,7 +40,6 @@ en:
       role: "Role"
       access: "Access"
       access_q: "Access?"
-
     change_password:
       title: "Change Password"
       headings:
@@ -52,10 +49,8 @@ en:
         new_password: "New password:"
         confirm_new_password: "Confirm new password:"
         force_password_reset: "User WILL need to reset own password:"
-
     index:
       title: "Users"
-
     new:
       title: "Add New User"
       headings:
@@ -94,7 +89,6 @@ en:
             A single '*' is also allowed to mean any provider name.
           </span>
       submit: "Create User"
-
     new_token:
       title: "New API Token"
       headings:
@@ -120,7 +114,6 @@ en:
         ip_lock_html: "The first time it is used, the IP address of the connecting client will be<br />recorded and only connections from that IP address will be valid."
         ip_invalid_html: "If a subsequent connection comes from any other IP address at any time,<br />the token will immediately be invalidated."
         copy_html: "To copy the token to your clipboard, simply click the copy button located to the right of the token. The token will be saved to your clipboard.<br />Please do not forget to paste and save the token. You will not be able to see it again."
-
     request_password:
       title: "Lost Password?"
       headings:
@@ -129,7 +122,6 @@ en:
         login: "CBRAIN login:"
         email: "E-mail address on your CBRAIN account:"
       submit: "Submit"
-
     show:
       title: "Account Info"
       titles:

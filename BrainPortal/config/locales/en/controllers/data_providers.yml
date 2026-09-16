@@ -1,12 +1,9 @@
 en:
   data_providers:
-
     notices:
       not_accessible:              "Provider not accessible by current user."
-
     errors:
       invalid_browse_path:         "Browse path is invalid"
-
     flash:
       created:                     "Provider successfully created."
       created_test_configuration:  " Please click the Test Configuration button. This will run tests on the current storage configuration. Note that if these tests fail, the storage will be marked 'offline'."

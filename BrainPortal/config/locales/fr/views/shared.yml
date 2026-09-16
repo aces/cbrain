@@ -1,15 +1,11 @@
 fr:
   shared:
-
     common:
       do_not_filter: "Ne pas filtrer"
-
     active_filters:
       active_filters: "Filtres actifs"
-
     date_range_info:
       from_to: "de %{from} à %{to}"
-
     dynamic_table:
       no_records_found: "Aucun enregistrement trouvé"
       filter: "Filtre - %{name}"
@@ -21,16 +17,13 @@ fr:
         report: "Rapport"
         show: "Afficher"
         on_word: "sur"
-
     error_messages:
       header_message: "%{object_errors} ont empêché l'enregistrement de ce %{object_name}:"
       message: "Des problèmes ont été détectés dans les champs suivants:"
-
     group_tables:
       labels:
         work_groups: "Projets de travail"
         invisible_groups: "Projets invisibles"
-
     persistent_selection:
       currently_selected: "%{item_name} actuellement sélectionné"
       select_all: "Tout sélectionner"

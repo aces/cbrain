@@ -1,10 +1,8 @@
 en:
   noc:
-
     cpu:
       title: "CPU Over Time"
       total_cpu: "Total CPU"
-
     dashboard:
       titles:
         main: "Activity %{range}"
@@ -24,12 +22,10 @@ en:
         cache: "Cache"
         tasks: "Tasks"
       offline: "OFFLINE!"
-
     tools:
       titles:
         cpu: "Top %{count} Tools By CPU"
         count: "Top %{count} Tools By count"
-
     users:
       title: "User Growth"
       spans:

@@ -1,9 +1,8 @@
 fr:
   messages:
-
     flash:
-      sent:           "Le message a été envoyé avec succès."
-      update_failed:  "Problème lors de la mise à jour du message."
+      sent: "Le message a été envoyé avec succès."
+      update_failed: "Problème lors de la mise à jour du message."
       deleted:
-        one:          "%{count} élément supprimé.\n"
-        other:        "%{count} éléments supprimés.\n"
+        one: "%{count} élément supprimé.\n"
+        other: "%{count} éléments supprimés.\n"

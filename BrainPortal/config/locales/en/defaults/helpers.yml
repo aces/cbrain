@@ -1,16 +1,12 @@
 en:
-
   background_activities:
     failed: "Failed"
     one_shot: "One shot"
     every_X: "Every %{count}"
-
   access_profiles:
     white: "white"
-
   ajax_widget:
     loading: "Loading..."
-
   date_range:
     attributes:
       by_creation_date: "By creation date"
@@ -39,12 +35,10 @@ en:
       years_ago:
         one:   "1 year ago"
         other: "%{count} years ago"
-
   abbreviations:
     A: "A"
     H: "H"
     I: "I"
-
   quotas:
     none_allowed: "None allowed"
     last_week: "last week;"
@@ -53,38 +47,29 @@ en:
     unlimited: "(Unlimited)"
     one_task: "1 task"
     multiple_tasks: "%{count} tasks"
-
   resource_usage:
     second: "second"
-
   resource_link:
     error: "This method requires the first argument to be a User object."
     last_activity: "Last Activity"
-
   dynamic_table:
     raise: "Cannot fetch field %{field_name} from %{obj}"
-
   zenodo:
     deposit: "Deposit %{id}"
     sandbox_deposit: " (sandbox)"
-
   rich_ui:
     copied: "Copied!"
     copy_to_clipboard: "copy to clipboard"
-
   show_table:
     info: "Info"
     initial_error: "Error: the form helper provided is not associated with our object!"
-
   userfiles:
     count: " (%{count} files)"
-
   users:
     normal: "Normal user"
     site_manager: "Site manager"
     admin: "Administrator"
     automated: "Automated user"
-
   task_form:
     date: "The current date in this format: YYYY-MM-DD"
     time: "The current time in this format: HH:MM:SS"

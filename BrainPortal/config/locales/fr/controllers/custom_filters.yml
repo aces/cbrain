@@ -1,10 +1,8 @@
 fr:
   custom_filters:
-
     errors:
       class_required: "La classe du filtre est requise"
-
     flash:
-      created:        "Filtre créé avec succès."
-      updated:        "Le filtre personnalisé '%{name}' a été mis à jour avec succès."
-      deleted:        "Filtre personnalisé '%{name}' supprimé."
+      created: "Filtre créé avec succès."
+      updated: "Le filtre personnalisé '%{name}' a été mis à jour avec succès."
+      deleted: "Filtre personnalisé '%{name}' supprimé."

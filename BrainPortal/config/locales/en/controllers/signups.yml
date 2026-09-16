@@ -1,6 +1,5 @@
 en:
   signups:
-
     flash:
       email_failed:              "It seems some error occurred. The email notification was probably not sent. There's nothing we can do about this."
       updated:                   "The account request has been updated."

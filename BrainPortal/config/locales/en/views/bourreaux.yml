@@ -1,6 +1,5 @@
 en:
   bourreaux:
-
     common:
       cache_trust_expire_select:
         never: "Never"
@@ -14,10 +13,8 @@ en:
         two_months: "Two months"
         three_months: "Three months"
         six_months: "Six months"
-
       workers_instances_select:
         none: "None (for debug)"
-
       workers_chk_time_select:
         five_seconds: "5 seconds"
         ten_seconds: "10 seconds"
@@ -27,7 +24,6 @@ en:
         five_minutes: "5 minutes"
         fifteen_minutes: "15 minutes"
         one_hour: "1 hour"
-
       workers_log_to_select:
         combined_file: "Combined file (recommended)"
         separate_files: "Separate files"
@@ -36,11 +32,9 @@ en:
         rails_stderr: "RAILS stderr"
         rails_stdout_and_stderr: "RAILS stdout and stderr"
         no_logging: "No logging"
-
       workers_verbose_select:
         normal: "Normal"
         debug_info: "Debug info"
-
     bourreaux_display:
       columns:
         server_type: "Server Type"
@@ -62,32 +56,26 @@ en:
         uptime: "Uptime"
         task_workers: "Task Workers"
         activity_workers: "Activity Workers"
-
       unk:
         env: "Unk Env"
         par: " (%{unk} unkn)"
-
       status:
         open: "Open"
         dead: "DEAD!"
         down: "Down!"
         since_for: "Since %{date} (for %{duration})"
-
       task_workers:
         workers: "Workers: %{nworkers} / %{exp_workers} "
         workers_processing: "(%{proc_workers} processing) "
-
       activity_workers:
         workers: "Workers: %{nworkers} / %{exp_workers} "
         workers_processing: "(%{proc_workers} processing) "
-
       links:
         create_new_server: "Create New Server"
         user_access_report: "User Access Report"
         disk_cache_report: "Disk Cache Report"
         task_workdir_size_report: "Task Workdir Size Report"
         access_to_data_providers: "Access to Data Providers"
-
       buttons:
         start:
           tunnels: "1. Start Tunnels"
@@ -99,20 +87,15 @@ en:
           task_workers: "1b. Stop Task Workers"
           execution_server: "2. Stop Execution Server"
           tunnels: "3. Stop Tunnels"
-
       dropdowns:
         start_services: "Start Services"
         stop_services: "Stop Services"
-
       confirms:
         stop:
           activity_workers: "Are you sure you want to stop the Activity Workers? They will finish what they are doing first."
           task_workers: "Are you sure you want to stop the Task Workers? They will finish what they are doing first."
           bourreau: "Are you sure? Note that workers will also shut down once they are done, if they are still active."
           tunnels: "Make sure Execution Servers, Task Workers and Activity Workers are all stopped!"
-
-
-      # Start services panel
       start_services:
         paragraphs:
           introduction_html: |
@@ -160,7 +143,6 @@ en:
               above. On Execution Servers these workers require both the Tunnel and the
               Execution Server to be running.
             </p>
-
       stop_services:
         processing_in_orange_text: "processing in orange text"
         processing: "processing"
@@ -213,7 +195,6 @@ en:
               Remember that is it %{not_safe} to stop Tunnels if
               any of the Workers are currently %{processing} something.
             </p>
-
     load_info:
       delay:
         instant: "instant"
@@ -229,7 +210,6 @@ en:
       last_wait_time: "Last wait time: %{time} (%{rating})"
       queue_info: "(This happened %{time} ago)"
       more_info: "more info"
-
     notes:
       show_configuration_notes: "Show configuration notes"
       hide_configuration_notes: "Hide configuration notes"
@@ -252,7 +232,6 @@ en:
             and manage the Execution Server, which explains all the fields in this form.
 
         </div>
-
     runtime_info:
       headings:
         runtime_information:       "Runtime Information"
@@ -286,16 +265,12 @@ en:
       rails_server_uptime:
         up_since: "Up since: %{time}"
         for: "for: %{duration}"
-
     index:
       title: "Execution Servers"
-
     new:
       title: "Add New Server"
-
       headings:
         main: "Add New Server"
-
       cms_class_select:
         unconfigured: "(Unconfigured)"
         scir_sge: "Sun GridEngine"
@@ -306,7 +281,6 @@ en:
         scir_slurm: "SLURM"
         scir_gcloud_batch: "Google Cloud"
         scir_unix: "UNIX processes"
-
       divs:
         name_html: |
           <div class="field_explanation">
@@ -356,7 +330,6 @@ en:
           <div class="field_explanation">
             This option has no effect if the logs are sent to the RAILS log.
           </div>
-
       labels:
         system_from_email: "System 'From' reply address"
         owner: "Owner"
@@ -382,15 +355,12 @@ en:
         workers_chk_time: "Check interval"
         workers_log_to: "Log destination"
         workers_verbose: "Log verbosity"
-
       status:
         online: "Online"
         offline: "Offline"
         prompt: "Select status"
-
       titles:
         time_zone: "Time zone where this server is located."
-
       legends:
         ssh_remote_control_configuration: "SSH Remote Control Configuration"
         optional_ssh_jump_host_configuration: "Optional SSH JumpHost Configuration"
@@ -399,12 +369,9 @@ en:
         cluster_management_system_configuration: "Cluster Management System Configuration"
         task_workers_configuration: "Task Workers Configuration"
         task_limits: "Task Limits"
-
       tool_version_configuration_explanation: "A tool configuration for this Execution Server can be made once the server is created."
       task_limits_explanation: "Task limits can be set once the Execution Server is created."
-
       submit: "Create New Server"
-
     rr_access_dp:
       title: "Servers Access to Data Providers"
       headings:
@@ -414,7 +381,6 @@ en:
         name: "Name"
         type: "Type"
         last_checked: "Last Checked"
-
       paragraphs:
         rr_access_explanation_html: |
           <p class="medium_paragraphs">
@@ -449,7 +415,6 @@ en:
       note_html: |
         <strong>Note: </strong>Clicking on <em>Refresh</em> triggers a background process on the server
         that will poll each Data Provider; this can take several minutes to complete.
-
     rr_access:
       title: "Execution Server Access"
       headings:
@@ -457,7 +422,6 @@ en:
       legends:
         accessible: "accessible"
         not_accessible: "not accessible"
-
     rr_disk_usage:
       title: "Disk Usage Caches"
       titles:
@@ -486,18 +450,15 @@ en:
       none_means_any_html: "(None selected means <em>any</em>)"
       last_accessed: "... were last accessed:"
       submit: "Refresh Report"
-
     show:
       titles:
         portal: "Portal Info"
         execution_server: "Execution Server Info"
         server_log: "Server Log"
-
       links:
         task_stats_by_status: "Task Statistics By Status"
         task_stats_by_type: "Task Statistics By Type"
         no_tool_config: "No tool config"
-
       headings:
         cache_expiration: "Cache Expiration Timeout (in seconds)"
         workers_instances: "Number of Workers"
@@ -553,7 +514,6 @@ en:
         container_config: "Container Configuration"
         docker_executable_name: "Docker executable"
         singularity_executable_name: "Singularity executable"
-
       cells:
         status: "Status"
         owner: "Owner"
@@ -561,7 +521,6 @@ en:
         group: "Project"
         revision_info_client: "Revision Info (Client Side)"
         common_config_all_tasks: "Common configuration for all tasks"
-
       field_explanations:
         description: "The first line should be a short summary, and the rest are for any special notes for the users."
         system_from_email: "If set, messages sent automatically by this system will contain this return address."
@@ -586,16 +545,12 @@ en:
         cache_expiration_html: "This means that in the execution server's cache, files that have been recorded as 'InSync' but were last accessed more than this amount of time will be considered untrustworthy and will be re-synchronized the next time they are accessed. Set this to a value less than <em>N</em> if the cluster's file policy, for instance, deletes all scratch files older than <em>N</em> days."
         docker_executable_name: "Name of the Docker executable available on the machines where tasks will run. It should always be set if Docker is present."
         singularity_executable_name: "Name of the Singularity executable available on the machines where tasks will run. It should always be set if Singularity is present."
-
       all_admins: "All admins"
-
       paragraphs:
         reverse_service_description_html: "This is an alternate mechanism to provide the Bourreau with a distinct database and SSH agent connection. For this to work, an SSH-accessible server (provided by hostname, port number and username) must be configured to accept the main CBRAIN portal key, and be visible from the Bourreau. That server must have a SSH agent that provides keys on a UNIX domain socket, and a database connection for CBRAIN. The database connection specification can be provided as either as a full path to a UNIX domain socket, or as <em>localhost:port</em>."
         reverse_service_defaults_html: "Some <strong>default values</strong> shown under the input boxes are <em>guesses</em> based on the currently running Portal. These are useful if the portal happens to be the server to connect back to."
         persistent_ssh_explanation: "When set to 'always', the SSH connections to a data provider's host will persist after the first use. This makes successive data transfers a bit faster because the connection doesn't have to be re-opened every time it is needed. The default is to have this behavior ON ('always') for portals and OFF ('never') for execution servers."
-
       default_value: "Default: %{value}"
-
       unknown_check_config: "(Unknown, check your config)"
       activity_workers_number_select:
         none: "None (for debug)"

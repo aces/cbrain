@@ -1,6 +1,5 @@
 fr:
   tools:
-
     form_fields:
       titles:
         cbrain_task_class_name: "Sous-classe de PortalTask implémentant cet outil."
@@ -46,7 +45,6 @@ fr:
         one: "1 version configurée."
         other: "%{count} versions configurées."
       version_config_name: "configuration de version '%{name}'"
-
     tool_config_select:
       include_blanks:
         no_online_server: "Aucun serveur en ligne pour cet outil !"
@@ -55,7 +53,6 @@ fr:
         server_version_html: "Serveur & Version :"
       submits:
         launch: "Lancer %{name}"
-
     tools_table:
       links:
         create_new_tool: "Créer un nouvel outil"
@@ -78,15 +75,12 @@ fr:
         access: "Accès ?"
         help: "Aide"
         info: "Infos"
-
     edit:
       title: "Informations sur l'outil"
       titles:
         log_title: "Journal de l'outil"
-
     index:
       title: "Outils"
-
     new:
       title: "Ajouter un nouvel outil"
       titles:

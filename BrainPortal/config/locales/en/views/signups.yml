@@ -1,13 +1,10 @@
 en:
   signups:
-
     common:
       comment: "Comments or special requests:"
-
     result_action_one:
       headings:
         main: "Result for %{name}, %{institution}"
-
     signups_table:
       links:
         new_request: "New Request"
@@ -44,7 +41,6 @@ en:
       tooltips:
         updated_at: "Updated: %{time}"
       delete_confirm: "Delete the selected signup requests?"
-
     status:
       approved_by: "Approved by: %{name}"
       approved_at: "Approved at: %{time}"
@@ -55,7 +51,6 @@ en:
         login_conflict: "(Login conflict)"
       links:
         approve: "(Approve)"
-
     confirm_button:
       title: "Confirm Your Request"
       headings:
@@ -72,7 +67,6 @@ en:
           <p>
       links:
         confirm_request: "Confirm request"
-
     confirm:
       title: "Request Confirmed"
       headings:
@@ -90,12 +84,10 @@ en:
           In the meantime you can %{look} at your request, or even %{edit} it.
         footer: |
           (There is nothing else to do here, you might as well have a coffee and read the news)
-
     index:
       title: "Account Signup Requests"
       headings:
         main: "Account Signup Requests"
-
     multi_action:
       title: "Batch action results"
       headings:
@@ -103,7 +95,6 @@ en:
       links:
         go_back_html: "You can go %{link}."
         back_to_list: "back to the request list"
-
     new:
       title: "New Account Request"
       warnings:
@@ -186,8 +177,6 @@ en:
         request_account: "Request Account"
         update_request: "Update Request"
       contact_html: "For more information, contact %{email}."
-
-
     show:
       title: "Account Request Info"
       headings:

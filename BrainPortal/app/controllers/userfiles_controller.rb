@@ -456,7 +456,7 @@ class UserfilesController < ApplicationController
       end
       respond_to do |format|
         format.html do
-          flash[:notice] = "Marked #{updated} files as newer on their Data Provider."
+          flash[:notice] = t("userfiles.flash.marked_newer", count: updated)
           redirect_to :action  => :index
         end
         format.json do
@@ -1465,7 +1465,7 @@ class UserfilesController < ApplicationController
     klass = compressing ? BackgroundActivity::CompressFile : BackgroundActivity::UncompressFile
     bac=klass.setup!(current_user.id, userfile_ids)
 
-    flash[:notice] = t('userfiles.flash.compression_in_background', count: userfiles.count, operation: operation.to_s)
+    flash[:notice] = t('userfiles.flash.compression_in_background', count: userfiles.count, action: operation.to_s)
     return bac
   end
 
@@ -2034,4 +2034,3 @@ class UserfilesController < ApplicationController
   end
 
 end
-

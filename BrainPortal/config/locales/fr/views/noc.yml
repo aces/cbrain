@@ -1,10 +1,8 @@
 fr:
   noc:
-
     cpu:
       title: "CPU en fonction du temps"
       total_cpu: "CPU total"
-
     dashboard:
       titles:
         main: "Activité %{range}"
@@ -24,12 +22,10 @@ fr:
         cache: "Cache"
         tasks: "Tâches"
       offline: "HORS LIGNE !"
-
     tools:
       titles:
         cpu: "Top %{count} outils par CPU"
         count: "Top %{count} outils par nombre"
-
     users:
       title: "Croissance des utilisateurs"
       spans:
