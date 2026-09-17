@@ -35,6 +35,7 @@ fr:
       years_ago:
         one: "Il y a 1 an"
         other: "Il y a %{count} ans"
+      big_bang: "Le Big Bang"
   abbreviations:
     A: "A"
     H: "M"
