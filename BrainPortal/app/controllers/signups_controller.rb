@@ -343,6 +343,9 @@ class SignupsController < ApplicationController
   end
 
   def send_confirm_email(signup) #:nodoc:
+
+    return false if has_client_ip_done_this_recently?('send_confirm_email')
+
     confirm_url = url_for(:controller => :signups, :action => :confirm, :id => signup.id, :only_path => false, :token => signup.confirm_token)
     signup.action_mailer_class.signup_request_confirmation(signup, confirm_url).deliver
     return true
@@ -352,6 +355,9 @@ class SignupsController < ApplicationController
   end
 
   def send_admin_notification(signup) #:nodoc:
+
+    return false if has_client_ip_done_this_recently?('send_admin_notification')
+
     return unless RemoteResource.current_resource.support_email
     show_url  = url_for(:controller => :signups, :action => :show, :id => signup.id, :only_path => false)
     signup.action_mailer_class.signup_notify_admin(signup, show_url).deliver

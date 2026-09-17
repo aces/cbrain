@@ -67,6 +67,23 @@ module RequestHelpers
     false
   end
 
+  # This utility can be used to detect duplicate activities in controller
+  # and avoid doing stuff too often (e.g. sending notification emails).
+  # It will return true if an activity identified by an string of your choosing
+  # has happened in the last 'within_the_last' duration (default 2 minutes).
+  def has_client_ip_done_this_recently?(activity_keyword, within_the_last = 2.minutes)
+    req_ip = cbrain_request_remote_ip rescue "Unknown-#{rand(1000000)}"
+    key    = "#{activity_keyword}_#{req_ip}"
+    if Rails.cache.fetch(key) # oh oh, dup request?
+      Rails.logger.warn "IP activity duplication: #{key}"
+      return true # means the IP has tried this recently
+    end
+
+    # All ok, record the current time
+    Rails.cache.write(key, true, :expires_in => within_the_last)
+    return false # means OK
+  end
+
   module ClassMethods
 
     # Returns the list registered allowed params
