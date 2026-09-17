@@ -76,3 +76,11 @@ en:
     task_id: "A unique number ID for the task, which doesn't change if the task is restarted"
     run_number: "A numeric run number that increases everytime the task is restarted, initially set to '1'"
     cluster: "The name of the execution server"
+  select_box:
+    task_status_groups:
+      standard_cycle: "Standard Cycle"
+      waiting:        "Waiting"
+      failed:         "Failed"
+      restarting:     "Restarting"
+      recovering:     "Recovering"
+      other:          "Other"

@@ -40,11 +40,15 @@ module BackgroundActivitiesHelper
     'CancelledScheduled'               => "fuchsia",
   }
 
+  # Label for Backround activity status
+  def bac_status_label(status)
+    t("background_activities.statuses.#{status.underscore}", default: status.underscore.humanize)
+  end
 
   # Returns a HTML SPAN within which the text of the task +status+ is highlighted in color.
   def colored_bac_status(status)
     return h(status) unless StatesToColor.has_key?(status)
-    html_colorize(h(status.underscore.humanize),StatesToColor[status])
+    html_colorize(h(bac_status_label(status)),StatesToColor[status])
   end
 
   # Returns a colorized pretty version of the "repeat" keyword.

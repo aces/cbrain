@@ -19,4 +19,6 @@ en:
     user: *user
     group_id: &group "Project"
     group: *group
+    site_id: &site "Site"
+    site: *site
     online: "Online"

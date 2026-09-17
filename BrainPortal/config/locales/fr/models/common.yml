@@ -19,4 +19,6 @@ fr:
     user: "Utilisateur"
     group_id: "Groupe"
     group: "Groupe"
+    site_id: &site "Site"
+    site: *site
     online: "En ligne"

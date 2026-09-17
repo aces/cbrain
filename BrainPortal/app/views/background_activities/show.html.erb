@@ -31,7 +31,7 @@
   <% end %>
 
   <% t.cell(t('.cells.status')) do %>
-    <%= @bac.status %>
+    <%= bac_status_label(@bac.status) %>
   <% end %>
 
   <% t.cell(t('.cells.user')) do %>

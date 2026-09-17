@@ -432,10 +432,12 @@ module SelectBoxHelper
     end
 
     grouped_by_category = []
-    [ "Standard Cycle", "Waiting","Failed", "Restarting", "Recovering", "Unknown"].each do |category|
+    [ "Standard Cycle", "Waiting","Failed", "Restarting", "Recovering", "Other"].each do |category|
       next unless status_grouped[category]
       sorted_statuses = status_grouped[category].sort { |a,b| cmp_status_order(a,b) }
-      grouped_by_category << [ category , sorted_statuses ]
+      options = sorted_statuses.map { |status| [ status_label(status), status ] }
+      grouped_by_category << [ t("select_box.task_status_groups.#{category.parameterize(:separator => '_')}", :default => category), options ]
+
     end
 
     grouped_options = grouped_options_for_select grouped_by_category, selected

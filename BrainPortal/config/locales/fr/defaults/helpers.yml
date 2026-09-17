@@ -76,3 +76,11 @@ fr:
     task_id: "Un identifiant numérique pour la tâche, qui ne change pas si la tâche est relancée"
     run_number: "Un identifiant numérique qui augmente à chaque fois que la tâche est relancée, initialement défini à '1'"
     cluster: "Le nom du serveur d'exécution"
+  select_box:
+    task_status_groups:
+      standard_cycle: "Cycle normal"
+      waiting:        "En attente"
+      failed:         "En échec"
+      restarting:     "Redémarrage"
+      recovering:     "Récupération"
+      other:          "Autres"

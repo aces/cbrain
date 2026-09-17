@@ -560,8 +560,17 @@ module ScopeHelper
     is_assoc = attribute <= ApplicationRecord rescue nil
     label  = 'login' if is_assoc && attribute <= User
     format = formatter.((
-      proc { |l| l.constantize.pretty_type } if
-        attribute.to_s.downcase == 'type'
+      if attribute.to_s.downcase == 'type'
+        proc { |l| l.constantize.pretty_type }
+      elsif attribute.to_s.downcase == 'status'
+        # Only the label is translated
+        model = (collection.klass rescue nil)
+        if model && model <= BackgroundActivity
+          proc { |l| bac_status_label(l) }
+        else
+          proc { |l| status_label(l) }
+        end
+      end
     )) unless is_assoc
 
     # Invoke +filter_values_for+ or +scoped_filters_for+ to generate the actual
