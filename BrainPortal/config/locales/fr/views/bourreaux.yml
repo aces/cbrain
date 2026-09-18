@@ -54,8 +54,8 @@ fr:
         tools: "Outils"
         control_tunnel: "Tunnel de contrôle"
         uptime: "Temps de fonctionnement"
-        task_workers: "Task Workers"
-        activity_workers: "Activity Workers"
+        task_workers: "Workers de tâches"
+        activity_workers: "Workers d'activités"
       unk:
         env: "Env inconnu"
         par: " (%{unk} inconnu)"
@@ -80,11 +80,11 @@ fr:
         start:
           tunnels: "1. Démarrer les tunnels"
           execution_server: "2. Démarrer le bourreau"
-          task_workers: "3a. Démarrer les Task Workers"
-          activity_workers: "3b. Démarrer les Activity Workers"
+          task_workers: "3a. Démarrer les Workers de tâches"
+          activity_workers: "3b. Démarrer les Workers d'activités"
         stop:
-          activity_workers: "1a. Arrêter les Activity Workers"
-          task_workers: "1b. Arrêter les Task Workers"
+          activity_workers: "1a. Arrêter les Workers d'activités"
+          task_workers: "1b. Arrêter les Workers de tâches"
           execution_server: "2. Arrêter le bourreau"
           tunnels: "3. Arrêter les tunnels"
       dropdowns:
@@ -93,9 +93,9 @@ fr:
       confirms:
         stop:
           activity_workers: "Êtes-vous sûr de vouloir arrêter les bourreaux ? Ilstermineront d'abord ce qu'ils sont en train de faire."
-          task_workers: "Êtes-vous sûr de vouloir arrêter les Task Workers ? Ils termineront d'abord ce qu'ils sont en train de faire."
+          task_workers: "Êtes-vous sûr de vouloir arrêter les Workers de tâches ? Ils termineront d'abord ce qu'ils sont en train de faire."
           bourreau: "Êtes-vous sûr ? Notez que les exécuteurs s'arrêteront également une fois leur travail terminé, s'ils sont encore actifs."
-          tunnels: "Assurez-vous que les bourreaux, les Task Workers et les Activity Workers sont tous arrêtés !"
+          tunnels: "Assurez-vous que les bourreaux, les Workers de tâches et les Workers d'activités sont tous arrêtés !"
       start_services:
         paragraphs:
           introduction_html: |
@@ -103,7 +103,7 @@ fr:
               Ces boutons démarrent les différentes couches de services nécessaires au démarrage
               d'un bourreau. Elles sont listées dans le même ordre dans lequel elles
               doivent être lancées. Les trois premiers boutons
-              ne s'appliquent qu'aux bourreaux, tandis que <strong>Démarrer les Activity Workers</strong>
+              ne s'appliquent qu'aux bourreaux, tandis que <strong>Démarrer les Workers d'activités</strong>
               s'applique à la fois aux bourreaux et aux portails.
             </p>
             <p class="dropmenu_info">
@@ -120,7 +120,7 @@ fr:
             <p class="dropmenu_info">
               Le tunnel est le principal canal de communication entre le portail
               et le serveur distant sur lequel le bourreau est configuré. Il est
-              nécessaire pour le bourreau et les Task Workers. Démarrer le
+              nécessaire pour le bourreau et les Workers de tâches. Démarrer le
               tunnel marquera le bourreau comme « en ligne » dans la base de données.
               Notez que vous pouvez aussi démarrer le tunnel avec le bouton « Démarrer le bourreau ».
               Envisagez de démarrer uniquement le tunnel pour vérifier que les paramètres réseau
@@ -133,11 +133,11 @@ fr:
             </p>
           start_task_workers_description_html: |
             <p class="dropmenu_info">
-              Les Task Workers nécessitent que le tunnel et le bourreau soient opérationnels.
+              Les Workers de tâches nécessitent que le tunnel et le bourreau soient opérationnels.
             </p>
           start_activity_workers_description_html: |
             <p class="dropmenu_info">
-              Les Activity Workers sont les seules services pouvant également être démarrés ou arrêtés
+              Les Workers d'activités sont les seules services pouvant également être démarrés ou arrêtés
               sur les portails. Sur les portails, les Workers ne requièrent aucune des autres couches ci‑dessus.
               Sur les bourreaux, ces Workers nécessitent à la fois le tunnel et le bourreau en fonctionnement.
             </p>
@@ -148,7 +148,7 @@ fr:
         paragraphs:
           stop_services_description_html: |
             <p class="dropmenu_info">
-              Ces boutons arrêtent les différentes couches de services associées à un bourreau. Elles sont listées dans le même ordre dans lequel elles doivent être arrêtées. Les trois derniers boutons ne s'appliquent qu'aux bourreaux, tandis que <strong>Arrêter les Activity Workers</strong> s'applique à la fois aux bourreaux et aux portails.
+              Ces boutons arrêtent les différentes couches de services associées à un bourreau. Elles sont listées dans le même ordre dans lequel elles doivent être arrêtées. Les trois derniers boutons ne s'appliquent qu'aux bourreaux, tandis que <strong>Arrêter les Workers d'activités</strong> s'applique à la fois aux bourreaux et aux portails.
             </p>
             <p class="dropmenu_info">
               Reportez‑vous aux quatre dernières colonnes du tableau pour savoir quels services sont actuellement opérationnels. Les quatre boutons de ce panneau leur correspondent dans l'<em>ordre inverse</em> (de droite à gauche).
@@ -161,15 +161,15 @@ fr:
             </p>
           stop_activity_workers_description_html: |
             <p class="dropmenu_info">
-              Les Activity Workers peuvent s'exécuter à la fois sur les portails et sur les bourreaux. Les arrêter leur enverra un signal pour terminer leurs actions en cours, puis quitter.
+              Les Workers d'activités peuvent s'exécuter à la fois sur les portails et sur les bourreaux. Les arrêter leur enverra un signal pour terminer leurs actions en cours, puis quitter.
             </p>
           stop_task_workers_description_html: |
             <p class="dropmenu_info">
-              Arrêter les Task Workers leur enverra un signal pour terminer ce qu'ils sont en train de faire, puis quitter. Cela peut prendre un certain temps.
+              Arrêter les Workers de tâches leur enverra un signal pour terminer ce qu'ils sont en train de faire, puis quitter. Cela peut prendre un certain temps.
             </p>
           stop_execution_server_description_html: |
             <p class="dropmenu_info">
-              Arrêter un bourreau arrêtera également les Task Workers <strong>et</strong> les Activity Workers qui y fonctionnent. Assurez‑vous qu'ils ne sont pas en train de %{processing} quelque chose.
+              Arrêter un bourreau arrêtera également les Workers de tâches <strong>et</strong> les Workers d'activités qui y fonctionnent. Assurez‑vous qu'ils ne sont pas en train de %{processing} quelque chose.
             </p>
           stop_tunnels_description_html: |
             <p class="dropmenu_info">
@@ -233,7 +233,7 @@ fr:
         workers_last_change_date: "Date du dernier changement des Workers"
         ssh_public_key: "Clé publique SSH"
       server_status:
-        down: "DOWN"
+        down: "ARRÊTÉ"
         server_status: "Ce serveur est actuellement %{status}"
       rails_server_uptime:
         up_since: "En fonctionnement depuis : %{time}"
@@ -249,7 +249,7 @@ fr:
         scir_sge: "Sun GridEngine"
         scir_pbs: "PBS"
         scir_moab: "MOAB"
-        scir_sharcnet: "Sharcnet custom"
+        scir_sharcnet: "Sharcnet personnalisé"
         scir_lsf: "LSF"
         scir_slurm: "SLURM"
         scir_gcloud_batch: "Google Cloud"
@@ -335,17 +335,17 @@ fr:
         cache_management_configuration: "Configuration de gestion du cache"
         tool_version_configuration: "Configuration des versions des outils"
         cluster_management_system_configuration: "Configuration du système de gestion de cluster"
-        task_workers_configuration: "Configuration des Task Workers"
+        task_workers_configuration: "Configuration des Workers de tâches"
         task_limits: "Nombre de tâches maximum par utilisateur"
       tool_version_configuration_explanation: "Une configuration d'outil pour ce bourreau peut être créée une fois le serveur créé."
       task_limits_explanation: "Les limites de tâches peuvent être définies une fois que le bourreau est créé."
       submit: "Créer un nouveau serveur"
     rr_access_dp:
-      title: "Accès des serveurs aux Data Providers"
+      title: "Accès des serveurs aux serveurs de stockage"
       headings:
-        main: "Accès des serveurs aux Data Providers"
+        main: "Accès des serveurs aux serveurs de stockage"
         servers: "Serveurs"
-        data_providers: "Data Providers"
+        data_providers: "Serveurs de stockage"
         name: "Nom"
         type: "Type"
         last_checked: "Dernière vérification"
@@ -376,13 +376,13 @@ fr:
         read_only: "(lecture seule)"
         no_access: "(pas d'accès)"
         alive: "en ligne"
-        down: "down"
+        down: "arrêté"
       legends:
-        data_provider_status: "Statut du Data Provider :"
-      data_providers_offline: "Data Providers hors ligne :"
+        data_provider_status: "Statut du Serveur de stockage :"
+      data_providers_offline: "Serveurs de stockage hors ligne :"
       note_html: |
         <strong>Note : </strong>Cliquez sur <em>Rafraîchir</em> lance un processus en arrière-plan sur le serveur
-        qui interrogera chaque Data Provider ; cela peut prendre plusieurs minutes.
+        qui interrogera chaque serveur de stockage ; cela peut prendre plusieurs minutes.
     rr_access:
       title: "Accès au bourreau"
       headings:
@@ -465,19 +465,19 @@ fr:
         reverse_service_user: "Utilisateur du service inverse"
         reverse_service_db_socket: "Chemin du socket DB du service inverse"
         reverse_service_ssh_agent: "Chemin du socket de l'agent SSH du service inverse"
-        activity_workers_config: "Configuration des Activity Workers"
+        activity_workers_config: "Configuration des Workers d'activités"
         activity_workers_number: "Nombre de Workers"
         cache_management: "Configuration de gestion du cache"
         path_to_dp_caches: "Chemin vers les caches des serveurs de stockage"
         ignore_patterns: "Motifs de noms de fichiers à ignorer"
         dp_options: "Options des serveurs de stockage"
-        persistent_ssh_masters: "Utiliser des masters SSH persistants pour les DataProviders  basés sur SSH"
+        persistent_ssh_masters: "Utiliser des masters SSH persistants pour les serveurs de stockage basés sur SSH"
         cluster_config: "Configuration du cluster"
         type_of_cluster: "Type de cluster"
         default_queue_name: "Nom de la queue par défaut"
         extra_qsub_args: "Options supplémentaires de soumission au cluster (sbatch, qsub)"
         path_shared_work_dir: "Chemin vers le répertoire de travail partagé"
-        task_workers_config: "Configuration des Task Workers"
+        task_workers_config: "Configuration des Workers de tâches"
         number_of_workers: "Nombre de Workers"
         container_config: "Configuration des conteneurs"
         docker_executable_name: "Exécutable Docker"

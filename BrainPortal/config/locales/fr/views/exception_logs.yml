@@ -13,7 +13,7 @@ fr:
         method: "Méthode"
         exception: "Exception"
         message: "Message"
-        controller: "Controller"
+        controller: "Contrôleur"
         action: "Action"
         format: "Format"
         user: "Utilisateur"

@@ -11,9 +11,9 @@ fr:
         locked_count: "%{count} verrouillé(s)"
         access: "Accès"
       columns:
-        login: "Login"
+        login: "Identifiant"
         full_name: "Nom complet"
-        email: "E-mail"
+        email: "Courriel"
         position: "Poste"
         affiliation: "Affiliation"
         last_connection: "Dernière connexion"
@@ -60,8 +60,8 @@ fr:
         project_membership: "Appartenance aux projets"
       labels:
         full_name: "Nom complet"
-        login: "Login"
-        email: "E-mail"
+        login: "Identifiant"
+        email: "Courriel"
         position: "Poste"
         affiliation: "Affiliation"
         city: "Ville"

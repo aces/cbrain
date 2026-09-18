@@ -35,7 +35,6 @@ fr:
       years_ago:
         one: "Il y a 1 an"
         other: "Il y a %{count} ans"
-      big_bang: "Le Big Bang"
   abbreviations:
     A: "A"
     H: "M"
@@ -85,3 +84,35 @@ fr:
       restarting:     "Redémarrage"
       recovering:     "Récupération"
       other:          "Autres"
+  scope_filters:
+    sentence: "%{attribute} : %{operator}%{values}"
+    none:     "(Aucun)"
+    system:   "Système"
+    list_or:  "%{head} ou %{last}"
+    range:    "%{min} et %{max}"
+    attributes:
+      project: "Projet"
+      server:  "Serveur"
+      version: "Version"
+      operators:
+        not_equal:       "différent de "
+        over:            "plus de "
+        under:           "moins de "
+        one_of:          "une valeur parmi "
+        anything_except: "tout sauf "
+        like:            "comme "
+        between:         "entre "
+        flags:
+          critical:            "Critique"
+          not_critical:        "Non critique"
+          read:                "Lu"
+          unread:              "Non lu"
+          locked:              "Verrouillé"
+          unlocked:            "Déverrouillé"
+          email_confirmed:     "Courriel confirmé"
+          email_not_confirmed: "Courriel non confirmé"
+          status: "Statut : %{value}"
+          tags:   "Étiquettes : %{list}"
+          hierarchy:
+            no_child:  "Sans enfant"
+            no_parent: "Sans parent"

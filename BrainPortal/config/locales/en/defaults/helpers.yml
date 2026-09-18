@@ -35,7 +35,6 @@ en:
       years_ago:
         one:   "1 year ago"
         other: "%{count} years ago"
-      big_bang: "The Big Bang"
   abbreviations:
     A: "A"
     H: "H"
@@ -85,3 +84,35 @@ en:
       restarting:     "Restarting"
       recovering:     "Recovering"
       other:          "Other"
+  scope_filters:
+    sentence: "%{attribute}: %{operator}%{values}"
+    none:     "(None)"
+    system:   "System"
+    list_or:  "%{head} or %{last}"
+    range:    "%{min} and %{max}"
+    attributes:
+      project: "Project"
+      server:  "Server"
+      version: "Version"
+      operators:
+        not_equal:       "not "
+        over:            "over "
+        under:           "under "
+        one_of:          "one of "
+        anything_except: "anything except "
+        like:            "like "
+        between:         "between "
+        flags:
+          critical:            "Critical"
+          not_critical:        "Not critical"
+          read:                "Read"
+          unread:              "Unread"
+          locked:              "Locked"
+          unlocked:            "Unlocked"
+          email_confirmed:     "Email Confirmed"
+          email_not_confirmed: "Email Not confirmed"
+          status: "Status: %{value}"
+          tags:   "Tags: %{list}"
+          hierarchy:
+            no_child:  "Has no children"
+            no_parent: "Has no parent"

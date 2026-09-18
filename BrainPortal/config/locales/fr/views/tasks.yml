@@ -80,7 +80,7 @@ fr:
       hijacker:
         trigger_error_recovery: "Déclencher la récupération après une erreur"
         setup_stage: "'Configuration' stage"
-        cluster_stage: "'Cluster' stage"
+        cluster_stage: "Étape 'Cluster'"
         post_processing_stage: "'Post-traitement' stage"
         duplicate_tasks: "Dupliquer les tâches"
         terminate_tasks: "Interrompre les tâches"
@@ -103,9 +103,9 @@ fr:
         open_batch: "Ouvrir le lot"
       switches:
         switch_to_list_view: "Passer à la vue Liste"
-        switch_to_batch_view: "Passer à la vue Batch"
+        switch_to_batch_view: "Passer à la vue par lot"
       columns:
-        batch: "Batch"
+        batch: "Lot"
         task_type: "Type de tâche"
         version: "Version"
         description: "Description"
@@ -128,7 +128,7 @@ fr:
       tasks_without_estimates:
         one: "(1 tâche sans estimation d'espace)"
         other: "(%{count} tâches sans estimation d'espace)"
-      disappeared_tasks: "Ce batch de tâches a disparu"
+      disappeared_tasks: "Ce lot de tâches a disparu"
       shared_parentheses: "(Partagé)"
       workdir_archiving_status_symbols: "Symboles d'état de l'archivage du répertoire de travail :"
     utility_interface_file_list:
@@ -213,7 +213,7 @@ fr:
         show_summary_of_params_for_task: "Afficher le résumé des paramètres de la tâche %{name}"
         error_rendering_yaml: "(Erreur lors du rendu YAML)"
       in_the_task_manager: "Dans le gestionnaire de tâches, vous pouvez voir la liste complète"
-      in_this_batch: "des tâches de ce batch."
+      in_this_batch: "des tâches de ce lot."
       tabs:
         parameters_in_yaml: "Paramètres en YAML"
         parameters_in_json: "Paramètres en JSON"
@@ -221,7 +221,7 @@ fr:
         stdout: "Sortie standard"
         stderr: "Erreur standard"
         script: "Script"
-        runtime_info: "RuntimeInfo"
+        runtime_info: "Infos d'exécution"
       paragraphs:
         parameters_description_html: |
           <p class="medium_paragraphs">

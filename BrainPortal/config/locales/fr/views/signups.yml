@@ -18,7 +18,7 @@ fr:
       columns:
         name: "Nom"
         edit: "Modifier"
-        email: "Email"
+        email: "Courriel"
         position: "Poste"
         department: "Département"
         institution: "Institution"
@@ -36,7 +36,7 @@ fr:
         not_approved: "(Non approuvé)"
       buttons:
         adjust_login: "Ajuster le login"
-        resend_confirm_email: "Renvoyer l'email de confirmation"
+        resend_confirm_email: "Renvoyer le courriel de confirmation"
         toggle_hidden: "Basculer l'affichage des cachés"
       tooltips:
         updated_at: "Mis à jour : %{time}"
@@ -44,10 +44,10 @@ fr:
     status:
       approved_by: "Approuvé par : %{name}"
       approved_at: "Approuvé le : %{time}"
-      email_confirmed: "E-mail confirmé."
+      email_confirmed: "Courriel confirmé."
       warnings:
-        email_unconfirmed: "(E-mail non confirmé)"
-        conflicting_email: "(E-mail en conflit)"
+        email_unconfirmed: "(Courriel non confirmé)"
+        conflicting_email: "(Courriel en conflit)"
         login_conflict: "(Conflit de login)"
       links:
         approve: "(Approuver)"
@@ -59,7 +59,7 @@ fr:
         main_html: |
           Merci d'avoir suivi le lien envoyé par CBRAIN dans votre boîte mail.
           <p>
-          Pour nous assurer que vous êtes bien le propriétaire de l'adresse e-mail ayant
+          Pour nous assurer que vous êtes bien le propriétaire de l'adresse courriel ayant
           demandé la création d'un compte CBRAIN, veuillez compléter l'étape finale en cliquant
           sur le bouton ci‑dessous. Cela informera les administrateurs de CBRAIN que votre demande est légitime et officielle.
           <p>
@@ -184,7 +184,7 @@ fr:
         department: "Département :"
         position: "Poste ou rôle :"
         affiliation: "Affiliation :"
-        email: "Adresse e‑mail :"
+        email: "Adresse courriel :"
         street1: "Adresse (ligne 1) :"
         street2: "Adresse (ligne 2) :"
         city: "Ville :"
@@ -197,17 +197,17 @@ fr:
         time_zone: "Fuseau horaire :"
       links:
         approve: "approuver"
-        email_confirmation_request: "demande de confirmation d'email"
+        email_confirmation_request: "demande de confirmation de courriel"
       paragraphs:
         made_from_portal_html: "Cette demande de compte a été faite depuis le portail %{portal} en utilisant le formulaire situé sur %{form_page}."
         admin_can_edit_html: "En tant qu'administrateur, vous pouvez %{link} cette demande."
         login_conflict: "Le login de cet utilisateur est en conflit avec un utilisateur déjà présent dans le système."
         can_approve_html: "Vous pouvez aussi %{link} cette demande."
-        not_confirmed: "L'utilisateur n'a pas encore confirmé son adresse e‑mail."
-        confirmed: "L'utilisateur a confirmé son adresse e‑mail."
-        resend_admin_html: "Si l'utilisateur n'a pas reçu l'e‑mail de confirmation, vous pouvez demander qu'un autre %{link} soit renvoyé."
+        not_confirmed: "L'utilisateur n'a pas encore confirmé son adresse courriel."
+        confirmed: "L'utilisateur a confirmé son adresse courriel."
+        resend_admin_html: "Si l'utilisateur n'a pas reçu courriel de confirmation, vous pouvez demander qu'un autre %{link} soit renvoyé."
         edit_session_note_html: "Vous pouvez %{link} ce formulaire, mais cette option ne sera disponible que tant que vous utilisez la même session de navigateur que celle utilisée pour soumettre le formulaire initialement. Faites‑le maintenant tant que vous le pouvez !"
-        confirmation_sent: "Un e‑mail de confirmation a été envoyé à l'adresse fournie. Une fois reçu, veuillez cliquer sur le lien fourni afin que nous puissions confirmer votre identité."
-        resend_user_html: "Si vous n'avez pas reçu l'e‑mail, vous pouvez demander qu'un autre %{link} vous soit envoyé."
+        confirmation_sent: "Un courriel de confirmation a été envoyé à l'adresse fournie. Une fois reçu, veuillez cliquer sur le lien fourni afin que nous puissions confirmer votre identité."
+        resend_user_html: "Si vous n'avez pas reçu courriel, vous pouvez demander qu'un autre %{link} vous soit envoyé."
         summary_intro: "Ci‑dessous un résumé des informations de cette demande de compte."
         delete_html: "Vous pouvez %{link} cette demande."

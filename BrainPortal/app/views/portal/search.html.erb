@@ -57,7 +57,7 @@
   <%= link_to_userfile_if_accessible(file) %> (<%= file.user.login %>)
 <% end %>
 
-<% result_table.(:tasks) do |task, r, c| %>
+<% result_table.(:tasks, t('activerecord.models.cbrain_task.other')) do |task, r, c| %>
   <%= link_to_model_if_accessible(CbrainTask,task,:name_and_bourreau) %> (<%= task.user.login %>)
   <%= link_to "(#{t('edit').downcase})", edit_task_path(task), :class => 'action_link' %><br>
   <%= overlay_description(task.description, :header_width => 35) %>

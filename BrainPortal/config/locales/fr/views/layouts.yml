@@ -1,7 +1,7 @@
 fr:
   layouts:
     common:
-      usage: "Usage"
+      usage: "Utilisation"
     section_account:
       dropdowns:
         resource: "Ressource"
@@ -16,10 +16,10 @@ fr:
         servers: "Serveurs"
         tools: "Outils"
         tool_versions: "Versions des outils"
-        usage: "Usage"
+        usage: "Utilisation"
         full_list: "Liste complète des outils et des jeux de données"
         help_site: "Aide"
-        email_support: "Support e-mail"
+        email_support: "Support courriel"
         sign_out: "Se déconnecter"
         sign_in: "Se connecter"
       labels:
@@ -39,7 +39,7 @@ fr:
       unagree: "(Bouton de débogage pour supprimer la licence)"
     section_footer:
       powered_by: "Propulsé par %{name}"
-      credits: "Credits"
+      credits: "Crédits"
     section_menu:
       all: "Tous"
       quick_project_switcher: "Sélecteur rapide de projet"

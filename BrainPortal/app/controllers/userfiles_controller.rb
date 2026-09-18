@@ -1783,7 +1783,7 @@ class UserfilesController < ApplicationController
 
     # Nice string representation of this filter for +pretty_scope_filter+.
     def to_s
-      "Tags: " + Tag.find(@value).map(&:name).uniq.join(', ') rescue ''
+      I18n.t('scope_filters.tags', :list => Tag.find(@value).map(&:name).uniq.join(', ')) rescue ''
     end
 
     # The methods below are TagFilter specific versions of the Scope::Filter
@@ -1890,8 +1890,8 @@ class UserfilesController < ApplicationController
     # Nice string representation of this filter for +pretty_scope_filter+.
     def to_s
       case @operator.to_s
-      when 'no_child'  then 'Has no children'
-      when 'no_parent' then 'Has no parent'
+        when 'no_child'  then I18n.t('scope_filters.hierarchy.no_child')
+        when 'no_parent' then I18n.t('scope_filters.hierarchy.no_parent')
       else @operator.to_s.humanize
       end
     end
@@ -2020,7 +2020,7 @@ class UserfilesController < ApplicationController
 
     # Find the class for the new userfile object that will be used for viewing
     viewer_userfile_class = viewer_class_name.try(:constantize) || @top_userfile.class
-    cb_error t('userfiles.errors.invalid_viewer_class', class: viewer_class_name)} if !(viewer_userfile_class < Userfile)
+    cb_error t('userfiles.errors.invalid_viewer_class', class: viewer_class_name) if !(viewer_userfile_class < Userfile)
 
     # Instanciate the userfile object with the class appropiate for the sub file.
     viewer_userfile_class.new(

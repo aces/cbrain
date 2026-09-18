@@ -80,7 +80,7 @@ fr:
         by_user_html: "Par utilisateur : %{dropdown}"
         by_instance_html: "Par nom d'instance : %{textfield}"
         by_method_html: "Par méthode : %{dropdown}"
-        by_controller_html: "Par controller : %{dropdown}"
+        by_controller_html: "Par contrôleur : %{dropdown}"
       toggles:
         hide_lines: "Masquer les lignes:"
         started_html: "'Démarré': %{checkbox}"
@@ -208,13 +208,13 @@ fr:
       headings:
         main: "Statistiques du service Web de CBRAIN"
         by_client: "Totaux par type de client"
-        by_controller_html: "Totaux par controller &amp; action"
+        by_controller_html: "Totaux par contrôleur &amp; action"
         by_status: "Totaux par code d'état HTTP"
       columns:
         client_type: "Type de client"
         successes: "Succès"
         failures: "Échecs"
-        controller: "Controller"
+        controller: "Contrôleur"
         action: "Action"
         status_code: "Code d'état"
         count: "Nombre"

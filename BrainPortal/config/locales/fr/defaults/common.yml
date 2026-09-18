@@ -96,7 +96,7 @@ fr:
     day: "Il y a un jour"
     hour: "Il y a une heure"
     now: "Maintenant ! (Y compris le vôtre !)"
-  login: "Login"
+  login: "Identifiant"
   owner: "Propriétaire"
   owner_downcase: "propriétaire"
   version:

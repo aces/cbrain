@@ -33,7 +33,7 @@ fr:
         active: "Utilisateurs actifs"
         locked: "Utilisateurs verrouillés"
       datas:
-        login: "Login"
+        login: "Identifiant"
         regular_user: "Utilisateur régulier"
         site_manager: "Responsable du site"
       buttons:
@@ -62,7 +62,7 @@ fr:
         data_providers: "Serveurs de stockage"
         remote_resources: "Ressources distantes"
       datas:
-        login: "Login"
+        login: "Identifiant"
         regular_user: "Utilisateur régulier"
         site_manager: "Responsable du site"
       labels:

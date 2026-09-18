@@ -1729,7 +1729,9 @@ class TasksController < ApplicationController
 
     # Nice string representation of this filter for +pretty_scope_filter+.
     def to_s
-      "Status: #{@value.to_s.humanize}"
+      key   = TasksHelper::StatusI18nKeys[@value.to_s]
+      label = key ? I18n.t("tasks.statuses.#{key}", :default => @value.to_s.humanize) : @value.to_s.humanize
+      I18n.t('scope_filters.status', :value => label)
     end
 
     # The methods below are StatusFilter specific versions of the Scope::Filter

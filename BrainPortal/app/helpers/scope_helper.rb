@@ -199,10 +199,10 @@ module ScopeHelper
     # Explanatory flag (boolean attributes) value names to use instead of
     # '<attribute>: true/1' or '<attribute>: false/0'.
     flag_names = {
-      'critical'       => ['Critical',        'Not critical'],
-      'read'           => ['Read',            'Unread'],
-      'account_locked' => ['Locked',          'Unlocked'],
-      'confirmed'      => ['Email Confirmed', 'Email Not confirmed'],
+      'critical'       => [ t('scope_filters.flags.critical'),        t('scope_filters.flags.not_critical')        ],
+      'read'           => [ t('scope_filters.flags.read'),            t('scope_filters.flags.unread')              ],
+      'account_locked' => [ t('scope_filters.flags.locked'),          t('scope_filters.flags.unlocked')            ],
+      'confirmed'      => [ t('scope_filters.flags.email_confirmed'), t('scope_filters.flags.email_not_confirmed') ],
     }
 
     # Model methods/attributes to use as representation of a model record;
@@ -269,7 +269,7 @@ module ScopeHelper
     # as such.
     if attribute == 'sender'
       values << nil if values.blank?
-      values.map! { |value| value.nil? ? 'System' : value }
+      values.map! { |value| value.nil? ? t('scope_filters.system') : value }
     end
 
     # Convert the values to a textual representation, depending on which
@@ -279,31 +279,38 @@ module ScopeHelper
       if ['in', 'out'].include?(operator)
         values.map! { |v| v.to_s =~ /[,\s]/ ? "'#{v}'" : v.to_s }
         last = values.pop
-        values.empty? ? last : "#{values.join(', ')} or #{last}"
+        values.empty? ? last : t('scope_filters.list_or', :head => values.join(', '), :last => last)
       elsif operator == 'range'
         min, max = values.sort
-        "#{min} and #{max}"
+        t('scope_filters.range', :min => min, :max => max)
       else
         values.first.to_s
       end
     )
-    values = "(None)" if values.blank?
+    values = t('scope_filters.none') if values.blank?
 
     # Have a nice textual representation of the operator
     operator = ({
       '=='    => '',
-      '!='    => 'not ',
-      '>'     => 'over ',
-      '>='    => 'over ',
-      '<'     => 'under ',
-      '<='    => 'under ',
-      'in'    => 'one of ',
-      'out'   => 'anything except ',
-      'match' => 'like ',
-      'range' => 'between '
+      '!='    => t('scope_filters.operators.not_equal'),
+      '>'     => t('scope_filters.operators.over'),
+      '>='    => t('scope_filters.operators.over'),
+      '<'     => t('scope_filters.operators.under'),
+      '<='    => t('scope_filters.operators.under'),
+      'in'    => t('scope_filters.operators.one_of'),
+      'out'   => t('scope_filters.operators.anything_except'),
+      'match' => t('scope_filters.operators.like'),
+      'range' => t('scope_filters.operators.between')
     })[filter.operator.to_s]
 
-    "#{attribute.humanize}: #{operator}#{values}"
+    attribute = t("scope_filters.attributes.#{attribute}",
+                  :default => [ :"attributes.#{attribute}", attribute.humanize ])
+
+    t('scope_filters.sentence',
+      :attribute => attribute,
+      :operator  => operator,
+      :values    => values
+      )
   end
 
   # Fetch the possible values (and their count) for +attribute+ within
