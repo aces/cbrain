@@ -209,7 +209,7 @@ module SelectBoxHelper
        options_dps  = dps_in_group.map do |dp|
          opt_pair = [ dp.name, dp.id.to_s ]
          if (! dp.online?) && (! options[:offline_is_ok])
-           opt_pair[0] += " (offline)"
+           opt_pair[0] += t('select_box.offline_suffix')
            opt_pair << { :disabled => "true" }
          end
          opt_pair #  [ "DpName", "3" ]    or   [ "DpName (offline)", "3", { :disabled => "true" } ]
@@ -255,12 +255,12 @@ module SelectBoxHelper
       selected = selector.to_s
     end
 
-    return "<strong style=\"color:red\">No Execution Servers Available</strong>".html_safe if bourreaux.nil? || bourreaux.empty?
+    return t('select_box.no_execution_servers_html') if bourreaux.nil? || bourreaux.empty?
 
     bourreaux_pairs = bourreaux.sort_by(&:name).map do |b|
        opt_pair = [ b.name, b.id.to_s ]
        if (! b.online?) && (! options[:offline_is_ok])
-         opt_pair[0] += " (offline)"
+         opt_pair[0] += t('select_box.offline_suffix')
          opt_pair << { :disabled => "true" }
        end
        opt_pair #  [ "BoName", "3" ]    or   [ "BoName", "3", { :disabled => "true" } ]
@@ -373,7 +373,7 @@ module SelectBoxHelper
           pairlist << tc_pair
         end
         if same_tool && (! same_bourreau || ordered_bourreau_ids.size == 1)
-          offline = b_is_online ? "" : " (offline)"
+          offline = b_is_online ? "" : t('select_box.offline_suffix')
           label = "On #{bourreau.name}#{offline}:"
         elsif same_bourreau && ! same_tool
           label = "For tool #{tool.name}:"

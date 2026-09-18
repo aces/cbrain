@@ -113,7 +113,7 @@ module AuthenticatedSystem #:nodoc:
     # behavior in case the user is not authorized
     # to access the requested action.  For example, a popup window might
     # simply close itself.
-    def access_denied(message = 'You must login to see this page.')
+    def access_denied(message = I18n.t('application.flash.login_required'))
       respond_to do |format|
         format.html do
           store_location

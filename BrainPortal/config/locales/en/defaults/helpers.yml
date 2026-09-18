@@ -35,6 +35,10 @@ en:
       years_ago:
         one:   "1 year ago"
         other: "%{count} years ago"
+    errors:
+      absolute_from_missing: "You should enter an absolute 'from' date or de-select the radio button"
+      absolute_to_missing:   "You should enter an absolute 'to' date or de-select the radio button"
+      same_relative_dates:   "You should choose 2 differents relatives dates"
   abbreviations:
     A: "A"
     H: "H"
@@ -84,6 +88,8 @@ en:
       restarting:     "Restarting"
       recovering:     "Recovering"
       other:          "Other"
+    no_execution_servers_html: "<strong style=\"color:red\">No Execution Servers Available</strong>"
+    offline_suffix:       " (offline)"
   scope_filters:
     sentence: "%{attribute}: %{operator}%{values}"
     none:     "(None)"
@@ -94,25 +100,25 @@ en:
       project: "Project"
       server:  "Server"
       version: "Version"
-      operators:
-        not_equal:       "not "
-        over:            "over "
-        under:           "under "
-        one_of:          "one of "
-        anything_except: "anything except "
-        like:            "like "
-        between:         "between "
-        flags:
-          critical:            "Critical"
-          not_critical:        "Not critical"
-          read:                "Read"
-          unread:              "Unread"
-          locked:              "Locked"
-          unlocked:            "Unlocked"
-          email_confirmed:     "Email Confirmed"
-          email_not_confirmed: "Email Not confirmed"
-          status: "Status: %{value}"
-          tags:   "Tags: %{list}"
-          hierarchy:
-            no_child:  "Has no children"
-            no_parent: "Has no parent"
+    operators:
+      not_equal:       "not "
+      over:            "over "
+      under:           "under "
+      one_of:          "one of "
+      anything_except: "anything except "
+      like:            "like "
+      between:         "between "
+      flags:
+        critical:            "Critical"
+        not_critical:        "Not critical"
+        read:                "Read"
+        unread:              "Unread"
+        locked:              "Locked"
+        unlocked:            "Unlocked"
+        email_confirmed:     "Email Confirmed"
+        email_not_confirmed: "Email Not confirmed"
+        status: "Status: %{value}"
+        tags:   "Tags: %{list}"
+        hierarchy:
+          no_child:  "Has no children"
+          no_parent: "Has no parent"

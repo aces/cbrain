@@ -79,7 +79,7 @@ class ToolsController < ApplicationController
 
   rescue
     # render :text  => "#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
-    render html: '<strong style="color:red">No Execution Servers Available</strong>'.html_safe
+    render html: t('select_box.no_execution_servers')
   end
 
   def new #:nodoc:

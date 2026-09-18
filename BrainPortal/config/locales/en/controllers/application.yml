@@ -5,3 +5,9 @@ en:
       block_needed:              "Block needed."
     flash:
       password_reset_required:   "Please reset your password."
+      page_not_found:            "The page you requested does not exist."
+      generic_exception:         "An error occurred. A message has been sent to the admins. Please try again later."
+      portal_locked_for_maintenance: "This portal is currently locked for maintenance."
+      object_not_found:          "The object you requested does not exist or is not accessible to you."
+      object_not_deleted:        "The requested object could not be deleted."
+      login_required:            "You must login to see this page."

@@ -24,8 +24,8 @@ module ExceptionHelpers
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  NOT_FOUND_MSG = "The object you requested does not exist or is not accessible to you." #:nodoc:
-  CANNOT_DELETE_MSG = "The requested object could not be deleted." #:nodoc:
+  NOT_FOUND_MSG = I18n.t('application.flash.object_not_found') #:nodoc:
+  CANNOT_DELETE_MSG = I18n.t('application.flash.object_not_deleted') #:nodoc:
 
   def self.included(includer) #:nodoc:
     includer.class_eval do
@@ -169,3 +169,4 @@ module ExceptionHelpers
   end
 
 end
+

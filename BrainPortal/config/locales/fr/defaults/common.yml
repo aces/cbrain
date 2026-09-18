@@ -154,3 +154,5 @@ fr:
     multiple: "Choisir des options"
     no_results: "Aucun résultat pour"
     add_tag: "Appuyez sur Entrée pour ajouter : "
+  custom_license:
+    message_header: "Fichier de licence ajouté"

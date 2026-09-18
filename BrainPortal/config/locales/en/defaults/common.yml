@@ -154,3 +154,5 @@ en:
     multiple:   "Select Some Options"
     no_results: "No results match"
     add_tag:    "Press Enter to add: "
+  custom_license:
+    message_header: "License file added"

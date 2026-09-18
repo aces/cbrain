@@ -15,3 +15,5 @@ en:
       untrusted_ip:              "Untrusted source IP address."
       portal_locked:             "The system is currently locked. Please try again later."
       account_locked:            "This account is locked, please write to %{contact} to get this account unlocked."
+      oidc_no_user_match:        "No CBRAIN user matches your %{name} identity. Create a CBRAIN account or link your existing CBRAIN account to your %{name} provider."
+      oidc_multiple_users_match: "Several CBRAIN user accounts match your %{name} identity. Please contact the CBRAIN admins, as this should never happen."

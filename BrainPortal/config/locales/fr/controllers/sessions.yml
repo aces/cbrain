@@ -15,3 +15,5 @@ fr:
       untrusted_ip: "Adresse IP source non fiable."
       portal_locked: "Le système est actuellement verrouillé. Veuillez réessayer plus tard."
       account_locked: "Ce compte est verrouillé, veuillez écrire à %{contact} pour le faire déverrouiller."
+      oidc_no_user_match: "Aucun compte CBRAIN ne correspond à votre identité %{name}. Créez un compte CBRAIN ou liez votre compte CBRAIN existant à votre fournisseur %{name}."
+      oidc_multiple_users_match: "Plusieurs comptes CBRAIN correspondent à votre identité %{name}. Veuillez contacter les administrateurs CBRAIN, car cela ne devrait jamais se produire."

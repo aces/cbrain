@@ -35,6 +35,10 @@ fr:
       years_ago:
         one: "Il y a 1 an"
         other: "Il y a %{count} ans"
+    errors:
+      absolute_from_missing: "Vous devez saisir une date absolue « de » ou désélectionner le bouton radio"
+      absolute_to_missing:   "Vous devez saisir une date absolue « à » ou désélectionner le bouton radio"
+      same_relative_dates:   "Vous devez choisir deux dates relatives différentes"
   abbreviations:
     A: "A"
     H: "M"
@@ -84,6 +88,8 @@ fr:
       restarting:     "Redémarrage"
       recovering:     "Récupération"
       other:          "Autres"
+    no_execution_servers_html: "<strong style=\"color:red\">Aucun serveur de calcul disponible</strong>"
+    offline_suffix:       " (hors ligne)"
   scope_filters:
     sentence: "%{attribute} : %{operator}%{values}"
     none:     "(Aucun)"
@@ -94,25 +100,25 @@ fr:
       project: "Projet"
       server:  "Serveur"
       version: "Version"
-      operators:
-        not_equal:       "différent de "
-        over:            "plus de "
-        under:           "moins de "
-        one_of:          "une valeur parmi "
-        anything_except: "tout sauf "
-        like:            "comme "
-        between:         "entre "
-        flags:
-          critical:            "Critique"
-          not_critical:        "Non critique"
-          read:                "Lu"
-          unread:              "Non lu"
-          locked:              "Verrouillé"
-          unlocked:            "Déverrouillé"
-          email_confirmed:     "Courriel confirmé"
-          email_not_confirmed: "Courriel non confirmé"
-          status: "Statut : %{value}"
-          tags:   "Étiquettes : %{list}"
-          hierarchy:
-            no_child:  "Sans enfant"
-            no_parent: "Sans parent"
+    operators:
+      not_equal:       "différent de "
+      over:            "plus de "
+      under:           "moins de "
+      one_of:          "une valeur parmi "
+      anything_except: "tout sauf "
+      like:            "comme "
+      between:         "entre "
+      flags:
+        critical:            "Critique"
+        not_critical:        "Non critique"
+        read:                "Lu"
+        unread:              "Non lu"
+        locked:              "Verrouillé"
+        unlocked:            "Déverrouillé"
+        email_confirmed:     "Courriel confirmé"
+        email_not_confirmed: "Courriel non confirmé"
+        status: "Statut : %{value}"
+        tags:   "Étiquettes : %{list}"
+        hierarchy:
+          no_child:  "Sans enfant"
+          no_parent: "Sans parent"
