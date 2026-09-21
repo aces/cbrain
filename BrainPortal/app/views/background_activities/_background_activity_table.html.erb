@@ -191,8 +191,8 @@
         <%= bac.current_item %>/<%= bac.items.size %>
         <% if bac.status != 'Completed' && (bac.num_successes > 0 || bac.num_failures > 0) %>
           |
-          <%= red_if(bac.num_successes != 0, "OK=#{bac.num_successes}",    nil, :color1 => 'red', :color2 => 'green') %>,
-          <%= red_if(bac.num_failures  == 0, "Failed=#{bac.num_failures}", nil, :color1 => 'red', :color2 => 'black') %>
+          <%= red_if(bac.num_successes != 0, t('.progress_counts.ok',     count: bac.num_successes), nil, :color1 => 'red', :color2 => 'green') %>,
+          <%= red_if(bac.num_failures  == 0, t('.progress_counts.failed', count: bac.num_failures), nil, :color1 => 'red', :color2 => 'black') %>
         <% end %>
       <% end %>
       <% if current_user.has_role?(:admin_user) && bac.handler_lock.present? %>
