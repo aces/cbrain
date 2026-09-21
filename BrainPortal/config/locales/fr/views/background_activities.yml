@@ -81,6 +81,9 @@ fr:
       items_count:
         one: "(%{count} élément)"
         other: "(%{count} éléments)"
+      progress_counts:
+        ok:     "Réussis=%{count}"
+        failed: "Échecs=%{count}"
       tooltips:
         messages: "(Messages)"
     RubyRunner:

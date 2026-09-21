@@ -83,6 +83,9 @@ en:
       items_count:
         one: "(%{count} item)"
         other: "(%{count} items)"
+      progress_counts:
+        ok:     "OK=%{count}"
+        failed: "Failed=%{count}"
       tooltips:
         messages: "(Messages)"
     RubyRunner:
