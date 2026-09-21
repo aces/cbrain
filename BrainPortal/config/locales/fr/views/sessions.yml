@@ -7,7 +7,7 @@ fr:
         explanations: "Explications"
         allowed_providers: "Les fournisseurs d'identité autorisés pour votre compte sont :"
       paragraphs:
-        explanations: |
+        explanations_html: |
           <p class="short_paragraphs">
           Lorsque vous cliquerez sur le bouton ci-dessous, votre navigateur
           sera redirigé vers une page de connexion d'un fournisseur d'identité,
@@ -16,12 +16,12 @@ fr:
           Une fois votre authentification réussie, votre navigateur sera redirigé vers
           cette page afin de finaliser la liaison avec votre compte CBRAIN.
           </p>
-        no_provider: |
+        no_provider_html: |
           <p class="short_paragraphs">
           Aucun fournisseur d'identité n'est actuellement disponible pour votre compte.
           Veuillez communiquer avec l'administrateur de CBRAIN pour obtenir de plus amples renseignements.
           </p>
-        already_logged_in: |
+        already_logged_in_html: |
           <p class="short_paragraphs">
           Si vous êtes déjà connecté à l'aide d'un autre fournisseur d'identité,
           vous devriez d'abord vous déconnecter. Vous pouvez le faire en cliquant sur le bouton ci-dessous :

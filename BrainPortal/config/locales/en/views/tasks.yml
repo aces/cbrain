@@ -229,7 +229,7 @@ en:
            this task. See the description in the last panel for more
            information.
           </p>
-        parameters_in_json: |
+        parameters_in_json_html: |
           <p class="medium_paragraphs">
            This shows only the scientific parameters associated with
            this task. See the description in the last panel for more

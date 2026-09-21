@@ -216,8 +216,7 @@
         <% end %>
 
         <%= tb.tab(t('.tabs.parameters_in_json')) do %>
-            <%= t('.paragraphs.parameters_in_json') %>
-          </p>
+          <%= t('.paragraphs.parameters_in_json_html') %>
           <% jsontext = JSON.pretty_generate(@task.params) %>
           <pre><%= jsontext %></pre>
         <% end %>

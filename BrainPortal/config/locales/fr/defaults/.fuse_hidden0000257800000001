@@ -117,8 +117,8 @@ fr:
       unlocked:            "Déverrouillé"
       email_confirmed:     "Courriel confirmé"
       email_not_confirmed: "Courriel non confirmé"
-    status: "Statut : %{value}"
-    tags:   "Étiquettes : %{list}"
-    hierarchy:
-      no_child:  "Sans enfant"
-      no_parent: "Sans parent"
+      status: "Statut : %{value}"
+      tags:   "Étiquettes : %{list}"
+      hierarchy:
+        no_child:  "Sans enfant"
+        no_parent: "Sans parent"

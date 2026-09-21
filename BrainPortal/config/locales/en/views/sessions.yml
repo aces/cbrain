@@ -7,7 +7,7 @@ en:
         explanations: "Explanations"
         allowed_providers: "The identity providers that are allowed for your account are:"
       paragraphs:
-        explanations: |
+        explanations_html: |
           <p class="short_paragraphs">
           When you click on the button below, your browser will be redirected
           to an identity provider login page; from there you can choose one of the
@@ -16,12 +16,12 @@ en:
           there, your browser will be redirected back here to finalize
           the link with your CBRAIN account.
           </p>
-        no_provider: |
+        no_provider_html: |
           <p class="short_paragraphs">
           No identity provider is currently available for your account.
           Please contact the CBRAIN administrator for more information.
           </p>
-        already_logged_in: |
+        already_logged_in_html: |
           <p class="short_paragraphs">
           If you already are logged in using a different identity provider, you
           might want to log out first. This can be accomplished by the button below:

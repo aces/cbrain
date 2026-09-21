@@ -149,7 +149,7 @@
       <%= f.submit(@signup.new_record? ? t('.submits.request_account') : t('.submits.update_request')) %>
     </div>
 
-    <%= t('.paragraphs.privacy_note') %></b>
+    <%= t('.paragraphs.privacy_note_html') %>
 
     <% if RemoteResource.current_resource.support_email.present? %>
       <br>

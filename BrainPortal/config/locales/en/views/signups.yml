@@ -148,7 +148,7 @@ en:
             We'll use this information to create or add you to a
             <em>Site</em> within CBRAIN.
           </div>
-        privacy_note: |
+        privacy_note_html: |
           <br>
           <b>Privacy note</b>
           <br>

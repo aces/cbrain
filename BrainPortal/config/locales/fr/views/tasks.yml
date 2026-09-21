@@ -229,7 +229,7 @@ fr:
            cette tâche. Consultez la description du dernier panneau pour plus
            d'informations.
           </p>
-        parameters_in_json: |
+        parameters_in_json_html: |
           <p class="medium_paragraphs">
            Ceci affiche uniquement les paramètres scientifiques associés à
            cette tâche. Consultez la description du dernier panneau pour plus

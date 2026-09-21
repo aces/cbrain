@@ -117,8 +117,8 @@ en:
       unlocked:            "Unlocked"
       email_confirmed:     "Email Confirmed"
       email_not_confirmed: "Email Not confirmed"
-      status: "Status: %{value}"
-      tags:   "Tags: %{list}"
-      hierarchy:
-        no_child:  "Has no children"
-        no_parent: "Has no parent"
+    status: "Status: %{value}"
+    tags:   "Tags: %{list}"
+    hierarchy:
+      no_child:  "Has no children"
+      no_parent: "Has no parent"

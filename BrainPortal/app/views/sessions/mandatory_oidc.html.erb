@@ -28,7 +28,7 @@
 
 <h5><%= t('.headings.explanations') %></h5>
 
-<%= t('.paragraphs.explanations') %>
+<%= t('.paragraphs.explanations_html') %>
 
 <h5><%= t('.headings.allowed_providers') %></h5>
 
@@ -41,9 +41,7 @@
 
 
 <% if @oidc_configs.empty? %>
-  <p class="short_paragraphs">
-    <%= t('.paragraphs.no_provider') %>
-  </p>
+  <%= t('.paragraphs.no_provider_html') %>
 <% end %>
 
 <% @oidc_configs.each do |oidc| %>
@@ -51,9 +49,7 @@
 <% end %>
 
 <% if !@oidc_configs.empty? %>
-<p class="short_paragraphs">
-  <%= t('.paragraphs.already_logged_in') %>
-<p>
+<%= t('.paragraphs.already_logged_in_html') %>
 <% end %>
 
 <% @oidc_configs.each do |oidc| %>
