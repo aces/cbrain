@@ -28,7 +28,7 @@
   <% end %>
   <%= overlay_ajax_link t('help'), "/doc/#{I18n.locale}/messages/message_info.html", :class  => "button" %>
 
-  <%= external_submit_button t('.buttons.delete_checked'), "message_form", :class  => "button", :confirm  => t('confirm_delete', name: 'the selected messages' )  %>
+  <%= external_submit_button t('.buttons.delete_checked'), "message_form", :class  => "button", :confirm  => t('confirm_delete', name: t('.buttons.delete_name'))  %>
 </div>
 
 <%=

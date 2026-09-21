@@ -45,8 +45,8 @@ fr:
     I: "I"
   quotas:
     none_allowed: "Aucun autorisé"
-    last_week: "la semaine dernière;"
-    last_month: "le mois dernier;"
+    last_week: "la semaine dernière ;"
+    last_month: "le mois dernier ;"
     total: "total"
     unlimited: "(Illimité)"
     one_task: "1 tâche"

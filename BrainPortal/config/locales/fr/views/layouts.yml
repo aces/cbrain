@@ -26,7 +26,7 @@ fr:
         unread_message:
           one: "Message non lu"
           other: "Messages non lus"
-        revision: "Rev: %{rev}"
+        revision: "Rev : %{rev}"
         branch: "Branche : %{name}"
         last_updated_html: "dernière mise à jour il y a <span class=\"elapsed\">%{time}</span>"
         as: "Connecté en tant que %{name}"

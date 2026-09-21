@@ -307,7 +307,7 @@ module DynamicTableHelper
         elsif obj.is_a?(Enumerable) && ! obj.is_a?(ActiveRecord::Relation)
           obj.to_a[index]
         else
-          raise t('dynamic_table.raise', field_name: field_name, obj: obj)
+          raise I18n.t('dynamic_table.raise', field_name: field_name, obj: obj)
         end
       end
 

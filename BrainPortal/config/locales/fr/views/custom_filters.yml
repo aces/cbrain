@@ -89,8 +89,6 @@ fr:
     userfile_custom_filter:
       headings:
         filename: "Nom du fichier"
-        parent_name_contains_html: "Le nom du parent contient <small>(liste les enfants)</small> :"
-        child_name_contains_html: "Le nom de l'enfant contient <small>(liste les parents)</small> :"
         by_file_types: "Par types de fichiers"
         size: "Taille"
         owner: "Propriétaire"

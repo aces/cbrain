@@ -37,6 +37,7 @@ fr:
         leave_message: "Laisser un message"
       buttons:
         delete_checked: "Supprimer les messages cochés"
+        delete_name: "les messages sélectionnés"
       scopes:
         unread_link: "%{count} non lus"
         read_link: "%{count} lus"

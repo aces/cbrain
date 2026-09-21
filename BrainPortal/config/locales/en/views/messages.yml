@@ -37,6 +37,7 @@ en:
         leave_message: "Leave Message"
       buttons:
         delete_checked: "Delete Checked Messages"
+        delete_name: "the selected messages"
       scopes:
         unread_link: "%{count} unread"
         read_link: "%{count} read"

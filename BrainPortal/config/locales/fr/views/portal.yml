@@ -14,7 +14,7 @@ fr:
       last_author: "Auteur de la dernière modification du portail :"
       last_revision: "Révision de la dernière modification du portail :"
       last_changed: "Date de la dernière modification du portail :"
-      up_since_html: "<strong>Portail en service depuis&nbsp;:</strong> %{started_at} (depuis: %{uptime})"
+      up_since_html: "<strong>Portail en service depuis&nbsp;:</strong> %{started_at} (depuis : %{uptime})"
       plugins_revision_header: "Informations sur la révision des plugins CBRAIN"
       plugins_package: "Package de plugins : %{plugin}"
       platform_info: "Informations sur la plateforme"
@@ -26,7 +26,7 @@ fr:
       gnu_license: "Licence publique générale GNU"
       gnu_desc_html: "Le code source de CBRAIN est distribué sous la Licence publique générale GNU (GPL).<br />Copyright Alan C. Evans – Université McGill 2008–2022<br />Une copie du texte de la licence est disponible ici."
       other_licenses: "Autres licences"
-      other_desc_html: "Certains paquets ou bibliothèques développés par des entités externes<br />sont utilisés dans le code source de CBRAIN; voici un résumé de leurs<br />licences respectives."
+      other_desc_html: "Certains paquets ou bibliothèques développés par des entités externes<br />sont utilisés dans le code source de CBRAIN ; voici un résumé de leurs<br />licences respectives."
       error_getting_license: "Erreur lors de la récupération du fichier de licence."
     available:
       title: "Liste des outils et des jeux de données"
@@ -39,7 +39,7 @@ fr:
         credits_box: "Crédits"
       paragraphs:
         citing_html: |
-          Les résultats publiés à partir de données recueillies ou traitées à l'aide d'une installation de CBRAIN doivent citer la référence suivante:
+          Les résultats publiés à partir de données recueillies ou traitées à l'aide d'une installation de CBRAIN doivent citer la référence suivante :
 
           <p>
 
@@ -76,24 +76,24 @@ fr:
       filters:
         lines_to_show_html: "Nombre de lignes à afficher : %{dropdown}"
         min_request_time_html: "Temps minimal de la requête : %{dropdown} ms"
-        filter: "Filtre:"
+        filter: "Filtre :"
         by_user_html: "Par utilisateur : %{dropdown}"
         by_instance_html: "Par nom d'instance : %{textfield}"
         by_method_html: "Par méthode : %{dropdown}"
         by_controller_html: "Par contrôleur : %{dropdown}"
       toggles:
-        hide_lines: "Masquer les lignes:"
-        started_html: "'Démarré': %{checkbox}"
-        processing_html: "'En cours de traitement': %{checkbox}"
-        parameters_html: "'Paramètres': %{checkbox}"
-        rendered_html: "'Rendu': %{checkbox}"
-        redirected_html: "'Redirigé': %{checkbox}"
-        user_html: "'Utilisateur': %{checkbox}"
-        completed_html: "'Terminé': %{checkbox}"
-        sql_html: "'SQL': %{checkbox}"
-        load_html: "'Chargement': %{checkbox}"
-        exists_html: "'Existe': %{checkbox}"
-        cache_html: "'CACHE': %{checkbox}"
+        hide_lines: "Masquer les lignes :"
+        started_html: "'Démarré' : %{checkbox}"
+        processing_html: "'En cours de traitement' : %{checkbox}"
+        parameters_html: "'Paramètres' : %{checkbox}"
+        rendered_html: "'Rendu' : %{checkbox}"
+        redirected_html: "'Redirigé' : %{checkbox}"
+        user_html: "'Utilisateur' : %{checkbox}"
+        completed_html: "'Terminé' : %{checkbox}"
+        sql_html: "'SQL' : %{checkbox}"
+        load_html: "'Chargement' : %{checkbox}"
+        exists_html: "'Existe' : %{checkbox}"
+        cache_html: "'CACHE' : %{checkbox}"
     provenance:
       title: "Provenance"
       headings:
@@ -129,7 +129,7 @@ fr:
 
           <p>
       footer:
-        last_updated_html: "<small>Dernière mise à jour du document: %{date}</small>"
+        last_updated_html: "<small>Dernière mise à jour du document : %{date}</small>"
     report:
       title: "Rapports tabulaires"
       headings:
@@ -138,7 +138,7 @@ fr:
         steps_html: |
           <p class="medium_paragraphs">
           Ce formulaire vous permet de générer de nombreux types de rapports
-          sous forme de tableaux. Procédez comme suit:
+          sous forme de tableaux. Procédez comme suit :
           </p>
 
           <ul>
@@ -263,7 +263,7 @@ fr:
         system_info: "Informations système"
         sessions: "Sessions"
         account_info: "Informations sur le compte"
-        tools_available_info_html: "Outils à votre disposition (%{available} sur %{total}, %{link}):"
+        tools_available_info_html: "Outils à votre disposition (%{available} sur %{total}, %{link}) :"
         latest_tasks: "Dernières tâches mises à jour"
         latest_files: "Derniers fichiers mis à jour"
       news:
@@ -275,7 +275,7 @@ fr:
         lock_message: "(message de verrouillage)"
         lock: "Verrouiller ce portail"
         lock_confirm: "Êtes-vous certain de vouloir verrouiller ce portail ?"
-        online_users: "Utilisateurs actuellement en ligne: "
+        online_users: "Utilisateurs actuellement en ligne : "
         recent_activity: "Activité récente :"
         active: "Actif"
         logged_out: "Déconnecté"
@@ -287,9 +287,9 @@ fr:
       sessions:
         sessions_count: "Il y a actuellement %{count} entrées dans la table des sessions."
         clear_sessions: "Supprimer les sessions datant de plus de"
-        clear_confirm: "Êtes-vous certain de vouloir supprimer les sessions?"
+        clear_confirm: "Êtes-vous certain de vouloir supprimer les sessions ?"
       exceptions:
-        logged: "Exceptions internes enregistrées:"
+        logged: "Exceptions internes enregistrées :"
         past_day:
           one: "1 exception au cours de la dernière journée."
           other: "%{count} exceptions de la dernière journée."
@@ -311,7 +311,7 @@ fr:
       defaults:
         projects: "Projets auxquels vous appartenez :"
         provider: "Votre data provider par défaut :"
-        server: "Votre bourreau par défaut:"
+        server: "Votre bourreau par défaut :"
       latest_tasks:
         active_count: "(%{count} actives)"
         none_active: "(Aucune active)"

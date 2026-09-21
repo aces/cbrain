@@ -156,7 +156,7 @@
       <% if before_archiving_size || before_archiving_num_files %>
         <%= t('.was_html',
               size: colored_pretty_size(before_archiving_size),
-              file_count: before_archiving_num_files ? view_pluralize(before_archiving_num_files, t('activerecord.models.userfile.other')) : t('unknown').downcase
+              file_count: before_archiving_num_files ? view_pluralize(before_archiving_num_files, t('activerecord.models.userfile.one').downcase) : t('unknown').downcase
             )
         %>
       <% end %>

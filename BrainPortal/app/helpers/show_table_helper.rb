@@ -97,7 +97,7 @@ module ShowTableHelper
 
       # Safety check to prevent devs from mixing up forms and objects
       if @form_helper && @form_helper.object != @object
-        raise t('show_table.initial_error')
+        raise I18n.t('show_table.initial_error')
       end
 
       # Template code

@@ -2,10 +2,10 @@ fr:
   tasks:
     control:
       headings:
-        main: "Contrôle des tâches:"
-      server_version_html: "Serveur&nbsp;&amp;&nbsp;version:"
+        main: "Contrôle des tâches :"
+      server_version_html: "Serveur&nbsp;&amp;&nbsp;version :"
       select_server_version: "Sélectionner le serveur et la version"
-      save_results_to_html: "Enregistrer&nbsp;les&nbsp;résultats&nbsp;dans:"
+      save_results_to_html: "Enregistrer&nbsp;les&nbsp;résultats&nbsp;dans :"
       select_data_provider: "(Sélectionner un serveur de stockage pour vos résultats)"
       description_note: "(La première ligne doit être un court résumé, et les suivantes vos notes.)"
     output_renaming_fieldset:
@@ -19,7 +19,7 @@ fr:
         main: "Paramètres de la tâche"
     presets:
       headings:
-        main: "Gestion des préréglages:"
+        main: "Gestion des préréglages :"
       submit_tag:
         load_preset: "Charger un préréglage"
         delete_preset: "Supprimer le préréglage"
@@ -27,7 +27,7 @@ fr:
       load_preset_configuration: "Charger une configuration prédéfinie :"
       select_preset: "(Sélectionner un préréglage à charger)"
       delete_this_preset: "Supprimer ce préréglage ?"
-      save_as_preset: "Enregistrer comme configuration prédéfinie:"
+      save_as_preset: "Enregistrer comme configuration prédéfinie :"
       select_preset_to_overwrite: "(Sélectionner un préréglage à remplacer)"
       or_as_new_name: " (ou sous un nouveau nom)"
       save_as_site_preset: "Enregistrer comme préréglage du site :"
@@ -56,8 +56,8 @@ fr:
         archiving: "Archivage"
         filters: "Filtres"
       paragraphs:
-        for_failed_tasks_html: "Ce panneau vous permet d'agir sur les tâches ayant échoué, d'une manière ou d'une autre.<br />La tentative de récupération après une erreur déclenchera le code de nettoyage ainsi qu'un redémarrage au<br />dernier stade de traitement réussi avant l'échec. Cela ne fonctionne pas toujours,<br />mais il est souvent utile d'essayer au moins une fois!"
-        for_completed_tasks_intro_html: "Ce panneau vous permet d'agir sur les tâches terminées avec succès.<br />Vous pouvez essayer de les redémarrer à trois étapes différentes de leur cycle de vie:"
+        for_failed_tasks_html: "Ce panneau vous permet d'agir sur les tâches ayant échoué, d'une manière ou d'une autre.<br />La tentative de récupération après une erreur déclenchera le code de nettoyage ainsi qu'un redémarrage au<br />dernier stade de traitement réussi avant l'échec. Cela ne fonctionne pas toujours,<br />mais il est souvent utile d'essayer au moins une fois !"
+        for_completed_tasks_intro_html: "Ce panneau vous permet d'agir sur les tâches terminées avec succès.<br />Vous pouvez essayer de les redémarrer à trois étapes différentes de leur cycle de vie :"
         for_completed_tasks_list_html: "<ul><li>À l'étape <strong>Configuration</strong>, lorsque les fichiers de données d'entrée<br />sont synchronisés sur le serveur de calcul et que les<br />scripts de traitement sont créés.</li><li>À l'étape <strong>Cluster</strong>, lorsque les scripts scientifiques<br />sont exécutés sur les nœuds du serveur de calcul.</li><li>À l'étape <strong>Post-traitement</strong>, lorsque les fichiers de sortie<br/>résultants sont renvoyés vers les fournisseurs de données de CBRAIN.</li></ul>"
         for_completed_tasks_note_html: "Vous pouvez également dupliquer des tâches et les recréer sur un autre<br />serveur de calcul. Avant de les redémarrer, assurez-vous toutefois d'ajuster<br />la version de leur outil."
         terminating_and_cleaning_up_html: "Ce panneau vous permet d'agir sur les tâches dont vous n'avez plus besoin.<br />Vous pouvez interrompre des tâches à n'importe quelle étape de leur cycle de vie, même<br />celles ayant échoué. Les tâches marquées <strong>Interrompue</strong> peuvent être redémarrées<br />ultérieurement."
@@ -65,7 +65,7 @@ fr:
         remove_tasks_html: "Enfin, vous pouvez supprimer complètement des tâches. Cela effacera le répertoire de travail de la tâche<br />sur le serveur de calcul, y compris les fichiers de données temporaires, mais n'effacera pas<br />les fichiers de sortie d'une tâche terminée avec succès. Cela est utile si vous avez,<br />par exemple, des données confidentielles. La suppression d'une tâche <strong>supprimera</strong> également toute<br />archive du répertoire de travail de cette tâche, le cas échéant (comme indiqué par<br />les symboles %{workdir_status} et<br />%{userfile_status} dans la colonne « Taille du répertoire de travail »)."
         archiving_1_html: "Ce panneau vous permet d'archiver le contenu du répertoire de travail<br />de vos tâches. Cela ne peut être effectué que pour les tâches dans un état<br />final, comme <strong>Terminée</strong>, <strong>Échec</strong> ou <strong>Interrompue</strong>."
         archiving_2_html: "Le processus peut prendre beaucoup de temps pour chaque tâche archivée ou restaurée.<br />Veuillez donc patienter et ne demandez pas cette action plusieurs fois en parallèle."
-        archiving_3_html: "Il existe deux différents « niveaux » d'archivage:<br/>\n<ul>\n  <li class=\"dropmenu_info\">\n    L'archivage <em>sur le cluster</em> signifie que les fichiers de la tâche seront compressés et archivés, mais resteront sur le cluster. Ces tâches sont indiquées par le symbole %{workdir_status} dans la table d'index.\n  </li>\n  <li class=\"dropmenu_info\">\n    L'archivage <em>comme fichier</em> signifie que l'archive sera rapatriée dans votre gestionnaire de fichiers sous la forme d'un fichier « %{type} » et qu'aucune donnée ne restera sur le cluster. Ces tâches sont indiquées par le symbole %{userfile_status} dans la table d'index.\n  </li>\n</ul>"
+        archiving_3_html: "Il existe deux différents « niveaux » d'archivage :<br/>\n<ul>\n  <li class=\"dropmenu_info\">\n    L'archivage <em>sur le cluster</em> signifie que les fichiers de la tâche seront compressés et archivés, mais resteront sur le cluster. Ces tâches sont indiquées par le symbole %{workdir_status} dans la table d'index.\n  </li>\n  <li class=\"dropmenu_info\">\n    L'archivage <em>comme fichier</em> signifie que l'archive sera rapatriée dans votre gestionnaire de fichiers sous la forme d'un fichier « %{type} » et qu'aucune donnée ne restera sur le cluster. Ces tâches sont indiquées par le symbole %{userfile_status} dans la table d'index.\n  </li>\n</ul>"
         archiving_4_html: "Le reste des informations sur les tâches ne sera en aucun cas modifié<br />lorsqu'elles seront archivées. Aucune opération ne peut être effectuée sur une tâche archivée, sauf<br />bien entendu sa désarchivage."
       change:
         owner: "Changer le propriétaire :"
@@ -91,11 +91,11 @@ fr:
         unarchive_tasks: "Désarchiver les tâches"
       confirm:
         terminate_tasks: "Êtes-vous certain de vouloir interrompre les tâches sélectionnées ?"
-        remove_work_directories: "Êtes-vous certain de vouloir supprimer les\nRÉPERTOIRES DE TRAVAIL des tâches sélectionnées?"
-        remove_tasks: "Êtes-vous certain de vouloir supprimer les tâches sélectionnées?\n\nREMARQUE IMPORTANTE: Cela supprimera également leurs répertoires de travail archivés, le cas échéant."
+        remove_work_directories: "Êtes-vous certain de vouloir supprimer les\nRÉPERTOIRES DE TRAVAIL des tâches sélectionnées ?"
+        remove_tasks: "Êtes-vous certain de vouloir supprimer les tâches sélectionnées ?\n\nREMARQUE IMPORTANTE : Cela supprimera également leurs répertoires de travail archivés, le cas échéant."
       restart_at: "Redémarrer à :"
       on_execution_server: "sur le serveur de calcul : "
-      optional_destination_dp_html: "Facultatif : lors de l'archivage <em>comme fichier</em>, choisissez un serveur de stockage de destination:<br />"
+      optional_destination_dp_html: "Facultatif : lors de l'archivage <em>comme fichier</em>, choisissez un serveur de stockage de destination :<br />"
       do_not_compress: "Ne pas compresser lors de l'archivage"
     tasks_display:
       titles:
@@ -122,9 +122,9 @@ fr:
         on_cluster: "Sur le Cluster"
         as_file: "Comme fichier"
       task_count_colon:
-        one: "%{count} tâche:"
-        other: "%{count} tâches:"
-      total_space_html: "Espace total utilisé par les tâches: %{space}"
+        one: "%{count} tâche :"
+        other: "%{count} tâches :"
+      total_space_html: "Espace total utilisé par les tâches : %{space}"
       tasks_without_estimates:
         one: "(1 tâche sans estimation d'espace)"
         other: "(%{count} tâches sans estimation d'espace)"
@@ -181,7 +181,7 @@ fr:
         terminate_task: "Êtes-vous certain de vouloir interrompre cette tâche ?"
         remove_work_directory: "Êtes-vous certain de vouloir supprimer le répertoire de travail de cette tâche ?"
         remove_task: "Êtes-vous certain de vouloir supprimer cette tâche ?"
-        remove_task_note: "\n\nREMARQUE IMPORTANTE: Cela supprimera également son répertoire de travail archivé."
+        remove_task_note: "\n\nREMARQUE IMPORTANTE : Cela supprimera également son répertoire de travail archivé."
       cells:
         task_name: "Nom de la tâche"
         task_description: "Description de la tâche"
@@ -288,13 +288,13 @@ fr:
         prepare: "Étape 1: création du dépôt"
         upload: "Étape 2: Importation des fichiers de données"
         publish: "Étape 3: publication du dépôt"
-        reset_deposit_html: "Attention: ce dépôt se trouve dans le <strong>Sandbox Zenodo</strong>"
+        reset_deposit_html: "Attention : ce dépôt se trouve dans le <strong>Sandbox Zenodo</strong>"
       paragraphs:
         prepare:
           complete_html: "En tant qu'auteur, vous pouvez consulter et modifier le dépôt<br />à ce lien : %{link}"
           incomplete_html: "Remplissez le formulaire ci-dessous pour créer le dépôt initial.<p>Vous pourrez modifier le contenu du formulaire à tout moment<br />ultérieurement, directement sur le site Web de Zenodo."
         upload:
-          incomplete_html: "<span class=\"warning\">Avertissement : déjà publié:</span> dans %{link}"
+          incomplete_html: "<span class=\"warning\">Avertissement : déjà publié :</span> dans %{link}"
         publish:
           doi_1_html: "Les sorties de cette tâche ont été publiées sous le DOI %{doi}"
           doi_2_html: "Vous pouvez modifier davantage le dépôt ici : %{link}"
@@ -306,7 +306,7 @@ fr:
           deposit_2_description_html: "Cela n'effacera rien sur Zenodo <em>qui a été publié</em>,<br />mais effacera tout dépôt et tout téléversement non publié."
           deposit_confirmation: "Êtes-vous certain de vouloir réinitialiser les informations du dépôt pour cette tâche ?"
       prepare:
-        scheduled_for_upload: "Planifié pour l'importation:"
+        scheduled_for_upload: "Planifié pour l'importation :"
         will_be_ignored: "Sera ignoré :"
       upload:
         waiting_for_initial_deposit: "En attente de la création du dépôt initial à l'étape 1."

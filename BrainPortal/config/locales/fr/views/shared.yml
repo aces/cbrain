@@ -19,7 +19,7 @@ fr:
         on_word: "sur"
     error_messages:
       header_message: "%{object_errors} ont empêché l'enregistrement de ce %{object_name}:"
-      message: "Des problèmes ont été détectés dans les champs suivants:"
+      message: "Des problèmes ont été détectés dans les champs suivants :"
     group_tables:
       labels:
         work_groups: "Projets de travail"

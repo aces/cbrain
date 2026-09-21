@@ -12,7 +12,7 @@ fr:
       mark_newer: "Marquer comme plus récent"
       upload: "Importer"
       and_go: " (et passer au fichier suivant)"
-      exception: "Exception:"
+      exception: "Exception :"
       read_only: "Lecture seule"
       read_write: "Lecture/Écriture"
       read: "Lecture"
@@ -38,10 +38,10 @@ fr:
       actions:
         proceed: "Continuer"
       autodetect: "(détecté automatiquement)"
-      invalid: "Non valide!"
+      invalid: "Non valide !"
       new_collection: "Nouvelle collection"
       qc_note: "Notez que le contrôle qualité (CQ) nécessite d'abord que les fichiers soient synchronisés localement."
-      unknown_file_type: "Type de fichier inconnu!"
+      unknown_file_type: "Type de fichier inconnu !"
       labels:
         extract: "Extraire"
         as_single_collection: "Comme une seule collection"
@@ -60,7 +60,7 @@ fr:
         locked: |
             Les fichiers verrouillés ne peuvent pas être modifiés ou déplacés entre les fournisseurs de données.
       confirmations:
-        delete_file_html: "Êtes-vous certain de vouloir supprimer ces <span class='dlg-cfrm-cnt'></span> fichier(s)?"
+        delete_file_html: "Êtes-vous certain de vouloir supprimer ces <span class='dlg-cfrm-cnt'></span> fichier(s) ?"
         delete_tag_html: "Êtes-vous certain de vouloir supprimer le label <span class='dlg-cfrm-obj'></span> ?"
     file_menu:
       static_actions:
@@ -103,17 +103,17 @@ fr:
         fail: "Échec"
       error_messages:
         qc_error: "Une erreur s'est produite lors de la génération du panneau de contrôle qualité pour ce fichier. Veuillez communiquer avec les développeurs."
-      full_list_of_tags: "Liste complète des labels:"
+      full_list_of_tags: "Liste complète des labels :"
     resource_usage:
       section:
         disk_space_history: "Historique de l'espace disque"
       headings:
         space_delta: "Variation de l'espace"
     syncstatus:
-      last_synchronized_date: "Date de la dernière synchronisation:"
-      last_accessed_date: "Date du dernier accès:"
-      transfer_started: "Transfert commencé:"
-      state_occurred: "État survenu:"
+      last_synchronized_date: "Date de la dernière synchronisation :"
+      last_accessed_date: "Date du dernier accès :"
+      transfer_started: "Transfert commencé :"
+      state_occurred: "État survenu :"
     tags_table:
       placeholders:
         group: "Un projet..."
@@ -125,7 +125,7 @@ fr:
         no_tools_others: "Aucun outil disponible. Communiquez avec votre administrateur pour les faire enregistrer."
       labels:
         all_tools: "Tous les outils"
-        software_package: "Progiciel:"
+        software_package: "Progiciel :"
       links:
         tool_website: "Site Web de l'outil"
     userfiles_display:
@@ -149,12 +149,12 @@ fr:
         group: "Projet"
         description: "Description"
         data_provider: "Fournisseur"
-      search_by_name: "Rechercher par nom:"
-      was_html: "(était: %{size} dans %{file_count})"
+      search_by_name: "Rechercher par nom :"
+      was_html: "(était : %{size} dans %{file_count})"
     index:
       title: "Fichiers"
       legends:
-        sync_symbols: "Symboles de synchronisation:"
+        sync_symbols: "Symboles de synchronisation :"
     quality_control:
       title: "Contrôle qualité"
       links:
@@ -187,14 +187,14 @@ fr:
         immutable_file: "Fichier immuable"
         hidden_file: "Fichier masqué"
       zenodo_publication:
-        published: "Publié: %{link}"
-        in_progress: "En cours: %{link}"
+        published: "Publié : %{link}"
+        in_progress: "En cours : %{link}"
       legends:
         content: "Contenu"
       content:
         archived: "Ce %{type} a été archivé."
         viewers_disabled: "Les visionneuses de contenu sont désactivées jusqu'à ce que le fichier soit désarchivé."
-        cannot_view: "(Ce fichier ne peut pas être consulté par vous; je me demande comment vous êtes arrivé ici.)"
+        cannot_view: "(Ce fichier ne peut pas être consulté par vous ; je me demande comment vous êtes arrivé ici.)"
         non_viewable_dp_html: |
           (Ce fichier ne peut pas être consulté car il est stocké sur le serveur de stockage
           %{dp_link}
@@ -230,9 +230,9 @@ fr:
           pour commencer le processus de synchronisation.
           Cela peut vous permettre de consulter le contenu affichable et d'extraire des fichiers de cette collection.)
         no_viewer_code_html: |
-          (Le contenu de ce fichier ne peut pas être consulté: aucun code de visionneuse n'est actuellement disponible
+          (Le contenu de ce fichier ne peut pas être consulté : aucun code de visionneuse n'est actuellement disponible
           pour les fichiers de type '%{type}')
-        change_view: "Changer de vue:"
-      was_html: "Était:<br>%{size} dans %{file_count}"
-      cached: "Mis en cache:"
+        change_view: "Changer de vue :"
+      was_html: "Était :<br>%{size} dans %{file_count}"
+      cached: "Mis en cache :"
       here: "ici"

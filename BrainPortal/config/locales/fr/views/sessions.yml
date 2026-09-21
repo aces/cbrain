@@ -44,9 +44,9 @@ fr:
       submit:
         sign_in: "Se connecter"
       links:
-        forgot_password: "Mot de passe oublié?"
+        forgot_password: "Mot de passe oublié ?"
         sign_in_with: "Se connecter avec %{name}"
         request_account: "Demander un compte"
         full_list: "Liste complète de tous les outils et jeux de données"
       or: "OU"
-      not_a_user: "Vous n'avez pas de compte?"
+      not_a_user: "Vous n'avez pas de compte ?"

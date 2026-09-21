@@ -143,7 +143,7 @@ fr:
             </p>
       stop_services:
         processing_in_orange_text: "Éléments en cours indiqués en orange"
-        processing: "en tratitement"
+        processing: "en traitement"
         not_safe: "risqué"
         paragraphs:
           stop_services_description_html: |
@@ -504,7 +504,7 @@ fr:
         user_manual_url: "Si défini, le portail affichera un lien appelé 'Manuel utilisateur' dans la barre de compte en haut."
         base_portal_url_html: "Requis pour diriger les nouveaux utilisateurs vers le portail, ceci doit être rempli avec l'URL <em>de base</em> du portail"
         neurohub_base_url_html: "Requis pour diriger les nouveaux utilisateurs vers le portail NeuroHub, ceci doit être rempli avec l'URL <em>de base</em> du portail"
-        large_upload_url: "Si défini, le portail affichera un lien intitulé « Datasets volumineux? » dans le panneau d'upload, renvoyant les utilisateurs vers une page personnalisée où vous pouvez fournir des explications pour des méthodes alternatives d'upload."
+        large_upload_url: "Si défini, le portail affichera un lien intitulé « Datasets volumineux ? » dans le panneau d'upload, renvoyant les utilisateurs vers une page personnalisée où vous pouvez fournir des explications pour des méthodes alternatives d'upload."
         upload_size_limit: "Si défini (et numérique), le portail affichera un avertissement lors du téléchargement de fichiers sur la taille maximale autorisée pour les uploads. Notez que cette limite doit être appliquée manuellement sur le serveur web hébergeant ce portail."
         support_email_html: "Si défini, le portail affichera un lien <em>mailto:</em> permettant aux utilisateurs de contacter le support."
         nh_support_email_html: "Si défini, le portail affichera un lien <em>mailto:</em> permettant aux utilisateurs de contacter le support NeuroHub."
