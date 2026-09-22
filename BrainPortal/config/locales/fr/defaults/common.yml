@@ -43,6 +43,38 @@ fr:
     upload_colon: "Téléverser :"
   date: "Date"
   ago_time: "il y a %{time}"
+  pretty_elapsed:
+    year:
+      one: "%{count} an"
+      other: "%{count} ans"
+    month:
+      one: "%{count} mois"
+      other: "%{count} mois"
+    week:
+      one: "%{count} semaine"
+      other: "%{count} semaines"
+    day:
+      one: "%{count} jour"
+      other: "%{count} jours"
+    hour:
+      one: "%{count} heure"
+      other: "%{count} heures"
+    minute:
+      one: "%{count} minute"
+      other: "%{count} minutes"
+    second:
+      one: "%{count} seconde"
+      other: "%{count} secondes"
+    separator: ", "
+    last_separator: " et "
+    short:
+      year: "a"
+      month: "mois"
+      week: "sem"
+      day: "j"
+      hour: "h"
+      minute: "m"
+      second: "s"
   more_parentheses: "(plus)"
   unknown: "Inconnu"
   unknown_parentheses: "(Inconnu)"

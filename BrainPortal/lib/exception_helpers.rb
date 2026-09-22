@@ -57,13 +57,13 @@ module ExceptionHelpers
 
   def record_not_deleted(exception)
     raise if Rails.env == 'development' #Want to see stack trace in dev.
-    flash[:error] = I18n.t('application.flash.object_not_deleted'
+    flash[:error] = I18n.t('application.flash.object_not_deleted')
     respond_to do |format|
       format.html { redirect_to default_redirect }
       format.js   { render :partial  => "shared/flash_update",     :status => 403 }
       format.xml  { render :xml =>  {:error => exception.message}, :status => 403 }
       format.json { render :json => {:error => "The #{exception.model} with id = #{exception.id} fails to delete",
-                                     :message => I18n.t('application.flash.object_not_deleted',
+                                     :message => I18n.t('application.flash.object_not_deleted'),
                                      :type => "delete failed",
                                      :model => exception.model,
                                      :id => exception.id
@@ -166,4 +166,3 @@ module ExceptionHelpers
   end
 
 end
-
