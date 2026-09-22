@@ -39,7 +39,7 @@ module ZenodoHelper
   def link_to_deposit(depid)
     zsite, id = depid.split("-")
     label  = t('zenodo.deposit', id: id)
-    label += t('zenodo.sandbox') if zsite == 'sandbox'
+    label += t('zenodo.sandbox_deposit') if zsite == 'sandbox'
     link_to label, url_for_deposit(depid), :target => '_blank'
   end
 

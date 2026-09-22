@@ -1,8 +1,6 @@
 en:
-
   will_paginate:
     page_gap: "…"
-
   labels:
     user_colon:
       one: "User:"
@@ -43,10 +41,40 @@ en:
     dates_colon: "Dates:"
     search_colon: "Search:"
     upload_colon: "Upload:"
-
   date: "Date"
   ago_time: "%{time} ago"
-
+  pretty_elapsed:
+    year:
+      one: "%{count} year"
+      other: "%{count} years"
+    month:
+      one: "%{count} month"
+      other: "%{count} months"
+    week:
+      one: "%{count} week"
+      other: "%{count} weeks"
+    day:
+      one: "%{count} day"
+      other: "%{count} days"
+    hour:
+      one: "%{count} hour"
+      other: "%{count} hours"
+    minute:
+      one: "%{count} minute"
+      other: "%{count} minutes"
+    second:
+      one: "%{count} second"
+      other: "%{count} seconds"
+    separator: ", "
+    last_separator: " and "
+    short:
+      year: "y"
+      month: "mo"
+      week: "w"
+      day: "d"
+      hour: "h"
+      minute: "m"
+      second: "s"
   more_parentheses: "(more)"
   unknown: "Unknown"
   unknown_parentheses: "(Unknown)"
@@ -71,74 +99,52 @@ en:
   info_parentheses: "(info)"
   no_description_parentheses: "(No description)"
   everyone: everyone
-
   no_information: "There is no information to show at this time."
-
   from: "From"
   to: "To"
-
   delete: "Delete"
   deleted: "Deleted"
   deleted_non_existing_parentheses: "(Deleted/Non-existing)"
-
   save: "Save"
   saved: "Saved"
-
   create: "Create"
   created: "Created"
-
   update: "Update"
   updated: "Updated"
   last_updated: "Last Updated"
-
   active_users: "Active Users"
   locked_users: "Locked Users"
-
   submit: "Submit"
-
   status: "Status"
-
   search_by_name: "Search by name:"
   confirm_delete: "Are you sure you want to delete %{name}?"
-
   dataset:
     one: "Dataset"
     other: "Datasets"
-
   agree: "I agree"
-
   clear_options:
       month: "One month ago"
       week: "One week ago"
       day: "One day ago"
       hour: "One hour ago"
       now: "Now! (Including yours!)"
-
   login: "Login"
-
   owner: "Owner"
   owner_downcase: "owner"
-
   version:
     one: "Version"
     other: "Versions"
-
   tool_version:
     one: "Tool Version"
     other: "Tool Versions"
-
   parameters:
     one: "Parameter"
     other: "Parameters"
   summary: "Summary"
-
-
   time_zone: "Time Zone"
   all: "All"
-
   show_hide_parentheses: "(show/hide)"
   hidden: "hidden"
-
   datetime:
     distance_in_words:
       half_a_minute: "half a minute"
@@ -175,12 +181,10 @@ en:
       almost_x_years:
         one: "almost 1 year"
         other: "almost %{count} years"
-
   chosen:
     single:     "Select an Option"
     multiple:   "Select Some Options"
     no_results: "No results match"
     add_tag:    "Press Enter to add: "
-
-
-
+  custom_license:
+    message_header: "License file added"

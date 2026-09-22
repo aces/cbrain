@@ -43,7 +43,7 @@
     <div title=<%= t('.titles.description') %>>
       <%= f.label :description, t('.labels.description') %><br>
       <%= f.text_area :description, :rows => 3, :cols => 85 %>
-      <%= t('.paragraphs.description_html',  group: current_user.own_group.name) %>
+      <%= t('.paragraphs.description_html') %>
     </div>
 
     <p>
@@ -51,7 +51,7 @@
     <div title=<%= t('.titles.group') %>>
       <%= f.label :group_id, t('.labels.group') %><br>
       <%= group_select("data_provider[group_id]", { :groups => @groups, :selector => @provider.group_id.to_s }) %>
-      <%= t('.paragraphs.group_html,  group: current_user.own_group.name') %>
+      <%= t('.paragraphs.group_html',  group: current_user.own_group.name) %>
     </div>
 
     <p>

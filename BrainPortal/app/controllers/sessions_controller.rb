@@ -144,7 +144,7 @@ class SessionsController < ApplicationController
 
     respond_to do |format|
       format.html {
-                    flash[:notice] = "You have been logged out."
+                    flash[:notice] = t('sessions.flash.logged_out')
                     redirect_to new_session_path
                   }
       format.xml  { head :ok }
@@ -163,17 +163,17 @@ class SessionsController < ApplicationController
     # Some initial simple validations
     oidc      = OidcConfig.find_by_state(state) if state
     if !code || !oidc || state != oidc_current_state(oidc)
-      cb_error "#{oidc&.name || 'OIDC'} session is out of sync with CBRAIN"
+      cb_error t('sessions.errors.oidc_out_of_sync', name: oidc&.name || 'OIDC' )
     end
 
     # Query OpenID provider; this returns all the info we need at the same time.
     identity_struct = oidc_fetch_token(oidc, code, oidc_redirect_url(oidc))
     if !identity_struct
-      cb_error "Could not fetch your identity information from #{oidc.name}"
+      cb_error t('sessions.errors.oidc_fetch_failed', name: oidc.name )
     end
     Rails.logger.info "#{oidc.name} identity struct:\n#{identity_struct.pretty_inspect.strip}"
     identity_provider_id, identity_provider_name, username = oidc.identity_info(identity_struct)
-    cb_error "Identity structure is missing some information. Contact the admins" if
+    cb_error t('sessions.errors.identity_incomplete') if
       identity_provider_id.blank? || identity_provider_name.blank? || username.blank?
 
     # Either record the identity...
@@ -182,16 +182,15 @@ class SessionsController < ApplicationController
         Rails.logger.error("User #{current_user.login} attempted authentication " +
                            "with unallowed identity provider " + identity_provider_name
                           )
-        flash[:error] = "Error: your account can only authenticate with the following providers: " +
-                        "#{allowed_oidc_provider_names(current_user).join(", ")}"
+        flash[:error] = t('sessions.flash.oidc_provider_not_allowed', providers: allowed_oidc_provider_names(current_user).join(", "))
         redirect_to user_path(current_user)
         return
       end
       record_oidc_identity(oidc, current_user, identity_struct)
-      flash[:notice] = "Your CBRAIN account is now linked to your #{oidc.name} identity."
+      flash[:notice] = t('sessions.flash.oidc_linked', name: oidc.name)
       if user_must_link_to_oidc?(current_user)
         wipe_user_password_after_oidc_link(oidc, current_user)
-        flash[:notice] += "\nImportant note: from now on you can no longer connect to CBRAIN using a password."
+        flash[:notice] += t('sessions.flash.oidc_no_more_password')
         redirect_to start_page_path
         return
       end
@@ -215,7 +214,7 @@ class SessionsController < ApplicationController
   rescue => ex
     clean_bt = Rails.backtrace_cleaner.clean(ex.backtrace || [])
     Rails.logger.error "#{oidc&.name || 'OIDC'} auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
-    flash[:error] = "The #{oidc&.name || 'OIDC'} authentication failed"
+    flash[:error] = t('sessions.flash.oidc_auth_failed', name: oidc&.name || 'OIDC')
     redirect_to new_session_path
   end
 
@@ -228,7 +227,7 @@ class SessionsController < ApplicationController
     oidc      = OidcConfig.find_by_name(oidc_name)
     unlink_oidc_identity(oidc, current_user) if oidc
 
-    flash[:notice] = "Your account is no longer linked to any #{oidc.name} identity"
+    flash[:notice] = t('sessions.flash.oidc_unlinked', name: oidc&.name || 'OIDC')
     redirect_to user_path(current_user)
   end
 
@@ -258,7 +257,7 @@ class SessionsController < ApplicationController
 
     # Bad login/password?
     unless user
-      flash.now[:error] = 'Invalid user name or password.'
+      flash.now[:error] =  t('sessions.flash.invalid_credentials')
       Kernel.sleep 3 # Annoying, as it blocks the instance for other users too. Sigh.
       return false
     end
@@ -269,7 +268,7 @@ class SessionsController < ApplicationController
       .map { |ip| IPAddr.new(ip.strip) rescue nil }
       .reject(&:blank?)
     if whitelist.present? && ! whitelist.any? { |ip| ip.include? cbrain_request_remote_ip }
-      flash.now[:error] = 'Untrusted source IP address.'
+      flash.now[:error] = t('sessions.flash.untrusted_ip')
       return false
     end
 
@@ -304,12 +303,12 @@ class SessionsController < ApplicationController
 
     # Portal locked?
     if portal.portal_locked? && !user.has_role?(:admin_user)
-      return "The system is currently locked. Please try again later."
+      return t('sessions.flash.portal_locked')
     end
 
     # Account locked?
     if user.account_locked?
-      return "This account is locked, please write to #{User.admin.email.presence || "the support staff"} to get this account unlocked."
+      return t('sessions.flash.account_locked', contact: User.admin.email.presence || "the support staff")
     end
 
     return ""

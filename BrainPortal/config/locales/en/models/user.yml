@@ -20,6 +20,3 @@ en:
         default_data_provider: "Default Data Provider"
         forced_openid_providers: "Forced OpenID Identity Providers"
         password: "Password"
-        name: "Name"
-        description: "Description"
-

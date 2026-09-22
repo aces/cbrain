@@ -1,5 +1,8 @@
 en:
   activerecord:
+    attributes:
+     remote_resource:
+        class: "Class"
     models:
       remote_resource:
         one: "Server"
@@ -12,6 +15,3 @@ en:
       resource:
         one: "Resource"
         other: "Resources"
-
-
-

@@ -75,7 +75,7 @@
         <% elsif situation =~ /ever/i %>
           <%= t('.exceeded.ever') %>
         <% else %>
-          <%= (#{t('unknown')}) %>
+          <%= t('unknown_parentheses') %>
         <% end %>
     </td>
     <td>
@@ -95,4 +95,3 @@
 <% end %>
 
 </table>
-

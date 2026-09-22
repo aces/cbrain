@@ -1,0 +1,200 @@
+fr:
+  background_activities:
+    common:
+      dynamic_items_list: "(Liste d'éléments dynamique)"
+    background_activity_table:
+      toggles:
+        about: "À propos"
+      submits:
+        cancel_activities: "Annuler les activités"
+        suspend_activities: "Suspendre les activités"
+        unsuspend_activities: "Réactiver les activités"
+        destroy_activities: "Supprimer les activités"
+        activate_now: "Activer maintenant !"
+        retry_failed: "Relancer les échecs"
+      confirms:
+        cancel: "Êtes-vous sûr de vouloir annuler les activités sélectionnées en arrière-plan ?"
+        suspend: "Êtes-vous sûr de vouloir suspendre les activités sélectionnées en arrière-plan ?"
+        unsuspend: "Êtes-vous sûr de vouloir réactiver les activités sélectionnées en arrière-plan ?"
+        destroy: "Êtes-vous sûr de vouloir supprimer les activités sélectionnées en arrière-plan ?"
+        activate: "Êtes-vous sûr de vouloir activer les activités sélectionnées en arrière-plan ?"
+        retry: "Êtes-vous sûr de vouloir relancer les éléments échoués des activités sélectionnées en arrière-plan ?"
+      links:
+        create_scheduled: "Créer une nouvelle activité planifiée"
+        hide_scheduled: "Masquer les activités planifiées"
+        refresh_list: "Rafraîchir cette liste"
+        show: "Afficher"
+      legends:
+        about: "À propos des activités en arrière-plan"
+      paragraphs:
+        about_general_top_html: |
+          <p class="long_paragraphs">
+          Cette page affiche les « activités en arrière-plan » sous forme de barres de progression. Chaque
+          activité applique une opération unique à un ensemble d'éléments (généralement,
+          des fichiers ou des tâches). Ces activités résultent souvent du clic
+          sur des boutons dans d'autres pages, lorsque vous recevez un message indiquant <em>qu'une action
+          a été lancée en arrière-plan</em>. Les activités en cours
+          sont affichées avec des bordures lumineuses. Les opérations individuelles au sein d'une
+          activité peuvent réussir ou échouer. Parfois, l'échec n'est pas
+          significatif (par ex. tenter de compresser un fichier déjà compressé).
+          <p class="long_paragraphs">
+          Vous pouvez annuler des activités, mais rappelez-vous que les activités annulées
+          ne peuvent jamais être relancées. Vous devrez refaire l'opération
+          qui a créé l'activité.
+          <p class="long_paragraphs">
+          Les anciennes activités terminées sont généralement supprimées après une semaine et disparaîtront de cette liste.
+        about_admin_html: |
+          <p class="long_paragraphs">
+          En tant qu'administrateur, vous pouvez créer des activités de maintenance qui peuvent être
+          planifiées pour plus tard. Consultez le formulaire associé pour plus d'aide. Vous
+          pouvez également suspendre des activités ; celles-ci sont reprises ensuite. Vous pouvez suspendre
+          des activités en cours ou planifiées dans le futur.
+        about_general_bottom_html: |
+          <p class="long_paragraphs">
+          Les barres de progression de cette page ne sont <strong>pas en direct</strong>, il
+          faut cliquer sur le bouton <em>Rafraîchir</em> pour obtenir une mise à jour
+          de l'avancement de vos activités.
+      columns:
+        user: "Utilisateur"
+        server: "Serveur"
+        status: "Statut"
+        activity_type: "Type d'activité"
+        scheduled_at: "Planifiée le"
+        repeat: "Répéter"
+        retries: "Relancer"
+        last_update: "Dernière mise à jour"
+        progress: "Progression"
+        show: "Afficher"
+      labels:
+        type_filter: "%{label} (de %{base})"
+      scheduled_at:
+        in_time: "(dans %{time})"
+        overdue_by: "(en retard de %{time})"
+      retries:
+        allowed:
+          one: "%{count} relance autorisée"
+          other: "%{count} relances autorisées"
+        next:
+          one: "(prochaine dans %{count} seconde)"
+          other: "(prochaine dans %{count} secondes)"
+      on_word: "sur"
+      items_count:
+        one: "(%{count} élément)"
+        other: "(%{count} éléments)"
+      progress_counts:
+        ok:     "Réussis=%{count}"
+        failed: "Échecs=%{count}"
+      tooltips:
+        messages: "(Messages)"
+    RubyRunner:
+      legends:
+        ruby_code: "Code Ruby"
+    index:
+      title: "Activités en arrière-plan"
+    new:
+      title: "Planifier une activité de maintenance"
+      headings:
+        main: "Planifier une activité de maintenance"
+      errors:
+        activity: "activité"
+      labels:
+        repeat: "Fréquence de répétition"
+        remove_task_workdirs: "Supprimer les répertoires de travail des tâches"
+        file_custom_filter: "Filtre personnalisé de fichiers :"
+        task_custom_filter: "Filtre personnalisé de tâches :"
+        clean_cache: "Nettoyer les caches des serveurs de stockage"
+        last_accessed: "Fichiers consultés pour la dernière fois au moins :"
+        belonging_users: "Appartenant aux utilisateurs :"
+        not_users: "Mais pas aux utilisateurs :"
+        of_type: "De type :"
+        not_type: "Mais pas de type :"
+        erase_bacs: "Effacer les activités en arrière-plan"
+        finished_older: "Activités terminées plus anciennes que :"
+        verify_dp: "Vérifier la connectivité des serveurs de stockage"
+        fake_activity: "Tests d'activité factices"
+        min_seconds: "Secondes minimales :"
+        max_seconds: "Secondes maximales :"
+        num_oks: "Nombre de OK :"
+        num_fails: "Nombre de FAIL :"
+        num_excs: "Nombre d'EXC :"
+        ruby_runner: "Exécuteur de code Ruby arbitraire"
+        prepare: "prepare_dynamic_items() : Obligatoire. Doit définir la liste d'éléments avec self.items=[] ."
+        before: "before_first_item() : Optionnel."
+        process_html: "process() : Obligatoire. Doit renvoyer <strong>[ true, nil ]</strong> lorsque quelque chose est traité correctement, et <strong>[ false,  message ]</strong> sinon."
+        after: "after_last_item() : Optionnel."
+        server: "Portail ou bourreau"
+        start_date: "Date de démarrage initiale"
+        start_now_html: "( Ou %{checkbox} immédiatement )"
+        move: "Déplacer"
+        copy: "Copier"
+        archive_task_workdirs: "Archiver les répertoires de travail des tâches"
+        compress: "Compresser"
+        uncompress: "Décompresser"
+      selects:
+        data_provider: "(Sélectionner un serveur de stockage)"
+        filter: "(Sélectionner un filtres)"
+        dps: "(Sélectionner des serveurs de stockage)"
+      paragraphs:
+        remember_file_filter_html: "Ce type d'activité est réservé aux développeurs système CBRAIN expérimentés\nqui comprennent le framework <strong>BackgroundActivity</strong>.\n"
+        move_crush: "Écraser les fichiers à destination s'ils existent :"
+        filter_intro: "Ces deux listes déroulantes vous permettent de sélectionner l'un de vos filtres personnalisés, soit pour les fichiers soit pour les tâches."
+        for_files_html: "Pour les activités qui concernent les <strong>fichiers</strong> :"
+        for_tasks_html: "Pour les activités qui concernent les <strong>tâches</strong> :"
+        move_to: "Vers :"
+        remember_task_filter_html: "N'oubliez pas de sélectionner un filtre personnalisé de <strong>tâche</strong> dans la section Éléments dynamiques ci‑dessous."
+        archive_blank_note: "(Laisser vide pour archiver directement dans les répertoires de travail)"
+        ruby_runner_intro_html: "Ce type d'activité est réservé aux développeurs système CBRAIN expérimentés qui comprennent le framework <strong>BackgroundActivity</strong>."
+        process_explanation: "Pensez à ajouter une courte description de ce que fait votre code RubyRunner\nsur la toute première ligne de commentaire ; celle-ci sera affichée comme description\nde l'activité en arrière-plan dans la page d'index.\n"
+      repeat_options:
+        prompt: "(À quelle fréquence et quand répéter)"
+        one_shot: "Une seule fois"
+        every_30min: "Toutes les 30 minutes"
+        every_hour: "Toutes les heures"
+        every_12h: "Toutes les 12 heures"
+        every_24h: "Toutes les 24 heures"
+        tomorrow: "Demain et tous les jours à..."
+        monday: "Les lundis à..."
+        tuesday: "Les mardis à..."
+        wednesday: "Les mercredis à..."
+        thursday: "Les jeudis à..."
+        friday: "Les vendredis à..."
+        saturday: "Les samedis à..."
+        sunday: "Les dimanches à..."
+      legends:
+        filter: "Sélection d'éléments dynamiques : fichiers ou tâches"
+        or_word: "ou"
+        files: "Fichiers"
+      repeat_at_html: "(Pour <strong>à...</strong> :"
+      days_ago: "jours"
+      system_dps: "Serveurs de stockage système :"
+      user_dps: "Serveurs de stockage utilisateur :"
+      submit: "Planifier la nouvelle activité"
+    show:
+      headings:
+        main: "Activité en arrière-plan"
+      cells:
+        type: "Type"
+        status: "Statut"
+        user: "Utilisateur"
+        execution_server: "Serveur de calcul"
+        total_items: "Nombre total d'éléments"
+        num_successes: "Nombre de succès"
+        num_processed: "Nombre d'éléments traités"
+        num_failures: "Nombre d'échecs"
+      legends:
+        items: "Éléments"
+      all_of_them: "%{count} (Tous)"
+      none_question: "(Aucun ?)"
+      none: "0 (Aucun)"
+      none_yet: "0 (Aucun pour l'instant !)"
+    statuses:
+      in_progress:         "En cours"
+      completed:           "Terminée"
+      partially_completed: "Partiellement terminée"
+      failed:              "Échec"
+      internal_error:      "Erreur interne"
+      suspended:           "Suspendue"
+      suspended_scheduled: "Planifiée et suspendue"
+      scheduled:           "Planifiée"
+      cancelled:           "Annulée"
+      cancelled_scheduled: "Annulation planifiée"

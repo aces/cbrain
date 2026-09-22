@@ -66,7 +66,7 @@ module ViewHelpers
     is_short  = options[:short]
 
 
-    return "0 seconds" if remain <= 0
+    return I18n.t('pretty_elapsed.second', :count => 0) if remain <= 0
 
     numyears = remain / 1.year.to_i
     remain   = remain - ( numyears * 1.year.to_i   )
@@ -89,13 +89,13 @@ module ViewHelpers
     numsecs  = remain
 
     components = [
-      [numyears, is_short ? "y" : "year"],
-      [nummos,   is_short ? "mo" : "month"],
-      [numweeks, is_short ? "w" : "week"],
-      [numdays,  is_short ? "d" : "day"],
-      [numhours, is_short ? "h" : "hour"],
-      [nummins,  is_short ? "m" : "minute"],
-      [numsecs,  is_short ? "s" : "second"]
+      [numyears, is_short ? I18n.t('pretty_elapsed.short.year')   : I18n.t('pretty_elapsed.year',   :count => numyears)],
+      [nummos,   is_short ? I18n.t('pretty_elapsed.short.month')  : I18n.t('pretty_elapsed.month',  :count => nummos)],
+      [numweeks, is_short ? I18n.t('pretty_elapsed.short.week')   : I18n.t('pretty_elapsed.week',   :count => numweeks)],
+      [numdays,  is_short ? I18n.t('pretty_elapsed.short.day')    : I18n.t('pretty_elapsed.day',    :count => numdays)],
+      [numhours, is_short ? I18n.t('pretty_elapsed.short.hour')   : I18n.t('pretty_elapsed.hour',   :count => numhours)],
+      [nummins,  is_short ? I18n.t('pretty_elapsed.short.minute') : I18n.t('pretty_elapsed.minute', :count => nummins)],
+      [numsecs,  is_short ? I18n.t('pretty_elapsed.short.second') : I18n.t('pretty_elapsed.second', :count => numsecs)]
     ]
 
     components = components.select { |c| c[0] > 0 }
@@ -109,20 +109,19 @@ module ViewHelpers
     final = ""
 
     while components.size > 0
-      comp = components.shift
-      num  = comp[0]
-      unit = comp[1]
+      comp  = components.shift
+      num   = comp[0]
+      label = comp[1]
       if !is_short
-        unit += "s" if num > 1
         unless final.blank?
           if components.size > 0
-            final += ", "
+            final += I18n.t('pretty_elapsed.separator')
           else
-            final += " and "
+            final += I18n.t('pretty_elapsed.last_separator')
           end
         end
       end
-      final += !is_short ? "#{num} #{unit}" : "#{num}#{unit}"
+      final += !is_short ? label : "#{num}#{label}"
     end
 
     final
@@ -134,11 +133,11 @@ module ViewHelpers
   #
   #    "2009-12-31 11:22:33 (3 days 2 hours 27 seconds ago)"
   def pretty_past_date(pastdate, what = :datetime, num_components = 3)
-    return "(Unknown)" if pastdate.blank?
+    return I18n.t('unknown_parentheses') if pastdate.blank?
     loctime = pastdate.is_a?(Time) ? pastdate : Time.parse(pastdate.to_s)
     locdate = to_localtime(pastdate,what)
     elapsed = pretty_elapsed(Time.now - loctime, :num_components => num_components)
-    "#{locdate} (#{elapsed} ago)"
+    "#{locdate} (#{I18n.t('ago_time', :time => elapsed)})"
   end
 
   # Format a byte size for display in the view.
@@ -354,4 +353,3 @@ module ViewHelpers
   end
 
 end
-

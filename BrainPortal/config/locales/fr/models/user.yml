@@ -20,5 +20,3 @@ fr:
         default_data_provider: "Serveur de stockage par défaut"
         forced_openid_providers: "Fournisseurs d'identité OpenID imposés"
         password: "Mot de passe"
-        time_zone: "Fuseau horaire"
-

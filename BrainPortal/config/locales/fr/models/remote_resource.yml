@@ -1,5 +1,8 @@
 fr:
   activerecord:
+    attributes:
+      remote_resource:
+        class: "Classe"
     models:
       remote_resource:
         one: "Serveur"

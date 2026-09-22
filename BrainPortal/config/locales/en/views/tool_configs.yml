@@ -1,0 +1,243 @@
+en:
+  tool_configs:
+    common:
+      all_tools: "(All tools)"
+      all_servers: "(All servers)"
+      no_versions_configured: "No versions configured"
+      version_config_name: "version configuration '%{name}'"
+      in_project_html: "in project '%{group}'"
+      everyone: "'everyone'"
+      access_yes: "Yes"
+      access_no: "NO!"
+      container_engine: "Container Engine"
+    by_resource:
+      labels:
+        tool: "Tool:"
+        execution_server: "Execution Server:"
+      no_versions:
+        for_servers: "No versions configured for these servers: "
+        for_tools: "No versions configured for these tools: "
+      headings:
+        execution_servers: "Execution Servers"
+        tools: "Tools"
+        versions_configured: "Versions Configured"
+        projects_in_effect: "Projects In Effect"
+        users_access_summary: "Users Access Summary"
+      have_access_html: "%{count} user(s) have access,"
+      have_no_access_html: "user(s) have no access"
+    by_user:
+      legends:
+        user: "User:"
+      member_of_projects: "Member Of Editable Projects:"
+      execution_servers_access: "Execution Servers Access:"
+      tool_access_summary: "Tool Access Summary:"
+      tool_versions_access_details: "Tool Versions Access Details:"
+      headings:
+        execution_server: "Execution Server"
+        tool: "Tool"
+        servers_project: "Server's Project"
+        accessible_to_user: "Accessible To User?"
+        tool_summary: "Tool Summary"
+        versions_per_server: "Number Of Versions Accessible, Per Server"
+        tools_project: "Tool's Project"
+        tool_version: "Tool Version"
+        effective_project: "Effective Project"
+      n_ok: "%{count} OK"
+      n_no: "%{count} NO"
+      tooltip:
+        server_project_html: "* Execution Server's project<br/>"
+        tool_project_html: "* Tool's project<br/>"
+        version_project_html: "* Version configuration's project<br/>"
+    env_key_value_pair:
+      headings:
+        name: "Name"
+        value: "Value"
+    form_fields:
+      headings:
+        version_config_info: "Version configuration info"
+        version: "Version"
+        project_access: "Project access"
+        suggested_cpus: "Suggested CPUs per task"
+        description: "Description"
+        inputs_readonly: "Does not modify its inputs files"
+        boutiques_path: "Path to Boutiques descriptor"
+        exec_server_control: "Execution Server Control"
+        extra_qsub: "Extra cluster submission options(sbatch, qsub)"
+        env_vars: "Environment variables"
+        bash_prologue: "BASH initialization prologue"
+        bash_epilogue: "BASH initialization epilogue"
+        container: "Container"
+        container_engine: "Container engine"
+        container_index: "Index of the container image"
+        container_image_name: "Container image name"
+        container_image_id: "ID of the container image"
+        singularity_overlays: "Singularity Overlays"
+        misc_singularity: "Misc Singularity Options"
+        short_workdir: "Use short workdirs inside Singularity"
+      field_explanations:
+        version: "Must be a simple string that represent a short identifier for the version. First character must be alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'"
+        description: |
+          The first line must be a short summary, and the rest are for any special
+          notes for the users.
+        inputs_readonly_html:
+          Check this if the tool is known <strong>not to modify its input files </strong>.
+          This will allow a user to launch the tool on files that are not marked as group-writable in the file manager.
+        boutiques_path_html: |
+          You can use this field to provide an explicit path to a
+          Boutiques descriptor; an absolute path will be used as-is,
+          while a relative path will be resolved relative to the
+          <em>boutiques_descriptor</em> folder in the installed plugins
+          subdirectory. The page indicates the source location of the
+          effective descriptor: 'Automatic' means the configuration has
+          been mapped automatically to an installed descriptor, 'Manual'
+          means the value in the input field here is used, and 'Overriden'
+          means both values exists, but the 'Manual' version is in effect.
+        extra_qsub_html: |
+          <b>Note:</b>This string will be appended to the extra 'qsub' option defined at the bourreau level.
+        container_index_html: |
+          The index (url) of the container image in which the docker or singularity container is
+          accessible through.
+          Examples for Docker are: quay.io, index.docker.io (default).
+          Examples for Singularity are: docker:&sol;&sol;, shub:&sol;&sol; (default).
+        container_image_name: |
+          The name and tag of the container image in which the tool is installed,
+          for instance "centos:latest". This name refers to the Docker/Singularity index
+          accessed by the Bourreau, which is configured manually in the Bourreau
+          for now.
+        container_image_id: |
+          The ID number of the container image in which the tool is installed.
+          This ID refers to a proper image file registered in CBRAIN by the admin.
+        singularity_overlays_html: |
+          This field can contain one or several specifications for data overlays and bindmounts
+          to be included when the task is started with Singularity.
+          <p>
+          Each overlay or bindmount specification should be on a separate line.
+          <p>
+          An overlay specification can be either:
+          <p>
+          <ul>
+          <li>a full path (e.g. <em>file:/a/b/data.squashfs</em>),</li>
+          <li>a path with a pattern (e.g. <em>file:/a/b/data*.squashfs</em>),</li>
+          <li>a registered file identified by ID (e.g. <em>userfile:123</em>),</li>
+          <li>a SquashFS Data Provider identified by its ID or name (e.g. <em>dp:123</em>, <em>dp:DpNameHere</em>)</li>
+          <li>or an ext3 capture overlay basename (e.g. <em>ext3capture:basename=SIZE</em> where size is <em>12G</em> or <em>12M</em>).</li>
+          </ul>
+          <p>
+          In the case of a Data Provider, the overlays will be the SquashFS files that the provider uses for its storage. The provider of course must be local to the current execution server.
+          <p>
+          A bindmount specification is one of:
+          <ul>
+            <li><em>bindmount:/bourreau/path/to/data:/containerized/path/to/data</em> or</li>
+            <li><em>bindmount:/bourreau/path/to/data:/containerized/path/to/data:ro</em></li>
+          </ul>
+          <p>
+          You can add comments, indicated with a hash symbol <em>#</em>.
+          For example, <em>file:/a/b/atlas.squashfs # brain atlas</em>
+        container_exec_args_html: |
+          This field can contain singularity exec command options. Please use appropriate quotation or escaping
+          For example, <em>--cleanenv --env MYPATH='/My Documents'</em>.
+      container_none: "None"
+      container_type_title: "Container type"
+      env_vars_note_top: "In the generated script, the values shown here will be placed in double quotes automatically."
+      env_vars_note_bottom: "Note: More environment variables lines can be added by saving and editing again."
+      prologue_explanation_html: |
+        This is a multi line partial BASH script. It can use the environment variables defined above
+        and do anything else you feel is needed to activate this configuration.
+        Note that this script should usually be silent, as outputing text (like in <em>echo</em> statements)
+        could interfere with the proper processing of the tasks output.
+      epilogue_explanation_html: |
+        This is a multi line partial BASH script, meant to match the prologue above. The code
+        here will be execute after the task's processing code.
+        Note that this script MUST be silent, as outputing text (like in <em>echo</em> statements)
+        could interfere with the proper processing of the tasks output.
+      legends:
+        merge: "Import and merge"
+      merge_explanation_both: |
+        The description, environment variables and prologue script will be appended to whatever
+        values are currently in the form. The project and suggested number of CPUs will be changed.
+      merge_explanation_env: |
+        The environment variables and prologue script will be appended to whatever
+        values are currently in the form.
+      merge_intro: "This panel allows you to merge another configuration into the current form."
+      merge_from: "Merge from..."
+      submits:
+        merge_preview: "Merge Configuration (Preview)"
+        save_everything: "Save everything!"
+        reload_original: "Reload original"
+      merge_note: |
+        You need to first click the Merge Configuration (Preview), carefully check the results, and only if
+        everything is ok click this or any other Update button, and the changed values will persist.
+    tool_configs_table:
+      links:
+        tool_list: "Back to Tools List"
+      tool_config_count:
+        one: "1 tool configuration"
+        other: "%{count} tool configurations"
+      show_edit: "Show/Edit"
+      columns:
+        access: "Access?"
+        tool_name: "Tool Name"
+        execution_server: "Execution Server"
+        tool_project: "Tool Project"
+        version: "Version"
+        version_project: "Version Project"
+        cpus: "CPUs"
+        boutiques: "Boutiques"
+        container_index: "Container Index"
+        container_image: "Container Image"
+        description: "Description"
+        operations: "Operations"
+    boutiques_descriptor:
+      title: "Boutiques Descriptor"
+      present_html: "This is the Boutiques Descriptor for tool <strong>%{tool}</strong> on Execution Server <strong>%{server}</strong>."
+      absent_html: "There is no Boutiques Descriptor for tool <strong>%{tool}</strong> on Execution Server <strong>%{server}</strong>."
+    index:
+      title: "Tools and their versions"
+    report:
+      title: "Access Summary"
+      all:
+        of_them: "all of them"
+        servers_or: "(All servers, or...)"
+        tools_or: "(All tools, or...)"
+        users_or: "(All users, or...)"
+      pick_best: "(Pick best)"
+      view_by:
+        server: "By Server"
+        tool: "By Tool"
+        user: "By User"
+      submit: "Get report!"
+      headings:
+        execution_server: "Execution Server"
+        tool: "Tool"
+        by: "Access Report, By %{type}"
+        access_by_user: "Tool Access Report, By User"
+        by_server_html: "By Execution Server(or %{link})"
+        by_tool_html: "By Tool (or %{link})"
+        quick_links: "Quick Links To Individual Access Reports"
+        by_user: "By User"
+        by_combination: "By a more specific combinations of resources"
+      labels:
+        execution_server: "Execution Server:"
+        tool: "Tool:"
+        user: "User:"
+        view_by: "View By:"
+    show:
+      title:
+        create: "Create Tool Version"
+        edit: "Edit Tool Version"
+      important_note: "Important note:"
+      applies_to_tool_html: "This form applies to tool <strong>%{tool}</strong>"
+      applies_to_all_tools_html: "This form applies to <strong>ALL tools</strong>"
+      running_on_all_servers_html: "running on <strong>ALL Execution Servers</strong>."
+      running_on_server_html: "running on Execution Server <strong>%{server}</strong>."
+      common_config_tool: "Common Config for tool %{tool} on ALL Servers"
+      common_config_server: "Common Config for ALL tools on %{server} Server"
+      bash_wrappers:
+        legend: "BASH scripts wrappers"
+        intro: "This section displays the full BASH initialization prologue and epilogue script for the configuration shown above."
+        surrounded: "It is surrounded by the BASH prologues or epilogues of other relevant global configurations."
+        order: "The commands are shown in the order of execution."
+      log:
+        global_bourreau: "Log of Global Bourreau Tool Config #%{id}"
+        global_tool: "Log of Global Tool Config #%{id}"
+        specific: "Log of Specific Tool Config #%{id}"

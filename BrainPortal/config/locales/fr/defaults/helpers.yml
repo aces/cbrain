@@ -1,16 +1,12 @@
 fr:
-
   background_activities:
     failed: "Échec"
     one_shot: "Exécution unique"
     every_X: "Tous les %{count}"
-
   access_profiles:
     white: "blanc"
-
   ajax_widget:
     loading: "Chargement..."
-
   date_range:
     attributes:
       by_creation_date: "Par date de création"
@@ -38,57 +34,91 @@ fr:
         other: "Il y a %{count} mois"
       years_ago:
         one: "Il y a 1 an"
-      other: "Il y a %{count} ans"
-
+        other: "Il y a %{count} ans"
+    errors:
+      absolute_from_missing: "Vous devez saisir une date absolue « de » ou désélectionner le bouton radio"
+      absolute_to_missing:   "Vous devez saisir une date absolue « à » ou désélectionner le bouton radio"
+      same_relative_dates:   "Vous devez choisir deux dates relatives différentes"
   abbreviations:
     A: "A"
     H: "M"
     I: "I"
-
   quotas:
     none_allowed: "Aucun autorisé"
-    last_week: "la semaine dernière;"
-    last_month: "le mois dernier;"
+    last_week: "la semaine dernière ;"
+    last_month: "le mois dernier ;"
     total: "total"
     unlimited: "(Illimité)"
     one_task: "1 tâche"
     multiple_tasks: "%{count} tâches"
-
   resource_usage:
     second: "seconde"
-
   resource_link:
     error: "Cette méthode requiert que le premier argument soit un objet User."
     last_activity: "Dernière activité"
-
   dynamic_table:
     raise: "Impossible de récupérer le champ %{field_name} de %{obj}"
-
   zenodo:
     deposit: "Dépôt %{id}"
     sandbox_deposit: " (sandbox)"
-
   rich_ui:
     copied: "Copié !"
     copy_to_clipboard: "copier dans le presse-papiers"
-
   show_table:
     info: "Info"
     initial_error: "Erreur : le form helper fourni n'est pas associé à notre objet !"
-
   userfiles:
     count: " (%{count} fichiers)"
-
   users:
     normal: "Utilisateur standard"
     site_manager: "Gestionnaire du site"
     admin: "Administrateur"
     automated: "Utilisateur automatisé"
-
   task_form:
     date: "La date actuelle au format : YYYY-MM-DD"
     time: "L'heure actuelle au format : HH:MM:SS"
     task_id: "Un identifiant numérique pour la tâche, qui ne change pas si la tâche est relancée"
     run_number: "Un identifiant numérique qui augmente à chaque fois que la tâche est relancée, initialement défini à '1'"
     cluster: "Le nom du serveur d'exécution"
-
+  select_box:
+    task_status_groups:
+      standard_cycle: "Cycle normal"
+      waiting:        "En attente"
+      failed:         "En échec"
+      restarting:     "Redémarrage"
+      recovering:     "Récupération"
+      other:          "Autres"
+    no_execution_servers_html: "<strong style=\"color:red\">Aucun serveur de calcul disponible</strong>"
+    offline_suffix:       " (hors ligne)"
+  scope_filters:
+    sentence: "%{attribute} : %{operator}%{values}"
+    none:     "(Aucun)"
+    system:   "Système"
+    list_or:  "%{head} ou %{last}"
+    range:    "%{min} et %{max}"
+    attributes:
+      project: "Projet"
+      server:  "Serveur"
+      version: "Version"
+    operators:
+      not_equal:       "différent de "
+      over:            "plus de "
+      under:           "moins de "
+      one_of:          "une valeur parmi "
+      anything_except: "tout sauf "
+      like:            "comme "
+      between:         "entre "
+    flags:
+      critical:            "Critique"
+      not_critical:        "Non critique"
+      read:                "Lu"
+      unread:              "Non lu"
+      locked:              "Verrouillé"
+      unlocked:            "Déverrouillé"
+      email_confirmed:     "Courriel confirmé"
+      email_not_confirmed: "Courriel non confirmé"
+    status: "Statut : %{value}"
+    tags:   "Étiquettes : %{list}"
+    hierarchy:
+      no_child:  "Sans enfant"
+      no_parent: "Sans parent"

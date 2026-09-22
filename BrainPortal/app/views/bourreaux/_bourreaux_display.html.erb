@@ -159,7 +159,7 @@
     ) { |r| overlay_description(r.description) }
 
     t.column(t('.columns.status_page_url'), :status_url) do |r|
-      link_to(t('labels.status_colon'), r.external_status_page_url, :class => "action_link", :target => "_blank") if
+      link_to(t('status'), r.external_status_page_url, :class => "action_link", :target => "_blank") if
         r.is_a?(Bourreau) && ! r.external_status_page_url.blank?
     end
 
@@ -349,9 +349,9 @@
               :class => 'button',
               :name  => 'operation',
               :value => 'stop_bourreaux',
-              :data  => { :confirm => t('.confirms.stop') }
+              :data  => { :confirm => t('.confirms.stop.bourreau') }
           %>
-          <% html_colorize_text_not_safe =  html_colorize("not safe","red") %>
+          <% html_colorize_text_not_safe =  html_colorize(t('.stop_services.not_safe'),"red") %>
           <%= t('.stop_services.paragraphs.stop_tunnels_description_html', processing: html_colorize_text_processing , not_safe: html_colorize_text_not_safe ) %>
           <%= external_submit_button t('.buttons.stop.tunnels'), "bourreau_form",
               :class => 'button',

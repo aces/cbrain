@@ -1,22 +1,21 @@
 fr:
   activerecord:
-      models:
-        data_provider:
-          one: "Serveur de stockage"
-          other: "Serveurs de stockage"
-      attributes:
-        data_provider:
-          name: "Nom"
-          description: "Description"
-          type: "Type"
-          remote_host: "Hôte distant"
-          alternate_host: "Hôte alternatif"
-          remote_user: "Utilisateur distant"
-          remote_port: "Port distant"
-          remote_dir: "Répertoire distant"
-          containerized_path: "Chemin du containeur"
-          cloud_storage_client_identifier: "Identifiant du client de stockage cloud"
-          cloud_storage_client_token: "Jeton du client de stockage cloud"
-          datalad_repository_url: "URL du dépôt Datalad"
-          datalad_relative_path: "Chemin relatif Datalad"
-          online: "En ligne"
+    models:
+      data_provider:
+        one: "Serveur de stockage"
+        other: "Serveurs de stockage"
+    attributes:
+      data_provider:
+        name: "Nom"
+        description: "Description"
+        type: "Type"
+        remote_host: "Hôte distant"
+        alternate_host: "Hôte alternatif"
+        remote_user: "Utilisateur distant"
+        remote_port: "Port distant"
+        remote_dir: "Répertoire distant"
+        containerized_path: "Chemin du containeur"
+        cloud_storage_client_identifier: "Identifiant du client de stockage cloud"
+        cloud_storage_client_token: "Jeton du client de stockage cloud"
+        datalad_repository_url: "URL du dépôt Datalad"
+        datalad_relative_path: "Chemin relatif Datalad"

@@ -34,7 +34,7 @@
     <%= show_table(@tool_config, :form_helper => cf, :header => t('.headings.version_config_info'),
                                  :edit_condition => check_role(:admin_user)) do |t| %>
 
-      <%= t('.field_explanations.version') %>
+      <% t.edit_cell(:version_name, :header => t('.headings.version')) do |f| %>
         <%= f.text_field :version_name, :size => 20 %>
         <div class="field_explanation">
           <%= t('.field_explanations.version') %>
@@ -250,4 +250,3 @@
     </fieldset>
 
 <% end # show_table_context %>
-

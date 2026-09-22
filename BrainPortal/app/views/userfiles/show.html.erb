@@ -64,7 +64,7 @@
       (<%= t('ago_time', time: pretty_elapsed(Time.now - @userfile.created_at, :num_components => 3)) %>)
     <% end %>
 
-    <% t.cell(t('activerecord.attributes.type')) do %>
+    <% t.cell(t('attributes.type')) do %>
       <%= inline_edit_field(@userfile, :type, :content => @userfile.pretty_type, :disabled => !@userfile.has_owner_access?(current_user)) do %>
         <% u_type = @userfile.is_a?(SingleFile) ? ["SingleFile"] : ["FileCollection"] %>
         <%= userfile_type_select("userfile[type]", {:userfile_types => u_type, :selector => @userfile.class.name}) %>
@@ -80,7 +80,7 @@
       (<%= t('ago_time', time: pretty_elapsed(Time.now - @userfile.updated_at, :num_components => 3)) %>)
     <% end %>
 
-    <% t.cell(t('activerecord.attributes.size')) do %>
+    <% t.cell(t('attributes.size')) do %>
       <% if @userfile.archived? %>
         <!-- Information after compression -->
         <%= archived_icon %>
@@ -218,11 +218,11 @@
 
     <% elsif @userfile.data_provider.meta[:no_viewers] %>
 
-        <%= t('.content.non_viewable_dp_html') %>
+        <%= t('.content.non_viewable_dp_html', dp_link: link_to_data_provider_if_accessible(@userfile.data_provider)) %>
 
     <% elsif @userfile.data_provider.not_syncable? %>
 
-        <%= t('.content.not_syncable_dp_html') %>
+        <%= t('.content.not_syncable_dp_html', dp_link: link_to_data_provider_if_accessible(@userfile.data_provider)) %>
 
     <% elsif @sync_status == "Corrupted" %>
 
@@ -232,11 +232,11 @@
 
     <% elsif ! @userfile.data_provider.rr_allowed_syncing? %>
 
-        <%= t('.content.sync_not_allowed_html') %>
+        <%= t('.content.sync_not_allowed_html', dp_link: link_to_data_provider_if_accessible(@userfile.data_provider)) %>
 
     <% elsif (! @userfile.is_locally_synced?) && (! @userfile.data_provider.online?) %>
 
-        <%= t('.content.offline_dp_html') %>
+        <%= t('.content.offline_dp_html', dp_link: link_to_data_provider_if_accessible(@userfile.data_provider)) %>
 
     <% elsif ! @userfile.is_locally_synced? %>
 

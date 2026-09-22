@@ -80,8 +80,8 @@
       <% t.empty_cell %>
     <% end %>
 
-    <% t.edit_cell(:online, :content => (@provider.online ? t('online') : t('online'))) do |f| %>
-      <%= f.select :online, [[t('online'), true], [t('online'), false]] %>
+    <% t.edit_cell(:online, :content => (@provider.online ? t('online') : t('offline'))) do |f| %>
+      <%= f.select :online, [[t('online'), true], [t('offline'), false]] %>
     <% end %>
 
     <% t.edit_cell(:user_id, :header => t('owner'), :content => link_to_user_with_tooltip(@provider.user), :disabled => ! current_user.has_role?(:admin_user) ) do %>

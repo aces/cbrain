@@ -22,17 +22,6 @@
 fr:
   activerecord:
     attributes:
-      id: "Identifiant"
-      created_at: "Créé le"
-      updated_at: "Mis à jour le"
-      name: "Nom"
-      description: "Description"
-      type: "Type"
-      status: "Statut"
-      user_id: &user "Utilisateur"
-      user: *user
-      group_id: &group "Groupe"
-      group: *group
       active_record_log:
         ar_id: &ar_id                "ID ActiveRecord"
         ar_table_name: &ar_table_name "Nom de la table ActiveRecord"
@@ -42,8 +31,6 @@ fr:
         share_wd_tid:                "Dossier de travail partagé avec la tâche"
         cluster_workdir_size:        "Taille du dossier de travail sur le cluster"
         workdir_archive_userfile_id: "Archive du dossier de travail"
-      data_provider:
-        remote_dir:                  "Dossier distant"
       meta_data_store:
         ar_id: *ar_id
         ar_table_name: *ar_table_name
@@ -66,11 +53,10 @@ fr:
       userfile:
         num_files:                   "Nombre de fichiers dans la collection"
       user:
-        email:                       "Adresse e-mail"
+        email:                       "Courriel"
       signup:
         first:                       "Prénom"
         last:                        "Nom"
   will_paginate:
     previous_label: "&larr; Précédent"
     next_label: "Suivant &rarr;"
-

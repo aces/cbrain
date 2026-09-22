@@ -1,18 +1,24 @@
 en:
-  activerecord:
-    attributes:
-      category: "Category"
-      city: "City"
-      country: "Country"
-      yearmonth: "Year/Month"
-      name: "Name"
-      description: "Description"
-      status: "Status"
-      type: "Type"
-      size: "Size"
-      color: "Color"
-      time_zone: "Time Zone"
-      name: "Name"
-      description: "Description"
-      license_agreements: "License Agreements"
-
+  attributes:
+    category: "Category"
+    city: "City"
+    country: "Country"
+    yearmonth: "Year/Month"
+    name: "Name"
+    description: "Description"
+    status: "Status"
+    type: "Type"
+    size: "Size"
+    color: "Color"
+    time_zone: "Time Zone"
+    license_agreements: "License Agreements"
+    id: "ID"
+    created_at: "Created At"
+    updated_at: "Updated At"
+    user_id: &user "User"
+    user: *user
+    group_id: &group "Project"
+    group: *group
+    site_id: &site "Site"
+    site: *site
+    online: "Online"

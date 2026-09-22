@@ -58,7 +58,7 @@ module QuotasHelper
     week  ||= t('unknown_parentheses')
     month ||= t('unknown_parentheses')
     ever  ||= t('unknown_parentheses')
-    "#{week} #{t('quotas.last_week')} #{month} #{t('quotas.month')} #{ever} #{t('quotas.total')}"
+    "#{week} #{t('quotas.last_week')} #{month} #{t('quotas.last_month')} #{ever} #{t('quotas.total')}"
   end
 
   # Renders the max number of active tasks

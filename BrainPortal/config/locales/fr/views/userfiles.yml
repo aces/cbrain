@@ -1,0 +1,238 @@
+fr:
+  userfiles:
+    common:
+      download: "Télécharger"
+      copy: "Copier"
+      move: "Déplacer"
+      rename: "Renommer"
+      compress: "Compresser"
+      uncompress: "Décompresser"
+      properties: "Propriétés"
+      synchronize: "Synchroniser"
+      mark_newer: "Marquer comme plus récent"
+      upload: "Importer"
+      and_go: " (et passer au fichier suivant)"
+      exception: "Exception :"
+      read_only: "Lecture seule"
+      read_write: "Lecture/Écriture"
+      read: "Lecture"
+      size_bytes: "%{size} octets"
+      created_at: "Créé le"
+      qc: "Contrôle qualité"
+    default_qc_panel:
+      not_synced: "Ce fichier doit être synchronisé localement pour afficher les données de contrôle qualité."
+      no_qc_data: "Ce fichier ne semble pas contenir de données de contrôle qualité, ou aucun modèle n'est disponible pour effectuer le contrôle qualité de ce type de fichier."
+    dialogs:
+      titles:
+        upload_sf: "Importation - Fichier unique"
+        file_properties: "Propriétés du fichier"
+        new_collection: "Nouvelle collection"
+      blanks:
+        keep_current_parentheses: "(Conserver %{attribute} actuel)"
+      placeholders:
+        dp: "Un serveur de stockage..."
+        group: "Un projet..."
+        tags: "Des labels..."
+        file_type: "Un type de fichier..."
+        keep_current: "Conserver %{attribute} actuel"
+      actions:
+        proceed: "Continuer"
+      autodetect: "(détecté automatiquement)"
+      invalid: "Non valide !"
+      new_collection: "Nouvelle collection"
+      qc_note: "Notez que le contrôle qualité (CQ) nécessite d'abord que les fichiers soient synchronisés localement."
+      unknown_file_type: "Type de fichier inconnu !"
+      labels:
+        extract: "Extraire"
+        as_single_collection: "Comme une seule collection"
+        as_multiple_files: "Comme plusieurs fichiers"
+        advanced_options: "Options avancées..."
+        detect_as: "Détecter comme"
+        allow_modification: "Autoriser la modification par les autres membres du projet"
+        overwrite: "Écraser les fichiers existants portant le même nom"
+        clear_tags: "Effacer les labels"
+        hidden_html: "Masqué (<span class='pp-hid-ind'>H</span>)"
+        locked_html: "Verrouillé (<span class='pp-ro-ind'>I</span>)"
+      divs:
+        hidden_html: |
+          Les fichiers masqués sont invisibles par défaut et sont généralement réservés
+          à des fins de maintenance, d'utilisation interne et d'archivage.
+        locked: |
+            Les fichiers verrouillés ne peuvent pas être modifiés ou déplacés entre les fournisseurs de données.
+      confirmations:
+        delete_file_html: "Êtes-vous certain de vouloir supprimer ces <span class='dlg-cfrm-cnt'></span> fichier(s) ?"
+        delete_tag_html: "Êtes-vous certain de vouloir supprimer le label <span class='dlg-cfrm-obj'></span> ?"
+    file_menu:
+      static_actions:
+        launch: "Lancer"
+        upload: "Importer"
+        show_only_my_files: "Afficher uniquement mes fichiers"
+        show_all_files: "Afficher tous les fichiers"
+      dynamic_actions:
+        download: "Télécharger"
+        copy: "Copier"
+        move: "Déplacer"
+        rename: "Renommer"
+        compress: "Compresser"
+        uncompress: "Décompresser"
+      menu_actions:
+        more: "Plus..."
+        custom_filters: "Filtres personnalisés"
+        new_collection: "Nouvelle collection"
+        export_as_csv: "Exporter au format CSV"
+        create_file_list: "Créer une liste de fichiers"
+        show_only_my_files: "Afficher uniquement mes fichiers"
+        show_all_files: "Afficher tous les fichiers"
+        hide_hidden_files: "Masquer les fichiers masqués"
+        show_hidden_files: "Afficher les fichiers masqués"
+        list_view: "Vue Liste"
+        tree_view: "Vue Arborescence"
+    filter_items:
+      new_filter: "Nouveau filtre"
+      has_no_parent: "N'a pas de parent"
+      has_no_children: "N'a pas d'enfants"
+    quality_control_panel:
+      legends:
+        navigation_info: "Informations de navigation"
+        file_tags: "Labels du fichier"
+        file_description: "Description du fichier"
+      submit:
+        previous_file: "Fichier précédent"
+        next_file: "Fichier suivant"
+        pass  : "Réussite"
+        fail: "Échec"
+      error_messages:
+        qc_error: "Une erreur s'est produite lors de la génération du panneau de contrôle qualité pour ce fichier. Veuillez communiquer avec les développeurs."
+      full_list_of_tags: "Liste complète des labels :"
+    resource_usage:
+      section:
+        disk_space_history: "Historique de l'espace disque"
+      headings:
+        space_delta: "Variation de l'espace"
+    syncstatus:
+      last_synchronized_date: "Date de la dernière synchronisation :"
+      last_accessed_date: "Date du dernier accès :"
+      transfer_started: "Transfert commencé :"
+      state_occurred: "État survenu :"
+    tags_table:
+      placeholders:
+        group: "Un projet..."
+    tools_interface:
+      titles:
+        toolsDialog: "Sélectionner un outil"
+      headings:
+        no_tools_admin:  "Aucun outil disponible. De nouveaux outils peuvent être enregistrés à partir de l'index des outils."
+        no_tools_others: "Aucun outil disponible. Communiquez avec votre administrateur pour les faire enregistrer."
+      labels:
+        all_tools: "Tous les outils"
+        software_package: "Progiciel :"
+      links:
+        tool_website: "Site Web de l'outil"
+    userfiles_display:
+      entry:
+        one: "1 entrée"
+        other: "%{count} entrées"
+      own_files_only: "(fichiers personnels uniquement)"
+      show_total:
+        hidden: "masqués"
+        archived: "archivés"
+        locked: "verrouillés"
+      columns:
+        type_icon: "Icône de type"
+        filename: "Nom de fichier"
+        file_type: "Type de fichier"
+        owner: "Propriétaire"
+        creation_date: "Date de création"
+        size: "Taille"
+        project_access: "Accès au projet"
+        tags: "Labels"
+        group: "Projet"
+        description: "Description"
+        data_provider: "Fournisseur"
+      search_by_name: "Rechercher par nom :"
+      was_html: "(était : %{size} dans %{file_count})"
+    index:
+      title: "Fichiers"
+      legends:
+        sync_symbols: "Symboles de synchronisation :"
+    quality_control:
+      title: "Contrôle qualité"
+      links:
+        finished: "Terminé"
+      buttons:
+        one_panel: "1 panneau"
+      loading_message:
+        loading_panel: "Chargement du panneau..."
+    show:
+      title: "Informations sur le fichier"
+      titles:
+        file_log: "Journal du fichier"
+      links:
+        download_collection: "Télécharger la collection"
+        download_file: "Télécharger le fichier"
+      error_messages:
+        suggested_type: "Ce fichier semble être un fichier de type %{type}."
+        update: "%{name} n'a pas pu être mis à jour."
+        viewer: "Une erreur s'est produite lors du chargement du module d'affichage."
+      headings:
+        provider_full_path: "Chemin du serveur de stockage local (cache)"
+        project_permission: "Permission du projet sur le fichier"
+      cells:
+        zenodo_publication: "Publication Zenodo"
+        parent: "Parent"
+        children: "Enfants"
+        provider_full_path: "Chemin du serveur de stockage local (cache)"
+        remote_full_path: "Chemin du répertoire distant"
+        modified_at: "Modifié le"
+        immutable_file: "Fichier immuable"
+        hidden_file: "Fichier masqué"
+      zenodo_publication:
+        published: "Publié : %{link}"
+        in_progress: "En cours : %{link}"
+      legends:
+        content: "Contenu"
+      content:
+        archived: "Ce %{type} a été archivé."
+        viewers_disabled: "Les visionneuses de contenu sont désactivées jusqu'à ce que le fichier soit désarchivé."
+        cannot_view: "(Ce fichier ne peut pas être consulté par vous ; je me demande comment vous êtes arrivé ici.)"
+        non_viewable_dp_html: |
+          (Ce fichier ne peut pas être consulté car il est stocké sur le serveur de stockage
+          %{dp_link}
+          qui est marqué comme <strong>non consultable</strong>)
+        not_syncable_dp_html: |
+          (Ce fichier ne peut pas être consulté car il est stocké sur le serveur de stockage
+          %{dp_link}
+          qui est configuré pour <strong>n'autoriser aucune synchronisation</strong> <em>du tout</em>)
+        corrupted_html: |
+          <span style="background-color: pink;">
+            (Le contenu de ce fichier semble être corrompu. Cela peut être dû
+            à un mauvais transfert de données lors de sa création ou à une défaillance du système de fichiers.
+            Il n'y a pas grand-chose que vous puissiez faire à ce sujet, mais si le fichier a été produit
+            par une tâche, envisagez de redémarrer l'étape de post-traitement de la tâche.)
+          </span>
+        sync_not_allowed_html: |
+          (Ce fichier ne peut pas être consulté car il est stocké sur le serveur de stockage
+          %{dp_link}
+          qui est configuré pour <strong>ne pas autoriser la synchronisation</strong> vers <em>ce portail</em>)
+        offline_dp_html: |
+          (Ces données ne sont actuellement pas synchronisées et leur serveur de stockage
+          %{dp_link}
+          est hors ligne. Leur contenu ne peut donc pas être consulté pour le moment)
+        sync_in_progress: "(Ce fichier de données est actuellement en cours de synchronisation. Attendez quelques secondes pour que le processus soit terminé)"
+        sync_start_html: |
+          (Ce fichier de données n'est actuellement pas synchronisé. Cliquez sur
+          %{link}
+          pour commencer le processus de synchronisation.
+          Cela peut vous permettre de consulter le contenu affichable.)
+        sync_start_collection_html: |
+          (Ce fichier de données n'est actuellement pas synchronisé. Cliquez sur
+          %{link}
+          pour commencer le processus de synchronisation.
+          Cela peut vous permettre de consulter le contenu affichable et d'extraire des fichiers de cette collection.)
+        no_viewer_code_html: |
+          (Le contenu de ce fichier ne peut pas être consulté : aucun code de visionneuse n'est actuellement disponible
+          pour les fichiers de type '%{type}')
+        change_view: "Changer de vue :"
+      was_html: "Était :<br>%{size} dans %{file_count}"
+      cached: "Mis en cache :"
+      here: "ici"

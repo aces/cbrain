@@ -62,7 +62,7 @@ class DataProvidersController < ApplicationController
   def show  #:nodoc:
     data_provider_id = params[:id]
     @provider        = DataProvider.find(data_provider_id)
-    cb_notice "Provider not accessible by current user." unless @provider.can_be_accessed_by?(current_user)
+    cb_notice t('data_providers.notices.not_accessible') unless @provider.can_be_accessed_by?(current_user)
 
     respond_to do |format|
       format.html # show.html.erb
@@ -94,7 +94,7 @@ class DataProvidersController < ApplicationController
     if @provider.save
       add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid])
       @provider.addlog_context(self,"Created by #{current_user.login}")
-      flash[:notice] = "Provider successfully created."
+      flash[:notice] = t('data_providers.flash.created')
       respond_to do |format|
         format.html { redirect_to :action => :index, :format => :html}
         format.xml  { render :xml   => @provider.for_api }
@@ -147,11 +147,9 @@ class DataProvidersController < ApplicationController
 
     @provider.addlog_context(self, "Created by #{current_user.login}")
     @provider.meta[:browse_gid] = current_user.own_group.id
-    flash[:notice]  = "Provider successfully created."
+    flash[:notice]  = t('data_providers.flash.created')
     if @provider.is_a?(SshDataProvider)
-      flash[:notice] += " Please click the Test Configuration button."\
-        " This will run tests on the current storage configuration. Note that if these tests fail,"\
-        " the storage will be marked 'offline'."
+      flash[:notice] += t('data_providers.flash.created_test_configuration')
     end
 
     respond_to do |format|
@@ -166,7 +164,7 @@ class DataProvidersController < ApplicationController
     @provider = DataProvider.find(id)
 
     unless @provider.has_owner_access?(current_user)
-       flash[:error] = "You cannot edit a provider that you do not own."
+       flash[:error] = t('data_providers.flash.cannot_edit_not_owner')
        respond_to do |format|
         format.html { redirect_to :action => :show }
         format.xml  { head :forbidden }
@@ -189,7 +187,7 @@ class DataProvidersController < ApplicationController
     if @provider.update_attributes_with_logging(new_data_provider_attr, current_user, @provider.attributes.keys)
       meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/\Adp_no_copy_\d+\z|\Arr_no_sync_\d+\z/)
       add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid] + meta_flags_for_restrictions)
-      flash[:notice] = "Provider successfully updated."
+      flash[:notice] = t('data_providers.flash.updated')
       respond_to do |format|
         format.html { redirect_to :action => :show }
         format.json { render :json  =>  @provider }
@@ -212,7 +210,7 @@ class DataProvidersController < ApplicationController
 
     @data_provider.destroy
 
-    flash[:notice] = "Provider successfully deleted."
+    flash[:notice] = t('data_providers.flash.deleted')
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
@@ -221,7 +219,7 @@ class DataProvidersController < ApplicationController
       format.json { head :ok }
     end
   rescue ActiveRecord::DeleteRestrictionError => e
-    flash[:error]  = "Provider not destroyed: #{e.message}"
+    flash[:error]  = t('data_providers.flash.delete_failed', reason: e.message)
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
@@ -325,8 +323,8 @@ class DataProvidersController < ApplicationController
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
 
     unless @provider.is_browsable?(current_user) && @provider.online?
-      flash[:error]  = "You cannot browse Data Provider '#{@provider.name}'.\n"
-      flash[:error] += "It is currently marked as 'offline'." if ! @provider.online
+      flash[:error]  = t('data_providers.flash.cannot_browse', name: @provider.name)
+      flash[:error] += t('data_providers.flash.marked_offline') if ! @provider.online
       respond_to do |format|
         format.html { redirect_to :action => :index }
         format.xml  { render :xml  => { :error => flash[:error] }, :status => :forbidden }
@@ -358,7 +356,7 @@ class DataProvidersController < ApplicationController
       # [ base, size, type, mtime ]
       @fileinfolist = BrowseProviderFileCaching.get_recent_provider_list_all(@provider, @as_user, @browse_path, params[:refresh])
     rescue => e
-      flash[:error] = "Cannot get list of files. Maybe the remote directory does not exist or is locked?"
+      flash[:error] = t('data_providers.flash.list_files_failed')
       Message.send_internal_error_message(User.find_by_login('admin'), "Browse DP exception", e, params) rescue nil
       respond_to do |format|
         format.html { redirect_to :action => :index }
@@ -432,7 +430,7 @@ class DataProvidersController < ApplicationController
     @as_user     = browse_as(@provider, params['as_user_id'])
     @browse_path = current_browse_path(@provider, params['browse_path'])
     unless @provider.is_browsable?(current_user)
-      flash[:error] = "You cannot register files from this provider."
+      flash[:error] = t('data_providers.flash.cannot_register')
       respond_to do |format|
         format.html { redirect_to :action => :index }
         format.xml  { render :xml  => { :error => flash[:error] }, :status => :forbidden }
@@ -449,7 +447,7 @@ class DataProvidersController < ApplicationController
     post_action = :move if params[:auto_do] == "MOVE"
     target_dp   = post_action && DataProvider.find_accessible_by_user(params[:other_data_provider_id], current_user) rescue nil
     if post_action && ! target_dp
-      flash[:error] = "Missing destination data provider for copy or move."
+      flash[:error] = t('data_providers.flash.missing_destination')
       respond_to do |format|
         format.html { redirect_to :action => :browse }
         format.xml  { render :xml  => { :error => flash[:error] }, :status => :unprocessable_entity }
@@ -481,8 +479,7 @@ class DataProvidersController < ApplicationController
       current_user.assignable_group_ids.include?(group_id)
 
     # Remind the user if browsing as another user
-    flash[:notice] += "Important note! Since you were browsing as user '#{@as_user.login}', the files will be registered as belonging to that user instead of you!\n" if
-      @as_user != current_user
+    flash[:notice] += t('data_providers.flash.registering_as_other_user', login: @as_user.login ) if @as_user != current_user
 
     # Compare given basenames with existing files
     base2uf = userfiles_from_basenames(@provider, @as_user, params[:basenames], @browse_path)
@@ -495,7 +492,7 @@ class DataProvidersController < ApplicationController
 
     # Just warn about missing filetypes
     missingtypes = base2uf.keys.select { |basename| filetypes[basename].blank? }.join(", ")
-    flash[:error] += "Ignoring these file names because no types were provided for them: #{missingtypes}" if missingtypes.present?
+    flash[:error] += t('data_providers.flash.ignoring_missing_types', names: missingtypes) if missingtypes.present?
 
     # Pick the type of registration operation; with or without MOVE or COPY
     bac_klass = BackgroundActivity::RegisterFile
@@ -507,7 +504,7 @@ class DataProvidersController < ApplicationController
     ) if items.size > 0
 
     # Generate a complete response matching the old API
-    flash[:notice] += "Registering #{items.size} userfile(s) in background.\n"
+    flash[:notice] += t('data_providers.flash.registering', count: items.size)
     already_registered = base2uf
       .select { |basename,userfile| userfile.present? }
       .map    { |_       ,userfile| userfile          }
@@ -536,7 +533,7 @@ class DataProvidersController < ApplicationController
     @as_user     = browse_as(@provider, params['as_user_id'])
     @browse_path = current_browse_path(@provider, params['browse_path'])
     unless @provider.is_browsable?(current_user)
-      flash[:error] = "You cannot unregister files from this provider."
+      flash[:error] = t('data_providers.flash.cannot_unregister')
       respond_to do |format|
         format.html { redirect_to :action => :index }
         format.xml  { render :xml  => { :error => flash[:error] }, :status => :forbidden }
@@ -561,7 +558,7 @@ class DataProvidersController < ApplicationController
     ) if items.size > 0
 
     # Generate a complete response matching the old API
-    flash[:notice] = "Unregistering #{items.size} userfile(s) in background.\n"
+    flash[:notice] = t('data_providers.flash.unregistering', count: items.size)
 
     api_response = generate_register_response.merge(
       :num_unregistered                => items.size,
@@ -587,7 +584,7 @@ class DataProvidersController < ApplicationController
     @as_user     = browse_as(@provider, params['as_user_id'])
     @browse_path = current_browse_path(@provider, params['browse_path'])
     unless @provider.is_browsable?(current_user)
-      flash[:error] = "You cannot delete files from this provider."
+      flash[:error] = t('data_providers.flash.cannot_delete')
       respond_to do |format|
         format.html { redirect_to :action => :index }
         format.xml  { render :xml  => { :error => flash[:error] }, :status => :forbidden }
@@ -623,9 +620,9 @@ class DataProvidersController < ApplicationController
 
     # Generate a complete response matching the old API
     flash[:notice]  = ""
-    flash[:notice] += "Deleting #{exist_files.count} userfile(s) in background.\n"              if exist_files.present?
-    flash[:notice] += "Deleting #{unreg_basenames.count} unregistered file(s) in background.\n" if unreg_basenames.present?
-    flash[:error]   = "No files selected, or that can be deleted." if exist_files.empty? && unreg_basenames.empty?
+    flash[:notice] += t('data_providers.flash.deleting_userfiles',    count: exist_files.count)     if exist_files.present?
+    flash[:notice] += t('data_providers.flash.deleting_unregistered', count: unreg_basenames.count) if unreg_basenames.present?
+    flash[:error]   = t('data_providers.flash.no_files_to_delete')                                  if exist_files.empty? && unreg_basenames.empty?
     api_response = generate_register_response.merge(
       :num_erased       => exist_files.size,
       :num_unregistered => unreg_basenames.size,
@@ -728,7 +725,7 @@ class DataProvidersController < ApplicationController
     id = params[:id]
     @provider = DataProvider.find(id)
     unless @provider.has_owner_access?(current_user)
-      flash[:error] = "You cannot check a provider that you do not own."
+      flash[:error] = t('data_providers.flash.cannot_check_not_owner')
       respond_to do |format|
         format.html { redirect_to :action => :show }
         format.xml  { head        :forbidden }
@@ -738,7 +735,7 @@ class DataProvidersController < ApplicationController
     end
 
     unless @provider.is_a? SshDataProvider
-      flash[:error] = "Presently, detailed check is only available to ssh providers."
+      flash[:error] = t('data_providers.flash.check_ssh_only')
       respond_to do |format|
         format.html { redirect_to :action => :show }
         format.xml  { head        :forbidden }
@@ -753,7 +750,7 @@ class DataProvidersController < ApplicationController
 
     # Ok, all is well.
     @provider.update_column(:online, true)
-    flash[:notice] = "The configuration was tested and seems to be operational."
+    flash[:notice] = t('data_providers.flash.check_ok')
 
     respond_to do |format|
       format.html { redirect_to :action => :show }
@@ -762,7 +759,7 @@ class DataProvidersController < ApplicationController
 
   rescue DataProviderTestConnectionError => ex
     flash[:error]  = ex.message
-    flash[:error] += "\nThis storage is marked as 'offline' until this test pass."
+    flash[:error] += t('data_providers.flash.check_failed_offline')
     @provider.update_column(:online, false)
 
     respond_to do |format|
@@ -864,7 +861,7 @@ class DataProvidersController < ApplicationController
 
     # Clean and validate each path component
     clean = Userfile.is_legal_browse_path?(mypath)
-    cb_error "Browse path is invalid" if ! clean
+    cb_error t('data_providers.errors.invalid_browse_path') if ! clean
     clean
   end
 
