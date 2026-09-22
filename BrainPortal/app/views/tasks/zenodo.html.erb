@@ -45,7 +45,7 @@
   <%= status_label.(step_1_status, nil) %>
   <p>
   <% if step_1_status == "zenodo_complete" %>
-    <%= t('.paragraphs.prepare.complete_html', link: link_to t('.links.zenodo_deposit_editor'), url_for_deposit(@task.zenodo_deposit_id)) %>
+    <%= t('.paragraphs.prepare.complete_html', link: link_to(t('.links.zenodo_deposit_editor'), url_for_deposit(@task.zenodo_deposit_id))) %>
   <% else %>
     <%= t('.paragraphs.prepare.incomplete_html') %>
   <% end %>

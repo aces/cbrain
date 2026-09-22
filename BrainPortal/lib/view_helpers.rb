@@ -121,7 +121,7 @@ module ViewHelpers
           end
         end
       end
-      final += !is_short ? label : "#{num}#{unit}"
+      final += !is_short ? label : "#{num}#{label}"
     end
 
     final

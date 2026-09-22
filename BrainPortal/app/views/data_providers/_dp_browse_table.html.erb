@@ -140,12 +140,10 @@
 
           owner = t('.belongs_to_html', login: userfile.user.login) unless
             userfile.user_id == current_user.id
-          <%=
-              t('.registered_with_owner_html',
-                link: link_to(t('.links.registered'), { :controller => 'userfiles', :action => 'show', :id => userfile.id }),
-                owner: owner
-              )
-          %>
+            t('.registered_with_owner_html',
+              link: link_to(t('.links.registered'), { :controller => 'userfiles', :action => 'show', :id => userfile.id }),
+              owner: owner
+            )
         end
 
       t.column(t('.columns.note'), :message)

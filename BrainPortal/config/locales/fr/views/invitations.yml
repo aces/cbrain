@@ -1,5 +1,6 @@
 fr:
   invitations:
     new:
+      title: "Inviter d'autres utilisateurs à rejoindre votre projet"
+      field_note: "Saisissez une ou plusieurs adresses courriel séparées par des espaces ou des virgules. Vous pouvez aussi indiquer des noms d'utilisateur CBRAIN si vous les connaissez."
       send_invitations: "Envoyer des invitations"
-      no_users_available: "Aucun utilisateur n'est disponible pour être invité."
