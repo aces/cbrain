@@ -128,7 +128,7 @@ RSpec.describe AccessProfilesController, :type => :controller do
       end
       it "should fail on a unknown profile ID" do
         post :update, params: {:id => -987}
-        expect(flash[:error]).to eq(ExceptionHelpers::NOT_FOUND_MSG)
+        expect(flash[:error]).to eq(I18n.t('application.flash.object_not_found'))
       end
       it "should change standard attributes" do
         new_att = { :name => 'new_name', :description => 'new_desc', :color => '#cababe' }
