@@ -31,7 +31,7 @@
 
 <div class="pagination">
   <span class="page_links">
-    (<%= pluralize @quotas.total_entries, "disk quota configurations" %>)
+    (<%= t('.links.config_count', count: @quotas.total_entries) %>)
   </span>
 </div>
 
@@ -53,46 +53,45 @@
   <%
     t.pagination
 
-    t.column("User", :user,
+    t.column(t('.columns.user'), :user,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, User)
     ) do |dq|
       if ! dq.is_for_user?
-        html_colorize("(Default for all users)", 'orange')
+        html_colorize(t('.columns.default_for_all_users'), 'orange')
       else
         link_to_user_if_accessible(dq.user)
       end
     end
 
-    t.column("Data Provider", :data_provider,
+    t.column(t('.columns.data_provider'), :data_provider,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, DataProvider)
     ) { |dq| link_to_data_provider_if_accessible(dq.data_provider) }
 
-    t.column("Max Size", :max_bytes,
+    t.column(t('.columns.max_size'), :max_bytes,
       :sortable => true,
     ) { |dq| pretty_quota_max_bytes(dq) }
 
-    t.column("Max Files", :max_files,
+    t.column(t('.columns.max_files'), :max_files,
       :sortable => true,
     ) { |dq| pretty_quota_max_files(dq) }
 
     # This column is a bit misleading: it shows the CURRENT USER's resources for all
     # quota records that are DP-wide, and the AFFECTED USER'S resources for the user-specific quotas.
-    t.column("My Usage") do |dq|
+    t.column(t('.columns.my_usage')) do |dq|
       what = dq.exceeded?(dq.user_id == 0 ? current_user.id : dq.user_id)
       what = nil if dq.cursize.zero? && dq.curfiles.zero?
+      usage = t('.disk_usage_html', size: colored_pretty_size(dq.cursize), files: number_with_commas(dq.curfiles))
       if what.nil?
-        html_colorize("OK","green") +
-        " (#{colored_pretty_size(dq.cursize)} and #{number_with_commas(dq.curfiles)} files)".html_safe
+        html_colorize(t('quotas.common.status.ok'),"green") + " ".html_safe + usage
       else
-        html_colorize("Exceeded: #{what.to_s.humanize}","red") +
-        " (#{colored_pretty_size(dq.cursize)} and #{number_with_commas(dq.curfiles)} files)".html_safe
+        html_colorize(t('quotas.common.status.exceeded', what: what.to_s.humanize),"red") + " ".html_safe + usage
       end
     end
 
-    t.column("Details") do |dq|
-      link_to 'Table',
+    t.column(t('.columns.details')) do |dq|
+      link_to t('.links.table'),
               report_path(
                   :table_name       => 'userfiles.combined_file_rep',
                   :user_id          => (dq.is_for_user? ? dq.user_id : ""),
@@ -105,11 +104,11 @@
 
     if current_user.has_role? :admin_user
 
-      t.column("Operations") do |dq|
-        ( link_to("Show/Edit", quota_path(dq), :class => "action_link") +
+      t.column(t('.columns.operations')) do |dq|
+        ( link_to(t('.links.show_edit'), quota_path(dq), :class => "action_link") +
           " " +
-          link_to("Delete",    quota_path(dq), :class => "action_link",
-              :data   => { :confirm => "Are you sure you want to delete this quota entry?" },
+          link_to(t('delete'),    quota_path(dq), :class => "action_link",
+              :data   => { :confirm => t('confirm_delete', name: t('quotas.common.confirm_delete_name')) },
               :method => :delete)
         )
       end

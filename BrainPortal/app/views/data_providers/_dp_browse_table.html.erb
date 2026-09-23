@@ -25,9 +25,9 @@
 <div name="dataprovider_files" class="index_block">
 
   <h2>
-    Files Available On Remote Data Provider '<%= @provider.name %>'
+    <%= t('.headings.main', name: @provider.name) %>
     <% if @as_user != current_user %>
-      (Browsing as user '<%= @as_user.login %>')
+      <%= t('.headings.browsing_as_html', login: @as_user.login) %>
     <% end %>
   </h2>
 
@@ -37,14 +37,14 @@
 
   <div class="pagination">
     <div class="pagination_left_side">
-      Register files as:
-      <%= master_select("file_select", ["..."] + SingleFile.valid_file_classes.map(&:pretty_type).sort) %>,
-      and directories as:
-      <%= master_select("directory_select", ["..."] + FileCollection.valid_file_classes.map(&:pretty_type).sort) %>
+      <%= t('.register_files_as') %>
+      <%= master_select("file_select", [t('select_placeholder')] + SingleFile.valid_file_classes.map(&:pretty_type).sort) %>,
+      <%= t('.and_directories_as') %>
+      <%= master_select("directory_select", [t('select_placeholder')] + FileCollection.valid_file_classes.map(&:pretty_type).sort) %>
     </div>
 
     <div class="pagination_right_side">
-      Search by name: <%= ajax_search_box("name_like", browse_data_provider_path) %>
+      <%= t('search_by_name') %> <%= ajax_search_box("name_like", browse_data_provider_path) %>
     </div>
   </div>
 
@@ -73,12 +73,12 @@
         } if f.state_ok
       end
 
-      t.column('Name', :name,
+      t.column(t('.columns.name'), :name,
         :sortable => true
       ) { |f| f.name.force_encoding('UTF-8') }
 
       if @provider.has_browse_path_capabilities?
-        t.column('CD', :changedir) do |f|
+        t.column(t('.columns.changedir'), :changedir) do |f|
           if f.symbolic_type == :directory
             newpath  = @browse_path.to_s # turns nil into ''
             newpath += "/" if newpath.present?
@@ -91,11 +91,11 @@
         end
       end
 
-      t.column('Size', :size,
+      t.column(t('.columns.size'), :size,
         :sortable => true
       ) { |f| f.symbolic_type == :regular ? colored_pretty_size(f.size) : '-' }
 
-      t.column('Type', :symbolic_type,
+      t.column(t('.columns.type'), :symbolic_type,
         :sortable => true,
         :filters  => filter_values_for(@fileinfolist, :symbolic_type,
           format: lambda do |format_info|
@@ -105,7 +105,7 @@
         )
       ) do |f|
         next f.userfile.pretty_type if f.userfile
-        next html_colorize('Unacceptable?') unless f.state_ok
+        next html_colorize(t('.unacceptable')) unless f.state_ok
 
         case f.symbolic_type
         when :regular
@@ -129,21 +129,24 @@
         )
       end
 
-      t.column('Last modified', :mtime, :sortable => true)  do |f|
+      t.column(t('.columns.last_modified'), :mtime, :sortable => true)  do |f|
        mtime = f.mtime
        next mtime.nil? ? '-' : to_localtime(Time.at(f.mtime), :datetime)
       end
 
-      t.column('Registered?', :registered) do |f|
+      t.column(t('.columns.registered'), :registered) do |f|
           userfile = f.userfile
-          next 'No' unless userfile
+          next t('data_providers.common.no_word') unless userfile
 
-          owner = "(belongs to user #{userfile.user.login})" unless
+          owner = t('.belongs_to_html', login: userfile.user.login) unless
             userfile.user_id == current_user.id
-          link_to("Registered", { :controller => 'userfiles', :action => 'show', :id => userfile.id }) + " #{owner}"
+            t('.registered_with_owner_html',
+              link: link_to(t('.links.registered'), { :controller => 'userfiles', :action => 'show', :id => userfile.id }),
+              owner: owner
+            )
         end
 
-      t.column('Note', :message)
+      t.column(t('.columns.note'), :message)
     %>
   <% end %>
 

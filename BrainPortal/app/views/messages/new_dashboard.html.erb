@@ -23,9 +23,9 @@
 -%>
 
 
-<% title 'Add New Dashboard Message' %>
+<% title t('.title') %>
 
-<h2>Add New Dashboard Message</h2>
+<h2><%= t('.headings.main') %></h2>
 <%= error_messages_for(@message) %>
 
 <%= form_for @message, :as => :message, :url => { :action => "create" }, :datatype => "script" do |f| -%>
@@ -36,7 +36,7 @@
 
     <p>
       <%= f.label :message_type do %>
-        Dashboard<br>
+        <%= t('.labels.dashboard') %><br>
       <% end %>
       <%= f.select :message_type, [
          [ "CBRAIN",   "cbrain_dashboard"  ],
@@ -57,17 +57,14 @@
       <%= f.text_area :description, :rows => 20, :cols => 160 %>
       <br>
       <span class="field_explanation">
-        For dashboard messages, whatever is entered here will be substituted literally
-        in the page's code. So you can use whatever HTML elements you want, but make sure
-        you know what you're doing. For NeuroHub, we recommand surrounding the entire text
-        with at least one &lt;P&gt; element.
+        <%= t('.explanations.dashboard_html') %>
       </span>
     </p>
 
     <%= f.hidden_field :variable_text, :value => "" %>
 
     <p>
-      <%= f.label :expiry_date, "Expiration date (current time: #{to_localtime(Time.now, :datetime)})" %><br>
+      <%= f.label :expiry_date, t('messages.common.labels.expiry_date', time: to_localtime(Time.now, :datetime)) %><br>
       <%= text_field_tag :expiry_date,
                          (@message.expiry ? "#{@message.expiry.strftime("%d/%m/%G")}" : ""),
                          :class => "datepicker"
@@ -83,7 +80,7 @@
     <br>
 
     <p>
-      <%= f.submit "Submit" %>
+      <%= f.submit t('submit') %>
     </p>
   </div>
 <% end %>

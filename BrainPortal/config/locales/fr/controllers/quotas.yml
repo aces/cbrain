@@ -1,0 +1,6 @@
+fr:
+  quotas:
+    flash:
+      created: "L'entrée de quota a été créée avec succès."
+      updated: "L'entrée de quota a été mise à jour avec succès."
+      deleted: "Entrée de quota %{type} supprimée."

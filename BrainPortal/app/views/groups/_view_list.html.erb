@@ -41,18 +41,18 @@
 
       t.row do |g|
         next unless (g == "ALL")
-        switch = link_to 'Switch', { :action => :switch, :id => "all"},
+        switch = link_to t('switch'), { :action => :switch, :id => "all"},
                                     :class   => 'action_link',
                                     :method  => :post
         row_content =
-          {:name           => "All",
-           :description    => "Represents all the projects",
-           :type           => "All Projects",
+          {:name           => t('all'),
+           :description    => t('.row_contents.represents_all_projects'),
+           :type           => t('.row_contents.all_projects'),
            :site           => "",
            :creator_id     => "",
            :users          => "",
-           :files          => @group_id_2_userfile_counts[nil] || "(None)",
-           :tasks          => @group_id_2_task_counts[nil] || "(None)",
+           :files          => @group_id_2_userfile_counts[nil] || t('none_parentheses'),
+           :tasks          => @group_id_2_task_counts[nil] || t('none_parentheses'),
            :switch         => switch,
           }
         {
@@ -63,27 +63,25 @@
         }
       end
 
-
-
-      t.column("Name", :name,
+      t.column(t('.columns.name'), :name,
         :sortable => true
       ) { |g| link_to_group_if_accessible(g) }
 
-      t.column("Description", :description,
+      t.column(t('.columns.description'), :description,
         :sortable => true,
       ) { |g| overlay_description(g.description) }
 
-      t.column("Project Type", :type,
+      t.column(t('.columns.type'), :type,
         :sortable => true,
         :filters  => default_filters_for(@base_scope, :type)
       ) { |g| g.pretty_category_name(current_user) }
 
-      t.column("Site", :site,
+      t.column(t('.columns.site'), :site,
         :sortable => true,
         :filters  => default_filters_for(@base_scope, Site)
       ) { |g| link_to_site_if_accessible(g.site) }
 
-      t.column("Creator", :creator_id,
+      t.column(t('.columns.creator'), :creator_id,
         :sortable => true,
         :filters => scoped_filters_for(
           @base_scope, @view_scope, :creator_id,
@@ -93,18 +91,18 @@
         )
       ) { |g| link_to_user_if_accessible(g.creator) }
 
-      t.column("Users", :users) do |g|
-        @group_id_2_user_counts[g.id].to_s.presence || html_colorize("(none)", "red")
+      t.column(t('.columns.users'), :users) do |g|
+        @group_id_2_user_counts[g.id].to_s.presence || html_colorize(t('none_parentheses'), "red")
       end
-      t.column("Files", :files) do |g|
+      t.column(t('.columns.files'), :files) do |g|
         index_count_filter @group_id_2_userfile_counts[g.id], :userfiles, { :group_id => g.id }, :show_zeros => true
       end
-      t.column("Tasks", :tasks) do |g|
+      t.column(t('.columns.tasks'), :tasks) do |g|
         index_count_filter @group_id_2_task_counts[g.id], :tasks, { :group_id => g.id }, :show_zeros => true
       end
 
-      t.column("Switch", :switch) do |g|
-        link_to 'Switch', { :action => :switch, :id => g.id },
+      t.column(t('.columns.switch'), :switch) do |g|
+        link_to t('.links.switch'), { :action => :switch, :id => g.id },
           :class   => 'action_link',
           :method  => :post
       end

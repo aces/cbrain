@@ -1,20 +1,19 @@
 
-Welcome to <%= @service_name  %>, <%= @user.full_name %>,
+<%= t('.welcome', service: @service_name, name: @user.full_name) %>
 
-Your account has been set up.
+<%= t('.account_set_up') %>
 
-Access <%= @service_name %> here:
+<%= t('cbrain_mailer.common.access_service', service: @service_name) %>
 
     <%= @external_url %>
 
-Your username for logging in is: <%= @user.login %>
+<%= t('.username') %> <%= @user.login %>
 <% unless @no_password_reset_needed %>
-Your temporary password is: <%= @plain_password.html_safe %>
+<%= t('.temporary_password') %> <%= @plain_password.html_safe %>
 
-You will be asked to change your password upon first log in.
+<%= t('.password_change_notice') %>
 <% end %>
 
-Sincerely,
+<%= t('cbrain_mailer.common.closing') %>
 
-The <%= @service_name  %> administrators.
-
+<%= t('cbrain_mailer.common.admins', service: @service_name) %>

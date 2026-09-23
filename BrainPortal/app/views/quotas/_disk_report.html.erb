@@ -22,25 +22,25 @@
 #
 -%>
 
-<% title "Exceeded Disk Quotas" %>
+<% title t('.title') %>
 
 <div class="menu_bar">
-  <%= link_to "Back To Disk Quotas",  quotas_path(:mode => :disk), :class => :button %>
+  <%= link_to t('.links.back_to_disk_quotas'),  quotas_path(:mode => :disk), :class => :button %>
 </div>
 
 <p>
 
 <table>
   <tr>
-    <th>User</th>
-    <th>DataProvider</th>
-    <th>Size</th>
-    <th>Size quota</th>
-    <th>Number of files</th>
-    <th>Number of files quota</th>
-    <th>Situation</th>
-    <th>Details</th>
-    <th>Quota record</th>
+    <th><%= t('.headings.user') %></th>
+    <th><%= t('.headings.data_provider') %></th>
+    <th><%= t('.headings.size') %></th>
+    <th><%= t('.headings.size_quota') %></th>
+    <th><%= t('.headings.num_files') %></th>
+    <th><%= t('.headings.num_files_quota') %></th>
+    <th><%= t('.headings.situation') %></th>
+    <th><%= t('.headings.details') %></th>
+    <th><%= t('.headings.quota_record') %></th>
   <tr>
 
 <% @user_id_and_quota.each do |user_id,quota| %>
@@ -64,7 +64,7 @@
     <td><%= pretty_quota_max_files(quota) %></td>
     <td><%= situation.to_s.humanize %></td>
     <td><%=
-      link_to 'Table',
+      link_to t('.links.table'),
               report_path(
                   :table_name       => 'userfiles.combined_file_rep',
                   :user_id          => user_id,
@@ -76,8 +76,8 @@
       %>
     </td>
     <td>
-      <% label = quota.is_for_user? ? "(User Quota)" : "(DP Quota)" %>
-      <%= link_to("Show/Edit #{label}", quota_path(quota), :class => "action_link") %>
+      <% label = quota.is_for_user? ? t('.labels.user_quota') : t('.labels.dp_quota') %>
+      <%= link_to(t('quotas.common.show_edit_label', label: label), quota_path(quota), :class => "action_link") %>
     </td>
   </tr>
 <% end %>

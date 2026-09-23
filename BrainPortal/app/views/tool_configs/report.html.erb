@@ -22,7 +22,7 @@
 #
 -%>
 
-<% title 'Access Summary' %>
+<% title t('.title') %>
 
 <% if @view == 'by_tool' || @view == 'by_bourreau' %>
   <%
@@ -34,7 +34,7 @@
       versus    = @bourreaux
     end
   %>
-  <h1>Access Report, By <%= @view == 'by_bourreau' ? "Execution Server" : "Tool" %></h1>
+  <h1><%= t('.headings.by', type: @view == 'by_bourreau' ? t('.headings.execution_server') : t('.headings.tool', count: 1)) %></h1>
   <% resources.each do |resource| %>
     <p>
     <%= render :partial => 'by_resource',
@@ -45,7 +45,7 @@
     %>
   <% end %>
 <% elsif @view == 'by_user' %>
-  <h1>Tool Access Report, By User</h1>
+  <h1><%= t('.headings.access_by_user') %></h1>
   <% @users.each do |user| %>
     <p>
     <%= render :partial => 'by_user',
@@ -59,52 +59,52 @@
 
 <p>
 
-<h1>Quick Links To Individual Access Reports</h1>
+<h1><%= t('.headings.quick_links') %></h1>
 
-<h5>By Execution Server(or <%= link_to "all of them", :action => :report, :view => 'by_bourreau' %>)</h5>
+<h5><%= t('.headings.by_server_html', link: link_to(t('.all.of_them'), :action => :report, :view => 'by_bourreau')) %></h5>
 <%= array_to_table(Bourreau.all.sort { |a,b| a.name <=> b.name }, :table_class => 'simple', :rows => 1 ) do |bourreau,r,c| %>
   <%= link_to bourreau.name, :action => :report, :bourreau_id => bourreau.id %>
 <% end %>
 
 <p>
 
-<h5>By Tool (or <%= link_to "all of them", :action => :report, :view => 'by_tool' %>)</h5>
+<h5><%= t('.headings.by_tool_html', link: link_to(t('.all.of_them'), :action => :report, :view => 'by_tool')) %></h5>
 <%= array_to_table(Tool.all.sort { |a,b| a.name <=> b.name }, :table_class => 'simple', :td_class => 'no_wrap' ) do |tool,r,c| %>
   <%= link_to tool.name, :action => :report, :tool_id => tool.id %>
 <% end %>
 
 <p>
 
-<h5>By User</h5>
+<h5><%= t('.headings.by_user') %></h5>
 <%= array_to_table(User.all.sort { |a,b| a.login <=> b.login }, :table_class => 'simple' ) do |user,r,c| %>
   <%= link_to user.login, :action => :report, :user_id => user.id %>
 <% end %>
 
 <p>
 
-<h5>By a more specific combinations of resources</h5>
+<h5><%= t('.headings.by_combination') %></h5>
 
 <%= form_tag( { :action => :report }, :method => :get) do %>
 
-Execution Server:
+<%= t('.labels.execution_server') %>
 <%= bourreau_select :bourreau_id,
                     {
                       :selector => (params[:bourreau_id] || ""),
                       :offline_is_ok => true,
                     },
-                    { :include_blank => '(All servers, or...)' } %>
+                    { :include_blank => t('.all.servers_or') } %>
 
-Tool:
+<%= t('.labels.tool') %>
 <% toollist = Tool.all.sort { |a,b| a.name <=> b.name } %>
-<%= select_tag :tool_id, options_for_select( [ [ "(All tools, or...)", "" ] ] + (toollist.collect { |t| [ t.name, t.id.to_s ] } ), params[:tool_id] ) %>
+<%= select_tag :tool_id, options_for_select( [ [ t('.all.tools_or'), "" ] ] + (toollist.collect { |t| [ t.name, t.id.to_s ] } ), params[:tool_id] ) %>
 
-User:
-<%= user_select :user_id, { :selector => params[:user_id] }, { :include_blank => '(All users, or...)' } %>
+<%= t('.labels.user') %>
+<%= user_select :user_id, { :selector => params[:user_id] }, { :include_blank => t('.all.users_or') } %>
 
-View By:
-<%= select_tag :view, options_for_select( [ [ "(Pick best)", "" ], [ 'By Server', 'by_bourreau' ], [ 'By Tool', 'by_tool' ], [ 'By User', 'by_user' ] ], params[:view] ) %>
+<%= t('.labels.view_by') %>
+<%= select_tag :view, options_for_select( [ [ t('.pick_best'), "" ], [ t('.view_by.server'), 'by_bourreau' ], [ t('.view_by.tool'), 'by_tool' ], [ t('.view_by.user'), 'by_user' ] ], params[:view] ) %>
 
-<%= submit_tag "Get report!" %>
+<%= submit_tag t('.submit') %>
 
 <% end %>
 

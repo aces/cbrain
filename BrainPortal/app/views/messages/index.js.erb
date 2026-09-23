@@ -23,7 +23,7 @@
 -%>
 
 <%= render :partial  => "shared/flash_update" %>
-jQuery("#message_menu_tab").attr("title", "<%= pluralize(@unread_message_count, "unread message") %>");
+jQuery("#message_menu_tab").attr("title", "<%= t('.unread_count', count: @unread_message_count) %>");
 var message_display = jQuery("#message_display");
 if(message_display){
   message_display.html(<%= html_for_js(render :partial  => 'messages/message_display') %>);

@@ -121,12 +121,14 @@
     loaded_element.find("select").each(function(){
       var select = $(this);
 
-      var defined_width = (select.context.style.width);
-      if ( defined_width !== '' ){
-        select.chosen({ width: defined_width });
-      } else {
-        select.chosen({ width: '25em' });
-      }
+      var meta = function (n) { return $('meta[name="' + n + '"]').attr('content'); };
+      var defined_width = select.context.style.width;
+      select.chosen({
+        width:                     defined_width !== '' ? defined_width : '25em',
+        placeholder_text_single:   meta('chosen-single'),
+        placeholder_text_multiple: meta('chosen-multiple'),
+        no_results_text:           meta('chosen-no-results')
+      });
     });
 
     /////////////////////////////////////////////////////////////////////
@@ -1134,12 +1136,14 @@
   $('select').each(function(){
     var select = $(this);
 
-    var defined_width = (select.context.style.width);
-    if ( defined_width !== '' ){
-      select.chosen({ width: defined_width });
-    } else {
-      select.chosen({ width: '25em' });
-    }
+    var meta = function (n) { return $('meta[name="' + n + '"]').attr('content'); };
+    var defined_width = select.context.style.width;
+    select.chosen({
+      width:                     defined_width !== '' ? defined_width : '25em',
+      placeholder_text_single:   meta('chosen-single'),
+      placeholder_text_multiple: meta('chosen-multiple'),
+      no_results_text:           meta('chosen-no-results')
+    });
   });
 
   // Credit to Jeff Hays (GitHub: @jphase) for the select/deselect toggle.

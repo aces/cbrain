@@ -22,27 +22,27 @@
 #
 -%>
 
-<% title "Exceeded CPU Quotas" %>
+<% title t('.title') %>
 
 <div class="menu_bar">
-  <%= link_to "Back To CPU Quotas",  quotas_path(:mode => :cpu), :class => :button %>
+  <%= link_to t('.links.back_to_cpu_quotas'),  quotas_path(:mode => :cpu), :class => :button %>
 </div>
 
 <p>
 
 <table>
   <tr>
-    <th>User</th>
-    <th>Execution Server</th>
-    <th>Usage Past Week</th>
-    <th>Limit Past Week</th>
-    <th>Usage Past Month</th>
-    <th>Limit Past Month</th>
-    <th>Usage All Time</th>
-    <th>Limit All Time</th>
-    <th>Situation</th>
-    <th>Details</th>
-    <th>Quota record</th>
+    <th><%= t('.headings.user') %></th>
+    <th><%= t('.headings.execution_server') %></th>
+    <th><%= t('.headings.usage_week') %></th>
+    <th><%= t('.headings.limit_week') %></th>
+    <th><%= t('.headings.usage_month') %></th>
+    <th><%= t('.headings.limit_month') %></th>
+    <th><%= t('.headings.usage_all') %></th>
+    <th><%= t('.headings.limit_all') %></th>
+    <th><%= t('.headings.situation') %></th>
+    <th><%= t('.headings.details') %></th>
+    <th><%= t('.headings.quota_record') %></th>
   <tr>
 
 <% @uid_bid_and_quota.each do |user_id,bourreau_id,quota| %>
@@ -69,17 +69,17 @@
     <td><%= pretty_quota_cputime(quota.max_cpu_ever,true) %></td>
     <td>
         <% if situation =~ /week/i %>
-          Past week CPU exceeded
+          <%= t('.exceeded.week') %>
         <% elsif situation =~ /month/i %>
-          Past month CPU exceeded
+          <%= t('.exceeded.month') %>
         <% elsif situation =~ /ever/i %>
-          Total lifetime CPU exceeded
+          <%= t('.exceeded.ever') %>
         <% else %>
-          (Unknown)
+          <%= t('unknown_parentheses') %>
         <% end %>
     </td>
     <td>
-      <%= index_count_filter('Table', :resource_usage,
+      <%= index_count_filter(t('.data.table'), :resource_usage,
           {
             :type               => 'CputimeResourceUsageForCbrainTask',
             :user_id            => user_id,
@@ -89,10 +89,9 @@
       %>
     </td>
     <td>
-      <%= link_to("Show/Edit CPU Quota", quota_path(quota), :class => "action_link") %>
+      <%= link_to(t('.data.show_edit_cpu_quota'), quota_path(quota), :class => "action_link") %>
     </td>
   </tr>
 <% end %>
 
 </table>
-

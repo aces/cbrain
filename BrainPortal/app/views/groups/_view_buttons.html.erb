@@ -22,14 +22,7 @@
 #
 -%>
 
-  <div class="medium_paragraphs">
-    A project is a way to group together under single name a set
-    of CBRAIN files and tasks.  A project <em>is not a folder</em>.
-    Switching to a project makes it the 'active' project.  When a
-    project is active, an automatic implicit filter will be applied
-    such that only files and tasks assigned to the project are shown
-    in the file or task manager.
-  </div>
+  <%= t('.paragraphs.description_html') %>
 
   <p>
 
@@ -115,77 +108,56 @@
 
   <%= build_tabs do |tb| %>
 
-    <%= my_groups.presence && tb.tab("My Private Projects") do %>
-      <p class="medium_paragraphs">
-        These projects are visible only to you. There is one particular
-        project named <strong><%= current_user.own_group.name %></strong> that is created
-        by the system for you, by default, and cannot be deleted. Any of
-        these projects can be turned into a Shared Project by inviting other
-        users to join. When this happens, the projects will appear in a separate tab.
-      </p>
+    <%= my_groups.presence && tb.tab(t('.tabs.my_private_projects')) do %>
+      <%= t('.paragraphs.my_private_projects_html', name: current_user.own_group.name) %>
       <%= render :partial => 'view_buttons_tab', :locals => { :tab_groups => my_groups } %>
     <% end %>
 
-    <%= my_shared_groups.presence && tb.tab("My Shared Projects") do %>
-      <p class="medium_paragraphs">
-        These are projects that you created and are shared with other users.
-        Files and tasks assigned to a project are visible to all users of that project.
-      </p>
+    <%= my_shared_groups.presence && tb.tab(t('.tabs.my_shared_projects')) do %>
+      <%= t('.paragraphs.my_shared_projects_html') %>
       <%= render :partial => 'view_buttons_tab', :locals => { :tab_groups => my_shared_groups } %>
     <% end %>
 
-    <%= other_users_shared_groups.presence && tb.tab("Projects Shared With Me") do %>
-      <p class="medium_paragraphs">
-        These are projects created by other users who have invited you to join them.
-        Files and tasks assigned to a project are visible to all users of that project.
-      </p>
+    <%= other_users_shared_groups.presence && tb.tab(t('.tabs.projects_shared_with_me')) do %>
+      <%= t('.paragraphs.projects_shared_with_me_html') %>
       <%= render :partial => 'view_buttons_tab', :locals => { :tab_groups => other_users_shared_groups } %>
     <% end %>
 
-    <%= public_groups.presence && tb.tab("Public Projects") do %>
-      <p class="medium_paragraphs">
-        These are Public projects. All files and tasks assigned to them are visible to all users!
-      </p>
+    <%= public_groups.presence && tb.tab(t('.tabs.public_projects')) do %>
+      <%= t('.paragraphs.public_projects_html') %>
       <%= render :partial => 'view_buttons_tab', :locals => { :tab_groups => public_groups } %>
     <% end %>
 
-    <%= site_groups.presence && tb.tab("Site Projects") do %>
-      <p class="medium_paragraphs">
-        These are Site projects. They can be used to share files and tasks among the set of users
-        belonging to the associated Site.
-      </p>
+    <%= site_groups.presence && tb.tab(t('.tabs.site_projects')) do %>
+      <%= t('.paragraphs.site_projects_html') %>
       <%= render :partial => 'view_buttons_tab', :locals => { :tab_groups => site_groups } %>
     <% end %>
 
     <% if current_user.has_role?(:admin_user) %>
-      <%= user_groups.presence && tb.tab("Other Users System Projects") do %>
-        <p class="medium_paragraphs">Admin only</p>
+      <%= user_groups.presence && tb.tab(t('.tabs.other_users_system_projects')) do %>
+        <%= t('.paragraphs.admin_only_html') %>
         <%= render :partial => 'view_buttons_tab', :locals => { :tab_groups => user_groups } %>
       <% end %>
 
-      <%= other_users_private_groups.presence && tb.tab("Other Users Private Projects") do %>
-        <p class="medium_paragraphs">Admin only</p>
+      <%= other_users_private_groups.presence && tb.tab(t('.tabs.other_users_private_projects')) do %>
+        <%= t('.paragraphs.admin_only_html') %>
         <%= render :partial => 'view_buttons_tab', :locals => { :tab_groups => other_users_private_groups } %>
       <% end %>
     <% end %>
 
-    <%= tb.tab("Special 'ALL' Project") do %>
+    <%= tb.tab(t('.tabs.special_all_project')) do %>
       <p class="medium_paragraphs">
-        This special <strong>ALL Project</strong> is in fact no
-        project at all. Selecting this as your currently active
-        'project' will disable all project-based filtering, so
-        you will see together <strong>all</strong> files and tasks.
-        The file manager and task manager will each show you a new
-        column where you'll be able to filter by project directly
-        there. Selecting the <strong>ALL Project</strong> is useful
-        when you need to manage or browse files and tasks that are
-        in multiple projects.
+        <%= t('.paragraphs.special_all_project_html') %>
+
       </p>
       <%= render :partial => 'view_buttons_tab', :locals => { :tab_groups => all_special_group } %>
     <% end %>
 
-    <%= other_groups.presence && tb.tab("Other Projects") do %>
-      <p class="medium_paragraphs">Projects that for some reason are not assigned to other tabs</p>
+    <%= other_groups.presence && tb.tab(t('.tabs.other_projects')) do %>
+      <p class="medium_paragraphs">
+      <%= t('.paragraphs.other_projects_html') %>
+
+      </p>
       <%= render :partial => 'view_buttons_tab', :locals => { :tab_groups => other_groups } %>
     <% end %>
 

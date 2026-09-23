@@ -46,6 +46,7 @@ class ApplicationController < ActionController::Base
 
   # These will be executed in order
   before_action :check_for_banned_ip
+  before_action :set_locale
   before_action :check_account_validity
   before_action :count_background_activities
   before_action :prepare_messages
@@ -70,6 +71,57 @@ class ApplicationController < ActionController::Base
   ########################################################################
 
   private
+
+  def supported_locale(locale) #:nodoc:
+    locale = locale.to_s.presence&.to_sym
+
+    if locale && I18n.available_locales.include?(locale)
+      return locale
+    else
+      nil
+    end
+  end
+
+  # Extract the locale from HTTP_ACCEPT_LANGUAGE
+  def extract_locale_from_request #:nodoc:
+    locale_from_cookies = supported_locale(cookies[:locale])
+
+    return locale_from_cookies if locale_from_cookies
+
+    http_request_languages = request.env['HTTP_ACCEPT_LANGUAGE']
+    return nil unless http_request_languages
+
+    http_request_languages = http_request_languages.scan(/^[a-z]{2}/).map{|l| l.to_sym }
+
+    # Return the 1st language in I18n availables locales
+    return http_request_languages.detect{|l| I18n.available_locales.include?(l) }
+  end
+
+  # Use the parameter from the URL if it exist
+  def set_locale
+    if api_request?
+      I18n.locale = I18n.default_locale
+      return true
+    end
+
+    locale_param        = supported_locale(params[:locale])
+
+    if locale_param
+      I18n.locale      = locale_param
+      cookies[:locale] = locale_param
+      if current_user && current_user.meta[:locale] != locale_param
+        current_user.meta[:locale] = locale_param
+        current_user.save
+      end
+      redirect_to url_for(request.query_parameters.except(:locale)) if request.get?
+      return
+    end
+
+    user_locale = current_user && current_user.meta[:locale]
+    I18n.locale = supported_locale(user_locale) ||
+                  extract_locale_from_request() ||
+                  I18n.default_locale
+  end
 
   # Re-compute the host and IP from the request (when not logged in, or changed)
   def adjust_remote_ip_and_host #:nodoc:
@@ -171,7 +223,7 @@ class ApplicationController < ActionController::Base
   def check_password_reset #:nodoc:
     if current_user.password_reset
       unless params[:controller] == "users" && (params[:action] == "change_password" || params[:action] == "update")
-        flash[:error] = "Please reset your password."
+        flash[:error] = t('application.flash.password_reset_required')
         redirect_to change_password_user_path(current_user)
         return false
       end
@@ -404,8 +456,8 @@ class ApplicationController < ActionController::Base
 
   # Messy utility, poking through layers. Tricky and brittle.
   def eval_in_controller(mycontroller, options={}, &block) #:nodoc:
-    cb_error "Controller is not a ApplicationController?" unless mycontroller < ApplicationController
-    cb_error "Block needed." unless block_given?
+    cb_error t('application.errors.not_application_controller') unless mycontroller < ApplicationController
+    cb_error t('application.errors.block_needed') unless block_given?
     context = mycontroller.new
     context.request = self.request
     if options.has_key?(:define_current_user)

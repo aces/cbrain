@@ -162,9 +162,9 @@ class QuotasController < ApplicationController
 
     if @quota.save_with_logging(current_user, %w( max_bytes max_files max_cpu_past_week max_cpu_past_month max_cpu_ever max_active_tasks ))
       if new_record
-        flash[:notice] = "Quota entry was successfully created."
+        flash[:notice] = t('quotas.flash.created')
       else
-        flash[:notice] = "Quota entry was successfully updated."
+        flash[:notice] = t('quotas.flash.updated')
       end
       redirect_to quota_path(@quota)
       return
@@ -182,7 +182,7 @@ class QuotasController < ApplicationController
     @quota = Quota.find(id)
     @quota.destroy
 
-    flash[:notice] = "#{@quota.class.to_s.sub("Quota","")} quota entry deleted."
+    flash[:notice] = t('quotas.flash.deleted', type: @quota.class.to_s.sub("Quota",""))
 
     if @quota.is_a?(DiskQuota)
       redirect_to quotas_path(:mode => 'disk')

@@ -36,11 +36,11 @@
   <!-- Generate appropriate legend -->
   <legend>
       <% if for_tool %>
-        Tool: <%= link_to resource.name, edit_tool_path(resource) %>
+        <%= t('.labels.tool') %> <%= link_to resource.name, edit_tool_path(resource) %>
       <% else %>
-        Execution Server: <%= link_to_bourreau_if_accessible(resource, nil, :path => bourreau_path(resource)) %>
+        <%= t('.labels.execution_server') %> <%= link_to_bourreau_if_accessible(resource, nil, :path => bourreau_path(resource)) %>
       <% end %>
-      in project '<%= link_to_group_if_editable(resource.group) %>'
+      <%= t('tool_configs.common.in_project_html', group: link_to_group_if_editable(resource.group)) %>
   </legend>
 
   <%
@@ -56,9 +56,9 @@
   no_version_summary = ""
   if versus_without_tcs.present?
     if for_tool
-      no_version_summary << html_colorize("No versions configured for these servers: ")
+      no_version_summary << html_colorize(t('.no_versions.for_servers'))
     else
-      no_version_summary << html_colorize("No versions configured for these tools: ")
+      no_version_summary << html_colorize(t('.no_versions.for_tools'))
     end
 
     versus_without_tcs.each do |vs|
@@ -69,7 +69,7 @@
       end
 
       if vs.group.name != "everyone"
-        no_version_summary << " (in project " << link_to_group_if_editable(vs.group) << ")"
+        no_version_summary << " (" << t('tool_configs.common.in_project_html', group: link_to_group_if_editable(vs.group)) << ")"
       end
 
       no_version_summary << ", "
@@ -94,10 +94,10 @@
     <!-- Create full report for resource with versus having at least one tool_config -->
     <% if versus_with_tcs.present? %>
       <tr>
-        <th><%= for_tool ? "Execution Servers" : "Tools" %> </th>
-        <th>Versions Configured</th>
-        <th>Projects In Effect</th>
-        <th class="left_align">Users Access Summary </th>
+        <th><%= for_tool ? t('.headings.execution_servers') : t('.headings.tools') %> </th>
+        <th><%= t('.headings.versions_configured') %></th>
+        <th><%= t('.headings.projects_in_effect') %></th>
+        <th class="left_align"><%= t('.headings.users_access_summary') %> </th>
       </tr>
     <% end %>
 
@@ -123,12 +123,12 @@
             <% else %>
               <%= link_to vs.name, edit_tool_path(vs) %>
             <% end %>
-            in project '<%= link_to_group_if_editable(vs.group) %>'
+            <%= t('tool_configs.common.in_project_html', group: link_to_group_if_editable(vs.group)) %>
           </td>
         <% end %>
           <td class="left_align no_wrap">
             <%= link_to tc.version_name, tool_config_path(tc) %>
-            in project '<%= link_to_group_if_editable(tc.group) %>'
+            <%= t('tool_configs.common.in_project_html', group: link_to_group_if_editable(tc.group)) %>
           </td>
           <td class="left_align no_wrap">
             <%
@@ -137,7 +137,7 @@
                projs = projs.uniq
             %>
             <% if projs.size == 0 %>
-              <%= html_colorize("'everyone'", 'green') %>
+              <%= html_colorize(t('tool_configs.common.everyone'), 'green') %>
             <% else %>
               <% links = projs.map { |g| link_to_group_if_editable(g) } %>
               <%= links.join(" &cap; ").html_safe %>
@@ -154,12 +154,12 @@
             <% tool_pb, exec_pb = user_can_access_versus, user_can_access_resource %>
             <% exec_pb, tool_pb = tool_pb, exec_pb if for_tool %>
 
-            <%= html_colorize(users_with_access.count, "green") %> user(s) have access,
+            <%= t('.have_access_html', count: html_colorize(users_with_access.count, "green")) %>
             <span class="warning">
               <%= users_without_access.count %>
             </span>
-            user(s) have no access
-          </td>
+            <%= t('.have_no_access_html') %>
+            </td>
         </tr>
       <% end %>
     <% end %>
@@ -167,4 +167,3 @@
   </table>
 
 </fieldset>
-

@@ -1,0 +1,6 @@
+fr:
+  activerecord:
+    models:
+      background_activity:
+        one: "Activité en arrière-plan"
+        other: "Activités en arrière-plan"

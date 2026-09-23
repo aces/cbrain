@@ -22,20 +22,20 @@
 #
 -%>
 
-<% title 'Detailed Service Stats' %>
+<% title t('.title') %>
 
-  <h1>CBRAIN Web Service Statistics</h1>
+  <h1><%= t('.headings.main') %></h1>
 
   <div class="generalbox">
     <table>
       <!-- header -->
       <tr>
-        <th colspan="3" class="supertitle">Totals by client type</th>
+        <th colspan="3" class="supertitle"><%= t('.headings.by_client') %></th>
       </tr>
       <tr>
-        <th>Client Type</th>
-        <th>Successes</th>
-        <th>Failures</th>
+        <th><%= t('.columns.client_type') %></th>
+        <th><%= t('.columns.successes') %></th>
+        <th><%= t('.columns.failures') %></th>
       </tr>
       <!-- each row -->
       <% @stats_by_client.keys.sort.each do |client| %>
@@ -55,13 +55,13 @@
     <table>
       <!-- header -->
       <tr>
-        <th colspan="4" class="supertitle">Totals by controller &amp; action</th>
+        <th colspan="4" class="supertitle"><%= t('.headings.by_controller_html') %></th>
       </tr>
       <tr>
-        <th>Controller</th>
-        <th>Action</th>
-        <th>Successes</th>
-        <th>Failures</th>
+        <th><%= t('.columns.controller') %></th>
+        <th><%= t('.columns.action') %></th>
+        <th><%= t('.columns.successes') %></th>
+        <th><%= t('.columns.failures') %></th>
       </tr>
       <!-- each row -->
       <% @stats_by_contr_action.keys.sort.each do |contr_action| %>
@@ -83,17 +83,17 @@
     <table class="report">
       <!-- header -->
       <tr>
-        <th colspan="2" class="supertitle">Totals by HTTP status codes</th>
+        <th colspan="2" class="supertitle"><%= t('.headings.by_status') %></th>
       </tr>
       <tr>
-        <th>Status code</th>
-        <th>Count</th>
+        <th><%= t('.columns.status_code') %></th>
+        <th><%= t('.columns.count') %></th>
       </tr>
       <!-- each row -->
       <% bystatus = @stats['StatusCodes'] || {} %>
       <% bystatus.keys.sort.each do |status_code| %>
         <% code  = status_code =~ /(\d+)\z/ ? Regexp.last_match[1] : status_code %>
-        <% count = bystatus[status_code] || "(Unknown)" %>
+        <% count = bystatus[status_code] || t('unknown_parentheses') %>
         <tr>
           <td><%= code %></td>
           <td><%= count %></td>
@@ -104,6 +104,6 @@
 
   <p>
 
-  <strong>Counters last reset:</strong> <%= @last_reset %>
+  <strong><%= t('.footer.last_reset') %></strong> <%= @last_reset %>
 
 

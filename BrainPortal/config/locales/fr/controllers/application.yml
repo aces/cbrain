@@ -1,0 +1,13 @@
+fr:
+  application:
+    errors:
+      not_application_controller: "Le contrôleur n'est pas un ApplicationController ?"
+      block_needed: "Un bloc est requis."
+    flash:
+      password_reset_required: "Veuillez réinitialiser votre mot de passe."
+      page_not_found: "La page que vous avez demandée n'existe pas."
+      generic_exception: "Une erreur est survenue. Un message a été envoyé aux administrateurs. Veuillez réessayer plus tard."
+      portal_locked_for_maintenance: "Ce portail est actuellement verrouillé pour maintenance."
+      object_not_found: "L'objet que vous avez demandé n'existe pas ou ne vous est pas accessible."
+      object_not_deleted: "L'objet demandé n'a pas pu être supprimé."
+      login_required: "Vous devez vous connecter pour voir cette page."

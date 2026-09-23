@@ -1,0 +1,11 @@
+en:
+  groups:
+    errors:
+      not_creator:               "Cannot destroy this project: you are not its creator."
+    flash:
+      created:                   "Project was successfully created."
+      no_edit_permission:        "You don't have permission to edit this project."
+      updated:                   "Project was successfully updated."
+      cannot_unregister_creator: "You cannot be unregistered from a project you created."
+      unregistered:              "You have been unregistered from project %{name}."
+      license_blocked:           "Access to the project %{name} is blocked due to licensing issues. Please consult with the project maintainer or support for details"

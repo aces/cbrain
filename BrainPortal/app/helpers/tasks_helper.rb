@@ -65,11 +65,54 @@ module TasksHelper
           'Total'                            => [ "black",  999 ]  # not an official task status, but used in reports
   }
 
+  StatusI18nKeys = {
+    'New'                              => 'new',
+    'Configured'                       => 'configured',
+    'Setting Up'                       => 'setting_up',
+    'Queued'                           => 'queued',
+    'On CPU'                           => 'on_cpu',
+    'On Hold'                          => 'on_hold',
+    'Suspended'                        => 'suspended',
+    'Data Ready'                       => 'data_ready',
+    'Post Processing'                  => 'post_processing',
+    'Completed'                        => 'completed',
+    'Terminated'                       => 'terminated',
+    'Failed'                           => 'failed',
+    'Failed To Setup'                  => 'failed_to_setup',
+    'Failed On Cluster'                => 'failed_on_cluster',
+    'Failed To PostProcess'            => 'failed_to_post_process',
+    'Failed Setup Prerequisites'       => 'failed_setup_prerequisites',
+    'Failed PostProcess Prerequisites' => 'failed_post_process_prerequisites',
+    'Recover Setup'                    => 'recover_setup',
+    'Recover Cluster'                  => 'recover_cluster',
+    'Recover PostProcess'              => 'recover_post_process',
+    'Recovering Setup'                 => 'recovering_setup',
+    'Recovering Cluster'               => 'recovering_cluster',
+    'Recovering PostProcess'           => 'recovering_post_process',
+    'Restart Setup'                    => 'restart_setup',
+    'Restart Cluster'                  => 'restart_cluster',
+    'Restart PostProcess'              => 'restart_post_process',
+    'Restarting Setup'                 => 'restarting_setup',
+    'Restarting Cluster'               => 'restarting_cluster',
+    'Restarting PostProcess'           => 'restarting_post_process',
+    'Preset'                           => 'preset',
+    'SitePreset'                       => 'site_preset',
+    'Duplicated'                       => 'duplicated',
+    'Standby'                          => 'standby',
+    'TOTAL'                            => 'total_uppercase',
+    'Total'                            => 'total',
+  }
+
+  # Displayable label for a task status
+  def status_label(status)
+    key = StatusI18nKeys[status]
+    key ? t("tasks.statuses.#{key}", :default => status) : status
+  end
 
   # Returns a HTML SPAN within which the text of the task +status+ is highlighted in color.
   def colored_status(status)
-    return h(status) unless StatesToColor.has_key?(status)
-    html_colorize(h(status),StatesToColor[status][0])
+    return h(status_label(status)) unless StatesToColor.has_key?(status)
+    html_colorize(h(status_label(status)),StatesToColor[status][0])
   end
 
   # Returns a colored indicator for the archived status of a task,

@@ -1,0 +1,227 @@
+fr:
+  quotas:
+    common:
+      config_count:
+        one: "1 configuration de quota"
+        other: "%{count} configurations de quota"
+      status:
+        ok: "OK"
+        exceeded: "Dépassé : %{what}"
+      show_edit: "Afficher/Modifier"
+      show_edit_label: "Afficher/Modifier %{label}"
+      table: "Tableau"
+      situation: "Situation"
+      quota_record: "Entrée de quota"
+      confirm_delete_name: "cette entrée de quota"
+    cpu_quotas_table:
+      links:
+        config_count:
+          one: "1 configuration de quota CPU"
+          other: "%{count} configurations de quota CPU"
+      default:
+        all_users_in_project: "(Pour tous les utilisateurs du projet)"
+        all_users: "(Par défaut pour tous les utilisateurs)"
+        all_servers: "(Par défaut pour tous les serveurs)"
+      varies_by_server: "(Varie selon le serveur)"
+      columns:
+        user: "Utilisateur"
+        project: "Projet"
+        execution_server: "Bourreau"
+        max_weekly_cpu: "CPU max hebdomadaire"
+        max_monthly_cpu: "CPU max mensuel"
+        max_cpu_total: "CPU max total"
+        max_active_tasks: "Tâches actives max"
+        my_usage: "Ma consommation"
+        details: "Détails"
+        operations: "Actions"
+    cpu_report:
+      title: "Quotas CPU dépassés"
+      links:
+        back_to_cpu_quotas: "Retour aux quotas CPU"
+      headings:
+        user: "Utilisateur"
+        execution_server: "Bourreau"
+        situation: "Situation"
+        details: "Détails"
+        quota_record: "Entrée de quota"
+        usage_week: "Utilisation dernière semaine"
+        limit_week: "Limite dernière semaine"
+        usage_month: "Utilisation dernier mois"
+        limit_month: "Limite dernier mois"
+        usage_all: "Utilisation totale"
+        limit_all: "Limite totale"
+      exceeded:
+        week: "CPU de la semaine dernière dépassé"
+        month: "CPU du mois dernier dépassé"
+        ever: "CPU total de la vie du compte dépassé"
+      data:
+        table: "Tableau"
+        show_edit_cpu_quota: "Afficher/Modifier le quota CPU"
+    disk_quotas_table:
+      links:
+        config_count:
+          one: "1 configuration de quota disque"
+          other: "%{count} configurations de quota disque"
+        table: "Tableau"
+        show_edit: "Afficher/Modifier"
+        show_edit_disk_quota: "Afficher/Modifier le quota disque"
+      columns:
+        user: "Utilisateur"
+        default_for_all_users: "(Par défaut pour tous les utilisateurs)"
+        data_provider: "Data providers"
+        max_size: "Taille max"
+        max_files: "Nombre max de fichiers"
+        my_usage: "Ma consommation"
+        details: "Détails"
+        operations: "Actions"
+      disk_usage_html: "(%{size} et %{files} fichiers)"
+    disk_report:
+      title: "Quotas disque dépassés"
+      links:
+        back_to_disk_quotas: "Retour aux quotas disque"
+        table: "Tableau"
+        show_edit_disk_quota: "Afficher/Modifier le quota disque"
+      headings:
+        user: "Utilisateur"
+        data_provider: "Data providers"
+        situation: "Situation"
+        details: "Détails"
+        quota_record: "Entrée de quota"
+        size: "Taille"
+        size_quota: "Quota de taille"
+        num_files: "Nombre de fichiers"
+        num_files_quota: "Quota du nombre de fichiers"
+      labels:
+        user_quota: "(Quota utilisateur)"
+        dp_quota: "(Quota serveur de stockage)"
+    show_cpu_quota:
+      titles:
+        create: "Créer un quota CPU"
+        edit: "Modifier un quota CPU"
+        log: "Journal de l'entrée de quota CPU"
+      links:
+        cpu_quotas_table: "Tableau des quotas CPU"
+        new_cpu_quota: "Nouveau quota CPU"
+      headings:
+        record: "Entrée de quota CPU"
+        max_cpu_week: "CPU max semaine passée"
+        max_cpu_month: "CPU max mois passé"
+        max_cpu_total: "CPU max total"
+        max_active_tasks: "Tâches actives max"
+      cells:
+        user: "Utilisateur"
+        project: "Projet"
+        execution_server: "Bourreau"
+      blanks:
+        any_project: "(N'importe quel projet)"
+        any_execution_server: "(N'importe quel bourreau)"
+        default_all_users: "(Par défaut pour tous les utilisateurs)"
+      divs:
+        user_html: |
+          <div class="field_explanation">
+            Vous pouvez laisser le champ utilisateur vide et spécifier à la place un projet, ci‑dessous.
+            Vous pouvez aussi laisser les deux vides.
+          </div>
+        project_html: |
+          <div class="field_explanation">
+            Au lieu de spécifier un utilisateur ci‑dessus, vous pouvez sélectionner un projet, et le quota
+            s'appliquera à tous les utilisateurs de ce projet. Utilisateur et Projet sont mutuellement exclusifs
+            pour un quota CPU. Vous pouvez aussi laisser les deux vides.
+          </div>
+        execution_server_html: |
+          <div class="field_explanation">
+            Vous pouvez laisser ceci vide, mais alors vous devez fournir soit un utilisateur soit un projet, ci‑dessus.
+          </div>
+        max_cpu_past_week_html: |
+          <div class="field_explanation">
+            Le temps CPU limite est en secondes ; lors de la saisie d'une nouvelle valeur,
+            vous pouvez utiliser un suffixe d'unité, par exemple
+            <em>3.5h</em> (heures), <em>7d</em> (jours), <em>4w</em> (semaines),
+            <em>3m</em> (mois) et <em>1y</em> (années).
+            Il n'y a pas de suffixe pour les secondes et les minutes.
+            Une valeur de <em>0</em> signifie qu'aucun temps n'est autorisé.
+          </div>
+        max_cpu_past_month_html: |
+          <div class="field_explanation">
+            Voir les explications pour CPU max mois passée.
+          </div>
+        max_cpu_ever_html: |
+          <div class="field_explanation">
+            Voir les explications pour CPU max semaine passée.
+          </div>
+        max_active_tasks_html: |
+          <div class="field_explanation">
+            Le nombre maximum de tâches qui peuvent être actives à tout moment sur le bourreau.
+            Laissez vide pour ne pas fixer de limite. Une valeur de zéro empêchera toute tâche d'être lancée.
+            Notez que les projets sont ignorés pour ces valeurs, et que si plusieurs entrées de quota s'appliquent
+            à un utilisateur et diffèrent uniquement par le projet, la valeur minimale de cet ensemble sera utilisée.
+            Le compte administrateur principal est utilisé pour définir un nombre maximum de tâches AU TOTAL pour un bourreau
+            (donc aucune limite spécifique à cet admin ne peut être spécifiée ici).
+          </div>
+    show_disk_quota:
+      titles:
+        create: "Créer un disque quota"
+        edit: "Modifier un disque quota"
+        log: "Journal de l'entrée de disque quota"
+      links:
+        disk_quotas_table: "Tableau des disques quotas"
+        new_disk_quota: "Nouveau disque quota"
+        new_quota_same_provider: "Nouveau quota avec le même data provider"
+        new_quota_same_user: "Nouveau quota pour le même utilisateur"
+      headings:
+        record: "Entrée de disque quota"
+        max_disk_space: "Espace disque maximal"
+        max_num_files: "Nombre maximal de fichiers"
+      columns:
+        user: "Utilisateur"
+        data_provider: "Data provider"
+      blanks:
+        default_all_users: "(Par défaut pour tous les utilisateurs)"
+        select_data_provider: "(Sélectionner un data provider)"
+      divs:
+        max_bytes_html: |
+          <div class="field_explanation">
+            Les tailles sont en octets ; lors de la saisie d'une nouvelle valeur,
+            vous pouvez utiliser un suffixe d'unité, par exemple <em>2.3 kb</em> et <em>10 G</em>.
+            Une valeur de <em>0</em> signifie qu'aucun fichier n'est autorisé.
+          </div>
+        max_files_html: |
+          <div class="field_explanation">
+            Une valeur de <em>0</em> signifie qu'aucun fichier n'est autorisé.
+          </div>
+    index:
+      title: "Configurations de quotas %{mode}"
+      mode:
+        disk: "Disque"
+        cpu: "CPU"
+      about: "À propos"
+      links:
+        exceeded_report: "Rapport des quotas %{mode} dépassés"
+        new_entry: "Nouvelle entrée de quota %{mode}"
+        to_disk: "Basculer vers les disque quotas"
+        to_cpu: "Basculer vers les quotas CPU"
+      legends:
+        about_disk: "À propos des  disque quotas"
+        about_cpu: "À propos des quotas CPU"
+      paragraphs:
+        disk_quota_explanations_html: |
+          <p class="long_paragraphs">
+          Cette page affiche les limites pour la quantité d'espace disque et le nombre
+          de fichiers qui peuvent être stockés sur chaque data providers. Chaque ligne est
+          une entrée de quota qui s'applique à un utilisateur ou à tous les utilisateurs, pour un data provider.
+          Lorsqu'un utilisateur dépasse l'une des deux limites pour
+          un fournisseur, il ne pourra plus créer de nouveaux fichiers.
+        cpu_quota_explanations_html: |
+          <p class="long_paragraphs">
+          Cette page affiche les limites pour la quantité de temps CPU de traitement
+          qu'un utilisateur peut accumuler historiquement. Il existe trois fenêtres :
+          pour le temps CPU accumulé sur la semaine passée, sur le mois passé, et sur la durée de vie du compte.
+          <p class="long_paragraphs">
+          Chaque ligne contient une entrée de quota avec les trois limites. Les quotas
+          peuvent s'appliquer à un ou plusieurs bourreaux, et peuvent s'appliquer à
+          un utilisateur spécifique, à tous les utilisateurs, ou à tous les utilisateurs d'un
+          projet particulier.
+          <p class="long_paragraphs">
+          Lorsqu'un utilisateur a dépassé son quota sur un bourreau, ses
+          tâches en statut 'New' ne seront pas préparées, et resteront en 'New'
+          jusqu'à ce que la fenêtre de quota progresse suffisamment pour libérer du temps.

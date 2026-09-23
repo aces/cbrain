@@ -1,0 +1,190 @@
+fr:
+  will_paginate:
+    page_gap: "…"
+  labels:
+    user_colon:
+      one: "Utilisateur :"
+      other: "Utilisateurs :"
+    group_colon:
+      one: "Groupe :"
+      other: "Groupes :"
+    project_colon:
+      one: "Projet :"
+      other: "Projets :"
+    tool_colon:
+      one: "Outil :"
+      other: "Outils :"
+    data_provider_colon:
+      one: "Serveur de stockage :"
+      other: "Serveurs de stockage :"
+    execution_server_colon:
+      one: "Serveur de calcul :"
+      other: "Serveurs de calcul :"
+    type_colon:
+      one: "Type :"
+      other: "Types :"
+    status_colon:
+      one: "Statut :"
+      other: "Statuts :"
+    description_colon:
+      one: "Description :"
+      other: "Descriptions :"
+    tags_colon:
+      one: "Label :"
+      other: "Labels :"
+    conflict_colon: "Conflit :"
+    created_colon: "Créé :"
+    updated_colon: "Mis à jour :"
+    owner_colon: "Propriétaire :"
+    published_colon: "Publié :"
+    year_month_colon: "Année/Mois :"
+    dates_colon: "Dates :"
+    search_colon: "Recherche :"
+    upload_colon: "Téléverser :"
+  date: "Date"
+  ago_time: "il y a %{time}"
+  pretty_elapsed:
+    year:
+      one: "%{count} an"
+      other: "%{count} ans"
+    month:
+      one: "%{count} mois"
+      other: "%{count} mois"
+    week:
+      one: "%{count} semaine"
+      other: "%{count} semaines"
+    day:
+      one: "%{count} jour"
+      other: "%{count} jours"
+    hour:
+      one: "%{count} heure"
+      other: "%{count} heures"
+    minute:
+      one: "%{count} minute"
+      other: "%{count} minutes"
+    second:
+      one: "%{count} seconde"
+      other: "%{count} secondes"
+    separator: ", "
+    last_separator: " et "
+    short:
+      year: "a"
+      month: "mois"
+      week: "sem"
+      day: "j"
+      hour: "h"
+      minute: "m"
+      second: "s"
+  more_parentheses: "(plus)"
+  unknown: "Inconnu"
+  unknown_parentheses: "(Inconnu)"
+  unset_parentheses: "(Non défini)"
+  yes_word: "Oui"
+  offline: "Hors ligne"
+  online: "En ligne"
+  none: "Aucun"
+  none_parentheses: "(Aucun)"
+  update_parentheses: "(Mettre à jour)"
+  show: "Afficher"
+  show_parentheses: "(Afficher)"
+  edit: "Modifier"
+  help: "Aide"
+  help_parentheses: "(Aide)"
+  browse: "Parcourir"
+  cancel: "Annuler"
+  switch: "Basculer"
+  clear: "Effacer"
+  refresh: "Rafraîchir"
+  select_placeholder: "..."
+  info_parentheses: "(info)"
+  no_description_parentheses: "(Pas de description)"
+  everyone: "Tout le monde"
+  no_information: "Il n'y a aucune information à afficher pour le moment."
+  from: "De"
+  to: "À"
+  delete: "Supprimer"
+  deleted: "Supprimé"
+  deleted_non_existing_parentheses: "(Supprimé/Non existant)"
+  save: "Enregistrer"
+  saved: "Enregistré"
+  create: "Créer"
+  created: "Créé"
+  update: "Mettre à jour"
+  updated: "Mis à jour"
+  last_updated: "Dernière mise à jour"
+  active_users: "Utilisateurs actifs"
+  locked_users: "Utilisateurs verrouillés"
+  submit: "Soumettre"
+  status: "Statut"
+  search_by_name: "Rechercher par nom :"
+  confirm_delete: "Êtes-vous sûr de vouloir supprimer %{name} ?"
+  dataset:
+    one: "Jeu de données"
+    other: "Jeux de données"
+  agree: "J'accepte"
+  clear_options:
+    month: "Il y a un mois"
+    week: "Il y a une semaine"
+    day: "Il y a un jour"
+    hour: "Il y a une heure"
+    now: "Maintenant ! (Y compris le vôtre !)"
+  login: "Identifiant"
+  owner: "Propriétaire"
+  owner_downcase: "propriétaire"
+  version:
+    one: "Version"
+    other: "Versions"
+  tool_version:
+    one: "Version de l'outil"
+    other: "Versions de l'outil"
+  parameters:
+    one: "Paramètre"
+    other: "Paramètres"
+  summary: "Résumé"
+  time_zone: "Fuseau horaire"
+  all: "Tous"
+  show_hide_parentheses: "(afficher/masquer)"
+  hidden: "masqué"
+  datetime:
+    distance_in_words:
+      half_a_minute: "une demi-minute"
+      less_than_x_seconds:
+        one: "moins d'une seconde"
+        other: "moins de %{count} secondes"
+      x_seconds:
+        one: "1 seconde"
+        other: "%{count} secondes"
+      less_than_x_minutes:
+        one: "moins d'une minute"
+        other: "moins de %{count} minutes"
+      x_minutes:
+        one: "1 minute"
+        other: "%{count} minutes"
+      about_x_hours:
+        one: "environ une heure"
+        other: "environ %{count} heures"
+      x_days:
+        one: "1 jour"
+        other: "%{count} jours"
+      about_x_months:
+        one: "environ un mois"
+        other: "environ %{count} mois"
+      x_months:
+        one: "1 mois"
+        other: "%{count} mois"
+      about_x_years:
+        one: "environ un an"
+        other: "environ %{count} ans"
+      over_x_years:
+        one: "plus d'un an"
+        other: "plus de %{count} ans"
+      almost_x_years:
+        one: "presqu'un an"
+        other: "presque %{count} ans"
+  chosen:
+    single: "Choisir une option"
+    multiple: "Choisir des options"
+    no_results: "Aucun résultat pour"
+    add_tag: "Appuyez sur Entrée pour ajouter : "
+  custom_license:
+    message_header: "Fichier de licence ajouté"

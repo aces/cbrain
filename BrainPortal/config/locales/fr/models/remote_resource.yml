@@ -1,0 +1,17 @@
+fr:
+  activerecord:
+    attributes:
+      remote_resource:
+        class: "Classe"
+    models:
+      remote_resource:
+        one: "Serveur"
+        other: "Serveurs"
+      portal: "Portail"
+      execution: "Exécution"
+      execution_server:
+        one: "Serveur de calcul"
+        other: "Serveurs de calcul"
+      resource:
+        one: "Ressource"
+        other: "Ressources"

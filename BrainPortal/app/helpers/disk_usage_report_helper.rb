@@ -17,14 +17,14 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # View helpers for creating disk usage reports.
 module DiskUsageReportHelper
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   # Returns a RGB color code '#000000' to '#ffffff'
   # for disk sizes; the values are all fully saturated
   # and move about the colorwheel from pure blue
@@ -48,7 +48,7 @@ module DiskUsageReportHelper
     span.html_safe
   end
 
-  # Produces cell contain in order to display colored_square 
+  # Produces cell contain in order to display colored_square
   # and text side by side.
   def disk_space_info_display(size, max_size=500_000_000_000, unit=1_000_000, &block)
     text = capture(&block)
@@ -63,13 +63,13 @@ module DiskUsageReportHelper
 
     return contain.html_safe
   end
-  
+
   # Produces a legend for disk usage reports
   def disk_usage_legend
     legend = <<-HTML_LEGEND
     <center>
       <span class="display_cell">
-        #{disk_space_info_display(              0,500_000_000_000,1_000_000) {     "None" }}
+        #{disk_space_info_display(              0,500_000_000_000,1_000_000) {  t('none') }}
         #{disk_space_info_display(     10_000_000,500_000_000_000,1_000_000) {    "10 Mb" }}
         #{disk_space_info_display(    100_000_000,500_000_000_000,1_000_000) {   "100 Mb" }}
         #{disk_space_info_display(  1_000_000_000,500_000_000_000,1_000_000) {     "1 Gb" }}
@@ -81,5 +81,5 @@ module DiskUsageReportHelper
     HTML_LEGEND
     return legend.html_safe
   end
-  
+
 end

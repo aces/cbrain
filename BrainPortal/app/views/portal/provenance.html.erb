@@ -22,44 +22,17 @@
 #
 -%>
 
-<% title 'Provenance' %>
+<% title t('.title') %>
 
 <div class="credit_box">
 
-  <h3>CBRAIN Provenance Statement</h3>
-  
+  <h3><%= t('.headings.statement') %></h3>
+
   <!-- Text by Bryan Caron -->
 
-  New features and bug fixes are tested and released into the
-  development branch upon completion.  Continuous integration testing
-  is performed in an automated fashion and is applied to all code
-  incorporated into the development repository.  All pull requests
-  are reviewed and validated by the senior development team before
-  either being accepted or returned so as to undergo further
-  modification and testing by the submitting developer.
+  <%= t('.paragraphs.statement_html') %>
 
-  <p>
-
-  Major releases are made so as amalgamate together collections of
-  bug fixes, patches and new features assessed as beneficial for
-  issuance as a cumulative, integrated release for community use.
-  Major releases are performed by the CBRAIN Lead Developer and
-  authorized together with the CBRAIN Team Director.
-
-  <p>
-
-  Each release contains an associated set of release notes documentation
-  clearly identifying the new features and issues that are addressed
-  within a given release.
-
-  <p>
-
-  <a href="https://github.com/aces/cbrain/blob/master/Release-Notes.md">Release Notes</a>
-  are available in the CBRAIN GitHub repository.
-
-  <p>
-
-  <small>Document last updated: 2021-05-03</small>
+  <%= t('.footer.last_updated_html', date: '2021-05-03') %>
 
 </div>
 

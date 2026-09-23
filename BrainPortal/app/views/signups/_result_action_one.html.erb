@@ -33,7 +33,7 @@
 #
 %>
 
-<h3>Result for <%= crop_text_to(30, signup.full_name) %>, <%= crop_text_to(30, signup.institution) %></h3>
+<h3><%= t('.headings.main', name: crop_text_to(30, signup.full_name), institution: crop_text_to(30, signup.institution)) %></h3>
 
 <% if info.present? %>
   <pre><%= info.to_s %></pre>
