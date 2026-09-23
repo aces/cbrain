@@ -147,10 +147,10 @@ $(function () {
   /*** Handle disables and requires relations between parameters ***/
 
   /* Javascript dictionaries for names, disabledBy, and requires */
-  var namesMap          = <%= json.( names_map ) %>;
-  var requiresMap       = <%= json.( requires_map ) %>;
-  var disabledByMap     = <%= json.( disabledBy_map ) %>;
-  var disabledByValue   = <%= json.( disabledBy_value ) %>;
+  var namesMap          = <%== json_escape names_map.to_json %>;
+  var requiresMap       = <%== json_escape requires_map.to_json %>;
+  var disabledByMap     = <%== json_escape disabledBy_map.to_json %>;
+  var disabledByValue   = <%== json_escape disabledBy_value.to_json %>;
 
   // Function to map ids to names to make the messages a little prettier
   var idToName = function(x){ return namesMap[x]; }
@@ -320,11 +320,11 @@ $(function () {
 
   /*** Handle constraints on numerical parameters ***/
   /* Maps and lists of constrained parameters */
-  var mins = <%= json.( min_inputs_map ) %>;
-  var maxs = <%= json.( max_inputs_map ) %>;
-  var ints = <%= json.( int_inputs_list ) %>;
-  var exclMins = <%= json.( min_inputs_exc_list ) %>;
-  var exclMaxs = <%= json.( max_inputs_exc_list ) %>;
+  var mins = <%== json_escape min_inputs_map.to_json %>;
+  var maxs = <%== json_escape max_inputs_map.to_json %>;
+  var ints = <%== json_escape int_inputs_list.to_json %>;
+  var exclMins = <%== json_escape min_inputs_exc_list.to_json %>;
+  var exclMaxs = <%== json_escape max_inputs_exc_list.to_json %>;
 
   /* Adds warnings to number parameters that violate number constraints */
   function handleNumberConstraints() {
@@ -571,15 +571,15 @@ $(function () {
     // Classes for the modal (popup)
     var mdiv = 'preview-modal', mcont = 'preview-modal-content', mclose = 'preview-modal-close';
     // Input parameters (fetch ids and data from cbcsvs and json descriptor)
-    var ids    = <%= json.( inputs.map(&:id)                                 ) %>;
-    var names  = <%= json.( inputs.map(&:name)                               ) %>;
-    var reqed  = <%= json.( inputs.select { |p| ! p.optional }.map(&:id)     ) %>;
-    var files  = <%= json.( file_inputs.map(&:id)                            ) %>;
-    var cbcsvs = <%= json.( cbcsvs.map(&:name)                               ) %>;
-    var cids   = <%= json.( cbcsvs.map(&:id)                                 ) %>;
-    var flags  = <%= json.( inputs.select { |p| p.type == 'Flag' }.map(&:id) ) %>;
-    var cfmap  = <%= json.( cbcsvToFiles                                     ) %>;
-    var fileIdsToNames = <%= json.( interface_files.pluck(:id,:name).to_h    ) %>;
+    var ids    = <%== json_escape inputs.map(&:id).to_json                                  %>;
+    var names  = <%== json_escape inputs.map(&:name).to_json                                %>;
+    var reqed  = <%== json_escape inputs.select { |p| ! p.optional }.map(&:id).to_json      %>;
+    var files  = <%== json_escape file_inputs.map(&:id).to_json                             %>;
+    var cbcsvs = <%== json_escape cbcsvs.map(&:name).to_json                                %>;
+    var cids   = <%== json_escape cbcsvs.map(&:id).to_json                                  %>;
+    var flags  = <%== json_escape inputs.select { |p| p.type == 'Flag' }.map(&:id).to_json  %>;
+    var cfmap  = <%== json_escape cbcsvToFiles.to_json                                      %>;
+    var fileIdsToNames = <%== json_escape interface_files.pluck(:id,:name).to_h.to_json     %>;
 
     // Helper for extracting value lists
     var getVals = function( id, join ) {
@@ -770,7 +770,7 @@ $(function () {
       modalText += "</tbody> </table> <br>";
     }
 
-    ////* Actually draw the table now *////
+    ////* Actually d<%== the table now *////
 
     /* Special case: single task present (no cbcsvs, with more than one file input) */
     if( nTasks == 1 ) {
@@ -779,9 +779,9 @@ $(function () {
     /* Special case: single File-type input parameter present (all files are placed into that input and a task is launched for each). */
     // Any cbcsv files present in that input are expanded to launch a task for each of their entries instead.
     else if( single != false ) {
-      // Draw the static table, ignoring the cbcsvs among the inputs of the single file parameter
+      // D<%== the static table, ignoring the cbcsvs among the inputs of the single file parameter
       generateStaticTable( true )
-      // Draw the dynamic table, with a task (row) for each file in allFiles
+      // D<%== the dynamic table, with a task (row) for each file in allFiles
       generateDynamicTable();
     }
     /* Generic case: otherwise, add static and dynamic sections to the preview */
@@ -820,4 +820,3 @@ $(function () {
 
 });
 </script>
-
