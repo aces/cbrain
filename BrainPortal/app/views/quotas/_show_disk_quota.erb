@@ -22,23 +22,23 @@
 #
 -%>
 
-<% title @quota.new_record? ? 'Create Disk Quota' : 'Edit Disk Quota' %>
+<% title @quota.new_record? ? t('.titles.create') : t('.titles.edit') %>
 
 <%= error_messages_for @quota %>
 
 <div class="menu_bar">
 
-  <%= link_to "Disk Quotas Table", quotas_path(:mode => :disk), :class => :button %>
+  <%= link_to t('.links.disk_quotas_table'), quotas_path(:mode => :disk), :class => :button %>
 
   <% if ! @quota.new_record? %>
 
     <% if @quota.is_for_user? %>
-      <%= link_to 'New Quota With Same User',
+      <%= link_to t('.links.new_quota_same_user'),
           new_quota_path(:mode => :disk, :data_provider_id => -1                     , :user_id => @quota.user_id), :class => :button %>
     <% end %>
 
     <% if @quota.is_for_resource? %>
-      <%= link_to 'New Quota With Same Provider',
+      <%= link_to t('.links.new_quota_same_provider'),
           new_quota_path(:mode => :disk, :data_provider_id => @quota.data_provider_id, :user_id => -1),             :class => :button %>
     <% end %>
 
@@ -48,41 +48,39 @@
 
 
 
-<%= show_table(@quota, :as => :quota, :header => "Disk Quota Record",
+<%= show_table(@quota, :as => :quota, :header => t('.headings.record'),
                             :edit_condition => check_role(:admin_user)) do |t| %>
    <%= hidden_field_tag :mode, 'disk' %>
 
-  <% t.cell("User") do %>
-    <% if @quota.new_record? %>
-      <%= user_select("quota[user_id]", { :selector => @quota.user_id, :include_blank => '(Default For All Users)' }) %>
+  <% t.cell(t('.columns.user')) do %>
+      <% if @quota.new_record? %>
+      <%= user_select("quota[user_id]", { :selector => @quota.user_id, :include_blank => t('.blanks.default_all_users') }) %>
     <% else %>
       <%= @quota.is_for_user? ?
           link_to_user_if_accessible(@quota.user) :
-          html_colorize("(Default for all users)", 'orange') %>
+          html_colorize(t('.blanks.default_all_users'), 'orange') %>
     <% end %>
   <% end %>
 
-  <% t.edit_cell(:max_bytes, :header => "Max Disk Space", :content => pretty_quota_max_bytes(@quota)) do |f| %>
+  <% t.edit_cell(:max_bytes, :header => t('.headings.max_disk_space'), :content => pretty_quota_max_bytes(@quota)) do |f| %>
     <%= f.text_field :max_bytes, :size => 12 %>
     <div class="field_explanation">
-       Sizes are in bytes; when entering a new value,
-       you can use a unit as a suffix, such as in <em>2.3 kb</em> and <em>10 G</em>.
-       A value of <em>0</em> means no files allowed at all.
+      <%= t('.divs.max_bytes_html') %>
     </div>
   <% end %>
 
-  <% t.cell("Data Provider") do %>
+  <% t.cell(t('.columns.data_provider')) do %>
     <% if @quota.new_record? %>
-      <%= data_provider_select("quota[data_provider_id]", { :selector => @quota.data_provider_id, :include_blank => '(Select a DataProvider)' }) %>
+      <%= data_provider_select("quota[data_provider_id]", { :selector => @quota.data_provider_id, :include_blank => t('.blanks.select_data_provider') }) %>
     <% else %>
       <%= link_to_data_provider_if_accessible(@quota.data_provider) %>
     <% end %>
   <% end %>
 
-  <% t.edit_cell(:max_files, :header => "Max Number Of Files", :content => pretty_quota_max_files(@quota)) do |f| %>
+  <% t.edit_cell(:max_files, :header => t('.headings.max_num_files'), :content => pretty_quota_max_files(@quota)) do |f| %>
     <%= f.text_field :max_files, :size => 12 %>
     <div class="field_explanation">
-       A value of <em>0</em> means no files allowed at all.
+      <%= t('.divs.max_files_html') %>
     </div>
   <% end %>
 
@@ -90,5 +88,5 @@
 
 
 <P>
-<%= render :partial => "layouts/log_report", :locals  => { :log  => @quota.getlog, :title => 'Disk Quota Record Log' } %>
+<%= render :partial => "layouts/log_report", :locals  => { :log  => @quota.getlog, :title => t('.titles.log') } %>
 

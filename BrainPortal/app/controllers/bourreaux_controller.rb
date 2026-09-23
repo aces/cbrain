@@ -61,7 +61,7 @@ class BourreauxController < ApplicationController
     @users    = current_user.available_users
     @bourreau = RemoteResource.find(params[:id])
 
-    cb_notice "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
+    cb_notice  t('bourreaux.notices.not_accessible') unless @bourreau.can_be_accessed_by?(current_user)
 
     respond_to do |format|
       format.html # show.html.erb
@@ -77,7 +77,7 @@ class BourreauxController < ApplicationController
   def info #:nodoc:
     @bourreau = RemoteResource.find(params[:id])
 
-    cb_notice "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
+    cb_notice  t('bourreaux.notices.not_accessible') unless @bourreau.can_be_accessed_by?(current_user)
 
     @info     = @bourreau.info
     respond_to do |format|
@@ -107,7 +107,7 @@ class BourreauxController < ApplicationController
 
     if @bourreau.save
       @bourreau.addlog_context(self,"Created by #{current_user.login}")
-      flash[:notice] = "Execution Server successfully created."
+      flash[:notice] = t('bourreaux.flash.created')
 
       respond_to do |format|
         format.html { redirect_to :action => :index, :format => :html }
@@ -125,7 +125,7 @@ class BourreauxController < ApplicationController
     id        = params[:id]
     @bourreau = RemoteResource.find(id)
 
-    cb_notice "This #{@bourreau.class.to_s} is not accessible by you." unless @bourreau.has_owner_access?(current_user)
+    cb_notice t('bourreaux.notices.not_accessible_by_you', type: @bourreau.class.to_s) unless @bourreau.has_owner_access?(current_user)
 
     @users    = current_user.available_users
     @groups   = current_user.assignable_groups
@@ -187,7 +187,7 @@ class BourreauxController < ApplicationController
       )
     end
 
-    flash[:notice] = "#{@bourreau.class.to_s} #{@bourreau.name} successfully updated"
+    flash[:notice] = t('bourreaux.flash.updated', type: @bourreau.class.to_s, name: @bourreau.name)
 
     respond_to do |format|
       format.html { redirect_to :action => :show }
@@ -204,7 +204,7 @@ class BourreauxController < ApplicationController
 
     @bourreau.destroy
 
-    flash[:notice] = "Execution Server successfully deleted."
+    flash[:notice] = t('bourreaux.flash.deleted')
 
     respond_to do |format|
       format.html { redirect_to :action => :index}
@@ -212,7 +212,7 @@ class BourreauxController < ApplicationController
       format.xml  { head :ok }
     end
   rescue ActiveRecord::DeleteRestrictionError => e
-    flash[:error] = "Execution Server destruction failed: #{e.message.humanize}."
+    flash[:error] = t('bourreaux.flash.delete_failed' , reason: e.message.humanize)
 
     respond_to do |format|
       format.html { redirect_to :action => :index}
@@ -259,10 +259,10 @@ class BourreauxController < ApplicationController
   def start #:nodoc:
     @bourreau = Bourreau.find(params[:id])
 
-    cb_notice "This #{@bourreau.class.to_s} is not accessible by you."                         unless @bourreau.has_owner_access?(current_user)
-    cb_notice "Execution Server '#{@bourreau.name}' not accessible by current user."           unless @bourreau.can_be_accessed_by?(current_user)
-    cb_notice "Execution Server '#{@bourreau.name}' is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
-    cb_notice "Execution Server '#{@bourreau.name}' has already been alive for #{pretty_elapsed(@bourreau.info(:ping).uptime)}." if @bourreau.is_alive?(:ping)
+    cb_notice t('bourreaux.notices.not_accessible_by_you', type: @bourreau.class.to_s) unless @bourreau.has_owner_access?(current_user)
+    cb_notice t('bourreaux.notices.not_accessible_named',  name: @bourreau.name)       unless @bourreau.can_be_accessed_by?(current_user)
+    cb_notice t('bourreaux.notices.no_ssh_control',        name: @bourreau.name)       unless @bourreau.has_ssh_control_info?
+    cb_notice t('bourreaux.notices.already_alive',         name: @bourreau.name,  elapsed: pretty_elapsed(@bourreau.info(:ping).uptime)) if @bourreau.is_alive?(:ping)
 
     # New behavior: if a bourreau is marked OFFLINE we turn in back ONLINE.
     unless @bourreau.online?
@@ -271,7 +271,7 @@ class BourreauxController < ApplicationController
     end
 
     @bourreau.start_tunnels
-    cb_error "Could not start master SSH connection and tunnels for '#{@bourreau.name}'." unless @bourreau.ssh_master.is_alive?
+    cb_error t('bourreaux.errors.ssh_master_failed_named', name: @bourreau.name) unless @bourreau.ssh_master.is_alive?
 
     started_ok = @bourreau.start
     alive_ok   = started_ok && (sleep 3) && @bourreau.is_alive?(:ping)
@@ -290,9 +290,9 @@ class BourreauxController < ApplicationController
     flash[:error]  = ""
 
     if alive_ok
-      flash[:notice] = "Execution Server '#{@bourreau.name}' started."
+      flash[:notice] = t('bourreaux.flash.started', name: @bourreau.name)
     elsif started_ok
-      flash[:error]  = "Execution Server '#{@bourreau.name}' was started but did not reply to first query:"
+      flash[:error]  = t('bourreaux.flash.started_no_reply', name: @bourreau.name)
       Message.send_message(current_user,
         :header        => "Start Exec Server #{@bourreau.name} Problem",
         :description   => 'Bourreau started but it did not reply to first query.',
@@ -300,7 +300,7 @@ class BourreauxController < ApplicationController
         :type          => :error,
       )
     else
-      flash[:error]  = "Execution Server '#{@bourreau.name}' could not be started."
+      flash[:error]  = t('bourreaux.flash.start_failed', name: @bourreau.name )
       Message.send_message(current_user,
         :header        => "Start Exec Server #{@bourreau.name} Problem",
         :description   => 'Bourreau could not be started.',
@@ -310,9 +310,9 @@ class BourreauxController < ApplicationController
     end
 
     if workers_ok
-      flash[:notice] += "\nWorkers on Execution Server '#{@bourreau.name}' started."
+      flash[:notice] += t('bourreaux.flash.workers_started', name: @bourreau.name)
     elsif alive_ok
-      flash[:error]  += "However, we couldn't start the workers."
+      flash[:error]  += t('bourreaux.flash.workers_start_failed')
     end
 
     respond_to do |format|
@@ -325,9 +325,9 @@ class BourreauxController < ApplicationController
   def stop #:nodoc:
     @bourreau = Bourreau.find(params[:id])
 
-    cb_notice "This #{@bourreau.class.to_s} is not accessible by you."                         unless @bourreau.has_owner_access?(current_user)
-    cb_notice "Execution Server '#{@bourreau.name}' not accessible by current user."           unless @bourreau.can_be_accessed_by?(current_user)
-    cb_notice "Execution Server '#{@bourreau.name}' is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
+    cb_notice t('bourreaux.notices.not_accessible_by_you', type: @bourreau.class.to_s) unless @bourreau.has_owner_access?(current_user)
+    cb_notice t('bourreaux.notices.not_accessible_named',  name: @bourreau.name)       unless @bourreau.can_be_accessed_by?(current_user)
+    cb_notice t('bourreaux.notices.no_ssh_control',        name: @bourreau.name)       unless @bourreau.has_ssh_control_info?
 
     flash[:notice] = flash[:error] = ""
 
@@ -335,9 +335,9 @@ class BourreauxController < ApplicationController
       res = @bourreau.send_command_stop_workers
       raise "Failed command to stop workers" unless res && res[:command_execution_status] == "OK" # to trigger rescue
       @bourreau.addlog("Workers stopped by user #{current_user.login}.")
-      flash[:notice] += "Workers on Execution Server '#{@bourreau.name}' stopped."
+      flash[:notice] += t('bourreaux.flash.workers_stopped', name: @bourreau.name)
     rescue
-      flash[:error]  += "It seems we couldn't stop the workers on Execution Server '#{@bourreau.name}'. They'll likely die by themselves."
+      flash[:error]  += t('bourreaux.flash.workers_stop_failed', name: @bourreau.name)
     end
 
     @bourreau.online = true # to trick layers below into doing the 'stop' operation
@@ -349,12 +349,12 @@ class BourreauxController < ApplicationController
     @bourreau.addlog("Rails application stopped by user #{current_user.login}.")
 
     if boustop
-      flash[:notice] += "\nExecution Server '#{@bourreau.name}' stopped."
-      flash[:notice] += "\nStopped Control SSH connection." if tunstop
+      flash[:notice] += t('bourreaux.flash.stopped', name: @bourreau.name)
+      flash[:notice] += t('bourreaux.flash.ssh_control_stopped') if tunstop
     else
-      flash[:error]  += "\nFailed to stop Rails application for '#{@bourreau.name}'."
+      flash[:error]  += t('bourreaux.flash.stop_rails_failed', name: @bourreau.name )
     end
-    flash[:error]    += "\nFailed to stop Control SSH connection." if ! tunstop
+    flash[:error]    += t('bourreaux.flash.ssh_control_stop_failed') if ! tunstop
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
@@ -390,73 +390,73 @@ class BourreauxController < ApplicationController
         operation_stop_bourreaux    (bourreau) if action == 'stop_bourreaux'
         operation_stop_task_workers (bourreau) if action == 'stop_task_workers'
         operation_stop_bac_workers  (bourreau) if action == 'stop_bac_workers'
-        flash[:notice] += "#{bourreau.name}: Success for '#{action.humanize}'\n"
+        flash[:notice] += t('bourreaux.flash.operation_success', name: bourreau.name, action: action.humanize)
       rescue CbrainException => ex
-        flash[:error] += "#{bourreau.name}: Failure for '#{action.humanize}': #{ex.message}\n"
+        flash[:error] += t('bourreaux.flash.operation_failure', name: bourreau.name, action: action.humanize, message: ex.message)
       rescue => ex
-        flash[:error] += "#{bourreau.name}: Exception for '#{action.humanize}': #{ex.class}: #{ex.message}\n"
+        flash[:error] += t('bourreaux.flash.operation_exception', name: bourreau.name, action: action.humanize, exception: ex.class.name, message: ex.message)
       end
     end
 
-    flash[:error] += "Nothing selected, so no operation performed.\n" if bids.empty?
+    flash[:error] += t('bourreaux.flash.nothing_selected') if bids.empty?
     redirect_to :action => :index
   end
 
   private
 
   def operation_start_tunnels(bourreau) #:nodoc:
-    cb_error "Operation not allowed for a Portal." unless bourreau.is_a?(Bourreau)
+    cb_error t('bourreaux.errors.not_allowed_for_portal') unless bourreau.is_a?(Bourreau)
     bourreau.update_column(:online, true)
     res = bourreau.start_tunnels
-    cb_error "Could not start master SSH connection and tunnels." unless res
+    cb_error t('bourreaux.errors.ssh_master_failed') unless res
   end
 
   def operation_start_bourreaux(bourreau) #:nodoc:
-    cb_error "Operation not allowed for a Portal." unless bourreau.is_a?(Bourreau)
+    cb_error t('bourreaux.errors.not_allowed_for_portal') unless bourreau.is_a?(Bourreau)
     started_ok = bourreau.start
     #alive_ok   = started_ok && sleep(1) && bourreau.is_alive?(:ping)
-    cb_error "Could not start Bourreau.\n" + bourreau.operation_messages.to_s unless started_ok
+    cb_error t('bourreaux.errors.start_bourreau_failed', messages: bourreau.operation_messages.to_s) unless started_ok
   end
 
   def operation_start_task_workers(bourreau) #:nodoc:
-    cb_error "Operation not allowed for a Portal." unless bourreau.is_a?(Bourreau)
+    cb_error t('bourreaux.errors.not_allowed_for_portal') unless bourreau.is_a?(Bourreau)
     res = bourreau.send_command_start_workers
     workers_ok = true if res && res[:command_execution_status] == "OK"
-    cb_error "Could not start TASK workers." unless workers_ok
+    cb_error t('bourreaux.errors.start_task_workers_failed') unless workers_ok
   end
 
   def operation_start_bac_workers(bourreau) #:nodoc:
     # This is allowed for a Portal, but only the current one
     res = bourreau.send_command_start_bac_workers
     workers_ok = true if res && res[:command_execution_status] == "OK"
-    cb_error "Could not start BAC workers." unless workers_ok
+    cb_error t('bourreaux.errors.start_bac_workers_failed') unless workers_ok
   end
 
   def operation_stop_tunnels(bourreau) #:nodoc:
-    cb_error "Operation not allowed for a Portal." unless bourreau.is_a?(Bourreau)
+    cb_error t('bourreaux.errors.not_allowed_for_portal') unless bourreau.is_a?(Bourreau)
     tunstop = bourreau.stop_tunnels
-    cb_error "Could not stop tunnels." unless tunstop
+    cb_error t('bourreaux.errors.stop_tunnels_failed') unless tunstop
     bourreau.update_column(:online, false)
   end
 
   def operation_stop_bourreaux(bourreau) #:nodoc:
-    cb_error "Operation not allowed for a Portal." unless bourreau.is_a?(Bourreau)
+    cb_error t('bourreaux.errors.not_allowed_for_portal') unless bourreau.is_a?(Bourreau)
     boustop = bourreau.stop
-    cb_error "Could not stop Bourreau." unless boustop
+    cb_error t('bourreaux.errors.stop_bourreau_failed') unless boustop
   end
 
   def operation_stop_task_workers(bourreau) #:nodoc:
-    cb_error "Operation not allowed for a Portal." unless bourreau.is_a?(Bourreau)
+    cb_error t('bourreaux.errors.not_allowed_for_portal') unless bourreau.is_a?(Bourreau)
     res = bourreau.send_command_stop_workers
     workers_ok = true if res && res[:command_execution_status] == "OK"
-    cb_error "Could not stop TASK workers." unless workers_ok
+    cb_error t('bourreaux.errors.stop_task_workers_failed') unless workers_ok
   end
 
   def operation_stop_bac_workers(bourreau) #:nodoc:
     # This is allowed for a Portal, but only the current one
     res = bourreau.send_command_stop_bac_workers
     workers_ok = true if res && res[:command_execution_status] == "OK"
-    cb_error "Could not stop BAC workers." unless workers_ok
+    cb_error t('bourreaux.errors.stop_bac_workers_failed') unless workers_ok
   end
 
   public
@@ -613,7 +613,7 @@ class BourreauxController < ApplicationController
 
       if col.submitted_bac_ids.present?
         flash[:notice] += "\n" unless flash[:notice].blank?
-        flash[:notice] += "Creating CleanCache background operation request for #{remote_resource.name}."
+        flash[:notice] += t('bourreaux.flash.clean_cache_requested', name: remote_resource.name)
       end
     end
 
@@ -663,10 +663,9 @@ class BourreauxController < ApplicationController
 
     if ! refresh.blank?
       if sent_refresh.size > 0
-        flash[:notice] = "Sent a request to check the Data Providers to these servers: #{sent_refresh.join(", ")}\n" +
-                         "This will be done in background and can take several minutes before the reports are ready."
+        flash[:notice] = t('bourreaux.flash.refresh_sent', names: sent_refresh.join(", "))
       else
-        flash[:notice] = "No refresh needed, access information is recent enough."
+        flash[:notice] = t('bourreaux.flash.refresh_not_needed')
       end
       redirect_to :action => :rr_access_dp  # try again, without the 'refresh' param
     end
@@ -694,15 +693,15 @@ class BourreauxController < ApplicationController
                           .where(:id => userfile_ids).pluck(:id)
 
     # Validate things
-    cb_error "DataProvider not available" if data_provider.read_only || !data_provider.can_be_accessed_by?(current_user)
-    cb_error "No files selected"          if userfile_ids.empty?
+    cb_error t('bourreaux.errors.dp_not_available')  if data_provider.read_only || !data_provider.can_be_accessed_by?(current_user)
+    cb_error t('bourreaux.errors.no_files_selected') if userfile_ids.empty?
 
     # Select potential bourreaux
     bourreaux = Bourreau.where(:online => true)
     bourreaux = bourreaux.where(:id => bourreau_ids)             if bourreau_ids.present?
     bourreaux = bourreaux.where(:group_id => bourreau_group_ids) if bourreau_group_ids.present?
     bourreaux = bourreaux.to_a.select { |b| b.can_be_accessed_by?(current_user) }
-    cb_error "No bourreaux available" if bourreaux.empty?
+    cb_error t('bourreaux.errors.no_bourreaux_available') if bourreaux.empty?
 
     # Select one best bourreau
     bids = bourreaux.map(&:id)

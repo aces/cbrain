@@ -17,14 +17,14 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # View helpers for creating access reports.
 module AccessReportHelper
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   # Produces a pretty times symbol (used to show unavailable resources)
   def times_icon(color="red")
     "<span style=\"color:#{color}\" class=\"bold_icon\">&times;</span>".html_safe
@@ -37,15 +37,15 @@ module AccessReportHelper
 
   # Produces a pretty symbol for hidden resources
   def hidden_icon(color="purple")
-    "<span style=\"color:#{color}\" class=\"bold_icon\">H</span>".html_safe
+    "<span style=\"color:#{color}\" class=\"bold_icon\">#{t('abbreviations.H')}</span>".html_safe
   end
 
   # Produces a pretty symbol for immutable resources
   def immutable_icon(color="purple")
-    "<span style=\"color:#{color}\" class=\"bold_icon\">I</span>".html_safe
+    "<span style=\"color:#{color}\" class=\"bold_icon\">#{t('abbreviations.I')}</span>".html_safe
   end
 
-  # Produces a centered legend 
+  # Produces a centered legend
   def center_legend(title, legend_a)
     legend  = "<center>"
     legend += "#{title}&nbsp;&nbsp;&nbsp;&nbsp;" if title
@@ -57,5 +57,5 @@ module AccessReportHelper
     legend += "</center>\n"
     return legend.html_safe
   end
-  
+
 end

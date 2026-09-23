@@ -23,17 +23,17 @@
 -%>
 
 
-<% title @maintype =~ /Userfile/    ? 'File Deltas'      :
-         @maintype =~ /Cputime/     ? 'Task CPU times'   :
-         @maintype =~ /Walltime/    ? 'Task Walltimes'   :
-         @maintype =~ /Space.*Task/ ? 'Task Final Space' : "" %>
+<% title @maintype =~ /Userfile/    ? t('.title.file_deltas')      :
+         @maintype =~ /Cputime/     ? t('resource_usage.common.task_cpu_time')   :
+         @maintype =~ /Walltime/    ? t('resource_usage.common.task_walltime')   :
+         @maintype =~ /Space.*Task/ ? t('resource_usage.common.task_final_status') : "" %>
 
 <div class="menu_bar">
   <% buttons =
-     [ [ 'Userfile Disk Space', 'SpaceResourceUsageForUserfile'      ],
-       [ 'Task CPU Time',       'CputimeResourceUsageForCbrainTask'  ],
-       [ 'Task Walltime',       'WalltimeResourceUsageForCbrainTask' ],
-       [ 'Task Final Status',   'SpaceResourceUsageForCbrainTask'    ],
+     [ [ t('.buttons.userfile_disk_space'),            'SpaceResourceUsageForUserfile'      ],
+       [ t('resource_usage.common.task_cpu_time'),     'CputimeResourceUsageForCbrainTask'  ],
+       [ t('resource_usage.common.task_walltime'),     'WalltimeResourceUsageForCbrainTask' ],
+       [ t('resource_usage.common.task_final_status'), 'SpaceResourceUsageForCbrainTask'    ],
      ]
   %>
 
@@ -54,48 +54,35 @@
 <p>
 
 <fieldset>
-  <legend>Table Description</legend>
-  <p class="medium_paragraphs">
-  This is a <em>very wide</em> report table. It contains
-  resource usage records for disk space and time consumed.
-  Feel free to hide columns using the <strong>+</strong>
-  menu at the right side of the main table header.
+  <legend><%= t('.legends.table_description') %></legend>
+  <%= t('.paragraphs.description_intro_html') %>
   <p class="medium_paragraphs">
   <% if    @maintype == 'SpaceResourceUsageForUserfile'      %>
-    It displays the <span style="color: green">changes of the sizes</span> of all the files,
-    existing as well as deleted.
+    <%= t('.paragraphs.description_space_userfile_html') %>
   <% elsif @maintype == 'CputimeResourceUsageForCbrainTask'  %>
-    It displays the <span style="color: green">CPU time</span> accumulated by tasks.
+    <%= t('.paragraphs.description_cputime_html') %>
   <% elsif @maintype == 'WalltimeResourceUsageForCbrainTask' %>
-    It displays the <span style="color: green">'wall' time</span> accumulated by tasks.
+    <%= t('.paragraphs.description_walltime_html') %>
   <% elsif @maintype == 'SpaceResourceUsageForCbrainTask'    %>
-    It displays the <span style="color: green">disk space</span> in the work directory,
-    as well as the <span style="color: green">final status</span> of past tasks. The disk space
-    is not garanteed to be accurate, as this is a expensive resource to compute
-    and is only provided FYI. The real, main purpose of this report is to gather statistics about the
-    final <strong>status</strong> of tasks.
+    <%= t('.paragraphs.description_space_task_html') %>
   <% end %>
   <p class="medium_paragraphs">
-  Columns labeled <strong>Cached</strong> record pieces of information
-  about resources <em>as they were at the time the record was made</em>.
-  If a resource was destroyed (e.g. a non-<strong>Cached</strong> column is empty), these stay behind
-  and provide filtering options. It makes it possible to gather statistics about
-  these deleted resources.
+  <%= t('.paragraphs.description_cached_html') %>
 </fieldset>
 
 <p>
 
 <fieldset>
-  <legend>Usage Summary (including filters)</legend>
+  <legend><%= t('.legends.usage_summary') %></legend>
 
-  <%= pluralize @resource_usages.total_entries, "usage record" %>:
+  <%= t('.usage_record_count', count: @resource_usages.total_entries) %>:
   <%= pretty_resource_usage_value(@maintype.constantize.new(:value => @total_plus)) %>
   <%= pretty_resource_usage_value(@maintype.constantize.new(:value => @total_minus)) if @total_minus < 0 %>
   <% if @total_plus > 0 && @total_minus < 0 %>
-    (Total: <%= pretty_resource_usage_value(@maintype.constantize.new(:value => @total)) %>)
+    (<%= t('.total') %>: <%= pretty_resource_usage_value(@maintype.constantize.new(:value => @total)) %>)
   <% end %>
   <% if @resource_usages.total_entries > 1 %>
-    (Average: <%= pretty_resource_usage_value(
+    (<%= t('.average') %>: <%= pretty_resource_usage_value(
                     @maintype.constantize.new(
                      :value => (@total.to_f / @resource_usages.total_entries.to_f)
                     )
@@ -109,8 +96,8 @@
 <fieldset>
 
   <legend>
-    Additional filtering
-    <%= show_hide_toggle "(show/hide)", ".filtering", :class => 'task_help_link', :slide_effect => true, :slide_duration => 'fast'  %>
+    <%= t('.legends.additional_filtering') %>
+    <%= show_hide_toggle t('show_hide_parentheses'), ".filtering", :class => 'task_help_link', :slide_effect => true, :slide_duration => 'fast'  %>
   </legend>
 
 
@@ -128,23 +115,23 @@
 
       <div>
         <div class="display_cell">
-          <%= date_range_panel(params[:date_range] || {}, "date_range", :date_attributes => {:created_at => "By creation date"}) %>
+          <%= date_range_panel(params[:date_range] || {}, "date_range", :date_attributes => {:created_at => t('.by_creation_date')}) %>
         </div>
 
         <div class="display_cell">
           <%= check_box_tag(:deleted_items, "1", params["deleted_items"]) %>
-          <%= label_tag(:deleted_items, "Only deleted items.") %>
+          <%= label_tag(:deleted_items, t('.labels.only_deleted_items')) %>
 
           <br>
 
           <% if @maintype =~ /Userfile/ %>
             <%= check_box_tag(:positive_file_delta, "1", params["positive_file_delta"]) %>
-            <%= label_tag(:positive_file_delta, "With positive size delta.") %>
+            <%= label_tag(:positive_file_delta, t('.labels.positive_size_delta')) %>
 
             <br>
 
             <%= check_box_tag(:negative_file_delta, "1", params["negative_file_delta"]) %>
-            <%= label_tag(:negative_file_delta, "With negative size delta.") %>
+            <%= label_tag(:negative_file_delta, t('.labels.negative_size_delta')) %>
           <% end %>
 
         </div>
@@ -152,7 +139,7 @@
 
       <br>
 
-      <%= submit_tag 'Refresh Table', :id => "refresh_data_table", :disabled => true %>
+      <%= submit_tag t('.submits.refresh_table'), :id => "refresh_data_table", :disabled => true %>
 
       <script type="text/javascript">
         $(document).ready(function() {
@@ -210,28 +197,28 @@
 
     #t.column("Usage Type", :type)
 
-    t.column("Date", :created_at,
+    t.column(t('.columns.date'), :created_at,
       :sortable => true,
     ) do |ru|
       html_tool_tip(to_localtime(ru.created_at, :datetime), :offset_x => 0, :offset_y => 20) do
         (ru.created_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z") + "<br>" +
-         pretty_elapsed(Time.now - ru.created_at, :num_components => 2) + " ago").html_safe
+         t('ago_time', time: pretty_elapsed(Time.now - ru.created_at, :num_components => 2))).html_safe
       end
     end
 
     # --- Main Values ---
 
-    t.column((@maintype =~ /Space/ ? "Disk Space" : "Time"),
+    t.column((@maintype =~ /Space/ ? t('.columns.disk_space') : t('.columns.time')),
       :value,
       :sortable => true,
     ) { |ru| pretty_resource_usage_value(ru) }
 
     if @maintype =~ /ForUserfile/
-      t.column("Userfile", :userfile,
+      t.column(t('activerecord.models.userfile', count: 1), :userfile,
         :sortable => false,
       ) { |ru| link_to_userfile_if_accessible(ru.userfile) }
     else
-      t.column("Task", :cbrain_task,
+      t.column(t('activerecord.models.cbrain_task', count: 1), :cbrain_task,
         :sortable => false,
       ) do |ru|
         task = ru.cbrain_task
@@ -246,42 +233,42 @@
 
     # --- Common Columns: User, Group, Server ---
 
-    t.column("Owner", :user,
+    t.column(t('owner'), :user,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, User)
     ) { |ru| link_to_user_if_accessible(ru.user) }
 
-    t.column("Project", :group,
+    t.column(t('activerecord.models.group', count: 1), :group,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, Group)
     ) { |ru| link_to_group_if_accessible(ru.group) }
 
-    t.column("Server", :remote_resource,
+    t.column(t('activerecord.models.remote_resource', count: 1), :remote_resource,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, RemoteResource)
     ) { |ru| link_to_bourreau_if_accessible(ru.remote_resource) }
 
-    t.column("Cached Owner Type", :user_type,
+    t.column(t('.columns.cached_owner_type'), :user_type,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, :user_type)
     )
 
-    t.column("Cached Owner Login", :user_login,
+    t.column(t('.columns.cached_owner_login'), :user_login,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, :user_login)
     )
 
-    t.column("Cached Project Type", :group_type,
+    t.column(t('.columns.cached_project_type'), :group_type,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, :group_type)
     )
 
-    t.column("Cached Project Name", :group_name,
+    t.column(t('.columns.cached_project_name'), :group_name,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, :group_name)
     )
 
-    t.column("Cached Server Name", :remote_resource_name,
+    t.column(t('.columns.cached_server_name'), :remote_resource_name,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, :remote_resource_name)
     )
@@ -290,28 +277,28 @@
 
       # --- Userfile Columns ---
 
-      t.column("Cached Userfile Type", :userfile_type,
+      t.column(t('.columns.cached_userfile_type'), :userfile_type,
         :sortable => true,
         :filters  => default_filters_for(@base_scope, :userfile_type)
       )
 
-      t.column("Cached Userfile Name", :userfile_name,
+      t.column(t('.columns.cached_userfile_name'), :userfile_name,
         :sortable => true,
       )
 
       # --- DataProvider Columns ---
 
-      t.column("Provider", :data_provider,
+      t.column(t('activerecord.models.data_provider', count: 1), :data_provider,
         :sortable => true,
         :filters  => default_filters_for(@base_scope, DataProvider)
       ) { |ru| link_to_data_provider_if_accessible(ru.data_provider) }
 
-      t.column("Cached Provider Type", :data_provider_type,
+      t.column(t('.columns.cached_provider_type'), :data_provider_type,
         :sortable => true,
         :filters  => default_filters_for(@base_scope, :data_provider_type)
       )
 
-      t.column("Cached Provider Name", :data_provider_name,
+      t.column(t('.columns.cached_provider_name'), :data_provider_name,
         :sortable => true,
         :filters  => default_filters_for(@base_scope, :data_provider_name)
       )
@@ -320,7 +307,7 @@
 
       # --- CbrainTask Columns ---
 
-      t.column("Cached Task Type", :cbrain_task_type,
+      t.column(t('.columns.cached_task_type'), :cbrain_task_type,
         :sortable => true,
         :filters  => scoped_filters_for(
           @base_scope, @scope, :cbrain_task_type,
@@ -329,7 +316,7 @@
             label = label.sub(/^CbrainTask::/,"")
             {
               :value     => value,
-              :label     => "#{label} (of #{base})",
+              :label     => t('.labels.task_type', label: label, base: base),
               :indicator => view,
               :empty     => view == 0
             }
@@ -337,26 +324,26 @@
         )
       ) { |ru| (ru.cbrain_task_type || "").sub(/CbrainTask::/,"") }
 
-      t.column("Cached Task Status", :cbrain_task_status,
+      t.column(t('.columns.cached_task_status'), :cbrain_task_status,
         :sortable => true,
         :filters  => default_filters_for(@base_scope, :cbrain_task_status)
       ) { |ru| colored_status(ru.cbrain_task_status) }
 
       # --- Tool Columns ---
 
-      t.column("Tool", :tool,
+      t.column(t('activerecord.models.tool', count: 1), :tool,
         :sortable => true,
         :filters  => default_filters_for(@base_scope, Tool)
       ) { |ru| ru.tool ? link_to(ru.tool.name, tool_path(ru.tool.id)) : "" }
 
-      t.column("Cached Tool Name", :tool_name,
+      t.column(t('.columns.cached_tool_name'), :tool_name,
         :sortable => true,
         :filters  => default_filters_for(@base_scope, :tool_name)
       )
 
       # --- ToolConfig Columns ---
 
-      t.column("Version", :tool_config,
+      t.column(t('version', count: 1), :tool_config,
         :sortable => true,
         :filters  => scoped_filters_for(
           @base_scope, @view_scope, :tool_config_id,
@@ -366,7 +353,7 @@
         )
       ) { |ru| ru.tool_config ? link_to(ru.tool_config.version_name, tool_config_path(ru.tool_config)) : "" }
 
-      t.column("Cached Version", :tool_config_version_name,
+      t.column(t('.columns.cached_version'), :tool_config_version_name,
         :sortable => true,
         :filters  => default_filters_for(@base_scope, :tool_config_version_name)
       )

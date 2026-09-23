@@ -1,0 +1,74 @@
+fr:
+  sites:
+    sites_table:
+      links:
+        create_new_site: "Créer un nouveau site"
+      headings:
+        main:
+          one: "Site"
+          other: "Sites"
+      columns:
+        name: "Nom"
+        description: "Description"
+        type: "Type"
+        site_manager: "Responsable du site"
+        number_of_users: "Nombre d'utilisateurs"
+        number_of_projects: "Nombre de projets"
+    index:
+      title: "Sites"
+    new:
+      title: "Ajouter un nouveau site"
+      headings:
+        main: "Ajouter un nouveau site"
+      titles:
+        brief_description_title: "Brève description du site."
+      labels:
+        description: "Description"
+      paragraphs:
+        brief_description_html: |
+          <div class="field_explanation">
+            La première ligne doit être un court résumé, le reste servant pour des notes particulières destinées aux utilisateurs.
+          </div>
+      lock_status:
+        active: "Utilisateurs actifs"
+        locked: "Utilisateurs verrouillés"
+      datas:
+        login: "Identifiant"
+        regular_user: "Utilisateur régulier"
+        site_manager: "Responsable du site"
+      buttons:
+        groups: "Projets"
+      submit: "Créer"
+      hide: "(Masquer)"
+    show:
+      title: "Site"
+      headings:
+        could_not_be_updated: "Le site n'a pas pu être mis à jour."
+        resources: "Ressources"
+        groups: "Projets"
+        users: "Utilisateurs"
+        data_providers: "Serveurs de stockage"
+        remote_resources: "Ressources distantes"
+      paragraphs:
+        description_html: |
+          <div class="field_explanation">
+          La première ligne doit être un court résumé, le reste servant pour des notes particulières destinées aux utilisateurs.
+          </div><br>
+      cells:
+        managers: "Responsable du site"
+        users: "Utilisateurs"
+        groups: "Projets"
+        userfiles: "Fichiers"
+        data_providers: "Serveurs de stockage"
+        remote_resources: "Ressources distantes"
+      datas:
+        login: "Identifiant"
+        regular_user: "Utilisateur régulier"
+        site_manager: "Responsable du site"
+      labels:
+        users: "Utilisateurs"
+      submits:
+        update_users: "Mettre à jour les utilisateurs"
+        update_projects: "Mettre à jour les projets"
+      titles:
+        site_log: "Journal du site"

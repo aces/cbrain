@@ -182,7 +182,7 @@ module UserfilesHelper
   #   123.4 Mb (78 files)
   def colored_format_size(userfile)
     size = colored_pretty_size(userfile.size)
-    size += " (#{userfile.num_files.presence || '?'} files)" if userfile.is_a?(FileCollection)
+    size += t('userfiles.count', count: userfile.num_files.presence || '?') if userfile.is_a?(FileCollection)
     size.html_safe
   end
 

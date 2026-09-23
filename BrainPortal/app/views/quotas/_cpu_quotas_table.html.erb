@@ -31,7 +31,7 @@
 
 <div class="pagination">
   <span class="page_links">
-    (<%= pluralize @quotas.total_entries, "CPU quota configurations" %>)
+    (<%= t('.links.config_count', count: @quotas.total_entries) %>)
   </span>
 </div>
 
@@ -53,73 +53,73 @@
   <%
     t.pagination
 
-    t.column("User", :user,
+    t.column(t('.columns.user'), :user,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, User)
     ) do |cq|
       if ! cq.is_for_user?
         if cq.is_for_group?
-          html_colorize("(For all users in project)", 'orange')
+          html_colorize(t('.default.all_users_in_project'), 'orange')
         else
-          html_colorize("(Default for all users)", 'orange')
+          html_colorize(t('.default.all_users'), 'orange')
         end
       else
         link_to_user_if_accessible(cq.user)
       end
     end
 
-    t.column("Project", :group,
+    t.column(t('.columns.project'), :group,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, Group)
     ) { |cq| link_to_group_if_accessible(cq.group) }
 
-    t.column("Execution Server", :remote_resource,
+    t.column(t('.columns.execution_server'), :remote_resource,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, RemoteResource)
     ) do |cq|
       if ! cq.is_for_resource?
-        html_colorize("(Default for all servers)", 'orange')
+        html_colorize(t('.default.all_servers'), 'orange')
       else
         link_to_bourreau_if_accessible(cq.remote_resource)
       end
     end
 
-    t.column("Max Weekly CPU", :max_cpu_past_week,
+    t.column(t('.columns.max_weekly_cpu'), :max_cpu_past_week,
       :sortable => true,
     ) { |cq| pretty_quota_cputime(cq.max_cpu_past_week, true) }
 
-    t.column("Max Monthly CPU", :max_cpu_past_month,
+    t.column(t('.columns.max_monthly_cpu'), :max_cpu_past_month,
       :sortable => true,
     ) { |cq| pretty_quota_cputime(cq.max_cpu_past_month, true) }
 
-    t.column("Max CPU Total", :max_cpu_ever,
+    t.column(t('.columns.max_cpu_total'), :max_cpu_ever,
       :sortable => true,
     ) { |cq| pretty_quota_cputime(cq.max_cpu_ever, true) }
 
-    t.column("Max Active Tasks", :max_active_tasks,
+    t.column(t('.columns.max_active_tasks'), :max_active_tasks,
       :sortable => true,
     ) { |cq| pretty_max_active_tasks(cq) }
 
     # This column is a bit misleading: it shows the CURRENT USER's resources for all
     # quota records that are DP-wide, and the AFFECTED USER'S resources for the user-specific quotas.
-    t.column("My Usage") do |cq|
+    t.column(t('.columns.my_usage')) do |cq|
       if ! cq.is_for_resource?
-        html_colorize("(Varies by server)","orange")
+        html_colorize(t('.varies_by_server'),"orange")
       else
         what = cq.exceeded?(cq.user_id == 0 ? current_user.id : cq.user_id, cq.remote_resource_id)
         if what.nil?
-          html_colorize("OK","green") +
+          html_colorize(t('quotas.common.status.ok'),"green") +
           " (#{pretty_quota_current_cpu_usage(cq)})"
         else
           what = :total if what == :ever # ugh
-          html_colorize("Exceeded: #{what.to_s.humanize}","red") +
+          html_colorize(t('quotas.common.status.exceeded', what: what.to_s.humanize),"red") +
           " (#{pretty_quota_current_cpu_usage(cq)})"
         end
       end
     end
 
-    t.column("Details") do |cq|
-      index_count_filter('Table', :resource_usage,
+    t.column(t('.columns.details')) do |cq|
+      index_count_filter(t('quotas.common.table'), :resource_usage,
           {
             :type               => 'CputimeResourceUsageForCbrainTask',
             :user_id            => (cq.is_for_user?     ? cq.user_id            : current_user.id),
@@ -130,12 +130,11 @@
 
     if current_user.has_role? :admin_user
 
-      t.column("Operations") do |cq|
-        ( link_to("Show/Edit", quota_path(cq), :class => "action_link") +
+       t.column(t('.columns.operations')) do |cq|
+        ( link_to(t('quotas.common.show_edit'), quota_path(cq), :class => "action_link") +
           " " +
-          link_to("Delete",    quota_path(cq), :class => "action_link",
-              :data   => { :confirm => "Are you sure you want to delete this quota entry?" },
-              :method => :delete)
+          link_to(t('delete'),    quota_path(cq), :class => "action_link",
+              :data   => { :confirm => t('confirm_delete', name: t('quotas.common.confirm_delete_name')) },              :method => :delete)
         )
       end
 

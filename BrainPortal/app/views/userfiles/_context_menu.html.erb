@@ -29,7 +29,7 @@
   data-empty-selection="0"
 >
   <div>
-  Download
+  <%= t('userfiles.common.download') %>
   <span class="ui-icon ui-icon-arrowthickstop-1-s"></span>
   </div>
 </li>
@@ -39,7 +39,7 @@
   data-dialog="cpmv-dialog"
 >
   <div>
-  Copy
+  <%= t('userfiles.common.copy') %>
   <span class="ui-icon ui-icon-copy"></span>
   </div>
 </li>
@@ -49,7 +49,7 @@
   data-dialog="cpmv-dialog"
 >
   <div>
-  Move
+  <%= t('userfiles.common.move') %>
   <span class="ui-icon ui-icon-arrowreturnthick-1-e"></span>
   </div>
 </li>
@@ -58,7 +58,7 @@
   class="act-item"
 >
   <div>
-  Rename
+  <%= t('userfiles.common.rename') %>
   <span class="ui-icon ui-icon-pencil"></span>
   </div>
 </li>
@@ -69,7 +69,7 @@
   data-method="POST"
 >
   <div>
-  Compress
+  <%= t('userfiles.common.compress') %>
   <span class="ui-icon ui-icon-suitcase"></span>
   </div>
 </li>
@@ -80,7 +80,7 @@
   data-method="POST"
 >
   <div>
-  Uncompress
+  <%= t('userfiles.common.uncompress') %>
   <span class="ui-icon ui-icon-folder-open"></span>
   </div>
 </li>
@@ -90,10 +90,10 @@
   data-url="<%= delete_files_userfiles_path %>"
   data-method="DELETE"
   data-confirm-dlg="delete-confirm"
-  data-confirm-act="Delete"
+  data-confirm-act="<%= t('delete') %>"
 >
   <div>
-  Delete
+  <%= t('delete') %>
   <span class="ui-icon ui-icon-trash"></span>
   </div>
 </li>
@@ -104,7 +104,7 @@
   data-dialog="prop-dialog"
 >
   <div>
-  Properties
+  <%= t('userfiles.common.properties') %>
   <span class="ui-icon ui-icon-document-b"></span>
   </div>
 </li>
@@ -115,7 +115,7 @@
   data-empty-selection="0"
 >
   <div>
-  Synchronize
+  <%= t('userfiles.common.synchronize') %>
   <span class="ui-icon ui-icon-refresh"></span>
   </div>
 </li>
@@ -126,7 +126,7 @@
   data-empty-selection="0"
 >
   <div>
-  Mark as newer
+  <%= t('userfiles.common.mark_newer') %>
   <span class="ui-icon ui-icon-flag"></span>
   </div>
 </li>

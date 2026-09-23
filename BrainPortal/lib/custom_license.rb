@@ -124,7 +124,7 @@ module CustomLicense
 
     Message.send_message(user,
       :message_type   => 'notice',
-      :header         => "License file added",
+      :header         => I18n.t('custom_license.message_header'),
       :variable_text  => "#{userfile.pretty_type} [[#{userfile.name}][/userfiles/#{userfile.id}]]"
     )
     userfile

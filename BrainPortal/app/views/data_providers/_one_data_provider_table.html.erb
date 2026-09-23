@@ -40,67 +40,68 @@
   ) do |t|
 %>
   <%
-    t.column("Provider Name", :name,
+    t.column(t('.columns.name'), :name,
       :sortable => true
     ) { |dp| link_to_data_provider_if_accessible(dp, current_user, :html_options => { :class => dp.online? ? nil : 'error_link' }) }
 
-    t.column("Type", :type,
+    t.column(t('.columns.type'), :type,
       :sortable => true,
       :hidden   => true,
       :filters  => default_filters_for(@base_scope, :type)
     ) { |dp| dp.class.to_s } if current_user.has_role? :admin_user
 
-    t.column("Owner", :owner,
+    t.column(t('.columns.owner'), :owner,
       :hidden   => true,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, User)
     ) { |dp| link_to_user_with_tooltip(dp.user) }
 
-    t.column("Project", :group,
+    t.column(t('.columns.group'), :group,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, Group)
     ) { |dp| link_to_group_if_accessible(dp.group) }
 
-    t.column("Site", :site,
+    t.column(t('.columns.site'), :site,
       :hidden => true
     ) { |dp| link_to_site_if_accessible(dp.site) }
 
-    t.column("Time Zone", :time_zone,
+    t.column(t('.columns.time_zone'), :time_zone,
       :hidden   => true,
       :sortable => true
-    ) { |dp| dp.time_zone || "(Unset)" }
+    ) { |dp| dp.time_zone || t('unset_parentheses') }
 
-    t.column("Online?", :online,
+    t.column(t('.columns.online'), :online,
       :sortable => true
-    ) { |dp| red_if(!dp.online?, "Yes", "No") }
+    ) { |dp| red_if(!dp.online?, t('yes_word'), t('data_providers.common.no_word')) }
   %>
 
-  <% t.column("Alive?", :alive) do |dp| %>
+  <% t.column(t('.columns.alive'), :alive) do |dp| %>
     <% if dp.online? %>
       <% if dp.alive_cached_valid? %>
-        <%= red_if( !dp.is_alive_with_caching?, "Yes", "No") %>
+        <%= red_if( !dp.is_alive_with_caching?, t('yes_word'), t('data_providers.common.no_word')) %>
       <% else %>
         <span class="dp_alive_btn" id="<%= "alive" + h(dp.id) %>">
-          <%= on_click_ajax_replace( { :element   => "span",
-                                       :url       => url_for(:controller => :data_providers, :action  => :is_alive, :id => dp.id),
-                                       :replace   => "alive" + h(dp.id)
-                                     },
-                                     {
-                                       :before  => "<span class='loading_message'>Loading...</span>",
-                                       :class     => "dp_alive_btn"
-                                     }
-                                   ) do %>
-            <a href="#" class="action_link">Check</a>
+          <%= on_click_ajax_replace( {
+                                :element   => "span",
+                                :url       => url_for(:controller => :data_providers, :action  => :is_alive, :id => dp.id),
+                                :replace   => "alive" + h(dp.id)
+                              },
+                              {
+                                :before => "<span class='loading_message'>#{t('.messages.loading')}</span>",
+                                :class  => "dp_alive_btn"
+                              }
+                            ) do %>
+            <a href="#" class="action_link"><%= t('.links.check') %></a>
           <% end %>
         </span>
       <% end %>
     <% else %>
-      No
+      <%= t('data_providers.common.no_word') %>
     <% end %>
   <% end %>
 
   <%
-    t.column("Files", :files) do |dp|
+    t.column(t('.columns.files'), :files) do |dp|
       file_count = Userfile.find_all_accessible_by_user(current_user).where(:data_provider_id => dp.id).count
       if file_count > 0
         index_count_filter(file_count, :userfiles, { :data_provider_id => dp.id })
@@ -109,31 +110,31 @@
       end
     end
 
-    t.column("Mode", :mode,
+    t.column(t('.columns.mode'), :mode,
       :sortable => true
-    ) { |dp| dp.read_only ? "Read Only" : "Read/Write" }
+    ) { |dp| dp.read_only ? t('data_providers.common.mode.read_only') : t('data_providers.common.mode.read_write') }
 
-    t.column("Syncability", :sync,
+    t.column(t('.columns.syncability'), :sync,
       :hidden   => true,
       :sortable => true
-    ) { |dp| dp.not_syncable ? "NOT syncable" : "Fully syncable" }
+    ) { |dp| dp.not_syncable ? t('data_providers.common.syncability.not_syncable') : t('data_providers.common.syncability.fully_syncable') }
 
-    t.column("Description", :description,
+    t.column(t('.columns.description'), :description,
       :hidden   => true,
       :sortable => true
     ) { |dp| overlay_description(dp.description) }
 
     %>
 
-    <% t.column("Browse", :operations) do |dp| %>
+    <% t.column(t('.columns.browse'), :operations) do |dp| %>
       <% if dp.is_browsable?(current_user) && dp.can_be_accessed_by?(current_user) && dp.online? %>
-        <%= link_to 'Browse', browse_data_provider_path(dp), :class => 'action_link' %>
+        <%= link_to t('.links.browse'), browse_data_provider_path(dp), :class => 'action_link' %>
       <% end %>
     <% end %>
 
     <% if check_role(:admin_user) %>
-      <% t.column("Inconsistency", :inconsistency) do |dp| %>
-        <%= link_to 'Report', report_data_provider_path(dp), :class => 'action_link' %>
+      <% t.column(t('.columns.inconsistency'), :inconsistency) do |dp| %>
+        <%= link_to t('.links.report'), report_data_provider_path(dp), :class => 'action_link' %>
       <% end %>
     <% end %>
 

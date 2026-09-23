@@ -134,7 +134,7 @@ module ResourceLinkHelper
   # :path (the default is the show path).
   def link_to_group_if_accessible(group, cur_user = current_user, options = {})
     the_id = group.is_a?(Group) ? group.id : ( group.to_i rescue 0 )
-    return "everyone" if the_id == Group.everyone.id && ! cur_user.has_role?(:admin_user) # special case
+    return t('everyone') if the_id == Group.everyone.id && ! cur_user.has_role?(:admin_user) # special case
     link_to_model_if_accessible(Group,group,:name,cur_user,options)
   end
 
@@ -219,14 +219,14 @@ module ResourceLinkHelper
   # if any access is denied, the link will not be a href, but just
   # the name of the object.
   def link_to_model_if_accessible(model_class, model_obj_or_id, model_name_method = :name, user = current_user, options = {}) #:nodoc:
-    return "(None)" if model_obj_or_id.blank?
+    return t('none_parentheses') if model_obj_or_id.blank?
 
     user      ||= current_user # allows us to supply 'nil' in arg
     model_obj   = model_obj_or_id
 
     if model_obj_or_id.is_a?(String) || model_obj_or_id.is_a?(Integer)
       model_obj = model_class.find(model_obj_or_id) rescue nil
-      return "(Deleted/Non-existing)" if model_obj.blank?
+      return t('deleted_non_existing_parentheses') if model_obj.blank?
     end
 
     model_name_method = options[:name_method] if options[:name_method]  # allows overriding
@@ -256,18 +256,18 @@ module ResourceLinkHelper
   # user object) and adds a tooltip with a summary of the
   # user's information (full name, site and city).
   def link_to_user_with_tooltip(user, cur_user = current_user, options = {})
-    return "(None)" if user.blank?
-    cb_error "This method requires the first argument to be a User object." unless user.is_a?(User)
+    return t('none_parentheses') if user.blank?
+    cb_error t('resource_link.error') unless user.is_a?(User)
     capture do
       html_tool_tip(link_to_user_if_accessible(user,current_user,options), :offset_x => 0, :offset_y => 20 ) do
         (
         "<div class=\"left_align\">\n" +
         "#{h(user.full_name)}<br>\n" +
-        (user.city.blank?  ? "" : "City: #{h(user.city)}, #{h(user.country)}<br>\n") +
-        (user.site.blank?  ? "" : "Site: #{h(user.site.name)}<br>\n") +
-        (user.email.blank? ? "" : "Email: #{h(user.email)}<br>\n") +
-        "Last connection: #{pretty_past_date(user.last_connected_at)}<br>\n" +
-        "Last activity: #{pretty_past_date(user.last_activity_at)}<br>\n" +
+        (user.city.blank?  ? "" : "#{t('activerecord.attributes.user.city')}: #{h(user.city)}, #{h(user.country)}<br>\n") +
+        (user.site.blank?  ? "" : "#{t('activerecord.attributes.user.site')}: #{h(user.site.name)}<br>\n") +
+        (user.email.blank? ? "" : "#{t('activerecord.attributes.user.email')}: #{h(user.email)}<br>\n") +
+        "#{t('users.users_table.columns.last_connection')}: #{pretty_past_date(user.last_connected_at)}<br>\n" +
+        "#{t('resource_link.last_activity')}: #{pretty_past_date(user.last_activity_at)}<br>\n" +
         "</div>"
         ).html_safe
       end

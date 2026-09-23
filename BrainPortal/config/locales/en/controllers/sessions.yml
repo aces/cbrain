@@ -1,0 +1,19 @@
+en:
+  sessions:
+    errors:
+      oidc_out_of_sync:          "%{name} session is out of sync with CBRAIN"
+      oidc_fetch_failed:         "Could not fetch your identity information from %{name}"
+      identity_incomplete:       "Identity structure is missing some information. Contact the admins"
+    flash:
+      logged_out:                "You have been logged out."
+      oidc_provider_not_allowed: "Error: your account can only authenticate with the following providers: %{providers}"
+      oidc_linked:               "Your CBRAIN account is now linked to your %{name} identity."
+      oidc_no_more_password:     "\nImportant note: from now on you can no longer connect to CBRAIN using a password."
+      oidc_auth_failed:          "The %{name} authentication failed"
+      oidc_unlinked:             "Your account is no longer linked to any %{name} identity"
+      invalid_credentials:       "Invalid user name or password."
+      untrusted_ip:              "Untrusted source IP address."
+      portal_locked:             "The system is currently locked. Please try again later."
+      account_locked:            "This account is locked, please write to %{contact} to get this account unlocked."
+      oidc_no_user_match:        "No CBRAIN user matches your %{name} identity. Create a CBRAIN account or link your existing CBRAIN account to your %{name} provider."
+      oidc_multiple_users_match: "Several CBRAIN user accounts match your %{name} identity. Please contact the CBRAIN admins, as this should never happen."

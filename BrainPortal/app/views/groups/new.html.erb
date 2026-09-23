@@ -22,9 +22,9 @@
 #
 -%>
 
-<% title 'New Project' %>
+<% title t('.title') %>
 
-<h2>New Project</h2>
+<h2><%= t('.headings.main') %></h2>
 
 <%= error_messages_for @group %>
 
@@ -33,34 +33,29 @@
   <div class="generalbox">
 
     <p>
-    <%= f.label :name, "Name" %><br />
+    <%= f.label :name, t('.labels.name') %><br />
     <%= f.text_field :name %>
     </p>
 
     <p>
-    <%= f.label :description, "Description" %><br />
+    <%= f.label :description, t('.labels.description') %><br />
     <%= f.text_area :description, :rows => 4, :cols => 40 %>
-    <div class="field_explanation">The first line should be a short summary, and the rest are for details.</div>
+    <%= t('.paragraphs.description_html') %>
 
     <% if current_user.has_role?(:admin_user) %>
       <p>
-      <%= f.label :site_id, "Site:" %>
-      <%= site_select "group[site_id]",{}, :prompt => "(Select a site)" %>
-      <p>
-      Make this a system group invisible to normal users:
+      <%= f.label :site_id, t('.labels.site') %>
+      <%= site_select "group[site_id]",{}, :prompt => t('.prompts.site') %>
+      <%= t('.paragraphs.invisible_html') %>
       <%= f.check_box :invisible %>
-      <p>
-      Turn on usage tracking for files in this project:
+      <%= t('.paragraphs.track_usage_html') %>
       <%= f.check_box :track_usage %>
     <% end %>
 
-    <p>
-    Normal members will not be able to assign files or other resources
-    to this project (but editors are always allowed to do so):
+    <%= t('.paragraphs.not_assignable_html') %>
     <%= f.check_box :not_assignable %>
 
-    <p>
-    Make the project public, so that all users can access the files. Be careful with this option! You can always make the project public later on:
+    <%= t('.paragraphs.public_html') %>
     <%= f.check_box :public %>
     <p>
       <% if current_user.has_role?(:normal_user) %>
@@ -69,6 +64,6 @@
       <%= render :partial => 'users_form' %>
     <% end %>
     <p>
-    <%= f.submit "Create" %>
+    <%= f.submit t('.submit') %>
     </p>
 <% end %>

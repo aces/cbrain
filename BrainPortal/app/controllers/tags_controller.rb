@@ -58,7 +58,7 @@ class TagsController < ApplicationController
 
     respond_to do |format|
       if @tag.save
-        flash[:notice] = 'Tag was successfully created.'
+        flash[:notice] = t('tags.flash.created')
         format.xml  { render :xml  => @tag.for_api, :status => :created, :location => @tag }
         format.json { render :json => @tag.for_api, :status => :created, :location => @tag }
       else
@@ -77,7 +77,7 @@ class TagsController < ApplicationController
 
     respond_to do |format|
       if @tag.update_attributes(tag_params)
-        flash[:notice] = 'Tag was successfully updated.'
+        flash[:notice] = t('tags.flash.updated')
         format.xml  { head :ok, :content_type => 'text/plain' }
         format.json { head :ok }
       else

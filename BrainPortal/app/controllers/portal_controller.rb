@@ -80,11 +80,11 @@ class PortalController < ApplicationController
           message = params[:message] || ""
           message = "" if message =~ /\(lock message\)/ # the default string
           BrainPortal.current_resource.meta[:portal_lock_message] = message
-          flash.now[:notice] = "This portal has been locked."
+          flash.now[:notice] = t('portal.flash.locked')
         elsif params[:lock_portal] == "unlock"
           BrainPortal.current_resource.unlock!
           BrainPortal.current_resource.addlog("User #{current_user.login} unlocked this portal.")
-          flash.now[:notice] = "This portal has been unlocked."
+          flash.now[:notice] = t('portal.flash.unlocked')
           flash.now[:error] = ""
         end
       end
@@ -215,7 +215,7 @@ class PortalController < ApplicationController
   def sign_license #:nodoc:
     @license = params[:license]
     unless params.has_key?(:agree)
-      flash[:error] = "CBRAIN cannot be used without signing the End User Licence Agreement."
+      flash[:error] = t('portal.flash.eula_required')
       redirect_to "/logout"
       return
     end
@@ -223,7 +223,7 @@ class PortalController < ApplicationController
     if num_checkboxes > 0
       num_checks = params.keys.grep(/\Alicense_check/).size
       if num_checks < num_checkboxes
-        flash[:error] = "There was a problem with your submission. Please read the agreement and check all checkboxes."
+        flash[:error] = t('portal.flash.eula_incomplete')
         redirect_to :action => :show_license, :license => @license
         return
       end
@@ -485,7 +485,7 @@ class PortalController < ApplicationController
     @specfile = Dir.entries(Rails.root + "public" + "swagger").grep(/\Acbrain-.*.json\z/).sort.last
 
     if (@specfile.blank?)
-      flash[:error] = "Cannot find SWAGGER specification for the service. Sorry."
+      flash[:error] = t('portal.flash.swagger_not_found')
       redirect_to start_page_path
       return
     end

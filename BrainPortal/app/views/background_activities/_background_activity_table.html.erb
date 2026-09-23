@@ -23,55 +23,31 @@
 -%>
 
 <div class="menu_bar">
-  <%= show_hide_toggle "About", ".bac_explanations", :class => 'button', :slide_effect => true, :slide_duration => 'fast'  %>
-  <%= external_submit_button "Cancel Activities", "bac_form", :class  => "button", :name => 'operation', :value => 'cancel', :data => { :confirm  => "Are you sure you want to cancel the selected background activities?" } %>
+  <%= show_hide_toggle t('.toggles.about'), ".bac_explanations", :class => 'button', :slide_effect => true, :slide_duration => 'fast'  %>
+  <%= external_submit_button t('.submits.cancel_activities'), "bac_form", :class  => "button", :name => 'operation', :value => 'cancel', :data => { :confirm  => t('.confirms.cancel') } %>
   <% if current_user.has_role? :admin_user %>
-    <%= external_submit_button "Suspend Activities", "bac_form", :class  => "button", :name => 'operation', :value => 'suspend', :confirm  => "Are you sure you want to suspend the selected background activities?" %>
-    <%= external_submit_button "Unsuspend Activities", "bac_form", :class  => "button", :name => 'operation', :value => 'unsuspend', :confirm  => "Are you sure you want to reactivate the selected background activities?" %>
-    <%= external_submit_button "Destroy Activities", "bac_form", :class  => "button", :name => 'operation', :value => 'destroy', :confirm  => "Are you sure you want to destroy the selected background activities?" %>
-    <%= external_submit_button "Activate Now!", "bac_form", :class  => "button", :name => 'operation', :value => 'activate', :confirm  => "Are you sure you want to activate the selected background activities?" %>
-    <%= external_submit_button "Retry Failed", "bac_form", :class  => "button", :name => 'operation', :value => 'retry', :confirm  => "Are you sure you want to retry the failed items of the selected background activities?" %>
-    <%= link_to "Create New Scheduled Activity", new_background_activity_path, :class => "button" %>
-    <%= scope_filter_link("Hide Scheduled", "background_activities#index", :replace,
+    <%= external_submit_button t('.submits.suspend_activities'), "bac_form", :class  => "button", :name => 'operation', :value => 'suspend', :confirm  => t('.confirms.suspend') %>
+    <%= external_submit_button t('.submits.unsuspend_activities'), "bac_form", :class  => "button", :name => 'operation', :value => 'unsuspend', :confirm  => t('.confirms.unsuspend') %>
+    <%= external_submit_button t('.submits.destroy_activities'), "bac_form", :class  => "button", :name => 'operation', :value => 'destroy', :confirm  => t('.confirms.destroy') %>
+    <%= external_submit_button t('.submits.activate_now'), "bac_form", :class  => "button", :name => 'operation', :value => 'activate', :confirm  => t('.confirms.activate') %>
+    <%= external_submit_button t('.submits.retry_failed'), "bac_form", :class  => "button", :name => 'operation', :value => 'retry', :confirm  => t('.confirms.retry') %>
+    <%= link_to t('.links.create_scheduled'), new_background_activity_path, :class => "button" %>
+    <%= scope_filter_link(t('.links.hide_scheduled'), "background_activities#index", :replace,
           [ { :a => :status, :o => 'in', :v => %w( InProgress Completed PartiallyCompleted Failed InternalError Cancelled Suspended ) } ],
           :url => { :controller => :background_activities, :action => :index },
           :link => { :class => "button" }
         )
     %>
   <% end %>
-  <%= link_to "Refresh This List", background_activities_path, :class => "button" %>
+  <%= link_to t('.links.refresh_list'), background_activities_path, :class => "button" %>
 </div>
 
 <fieldset class="bac_explanations" style="display: <%= @bacs.count == 0 ? 'block' : 'none' %>">
-  <legend>About Background Activities</legend>
-  <p class="long_paragraphs">
-  This page shows "background activities" as progress bars. Each
-  activity applies a single operation to a set of things (usually,
-  files or tasks). These activities are often the result of clicking
-  on buttons in other pages, when you get a message that <em>something
-  was started in background</em>. Activities that are in progress
-  are shown with glowing borders. Individual operations within an
-  activity can succeed or fail. Sometimes, the failure is not
-  significant (e.g. trying to compress a file that is already
-  compressed).
-  <p class="long_paragraphs">
-  You can cancel activities, but remember that cancelled activities
-  can never be restarted. You will have to redo whatever operation
-  created the activity.
-  <p class="long_paragraphs">
-  Older, finished "background activities" are generally cleaned
-  up after one week and will disappear from this list.
+  <legend><%= t('.legends.about') %></legend>
   <% if current_user.has_role? :admin_user %>
-  <p class="long_paragraphs">
-  As an admin, you can create maintenance activities that can be
-  scheduled for later. See the accompanying form for more help. You
-  can also suspend activities; these are resumable. You can suspend
-  activities that are in progress, or scheduled in the future.
+    <%= t('.paragraphs.about_admin_html') %>
   <% end %>
-  <p class="long_paragraphs">
-  The progress bars in this page are <strong>not live</strong>, so
-  you need to click the <em>Refresh</em> button to get an update
-  on the progress of your activities.
+  <%= t('.paragraphs.about_general_bottom_html') %>
 </fieldset>
 
 <%=
@@ -113,7 +89,7 @@
 
     <%
       if current_user.has_role? :admin_user
-        t.column("User", :user,
+        t.column(t('.columns.user'), :user,
           :sortable => true,
           :filters  => filter_values_for(
             @base_scope, :user_id,
@@ -122,12 +98,12 @@
           )
         ) { |bac| link_to_user_if_accessible(bac.user) }
 
-        t.column("Server", :remote_resource,
+        t.column(t('.columns.server'), :remote_resource,
           :sortable => true,
           :filters  => default_filters_for(@base_scope, RemoteResource)
         ) { |bac| link_to_bourreau_if_accessible(bac.remote_resource) }
 
-        t.column("Status", :status,
+        t.column(t('.columns.status'), :status,
           :sortable => true,
           :filters  => default_filters_for(@base_scope, :status)
         ) { |bac| colored_bac_status(bac.status) }
@@ -136,7 +112,7 @@
     %>
 
     <%
-      t.column("Activity Type", :type,
+      t.column(t('.columns.activity_type'), :type,
         :sortable => true,
         :filters  => scoped_filters_for(
           @base_scope, @scope, :type,
@@ -144,7 +120,7 @@
             value, label, base, view = *format_info
             {
               :value     => value,
-              :label     => "#{label.demodulize.underscore.humanize} (of #{base})",
+              :label     => t('.labels.type_filter', label: label.demodulize.underscore.humanize, base: base),
               :indicator => view,
               :empty     => view == 0
             }
@@ -162,38 +138,38 @@
 
     <% if current_user.has_role? :admin_user %>
 
-      <% t.column("Scheduled At", :start_at, :sortable => true) do |bac| %>
+      <% t.column(t('.columns.scheduled_at'), :start_at, :sortable => true) do |bac| %>
         <% if bac.start_at.present? %>
           <%= to_localtime(bac.start_at, :datetime) %><br>
           <% if bac.start_at >= Time.now %>
-            (in <%= pretty_elapsed(bac.start_at.to_i - Time.now.to_i, :num_components => 2) %>)
+            <%= t('.scheduled_at.in_time', time: pretty_elapsed(bac.start_at.to_i - Time.now.to_i, :num_components => 2)) %>
           <% else %>
             <span class="warning">
-              (overdue by <%= pretty_elapsed(Time.now.to_i - bac.start_at.to_i, :num_components => 2) %>)
+              <%= t('.scheduled_at.overdue_by', time: pretty_elapsed(Time.now.to_i - bac.start_at.to_i, :num_components => 2)) %>
             </span>
           <% end %>
         <% end %>
       <% end %>
 
-      <% t.column("Repeat", :repeat, :sortable => true) do |bac| %>
+      <% t.column(t('.columns.repeat'), :repeat, :sortable => true) do |bac| %>
         <%= bac_pretty_repeat bac.repeat %>
       <% end %>
 
-      <% t.column("Retries", :retry_count, :sortable => false) do |bac| %>
+      <% t.column(t('.columns.retries'), :retry_count, :sortable => false) do |bac| %>
         <% if bac.retry_count.present? %>
-          <%= pluralize(bac.retry_count, "retry") %> allowed<br>
-          (next with <%= pluralize(bac.retry_delay || 60, "seconds delay") %>)
+          <%= t('.retries.allowed', count: bac.retry_count) %><br>
+          <%= t('.retries.next',    count: bac.retry_delay || 60) %>
         <% end %>
       <% end %>
 
     <% end %>
 
-    <% t.column("Last Updated", :updated_at, :sortable => true) do |bac| %>
+    <% t.column(t('.columns.last_update'), :updated_at, :sortable => true) do |bac| %>
         <%= to_localtime(bac.updated_at, :datetime) %><br>
-        (<%= pretty_elapsed(Time.now.to_i - bac.updated_at.to_i, :num_components => 2) %> ago)
+        (<%= t('ago_time', time: pretty_elapsed(Time.now.to_i - bac.updated_at.to_i, :num_components => 2)) %>)
     <% end %>
 
-    <% t.column("Progress", :header, :sortable => false) do |bac| %>
+    <% t.column(t('.columns.progress'), :header, :sortable => false) do |bac| %>
       <%
         ok_fail_class = ""
         ok_fail_class = "bac_all_ok"   if bac.num_successes  > 0 && bac.num_failures == 0
@@ -206,17 +182,17 @@
         <progress class="background_activity_progress bac_<%=bac.status%> <%= ok_fail_class %>" id="bac_<%= bac.id %>" value="<%= bac.current_item %>" max="<%= bac.items.size %>"><%= bac.current_item %>/<%= bac.items.size %></progress><br>
       <% end %>
       <strong><%= colored_bac_status(bac.status) %></strong>
-      on <%= bac.remote_resource.name %> |
+      <%= t('.on_word') %> <%= bac.remote_resource.name %> |
       <% if bac.is_configured_for_dynamic_items? %>
-        (Dynamic items list)
+        <%= t('background_activities.common.dynamic_items_list') %>
       <% elsif is_scheduled %>
-        (<%= bac.items.size %> items)
+        <%= t('.items_count', count: bac.items.size) %>
       <% else %>
         <%= bac.current_item %>/<%= bac.items.size %>
         <% if bac.status != 'Completed' && (bac.num_successes > 0 || bac.num_failures > 0) %>
           |
-          <%= red_if(bac.num_successes != 0, "OK=#{bac.num_successes}",    nil, :color1 => 'red', :color2 => 'green') %>,
-          <%= red_if(bac.num_failures  == 0, "Failed=#{bac.num_failures}", nil, :color1 => 'red', :color2 => 'black') %>
+          <%= red_if(bac.num_successes != 0, t('.progress_counts.ok',     count: bac.num_successes), nil, :color1 => 'red', :color2 => 'green') %>,
+          <%= red_if(bac.num_failures  == 0, t('.progress_counts.failed', count: bac.num_failures), nil, :color1 => 'red', :color2 => 'black') %>
         <% end %>
       <% end %>
       <% if current_user.has_role?(:admin_user) && bac.handler_lock.present? %>
@@ -224,14 +200,14 @@
       <% end %>
       <% if messages.present? %>
         <% messages = messages.map { |m| h(m) }.join("<br>").html_safe %>
-        | <%= html_tool_tip('(Messages)') { messages } %>
+        | <%= html_tool_tip(t('.tooltips.messages')) { messages } %>
       <% end %>
     <% end %>
 
     <%
       if current_user.has_role? :admin_user
-        t.column("Show", :show) do |bac|
-          link_to("Show", background_activity_path(bac), :class => 'action_link')
+        t.column(t('.columns.show'), :show) do |bac|
+          link_to(t('.links.show'), background_activity_path(bac), :class => 'action_link')
         end
       end
     %>

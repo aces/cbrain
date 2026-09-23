@@ -126,23 +126,23 @@ module TaskFormHelper
   def output_renaming_default_dt_dd_keywords
     [
       [ "{date}",
-        "The current date in this format: YYYY-MM-DD"
+        I18n.t('task_form.date')
       ],
 
       [ "{time}",
-        "The current time in this format: HH:MM:SS"
+        I18n.t('task_form.time')
       ],
 
       [ "{task_id}",
-        "A unique number ID for the task, which doesn't change if the task is restarted"
+        I18n.t('task_form.task_id')
       ],
 
       [ "{run_number}",
-        "A numeric run number that increases everytime the task is restarted, initially set to '1'"
+        I18n.t('task_form.run_number')
       ],
 
       [ "{cluster}",
-        "The name of the execution server"
+        I18n.t('task_form.cluster')
       ],
     ]
   end

@@ -1,22 +1,21 @@
-Someone is asking for a new <%= @service_name %> account:
+<%= t('.someone_asking', service: @service_name) %>
 
-Full name:   <%= @signup.full_name %>
-Email:       <%= @signup.email %>
-Institution: <%= @signup.institution.presence || "(None provided)" %>
+<%= t('activerecord.attributes.user.full_name') %>   <%= @signup.full_name %>
+<%= t('activerecord.attributes.user.email') %>       <%= @signup.email %>
+<%= t('activerecord.attributes.user.institution') %> <%= @signup.institution.presence || t('.none_provided') %>
 <% if @signup.comment.present? %>
 
-The requester provided some comments:
+<%= t('.comments_intro') %>
 
 =================================================
 <%= @signup.comment %>
 =================================================
 <% end %>
 
-As an administrator, you can review the full application here:
+<%= t('.review_application') %>
 
   <%= @show_url %>
 
-Thank you,
+<%= t('cbrain_mailer.common.thank_you') %>
 
-The <%= @service_name %> system.
-
+<%= t('.system_signature', service: @service_name) %>

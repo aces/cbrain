@@ -31,47 +31,43 @@
 
   <% if @tool_config.tool_id && @tool_config.bourreau_id %>
 
-    <%= show_table(@tool_config, :form_helper => cf, :header => "Version configuration info",
+    <%= show_table(@tool_config, :form_helper => cf, :header => t('.headings.version_config_info'),
                                  :edit_condition => check_role(:admin_user)) do |t| %>
 
-      <% t.edit_cell(:version_name, :header => "Version") do |f| %>
+      <% t.edit_cell(:version_name, :header => t('.headings.version')) do |f| %>
         <%= f.text_field :version_name, :size => 20 %>
         <div class="field_explanation">
-           Must be a simple string that represent
-           a short identifier for the version. First character must be alphanum,
-           and can contain only alphanums, '.', '-', '_', ':' and '@'
+          <%= t('.field_explanations.version') %>
         </div>
       <% end %>
 
-      <% t.cell("Created") { @tool_config.created_at.present? ? to_localtime(@tool_config.created_at,:datetime) : "" } %>
+      <% t.cell(t('created')) { @tool_config.created_at.present? ? to_localtime(@tool_config.created_at,:datetime) : "" } %>
 
-      <% t.edit_cell(:group_id, :header => "Project access",
+      <% t.edit_cell(:group_id, :header => t('.headings.project_access'),
                      :content => link_to_group_if_accessible(@tool_config.group_id)) do %>
         <%= group_select "tool_config[group_id]", @tool_config.group_id %>
       <% end %>
 
-      <% t.cell("Last Updated") { @tool_config.updated_at.present? ? to_localtime(@tool_config.updated_at,:datetime) : "" } %>
+      <% t.cell(t('last_updated')) { @tool_config.updated_at.present? ? to_localtime(@tool_config.updated_at,:datetime) : "" } %>
 
-      <% t.edit_cell(:ncpus, :header => "Suggested CPUs per task") do |f| %>
+      <% t.edit_cell(:ncpus, :header => t('.headings.suggested_cpus')) do |f| %>
         <%= f.select :ncpus, [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 32, 36, 40, 48, 56, 64, 128, 192, 256,
                               320, 384, 512] %>
       <% end %>
 
       <% t.empty_cell %>
 
-      <% t.edit_cell(:description, :header => "Description", :show_width => 2, :content => full_description(@tool_config.description)) do |f| %>
+      <% t.edit_cell(:description, :header => t('.headings.description'), :show_width => 2, :content => full_description(@tool_config.description)) do |f| %>
         <%= f.text_area :description, :rows => 10, :cols => 120 %>
         <div class="wide_field_explanation">
-          The first line must be a short summary, and the rest are for any special
-          notes for the users.
+          <%= t('.field_explanations.description') %>
         </div>
       <% end %>
 
-      <% t.edit_cell(:inputs_readonly, :header => "Does not modify its inputs files", :show_width => 2) do |f| %>
+      <% t.edit_cell(:inputs_readonly, :header => t('.headings.inputs_readonly'), :show_width => 2) do |f| %>
         <%= f.check_box :inputs_readonly %>
         <div class="wide_field_explanation">
-          Check this if the tool is known <strong>not to modify its input files </strong>.
-          This will allow a user to launch the tool on files that are not marked as group-writable in the file manager.
+          <%= t('.field_explanations.inputs_readonly_html') %>
         </div>
       <% end %>
 
@@ -79,22 +75,14 @@
       <% desc_content  = "<strong>(#{desc_origin.capitalize})</strong> ".html_safe %>
       <%
          if desc_path.present?
-           show_btq_link = link_to("(show)", boutiques_descriptor_tool_config_path(@tool_config))
+           show_btq_link = link_to("(#{t('show')})", boutiques_descriptor_tool_config_path(@tool_config))
            desc_content += show_btq_link
          end
       %>
-      <% t.edit_cell(:boutiques_descriptor_path, :header => "Path to Boutiques descriptor", :show_width => 2, :content => desc_content) do |f| %>
+      <% t.edit_cell(:boutiques_descriptor_path, :header => t('.headings.boutiques_path'), :show_width => 2, :content => desc_content) do |f| %>
         <%= f.text_field :boutiques_descriptor_path, :size => 80 %>
         <div class="wide_field_explanation">
-          You can use this field to provide an explicit path to a
-          Boutiques descriptor; an absolute path will be used as-is,
-          while a relative path will be resolved relative to the
-          <em>boutiques_descriptor</em> folder in the installed plugins
-          subdirectory. The page indicates the source location of the
-          effective descriptor: 'Automatic' means the configuration has
-          been mapped automatically to an installed descriptor, 'Manual'
-          means the value in the input field here is used, and 'Overriden'
-          means both values exists, but the 'Manual' version is in effect.
+          <%= t('.field_explanations.boutiques_path_html') %>
         </div>
       <% end %>
 
@@ -104,12 +92,12 @@
 
 
 
-  <%= show_table(@tool_config, :form_helper => cf, :header => "Execution Server Control", :edit_condition => check_role(:admin_user)) do |t| %>
+  <%= show_table(@tool_config, :form_helper => cf, :header => t('.headings.exec_server_control'), :edit_condition => check_role(:admin_user)) do |t| %>
 
-    <% t.edit_cell(:extra_qsub_args, :header => "Extra cluster submission options(sbatch, qsub)", :show_width => 2) do |f| %>
+    <% t.edit_cell(:extra_qsub_args, :header => t('.headings.extra_qsub'), :show_width => 2) do |f| %>
       <%= f.text_field :extra_qsub_args, :size => 80 %>
       <div class="wide_field_explanation">
-        <b>Note:</b>This string will be appended to the extra 'qsub' option defined at the bourreau level.
+        <%= t('.field_explanations.extra_qsub_html') %>
       </div>
     <% end %>
 
@@ -117,11 +105,11 @@
 
 
 
-  <%= show_table(@tool_config, :form_helper => cf, :header => "Environment variables",
+  <%= show_table(@tool_config, :form_helper => cf, :header => t('.headings.env_vars'),
                                :edit_condition => check_role(:admin_user)) do |t| %>
 
     <% t.row do %>
-      In the generated script, the values shown here will be placed in double quotes automatically.
+      <%= t('.env_vars_note_top') %>
     <% end %>
 
     <% @tool_config.env_array.each do |env_name_value| %>
@@ -139,14 +127,14 @@
     <% end %>
 
     <% t.row do %>
-      Note: More environment variables lines can be added by saving and editing again.
+      <%= t('.env_vars_note_bottom') %>
     <% end %>
 
   <% end %>
 
 
 
-  <%= show_table @tool_config, :form_helper => cf, :header => "BASH initialization prologue",
+  <%= show_table @tool_config, :form_helper => cf, :header => t('.headings.bash_prologue'),
                  :edit_condition => check_role(:admin_user) do |t| %>
 
     <% t.edit_cell(:script_prologue, :content => full_description(@tool_config.script_prologue),
@@ -155,10 +143,7 @@
 
       <p>
       <div class="wide_field_explanation">
-        This is a multi line partial BASH script. It can use the environment variables defined above
-        and do anything else you feel is needed to activate this configuration.
-        Note that this script should usually be silent, as outputing text (like in <em>echo</em> statements)
-        could interfere with the proper processing of the tasks output.
+        <%= t('.prologue_explanation_html') %>
       </div>
     <% end %>
 
@@ -166,7 +151,7 @@
 
 
 
-  <%= show_table @tool_config, :form_helper => cf, :header => "BASH initialization epilogue",
+  <%= show_table @tool_config, :form_helper => cf, :header => t('.headings.bash_epilogue'),
                  :edit_condition => check_role(:admin_user) do |t| %>
 
     <% t.edit_cell(:script_epilogue, :content => full_description(@tool_config.script_epilogue),
@@ -175,10 +160,7 @@
 
       <p>
       <div class="wide_field_explanation">
-        This is a multi line partial BASH script, meant to match the prologue above. The code
-        here will be execute after the task's processing code.
-        Note that this script MUST be silent, as outputing text (like in <em>echo</em> statements)
-        could interfere with the proper processing of the tasks output.
+        <%= t('.epilogue_explanation_html') %>
       </div>
     <% end %>
 
@@ -186,82 +168,50 @@
 
 
 
-  <%= show_table(@tool_config, :form_helper => cf, :header => "Container", :edit_condition => check_role(:admin_user)) do |t| %>
-    <% t.edit_cell(:container_engine, :header => "Container engine") do |f| %>
-      <%= f.select :container_engine, [["None", ''], ['Docker', 'Docker'], ['Singularity', 'Singularity']], :title => 'Container type' %>
+  <%= show_table(@tool_config, :form_helper => cf, :header => t('.headings.container'), :edit_condition => check_role(:admin_user)) do |t| %>
+    <% t.edit_cell(:container_engine, :header => t('tool_configs.common.container_engine')) do |f| %>
+      <%= f.select :container_engine, [[t('.container_none'), ''], ['Docker', 'Docker'], ['Singularity', 'Singularity']], :title => t('.container_type_title') %>
     <% end %>
 
-    <% t.edit_cell(:container_index_location, :header => "Index of the container image") do |f| %>
+    <% t.edit_cell(:container_index_location, :header => t('.headings.container_index')) do |f| %>
       <%= f.text_field :container_index_location %>
       <div class="field_explanation">
-        The index (url) of the container image in which the docker or singularity container is
-        accessible through.
-        Examples for Docker are: quay.io, index.docker.io (default).
-        Examples for Singularity are: docker:&sol;&sol;, shub:&sol;&sol; (default).
+        <%= t('.field_explanations.container_index_html') %>
       </div>
     <% end %>
 
-    <% t.edit_cell(:containerhub_image_name, :header => "Container image name") do |f| %>
+    <% t.edit_cell(:containerhub_image_name, :header => t('.headings.container_image_name')) do |f| %>
       <%= f.text_field :containerhub_image_name %>
         <div class="field_explanation">
-        The name and tag of the container image in which the tool is installed,
-        for instance "centos:latest". This name refers to the Docker/Singularity index
-        accessed by the Bourreau, which is configured manually in the Bourreau
-        for now.
+        <%= t('.field_explanations.container_image_name') %>
         </div>
     <% end %>
 
-    <% t.edit_cell :containerhub_image_name, :content => link_to_userfile_if_accessible(@tool_config.container_image), :header => "ID of the container image" do |f| %>
+    <% t.edit_cell :containerhub_image_name, :content => link_to_userfile_if_accessible(@tool_config.container_image), :header => t('.headings.container_image_id') do |f| %>
       <%= f.text_field :container_image_userfile_id %>
       <div class="field_explanation">
-        The ID number of the container image in which the tool is installed.
-        This ID refers to a proper image file registered in CBRAIN by the admin.
+        <%= t('.field_explanations.container_image_id') %>
       </div>
     <% end %>
 
-    <% t.edit_cell(:singularity_overlays_specs, :header => "Singularity Overlays", :show_width => 2, :content => full_description(@tool_config.singularity_overlays_specs)) do |f| %>
+    <% t.edit_cell(:singularity_overlays_specs, :header => t('.headings.singularity_overlays'), :show_width => 2, :content => full_description(@tool_config.singularity_overlays_specs)) do |f| %>
       <%= f.text_area :singularity_overlays_specs, :rows => 6, :cols => 120 %>
         <div class="wide_field_explanation">
-        This field can contain one or several specifications for data overlays and bindmounts
-        to be included when the task is started with Singularity.
-        <p>
-        Each overlay or bindmount specification should be on a separate line.
-        <p>
-        An overlay specification can be either:
-        <p>
-        <ul>
-        <li>a full path (e.g. <em>file:/a/b/data.squashfs</em>),</li>
-        <li>a path with a pattern (e.g. <em>file:/a/b/data*.squashfs</em>),</li>
-        <li>a registered file identified by ID (e.g. <em>userfile:123</em>),</li>
-        <li>a SquashFS Data Provider identified by its ID or name (e.g. <em>dp:123</em>, <em>dp:DpNameHere</em>)</li>
-        <li>or an ext3 capture overlay basename (e.g. <em>ext3capture:basename=SIZE</em> where size is <em>12G</em> or <em>12M</em>).</li>
-        </ul>
-        <p>
-        In the case of a Data Provider, the overlays will be the SquashFS files that the provider uses for its storage. The provider of course must be local to the current execution server.
-        <p>
-        A bindmount specification is one of:
-        <ul>
-          <li><em>bindmount:/bourreau/path/to/data:/containerized/path/to/data</em> or</li>
-          <li><em>bindmount:/bourreau/path/to/data:/containerized/path/to/data:ro</em></li>
-        </ul>
-        <p>
-        You can add comments, indicated with a hash symbol <em>#</em>.
-        For example, <em>file:/a/b/atlas.squashfs # brain atlas</em>
+          <%= t('.field_explanations.singularity_overlays_html') %>
         </div>
     <% end %>
 
-    <% t.edit_cell(:container_exec_args, :header => "Misc Singularity Options", :show_width => 2) do |f| %>
+    <% t.edit_cell(:container_exec_args, :header => t('.headings.misc_singularity'), :show_width => 2) do |f| %>
       <%= f.text_field :container_exec_args, :size => 60 %>
       <div class="field_explanation">
-        This field can contain singularity exec command options. Please use appropriate quotation or escaping
-        For example, <em>--cleanenv --env MYPATH='/My Documents'</em>.
+        <%= t('.field_explanations.container_exec_args_html') %>
       </div>
     <% end %>
 
     <% t.boolean_edit_cell('tool_config[singularity_use_short_workdir]',
          (@tool_config.singularity_use_short_workdir ? "1" : "0"),
          "1", "0",
-         :header => "Use short workdirs inside Singularity")
+         :header => t('.headings.short_workdir'))
     %>
 
   <% end %>
@@ -272,35 +222,31 @@
   <p>
 
     <fieldset class="groupentry" style="margin: 0.2em;">
-      <legend>Import and merge</legend>
+      <legend><%= t('.legends.merge') %></legend>
       <div class="wide_field_explanation">
-        This panel allows you to merge another configuration into the current form.
+        <%= t('.merge_intro') %>
         <p>
         <% if @tool_config.tool_id && @tool_config.bourreau_id %>
-          The description, environment variables and prologue script will be appended to whatever
-          values are currently in the form. The project and suggested number of CPUs will be changed.
+          <%= t('.merge_explanation_both') %>
         <% else %>
-          The environment variables and prologue script will be appended to whatever
-          values are currently in the form.
+          <%= t('.merge_explanation_env') %>
         <% end %>
       </div>
 
-      <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => 'Merge from...' } %>
-      <%= submit_tag 'Merge Configuration (Preview)', :name => :merge %><br/>
+      <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => t('.merge_from') } %>
+      <%= submit_tag t('.submits.merge_preview'), :name => :merge %><br/>
 
       <hr>
 
-      <%= submit_tag 'Save everything!', :name => :update %>
+      <%= submit_tag t('.submits.save_everything'), :name => :update %>
 
       <% if ! @tool_config.new_record? %>
-        <%= submit_tag 'Reload original', :name => :cancel %>
+        <%= submit_tag t('.submits.reload_original'), :name => :cancel %>
       <% end %>
 
       <div class="wide_field_explanation">
-        You need to first click the Merge Configuration (Preview), carefully check the results, and only if
-        everything is ok click this or any other Update button, and the changed values will persist
+        <%= t('.merge_note') %>
       </div>
     </fieldset>
 
 <% end # show_table_context %>
-

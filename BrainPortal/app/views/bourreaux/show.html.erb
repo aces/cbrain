@@ -28,25 +28,25 @@
   @info       = @bourreau.info
  %>
 
-<% title is_portal ? 'Portal Info' : 'Execution Server Info' %>
+<% title is_portal ? t('.titles.portal') : t('.titles.execution_server') %>
 
 <% if check_role(:admin_user) || @bourreau.user_id == current_user.id %>
   <div class="menu_bar">
     <% if is_bourreau %>
 
-      <%= link_to 'Task Statistics By Status', report_path(:table_name => :cbrain_tasks, :bourreau_id => @bourreau.id, :row_type => :user_id , :col_type => :status, :generate => "ok" ), :class => "button" %>
+      <%= link_to t('.links.task_stats_by_status'), report_path(:table_name => :cbrain_tasks, :bourreau_id => @bourreau.id, :row_type => :user_id , :col_type => :status, :generate => "ok" ), :class => "button" %>
 
-      <%= link_to 'Task Statistics By Type', report_path(:table_name => :cbrain_tasks, :bourreau_id => @bourreau.id, :row_type => :user_id , :col_type => :type, :generate => "ok" ), :class => "button" %>
+      <%= link_to t('.links.task_stats_by_type'), report_path(:table_name => :cbrain_tasks, :bourreau_id => @bourreau.id, :row_type => :user_id , :col_type => :type, :generate => "ok" ), :class => "button" %>
 
     <%end%>
 
-    <%= link_to 'Delete', bourreau_path(@bourreau), { :data => { :confirm => "Are you sure you want to delete '#{@bourreau.name}' ?" }, :method => :delete, :class => "button" } %>
+    <%= link_to t('delete'), bourreau_path(@bourreau), { :data => { :confirm => t('confirm_delete', name: @bourreau.name) }, :method => :delete, :class => "button" } %>
   </div>
 <% end %>
 
 <p>
 
-<%= error_messages_for @bourreau, :header_message => "Server could not be updated." %>
+<%= error_messages_for @bourreau, :header_message => t('.headings.message_update_error') %>
 
 <div class="display_inline_block" style="min-width: 50%">
   <%= show_table(@bourreau, :as => :bourreau, :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
@@ -54,112 +54,108 @@
     <% t.edit_cell(:name) do |f| %>
       <%= f.text_field :name %><br>
       <div class="field_explanation">
-        Important note: this name must also be changed accordingly in the config file
-        <em><%= is_bourreau ? "Bourreau/config/initializers/config_bourreau.rb" : "BrainPortal/config/initializers/config_portal.rb" %></em>
-        for this server to restart properly later on.
+        <%= is_bourreau ? t('.field_explanations.name_note_bourreau_html') : t('.field_explanations.name_note_portal_html') %>
       </div>
     <% end %>
 
     <% t.edit_cell(:description, :content =>  full_description(@bourreau.description)) do |f| %>
       <%= f.text_area :description, :rows => 10, :cols => 40 %><br>
-      <div class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</div><br>
+      <div class="field_explanation"><%= t('.field_explanations.description') %></div><br>
     <% end %>
 
     <% t.attribute_cell(:class) %>
 
-    <% t.edit_cell(:online, :header => "Status", :content => (@bourreau.online ? "Online" : "Offline")) do |f| %>
-      <%=  f.select  :online, [["Online", true], ["Offline", false]] %>
+    <% t.edit_cell(:online, :header => t('.cells.status'), :content => (@bourreau.online ? t('online') : t('offline'))) do |f| %>
+      <%=  f.select  :online, [[t('online'), true], [t('offline'), false]] %>
     <% end %>
 
-    <% t.edit_cell(:user_id, :header => "Owner", :content => link_to_user_with_tooltip(@bourreau.user), :disabled => ! current_user.has_role?(:admin_user)) do %>
+    <% t.edit_cell(:user_id, :header => t('.cells.owner'), :content => link_to_user_with_tooltip(@bourreau.user), :disabled => ! current_user.has_role?(:admin_user)) do %>
       <%= user_select("bourreau[user_id]", { :selector => @bourreau } ) %>
     <% end %>
 
-    <% t.edit_cell(:time_zone, :content => (@bourreau.time_zone || "(Unset)") ) do |f| %>
+    <% t.edit_cell(:time_zone, :content => (@bourreau.time_zone || t('.cells.unset')) ) do |f| %>
       <%=  f.select :time_zone, time_zone_options_for_select(@bourreau.time_zone, /canada/i), :include_blank => true %>
     <% end %>
 
-    <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@bourreau.group)) do %>
+    <% t.edit_cell(:group_id, :header => t('.cells.group'), :content => link_to_group_if_accessible(@bourreau.group)) do %>
       <%= group_select("bourreau[group_id]", {:selector => @bourreau} ) %>
     <% end %>
 
-    <% t.cell("Revision Info (Client Side)") { Bourreau.revision_info.format() } %>
+    <% t.cell(t('.cells.revision_info_client')) { Bourreau.revision_info.format() } %>
 
-    <% licenses = @bourreau.license_agreements.count == 0 ? "(None)": @bourreau.license_agreements.join("\n") %>
+    <% licenses = @bourreau.license_agreements.count == 0 ? "(#{t('none')})": @bourreau.license_agreements.join("\n") %>
     <% t.edit_cell(:license_agreements, :content => licenses) do |f| %>
       <%= f.text_area :license_agreements, :value => @bourreau.license_agreements.join("\n"), :rows => 5, :cols => 40 %><br>
-      <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
+      <div class="field_explanation"><%= t('.field_explanations.license_agreements') %></div>
     <% end %>
 
     <% if is_bourreau %>
       <% external_status_page_url = @bourreau.external_status_page_url.nil? ?
-                                      "(None)" : link_to(@bourreau.external_status_page_url, @bourreau.external_status_page_url, :class => "action_link", :target => "_blank") %>
-      <% t.edit_cell(:external_status_page_url, :header => "External status page URL", :content => external_status_page_url ) do |f| %>
+                                      "(#{t('none')})" : link_to(@bourreau.external_status_page_url, @bourreau.external_status_page_url, :class => "action_link", :target => "_blank") %>
+      <% t.edit_cell(:external_status_page_url, :header => t('.headings.external_status_page_url'), :content => external_status_page_url ) do |f| %>
         <%= f.text_field :external_status_page_url, :size => 60 %><br>
-        <div class="field_explanation">Link to external status page for the server.</div>
+        <div class="field_explanation"><%= t('.field_explanations.external_status_page') %></div>
       <% end %>
     <% end %>
 
     <% if is_portal %>
 
-      <% t.edit_cell(:help_url, :header => "User Manual URL", :show_width => 1) do |f| %>
+      <% t.edit_cell(:help_url, :header => t('.headings.user_manual_url'), :show_width => 1) do |f| %>
         <%= f.text_field :help_url, :size => 40 %><br/>
-        <div class="field_explanation">If set, the portal will show a link called 'User Manual' in the account bar at the top.</div>
+        <div class="field_explanation"><%= t('.field_explanations.user_manual_url') %></div>
       <% end %>
 
       <% t.edit_cell :site_url_prefix,
-                     :header => "Base Portal URL",
-                     :content => (@bourreau.site_url_prefix.blank? ? "(None)" : @bourreau.site_url_prefix),
+                     :header => t('.headings.base_portal_url'),
+                     :content => (@bourreau.site_url_prefix.blank? ? "(#{t('none')})" : @bourreau.site_url_prefix),
                      :show_width => 2 do |f| %>
         <%= f.text_field :site_url_prefix, :size => 40 %><br/>
         <div class="field_explanation">
-          Required to direct new users to the portal, this should be filled in with the <em>base</em> URL of the portal
+          <%= t('.field_explanations.base_portal_url_html') %>
         </div>
       <% end %>
 
       <% t.edit_cell :nh_site_url_prefix,
-                     :header => "NeuroHub Base Portal URL",
-                     :content => (@bourreau.nh_site_url_prefix.blank? ? "(None)" : @bourreau.nh_site_url_prefix),
+                     :header => t('.headings.neurohub_base_url'),
+                     :content => (@bourreau.nh_site_url_prefix.blank? ? "(#{t('none')})" : @bourreau.nh_site_url_prefix),
                      :show_width => 2 do |f| %>
         <%= f.text_field :nh_site_url_prefix, :size => 40 %><br/>
         <div class="field_explanation">
-          Required to direct new users to the NeuroHub portal, this should be filled in with the <em>base</em> URL of the portal
+          <%= t('.field_explanations.neurohub_base_url_html') %>
         </div>
       <% end %>
 
       <% t.edit_cell :small_logo,
-                     :header => "Small logo",
-                     :content => (@bourreau.small_logo.blank? ? "(None)" : @bourreau.small_logo),
+                     :header => t('.headings.small_logo'),
+                     :content => (@bourreau.small_logo.blank? ? "(#{t('none')})" : @bourreau.small_logo),
                      :show_width => 1 do |f| %>
         <%= f.text_field :small_logo, :size => 40 %><br/>
       <% end %>
 
       <% t.edit_cell :large_logo,
-                     :header => "Large logo",
-                     :content => (@bourreau.large_logo.blank? ? "(None)" : @bourreau.large_logo),
+                     :header => t('.headings.large_logo'),
+                     :content => (@bourreau.large_logo.blank? ? "(#{t('none')})" : @bourreau.large_logo),
                      :show_width => 1 do |f| %>
         <%= f.text_field :large_logo, :size => 40 %><br/>
       <% end %>
 
       <% t.edit_cell 'meta[large_upload_url]',
-                     :header => "Help URL for large uploads",
-                     :content => (@bourreau.meta[:large_upload_url].blank? ? "(None)" : @bourreau.meta[:large_upload_url]),
+                     :header => t('.headings.large_upload_url'),
+                     :content => (@bourreau.meta[:large_upload_url].blank? ? "(#{t('none')})" : @bourreau.meta[:large_upload_url]),
                      :show_width => 1 do %>
         <%= text_field_tag "meta[large_upload_url]", @bourreau.meta[:large_upload_url], :size => 40 %><br/>
         <div class="field_explanation">
-          If set, the portal will show a link called "Large datasets?" in the upload panel sending
-          users to a custom page where you can provide explanations for alternative upload methods.
+          <%= t('.field_explanations.large_upload_url') %>
         </div>
       <% end %>
 
       <% t.edit_cell 'meta[upload_size_limit]',
-                     :header => "File upload size limit (MB)",
-                     :content => (@bourreau.meta[:upload_size_limit].blank? ? "(None)" : @bourreau.meta[:upload_size_limit]),
+                     :header => t('.headings.upload_size_limit'),
+                     :content => (@bourreau.meta[:upload_size_limit].blank? ? "(#{t('none')})" : @bourreau.meta[:upload_size_limit]),
                      :show_width => 1 do %>
         <%= text_field_tag "meta[upload_size_limit]", @bourreau.meta[:upload_size_limit], :size => 20 %><br/>
         <div class="field_explanation">
-          If set (and numeric), the portal will show a warning when uploading files about the maximum allowed file
-          size for uploads. Note that this limit needs to be manually enforced on the web server hosting this portal.
+          <%= t('.field_explanations.upload_size_limit') %>
         </div>
       <% end %>
 
@@ -168,25 +164,25 @@
   <% end %>
 
   <% if check_role(:admin_user) && is_portal %>
-    <%= show_table(@bourreau, :as => :bourreau, :header => "Mail configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
-      <% t.edit_cell(:support_email, :header => "Support email address") do |f| %>
+    <%= show_table(@bourreau, :as => :bourreau, :header => t('.headings.mail_configuration'), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <% t.edit_cell(:support_email, :header => t('.headings.support_email')) do |f| %>
         <%= f.text_field :support_email, :size => 30 %><br/>
-        <div class="field_explanation">If set, the portal will show a <em>mailto:</em> link for letting users contact support.</div>
+        <div class="field_explanation"><%= t('.field_explanations.support_email_html') %></div>
       <% end %>
-      <% t.edit_cell(:system_from_email, :header => "System 'From' reply address") do |f| %>
+      <% t.edit_cell(:system_from_email, :header => t('.headings.system_from_email')) do |f| %>
         <%= f.text_field :system_from_email, :size => 30 %><br/>
-        <div class="field_explanation">If set, messages sent automatically by this system will contain this return address.</div>
+          <div class="field_explanation"><%= t('.field_explanations.system_from_email') %></div>
       <% end %>
-      <% t.edit_cell(:nh_support_email, :header => "NeuroHub Support email address") do |f| %>
+      <% t.edit_cell(:nh_support_email, :header => t('.headings.nh_support_email')) do |f| %>
         <%= f.text_field :nh_support_email, :size => 30 %><br/>
-        <div class="field_explanation">If set, the portal will show a <em>mailto:</em> link for letting users contact NeuroHub support.</div>
+        <div class="field_explanation"><%= t('.field_explanations.nh_support_email_html') %></div>
       <% end %>
-      <% t.edit_cell(:nh_system_from_email, :header => "NeuroHub System 'From' reply address") do |f| %>
+      <% t.edit_cell(:nh_system_from_email, :header => t('.headings.nh_system_from_email')) do |f| %>
         <%= f.text_field :nh_system_from_email, :size => 30 %><br/>
-        <div class="field_explanation">If set, NeuroHub messages sent automatically by this system will contain this return address.</div>
+        <div class="field_explanation"><%= t('.field_explanations.nh_system_from_email') %></div>
       <% end %>
-      <% t.edit_cell("meta[error_message_mailing_list]", :header => "Error notifications sent to members of project", :content => link_to_group_if_accessible(@bourreau.meta[:error_message_mailing_list])) do %>
-        <%= group_select("meta[error_message_mailing_list]", {:include_blank => "All admins", :selector => @bourreau.meta[:error_message_mailing_list], :groups => WorkGroup.where(:creator_id => AdminUser.all.map(&:id)) } ) %>
+      <% t.edit_cell("meta[error_message_mailing_list]", :header => t('.headings.error_notifications'), :content => link_to_group_if_accessible(@bourreau.meta[:error_message_mailing_list])) do %>
+        <%= group_select("meta[error_message_mailing_list]", {:include_blank => t('.all_admins'), :selector => @bourreau.meta[:error_message_mailing_list], :groups => WorkGroup.where(:creator_id => AdminUser.all.map(&:id)) } ) %>
       <% end %>
     <% end %>
   <% end %>
@@ -196,167 +192,155 @@
 
     <% if is_bourreau %>
 
-      <%= show_table(@bourreau, :as => :bourreau, :header => "SSH Connection Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <%= show_table(@bourreau, :as => :bourreau, :header => t('.headings.ssh_connection_config'), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
-        <% t.edit_cell(:ssh_control_host, :header => "SSH Hostname") do |f| %>
+        <% t.edit_cell(:ssh_control_host, :header => t('.headings.ssh_hostname')) do |f| %>
           <%= f.text_field :ssh_control_host, :size => 30 %>
         <% end %>
 
-        <% t.edit_cell(:ssh_control_rails_dir, :header => "Rails Server Directory") do |f| %>
+        <% t.edit_cell(:ssh_control_rails_dir, :header => t('.headings.rails_server_directory')) do |f| %>
           <%= f.text_field :ssh_control_rails_dir, :size => 60 %>
         <% end %>
 
-        <% t.edit_cell(:ssh_control_user, :header => "SSH User") do |f| %>
+        <% t.edit_cell(:ssh_control_user, :header => t('.headings.ssh_user')) do |f| %>
           <%= f.text_field :ssh_control_user, :size => 10 %>
         <% end %>
 
-        <% t.edit_cell(:ssh_control_port, :header => "SSH Port") do |f| %>
+        <% t.edit_cell(:ssh_control_port, :header => t('.headings.ssh_port')) do |f| %>
           <%= f.text_field :ssh_control_port, :size => 6 %>
         <% end %>
 
-        <% t.edit_cell(:active_resource_control_port, :header => "Local Control Port") do |f| %>
+        <% t.edit_cell(:active_resource_control_port, :header => t('.headings.local_control_port')) do |f| %>
           <%= f.text_field :active_resource_control_port, :size => 6 %>
         <% end %>
 
       <% end %>
 
-      <%= show_table(@bourreau, :as => :bourreau, :header => "Optional SSH JumpHost Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <%= show_table(@bourreau, :as => :bourreau, :header => t('.headings.ssh_jumphost'), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
-        <% t.edit_cell(:jumphost_host, :header => "JumpHost Hostname") do |f| %>
+        <% t.edit_cell(:jumphost_host, :header => t('.headings.jumphost_hostname')) do |f| %>
           <%= f.text_field :jumphost_host, :size => 30 %>
         <% end %>
 
-        <% t.edit_cell(:jumphost_user, :header => "JumpHost User") do |f| %>
+        <% t.edit_cell(:jumphost_user, :header => t('.headings.jumphost_user')) do |f| %>
           <%= f.text_field :jumphost_user, :size => 10 %>
         <% end %>
 
-        <% t.edit_cell(:jumphost_port, :header => "JumpHost Port") do |f| %>
+        <% t.edit_cell(:jumphost_port, :header => t('.headings.jumphost_port')) do |f| %>
           <%= f.text_field :jumphost_port, :size => 6 %>
         <% end %>
 
       <% end %>
 
-      <%= show_table(@bourreau, :as => :bourreau, :header => "Optional Reverse Service Connection Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <%= show_table(@bourreau, :as => :bourreau, :header => t('.headings.reverse_service_config'), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
         <% t.row() do %>
           <p class="medium_paragraphs">
-          This is an alternate mechanism to provide the Bourreau with a distinct database and SSH agent connection. For this to work,
-          an SSH-accessible server (provided by hostname, port number and username) must be configured to accept the main CBRAIN portal
-          key, and be visible from the Bourreau. That server must have a SSH agent that provides keys on a UNIX domain socket,
-          and a database connection for CBRAIN. The database connection specification can be provided as either as a full path
-          to a UNIX domain socket, or as <em>localhost:port</em>.
+          <%= t('.paragraphs.reverse_service_description_html') %>
           </p>
           <p class="medium_paragraphs">
-          Some <strong>default values</strong> shown under the input boxes are <em>guesses</em> based on the currently running Portal. These
-          are useful if the portal happens to be the server to connect back to.
+          <%= t('.paragraphs.reverse_service_defaults_html') %>
           </p>
         <% end %>
 
         <% t.boolean_edit_cell('bourreau[use_reverse_service]', (@bourreau.use_reverse_service ? "1" : ""), "1", "0",
-           :header => "Use the SSH Reverse Service", :show_width => 2) %>
+           :header => t('.headings.use_reverse_service'), :show_width => 2) %>
 
-        <% t.edit_cell(:reverse_service_host, :header => "Reverse Service Hostname", :show_width => 1) do |f| %>
+        <% t.edit_cell(:reverse_service_host, :header => t('.headings.reverse_service_hostname'), :show_width => 1) do |f| %>
           <%= f.text_field :reverse_service_host, :size => 20 %>
-          <br>Default: <%= Socket.gethostname %>
+          <br><%= t('.default_value', value: Socket.gethostname) %>
         <% end %>
 
-        <% t.edit_cell(:reverse_service_port, :header => "Reverse Service Port", :show_width => 1) do |f| %>
+        <% t.edit_cell(:reverse_service_port, :header => t('.headings.reverse_service_port'), :show_width => 1) do |f| %>
           <%= f.text_field :reverse_service_port, :size => 6 %>
         <% end %>
 
-        <% t.edit_cell(:reverse_service_user, :header => "Reverse Service User", :show_width => 1) do |f| %>
+        <% t.edit_cell(:reverse_service_user, :header => t('.headings.reverse_service_user'), :show_width => 1) do |f| %>
           <%= f.text_field :reverse_service_user, :size => 20 %>
-          <br>Default: <%= CBRAIN::Rails_UserName %>
+          <br><%= t('.default_value', value: CBRAIN::Rails_UserName) %>
         <% end %>
 
         <% t.empty_cell %>
 
-        <% t.edit_cell(:reverse_service_db_socket_path, :header => "Reverse Service DB Socket Path", :show_width => 2) do |f| %>
+        <% t.edit_cell(:reverse_service_db_socket_path, :header => t('.headings.reverse_service_db_socket'), :show_width => 2) do |f| %>
           <%= f.text_field :reverse_service_db_socket_path, :size => 60 %>
           <% db_host = ApplicationRecord.connection.raw_connection.query_options[:host] rescue nil %>
-          <br>Default: <%= db_host == 'localhost' ? 'localhost:3306' : db_host.nil? ? '(Unknown, check your config)' : db_host %>
+          <br><%= t('.default_value', value: (db_host == 'localhost' ? 'localhost:3306' : db_host.nil? ? t('.unknown_check_config') : db_host)) %>
         <% end %>
 
-        <% t.edit_cell(:reverse_service_ssh_agent_socket_path, :header => "Reverse Service SSH Agent Socket Path", :show_width => 2) do |f| %>
+        <% t.edit_cell(:reverse_service_ssh_agent_socket_path, :header => t('.headings.reverse_service_ssh_agent'), :show_width => 2) do |f| %>
           <%= f.text_field :reverse_service_ssh_agent_socket_path, :size => 60 %>
-          <br>Default: <%= SshAgent.find_current&.socket %>
+          <br><%= t('.default_value', value: SshAgent.find_current&.socket) %>
         <% end %>
 
       <% end %>
 
     <% end %>
 
-    <%= show_table(@bourreau, :as => :bourreau, :header => "Activity Workers Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
-        <% t.edit_cell :activity_workers_instances, :header => "Number of workers", :show_width => 2 do |f| %>
+    <%= show_table(@bourreau, :as => :bourreau, :header => t('.headings.activity_workers_config'), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+        <% t.edit_cell :activity_workers_instances, :header => t('.headings.activity_workers_number'), :show_width => 2 do |f| %>
           <%=  f.select :activity_workers_instances, [
-                  [  "None (for debug)",                0 ],
-                  [  "1 (recommended for Bourreaux)",   1 ],
-                  [  "2",                               2 ],
-                  [  "3 (recommended for Portals)",     3 ],
-                  [  "4",                               4 ],
-                  [  "5",                               5 ],
-                  [ "10",                              10 ],
+                  [  t('.activity_workers_number_select.none'),                  0 ],
+                  [  t('.activity_workers_number_select.recommended_bourreaux'), 1 ],
+                  [  "2",                                                        2 ],
+                  [  t('.activity_workers_number_select.recommended_portals'),   3 ],
+                  [  "4",                                                        4 ],
+                  [  "5",                                                        5 ],
+                  [ "10",                                                       10 ],
               ]
           %>
           <div class="field_explanation">
-            In a development environment <%= Rails.env == 'development' ? "(like right now)" : "" %>
-            a single Activity Worker is often enough. In production, a busy Portal might
-            require more than one Worker, but a Bourreau could work fine with just one.
+            <%= t('.field_explanations.activity_workers_explanation_html', env_note: (Rails.env == 'development' ? t('.like_right_now') : "")) %>
           </div>
         <% end %>
     <% end %>
 
-    <%= show_table(@bourreau, :as => :bourreau, :header => "Cache Management Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
-      <% t.edit_cell(:dp_cache_dir, :header => "Path to Data Provider caches") do |f| %>
+    <%= show_table(@bourreau, :as => :bourreau, :header => t('.headings.cache_management'), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <% t.edit_cell(:dp_cache_dir, :header => t('.headings.path_to_dp_caches')) do |f| %>
         <%= f.text_field :dp_cache_dir, :size => 60 %><br/>
-        <div class="field_explanation">Warning! Changing this field will result in resetting the synchronization
-        status of all files from all Data Providers! Also, the Rails app will have to
-        be restarted, and all files in that directory will be erased!</div>
+        <div class="field_explanation">
+          <%= t('.field_explanations.dp_cache_warning') %></div>
+        </div>
       <% end %>
-      <% t.edit_cell(:spaced_dp_ignore_patterns, :header => "Patterns for filenames to ignore", :content => @bourreau.spaced_dp_ignore_patterns) do |f| %>
+      <% t.edit_cell(:spaced_dp_ignore_patterns, :header => t('.headings.ignore_patterns'), :content => @bourreau.spaced_dp_ignore_patterns) do |f| %>
         <%= f.text_field :spaced_dp_ignore_patterns, :size => 60 %><br/>
-        <div class="field_explanation">Separate several patterns with spaces; each pattern can contain single '*'s, but no '/'s or special characters.</div>
+        <div class="field_explanation">
+          <%= t('.field_explanations.ignore_patterns') %></div>
+        </div>
       <% end %>
-      <% t.edit_cell(:cache_trust_expire, :header => "Cache Expiration Timeout (in seconds)", :content => (@bourreau.cache_trust_expire == 0 ? "Never" : @bourreau.cache_trust_expire)) do |f| %>
+      <% t.edit_cell(:cache_trust_expire, :header => t('.headings.cache_expiration'), :content => (@bourreau.cache_trust_expire == 0 ? "Never" : @bourreau.cache_trust_expire)) do |f| %>
         <%= f.select :cache_trust_expire, [
-                [ "Never",        "0"                  ],
-                [ "Six hours",     6.hours.to_i.to_s   ],
-                [ "Twelve hours", 12.hours.to_i.to_s   ],
-                [ "One day",       1.day.to_i.to_s     ],
-                [ "Three days",    3.days.to_i.to_s    ],
-                [ "One week",      1.week.to_i.to_s    ],
-                [ "Two weeks",     2.weeks.to_i.to_s   ],
-                [ "One month",     1.month.to_i.to_s   ],
-                [ "Two months",    2.months.to_i.to_s  ],
-                [ "Three months",  3.months.to_i.to_s  ],
-                [ "Six months",    6.months.to_i.to_s  ]
+                [ t('bourreaux.common.cache_trust_expire_select.never'),        "0"                  ],
+                [ t('bourreaux.common.cache_trust_expire_select.six_hours'),     6.hours.to_i.to_s   ],
+                [ t('bourreaux.common.cache_trust_expire_select.twelve_hours'), 12.hours.to_i.to_s   ],
+                [ t('bourreaux.common.cache_trust_expire_select.one_day'),       1.day.to_i.to_s     ],
+                [ t('bourreaux.common.cache_trust_expire_select.three_days'),    3.days.to_i.to_s    ],
+                [ t('bourreaux.common.cache_trust_expire_select.one_week'),      1.week.to_i.to_s    ],
+                [ t('bourreaux.common.cache_trust_expire_select.two_weeks'),     2.weeks.to_i.to_s   ],
+                [ t('bourreaux.common.cache_trust_expire_select.one_month'),     1.month.to_i.to_s   ],
+                [ t('bourreaux.common.cache_trust_expire_select.two_months'),    2.months.to_i.to_s  ],
+                [ t('bourreaux.common.cache_trust_expire_select.three_months'),  3.months.to_i.to_s  ],
+                [ t('bourreaux.common.cache_trust_expire_select.six_months'),    6.months.to_i.to_s  ]
             ]
         %></br>
-        <div class="field_explanation">This means that in the execution server's cache, files that have been recorded
-        as 'InSync' but were last accessed more than this amount of time will be considered untrustworthy
-        and will be re-synchronized the next time they are accessed. Set this to a value less than <em>N</em>
-        if the cluster's file policy, for instance, deletes all scratch files older than <em>N</em> days.</div>
+        <div class="field_explanation">
+          <div class="field_explanation"><%= t('.field_explanations.cache_expiration_html') %></div>
+        </div>
       <% end %>
     <% end %>
 
-    <%= show_table(@bourreau, :as => :bourreau, :header => "Data Providers Options", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+    <%= show_table(@bourreau, :as => :bourreau, :header => t('.headings.dp_options'), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
         <% persistent = @bourreau.meta[:use_persistent_ssh_masters_for_dps] %>
         <% persistent = is_portal if persistent.nil? %>
         <% t.edit_cell 'meta[use_persistent_ssh_masters_for_dps]',
-                       :header  => "Use persistent SSH masters for SSH-based DataProviders",
-                       :content => (persistent.to_s == 'true' ? 'Always' : 'Never') do %>
+                       :header  => t('.headings.persistent_ssh_masters'),
+                       :content => (persistent.to_s == 'true' ? t('.options.always') : t('.options.never')) do %>
           <%= select_tag  'meta[use_persistent_ssh_masters_for_dps]',
-              options_for_select( [ [ "Always", "true" ], [ 'Never', "false" ] ], persistent )
+              options_for_select( [ [ t('.options.always'), "true" ], [ t('.options.never'), "false" ] ], persistent )
           %>
           <br>
           <p class="wide_field_explanation">
-            When set to 'always', the SSH connections to a data
-            provider's host will persist after the first use. This
-            makes successive data transfers a bit faster because
-            the connection doesn't have to be re-opened every time
-            it is needed. The default it to have this behavior ON
-            ('always') for portals and OFF ('never') for execution
-            servers.
+            <%= t('.paragraphs.persistent_ssh_explanation') %>
           </p>
           <%
           # The following hidden field is needed so this table receives at least one attribute
@@ -368,11 +352,11 @@
 
 
     <% if is_bourreau %>
-      <%= show_table(@bourreau, :as => :bourreau, :header => "Cluster Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <%= show_table(@bourreau, :as => :bourreau, :header => t('.headings.cluster_config'), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
-        <% t.edit_cell(:cms_class, :header => "Type of cluster") do |f| %>
+        <% t.edit_cell(:cms_class, :header => t('.headings.type_of_cluster')) do |f| %>
           <%= f.select :cms_class, [
-                  [ "(Unconfigured)",  "" ],
+                  [ t('.options.unconfigured'), "" ],
                   [ "Sun GridEngine",  "ScirSge" ],
                   [ "PBS",             "ScirPbs" ],
                   [ "MOAB",            "ScirMoab" ],
@@ -385,92 +369,101 @@
           %>
         <% end %>
 
-        <% t.edit_cell(:cms_default_queue, :header => "Default queue name") do |f| %>
+        <% t.edit_cell(:cms_default_queue, :header => t('.headings.default_queue_name')) do |f| %>
           <%= f.text_field :cms_default_queue %><br/>
-          <div class="field_explanation">Optional.</div>
+          <div class="field_explanation">
+            <%= t('.field_explanations.cms_default_queue') %>
+          </div>
         <% end %>
 
         <% tool_config = ToolConfig.where(:bourreau_id => @bourreau.id, :tool_id => nil).first %>
-        <% tool_config_show_link   = tool_config ? (link_to "Show",   tool_config_path(tool_config)) : "No tool config" %>
-        <% tool_config_create_link =                link_to "Create", new_tool_config_path(:bourreau_id => @bourreau.id) %>
-        <% t.edit_cell("Common configuration for all tasks", :content => tool_config_show_link) do %>
+        <% tool_config_show_link   = tool_config ? (link_to t('show'),   tool_config_path(tool_config)) : t('.links.no_tool_config') %>
+        <% tool_config_create_link =                link_to t('create'), new_tool_config_path(:bourreau_id => @bourreau.id) %>
+        <% t.edit_cell(t('.cells.common_config_all_tasks'), :content => tool_config_show_link) do %>
           <%= tool_config ? tool_config_show_link : tool_config_create_link %>
         <% end %>
 
         <% t.empty_cell %>
 
-        <% t.edit_cell(:cms_extra_qsub_args, :header => "Extra cluster submission options(sbatch, qsub)", :show_width => 2) do |f| %>
+        <% t.edit_cell(:cms_extra_qsub_args, :header => t('.headings.extra_qsub_args'), :show_width => 2) do |f| %>
           <%= f.text_field :cms_extra_qsub_args, :size => 60 %><br/>
-          <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
+          <div class="field_explanation">
+            <%= t('.field_explanations.cms_extra_qsub_args') %>
+          </div>
         <% end %>
 
-        <% t.edit_cell(:cms_shared_dir, :header => "Path to shared work directory", :show_width => 2) do |f| %>
+        <% t.edit_cell(:cms_shared_dir, :header => t('.headings.path_shared_work_dir'), :show_width => 2) do |f| %>
           <%= f.text_field :cms_shared_dir, :size => 60 %><br/>
-          <div class="field_explanation">Mandatory. This directory must be visible and writable from all nodes.
-                 This is were the work subdirectories for all tasks will be created.</div>
+          <div class="field_explanation">
+            <%= t('.field_explanations.cms_shared_dir_html') %>
+          </div>
         <% end %>
 
       <% end %>
 
 
-      <%= show_table(@bourreau, :as => :bourreau, :header => "Task Workers Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
-        <% t.edit_cell :workers_instances, :header => "Number of workers" do |f| %>
+      <%= show_table(@bourreau, :as => :bourreau, :header => t('.headings.task_workers_config'), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+        <% t.edit_cell :workers_instances, :header => t('.headings.workers_instances') do |f| %>
           <%=  f.select :workers_instances, [
-                  [ "None (for debug)",  0 ],
-                  [ "1",                 1 ],
-                  [ "2",                 2 ],
-                  [ "3",                 3 ],
-                  [ "4",                 4 ],
-                  [ "5",                 5 ],
-                  [ "10",                10 ],
-                  [ "20",                20 ]
+                  [ t('bourreaux.common.workers_instances_select.none'),  0 ],
+                  [ "1",                                  1 ],
+                  [ "2",                                  2 ],
+                  [ "3",                                  3 ],
+                  [ "4",                                  4 ],
+                  [ "5",                                  5 ],
+                  [ "10",                                10 ],
+                  [ "20",                                20 ]
               ]
           %>
         <% end %>
-        <% t.edit_cell :workers_chk_time, :header => "Check interval" do |f| %>
+        <% t.edit_cell :workers_chk_time, :header => t('.headings.workers_chk_time') do |f| %>
           <%=  f.select :workers_chk_time, [
-                  [ "5 seconds",               5 ],
-                  [ "10 seconds",              10 ],
-                  [ "30 seconds",              30 ],
-                  [ "1 minute (recommended)",  60 ],
-                  [ "2 minutes",               120 ],
-                  [ "5 minutes",               300 ],
-                  [ "15 minutes",              900 ],
-                  [ "1 hour",                  3600 ]
+                  [ t('bourreaux.common.workers_chk_time_select.five_seconds'),       5 ],
+                  [ t('bourreaux.common.workers_chk_time_select.ten_seconds'),       10 ],
+                  [ t('bourreaux.common.workers_chk_time_select.thirty_seconds'),    30 ],
+                  [ t('bourreaux.common.workers_chk_time_select.one_minute'),        60 ],
+                  [ t('bourreaux.common.workers_chk_time_select.two_minutes'),      120 ],
+                  [ t('bourreaux.common.workers_chk_time_select.five_minutes'),     300 ],
+                  [ t('bourreaux.common.workers_chk_time_select.fifteen_minutes'),  900 ],
+                  [ t('bourreaux.common.workers_chk_time_select.one_hour'),        3600 ]
               ]
           %>
         <% end %>
-        <% t.edit_cell :workers_log_to, :header => "Log destination" do |f| %>
+        <% t.edit_cell :workers_log_to, :header => t('.headings.workers_log_to') do |f| %>
           <%= f.select :workers_log_to, [
-                  [ "Combined file (recommended)", "combined" ],
-                  [ "Separate files",              "separate" ],
-                  [ "RAILS log",                   "bourreau" ],
-                  [ "RAILS stdout",                "stdout" ],
-                  [ "RAILS stderr",                "stderr" ],
-                  [ "RAILS stdout and stderr",     "stdout|stderr" ],
-                  [ "No logging",                  "none" ]
+                  [ t('bourreaux.common.workers_log_to_select.combined_file'),           "combined"      ],
+                  [ t('bourreaux.common.workers_log_to_select.separate_files'),          "separate"      ],
+                  [ t('bourreaux.common.workers_log_to_select.rails_log'),               "bourreau"      ],
+                  [ t('bourreaux.common.workers_log_to_select.rails_stdout'),            "stdout"        ],
+                  [ t('bourreaux.common.workers_log_to_select.rails_stderr'),            "stderr"        ],
+                  [ t('bourreaux.common.workers_log_to_select.rails_stdout_and_stderr'), "stdout|stderr" ],
+                  [ t('bourreaux.common.workers_log_to_select.no_logging'),              "none"          ]
               ]
           %>
         <% end %>
-        <% t.edit_cell :workers_verbose, :header => "Log verbosity", :content => ['(Not configured)', 'Normal', 'Debug info' ][@bourreau.workers_verbose || 0]  do |f| %>
+        <% t.edit_cell :workers_verbose, :header => t('.headings.workers_verbose'), :content => [t('.content.not_configured'), t('bourreaux.common.workers_verbose_select.normal'), t('bourreaux.common.workers_verbose_select.debug_info') ][@bourreau.workers_verbose || 0]  do |f| %>
           <%=  f.select :workers_verbose, [
-                  [ "Normal",      1 ],
-                  [ "Debug info",  2 ]
+                [ t('bourreaux.common.workers_verbose_select.normal'),      1 ],
+                [ t('bourreaux.common.workers_verbose_select.debug_info'),  2 ]
               ]
           %>
         <% end %>
       <% end %>
       <!-- Container -->
-      <%= show_table(@bourreau, :as => :bourreau, :header => "Container Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <%= show_table(@bourreau, :as => :bourreau, :header => t('.headings.container_config'), :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
         <!-- Docker -->
-        <% t.edit_cell :docker_executable_name, :header => "Docker executable" do |f| %>
+        <% t.edit_cell :docker_executable_name, :header => t('.headings.docker_executable_name') do |f| %>
           <%= f.text_field :docker_executable_name, :size => 60 %><br/>
-           <div class="field_explanation">Name of the Docker executable available on the machines where tasks will run. It should always be set if Docker is present.</div>
+            <div class="field_explanation">
+              <%= t('.field_explanations.docker_executable_name') %>
+            </div>
         <% end %>
         <!-- Singularity -->
-        <% t.edit_cell :singularity_executable_name, :header => "Singularity executable" do |f| %>
+        <% t.edit_cell :singularity_executable_name, :header => t('.headings.singularity_executable_name') do |f| %>
           <%= f.text_field :singularity_executable_name, :size => 60 %><br/>
-           <div class="field_explanation">Name of the Singularity executable available on the machines where tasks will run. It should always be set if Singularity is present.</div>
+            <div class="field_explanation">
+              <%= t('.field_explanations.singularity_executable_name') %>
+            </div>
         <% end %>
       <% end %>
     <% end %>
@@ -483,6 +476,6 @@
 
 <% if @bourreau.has_owner_access?(current_user) %>
   <P>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @bourreau.getlog, :title => "Server Log" } %>
+  <%= render :partial => "layouts/log_report", :locals  => { :log  => @bourreau.getlog, :title => t('.titles.server_log') } %>
 <% end %>
 

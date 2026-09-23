@@ -679,7 +679,7 @@ $(function() {
 
     /* Chosen select box plugin */
     $('#up-tag, #pp-tag').chosen({
-      no_results_text: "Press Enter to add: ",
+      no_results_text: $('meta[name="chosen-add-tag"]').attr('content'),
       width: '200px'
     });
 

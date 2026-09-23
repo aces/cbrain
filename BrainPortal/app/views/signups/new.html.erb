@@ -22,45 +22,43 @@
 #
 -%>
 
-<% title 'New Account Request' %>
+<% title t('.title') %>
 
 <%= form_for @signup, :url => {:action => (@signup.new_record? ? "create" : "update"), :id => @signup.id} do |f| %>
   <%= error_messages_for @signup %>
   <%= hidden_field_tag(:auth_spec, (@auth_spec.to_s.presence || Time.now.to_i.to_s)) %>
 
   <div class="generalbox">
-    <p class="warning"> Fields with an asterisk (*) are mandatory.</p>
+    <p class="warning"> <%= t('.warnings.mandatory_fields') %></p>
 
     <fieldset class="groupentry">
 
       <legend>
-        Personal Info
+        <%= t('.legends.personal_info') %>
       </legend>
 
       <div class="tree-column-grid">
 
-        <%= f.label(:title, "Title:") %>
+        <%= f.label(:title, t('.labels.title')) %>
         <%= f.text_field :title %>
-        <span class="wide_field_explanation">for example: 'Mrs.', 'Mr', 'Dr.', etc.</span>
 
-        <%= f.label(:first, "* First Name:") %>
+        <%= t('.paragraphs.title_html') %>
+
+        <%= f.label(:first, t('.labels.first')) %>
         <%= f.text_field :first %>
         <br>
 
-        <%= f.label(:middle, "Middle Name:") %>
+        <%= f.label(:middle, t('.labels.middle')) %>
         <%= f.text_field :middle %>
         <br>
 
-        <%= f.label(:last, "* Last Name:") %>
+        <%= f.label(:last, t('.labels.last')) %>
         <%= f.text_field :last %>
         <br>
 
-        <%= f.label(:login, "Preferred 'login' name:") %>
+        <%= f.label(:login, t('.labels.login')) %>
         <%= f.text_field :login %>
-        <span class="wide_field_explanation">
-            <small>one letter + alphanums. <strong>By convention</strong>: the first letter of your first name + last name.
-            For example, John Doe login: 'jdoe' </small>
-        </span>
+        <%= t('.paragraphs.login_html') %>
       </div>
     </fieldset>
 
@@ -69,89 +67,78 @@
     <fieldset class="groupentry">
 
       <legend>
-        Institution Info
+        <%= t('.legends.institution_info') %>
       </legend>
 
       <div class="two-column-grid">
 
-        <%= f.label(:institution, "* Name of Institution/Organization:") %>
+        <%= f.label(:institution, t('.labels.institution')) %>
         <%= f.text_field :institution, :size => 60 %>
 
-        <%= f.label(:department, "* Department") %>
+        <%= f.label(:department, t('.labels.department')) %>
         <%= f.text_field :department, :size => 60 %>
 
-        <%= f.label(:position, "* Current position or role:") %>
+        <%= f.label(:position, t('.labels.position')) %>
         <%= f.select :position, options_for_select(
-            [["(select one)", ""], "Faculty",
-                                   "Postdoctoral",
-                                   "PhD. candidate",
-                                   "Masters student",
-                                   "Student",
-                                   "Researcher",
-                                   "Other"
+            [[t('.selects.select_one'), ""], [t('.selects.position_options.faculty'), "Faculty"],
+                                     [t('.selects.position_options.postdoctoral'), "Postdoctoral"],
+                                     [t('.selects.position_options.phd_candidate'), "PhD. candidate"],
+                                     [t('.selects.position_options.masters_student'), "Masters student"],
+                                     [t('.selects.position_options.student'), "Student"],
+                                     [t('.selects.position_options.researcher'), "Researcher"],
+                                     [t('.selects.position_options.other'), "Other"]
             ],
             @signup.position)
         %>
 
-        <%= f.label(:affiliation, "* Current affiliation:") %>
+        <%= f.label(:affiliation, t('.labels.affiliation')) %>
         <%= f.select :affiliation, options_for_select(
-            [["(select one)", ""], "Academic",
-                                   "Private sector",
-                                   "Government",
-                                   "Non-profit",
-                                   "Other",
+            [[t('.selects.select_one'), ""], [t('.selects.affiliation_options.academic'), "Academic"],
+                                     [t('.selects.affiliation_options.private_sector'), "Private sector"],
+                                     [t('.selects.affiliation_options.government'), "Government"],
+                                     [t('.selects.affiliation_options.non_profit'), "Non-profit"],
+                                     [t('.selects.affiliation_options.other'), "Other"]
             ],
             @signup.affiliation)
         %>
 
-        <%= f.label(:email, "* Institutional Email address:") %>
+        <%= f.label(:email, t('.labels.email')) %>
         <%= f.text_field :email, :size => 60 %>
 
         <div></div>
-        <div class="wide_field_explanation">
-          <small>Please supply the address of <strong class="warning"> your research institution.</strong>
-            Requests with non-institutional address or email
-            will be <strong>ignored</strong>
-          </small>
-        </div>
+        <%= t('.paragraphs.email_html') %>
 
-        <%= f.label(:street1, "Institution Street Address (line 1):") %>
+        <%= f.label(:street1, t('.labels.street1')) %>
         <%= f.text_field :street1, :size => 60 %>
 
-        <%= f.label(:street2, "Institution Street Address (line 2):") %>
+        <%= f.label(:street2, t('.labels.street2')) %>
         <%= f.text_field :street2, :size => 60 %>
 
-        <%= f.label(:city, "* City of Institution:") %>
+        <%= f.label(:city, t('.labels.city')) %>
         <%= f.text_field :city, :size => 30 %>
 
-        <%= f.label(:province, "* Province/State:") %>
+        <%= f.label(:province, t('.labels.province')) %>
         <%= f.text_field :province, :size => 30 %>
 
-        <%= f.label(:country, "* Country:") %>
+        <%= f.label(:country, t('.labels.country')) %>
         <%= f.text_field :country, :size => 30 %>
 
-        <%= f.label(:postal_code, "Postal/ZIP Code:") %>
+        <%= f.label(:postal_code, t('.labels.postal_code')) %>
         <%= f.text_field :postal_code, :size => 8 %>
 
-        <%= f.label(:time_zone, "Time Zone:") %>
+        <%= f.label(:time_zone, t('time_zone')) %>
         <%= f.time_zone_select :time_zone,
                                ActiveSupport::TimeZone.all.select {|t| t.name =~ /canada/i},
                                {:default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'], :include_blank => true}
         %>
 
-        <%= f.label(:comment, "Comments or special requests:") %>
+        <%= f.label(:comment, t('.labels.comment')) %>
         <%= f.text_area :comment, :cols => 80, :rows => 5 %>
         <br>
-        <div class="wide_field_explanation">
-          Please tell us the name of the laboratory you work for,
-          the name of its Principal Investigator (if not you), and if possible
-          anyone else you know in your lab who are already CBRAIN users. <br>
-          We'll use this information to create or add you to a
-          <em>Site</em> within CBRAIN.
-        </div>
+        <%= t('.paragraphs.comment_html') %>
 
       <% if current_user.present? && current_user.has_role?(:admin_user) %>
-          <%= f.label(:admin_comment, "Private, admin-only comments:") %>
+          <%= f.label(:admin_comment, t('.labels.admin_comment')) %>
           <%= f.text_area :admin_comment, :cols => 80, :rows => 5 %>
       <% end %>
       </div>
@@ -159,22 +146,14 @@
     </fieldset>
     <br>
     <div class="centered">
-      <%= f.submit(@signup.new_record? ? "Request Account" : "Update Request") %>
+      <%= f.submit(@signup.new_record? ? t('.submits.request_account') : t('.submits.update_request')) %>
     </div>
 
-    <br>
-    <b>Privacy note</b>
-    <br>
-    The information you supply in this form is
-    only used in order to review your application and, <br> when approved, to
-    automatically generate your user account. <br>
-    This information will not be used in any other way, or passed on to
-    any other entities or persons.
+    <%= t('.paragraphs.privacy_note_html') %>
 
     <% if RemoteResource.current_resource.support_email.present? %>
       <br>
-      For more information, contact
-      <a href="mailto:<%= RemoteResource.current_resource.support_email %>"><%= RemoteResource.current_resource.support_email %></a>.
+      <%= t('.contact_html', email: link_to(RemoteResource.current_resource.support_email, "mailto:#{RemoteResource.current_resource.support_email}")) %>
     <% end %>
   </div>
 <% end %>

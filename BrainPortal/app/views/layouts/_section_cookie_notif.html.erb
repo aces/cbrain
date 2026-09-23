@@ -26,20 +26,19 @@
 
 <div class="cookie_notification">
   <fieldset>
-    <legend>Cookie Notification</legend>
-    <strong>This site uses a cookie to remember you.</strong>
+    <legend><%= t('.legend') %></legend>
+    <strong><%= t('.strong') %></strong>
     <p>
     <small>
-       This is safe and private. The cookie information is only exchanged between your browser and the site.<br>
-       No information is sent to other sites, people or third parties.
+      <%= t('.small_html') %>
     </small>
     <p>
-    <span class="cookie_agree_button">I agree</span>
+    <span class="cookie_agree_button"><%= t('agree') %></span>
   </fieldset>
 </div>
 
 <!--
-<p><strong class="unagree" style="color: red">(Debug button remove agree)</strong>
+<p><strong class="unagree" style="color: red"><%= t('.unagree') %></strong>
 -->
 
 <script type="text/javascript">

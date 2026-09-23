@@ -29,41 +29,41 @@
     <%= text_field_tag "custom_filter[name]", @custom_filter.name %>
   <% end %>
 
-  <% t.edit_cell(:data_types, :header => "Types",
+  <% t.edit_cell(:data_types, :header => t('.headings.types'),
      :content => (@custom_filter.data_types.presence || [])
                  .map(&:constantize).map(&:pretty_name).sort.join(", ")) do %>
     <%= task_type_select("data[types]", {:task_types => current_user.available_tools.map(&:cbrain_task_class_name).sort, :selector => @custom_filter.data_types, :include_top => true }, :multiple => true, :size => 10) %>
   <% end %>
 
-  <% t.edit_cell(:data_status, :header => "Status", :content => (@custom_filter.data_status||[]).join(", ")) do %>
+  <% t.edit_cell(:data_status, :header => t('.headings.status'), :content => (@custom_filter.data_status||[]).join(", ")) do %>
     <%= task_status_select("data[status]", {:selector => @custom_filter.data_status}, :multiple => true, :size => 10) %>
   <% end %>
 
   <%
     description_type =
       {
-        ''        => "Don't filter description",
-        'match'   => 'Match exactly',
-        'contain' => 'Contains',
-        'begin'   => 'Begins with',
-        'end'     => 'Ends with',
+        ''        => t('custom_filters.common.dont_filter_description'),
+        'match'   => t('custom_filters.common.match_type.match_exactly'),
+        'contain' => t('custom_filters.common.match_type.contain'),
+        'begin'   => t('custom_filters.common.match_type.begin'),
+        'end'     => t('custom_filters.common.match_type.end'),
       }
   %>
 
-  <% t.edit_cell(:data_description_type, :header => "Description",
+  <% t.edit_cell(:data_description_type, :header => t('.headings.description'),
                  :content => "#{description_type[@custom_filter.data_description_type]} #{@custom_filter.data_description_term}") do %>
     <%= select :data, :description_type, description_type.map{|k,v| [v,k]}, :selected => @custom_filter.data_description_type %> <%= text_field_tag "data[description_term]", @custom_filter.data_description_term %>
   <% end %>
 
-  <% t.edit_cell(:data_user_ids, :header => "Owners", :content => User.where(:id => @custom_filter.data_user_ids).pluck(:login).join(", ").presence || "None") do %>
+  <% t.edit_cell(:data_user_ids, :header => t('.headings.owners'), :content => User.where(:id => @custom_filter.data_user_ids).pluck(:login).join(", ").presence || t('none')) do %>
     <%= user_select 'data[user_ids]', { :users => current_user.available_users, :selector => @custom_filter.data_user_ids }, :include_blank => true, :multiple => true %>
   <% end %>
 
-  <% t.edit_cell(:data_group_ids, :header => "Projects", :content => Group.where(:id => @custom_filter.data_group_ids).pluck(:name).join(", ").presence || "None") do %>
+  <% t.edit_cell(:data_group_ids, :header => t('.headings.projects'), :content => Group.where(:id => @custom_filter.data_group_ids).pluck(:name).join(", ").presence || t('none')) do %>
     <%= group_select("data[group_ids]", { :selector => @custom_filter.data_group_ids }, { :include_blank => true, :multiple => true })  %>
   <% end %>
 
-  <% t.edit_cell(:data_bourreau_ids, :header => "Execution Servers", :content => Bourreau.where(:id => @custom_filter.data_bourreau_ids).pluck(:name).join(", ").presence || "None") do %>
+  <% t.edit_cell(:data_bourreau_ids, :header => t('.headings.execution_servers'), :content => Bourreau.where(:id => @custom_filter.data_bourreau_ids).pluck(:name).join(", ").presence || t('none')) do %>
     <%= bourreau_select 'data[bourreau_ids]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => @custom_filter.data_bourreau_ids, :offline_is_ok => true }, :include_blank => true, :multiple => true %>
   <% end %>
 
@@ -71,13 +71,13 @@
     archiving_status =
       {
         ""         => "",
-        "none"     => "Not archived",
-        "cluster"  => "Archived on cluster",
-        "file"     => "Archived as file"
+        "none"     => t('custom_filters.common.archiving.not_archived'),
+        "cluster"  => t('custom_filters.common.archiving.on_cluster'),
+        "file"     => t('custom_filters.common.archiving.as_file')
       }
   %>
 
-  <% t.edit_cell(:data_archiving_status, :header => "Archiving status", :content => archiving_status[@custom_filter.data_archiving_status]) do %>
+  <% t.edit_cell(:data_archiving_status, :header => t('.headings.archiving_status'), :content => archiving_status[@custom_filter.data_archiving_status]) do %>
     <%= select :data, :archiving_status, archiving_status.map{|k,v| [v,k]}, selected: @custom_filter.data_archiving_status %>
   <% end %>
 
@@ -85,18 +85,18 @@
     wd_status =
       {
         ''           => "",
-        'shared'     => "Use another task's",
-        'not_shared' => "Have own Work Directory",
-        'exists'     => "Work Directory exists on cluster",
-        'none'       => "Work Directory does not exist on cluster"
+        'shared'     => t('custom_filters.common.task.wd_status.shared'),
+        'not_shared' => t('custom_filters.common.task.wd_status.not_shared'),
+        'exists'     => t('custom_filters.common.task.wd_status.exists'),
+        'none'       => t('custom_filters.common.task.wd_status.none')
       }
   %>
 
-  <% t.edit_cell(:data_wd_status, :header => "Work Directory status", :content => wd_status[@custom_filter.data_wd_status]) do %>
+  <% t.edit_cell(:data_wd_status, :header => t('.headings.work_directory_status'), :content => wd_status[@custom_filter.data_wd_status]) do %>
     <%= select :data, :wd_status, wd_status.map{|k,v| [v,k]}, :selected => @custom_filter.data_wd_status %>
   <% end %>
 
-  <% t.edit_cell(:date_range_display_table, :header => "Filtering by date", :content => date_range_info(@custom_filter)) do %>
+  <% t.edit_cell(:date_range_display_table, :header => t('.headings.filtering_by_date'), :content => date_range_info(@custom_filter)) do %>
     <%= date_range_panel(@custom_filter[:data] || {}, "data") %>
   <% end %>
 

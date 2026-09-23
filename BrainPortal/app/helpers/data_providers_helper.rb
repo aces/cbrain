@@ -28,7 +28,7 @@ module DataProvidersHelper
   # This method reformats a long SSH key text so that it
   # is folded on several lines.
   def pretty_ssh_key(ssh_key)
-     return "(None)" if ssh_key.blank?
+     return t('none_parentheses') if ssh_key.blank?
      return ssh_key
      #pretty = ""
      #while ssh_key != ""
@@ -43,7 +43,7 @@ module DataProvidersHelper
   def overlay_data_providers_descriptions(data_providers = nil)
     all_descriptions = data_providers_descriptions(data_providers)
     link =
-       overlay_content_link("(info)", :enclosing_element => 'span') do
+       overlay_content_link(t('info_parentheses'), :enclosing_element => 'span') do
          all_descriptions.html_safe
        end
     link.html_safe
@@ -56,7 +56,7 @@ module DataProvidersHelper
       <<-"HTML"
         <strong>#{h(dp.name)}</strong>
         <br/>
-        <pre class="medium_paragraphs">#{dp.description.blank? ? "(No description)" : h(dp.description.strip)}</pre>
+        <pre class="medium_paragraphs">#{dp.description.blank? ? t('no_description_parentheses') : h(dp.description.strip)}</pre>
       HTML
     end
     all_descriptions = <<-"HTML"

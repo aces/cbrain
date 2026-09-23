@@ -22,23 +22,16 @@
 #
 -%>
 
-<% title 'Boutiques Descriptor' %>
+<% title t('.title') %>
 
 <% if @descriptor.present? %>
 
-This is the Boutiques Descriptor for tool
-<strong><%= @tool_config.tool.name %></strong>
-on Execution Server
-<strong><%= @tool_config.bourreau.name %></strong>.
-<p>
-
-<pre><%= @prettify ? @descriptor.super_pretty_json : JSON.pretty_generate(@descriptor) %></pre>
+    <%= t('.present_html', tool: @tool_config.tool.name, server: @tool_config.bourreau.name) %>
+    <p>
+    <pre><%= @prettify ? @descriptor.super_pretty_json : JSON.pretty_generate(@descriptor) %></pre>
 
 <% else %>
 
-There is no Boutiques Descriptor for tool
-<strong><%= @tool_config.tool.name %></strong>
-on Execution Server
-<strong><%= @tool_config.bourreau.name %></strong>.
+    <%= t('.absent_html', tool: @tool_config.tool.name, server: @tool_config.bourreau.name) %>
 
 <% end %>

@@ -24,8 +24,8 @@
 #
 -%>
 
-<% title "Activity #{@range}" %>
-<% title to_localtime(Time.now, :date) + " at " + to_localtime(Time.now, :time) %>
+<% title t('.titles.main', range: @range) %>
+<% title t('.titles.subtitle', date: to_localtime(Time.now, :date), time: to_localtime(Time.now, :time)) %>
 
 <head>
   <title><%= RemoteResource.current_resource.name.presence || "CBRAIN" %><%= yield :title %></title>
@@ -55,19 +55,19 @@
 
 <div class="noc_main">
   <div class="noc_panel">
-    <div class="noc_header">Users</div><br>
+    <div class="noc_header"><%= t('.headings.users') %></div><br>
     <div class="noc_count" style="color: <%= num_users_color %>"><%= @active_users %></div>
   </div>
   <div class="noc_panel">
-    <div class="noc_header">Active Tasks</div><br>
+    <div class="noc_header"><%= t('.headings.active_tasks') %></div><br>
     <div class="noc_count" style="color: <%= num_tasks_color %>"><%= @active_tasks %></div>
   </div>
   <div class="noc_panel">
-    <div class="noc_header">Active Transfers</div><br>
+    <div class="noc_header"><%= t('.headings.active_transfers') %></div><br>
     <div class="noc_count"><%= @data_transfer.zero? ? "-" : colored_pretty_size(@data_transfer) %></div>
   </div>
   <div class="noc_panel">
-    <div class="noc_header">CPU Time</div><br>
+    <div class="noc_header"><%= t('.headings.cpu_time') %></div><br>
     <div class="noc_count">
       <% if @cpu_time.zero? %>
         -
@@ -83,20 +83,20 @@
   <% total_minus = @dp_space_delta_M.values.inject(:+) || 0 %>
   <% total_delta = total_plus + total_minus.abs %>
   <div class="noc_panel">
-    <div class="noc_header">Files Deltas</div><br>
+    <div class="noc_header"><%= t('.headings.files_deltas') %></div><br>
     <div class="noc_count"><%= total_delta.zero? ? "-" : colored_pretty_size(total_delta) %></div>
   </div>
 
   <% if @num_exceptions > 0 %>
   <div class="noc_panel">
-    <div class="noc_header">Exceptions</div><br>
+    <div class="noc_header"><%= t('.headings.exceptions') %></div><br>
     <div class="noc_count" style="color: <%= num_excep_color %>"><%= @num_exceptions %></div>
   </div>
   <% end %>
 
   <% if @num_bacs_progress + @num_bacs_completed + @num_bacs_failed + @num_bacs_partial > 0 %>
   <div class="noc_panel">
-    <div class="noc_header">Background Activities</div><br>
+    <div class="noc_header"><%= t('activerecord.models.background_activity.other') %></div><br>
     <div class="noc_count">
       <% # Note: that very long line is to make sure no spaces are inserted anywhere within the div %>
       <%= (@num_bacs_progress > 0).presence && html_colorize(@num_bacs_progress,'blue') %><%= (@num_bacs_completed > 0 && @num_bacs_progress > 0).presence && ':' %><%= (@num_bacs_completed > 0).presence && html_colorize(@num_bacs_completed,'green') %><%= (@num_bacs_partial > 0 && (@num_bacs_progress+@num_bacs_completed > 0)).presence && ':' %><%= (@num_bacs_partial > 0).presence && html_colorize(@num_bacs_partial,'yellow') %><%= (@num_bacs_failed > 0 && (@num_bacs_progress+@num_bacs_completed+@num_bacs_partial > 0)).presence && ':' %><%= (@num_bacs_failed > 0).presence && html_colorize(@num_bacs_failed,'red') %>
@@ -108,7 +108,7 @@
 
 
 
-<h1>Execution Servers Caches And Tasks</h1>
+<h1><%= t('.headings.servers') %></h1>
 
 <% (@portals + @bourreaux).each do |b| %>
   <%
@@ -125,11 +125,11 @@
   %>
 
   <fieldset class="daily_bourreau <%= offline %>">
-    <legend><%= red_if(offline, b.name) %><%= b.is_a?(BrainPortal) ? " (Portal)" : "" %></legend>
+    <legend><%= red_if(offline, b.name) %><%= b.is_a?(BrainPortal) ? t('.legends.portal_suffix') : "" %></legend>
 
     <span class="display_cell">
       <%= disk_space_info_display(cached_files) do %>
-        <small>Cache:</small><br>
+        <small><%= t('.labels.cache') %></small><br>
         <%= colored_pretty_size cached_files %><br>
       <% end %>
     </span>
@@ -137,7 +137,7 @@
     <% if b.is_a?(Bourreau) && task_space > 0 %>
     <span class="display_cell">
       <%= disk_space_info_display(task_space) do %>
-        <small>Tasks:</small><br>
+        <small><%= t('.labels.tasks') %></small><br>
         <%= colored_pretty_size task_space %><br>
       <% end %>
     </span>
@@ -161,7 +161,7 @@
 
 
 
-<h1>Data Providers Updated Files</h1>
+<h1><%= t('.headings.dp') %></h1>
 
 <% joined_dp_ids = (@dp_space_delta_P.keys + @dp_space_delta_M.keys).uniq.sort %>
 <% joined_dp_ids.each do |dp_id| %>
@@ -185,7 +185,7 @@
       <% end %>
       <% if offline %>
         <br>
-        <%= red_if(true,"OFFLINE!") %>
+        <%= red_if(true, t('.offline')) %>
       <% end %>
     <% end %>
   </fieldset>

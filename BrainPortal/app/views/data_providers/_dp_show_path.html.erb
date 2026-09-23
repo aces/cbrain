@@ -22,10 +22,10 @@
 #
 -%>
 
-<% components = ['(top)'] + (@browse_path.presence || "").split('/') %>
+<% components = [t('.top')] + (@browse_path.presence || "").split('/') %>
 <% cumul      = "" %>
 <div name="show_path" class="groupentry">
-  Browse Path:
+  <%= t('.browse_path') %>
   <% components.each_with_index do |comp,i| %>
 
     <% if i > 0 %>

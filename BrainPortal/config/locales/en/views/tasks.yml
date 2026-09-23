@@ -1,0 +1,349 @@
+en:
+  tasks:
+    control:
+      headings:
+        main: "Task Control:"
+      server_version_html: "Server&nbsp;&amp;&nbsp;Version:"
+      select_server_version: "Select Server & Version"
+      save_results_to_html: "Save&nbsp;results&nbsp;to:"
+      select_data_provider: "(Select a Data Provider for your results)"
+      description_note: "(This first line should be a short summary, and the rest are your notes)"
+    output_renaming_fieldset:
+      legends:
+        output_filenames_renaming: "Output filenames renaming"
+      output_files_pattern: "Output files can be named or renamed automatically using this pattern:"
+      leave_blank_html: "<small>(Leave blank to let the program name the files automatically using its own rules)</small>"
+      supported_keywords_html: "Patterns can include the following special<br /><em>{keywords}</em> in curly brackets that will be substituted<br />automatically.<br /><p><br />The supported keywords are:"
+    params:
+      headings:
+        main: "Task Parameters"
+    presets:
+      headings:
+        main: "Preset Management:"
+      submit_tag:
+        load_preset: "Load Preset"
+        delete_preset: "Delete Preset"
+        save_preset: "Save Preset"
+      load_preset_configuration: "Load a preset configuration:"
+      select_preset: "(Select a preset to load)"
+      delete_this_preset: "Delete this preset?"
+      save_as_preset: "Save as a preset configuration:"
+      select_preset_to_overwrite: "(Select a preset to overwrite)"
+      or_as_new_name: " (or as new name)"
+      save_as_site_preset: "Save as site preset:"
+    resource_usage:
+      legends:
+        main: "Resource Usage History"
+      headings:
+        task_status: "Task Status"
+        usage_type: "Usage Type"
+        time_used: "Time Used"
+        disk_space_used: "Disk Space Used"
+      labels:
+        cpu: "CPU"
+        walltime: "Walltime"
+        disk_space: "Disk Space"
+    show_prereqs:
+      other_tasks: "These other tasks..."
+      must_be: "...must be in these states"
+      destroyed_task_parentheses: "(DestroyedTask)"
+    task_menu:
+      dropdown:
+        update_attributes: "Update Attributes"
+        for_failed_tasks: "For Failed Tasks"
+        for_completed_tasks: "For Completed Tasks"
+        terminating_and_cleaning_up: "Terminating And Cleaning Up"
+        archiving: "Archiving"
+        filters: "Filters"
+      paragraphs:
+        for_failed_tasks_html: "This panel allows you to affect tasks that have failed, one way or another.<br />Trying to recover from errors will trigger cleanup code and a restart at<br />the closest successful processing stage before it failed. It doesn't always<br />work but it's often useful to try at least once!"
+        for_completed_tasks_intro_html: "This panel allows you to affect tasks that have completed successfully.<br />You can try to restart them at three different stages in their lifecycle:"
+        for_completed_tasks_list_html: "<ul><li>At <strong>Setup</strong>, when input data files<br />are synchronized on the Execution server and the<br />processing scripts are created.</li><li>At <strong>Cluster</strong>, when the scientific scripts<br />are actually run on the Execution Server's nodes.</li><li>At <strong>Post Processing</strong>, when the resulting output<br/>files are sent back to the CBRAIN Data Providers.</li></ul>"
+        for_completed_tasks_note_html: "You can also duplicate tasks and recreate them on a different<br />Execution Server. Before restarting them, make sure to adjust<br />their tool version, though."
+        terminating_and_cleaning_up_html: "This panel allows you to affect tasks that you no longer need.<br />You can terminate tasks that are at any point in their lifecycle, even<br />failed tasks. Tasks marked <strong>Terminated</strong> can be restarted<br />later on."
+        remove_work_directories_note_html: "It's also possible to remove the tasks' work directories<br />on the Execution Server while leaving the rest of the tasks'<br />information intact. This is useful to free space on the Server<br />or when the tasks have processed confidential information that<br />you'd rather not leave over there. The panel <em>Archiving</em><br />on the left provides you with other options for disposing of<br />the tasks' work directories."
+        remove_tasks_html: "Finally, you can remove tasks completely. This will erase the task's work directory<br />on the Execution Server, including temporary data files, but will not erase<br />a successful task's output files. This is useful if you have<br />confidential data, for instance. Removing a task <strong>will</strong> delete any<br />archives of the task's work directory, if any (as indicated by<br />the symbols %{workdir_status} and<br />%{userfile_status} in the 'Workdir Size' column)."
+        archiving_1_html: "This panel allows you to archive the content of the work directory<br / >of your tasks. This can only be done on tasks that are in a final<br />state, such as <strong>Completed</strong>, <strong>Failed</strong> or <strong>Terminated</strong>."
+        archiving_2_html: "The process can take a very long time for each task being archived or restored, so<br />be patient and do not request this action multiple times in parallel."
+        archiving_3_html: "There are two different 'levels' of archiving:<br/>\n<ul>\n  <li class=\"dropmenu_info\">\n    Archiving <em>On Cluster</em> means that the task's files will be compressed and archived but will stay on the cluster's side. Such tasks are shown with the symbol %{workdir_status} in the index table.\n  </li>\n  <li class=\"dropmenu_info\">\n    Archiving <em>As File</em> means that the archive will be brought back to your file manager as a '%{type}' file and no data at all will be left on the cluster side. Such tasks are shown with the symbol %{userfile_status} in the index table.\n  </li>\n</ul>"
+        archiving_4_html: "The rest of the information about the tasks will not be affected in any way<br />when they are archived. No operation can be performed on archived task, except<br />of course unarchiving them."
+      change:
+        owner: "Change Owner:"
+        group: "Change Project:"
+        data_provider: "Change Data Provider For Results:"
+        tool_version: "Change Tool Version:"
+      blanks:
+        select_another_owner: "(Select another Owner)"
+        select_another_group: "(Select another Project)"
+        select_another_data_provider: "(Select another Data Provider)"
+        select_another_tool_version: "(Select another Tool Version)"
+      hijacker:
+        trigger_error_recovery: "Trigger Error Recovery"
+        setup_stage: "'Setup' stage"
+        cluster_stage: "'Cluster' stage"
+        post_processing_stage: "'Post Processing' stage"
+        duplicate_tasks: "Duplicate Tasks"
+        terminate_tasks: "Terminate Tasks"
+        remove_work_directories: "Remove Work Directories"
+        remove_tasks: "Remove Tasks"
+        archive_on_cluster: "Archive On Cluster"
+        archive_as_file: "Archive As File"
+        unarchive_tasks: "Unarchive Tasks"
+      confirm:
+        terminate_tasks: "Are you sure you want to terminate the selected tasks?"
+        remove_work_directories: "Are you sure you want to remove the\nWORK DIRECTORIES of the selected tasks?"
+        remove_tasks: "Are you sure you want to remove the selected tasks?\n\nIMPORTANT NOTE: This will also remove their archived work directories, if any."
+      restart_at: "Restart at:"
+      on_execution_server: "on Execution Server: "
+      optional_destination_dp_html: "Optional: when archiving <em>As File</em>, choose a destination Data Provider:<br />"
+      do_not_compress: "Do not compress while archiving"
+    tasks_display:
+      titles:
+        expand_batch: "Expand batch"
+        open_batch: "Open batch"
+      switches:
+        switch_to_list_view: "Switch to List View"
+        switch_to_batch_view: "Switch to Batch View"
+      columns:
+        batch: "Batch"
+        task_type: "Task Type"
+        version: "Version"
+        description: "Description"
+        owner: "Owner"
+        project: "Project"
+        server: "Execution Server"
+        current_status: "Current Status"
+        run_number: "Run Number"
+        workdir_size: "Workdir Size"
+        results_on: "Results On"
+        time_submitted: "Time Submitted"
+        last_updated: "Last Updated"
+      legends:
+        on_cluster: "On Cluster"
+        as_file: "As File"
+      task_count_colon:
+        one: "%{count} task:"
+        other: "%{count} tasks:"
+      total_space_html: "Total space used by tasks: %{space}"
+      tasks_without_estimates:
+        one: "(1 task without space estimates)"
+        other: "(%{count} tasks without space estimates)"
+      disappeared_tasks: "This batch of tasks has disappeared"
+      shared_parentheses: "(Shared)"
+      workdir_archiving_status_symbols: "Workdir archiving status symbols:"
+    utility_interface_file_list:
+      run_on: "Run %{name} on:"
+    zenodo_deposit_form:
+      legends:
+        basic_deposit_information: "Basic Deposit Information"
+      labels:
+        select_zenodo_token: "Select which of your Zenodo token to use:"
+        title: "Title"
+        description: "Description"
+        creators: "Creators"
+      options:
+        sandbox: "Sandbox"
+        main: "Main"
+      explanation_html: "Should be in <em>lastname, firstname</em> format.<br />You can add even more creators later on, once the deposit is created."
+      submit: "Create Deposit"
+    edit:
+      edit_task: "Edit Task %{name}"
+      submit: "Save modified parameters for this task"
+    index:
+      title: "Tasks"
+    new:
+      title: "Launch %{name}"
+      headings:
+        main: "Launch %{name} Task"
+      submit: "Start %{name}"
+    show:
+      title: "%{name} Task Information"
+      headings:
+        cluster_job_id: "Cluster Job's ID"
+        setup_prerequisites: "Setup Prerequisites"
+        post_processing_prerequisites: "Post Processing Prerequisites"
+      links:
+        edit_parameters: "Edit Parameters"
+        refresh: "Refresh"
+        retry_failed: "Retry Failed"
+        restart_at_setup: "Restart At Setup"
+        restart_on_cluster: "Restart On Cluster"
+        restart_at_post_processing: "Restart At Post-Processing"
+        archive_on_cluster: "Archive On Cluster"
+        unarchive: "Unarchive"
+        terminate_task: "Terminate Task"
+        remove_work_directory: "Remove Work Directory"
+        save_work_directory: "Save Work Directory"
+        publish_to_zenodo: "Publish to Zenodo"
+        remove_task: "Remove Task"
+        list_of_tasks: "List of tasks (%{count})"
+      confirm:
+        terminate_task: "Are you sure you want to terminate this task?"
+        remove_work_directory: "Are you sure you want to remove the task's work directory?"
+        remove_task: "Are you sure you want to remove this task?"
+        remove_task_note: "\n\nIMPORTANT NOTE: This will also remove its archived work directory."
+      cells:
+        task_name: "Task Name"
+        task_description: "Task Description"
+        execution_server: "Execution Server"
+        owner: "Owner"
+        tool_version: "Tool Version"
+        group: "Project"
+        current_status: "Current Status"
+        time_submitted: "Time Submitted"
+        data_provider_for_results: "Data Provider For Results"
+        zenodo_publication: "Zenodo Publication"
+        cluster_job_work_directory: "Cluster Job's Work Directory"
+        not_yet_created_or_erased: "(Not yet created or erased)"
+        size_of_work_directory: "Size of Work Directory"
+        archiving_status: "Archiving Status"
+        last_updated: "Last Updated"
+      zenodo_publication:
+        published: "Published"
+        in_progress: "In Progress"
+        none: "None."
+      shared_with_task: "Shared with task:"
+      archiving_status:
+        not: "Not archived"
+        on_cluster: "Archived on cluster."
+        as_file: "Archived as file %{link}"
+      rescue:
+        no_template_html: "<pre>Problem loading summary view (no template provided by task author).</pre>"
+        template_error_html: "<pre>Problem loading summary view (template error).</pre>"
+        show_summary_of_params_for_task: "Show summary of params for task %{name}"
+        error_rendering_yaml: "(Error rendering YAML)"
+      in_the_task_manager: "In the task manager, you can view the full"
+      in_this_batch: "in this batch."
+      tabs:
+        parameters_in_yaml: "Parameters in YAML"
+        parameters_in_json: "Parameters in JSON"
+        full_task_object_in_json: "Full Task Object in JSON"
+        stdout: "Standard Out"
+        stderr: "Standard Error"
+        script: "Script"
+        runtime_info: "RuntimeInfo"
+      paragraphs:
+        parameters_description_html: |
+          <p class="medium_paragraphs">
+           This shows only the scientific parameters associated with
+           this task. See the description in the last panel for more
+           information.
+          </p>
+        parameters_in_json_html: |
+          <p class="medium_paragraphs">
+           This shows only the scientific parameters associated with
+           this task. See the description in the last panel for more
+           information.
+          </p>
+        full_task_object_in_json_html: |
+          <p class="medium_paragraphs">
+            This structure shows the minimal amount of information needed
+            to create a CBRAIN task similar to this one, using the CBRAIN API.
+            This is provided to help developers working with the API. The top
+            level contains the IDs of the CBRAIN resources needed for the task
+            (e.g. the group (project) ID, the user's ID, the version of the
+            tool etc). These are the values you see at the top of the page in
+            the <em>Info</em> section.
+          </p>
+          <p class="medium_paragraphs">
+            The information under <strong>"params"</strong> is exactly what
+            is shown in the previous tab. It generally contains the scientific
+            parameters for the tool, where file names are replaced by the IDs
+            of files registered within CBRAIN.
+          </p>
+          <p class="medium_paragraphs">
+            For tools integrated with
+            <a href="https://github.com/boutiques/boutiques" target="_blank">Boutiques</a>,
+            the <strong>"params"</strong> structure will contain a substructure called
+            <strong>"invoke"</strong> where most of the scientific parameters are
+            relocated. This structure should match exactly the invoke structure that
+            the Boutiques program <em>bosh</em> expect, but again with filenames
+            replaced by CBRAIN file IDs.
+          </p>
+          <p class="medium_paragraphs">
+            Note that some keys and values are added to these structures during or
+            at the end of processing and are not required at the time the task is
+            submitted.
+          </p>
+      legends:
+        processing_log: "Processing Log"
+        prerequisites: "Prerequisites"
+        cluster_job_captured_output: "Cluster Job's Captured Output"
+      outputs_not_available: "Since this task is archived, outputs aren't available right now."
+      outputs_available: "Outputs are available for several runs:"
+      stdout_lim: "Only the last %{stdout_lim} lines are shown here. See more lines of Standard Output:"
+      stderr_lim: "Only the last %{stderr_lim} lines are shown here. See more lines of Standard Error:"
+    zenodo:
+      title: "%{name} Zenodo Publishing Status"
+      links:
+        task_info: "Task Info"
+        zenodo_deposit_editor: "Zenodo Deposit Editor"
+        refresh_message: "refresh this page"
+        reset_deposit: "Reset Deposition"
+      status:
+        complete: "complete"
+        in_progress: "in progress"
+        incomplete: "incomplete"
+      legends:
+        prepare: "Step 1: creation of the deposit"
+        upload: "Step 2: upload of data files"
+        publish: "Step 3: publishing the deposit"
+        reset_deposit_html: "Be aware: this deposit is in the <strong>Zenodo Sandbox</strong>"
+      paragraphs:
+        prepare:
+          complete_html: "Assuming you are the author, you can review and edit the deposit<br />at this link: %{link}"
+          incomplete_html: "Proceed to fill the form below to create the initial deposit.<p>You will be able to edit the content of the form at any time<br />later on, directly on Zenodo's web site."
+        upload:
+          incomplete_html: "<span class=\"warning\">Warning: already published:</span> in %{link}"
+        publish:
+          doi_1_html: "This task's outputs have been published as DOI %{doi}"
+          doi_2_html: "You can edit further the deposit here: %{link}"
+          no_doi_1_html: "You can edit further the deposit here and click the <strong>Publish</strong> button here: %{link}"
+          no_doi_2_html: "Once the deposit has been published, please return to this page right here (or just %{link}) so that the DOI of the deposit can be recorded in CBRAIN."
+          waiting: "Waiting for steps 1 and 2."
+        reset:
+          deposit_1_description_html: "You can erase all recorded information about the Zenodo deposit and publication<br />state in CBRAIN, in order to start over or publish in the main Zenodo site."
+          deposit_2_description_html: "Doing this will not erase anything on Zenodo <em>that has been published</em>,<br />but will erase any unpublished deposition and uploads."
+          deposit_confirmation: "Are you sure you want to reset the deposition information for this task?"
+      prepare:
+        scheduled_for_upload: "Scheduled for upload:"
+        will_be_ignored: "Will be ignored:"
+      upload:
+        waiting_for_initial_deposit: "Waiting for the initial deposit to be created in step 1."
+        it_can_take_some_time: "It can take some time to transfer the content of all the files to Zenodo."
+    statuses:
+      new:                               "New"
+      configured:                        "Configured"
+      setting_up:                        "Setting Up"
+      queued:                            "Queued"
+      on_cpu:                            "On CPU"
+      on_hold:                           "On Hold"
+      suspended:                         "Suspended"
+      data_ready:                        "Data Ready"
+      post_processing:                   "Post Processing"
+      completed:                         "Completed"
+      terminated:                        "Terminated"
+      failed:                            "Failed"
+      failed_to_setup:                   "Failed To Setup"
+      failed_on_cluster:                 "Failed On Cluster"
+      failed_to_post_process:            "Failed To PostProcess"
+      failed_setup_prerequisites:        "Failed Setup Prerequisites"
+      failed_post_process_prerequisites: "Failed PostProcess Prerequisites"
+      recover_setup:                     "Recover Setup"
+      recover_cluster:                   "Recover Cluster"
+      recover_post_process:              "Recover PostProcess"
+      recovering_setup:                  "Recovering Setup"
+      recovering_cluster:                "Recovering Cluster"
+      recovering_post_process:           "Recovering PostProcess"
+      restart_setup:                     "Restart Setup"
+      restart_cluster:                   "Restart Cluster"
+      restart_post_process:              "Restart PostProcess"
+      restarting_setup:                  "Restarting Setup"
+      restarting_cluster:                "Restarting Cluster"
+      restarting_post_process:           "Restarting PostProcess"
+      preset:                            "Preset"
+      site_preset:                       "SitePreset"
+      duplicated:                        "Duplicated"
+      standby:                           "Standby"
+      total_uppercase:                   "TOTAL"
+      total:                             "Total"

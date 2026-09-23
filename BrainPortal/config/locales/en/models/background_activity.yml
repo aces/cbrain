@@ -1,0 +1,6 @@
+en:
+  activerecord:
+    models:
+      background_activity:
+        one: "Background Activity"
+        other: "Background Activities"

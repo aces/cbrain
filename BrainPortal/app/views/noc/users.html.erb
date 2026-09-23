@@ -24,7 +24,7 @@
 #
 -%>
 
-<% title "User Growth" %>
+<% title t('.title') %>
 
 <head>
   <title><%= RemoteResource.current_resource.name.presence || "CBRAIN" %><%= yield :title %></title>
@@ -54,9 +54,9 @@
 
 <div class="noc_users_table">
   <div class="noc_users_row noc_users_legend">
-    <span style="color: <%= country_color %>">New Users From <%= @country %></span>,
-    <span style="color: <%= intl_color %>">New Users From Elsewhere</span>,
-    <span style="color: <%= cumul_color %>">Cumulative Users</span>
+    <span style="color: <%= country_color %>"><%= t('.spans.new_from_country', country: @country) %></span>,
+    <span style="color: <%= intl_color %>"><%= t('.spans.new_from_elsewhere') %></span>,
+    <span style="color: <%= cumul_color %>"><%= t('.spans.cumulative') %></span>
   </div>
 </div>
 

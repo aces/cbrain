@@ -23,7 +23,7 @@
 -%>
 
 <div class="menu_bar">
-  <%= external_submit_button "Delete Checked Exceptions", "exception_form", :class  => "button", :confirm  => "Are you sure you want to delete the selected logs?"  %>
+  <%= external_submit_button t('.submit.delete_checked'), "exception_form", :class  => "button", :confirm  => t('confirm_delete', name: t('.submit.delete_name'))  %>
 </div>
 
 <%=
@@ -35,7 +35,7 @@
 
 <div class="pagination">
   <span class="page_links">
-    (<%= pluralize @exception_logs.total_entries, "message" %>)
+    (<%= t('.message_count', count: @exception_logs.total_entries) %>)
   </span>
 </div>
 
@@ -64,26 +64,26 @@
       t.paginate
       t.selectable('exception_log_ids[]')
 
-      t.column("Exception", :exception_class,
+      t.column(t('.columns.exception'), :exception_class,
         :sortable => true,
         :filters  => default_filters_for(@base_scope, :exception_class)
       ) { |e| link_to e.exception_class, e }
 
-      t.column("Message", :message) { |e| crop_text_to(75, e.message) }
+      t.column(t('.columns.message'), :message) { |e| crop_text_to(75, e.message) }
 
-      generic_column.("Method",     :request_method)
-      generic_column.("Controller", :request_controller)
-      generic_column.("Action",     :request_action)
-      generic_column.("Format",     :request_format)
+      generic_column.(t('.columns.method'),     :request_method)
+      generic_column.(t('.columns.controller'), :request_controller)
+      generic_column.(t('.columns.action'),     :request_action)
+      generic_column.(t('.columns.format'),     :request_format)
 
-      t.column("User", :user,
+      t.column(t('.columns.user'), :user,
         :sortable => true,
         :filters  => default_filters_for(@view_scope, User)
       ) { |e| link_to_user_with_tooltip(e.user) }
 
-      generic_column.("Revision",   :revision_no)
+      generic_column.(t('.columns.revision'),   :revision_no)
 
-      t.column("Raised at", :created_at,
+      t.column(t('.columns.raised_at'), :created_at,
         :sortable => true
       ) { |e| to_localtime(e.created_at, :datetime) }
     %>
