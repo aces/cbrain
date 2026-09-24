@@ -1295,7 +1295,7 @@ class TasksController < ApplicationController
 
     # Prep temp file
     tmpdir = "/tmp/zenodo-upload-#{deposit.id}"
-    Dir.mkdir(tmpdir, 0700) unless Dir.exists?(tmpdir)
+    FileUtils.mkdir_p(tmpdir, mode: 0o700)
     content_path = "#{tmpdir}/#{filename}"
     File.open(content_path, "w:BINARY") { |fh| fh.write(text) }
 
@@ -1314,7 +1314,7 @@ class TasksController < ApplicationController
     cache   = filecollection.cache_full_path
     tmpdir  = "/tmp/zenodo-upload-#{deposit.id}"
     tmpbase = "#{tmpdir}/#{filecollection.name}.tar.gz"
-    Dir.mkdir(tmpdir, 0700) unless Dir.exists?(tmpdir)
+    FileUtils.mkdir_p(tmpdir, mode: 0o700)
     ret     = system "cd #{cache.parent.to_s.bash_escape} && tar -czf #{tmpbase} #{filecollection.name.bash_escape}"
     cb_error "Cannot create tmp tar file for FileCollection ##{filecollection.id}" unless ret
     tmpbase
