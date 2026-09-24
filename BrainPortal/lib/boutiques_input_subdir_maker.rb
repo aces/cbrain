@@ -145,30 +145,46 @@ module BoutiquesInputSubdirMaker
 
     # Special make_available who need to have a parent folder
     parent_dirname_by_inputid.each do |inputid,subdir_config|
-      userfile_id = original_userfile_ids[inputid]
+      original_userfile_id = original_userfile_ids[inputid]
+      next if original_userfile_id.blank?
 
-      next if userfile_id.blank?
-
-      userfile    = Userfile.find(userfile_id)
-      dirname     = subdir_config["dirname"]
-      filename    = subdir_config["filename"] || userfile.name
-
-      # Sync and create symlink; default mode when physical_copy not requested
-      if ! subdir_config["physical_copy"]
-        make_available(userfile, "#{dirname}/#{filename}")
-        next
+      original_userfile = Userfile.find(original_userfile_id)
+      input             = descriptor.input_by_id(inputid)
+      if ! input.list || ! original_userfile.is_a?(CbrainFileList)
+        #todo add .cbcsv support?
+        userfile_list   = [original_userfile]
+      else
+        # In case the input is a list and is assigned a CbrainFileList
+        original_userfile.sync_to_cache
+        userfile_list = original_userfile.userfiles_accessible_by_user!(user, nil, nil, file_access_symbol)
+        if subdir_config["filename"].present? && userfile_list.size > 1
+          self.addlog("The filename param in this module is not compatible with CBRAIN file list.")
+          self.addlog("Several input files for input #{inputid} are not renamed, other issues are possible.")
+        end
       end
 
-      # In the case of a physical copy, call make_available() in
-      # a local temp dir to do everything including syncing and
-      # creating the symlink, then make the physical copy using that symlink
-      install_tmp = ".subdirmaker/#{userfile.id}-#{filename}"
-      make_available(userfile, install_tmp)
-      Dir.mkdir(dirname) unless File.directory?(dirname)
-      add_slash = userfile.is_a?(FileCollection) ? '/'  : ''
-      add_dashL = userfile.is_a?(SingleFile)     ? '-L' : ''
-      rsyncout = ism_bash_this("rsync -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{add_dashL} #{install_tmp.bash_escape}#{add_slash} #{dirname.bash_escape}/#{filename.bash_escape}")
-      cb_error "Failed to install '#{dirname}/#{filename}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
+      dirname  = subdir_config["dirname"]
+      filename = subdir_config["filename"]
+      userfile_list.compact.each do |userfile|
+        # special make_available - inside dir, possibly renamed to filename if any
+
+        # either copy or symlink files
+        if ! subdir_config["physical_copy"]  # Sync and create symlink; default mode when physical_copy not requested
+          make_available(userfile, "#{dirname}/#{filename}")
+        else
+          # In the case of a physical copy, call make_available() in
+          # a local temp dir to do everything including syncing and
+          # creating the symlink, then make the physical copy using that symlink
+          install_tmp = ".subdirmaker/#{userfile.id}-#{filename}"
+          make_available(userfile, install_tmp)
+          Dir.mkdir(dirname) unless File.directory?(dirname)
+          add_slash = userfile.is_a?(FileCollection) ? '/'  : ''
+          add_dashL = userfile.is_a?(SingleFile)     ? '-L' : ''
+          rsyncout = ism_bash_this("rsync -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{add_dashL} #{install_tmp.bash_escape}#{add_slash} #{dirname.bash_escape}/#{filename.bash_escape}")
+          cb_error "Failed to install '#{dirname}/#{filename}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
+        end
+        filename = nil  # keep filenames as are
+      end
     end
 
     true
@@ -190,9 +206,20 @@ module BoutiquesInputSubdirMaker
         override_invoke_params.delete(inputid)
       else
         dirname              = subdir_config["dirname"]
-        filename             = subdir_config["filename"] || "#{override_invoke_params[inputid]}"
+        filename             = subdir_config["filename"]
         append_userfile_name = subdir_config["append_filename"]
-        override_invoke_params[inputid] = append_userfile_name ? "#{dirname}/#{filename}" : dirname
+        new_value = if override_invoke_params[inputid].is_a?(String)
+                      filename ||= "#{override_invoke_params[inputid]}"
+                      append_userfile_name ? "#{dirname}/#{filename}" : dirname
+                    elsif ! append_userfile_name   # handing input filelist
+                      [ dirname.to_s ]
+                    else
+                      override_invoke_params[inputid].map do |final_filename|
+                        final_filename ||= filename
+                        "#{dirname}/#{final_filename}"
+                      end
+                    end
+        override_invoke_params[inputid] = new_value
       end
     end
 
