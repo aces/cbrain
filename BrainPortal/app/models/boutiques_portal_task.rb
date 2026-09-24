@@ -99,11 +99,13 @@ class BoutiquesPortalTask < PortalTask
   end
 
   def before_form
-    descriptor        = self.descriptor_for_before_form
+    descriptor         = self.descriptor_for_before_form
 
-    num_needed_inputs = descriptor.required_file_inputs.size
-    num_opt_inputs    = descriptor.optional_file_inputs.size
-    num_in_files      = Userfile.where(:id => (self.params[:interface_userfile_ids] || [])).count
+    needed_files_ids   = descriptor.required_file_inputs.map(&:id)
+    num_needed_inputs  = needed_files_ids.size
+    optional_files_ids = descriptor.optional_file_inputs.map(&:id)
+    num_opt_inputs     = optional_files_ids.size
+    num_in_files       = Userfile.where(:id => (self.params[:interface_userfile_ids] || [])).count
 
     # This is a message describing briefly all file inputs
     input_infos = descriptor.file_inputs
@@ -113,10 +115,17 @@ class BoutiquesPortalTask < PortalTask
         "#{iname} #{ioptional}\n"
       }.join("")
 
+    # List of file that can be disable (requested or optional)
+    input_files_can_be_disabled = descriptor.inputs.any? do |input|
+      (input['value-disables'] || {}).any? do |_, disabled_inputs|
+        (needed_files_ids & disabled_inputs).any? || (optional_files_ids & disabled_inputs).any?
+      end
+    end
+
     # return "Warning: you selected more files than this task requires, so you won't be able to assign them all."
     # Not available in case of descriptor qualified to launch multiple task
-    if num_in_files < num_needed_inputs || num_in_files > num_needed_inputs+num_opt_inputs
-      if (! descriptor.qualified_to_launch_multiple_tasks? || num_in_files == 0)
+    if num_in_files < num_needed_inputs || num_in_files > num_needed_inputs + num_opt_inputs
+      if (! descriptor.qualified_to_launch_multiple_tasks? || num_in_files == 0) && !input_files_can_be_disabled
         message = "This task requires #{num_needed_inputs} mandatory file(s) and #{num_opt_inputs} optional file(s)\n" +
           input_infos
         cb_error message
@@ -138,6 +147,8 @@ class BoutiquesPortalTask < PortalTask
 
     # Required parameters
     descriptor.required_inputs.each do |input|
+      # skip if it is disabled
+      next if isDisabled(input)
       # skip if the input is the sole mandatory file and if
       # the task is qualified to launch multiple tasks
       # only if no params was provide
@@ -150,7 +161,7 @@ class BoutiquesPortalTask < PortalTask
 
     # Optional parameters
     descriptor.optional_inputs.each do |input|
-      sanitize_param(input) unless isInactive(input)
+      sanitize_param(input) unless isInactive(input) || isDisabled(input)
     end
 
     # ---------------------------------------------------------------
@@ -165,7 +176,7 @@ class BoutiquesPortalTask < PortalTask
     # ---------------------------------------------------------------
 
     descriptor.inputs.select(&:value_choices).each do |input|
-      check_enum_param(input) unless isInactive(input)
+      check_enum_param(input) unless isInactive(input) || isDisabled(input)
     end
 
     # -------------------------------------------------------------------------------
@@ -173,7 +184,7 @@ class BoutiquesPortalTask < PortalTask
     # -------------------------------------------------------------------------------
 
     descriptor.inputs.select { |input| input.type == 'Number' }.each do |input|
-      check_number_param(input) unless isInactive(input)
+      check_number_param(input) unless isInactive(input) || isDisabled(input)
     end
 
     # ----------------------------------------
@@ -182,7 +193,7 @@ class BoutiquesPortalTask < PortalTask
 
     descriptor.list_inputs.each do |input|
       next if input.type == 'File' # these are special
-      check_list_param(input) unless isInactive(input)
+      check_list_param(input) unless isInactive(input) || isDisabled(input)
     end
 
     # ---------------------------------
@@ -191,7 +202,7 @@ class BoutiquesPortalTask < PortalTask
 
     descriptor.inputs.each do |input|
 
-      next if isInactive(input)
+      next if isInactive(input) || isDisabled(input)
 
       # Inputs that want other inputs to NOT BE provided
       (input.disables_inputs || []).each do |dontneed| # loop on IDs
@@ -469,6 +480,27 @@ class BoutiquesPortalTask < PortalTask
     )
   end
 
+  def isDisabled(input)
+    descriptor = self.descriptor_for_after_form
+    descriptor.inputs.any? do |other_input|
+      # An inactive input cannot disable an other one
+      next false if isInactive(other_input)
+      # Disabled via disables-inputs
+      # Eg:
+      #    "disables-inputs": [ "mask" ]
+      (other_input.disables_inputs || []).include?(input.id) ||
+      # Disabled via value-disables for the current chosen value
+      # Eg:
+      #    "value-disables": {
+      #          "setup": [
+      #              "working_dir",
+      #              "PAR_demuxalot_genotype_names"
+      #          ]
+      #    }
+      ((other_input['value-disables'] || {})[invoke_params[other_input.id].to_s] || []).include?(input.id)
+    end
+  end
+
   # Checks that the cbcsv is the correct type
   # Current implementation will output an error here if a person uploads a cbcsv
   # but forgets to change its type to cbcsv. I.e. we assume it is an error to use
@@ -697,7 +729,7 @@ class BoutiquesPortalTask < PortalTask
 
   def check_mutex_group(group, descriptor = self.descriptor_for_after_form)
     members = group.members
-    are_set = members.select { |inputid| ! isInactive(descriptor.input_by_id inputid) }
+    are_set = members.select { |inputid| ! isInactive(descriptor.input_by_id inputid) && ! isDisabled(descriptor.input_by_id inputid) }
     return if are_set.size <= 1
     are_set.each do |inputid|
       params_errors.add(group.name, " can have at most one parameter set")
@@ -708,16 +740,17 @@ class BoutiquesPortalTask < PortalTask
 
   def check_oneisrequired_group(group, descriptor = self.descriptor_for_after_form)
     members = group.members
-    are_set = members.select { |inputid| ! isInactive(descriptor.input_by_id inputid) }
+    are_set = members.select { |inputid| ! isInactive(descriptor.input_by_id inputid) && ! isDisabled(descriptor.input_by_id inputid) }
     return if are_set.size > 0
     params_errors.add(group.name, " need at least one parameter set")
   end
 
   def check_allornone_group(group, descriptor = self.descriptor_for_after_form)
-    members = group.members
-    num_unset = members.count { |inputid| isInactive(descriptor.input_by_id inputid) }
-    return if num_unset == 0 || num_unset == members.size # all, or none
-    params_errors.add(group.name, " need either all the parameters set or neither")
+    members        = group.members
+    active_members = members.reject       { |inputid| isDisabled(descriptor.input_by_id(inputid)) }
+    num_unset      = active_members.count { |inputid| isInactive(descriptor.input_by_id(inputid)) }
+    # In case of disabled value use active_members to check
+    return if num_unset == 0 || num_unset == active_members.size
   end
 
   # MAYBE IN COMMON
