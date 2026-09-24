@@ -551,7 +551,8 @@ class UserfilesController < ApplicationController
                      :name             => basename,
                      :user_id          => current_user.id,
                      :data_provider_id => data_provider_id,
-                     :tag_ids          => params[:tags]
+                     :tag_ids          => params[:tags],
+                     :group_writable   => params[:group_writable] == "on",
                    )
                  )
       userfile.group_id = current_user.own_group.id unless
@@ -638,7 +639,8 @@ class UserfilesController < ApplicationController
           :name              => collection_name,
           :user_id           => current_user.id,
           :data_provider_id  => data_provider_id,
-          :tag_ids           => params[:tags]
+          :tag_ids           => params[:tags],
+          :group_writable   => params[:group_writable] == "on",
         )
       )
 
@@ -692,7 +694,8 @@ class UserfilesController < ApplicationController
     attributes = userfile_params.merge({
       :user_id           => current_user.id,
       :data_provider_id  => data_provider_id,
-      :tag_ids           => params[:tags]
+      :tag_ids           => params[:tags],
+      :group_writable   => params[:group_writable] == "on",
     })
 
     # Do it in background.
@@ -2042,4 +2045,3 @@ class UserfilesController < ApplicationController
   end
 
 end
-
