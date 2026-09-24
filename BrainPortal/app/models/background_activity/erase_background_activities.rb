@@ -36,6 +36,10 @@ class BackgroundActivity::EraseBackgroundActivities < BackgroundActivity
     return [ true, nil ]
   end
 
+  def targets_model
+    BackgroundActivity  # stands for undefined
+  end
+
   def prepare_dynamic_items
     days = self.options[:days_older] || 7
     bacs = BackgroundActivity

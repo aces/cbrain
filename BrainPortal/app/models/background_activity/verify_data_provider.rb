@@ -44,5 +44,14 @@ class BackgroundActivity::VerifyDataProvider < BackgroundActivity
     return [ false, "Not alive: #{data_provider.name}" ]
   end
 
-end
+  # Returns the primary class of items the task targets
+  def targets_model
+    DataProvider
+  end
 
+  # Returns the primary class of items the task targets
+  def produces_model
+    nil  # stands for undefined
+  end
+
+end
