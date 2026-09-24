@@ -23,25 +23,86 @@
 # Model code common to the Bourreau and Portal side for SimpleFileExtractor.
 class CbrainTask::SimpleFileExtractor
 
-  # In the params, the list of patterns is maintained as a hash:
-  #   { "0" => "pat1", "1" => "pat2", etc }
-  # This returns just the array of values, while preserving the ordering
-  # that the keys encode:
-  #   [ "pat1", "pat2" etc ]
-  def patterns_as_array(pat_hash)
-    keys      = pat_hash.keys.sort { |a,b| a.to_i <=> b.to_i }
-    pat_array = keys.map { |i| pat_hash[i].presence }.compact
-    pat_array
+  # In the params, patterns, replacement path, folder flags are maintained as a hash:
+  #   #   { "0" => ["*/pat1"],  "1" => "*/pat2", etc }, {"0": "subfolder1", "1" => nil...}
+  #   #   { "0" => ["*/pat1"],  "1" => "*/pat2", etc }, {"0": "subfolder1", "1" => nil...}
+  # This method convert three hashes just the array of values, while preserving the ordering
+  # that the keys encode, and skipping empty rows:
+  #   [ ["pat1", "pat2"], etc ]
+  # Usually some indexes with no info in either category
+  def patterns_as_arrays(pat_hash, repl_hash, fold_hash)
+    keys      = pat_hash.keys.sort_by(&:to_i)
+    pat_array = keys.map do |i|
+      [
+        pat_hash[i]&.strip.presence,
+        repl_hash[i]&.strip.presence,
+        fold_hash[i]
+      ]
+    end.select { |x, y, z| x || y || z == "1" } # filter out blank rows
+    return pat_array.transpose
   end
 
-  # This does the opposite of patterns_as_array; given
-  # an array of patterns, returns a hash where the keys are
+  # This allows perform the opposite of patterns_as_array; given
+  # an array of patterns, path, or flags , returns array of hash where the keys are
   # the index of the array
-  def patterns_as_hash(pat_array)
-    pat_hash = {}
-    pat_array.each_with_index { |pat,i| pat_hash[i.to_s] = pat }
-    pat_hash
+  # Hash it returns has with array indexes as values (stringifierd)
+  #
+  def array_to_hash(arr)
+    hsh = arr.map.with_index { |pat, i| [i.to_s, pat] }.to_h
+    hsh
+  end
+
+  # best effort mapping of a glob pattern to regex (with groups)
+  # https://stackoverflow.com/questions/1307712/how-to-convert-glob-to-regular-expression
+  def glob_to_regex(glob)
+    escaped = ''
+    i = 0
+    while i < glob.length
+      char = glob[i]
+
+      case char
+      when '*'
+        # Check for ** (recursive)
+        if glob[i, 2] == '**'
+          escaped << '(.+?)'  # non-greedy match across directories
+          i += 1
+        else
+          escaped << '([^/]+)' # * matches a single path segment
+        end
+      when '?'
+        escaped << '(.)'
+      when '['
+        # Copy character class literally until closing ]
+        j = i + 1
+        while j < glob.length && glob[j] != ']'
+          j += 1
+        end
+        char_class = glob[i..j]  # include the closing ]
+        escaped << char_class
+        i = j
+      when '{'
+        # Convert {a,b,c} → (a|b|c)
+        j = i + 1
+        brace_content = ''
+        depth = 1
+        while j < glob.length && depth > 0
+          if glob[j] == '{'
+            depth += 1
+          elsif glob[j] == '}'
+            depth -= 1
+          end
+          brace_content << glob[j] if depth > 0
+          j += 1
+        end
+        alternatives = brace_content.split(',').map { |x| Regexp.escape(x) }.join('|')
+        escaped << "(#{alternatives})"
+        i = j - 1
+      else
+        escaped << Regexp.escape(char)  # escape other character
+      end
+      i += 1
+    end
+    Regexp.new("\\A#{escaped}\\z")
   end
 
 end
-
