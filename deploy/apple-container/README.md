@@ -8,7 +8,14 @@ exclusion file.
 
 ## Start
 
-From the repository root, with Apple container installed:
+Requires an Apple silicon Mac running macOS 26 or newer and Apple's `container`
+CLI on `PATH`. Install the signed package from the
+[Apple container releases](https://github.com/apple/container/releases).
+The launcher checks these prerequisites before invoking container commands or
+creating local state, and explains how to resolve a missing prerequisite.
+The `credentials` command can still read saved credentials without the runtime.
+
+From the repository root:
 
 ```sh
 deploy/apple-container/apple-container.sh build
