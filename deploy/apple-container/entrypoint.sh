@@ -40,13 +40,15 @@ ssh-keygen -A
 /usr/sbin/sshd
 ssh-keyscan -H 127.0.0.1 > /root/.ssh/known_hosts 2>/dev/null
 # SSH-launched Bourreau shells need the image's Ruby/bundler on PATH.
+# Expand PATH in the SSH shell, not while writing its configuration.
+# shellcheck disable=SC2016
 printf 'export PATH=/usr/local/bundle/bin:/usr/local/bin:$PATH\nexport GEM_HOME=/usr/local/bundle\n' > /root/.bashrc
 cd /opt/cbrain/BrainPortal
 bundle exec rake db:local:prepare db:sanity:check
 bundle exec puma -b tcp://0.0.0.0:3000 > /data/portal-log/server.log 2>&1 &
 portal_pid=$!
 trap 'kill "$portal_pid" 2>/dev/null || true; exit' TERM INT
-for attempt in {1..90}; do
+for _attempt in {1..90}; do
   if curl -fsS http://127.0.0.1:3000/ >/dev/null 2>&1; then break; fi
   kill -0 "$portal_pid"
   sleep 2

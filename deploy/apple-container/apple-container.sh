@@ -68,7 +68,7 @@ case "${1:-up}" in
       container start cbrain-db
     fi
     ready=false
-    for attempt in {1..60}; do
+    for _attempt in {1..60}; do
       if container exec cbrain-db healthcheck.sh --connect --innodb_initialized >/dev/null 2>&1; then ready=true; break; fi
       sleep 2
     done
@@ -91,7 +91,7 @@ case "${1:-up}" in
       container start cbrain-app
     fi
     ready=false
-    for attempt in {1..120}; do
+    for _attempt in {1..120}; do
       if curl -fsS http://127.0.0.1:3000/ >/dev/null 2>&1 && container exec cbrain-app test -f /tmp/cbrain-ready; then ready=true; break; fi
       running cbrain-app || { container logs cbrain-app; exit 1; }
       sleep 2
