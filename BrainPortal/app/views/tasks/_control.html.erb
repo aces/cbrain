@@ -73,5 +73,26 @@
     </td>
   </tr>
 
+  <tr>
+    <td>
+      <strong>On Task Success (Completed):</strong><br>
+      <%= select_tag "cbrain_task[success_cleanup_policy]", options_for_select([
+        ['Keep everything (Current behavior)', 'keep_all'],
+        ['Erase work directory, keep cache', 'erase_workdir'],
+        ['Erase work directory & output cache (Recommended Default)', 'erase_workdir_and_outputs'],
+        ['Erase everything (Workdir, input & output cache)', 'erase_all'],
+        ['Keep work directory, erase input & output caches', 'erase_caches']
+      ], @task.success_cleanup_policy) %>
+    </td>
+
+    <td>
+      <strong>On Task Failure (Failed):</strong><br>
+      <%= select_tag "cbrain_task[failure_cleanup_policy]", options_for_select([
+        ['Keep everything (Current behavior)', 'keep_all'],
+        ['Erase work directory, keep input cache', 'erase_workdir']
+      ], @task.failure_cleanup_policy) %>
+    </td>
+  </tr>
+
 </table>
 
