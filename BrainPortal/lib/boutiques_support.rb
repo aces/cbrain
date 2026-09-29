@@ -150,8 +150,8 @@ module BoutiquesSupport
   # Main class for representing a Boutiques Descriptor
   class BoutiquesDescriptor
 
-    attr_accessor :from_file    # not a hash attribute; a file name, for info
-
+    attr_accessor :from_file       # not a hash attribute; a file name, for info
+    attr_accessor :from_file_mtime # not a hash attribute; the mtime of the from_file
 
     def initialize(hash={})
       super(hash)
@@ -175,7 +175,8 @@ module BoutiquesSupport
 
     def self.new_from_file(path)
       obj = self.new_from_string(File.read(path))
-      obj.from_file = path
+      obj.from_file       = path
+      obj.from_file_mtime = File.mtime(path)
       obj
     end
 
@@ -186,13 +187,43 @@ module BoutiquesSupport
     # When dup'ing, also copy the from_file attribute
     def dup #:nodoc:
       copy = super
-      copy.from_file = self.from_file
+      copy.from_file       = self.from_file
+      copy.from_file_mtime = self.from_file_mtime
       # We need to copy explicitely the 'cbrain_input_notes'
       self.inputs = [] if self.inputs.nil?
       copy.inputs.each_with_index do |input,idx|
         input.cbrain_input_notes = self.inputs[idx].cbrain_input_notes.dup
       end
       copy
+    end
+
+    # If the descriptor was loaded from a file, check the
+    # timestamp on the file and reloads it if the content
+    # of the file is newer. Returns true if the descriptor was
+    # reloaded and false if not. This method modifies the
+    # descriptor object in-situ.
+    def reload_if_updated
+      # Do nothing if the descriptor doesn't come from a file
+      return false if self.from_file.blank? || self.from_file_mtime.blank?
+
+      # Check if the file was updated; if not, do nothing
+      current_mtime = File.mtime(self.from_file)
+      return false if current_mtime == self.from_file_mtime
+
+      # Update all keys
+      #puts_yellow "Reloading descriptor"
+      self.from_file_mtime = current_mtime
+      reloaded = self.class.new_from_file(self.from_file)
+      (self.keys - reloaded.keys).each do |key|
+        #puts_red " -> Reloading: removing key: #{key}"
+        self.delete(key)
+      end
+      reloaded.keys.each do |key|
+        #puts_green " -> Reloading: replacing key: #{key}"
+        self[key] = reloaded[key]
+      end
+
+      true
     end
 
     # ------------------------------

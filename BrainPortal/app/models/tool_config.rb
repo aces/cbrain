@@ -636,7 +636,11 @@ class ToolConfig < ApplicationRecord
   def self.registered_boutiques_descriptor(tool_name, tool_version) #:nodoc:
     @_descriptors_ ||= {}
     key = [ tool_name, tool_version ] # two strings
-    @_descriptors_[key]
+    desc = @_descriptors_[key]
+    if desc&.reload_if_updated
+      Rails.logger.info "Descriptor reloaded from file: #{tool_name} #{tool_version} from #{desc.from_file}"
+    end
+    desc
   end
 
   def boutiques_descriptor
