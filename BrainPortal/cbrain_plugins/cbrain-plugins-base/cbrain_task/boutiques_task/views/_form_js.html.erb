@@ -80,13 +80,13 @@ makeReceiverWithValueActionMap = lambda do |action|
         doesMap[id] = doesMap[id] || {};
         if (doesMap[id] && doesMap[id][disable_by])
           doesMap[id][disable_by].push(value)
-        elsif (doesMap[id]) 
+        elsif (doesMap[id])
           doesMap[id][disable_by] = [value]
         end
       end
     end
   end
-  
+
   doesMap
 end
 
@@ -122,9 +122,6 @@ int_inputs_list     = int_inputs.map(&:id)
 
 %>
 
-<%# Pierre's cute JSON inline serializer %>
-<% json = lambda { |x| JSON[x].html_safe } %>
-
 <script type="application/javascript">
 
 "use strict";
@@ -147,10 +144,10 @@ $(function () {
   /*** Handle disables and requires relations between parameters ***/
 
   /* Javascript dictionaries for names, disabledBy, and requires */
-  var namesMap          = <%= json.( names_map ) %>;
-  var requiresMap       = <%= json.( requires_map ) %>;
-  var disabledByMap     = <%= json.( disabledBy_map ) %>;
-  var disabledByValue   = <%= json.( disabledBy_value ) %>;
+  var namesMap          = <%== json_escape( names_map.to_json ) %>;
+  var requiresMap       = <%== json_escape( requires_map.to_json ) %>;
+  var disabledByMap     = <%== json_escape( disabledBy_map.to_json ) %>;
+  var disabledByValue   = <%== json_escape( disabledBy_value.to_json ) %>;
 
   // Function to map ids to names to make the messages a little prettier
   var idToName = function(x){ return namesMap[x]; }
@@ -171,8 +168,8 @@ $(function () {
   var isActiveParamWithValues = function(disable_by, disabled_by_values) {
     var targ = $( 'li.' + ("btq-" + disable_by) + '.tsk-prm' );
 
-    var current_values = ($(targ[0].querySelector('select')) && $(targ[0].querySelector('select')).val()) || 
-                            [targ[0].querySelector('input[type="hidden"]') && targ[0].querySelector('input[type="hidden"]').value]; 
+    var current_values = ($(targ[0].querySelector('select')) && $(targ[0].querySelector('select')).val()) ||
+                            [targ[0].querySelector('input[type="hidden"]') && targ[0].querySelector('input[type="hidden"]').value];
         current_values = (current_values && current_values.filter(k => k !== "")) || [];
 
     return current_values.filter(value => disabled_by_values.includes(value));
@@ -320,11 +317,11 @@ $(function () {
 
   /*** Handle constraints on numerical parameters ***/
   /* Maps and lists of constrained parameters */
-  var mins = <%= json.( min_inputs_map ) %>;
-  var maxs = <%= json.( max_inputs_map ) %>;
-  var ints = <%= json.( int_inputs_list ) %>;
-  var exclMins = <%= json.( min_inputs_exc_list ) %>;
-  var exclMaxs = <%= json.( max_inputs_exc_list ) %>;
+  var mins = <%== json_escape( min_inputs_map.to_json ) %>;
+  var maxs = <%== json_escape( max_inputs_map.to_json ) %>;
+  var ints = <%== json_escape( int_inputs_list.to_json ) %>;
+  var exclMins = <%== json_escape( min_inputs_exc_list.to_json ) %>;
+  var exclMaxs = <%== json_escape( max_inputs_exc_list.to_json ) %>;
 
   /* Adds warnings to number parameters that violate number constraints */
   function handleNumberConstraints() {
@@ -414,7 +411,7 @@ $(function () {
   })
 
   /* Clicking on the parameter's checkbox toggles the parameter's state */
-  parameters.delegate('.tsk-prm-opt, .tsk-prm-chk, .tsk-prm-sel, .tsk-prm-sel-mult', 'change activate.tsk-prm', function () {  
+  parameters.delegate('.tsk-prm-opt, .tsk-prm-chk, .tsk-prm-sel, .tsk-prm-sel-mult', 'change activate.tsk-prm', function () {
     var opt   = $(this),
         param = opt.parent();
 
@@ -571,20 +568,20 @@ $(function () {
     // Classes for the modal (popup)
     var mdiv = 'preview-modal', mcont = 'preview-modal-content', mclose = 'preview-modal-close';
     // Input parameters (fetch ids and data from cbcsvs and json descriptor)
-    var ids    = <%= json.( inputs.map(&:id)                                 ) %>;
-    var names  = <%= json.( inputs.map(&:name)                               ) %>;
-    var reqed  = <%= json.( inputs.select { |p| ! p.optional }.map(&:id)     ) %>;
-    var files  = <%= json.( file_inputs.map(&:id)                            ) %>;
-    var cbcsvs = <%= json.( cbcsvs.map(&:name)                               ) %>;
-    var cids   = <%= json.( cbcsvs.map(&:id)                                 ) %>;
-    var flags  = <%= json.( inputs.select { |p| p.type == 'Flag' }.map(&:id) ) %>;
-    var cfmap  = <%= json.( cbcsvToFiles                                     ) %>;
-    var fileIdsToNames = <%= json.( interface_files.pluck(:id,:name).to_h    ) %>;
+    var ids    = <%== json_escape( inputs.map(&:id).to_json                                 ) %>;
+    var names  = <%== json_escape( inputs.map(&:name).to_json                               ) %>;
+    var reqed  = <%== json_escape( inputs.select { |p| ! p.optional }.map(&:id).to_json     ) %>;
+    var files  = <%== json_escape( file_inputs.map(&:id).to_json                            ) %>;
+    var cbcsvs = <%== json_escape( cbcsvs.map(&:name).to_json                               ) %>;
+    var cids   = <%== json_escape( cbcsvs.map(&:id).to_json                                 ) %>;
+    var flags  = <%== json_escape( inputs.select { |p| p.type == 'Flag' }.map(&:id).to_json ) %>;
+    var cfmap  = <%== json_escape( cbcsvToFiles.to_json                                     ) %>;
+    var fileIdsToNames = <%== json_escape( interface_files.pluck(:id,:name).to_h.to_json    ) %>;
 
     // Helper for extracting value lists
     var getVals = function( id, join ) {
       var vals = $('li.' + ('btq-' + id) + '.tsk-prm').find('.tsk-prm-in').map( function(){ return $(this).val(); } );
-      
+
       if (vals.length === 0 ) {
         var li = $('li.' + ('btq-' + id));
         vals   = li.find(":selected").map(idx => li.find(":selected")[idx]['value']);
