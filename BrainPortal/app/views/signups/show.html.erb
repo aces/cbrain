@@ -21,72 +21,62 @@
 #
 %>
 
-<% title 'Account Request Info' %>
+<% title t('.title') %>
 
-<h1>Account Request Summary</h1>
+<h1><%= t('.headings.main') %></h1>
 
 <% if current_user.present? && current_user.has_role?(:admin_user) %>
 
   <% if @signup.remote_resource %>
-    This account request was made from portal
-    <%= link_to_bourreau_if_accessible(@signup.remote_resource) %>
-    using the form located on
-    <%= @signup.form_page %>
-    .<p>
+    <%= t('.paragraphs.made_from_portal_html', portal: link_to_bourreau_if_accessible(@signup.remote_resource), form_page: @signup.form_page) %>
   <% end %>
 
-  As an administrator, you can <%= link_to "edit", :action => :edit %> this request.<p>
+  <%= t('.paragraphs.admin_can_edit_html', link: link_to(t('edit').downcase, :action => :edit)) %><p>
 
   <% if ! @signup.approved? %>
 
     <% if @signup.dup_login? %>
-      <span class="warning">This user's login conflicts with a user already in the system.</span>
+      <span class="warning"><%= t('.paragraphs.login_conflict') %></span>
     <% else %>
-      You can also <%= link_to "approve", new_user_path(:signup_id => @signup.id), :class => 'action_link' %> this request.
+      <%= t('.paragraphs.can_approve_html', link: link_to(t('.links.approve'), new_user_path(:signup_id => @signup.id), :class => 'action_link')) %>
     <% end %>
 
     <% if ! @signup.confirmed? %>
-      <span class="warning">The user has not yet confirmed their email address.</span>
+      <span class="warning"><%= t('.paragraphs.not_confirmed') %></span>
     <% else %>
-      The user has confirmed the email address.
+      <%= t('.paragraphs.confirmed') %>
     <% end %>
 
     <p>
-    If the user hasn't received the confirmation email, you can ask for another
-    <%= link_to "email confirmation request", resend_confirm_signup_path(@signup), :method => :post %> to be sent again.
+    <%= t('.paragraphs.resend_admin_html', link: link_to(t('.links.email_confirmation_request'), resend_confirm_signup_path(@signup), :method => :post)) %>
 
   <% end %>
 
 <% else %>
 
   <p>
-  You can <%= link_to "edit", :action => :edit %> this form, but
-  this option will only be available while you are using the
-  same browser session you used for submitting this form
-  originally. Do it now while you can!
+  <%= t('.paragraphs.edit_session_note_html', link: link_to(t('edit'), :action => :edit)) %>
 
 <% end %>
 
 <% if current_user.blank? && ! @signup.confirmed? %>
   <p>
-  A confirmation email has been sent to the address you provided. Once you receive
-  it, please click on the provided link so we can confirm your identity.
+  <%= t('.paragraphs.confirmation_sent') %>
   <p>
-  If you haven't received the email, you can ask for another
-  <%= link_to "email confirmation request", resend_confirm_signup_path(@signup), :method => :post %> to be sent to you.
+  <%= t('.paragraphs.resend_user_html', link: link_to(t('.links.email_confirmation_request'), resend_confirm_signup_path(@signup), :method => :post)) %>
 <% end %>
 
 <p>
-You can <%= link_to "delete", signup_path(@signup), :action => :destroy, :method => :delete, :data => { :confirm => "Are you sure you want to delete the request of \"#{@signup.full_name}\" ?" } %> this request.
+<%= t('.paragraphs.delete_html', link: link_to(t('delete'), signup_path(@signup), :action => :destroy, :method => :delete, :data => { :confirm => t('confirm_delete', name: @signup.full_name) })) %>
 
 <p>
-Below is a summary of the information in this account request.
+<%= t('.paragraphs.summary_intro') %>
 
 <p>
   <table class="simple bordered">
 
   <tr>
-    <th>Full Name:</th>
+    <th><%= t('.headings.full_name') %></th>
     <td><%= @signup.full_name %></td>
   </tr>
 
@@ -96,8 +86,8 @@ Below is a summary of the information in this account request.
   </tr>
 
   <tr>
-    <th>Preferred 'login' name:</th>
-    <td><%= @signup.login.presence || "(none)" %></td>
+    <th><%= t('.headings.login') %></th>
+    <td><%= @signup.login.presence || t('none_parentheses') %></td>
   </tr>
 
   <tr>
@@ -106,27 +96,27 @@ Below is a summary of the information in this account request.
   </tr>
 
   <tr>
-    <th>Name of Institution/Organization:</th>
+    <th><%= t('.headings.institution') %></th>
     <td><%= @signup.institution %></td>
   </tr>
 
   <tr>
-    <th>Department:</th>
+    <th><%= t('.headings.department') %></th>
     <td><%= @signup.department %></td>
   </tr>
 
   <tr>
-    <th>Position or role:</th>
+    <th><%= t('.headings.position') %></th>
     <td><%= @signup.position %></td>
   </tr>
 
   <tr>
-    <th>Affiliation:</th>
+    <th><%= t('.headings.affiliation') %></th>
     <td><%= @signup.affiliation %></td>
   </tr>
 
   <tr>
-    <th>Email address:</th>
+    <th><%= t('.headings.email') %></th>
     <td><%= @signup.email %></td>
   </tr>
 
@@ -136,37 +126,37 @@ Below is a summary of the information in this account request.
   </tr>
 
   <tr>
-    <th>Street Address (line 1):</th>
+    <th><%= t('.headings.street1') %></th>
     <td><%= @signup.street1 %></td>
   </tr>
 
   <tr>
-    <th>Street Address (line 2):</th>
+    <th><%= t('.headings.street2') %></th>
     <td><%= @signup.street2 %></td>
   </tr>
 
   <tr>
-    <th>City:</th>
+    <th><%= t('.headings.city') %></th>
     <td><%= @signup.city %></td>
   </tr>
 
   <tr>
-    <th>Province/State:</th>
+    <th><%= t('.headings.province') %></th>
     <td><%= @signup.province %></td>
   </tr>
 
   <tr>
-    <th>Country:</th>
+    <th><%= t('.headings.country') %></th>
     <td><%= @signup.country %></td>
   </tr>
 
   <tr>
-    <th>Postal Code:</th>
+    <th><%= t('.headings.postal_code') %></th>
     <td><%= @signup.postal_code %></td>
   </tr>
 
   <tr>
-    <th>Time Zone:</th>
+    <th><%= t('.headings.time_zone') %></th>
     <td><%= @signup.time_zone %></td>
   </tr>
 
@@ -178,7 +168,7 @@ Below is a summary of the information in this account request.
   <% if @signup.comment.present? %>
 
     <tr>
-      <th>Comments or special requests:</th>
+      <th><%= t('.headings.comment') %></th>
       <td><pre><%= @signup.comment %></pre></td>
     </tr>
 
@@ -192,7 +182,7 @@ Below is a summary of the information in this account request.
   <% if current_user.present? && current_user.has_role?(:admin_user) %>
 
     <tr>
-      <th>Admin Comments</th>
+      <th><%= t('.headings.admin_comments') %></th>
       <td><pre><%= @signup.admin_comment %></pre></td>
     </tr>
 
@@ -204,7 +194,7 @@ Below is a summary of the information in this account request.
   <% end %>
 
   <tr>
-    <th>Status of request:</th>
+    <th><%= t('.headings.status_of_request') %></th>
     <td>
       <%= render :partial => 'status', :locals => { :signup => @signup, :multi_lines => true } %>
     </td>

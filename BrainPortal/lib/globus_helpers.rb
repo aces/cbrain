@@ -196,13 +196,13 @@ module GlobusHelpers
 
     if users.size == 0
       Rails.logger.error "#{oidc.name} warning: no CBRAIN accounts found for identity '#{pref_username}' on provider '#{provider_name}'"
-      return "No CBRAIN user matches your #{oidc.name} identity. Create a CBRAIN account or link your existing CBRAIN account to your #{oidc.name} provider."
+      return I18n.t('sessions.flash.oidc_no_user_match', name: oidc.name)
     end
 
     if users.size > 1
       loginnames = users.map(&:login).join(", ")
       Rails.logger.error "#{oidc.name.upcase} error: multiple CBRAIN accounts (#{loginnames}) found for identity '#{pref_username}' on provider '#{provider_name}'"
-      return "Several CBRAIN user accounts match your #{oidc.name} identity. Please contact the CBRAIN admins, as this should never happen."
+      return I18n.t('sessions.flash.oidc_multiple_users_match', name: oidc.name)
     end
 
     # The one lucky user
@@ -252,3 +252,4 @@ module GlobusHelpers
   end
 
 end
+

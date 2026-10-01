@@ -1,0 +1,210 @@
+fr:
+  users:
+    common:
+      select_site: "(Sélectionner un site)"
+      used: "%{size} utilisés"
+      unkn: "%{count} inconnus"
+    users_table:
+      links:
+        create_user: "Créer un utilisateur"
+        active_count: "%{count} actif(s)"
+        locked_count: "%{count} verrouillé(s)"
+        access: "Accès"
+      columns:
+        login: "Identifiant"
+        full_name: "Nom complet"
+        email: "Courriel"
+        position: "Poste"
+        affiliation: "Affiliation"
+        last_connection: "Dernière connexion"
+        groups: "Projets"
+        role: "Rôle"
+        site: "Site"
+        city: "Ville"
+        country: "Pays"
+        timezone: "Fuseau horaire"
+        files: "Fichiers"
+        tasks: "Tâches"
+        switch: "Basculer"
+        access: "Accès"
+      user_count:
+        one: "1 utilisateur"
+        other: "%{count} utilisateurs"
+      unlocked: "Déverrouillé"
+      locked: "Verrouillé"
+      label_of: "%{label} (de %{base})"
+      last_connection: "Dernière connexion"
+      project_count:
+        one: "1 projet"
+        other: "%{count} projets"
+      role: "Rôle"
+      access: "Accès"
+      access_q: "Accès ?"
+    change_password:
+      title: "Changer le mot de passe"
+      headings:
+        main: "Changer le mot de passe"
+        message: "Le mot de passe n'a pas pu être mis à jour."
+      labels:
+        new_password: "Nouveau mot de passe :"
+        confirm_new_password: "Confirmer le nouveau mot de passe :"
+        force_password_reset: "L'utilisateur devra réinitialiser son propre mot de passe :"
+    index:
+      title: "Utilisateurs"
+    new:
+      title: "Ajouter un nouvel utilisateur"
+      headings:
+        main: "Ajouter un nouvel utilisateur"
+        basic_information: "Informations de base"
+        access_profile: "Profil d'accès"
+        project_membership: "Appartenance aux projets"
+      labels:
+        full_name: "Nom complet"
+        login: "Identifiant"
+        email: "Courriel"
+        position: "Poste"
+        affiliation: "Affiliation"
+        city: "Ville"
+        country: "Pays"
+        time_zone: "Fuseau horaire"
+        type: "Type"
+        site: "Site"
+        pref_data_provider_id: "Serveur de stockage par défaut"
+        allowed_globus_provider_names: "Fournisseurs d'identité OpenID forcés"
+        password: "Mot de passe"
+        confirm_password: "Confirmer le mot de passe"
+        no_password_reset: "Pas besoin de réinitialiser le mot de passe initial :"
+      paragraphs:
+        login_html: |
+          <span class="field_explanation">
+            Pour <strong>Tom Jones</strong>, utilisez <strong>tjones</strong>, pas 'tom' ou 'jones'.
+          </span>
+        dp_html: |
+          <span class="field_explanation">
+            Si défini, assurez-vous qu'il s'agit d'un serveur de stockage auquel l'utilisateur pourra accéder.
+          </span>
+        openid_html: |
+          <span class="field_explanation">
+            Si défini, il doit s'agir de noms exacts de fournisseurs d'identité OpenID séparés par des virgules.
+            Un seul '*' est également autorisé pour signifier n'importe quel fournisseur.
+          </span>
+      submit: "Créer l'utilisateur"
+
+    new_token:
+      title: "Nouveau jeton API"
+      headings:
+        main: "Nouveau jeton API"
+      titles:
+        notes: "Quelques remarques sur ce jeton"
+        copy_tooltip: "Cliquez sur ce bouton pour copier le jeton API dans le presse-papiers"
+      paragraphs:
+        generated_intro: "Un nouveau jeton API vient d'être généré pour vous."
+        token_html: |
+          Si vous êtes développeur et souhaitez automatiser des interactions
+          avec CBRAIN ou NeuroHub, ce jeton sera nécessaire pour accéder aux API.
+          <p>
+          Reportez-vous à la documentation de l'API CBRAIN
+          pour plus d'informations.
+          <p>
+      labels:
+        copy: "copier"
+      li:
+        validity: "Ce jeton ne sera valide que pendant %{duration}."
+        renewal: "Chaque fois qu'une requête est faite avec ce jeton, il devient valide pour une nouvelle période de %{duration}."
+        ip_lock_html: "La première fois qu'il est utilisé, l'adresse IP du client connecté sera<br />enregistrée et seules les connexions depuis cette adresse IP seront valides."
+        ip_invalid_html: "Si une connexion ultérieure provient d'une autre adresse IP à un moment quelconque,<br />le jeton sera immédiatement invalidé."
+        copy_html: "Pour copier le jeton dans votre presse-papiers, cliquez simplement sur le bouton « copier » situé à droite du jeton. Le jeton sera enregistré dans votre presse-papiers.<br />N'oubliez pas de le coller et de le sauvegarder : vous ne pourrez pas le voir à nouveau."
+    request_password:
+      title: "Mot de passe perdu ?"
+      headings:
+        main: "Mot de passe perdu ? Remplissez ce formulaire, nous vous contacterons."
+      labels:
+        login: "Login CBRAIN :"
+        email: "Adresse e-mail associée à votre compte CBRAIN :"
+      submit: "Envoyer"
+    show:
+      title: "Informations du compte"
+      titles:
+        user_activity_report: "Rapport d'activité utilisateur"
+      links:
+        tool_access_reports: "Rapports d'accès aux outils"
+        switch_to_user: "Se connecter en tant qu'utilisateur"
+        report_maker: "Générateur de rapports"
+        change_password: "Changer le mot de passe"
+        generate_api_token: "Générer un nouveau jeton API"
+        unlink_identity: "Dissocier cette identité %{name}"
+        link_identity: "Lier une identité %{name}"
+        neurohub_interface: "Interface NeuroHub"
+      prompts:
+        select_site: "(Sélectionner un site)"
+      cells:
+        login: "Utilisateur"
+        last_connected: "Dernière connexion"
+        never: "(Jamais)"
+        public_key: "Clé publique"
+        provider: "Serveur %{name}"
+        orcid_identity: "Identité ORCID"
+        active_sessions: "Sessions actives"
+        files: "Fichiers"
+        tasks: "Tâches"
+        data_providers: "Serveurs de stockage"
+        historical_storage: "Stockage historique"
+        historical_cpu_time: "Temps CPU historique"
+        tools: "Outils"
+        portal: "Portail"
+        execution: "Exécution"
+        installation_sites: "Sites d'installation"
+      headings:
+        message: "L'utilisateur n'a pas pu être mis à jour."
+        pref_data_provider_id: "Serveur de stockage par défaut"
+        pref_bourreau_id: "Serveur de calcul par défaut"
+        account_locked: "Compte verrouillé"
+        ip_whitelist: "Liste blanche des IP sources"
+        allowed_globus_provider_names: "Fournisseurs OpenID forcés"
+        ssh_key: "Votre clé SSH système"
+        sessions_tokens: "Sessions et jetons"
+        zenodo_publishing: "Publication Zenodo"
+        zenodo_sandbox_token: "Jeton Sandbox Zenodo"
+        zenodo_official_token: "Jeton officiel Zenodo"
+        license_agreements: "Licence"
+        linked_identities: "Identités liées"
+        provider_name: "Nom du serveur :"
+        provider_user: "Utilisateur du serveur :"
+        ip: "IP"
+        last_access: "Dernier accès"
+        resources: "Ressources"
+        access_profiles: "Profils d'accès"
+        groups: "Projets"
+        project_name: "Nom du projet"
+        project_type: "Type de projet"
+        members: "Membres"
+      paragraphs:
+        ip_whitelist_html: |
+          <div class="field_explanation">
+            Liste d'adresses IP sources autorisées, séparées par des virgules (format X.X.X.X/XX) depuis lesquelles l'utilisateur peut se connecter.
+          </div>
+        allowed_globus_provider_names_html: |
+          <div class="field_explanation">
+            Si défini, doit être une liste de noms de fournisseurs d'identité OpenID séparés par des virgules. Un seul '*' est également autorisé pour signifier n'importe quel fournisseur.
+          </div>
+        zenodo_sandbox_token_html: |
+          <div class="wide_field_explanation">
+            Ce jeton peut être utilisé pour créer des dépôts de données Zenodo <strong>temporaires/de test</strong>.<p>
+            Vous pouvez créer un jeton sur <a href="https://sandbox.zenodo.org/account/settings/applications/" target="_blank">https://sandbox.zenodo.org/account/settings/applications/</a>.
+          </div>
+        zenodo_main_token_html: |
+          <div class="wide_field_explanation">
+            Ce jeton peut être utilisé pour créer des dépôts Zenodo <strong>réels, officiels et permanents</strong>.<p>
+            Vous pouvez créer un jeton sur <a href="https://zenodo.org/account/settings/applications/" target="_blank">https://zenodo.org/account/settings/applications/</a>.
+          </div>
+      datas:
+        last_pushed: "Dernier envoi : %{date}"
+        push: "Push :"
+        no_ip_yet: "(Aucun pour l'instant)"
+      confirms:
+        unlink: "Êtes-vous sûr de vouloir dissocier votre compte de cette identité %{name} ?"
+      no_identity: "(Aucune identité %{name} liée à votre compte)"
+      orcid_id: "ID ORCID :"
+      no_orcid: "(Aucune identité ORCID liée à votre compte)"
+      orcid_note_html: "<strong>Remarque :</strong> Utilisez le %{link} pour gérer le lien d'identité ORCID"
+      submit: "Mettre à jour les projets"

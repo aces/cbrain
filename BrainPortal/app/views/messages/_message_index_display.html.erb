@@ -24,11 +24,11 @@
 
 <div class="menu_bar">
   <% if current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user) %>
-    <%= link_to "Leave Message", new_message_path, :class => "button" %>
+    <%= link_to t('.links.leave_message'), new_message_path, :class => "button" %>
   <% end %>
-  <%= overlay_ajax_link "Help", "/doc/messages/message_info.html", :class  => "button" %>
+  <%= overlay_ajax_link t('help'), "/doc/#{I18n.locale}/messages/message_info.html", :class  => "button" %>
 
-  <%= external_submit_button "Delete Checked Messages", "message_form", :class  => "button", :confirm  => "Are you sure you want to delete the selected messages?"  %>
+  <%= external_submit_button t('.buttons.delete_checked'), "message_form", :class  => "button", :confirm  => t('confirm_delete', name: t('.buttons.delete_name'))  %>
 </div>
 
 <%=
@@ -42,11 +42,11 @@
 <div class="pagination">
   <span class="pagination_center">
     (
-      <%= pluralize @messages.total_entries, "message" %>
+      <%= t('messages.common.message_count', count: @messages.total_entries) %>
       <% if @unread_count > 0 %>,
         <%=
           scope_filter_link(
-            html_colorize("#{@unread_count} unread"),
+            html_colorize(t('.scopes.unread_link', count: @unread_count)),
             @scope, :set, { :a => 'read', :v => 0 },
             link: { :ajax => true }
           )
@@ -55,7 +55,7 @@
       <% if @read_count > 0 %>,
         <%=
           scope_filter_link(
-            "#{@read_count} read",
+            t('.scopes.read_link', count: @read_count),
             @scope, :set, { :a => 'read', :v => 1 },
             link: { :ajax => true }
           )
@@ -98,16 +98,16 @@
     <%
       # Unicode character 'WARNING SIGN' (U+26A0)
       t.column("&#9888;".html_safe, :critical,
-        :pretty_name => 'Critical',
+        :pretty_name => t('.columns.criticality.critical'),
         :hidden      => true,
         :filters     => scoped_filters_for(
           @base_scope, @scope, :critical,
           format: lambda do |format_info|
             value, label, base, view = *format_info
-            label = (! value || value == 0) ? 'Not critical' : 'Critical'
+            label = (! value || value == 0) ? t('.columns.criticality.not_critical') : t('.columns.criticality.critical')
             {
               :value     => value,
-              :label     => "#{label} (of #{base})",
+              :label     => t('.labels.base', label: label, base: base),
               :indicator => view,
               :empty     => view == 0
             }
@@ -115,7 +115,7 @@
         )
       ) { |m| html_colorize("!!!") if m.critical }
 
-      t.column("Type", :message_type,
+      t.column(t('.columns.type'), :message_type,
         :hidden   => true,
         :sortable => true,
         :filters  => scoped_filters_for(
@@ -124,7 +124,7 @@
             value, label, base, view = *format_info
             {
               :value     => value,
-              :label     => "#{label.humanize} (of #{base})",
+              :label     => t('.labels.base', label: label.humanize, base: base),
               :indicator => view,
               :empty     => view == 0
             }
@@ -133,7 +133,7 @@
       ) { |m| m.message_type.humanize }
     %>
 
-    <% t.column("Message", :header, :sortable => true) do |m| %>
+    <% t.column(t('.columns.message'), :header, :sortable => true) do |m| %>
       <%= show_hide_toggle(Message.parse_markup(m.header), "#message_table_details_#{m.id}") %>
       <div id="message_table_details_<%= m.id %>" style="display: none">
         <%= render :partial  => 'messages/message_details', :locals  => { :mess  => m } %>
@@ -141,7 +141,7 @@
     <% end %>
 
     <%
-      t.column("Sender", :sender,
+      t.column(t('.columns.sender'), :sender,
         :sortable => true,
         :filters  => filter_values_for(
           @base_scope, :sender_id,
@@ -149,14 +149,14 @@
           association: [User, 'id', 'sender_id']
         ) + [{
           :value     => nil,
-          :label     => 'System',
+          :label     => t('messages.common.labels.system'),
           :indicator => @view_scope
             .where('sender_id' => nil)
             .count
         }]
-      ) { |m| m.sender.try(:login) || "System" }
+      ) { |m| m.sender.try(:login) || t('messages.common.labels.system') }
 
-      t.column("Recipient", :recipient,
+      t.column(t('.columns.recipient'), :recipient,
         :sortable => true,
         :filters  => scoped_filters_for(
           @base_scope, @scope, :user_id,
@@ -166,45 +166,45 @@
       ) { |m| link_to_user_with_tooltip(m.user) } unless
         current_user.has_role?(:normal_user)
 
-      t.column("Last Updated", :last_sent,
+      t.column(t('.columns.last_updated'), :last_sent,
         :sortable => true,
         :filters  => ([
-          [10.minutes, 'Ten minutes'],
-          [1.hour,     'One hour'   ],
-          [1.day,      'One day'    ],
-          [2.days,     'Two days'   ],
-          [1.week,     'One week'   ],
-          [1.month,    'One month'  ],
-          [2.months,   'Two months' ],
-          [1.year,     'One year'   ]
+          [10.minutes, t('messages.common.time_ago.ten_minutes')],
+          [1.hour,     t('messages.common.time_ago.one_hour')   ],
+          [1.day,      t('messages.common.time_ago.one_day')    ],
+          [2.days,     t('messages.common.time_ago.two_days')   ],
+          [1.week,     t('messages.common.time_ago.one_week')   ],
+          [1.month,    t('messages.common.time_ago.one_month')  ],
+          [2.months,   t('messages.common.time_ago.two_months') ],
+          [1.year,     t('messages.common.time_ago.one_year')   ]
         ]).map do |value, label|
           [value.ago.to_datetime, label + ' ago']
         end
       ) { |m| to_localtime(m.last_sent, :datetime) }
     %>
 
-    <% t.column("Operations", :operations) do |m| %>
+    <% t.column(t('.columns.operations'), :operations) do |m| %>
       <div>
         <%=
-          click_state   = m.read ? 'Unread' : 'Read' # inverse of current state
-          delete_button("<span class=\"read_unread\">Mark&nbsp;as&nbsp;#{click_state}</span>".html_safe,
+          click_state   = m.read ? t('messages.common.labels.state_unread') : t('messages.common.labels.state_read') # inverse of current state
+          delete_button("<span class=\"read_unread\">#{t('messages.common.mark_as_html', state: click_state)}</span>".html_safe,
             message_path(m, :read => (!m.read).to_s),
             :class                  => 'action_link',
             :method                 => "PUT",
             :target                 => ".message_display_#{m.id}",
-            :loading_message        => "<span style='color: red; text-align: center;'>#{click_state}</span>",
+            :loading_message        => "<span style='color: red; text-align: center;'>#{t('messages.common.deleting')}</span>",
             :loading_message_target => ".message_display_#{m.id} > td.operations > div > a > span.read_unread"
           )
         %>
         &nbsp;
         <%=
-          delete_button('<span class="del_label">Delete</span>'.html_safe,
+          delete_button("<span class=\"del_label\">#{t('delete')}</span>".html_safe,
             message_path(m),
             :class                  => 'action_link',
             :method                 => "DELETE",
             :target                 => ".message_display_#{m.id}",
             :remove_target          => ".message_display_#{m.id}",
-            :loading_message        => "<span style='color: red; text-align: center;'>Deleting...</span>",
+            :loading_message        => "<span style='color: red; text-align: center;'>#{t('messages.common.deleting')}</span>",
             :loading_message_target => ".message_display_#{m.id} > td.operations > a > span.del_label"
           )
         %>

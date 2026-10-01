@@ -1,0 +1,10 @@
+fr:
+  tool_configs:
+    errors:
+      need_tool_or_bourreau: "Il faut au moins un identifiant d'outil ou un identifiant de bourreau."
+    flash:
+      appended_info: "Informations ajoutées depuis une autre configuration d'outil."
+      no_changes: "Aucune modification effectuée."
+      created: "La configuration d'outil a été créée avec succès."
+      updated: "La configuration d'outil a été mise à jour avec succès."
+      deleted: "Configuration d'outil supprimée."

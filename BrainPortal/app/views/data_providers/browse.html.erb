@@ -22,7 +22,7 @@
 #
 -%>
 
-<% title 'Browse Data Provider' %>
+<% title t('.title') %>
 
 <%= form_tag(url_for(:controller => 'data_providers', :id => @provider.id, :action => 'register'), :method => :post, :id => "browse_form") do %>
 
@@ -31,7 +31,7 @@
     <%= render :partial => "unregister_button" %>
     <%= render :partial => "delete_button" %>
     <%= render :partial => "view_option_button" %>
-    <%= link_to('Refresh list of files', browse_data_provider_path(:refresh => true), :class => 'button', :datatype => 'script') %>
+    <%= link_to(t('.links.refresh_list'), browse_data_provider_path(:refresh => true), :class => 'button', :datatype => 'script') %>
   </div>
 
   <div class="resource_list" id="dp_browse_table">

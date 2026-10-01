@@ -31,8 +31,6 @@ en:
           share_wd_tid:                Working directory is shared with task
           cluster_workdir_size:        Working directory size on cluster
           workdir_archive_userfile_id: Working directory archive
-        data_provider:
-          remote_dir:                  Remote directory
         meta_data_store:
           ar_id:                       ActiveRecord id
           ar_table_name:               ActiveRecord table name

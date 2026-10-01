@@ -18,21 +18,18 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<%= button_with_dropdown_menu("Delete Files") do %>
-  <p class="medium_paragraphs">
-  This panel allows you to <strong>delete permanently</strong> files that
-  are present on the remote Data Provider. Note that this operation will
-  work whether or not the files are registered. If they are registered,
-  they will be unregistered first.
+<%= button_with_dropdown_menu(t('.buttons.delete_files')) do %>
+  <%= t('.paragraphs.explanation_html') %>
+
   </p>
 
   <p class="centered">
     <%= hijacker_submit_button(
-      "Delete the files",
+      t('.submit'),
       :name     => :register,
       :url      => url_for(:action => :delete),
       :method   => :post,

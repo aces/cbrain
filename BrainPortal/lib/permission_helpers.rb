@@ -69,7 +69,7 @@ module PermissionHelpers
     if BrainPortal.current_resource.portal_locked?
       flash.now[:error] ||= ""
       flash.now[:error] += "\n" unless flash.now[:error].blank?
-      flash.now[:error] += "This portal is currently locked for maintenance."
+      flash.now[:error] += I18n.t('application.flash.portal_locked_for_maintenance')
       message = BrainPortal.current_resource.meta[:portal_lock_message]
       flash.now[:error] += "\n#{message}" unless message.blank?
       unless current_user && current_user.has_role?(:admin_user)

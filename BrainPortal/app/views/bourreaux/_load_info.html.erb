@@ -35,27 +35,27 @@
     latest_in_queue_delay = latest_in_queue_delay.to_i
     rating = case
       when latest_in_queue_delay <  1.minute
-        html_colorize("instant",  'green')
+        html_colorize(t('.delay.instant'),  'green')
       when latest_in_queue_delay <  2.minute
-        html_colorize("superb",   'blue')
+        html_colorize(t('.delay.superb'),   'blue')
       when latest_in_queue_delay < 15.minutes
-        html_colorize("good",     'black')
+        html_colorize(t('.delay.good'),     'black')
       when latest_in_queue_delay <  1.hour
-        html_colorize("mediocre", 'orange')
+        html_colorize(t('.delay.mediocre'), 'orange')
       when latest_in_queue_delay <  2.hours
-        html_colorize("bad",      'purple')
+        html_colorize(t('.delay.bad'),      'purple')
       else
-        html_colorize("awful",    'red')
+        html_colorize(t('.delay.awful'),    'red')
     end
 %>
-  <b>Last wait time:</b> <%= pretty_elapsed(latest_in_queue_delay.to_i, :num_components => 2) %> (<%= rating %>)<br/>
+  <b><%= t('.last_wait_time', time: pretty_elapsed(latest_in_queue_delay.to_i, :num_components => 2), rating: rating ) %> <br/>
   <% unless time_of_last_queue_delay.blank? %>
-    <small>(This happened <%= pretty_elapsed(Time.now.to_i - time_of_last_queue_delay.to_i, :num_components => 2) %> ago)</small>&nbsp;
-    <a href="#" id="showAdditionalToolInfo">more info</a><br/>
+    <small><%= t('.queue_info', time: pretty_elapsed(Time.now.to_i - time_of_last_queue_delay.to_i, :num_components => 2)) %></small>&nbsp;
+    <a href="#" id="showAdditionalToolInfo"><%= t('.more_info') %></a><br/>
   <% end %>
 <% end %>
 <div class="additionalToolInfo">
-Number of active tasks (all users):  <%= num_active %><br/>
-Number of queued tasks (all users):  <%= num_queued %><br/>
-Number of running tasks (all users): <%= num_processing %>
+<%= t('.number_of.active_tasks', num_active: num_active ) %><br />
+<%= t('.number_of.queued_tasks', num_queued: num_queued ) %><br />
+<%= t('.number_of.running_tasks', num_processing: num_processing ) %>
 </div>

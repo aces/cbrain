@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -28,17 +28,17 @@
     <%= form_tag :action => :sign_license, :license => @license %>
       <%= hidden_field_tag :license, @license %>
   <% end %>
-  <% content = File.read(Rails.root + "public/licenses/#{@license}.html") rescue "(Error fetching license text)" %>
+  <% content = File.read(Rails.root + "public/licenses/#{@license}.html") rescue t('.error_fetching') %>
   <% content.gsub!(/<input\s/i,"<INPUT DISABLED CHECKED ") if is_signed %>
   <%= content.html_safe %>
   <p>
   <hr>
   <% if ! is_signed %>
-      <%= submit_tag "I Agree", :name => :agree %>
-      <%= submit_tag "I Do Not Agree", :name => :not_agree %>
+      <%= submit_tag t('agree'), :name => :agree %>
+      <%= submit_tag t('.disagree'), :name => :not_agree %>
     </form>
   <% else %>
-    <strong>You have already signed this agreement.</strong>
+    <strong><%= t('.already_signed') %></strong>
   <% end %>
 </div>
 

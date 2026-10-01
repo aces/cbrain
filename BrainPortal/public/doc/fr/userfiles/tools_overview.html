@@ -1,0 +1,57 @@
+
+<!--
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-->
+
+<h1>Outils scientifiques MINC disponibles</h1><br>
+
+<b>Civet</b><br>
+    Par défaut, CIVET s'exécute sur des données multispectrales (pondérées en T1, T2 et densité de protons). Les outils de symétrie peuvent être activés en option. L'exécution sur des images T1 uniquement, l'exécution sans ANIMAL et l'ajout de modèles d'enregistrement personnalisés (par exemple, pour l'enregistrement de données pédiatriques) constituent d'autres options principales. CIVET calcule l'épaisseur corticale à chaque sommet à l'aide de la métrique <i>t_link</i> (dans les espaces enregistré et natif) sur des surfaces hémisphériques ayant fait l'objet d'un enregistrement non linéaire. Les surfaces par défaut sont constituées de 81,920 polygones et de 40,962 sommets chacune. CIVET produit également des cartes régionales d'épaisseur ainsi que des mesures de surface fondées sur l'intersection d'ANIMAL avec les surfaces du cortex.
+<br>
+<br>
+    Un développement récent consiste en l'introduction d'étapes automatisées de contrôle de la qualité, proposées comme procédures de post-traitement facultatives à exécuter une fois les données traitées par CIVET. Comme CIVET est désormais composé de « modules » contrôlés par un « shell » et que chaque module regroupe plusieurs étapes connexes, le contrôle de la qualité peut désormais être effectué au niveau des modules. Cette modularisation a été introduite afin de faciliter la gestion de CIVET, qui serait autrement constitué d'un script relativement volumineux.
+<br>    
+<br>
+<b>Mincmath</b>
+<br>
+    Mincmath effectue de simples opérations mathématiques voxel par voxel sur un ou plusieurs fichiers MINC ayant la même forme et le même échantillonnage des coordonnées afin de produire un seul fichier de sortie. Les opérations peuvent être unaires (sur un seul fichier), binaires (sur deux fichiers d'entrée) ou cumulatives (sur deux fichiers d'entrée ou plus). Les opérations cumulatives peuvent également être effectuées selon une dimension spécifiée des fichiers d'entrée. <br>   
+<br>
+<br>
+
+<b>Mincaverage</b>
+<br>
+    Mincaverage calcule la moyenne de plusieurs fichiers MINC. Diverses options sont également disponibles, notamment : la normalisation préalable des volumes, la création d'un volume d'écart-type et le calcul de la moyenne selon une dimension spécifiée des fichiers d'entrée. 
+<br>
+<br>
+
+<b>Mincpik</b>
+<br>
+    Mincpik génère des fichiers d'image à partir de volumes MINC à l'aide de l'utilitaire <i>convert</i> d'ImageMagick.
+<br>
+<br>
+
+<b>Mincresample</b>
+<br>
+    Mincresample rééchantillonne un fichier MINC selon de nouvelles dimensions spatiales et de nouvelles positions de voxels. Chaque volume du fichier d'entrée (défini par les dimensions spatiales <i>xspace</i>, <i>yspace</i> et <i>zspace</i>) est rééchantillonné conformément aux options de la ligne de commande. Les dimensions non spatiales sont conservées dans leur ordre d'origine, tandis que les dimensions spatiales peuvent être réordonnées afin de produire des images transversales, sagittales ou coronales. Les nouvelles valeurs des voxels sont calculées au moyen d'une interpolation trilinéaire, tricubique ou par plus proche voisin.
+<br>
+<br>
+

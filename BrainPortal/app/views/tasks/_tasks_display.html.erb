@@ -94,7 +94,7 @@
   <% if batch_view %>
     <%
       t.column('', :expand,
-        :pretty_name => "Batch"
+        :pretty_name => t('.columns.batch')
       ) do |type,id,count,task|
     %>
       <% next if type == :task %>
@@ -102,19 +102,19 @@
         if type == :loaded_batch
           attributes = {
             :class => [ 'batch-btn', 'ui-icon', 'ui-icon-minus' ],
-            :title => "Expand batch"
+            :title => t('.titles.expand_batch')
           }
         elsif count <= @scope.pagination.per_page.to_i
           attributes = {
             :class => [ 'batch-btn', 'ui-icon', 'ui-icon-plus' ],
-            :title => "Expand batch",
+            :title => t('.titles.expand_batch'),
             :'data-batch-type' => 'ajax_fetch',
             :'data-batch-url'  => url_for(:action => :batch_list, :batch_id => id)
           }
         else
           attributes = {
             :class => [ 'batch-btn', 'ui-icon', 'ui-icon-folder-open' ],
-            :title => "Open batch",
+            :title => t('.titles.open_batch'),
             :'data-batch-type' => 'html_link',
             :'data-batch-url'  =>
               url_for(scope_filter_params(@scope, :set, {
@@ -129,7 +129,7 @@
   <% end %>
 
   <%
-    t.column("Task Type", :type,
+    t.column(t('.columns.task_type'), :type,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, @custom_scope, :type)
     ) do |type,id,count,task|
@@ -144,7 +144,7 @@
   <% end %>
 
   <%
-    t.column("Version", :version,
+    t.column(t('.columns.version'), :version,
       :sortable => true,
       :filters  => scoped_filters_for(
         @base_scope, @custom_scope, :tool_config_id,
@@ -158,27 +158,27 @@
   %>
 
   <%
-    t.column("Description", :description,
+    t.column(t('.columns.description'), :description,
       :sortable => true
     ) do |type,id,count,task|
       overlay_description(task.description, :header_width => 35) unless type == :loaded_batch
     end
 
-    t.column("Owner", :owner,
+    t.column(t('.columns.owner'), :owner,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, @custom_scope, User)
     ) do |type,id,count,task|
       link_to_user_if_accessible(task.user) unless type == :loaded_batch
     end
 
-    t.column("Project", :project,
+    t.column(t('.columns.project'), :project,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, @custom_scope, Group)
     ) do |type,id,count,task|
       link_to_group_if_accessible(task.group) unless type == :loaded_batch
     end unless current_project
 
-    t.column("Execution Server", :server,
+    t.column(t('.columns.server'), :server,
       :sortable => true,
       :filters  => scoped_filters_for(
         @base_scope, @custom_scope, :bourreau_id,
@@ -194,7 +194,7 @@
   %>
 
   <%
-    t.column("Current Status", :status,
+    t.column(t('.columns.current_status'), :status,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, @custom_scope, :status)
     ) do |type,id,count,task|
@@ -225,7 +225,7 @@
           .each { |s,t| statuses[s] = t.size }
       end
     %>
-    <%= pluralize(ntasks, "task") + ":" if statuses.size > 1 %>
+    <%= t('.task_count_colon', count: ntasks) if statuses.size > 1 %>
     <%=
       statuses
         .keys
@@ -236,17 +236,17 @@
     %>
   <% end %>
 
-  <% t.column("Run Number", :run) { |type,id,count,task| task.run_number.to_s if type == :task } %>
+  <% t.column(t('.columns.run_number'), :run) { |type,id,count,task| task.run_number.to_s if type == :task } %>
 
   <%
-    t.column("Workdir Size", :workdir_size,
+    t.column(t('.columns.workdir_size'), :workdir_size,
       :sortable => true
     ) do |type,id,count,task|
   %>
     <% case type %>
     <% when :task %>
       <% if task.share_wd_tid %>
-        (Shared)
+        <%= t('.shared_parentheses') %>
       <% else %>
         <% as = task.archived_status %>
         <%= colored_archived_status(as) %>
@@ -262,7 +262,7 @@
   <% end %>
 
   <%
-    t.column("Results On", :results_data_provider,
+    t.column(t('.columns.results_on'), :results_data_provider,
       :sortable => true,
       :filters  => scoped_filters_for(
         @base_scope, @custom_scope, :results_data_provider_id,
@@ -278,13 +278,13 @@
   %>
 
   <%
-    t.column("Time Submitted", :created_at,
+    t.column(t('.columns.time_submitted'), :created_at,
       :sortable => true
     ) do |type,id,count,task|
         to_localtime(task.created_at, :datetime)
       end
 
-    t.column("Last Updated", :updated_at,
+    t.column(t('.columns.last_updated'), :updated_at,
       :sortable => true
     ) do |type,id,count,task|
       case type
@@ -318,7 +318,7 @@
   <% if @tasks.empty? %>
     <tr class="batch">
       <td class="dt-table-wide">
-        This batch of tasks has disappeared
+        <%= t('.disappeared_tasks') %>
       </td>
     </tr>
   <% else %>
@@ -337,21 +337,21 @@
     <div class="pagination_left_side">
       <%=
         scope_custom_link(
-          "Switch to #{batch_view ? 'List' : 'Batch'} View",
+          batch_view ? t('.switches.switch_to_list_view') : t('.switches.switch_to_batch_view'),
           @scope, { 'batch' => !batch_view },
           link: { :ajax => true }
         )
       %>
     </div>
     <div class="page_links">
-      (<%= pluralize @total_tasks, "task" %>)
+      (<%= t('activerecord.models.cbrain_task', count: @total_tasks) %>)
     </div>
     <div class="pagination_right_side">
       <% if @total_space_known > 0 %>
-        Total task space used: <%= colored_pretty_size(@total_space_known) %>
+        <%= t('.total_space_html', space: colored_pretty_size(@total_space_known))  %>
       <% end %>
       <% if @total_space_unkn  > 0 %>
-        (<%= pluralize @total_space_unkn, "task" %> without space estimates)
+        <%= t('.tasks_without_estimates', count: @total_space_unkn ) %>
       <% end %>
     </div>
   </div>
@@ -363,9 +363,9 @@
   <%= table.render %>
 
   <%=
-    center_legend("Workdir archiving status symbols:", [
-      [ colored_archived_status(:workdir),  "On Cluster" ],
-      [ colored_archived_status(:userfile), "As File"    ],
+    center_legend(t('.workdir_archiving_status_symbols'), [
+      [ colored_archived_status(:workdir),  t('.legends.on_cluster') ],
+      [ colored_archived_status(:userfile), t('.legends.as_file')    ],
     ])
   %>
 <% end %>

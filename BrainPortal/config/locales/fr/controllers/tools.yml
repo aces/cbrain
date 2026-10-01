@@ -1,0 +1,11 @@
+fr:
+  tools:
+    flash:
+      created: "L'outil a été créé avec succès."
+      updated: "L'outil a été mis à jour avec succès."
+      not_added: "%{class_name} n'a pas pu être ajouté.\n"
+      registered:
+        one: "%{count} outil enregistré avec succès :\n"
+        other: "%{count} outils enregistrés avec succès :\n"
+      registered_line: "Nom : %{name} Classe : %{class_name}\n"
+      none_unregistered: "Aucun outil non enregistré trouvé."

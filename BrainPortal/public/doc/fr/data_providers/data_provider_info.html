@@ -1,0 +1,97 @@
+
+<!--
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-->
+
+<h1>Comment enregistrer des fichiers dans CBRAIN</h1>
+
+Un fournisseur de données est un espace de stockage de données reconnu par CBRAIN.
+Un utilisateur typique a accès à deux fournisseurs de données nommés MainStore et
+MindStore, ainsi qu'à deux "fournisseurs de données entrants".
+Un "fournisseur de données entrant" est un espace de stockage configuré par l'administrateur du réseau,
+auquel il est possible d'accéder au moyen d'un protocole externe à l'environnement CBRAIN.
+Les deux fournisseurs de données entrants actuellement configurés sont "SFTP-Incoming" et "SFTP-Brainstorm",
+accessibles à l'aide du protocole SFTP (Secure File Transfer Protocol).
+
+<p>
+Les fichiers de données peuvent être importés vers CBRAIN à l'aide d'un client SFTP installé sur votre ordinateur.
+Vous pouvez vous connecter à l'aide de n'importe quel client SFTP pour UNIX,
+macOS ou Windows aux hôtes <strong>mindstorm.cbrain.mcgill.ca</strong> ou <strong>brainstorm.cbrain.mcgill.ca</strong>
+en utilisant le port <strong>7500</strong>. Votre nom d'utilisateur et votre mot de passe sont les mêmes que ceux de
+votre compte CBRAIN. Les fichiers téléversés vers <em>mindstorm</em> apparaîtront dans CBRAIN lorsque vous
+cliquerez sur le bouton « Parcourir » du fournisseur de données « SFTP-Incoming », tandis que les fichiers téléversés
+vers <em>brainstorm</em> apparaîtront dans le fournisseur de données « SFTP-Brainstorm ».
+
+<p>
+
+<b>Clients SFTP recommandés</b>
+<br>
+<ul>
+    <li><b>Client SFTP en ligne de commande sous Unix</b></li>
+        <ul>
+            <li>sftp -o port=7500 username@mindstorm.cbrain.mcgill.ca</li>
+            <li>Les options disponibles peuvent être affichées en saisissant la ligne de commande help.</li>
+        </ul>
+    <li><b>SFTP client disponible pour macOS et Windows: FileZilla</b></li>
+            <ul>
+                <li>Sélectionnez le fichier -> Site Manager</li>
+                <li>Sélectionnez Nouveau Site</li>
+                <li>Dans l'onglet General du Site Manager</li>
+                <ul>
+                    <li>Saisissez le nom d'hôte : mindstorm.cbrain.mcgill.ca</li>
+                    <li>Saisissez le numéro de port: 7500</li>
+                    <li>Sélectionnez le Type de Serveur: <b>SFTP - SSH File Transfer</b> Protocol</li>
+                    <li>Sélectionnez le Type de Logon: Normal</li>
+                    <li>Saisissez le nom d'utilisateur de votre compte CBRAIN</li>
+                    <li>Saisissez le mot de passe de votre compte CBRAIN</li>
+                </ul>
+                <li>Dans l'onglet Advanced</li>
+                <ul>
+                    <li>Sélectionnez Unix comme Type de Serveur</li>
+                    <li>Sélectionnez Bypass proxy</li>
+                </ul>
+                <li>Cliquez sur connect</li>
+                <li>Les fichiers de votre ordinateur local sont affichés dans le panneau de gauche</li>
+                <li>Les fichiers de l'ordinateur à distance sont affichés dans le panneau de droite</li>
+                <ul>
+                    <li>Vous pouvez faire glisser les fichiers pour les transférer entre l'ordinateur local et l'ordinateur à distance</li>
+                    <li>Les options de gestion des fichiers s'affichent lorsque vous sélectionnez un fichier et cliquez dessus avec le bouton droit de la souris</li>
+                </ul>
+    </ul>
+        <li><b>SFTP Client disponible sur macOS: Cyberduck:</b></li>
+        <ul>
+            <li>Sélectionnez Open Connection</li>
+            <li>Sélectionnez <b>SFTP</b> comme protocole de transfer de fichiers</li>
+            <li>Saisissez mindstorm.cbrain.mcgill.ca comme serveur, le port 7500, ainsi que le nom d'utilisateur et le mot de passe de votre compte CBRAIN</li>
+            <li>Les fichiers affichés dans le panneau correspondent aux fichiers de l'ordinateur à distance</ili>
+            <li>Faites un clic droit dans le panneau, puis sélectionnez Upload pour transférer des fichiers de votre ordinateur local vers l'ordinateur à distance</li>
+            <li>Sélectionnez un fichier, et faites un clic droit pour le télécharger vers votre ordinateur local</li>
+        </ul>
+    </ul>
+</ul>
+<br>
+Importez ou téléchargez vos fichiers au besoin à l'aide du client configuré.
+Ensuite, accédez à l'onglet fournisseurs de données, repérez le "fournisseur de données entrant", puis cliquez sur le lien "Browse".
+Enregistrez vos fichiers dans CBRAIN; ils apparaîtront alors dans le gestionnaire de fichiers. Il est recommandé de <b>DÉPLACER</b> ces fichiers vers l'un des fournisseurs de données officiels de CBRAIN.
+Lors de l'enregistrement, les fichiers peuvent être automatiquement associés à un projet, puis déplacés ou copiés vers le fournisseur de données sélectionné.</p>
+<br><br>
+

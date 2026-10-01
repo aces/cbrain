@@ -23,9 +23,9 @@
 -%>
 
 <div class="menu_bar">
-  <%= link_to 'Tools List', tools_path, :class => "button menu_button" %>
-  <%= overlay_ajax_link "Help", "/doc/tool_configs/tool_configs_info.html", :class  => "button" %>
-</div>
+
+  <%= link_to t('.links.tool_list'), tools_path, :class => "button menu_button" %>
+  <%= overlay_ajax_link t('help'), "/doc/#{I18n.locale}/tool_configs/tool_configs_info.html", :class  => "button" %></div>
 
 <%=
   render(:partial => 'shared/active_filters', :locals  => {
@@ -36,7 +36,7 @@
 
 <div class="pagination">
   <span class="page_links">
-    (<%= pluralize @tool_configs.total_entries, "tool configurations" %>)
+    (<%= t('.tool_config_count', count: @tool_configs.total_entries) %>)
   </span>
 </div>
 
@@ -60,53 +60,53 @@
   <%
     t.pagination
 
-    t.column("Tool Name", :tool,
+    t.column(t('.columns.tool_name'), :tool,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, Tool)
     ) do |tc|
       if ! tc.tool
-        html_colorize("(All tools)", 'orange')
+        html_colorize(t('tool_configs.common.all_tools'), 'orange')
       else
         current_user.has_role?(:admin_user) ? link_to(tc.tool.name,edit_tool_path(tc.tool)) : tc.tool.name
       end
     end
 
-    t.column("Execution Server", :bourreau,
+    t.column(t('.columns.execution_server'), :bourreau,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, Bourreau)
-    ) { |tc| tc.bourreau ? link_to_bourreau_if_accessible(tc.bourreau) : html_colorize("(All servers)",'orange')}
+    ) { |tc| tc.bourreau ? link_to_bourreau_if_accessible(tc.bourreau) : html_colorize(t('tool_configs.common.all_servers'),'orange')}
 
 
-    t.column("Tool Project", 'tools.group_id',
+    t.column(t('.columns.tool_project'), 'tools.group_id',
       #:sortable => true,
       #:filters  => default_filters_for(@base_scope, Group)
     ) { |tc| link_to_group_if_accessible(tc.tool.group) if tc.tool }
 
-    t.column("Version", :version_name,
+    t.column(t('.columns.version'), :version_name,
       :sortable => true,
     ) { |tc|
         if  tc.version_name.present?
           current_user.has_role?(:admin_user) ? link_to(tc.version_name,tool_config_path(tc)) : tc.version_name
         else
           (
-          tc.tool_id.blank?     ? html_colorize("(All tools)", 'orange') :
-          tc.bourreau_id.blank? ? html_colorize("(All servers)", 'orange') :
-          html_colorize("(Unset)",'red')
+          tc.tool_id.blank?     ? html_colorize(t('tool_configs.common.all_tools'), 'orange') :
+          tc.bourreau_id.blank? ? html_colorize(t('tool_configs.common.all_servers'), 'orange') :
+          html_colorize(t('unset_parentheses'),'red')
           )
         end
       }
 
-    t.column("Version Project", :group,
+    t.column(t('.columns.version_project'), :group,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, Group)
     ) { |tc| link_to_group_if_accessible(tc.group) }
 
-    t.column("CPUs", :ncpus,
+    t.column(t('.columns.cpus'), :ncpus,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, :ncpus)
     ) { |tc| tc.ncpus.to_s }
 
-    t.column("Boutiques", :boutiques,
+    t.column(t('.columns.boutiques'), :boutiques,
     ) do |tc|
       descriptor = tc.boutiques_descriptor rescue nil # some TCs have no tools
       if descriptor
@@ -131,17 +131,17 @@
       end
     end
 
-    t.column("Container Engine", :container_engine,
+    t.column(t('tool_configs.common.container_engine'), :container_engine,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, :container_engine)
     ) { |tc| tc.container_engine.to_s }
 
-    t.column("Container Index", :container_index_location,
+    t.column(t('.columns.container_index'), :container_index_location,
     ) { |tc|
         tc.container_index_location
       }
 
-    t.column("Container Image", :container_name_image,
+    t.column(t('.columns.container_image'), :container_name_image,
     ) { |tc|
         if tc.containerhub_image_name.present?
           tc.containerhub_image_name
@@ -150,22 +150,22 @@
         end
       }
 
-    t.column("Description", :description,
+    t.column(t('.columns.description'), :description,
       :sortable => true,
     ) { |tc| overlay_description(tc.description) }
 
     if current_user.has_role?(:admin_user)
-      t.column("Access?") do |tc|
+      t.column(t('.columns.access')) do |tc|
         tool = tc.tool
         if tool
-          link_to "Access?", report_tool_configs_path(:tool_id => tool.id, :bourreau_id => tc.bourreau_id)
+          link_to t('.columns.access'), report_tool_configs_path(:tool_id => tool.id, :bourreau_id => tc.bourreau_id)
         end
       end
 
-      t.column("Operations") do |tc|
-        ( link_to("Show/Edit",   tool_config_path(tc), :class => "action_link") + " " +
-          link_to('Delete', tool_config_path(tc),      :class => "action_link",
-              :data => { :confirm => "Are you sure you want to delete version configuration '#{tc.version_name}'?" },
+      t.column(t('.columns.operations')) do |tc|
+        ( link_to(t('.show_edit'),   tool_config_path(tc), :class => "action_link") + " " +
+          link_to(t('delete'), tool_config_path(tc),      :class => "action_link",
+              :data => { :confirm => t('confirm_delete', name: t('tool_configs.common.version_config_name', name: tc.version_name)) },
               :method => :delete)
         )
       end

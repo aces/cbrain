@@ -120,7 +120,7 @@ class GroupsController < ApplicationController
     respond_to do |format|
       if @group.save
         @group.addlog_context(self,"Created by #{current_user.login}")
-        flash[:notice] = 'Project was successfully created.'
+        flash[:notice] = t('groups.flash.created')
         format.html { redirect_to :action => :index }
         format.xml  { render :xml  => @group.for_api, :status => :created }
         format.json { render :json => @group.for_api, :status => :created }
@@ -140,7 +140,7 @@ class GroupsController < ApplicationController
     @group = current_user.modifiable_groups.find(params[:id])
 
     unless @group.can_be_edited_by?(current_user)
-       flash[:error] = "You don't have permission to edit this project."
+       flash[:error] = t('groups.flash.no_edit_permission')
        respond_to do |format|
         format.html { redirect_to :action => :show }
         format.xml  { head :forbidden }
@@ -193,7 +193,7 @@ class GroupsController < ApplicationController
         end
         @group.user_ids |= [ @group.creator.id ]
         @group.addlog_object_list_updated("Users", User, original_user_ids, @group.user_ids, current_user, :login)
-        flash[:notice] = 'Project was successfully updated.'
+        flash[:notice] = t('groups.flash.updated')
         format.html { redirect_to :action => "show" }
         format.xml  { head :ok }
         format.json { head :ok }
@@ -212,7 +212,7 @@ class GroupsController < ApplicationController
 
     respond_to do |format|
       if current_user.id == @group.creator_id
-        flash[:error] = "You cannot be unregistered from a project you created."
+        flash[:error] = t('groups.flash.cannot_unregister_creator')
         format.html { redirect_to group_path(@group) }
         format.xml  { head :unprocessable_entity }
         format.json { head :unprocessable_entity }
@@ -221,7 +221,7 @@ class GroupsController < ApplicationController
         @group.user_ids   = @group.user_ids - [current_user.id]
         @group.addlog_object_list_updated("Users", User, original_user_ids, @group.user_ids, current_user, :login)
 
-        flash[:notice] = "You have been unregistered from project #{@group.name}."
+        flash[:notice] = t('groups.flash.unregistered', name: @group.name)
         format.html { redirect_to :action => "index" }
         format.xml  { head :ok }
         format.json { head :ok}
@@ -235,7 +235,7 @@ class GroupsController < ApplicationController
   def destroy  #:nodoc:
     @group = current_user.modifiable_groups.find(params[:id])
     if ! current_user.has_role?(:admin_user)
-      cb_error "Cannot destroy this project: you are not its creator." if current_user.id != @group.creator_id
+      cb_error t('groups.errors.not_creator') if current_user.id != @group.creator_id
     end
     @group.destroy
 
@@ -307,7 +307,7 @@ class GroupsController < ApplicationController
       return true
     end
     if current_user.unsigned_custom_licenses(@group).present?
-      flash[:error] = "Access to the project #{@group.name} is blocked due to licensing issues. Please consult with the project maintainer or support for details"
+      flash[:error] = t('groups.flash.license_blocked', name: @group.name)
       license_redirect
     end
   end

@@ -40,13 +40,13 @@
 
 <% if mess.expiry.present? %>
     <p class="mess_<%= mess.message_type.to_s %>">
-      Expires: <%=to_localtime(mess.expiry, :datetime) -%>
+      <%= t('.paragraphs.expires') %> <%=to_localtime(mess.expiry, :datetime) -%>
     </p>
 <% end %>
 
 <% if mess.description.blank? && mess.variable_text.blank? && mess.expiry.blank? %>
   <p>
-    (No Details)
+    <%= t('.paragraphs.no_details') %>
   </p>
 <% end %>
 

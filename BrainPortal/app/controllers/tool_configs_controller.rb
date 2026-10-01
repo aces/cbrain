@@ -113,7 +113,7 @@ class ToolConfigsController < ApplicationController
   def new
     tool_id     = params[:tool_id].presence     # nil allowed, means ALL tools
     bourreau_id = params[:bourreau_id].presence # nil allowed, means ALL remote resources
-    cb_error "Need at least one of tool ID or bourreau ID." unless tool_id || bourreau_id
+    cb_error t('tool_configs.errors.need_tool_or_bourreau') unless tool_id || bourreau_id
 
     # For shared configs, we check that the object is indeed new,
     # if not then show user existing object
@@ -153,7 +153,7 @@ class ToolConfigsController < ApplicationController
 
     # Build the true object for the form
     @tool_config   = ToolConfig.find(id) unless id.blank?
-    cb_error "Need at least one of tool ID or bourreau ID." if @tool_config.blank? && form_tool_id.blank? && form_bourreau_id.blank?
+    cb_error t('tool_configs.errors.need_tool_or_bourreau') if @tool_config.blank? && form_tool_id.blank? && form_bourreau_id.blank?
     @tool_config ||= ToolConfig.where( :tool_id => form_tool_id, :bourreau_id => form_bourreau_id ).first if form_tool_id.blank? || form_bourreau_id.blank?
     @tool_config ||= ToolConfig.new(   :tool_id => form_tool_id, :bourreau_id => form_bourreau_id )
 
@@ -215,9 +215,9 @@ class ToolConfigsController < ApplicationController
          @tool_config.env_array       += (other_tc.env_array || [])
          @tool_config.script_prologue  = "#{@tool_config.script_prologue}\n#{other_tc.script_prologue}"
          @tool_config.script_epilogue  = "#{@tool_config.script_epilogue}\n#{other_tc.script_epilogue}"
-         flash[:notice] = "Appended info from another Tool Config."
+         flash[:notice] = t('tool_configs.flash.appended_info')
        else
-         flash[:notice] = "No changes made."
+         flash[:notice] = t('tool_configs.flash.no_changes')
        end
 
        render :action => "show"
@@ -245,9 +245,9 @@ class ToolConfigsController < ApplicationController
         )
 
         if new_record
-          flash[:notice] = "Tool configuration is successfully created."
+          flash[:notice] = t('tool_configs.flash.created')
         else
-          flash[:notice] = "Tool configuration was successfully updated."
+          flash[:notice] = t('tool_configs.flash.updated')
         end
         format.html { redirect_to tool_config_path(@tool_config) }
         format.xml  { head     :ok                                   }
@@ -267,7 +267,7 @@ class ToolConfigsController < ApplicationController
     @tool_config = ToolConfig.find(id)
     @tool_config.destroy
 
-    flash[:notice] = "Tool configuration deleted."
+    flash[:notice] = t('tool_configs.flash.deleted')
 
     respond_to do |format|
       format.html {

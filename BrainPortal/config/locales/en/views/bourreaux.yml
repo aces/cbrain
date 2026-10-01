@@ -1,0 +1,565 @@
+en:
+  bourreaux:
+    common:
+      cache_trust_expire_select:
+        never: "Never"
+        six_hours: "Six hours"
+        twelve_hours: "Twelve hours"
+        one_day: "One day"
+        three_days: "Three days"
+        one_week: "One week"
+        two_weeks: "Two weeks"
+        one_month: "One month"
+        two_months: "Two months"
+        three_months: "Three months"
+        six_months: "Six months"
+      workers_instances_select:
+        none: "None (for debug)"
+      workers_chk_time_select:
+        five_seconds: "5 seconds"
+        ten_seconds: "10 seconds"
+        thirty_seconds: "30 seconds"
+        one_minute: "1 minute (recommended)"
+        two_minutes: "2 minutes"
+        five_minutes: "5 minutes"
+        fifteen_minutes: "15 minutes"
+        one_hour: "1 hour"
+      workers_log_to_select:
+        combined_file: "Combined file (recommended)"
+        separate_files: "Separate files"
+        rails_log: "RAILS log"
+        rails_stdout: "RAILS stdout"
+        rails_stderr: "RAILS stderr"
+        rails_stdout_and_stderr: "RAILS stdout and stderr"
+        no_logging: "No logging"
+      workers_verbose_select:
+        normal: "Normal"
+        debug_info: "Debug info"
+    bourreaux_display:
+      columns:
+        server_type: "Server Type"
+        server_name: "Server Name"
+        live_revision: "Live Revision"
+        owner: "Owner"
+        project: "Project"
+        time_zone: "Time Zone"
+        online: "Online?"
+        tasks: "Tasks"
+        tasks_space: "Tasks Space"
+        cache_space:
+          all: "Cache Space all"
+          own: "Cache Space own"
+        description: "Description"
+        status_page_url: "Status page URL"
+        tools: "Tools"
+        control_tunnel: "Control Tunnel"
+        uptime: "Uptime"
+        task_workers: "Task Workers"
+        activity_workers: "Activity Workers"
+      unk:
+        env: "Unk Env"
+        par: " (%{unk} unkn)"
+      status:
+        open: "Open"
+        dead: "DEAD!"
+        down: "Down!"
+        since_for: "Since %{date} (for %{duration})"
+      task_workers:
+        workers: "Workers: %{nworkers} / %{exp_workers} "
+        workers_processing: "(%{proc_workers} processing) "
+      activity_workers:
+        workers: "Workers: %{nworkers} / %{exp_workers} "
+        workers_processing: "(%{proc_workers} processing) "
+      links:
+        create_new_server: "Create New Server"
+        user_access_report: "User Access Report"
+        disk_cache_report: "Disk Cache Report"
+        task_workdir_size_report: "Task Workdir Size Report"
+        access_to_data_providers: "Access to Data Providers"
+      buttons:
+        start:
+          tunnels: "1. Start Tunnels"
+          execution_server: "2. Start Execution Server"
+          task_workers: "3a. Start Task Workers"
+          activity_workers: "3b. Start Activity Workers"
+        stop:
+          activity_workers: "1a. Stop Activity Workers"
+          task_workers: "1b. Stop Task Workers"
+          execution_server: "2. Stop Execution Server"
+          tunnels: "3. Stop Tunnels"
+      dropdowns:
+        start_services: "Start Services"
+        stop_services: "Stop Services"
+      confirms:
+        stop:
+          activity_workers: "Are you sure you want to stop the Activity Workers? They will finish what they are doing first."
+          task_workers: "Are you sure you want to stop the Task Workers? They will finish what they are doing first."
+          bourreau: "Are you sure? Note that workers will also shut down once they are done, if they are still active."
+          tunnels: "Make sure Execution Servers, Task Workers and Activity Workers are all stopped!"
+      start_services:
+        paragraphs:
+          introduction_html: |
+            <p class="dropmenu_info">
+              These buttons start the different layers of services required to
+              boot an Execution Server. They are listed in the same order as they
+              need to be started. The first three buttons
+              only apply to Execution Servers, while <strong>Start Activity Workers</strong>
+              applies to both Execution Servers and Portals.
+            </p>
+            <p class="dropmenu_info">
+              Refer the the last four columns of the table to find out what service
+              are currently operational. The four buttons in this pannel map
+              to them in the same order.
+            </p>
+            <p class="dropmenu_info">
+              Also note that your browser blocks while these requests are being processed;
+              be patient and check your browser's progress bar. Do not perform long operations
+              on multiple Execution Servers to avoid timeouts.
+            </p>
+          tunnel_html: |
+            <p class="dropmenu_info">
+              The tunnel is the main communication channel between the Portal
+              and the remote server where the Execution Server is configured. It is
+              necessary for the Execution Server and the Task Workers. Starting the
+              tunnel will mark the Execution Server as "online" in the database.
+              Note that you can also start the tunnel with the "Start Execution Server"
+              button. Consider starting just the tunnel as a way to verify that the network
+              parameters are valid (e.g. to check hostnames, ports, firewalls, etc).
+            </p>
+          execution_server_html: |
+            <p class="dropmenu_info">
+              The Execution Server requires the tunnel, above. Note that as convenience
+              feature, if the tunnel is not started, starting the Execution Server will also
+              start the tunnel first.
+            </p>
+          start_task_workers_description_html: |
+            <p class="dropmenu_info">
+              Task workers require a Tunnel and the Execution Server to be up.
+            </p>
+          start_activity_workers_description_html: |
+            <p class="dropmenu_info">
+              Activity workers are the only service that can be started or stopped
+              on Portals too. On portals the workers don't require any of the other layers
+              above. On Execution Servers these workers require both the Tunnel and the
+              Execution Server to be running.
+            </p>
+      stop_services:
+        processing_in_orange_text: "processing in orange text"
+        processing: "processing"
+        not_safe: "not safe"
+        paragraphs:
+          stop_services_description_html: |
+            <p class="dropmenu_info">
+              These buttons stop the different layers of services associated with
+              an Execution Server. They are listed in the same order as they
+              need to be stopped. The last three buttons
+              only apply to Execution Servers, while <strong>Stop Activity Workers</strong>
+              applies to both Execution Servers and Portals.
+            </p>
+            <p class="dropmenu_info">
+              Refer the the last four columns of the table to find out what service
+              are currently operational. The four buttons in this pannel map
+              to them in <em>reverse order</em> (right to left).
+            </p>
+            <p class="dropmenu_info">
+              Note that stopping the Workers (any type) is an action that asks
+              them to shut down gracefully. If they are processing something, they will finish it
+              first. The last two columns of the table indicate if they are currently busy
+              with the word %{html_colorize_text}.
+              In some cases it can take a long time for the workers to stop. Refreshing this
+              page will tell you when they are stopped, but remember that the page's content
+              is normally only updated once every 30 seconds.
+            </p>
+            <p class="dropmenu_info">
+              Also note that your browser blocks while these requests are being processed;
+              be patient and check your browser's progress bar. Do not perform long operations
+              on multiple Execution Servers to avoid timeouts.
+            </p>
+          stop_activity_workers_description_html: |
+            <p class="dropmenu_info">
+              Activity Workers can run on both Portals and Execution Servers. Stopping them
+              will send them a signal to finish their current processing actions and then exit.
+            </p>
+          stop_task_workers_description_html: |
+            <p class="dropmenu_info">
+              Stopping Task Workers will send them a signal to finish what they are doing
+              and then exit. This can take some time.
+            </p>
+          stop_execution_server_description_html: |
+            <p class="dropmenu_info">
+              Stopping an Execution Server will also stop the Task Workers <strong>and</strong> Activity Workers running on it.
+              Make sure they are not actively %{processing} something.
+            </p>
+          stop_tunnels_description_html:
+            <p class="dropmenu_info">
+              Remember that is it %{not_safe} to stop Tunnels if
+              any of the Workers are currently %{processing} something.
+            </p>
+    load_info:
+      delay:
+        instant: "instant"
+        superb: "superb"
+        good: "good"
+        mediocre: "mediocre"
+        bad: "bad"
+        awful: "awful"
+      number_of:
+        active_tasks: "Number of active tasks (all users):  %{num_active}"
+        queued_tasks: "Number of queued tasks (all users):  %{num_queued}"
+        running_tasks: "Number of running tasks (all users): %{num_processing}"
+      last_wait_time: "Last wait time: %{time} (%{rating})"
+      queue_info: "(This happened %{time} ago)"
+      more_info: "more info"
+    notes:
+      show_configuration_notes: "Show configuration notes"
+      hide_configuration_notes: "Hide configuration notes"
+      notesbody_html: |
+        <div id="notesbody" class="notesbox" style="display:none">
+
+            <h3>Some Notes About Configuring A Execution Server</h3>
+
+            An Execution Server is a remote Rails application that is used by the
+            BrainPortal. Like all Rails applications, it runs on some host
+            somewhere, it listens to HTTP connections on some port and needs
+            to connect to the same database server as the BrainPortal.
+
+            <p>
+
+            Unlike the BrainPortal, the HTTP connections it expects are not
+            from a user's browser, but they are XML requests issued by the
+            BrainPortal using a Rails protocol called ActiveResource. There
+            are several ways that the BrainPortal can be told how to connect to
+            and manage the Execution Server, which explains all the fields in this form.
+
+        </div>
+    runtime_info:
+      headings:
+        runtime_information:       "Runtime Information"
+      cells:
+        rails_environment: "Rails Environment"
+        rails_revision: "Rails Revision"
+        disk_code_revision: "Disk Code Revision"
+        rails_server_uptime: "Rails Server Uptime"
+        process:
+          start:
+            revision: "Process Start Revision"
+            last_change_author: "Process Start Last Change Author"
+            last_change_revision: "Process Start Last Change Revision"
+            last_change_date: "Process Start Last Change Date"
+          remote_host:
+            name: "Remote Host Name"
+            ip_address: "Remote Host IP Address"
+            os_type: "Remote Host OS Type"
+            uptime: "Remote Host Uptime"
+        worker_pids: "Worker PIDs"
+        number_of_tasks_running: "Number of Tasks Running"
+        workers_last_change_author: "Workers Last Change Author"
+        cluster_management_system_type: "Cluster Management System Type"
+        workers_last_change_revision: "Workers Last Change Revision"
+        cluster_management_system_revision: "Cluster Management System Revision"
+        workers_last_change_date: "Workers Last Change Date"
+        ssh_public_key: "SSH Public Key"
+      server_status:
+        down: "DOWN"
+        server_status: "This server is currently %{status}"
+      rails_server_uptime:
+        up_since: "Up since: %{time}"
+        for: "for: %{duration}"
+    index:
+      title: "Execution Servers"
+    new:
+      title: "Add New Server"
+      headings:
+        main: "Add New Server"
+      cms_class_select:
+        unconfigured: "(Unconfigured)"
+        scir_sge: "Sun GridEngine"
+        scir_pbs: "PBS"
+        scir_moab: "MOAB"
+        scir_sharcnet: "Sharcnet custom"
+        scir_lsf: "LSF"
+        scir_slurm: "SLURM"
+        scir_gcloud_batch: "Google Cloud"
+        scir_unix: "UNIX processes"
+      divs:
+        name_html: |
+          <div class="field_explanation">
+            Important note: this name must also be changed accordingly in the config file
+            <em>Bourreau/config/initializers/config_bourreau.rb</em>
+            for this server to restart properly later on.
+          </div>
+        system_from_email_html: |
+          <div class="field_explanation">
+            If set, messages sent automatically by this system will contain this return address.
+          </div>
+        description_html: |
+          <div class="field_explanation">
+            The first line should be a short summary, and the rest are for any special notes for the users.
+          </div>
+        dp_cache_dir_html: |
+          <div class="field_explanation">
+            Warning! Changing this field will result in resetting the synchronization
+            status of all files from all Data Providers! Also, the Rails app will have to
+            be restarted, and all files in that directory will be erased!
+          </div>
+        spaced_dp_ignore_patterns_html: |
+          <div class="field_explanation">
+            Separate several patterns with spaces; each pattern can contain single '*'s, but no '/'s or special characters.
+          </div>
+        cache_trust_expire_html: |
+          <div class="field_explanation">
+            This means that in the execution server's cache, files that have been recorded
+            as 'InSync' but were last accessed more than this amount of time will be considered untrustworthy
+            and will be re-synchronized the next time they are accessed. Set this to a value less than <em>N</em>
+            if the cluster's file policy, for instance, deletes all scratch files older than <em>N</em> days.
+          </div>
+        cms_shared_dir_html: |
+          <div class="field_explanation">
+            Mandatory. This directory must be visible and writable from all nodes.
+            This is were the work subdirectories for all tasks will be created.
+          </div>
+        cms_default_queue_html: |
+          <div class="field_explanation">
+            Optional.
+          </div>
+        cms_extra_qsub_args_html: |
+          <div class="field_explanation">
+            Optional. Careful, this is inserted as-is in the command-line for submitting jobs.
+          </div>
+        workers_verbose_html: |
+          <div class="field_explanation">
+            This option has no effect if the logs are sent to the RAILS log.
+          </div>
+      labels:
+        system_from_email: "System 'From' reply address"
+        owner: "Owner"
+        group: "Project"
+        status: "Status"
+        rr_timeout: "Timeout for is alive check (seconds)"
+        time_zone: "Time Zone"
+        ssh_control_host: "Hostname"
+        ssh_control_user: "Username"
+        ssh_control_port: "Port Number"
+        ssh_control_rails_dir: "Rails Server Directory"
+        jump_host: "JumpHost hostname"
+        jump_user: "JumpHost username"
+        jump_port: "JumpHost port"
+        spaced_dp_ignore_patterns: "Patterns for filenames to ignore"
+        dp_cache_dir: "Path to Data Provider caches"
+        cms_class: "Type of cluster"
+        cms_shared_dir: "Path to shared work directory"
+        cms_default_queue: "Default queue name"
+        cms_extra_qsub_args: "Extra cluster submission options"
+        cache_trust_expire: "Cache Expiration Timeout"
+        workers_instances: "Number of Workers"
+        workers_chk_time: "Check interval"
+        workers_log_to: "Log destination"
+        workers_verbose: "Log verbosity"
+      status:
+        online: "Online"
+        offline: "Offline"
+        prompt: "Select status"
+      titles:
+        time_zone: "Time zone where this server is located."
+      legends:
+        ssh_remote_control_configuration: "SSH Remote Control Configuration"
+        optional_ssh_jump_host_configuration: "Optional SSH JumpHost Configuration"
+        cache_management_configuration: "Cache Management Configuration"
+        tool_version_configuration: "Tool Version Configuration"
+        cluster_management_system_configuration: "Cluster Management System Configuration"
+        task_workers_configuration: "Task Workers Configuration"
+        task_limits: "Task Limits"
+      tool_version_configuration_explanation: "A tool configuration for this Execution Server can be made once the server is created."
+      task_limits_explanation: "Task limits can be set once the Execution Server is created."
+      submit: "Create New Server"
+    rr_access_dp:
+      title: "Servers Access to Data Providers"
+      headings:
+        main: "Servers Access to Data Providers"
+        servers: "Servers"
+        data_providers: "Data Providers"
+        name: "Name"
+        type: "Type"
+        last_checked: "Last Checked"
+      paragraphs:
+        rr_access_explanation_html: |
+          <p class="medium_paragraphs">
+          This page shows which Servers (rows) can access which Data Providers (columns).
+          </p>
+          <p class="medium_paragraphs">
+          If you want to launch tasks on a particular Execution Server, make sure they are
+          configured to access files on Data Providers marked by green circles (&nbsp;%{o_icon}&nbsp;).
+          </p>
+          <p class="medium_paragraphs">
+          Data Provider identified below their name with %{not_syncable}
+          indicate their files can still be accessed through streaming APIs, but can never be fully
+          synchronized on any server.
+          </p>
+          <p class="medium_paragraphs">
+          Cells marked with %{no_access}
+          indicate servers that are not allowed to access files on the Data Provider
+          at all, in any way (streaming or synchronized), even if the Data Provider seems alive.
+          </p>
+      links:
+        refresh_all: "Refresh all"
+      status:
+        offline: "(offline)"
+        not_syncable: "(not syncable)"
+        read_only: "(read only)"
+        no_access: "(no access)"
+        alive: "alive"
+        down: "down"
+      legends:
+        data_provider_status: "Data Provider Status:"
+      data_providers_offline: "Data Providers offline:"
+      note_html: |
+        <strong>Note: </strong>Clicking on <em>Refresh</em> triggers a background process on the server
+        that will poll each Data Provider; this can take several minutes to complete.
+    rr_access:
+      title: "Execution Server Access"
+      headings:
+        main: "Execution Server Access Report"
+      legends:
+        accessible: "accessible"
+        not_accessible: "not accessible"
+    rr_disk_usage:
+      title: "Disk Usage Caches"
+      titles:
+        server_log: "Server Log"
+      headings:
+        main: "Disk Usage Statistics for Server's Data Provider Caches"
+        no_entries: "(There are no entries in this report)"
+        filter: "Filter this report: files reported above..."
+      entry:
+        one: "1 entry"
+        other: "%{count} entries"
+      file:
+        one: "1 file"
+        other: "%{count} files"
+      entries_and_files_html: "%{entries}&nbsp;/&nbsp;%{files}"
+      unknown_count:
+        one: "%{count} unknown"
+        other: "%{count} unknowns"
+      active_task:
+        one: "Danger! %{count} active task!"
+        other: "Danger! %{count} active tasks!"
+      all_on: "All on %{name}: "
+      submits:
+        cleanup_selected: "Cleanup Selected Caches"
+      of_type: "... are of type:"
+      none_means_any_html: "(None selected means <em>any</em>)"
+      last_accessed: "... were last accessed:"
+      submit: "Refresh Report"
+    show:
+      titles:
+        portal: "Portal Info"
+        execution_server: "Execution Server Info"
+        server_log: "Server Log"
+      links:
+        task_stats_by_status: "Task Statistics By Status"
+        task_stats_by_type: "Task Statistics By Type"
+        no_tool_config: "No tool config"
+      headings:
+        cache_expiration: "Cache Expiration Timeout (in seconds)"
+        workers_instances: "Number of Workers"
+        workers_chk_time: "Check interval"
+        workers_log_to: "Log destination"
+        workers_verbose: "Log verbosity"
+        message_update_error: "Server could not be updated."
+        external_status_page_url: "External status page URL"
+        base_portal_url: "Base Portal URL"
+        user_manual_url: "User Manual URL"
+        neurohub_base_url: "NeuroHub Base Portal URL"
+        small_logo: "Small logo"
+        large_logo: "Large logo"
+        large_upload_url: "Help URL for large uploads"
+        upload_size_limit: "File upload size limit (MB)"
+        mail_configuration: "Mail configuration"
+        support_email: "Support email address"
+        system_from_email: "System 'From' reply address"
+        nh_support_email: "NeuroHub Support email address"
+        nh_system_from_email: "NeuroHub System 'From' reply address"
+        error_notifications: "Error notifications sent to members of project"
+        ssh_connection_config: "SSH Connection Configuration"
+        ssh_hostname: "SSH Hostname"
+        rails_server_directory: "Rails Server Directory"
+        ssh_user: "SSH User"
+        ssh_port: "SSH Port"
+        local_control_port: "Local Control Port"
+        ssh_jumphost: "Optional SSH JumpHost Configuration"
+        jumphost_hostname: "JumpHost Hostname"
+        jumphost_user: "JumpHost User"
+        jumphost_port: "JumpHost Port"
+        reverse_service_config: "Optional Reverse Service Connection Configuration"
+        use_reverse_service: "Use the SSH Reverse Service"
+        reverse_service_hostname: "Reverse Service Hostname"
+        reverse_service_port: "Reverse Service Port"
+        reverse_service_user: "Reverse Service User"
+        reverse_service_db_socket: "Reverse Service DB Socket Path"
+        reverse_service_ssh_agent: "Reverse Service SSH Agent Socket Path"
+        activity_workers_config: "Activity Workers Configuration"
+        activity_workers_number: "Number of workers"
+        cache_management: "Cache Management Configuration"
+        path_to_dp_caches: "Path to Data Provider caches"
+        ignore_patterns: "Patterns for filenames to ignore"
+        dp_options: "Data Providers Options"
+        persistent_ssh_masters: "Use persistent SSH masters for SSH-based DataProviders"
+        cluster_config: "Cluster Configuration"
+        type_of_cluster: "Type of cluster"
+        default_queue_name: "Default queue name"
+        extra_qsub_args: "Extra cluster submission options(sbatch, qsub)"
+        path_shared_work_dir: "Path to shared work directory"
+        task_workers_config: "Task Workers Configuration"
+        number_of_workers: "Number of workers"
+        container_config: "Container Configuration"
+        docker_executable_name: "Docker executable"
+        singularity_executable_name: "Singularity executable"
+      cells:
+        status: "Status"
+        owner: "Owner"
+        unset: "(Unset)"
+        group: "Project"
+        revision_info_client: "Revision Info (Client Side)"
+        common_config_all_tasks: "Common configuration for all tasks"
+      field_explanations:
+        description: "The first line should be a short summary, and the rest are for any special notes for the users."
+        system_from_email: "If set, messages sent automatically by this system will contain this return address."
+        cms_shared_dir_html: "Mandatory. This directory must be visible and writable from all nodes.<br />This is were the work subdirectories for all tasks will be created."
+        cms_default_queue: "Optional."
+        cms_extra_qsub_args: "Optional. Careful, this is inserted as-is in the command-line for submitting jobs."
+        dp_cache_warning: "Warning! Changing this field will result in resetting the synchronization status of all files from all Data Providers! Also, the Rails app will have to be restarted, and all files in that directory will be erased!"
+        ignore_patterns: "Separate several patterns with spaces; each pattern can contain single '*'s, but no '/'s or special characters."
+        name_note_bourreau_html: "Important note: this name must also be changed accordingly in the config file <em>Bourreau/config/initializers/config_bourreau.rb</em> for this server to restart properly later on."
+        name_note_portal_html: "Important note: this name must also be changed accordingly in the config file <em>BrainPortal/config/initializers/config_portal.rb</em> for this server to restart properly later on."
+        license_agreements: "Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted."
+        external_status_page: "Link to external status page for the server."
+        user_manual_url: "If set, the portal will show a link called 'User Manual' in the account bar at the top."
+        base_portal_url_html: "Required to direct new users to the portal, this should be filled in with the <em>base</em> URL of the portal"
+        neurohub_base_url_html: "Required to direct new users to the NeuroHub portal, this should be filled in with the <em>base</em> URL of the portal"
+        large_upload_url: "If set, the portal will show a link called \"Large datasets?\" in the upload panel sending users to a custom page where you can provide explanations for alternative upload methods."
+        upload_size_limit: "If set (and numeric), the portal will show a warning when uploading files about the maximum allowed file size for uploads. Note that this limit needs to be manually enforced on the web server hosting this portal."
+        support_email_html: "If set, the portal will show a <em>mailto:</em> link for letting users contact support."
+        nh_support_email_html: "If set, the portal will show a <em>mailto:</em> link for letting users contact NeuroHub support."
+        nh_system_from_email: "If set, NeuroHub messages sent automatically by this system will contain this return address."
+        activity_workers_explanation_html: "In a development environment %{env_note} a single Activity Worker is often enough. In production, a busy Portal might require more than one Worker, but a Bourreau could work fine with just one."
+        cache_expiration_html: "This means that in the execution server's cache, files that have been recorded as 'InSync' but were last accessed more than this amount of time will be considered untrustworthy and will be re-synchronized the next time they are accessed. Set this to a value less than <em>N</em> if the cluster's file policy, for instance, deletes all scratch files older than <em>N</em> days."
+        docker_executable_name: "Name of the Docker executable available on the machines where tasks will run. It should always be set if Docker is present."
+        singularity_executable_name: "Name of the Singularity executable available on the machines where tasks will run. It should always be set if Singularity is present."
+      all_admins: "All admins"
+      paragraphs:
+        reverse_service_description_html: "This is an alternate mechanism to provide the Bourreau with a distinct database and SSH agent connection. For this to work, an SSH-accessible server (provided by hostname, port number and username) must be configured to accept the main CBRAIN portal key, and be visible from the Bourreau. That server must have a SSH agent that provides keys on a UNIX domain socket, and a database connection for CBRAIN. The database connection specification can be provided as either as a full path to a UNIX domain socket, or as <em>localhost:port</em>."
+        reverse_service_defaults_html: "Some <strong>default values</strong> shown under the input boxes are <em>guesses</em> based on the currently running Portal. These are useful if the portal happens to be the server to connect back to."
+        persistent_ssh_explanation: "When set to 'always', the SSH connections to a data provider's host will persist after the first use. This makes successive data transfers a bit faster because the connection doesn't have to be re-opened every time it is needed. The default is to have this behavior ON ('always') for portals and OFF ('never') for execution servers."
+      default_value: "Default: %{value}"
+      unknown_check_config: "(Unknown, check your config)"
+      activity_workers_number_select:
+        none: "None (for debug)"
+        recommended_bourreaux: "1 (recommended for Bourreaux)"
+        recommended_portals: "3 (recommended for Portals)"
+      like_right_now: "(like right now)"
+      options:
+        always: "Always"
+        never: "Never"
+        unconfigured: "(Unconfigured)"
+      content:
+        not_configured: "(Not configured)"

@@ -603,7 +603,7 @@ RSpec.describe UsersController, :type => :controller do
 
         it "should not allow site manager to destroy a user not from the site" do
           delete :destroy, params: {:id => user.id }
-          expect(flash['error']).to eq(ExceptionHelpers::NOT_FOUND_MSG)
+          expect(flash['error']).to eq(I18n.t('application.flash.object_not_found'))
         end
 
       end
@@ -663,7 +663,7 @@ RSpec.describe UsersController, :type => :controller do
 
         it "should not allow switching to a user not from the site" do
           post :switch, params: {:id => user.id }
-          expect(flash[:error]).to eq(ExceptionHelpers::NOT_FOUND_MSG)
+          expect(flash['error']).to eq(I18n.t('application.flash.object_not_found'))
           expect(cbrain_session[:user_id]).not_to eq(user.id)
         end
       end
@@ -741,4 +741,3 @@ RSpec.describe UsersController, :type => :controller do
   end
 
 end
-

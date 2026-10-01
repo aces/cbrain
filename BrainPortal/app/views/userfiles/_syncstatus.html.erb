@@ -28,14 +28,13 @@
   <%= "#{@_syncstatus_rr_cache[syncstat.remote_resource_id].class.to_s} '#{h(@_syncstatus_rr_cache[syncstat.remote_resource_id].name)}' : #{status_html_symbol(syncstat.status)} (#{h(syncstat.status)})".html_safe %>
   <% if syncstat.status == 'InSync' -%>
     <br>
-    Last Synchronized Date: <%= pretty_past_date syncstat.synced_at %><br>
-    Last Accessed Date:     <%= pretty_past_date syncstat.accessed_at %>
+    <%= t('.last_synchronized_date') %> <%= pretty_past_date syncstat.synced_at %><br>
+    <%= t('.last_accessed_date') %>     <%= pretty_past_date syncstat.accessed_at %>
   <% elsif syncstat.status =~ /^To/ -%>
     <br>
-    Transfer Started: <%= pretty_past_date syncstat.updated_at %>
+    <%= t('.transfer_started') %> <%= pretty_past_date syncstat.updated_at %>
   <% else -%>
     <br>
-    State Occurred: <%= pretty_past_date syncstat.updated_at %>
+    <%= t('.state_occurred') %> <%= pretty_past_date syncstat.updated_at %>
   <% end -%>
 <% end %>
-

@@ -60,7 +60,7 @@ class ExceptionLogsController < ApplicationController
     @exception_logs = ExceptionLog.find(params[:exception_log_ids]) rescue []
     @exception_logs.each(&:destroy)
 
-    flash[:notice] = "#{view_pluralize(@exception_logs.count, "exception")} deleted."
+    flash[:notice] = t('exception_logs.flash.deleted', count: @exception_logs.count)
 
     respond_to do |format|
       format.html { redirect_to(:action => :index) }

@@ -37,27 +37,27 @@
 
 <% if signup.approved? %>
   <% if newline.present? && current_user.present? && current_user.has_role?(:admin_user) %>
-    Approved by: <%= signup.approved_by %><%= newline %>
+    <%= t('.approved_by', name: signup.approved_by) %><%= newline %>
   <% end %>
-  Approved at: <%= signup.approved_at %>
+  <%= t('.approved_at', time: signup.approved_at) %>
 <% else %>
 
   <% if signup.confirmed? %>
-    <span><strong>Email confirmed.</strong></span>
+    <span><strong><%= t('.email_confirmed') %></strong></span>
   <% else %>
-    <span class="warning">(Email unconfirmed)</span>
+    <span class="warning"><%= t('.warnings.email_unconfirmed') %></span>
   <% end %>
   <%= newline %>
 
   <% if signup.dup_email? %>
-    <span class="warning">(Conflicting email)</span><%= newline %>
+    <span class="warning"><%= t('.warnings.conflicting_email') %></span><%= newline %>
   <% end %>
 
   <% if signup.dup_login? %>
-    <span class="warning">(Login conflict)</span>
+    <span class="warning"><%= t('.warnings.login_conflict') %></span>
   <% else %>
     <% if current_user.present? && current_user.has_role?(:admin_user) %>
-      <%= link_to "(Approve)", new_user_path(:signup_id => signup.id), :class => 'action_link' %>
+      <%= link_to t('.links.approve'), new_user_path(:signup_id => signup.id), :class => 'action_link' %>
     <% end %>
   <% end %>
 

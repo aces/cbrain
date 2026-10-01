@@ -22,18 +22,10 @@
 #
 -%>
 
-<% title 'Confirm Your Request' %>
+<% title t('.title') %>
 
-<h1>Please confirm your new account request.</h1>
+<h1><%= t('.headings.main') %></h1>
 
-Thank you for following the link from CBRAIN in your mailbox.
-<p>
-To ensure you are indeed the owner of the email address that has
-requested the creation of an account on CBRAIN, please complete the
-final required step by clicking the button below. This will tell
-the CBRAIN administrators that your request is legitimate and
-official.
-<p>
+<%= t('.paragraphs.main_html') %>
 
-<%= link_to( 'Confirm request', confirm_signup_path(@signup, :token => @token), :class => "button", :method => :post ) %>
-
+<%= link_to( t('.links.confirm_request'), confirm_signup_path(@signup, :token => @token), :class => "button", :method => :post ) %>

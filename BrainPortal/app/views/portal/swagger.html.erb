@@ -22,7 +22,7 @@
 #
 -%>
 
-<% title 'CBRAIN API' %>
+<% title t('.title') %>
 
 <link href='swagger/css/typography.css' media='screen' rel='stylesheet' type='text/css'/>
 <link href='swagger/css/reset.css'      media='screen' rel='stylesheet' type='text/css'/>
@@ -43,27 +43,7 @@
 <script src='swagger/lib/marked.js'                        type='text/javascript'></script>
 <script src='swagger/lib/swagger-oauth.js'                 type='text/javascript'></script>
 
-<div class="generalbox">
-<big><strong>This page describes the CBRAIN API</strong></big>
-
-<p class="medium_paragraphs">
-For more information about the work in progress on the API, please look up the
-<a href="https://github.com/aces/cbrain/issues?q=is%3Aopen+is%3Aissue+label%3AAPI">API issues</a>
-on
-<a href="https://github.com/aces/cbrain">CBRAIN's GitHub repository</a>.
-
-<p class="medium_paragraphs">
-This specification's <a href="/swagger.yaml">YAML</a> or <a href="/swagger.json">JSON</a> files can be opened
-at <a href="https://app.swaggerhub.com/home">SwaggerHUB</a>.
-
-<p class="medium_paragraphs">
-This will provide you a way to generate client code and inspect the same documentation
-that is shown here.
-In particular, this will allow you to generate client libraries in all sorts of
-marvelous exotic languages, such as <em>Python</em>, <em>Perl</em>, <em>Java</em>, <em>Swift</em> and even <em><strong>Ruby</strong></em>.
-<p class="medium_paragraphs">
-Here is a direct link to the developer's <a href="https://app.swaggerhub.com/apis/prioux/CBRAIN/<%= @spec_version %>">latest version on SwaggerHub</a>.
-</div>
+<%= t('.paragraphs.api_html', spec_version: @spec_version) %>
 
 <div class="swagger-section">
   <div id="message-bar" class="swagger-ui-wrap" data-sw-translate>&nbsp;</div>

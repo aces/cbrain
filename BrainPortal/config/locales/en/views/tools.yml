@@ -1,0 +1,113 @@
+en:
+  tools:
+    form_fields:
+      titles:
+        cbrain_task_class_name: "PortalTask subclass which implements this tool."
+      headings:
+        general_info: "General info"
+        name: "Tool Name"
+        cbrain_task_class_name: "CbrainTask Class name"
+        last_updated: "Last Updated"
+        belongs_to: "Belongs to"
+        available_to_project: "Available to members of project"
+        category: "Category"
+        license_agreements: "License agreements"
+        description: "Description"
+        package_name: "Package name"
+        tool_type: "Tool type"
+        comma_separated_tags: "Comma separated tags"
+        url: "Tool URL"
+        select_menu_text: "Text for select box on the userfiles page"
+      cells:
+        created: "Created"
+        last_updated: "Last updated"
+        belongs_to: "Belongs to"
+      paragraphs:
+        license_agreements_html: |
+          <div class="field_explanation">
+            Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.
+          </div>
+        description_html: |
+          <div class="field_explanation">
+            The first line is a short summary, and the rest are for any special notes for the users.
+          </div>
+      labels:
+        common_config: "Common configuration this tool on all servers:"
+        versions_installed: "Versions installed on the following execution servers:"
+      links:
+        add_new: "Add new"
+      datas:
+        cpu_count:
+          one: "1 cpu"
+          other: "%{count} cpus"
+      no_versions_configured: "(No specific versions configured)."
+      versions_configured:
+        one: "1 version configured."
+        other: "%{count} versions configured."
+      version_config_name: "version configuration '%{name}'"
+
+    tool_config_select:
+      include_blanks:
+        no_online_server: "No online server for this tool!"
+        select_server_version: "Select Server & Version"
+      labels:
+        server_version_html: "Server & Version:"
+      submits:
+        launch: "Launch %{name}"
+    tools_table:
+      links:
+        create_new_tool: "Create New Tool"
+        autoload_tools: "Autoload Tools"
+        access_reports: "Access Reports"
+        tool_versions_list: "Tool Versions List"
+        version_count:
+          one: "(1 version)"
+          other: "(%{count} versions)"
+        access: "Access?"
+      titles:
+        autoload_tools: "Registers all subclasses of PortalTask as Tools"
+      columns:
+        name: "Tool Name"
+        description: "Description"
+        category: "Category"
+        owner: "Owner"
+        group: "Project"
+        execution_versions: "Execution & Versions"
+        access: "Access?"
+        help: "Help"
+        info: "Info"
+    edit:
+      title: "Tool Info"
+      titles:
+        log_title: "Tool Log"
+    index:
+      title: "Tools"
+    new:
+      title: "Add New Tool"
+      titles:
+        cbrain_task_class: "CbrainTask Class:"
+      headings:
+        main: "Add New Tool"
+      labels:
+        name: "Tool Name:"
+        cbrain_task_class: "CbrainTask Class:"
+        belongs_to: "Belongs to:"
+        group: "Available to members of project:"
+        category: "Category:"
+        license_agreements: "License agreements:"
+        description: "Description:"
+        package_name: "Package name:"
+        tool_type: "Tool type:"
+        application_tags: "Comma separated tags:"
+        url: "Tool URL:"
+        select_menu_text: "Text for select box on the userfiles page:"
+      paragraphs:
+        license_agreements_html: |
+          <div class="field_explanation">
+            Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.
+          </div>
+        description_html: |
+          <div class="field_explanation">
+            The first line must should be a short summary, and the rest are for any special notes for the users.
+          </div>
+      submit: "Create new tool"

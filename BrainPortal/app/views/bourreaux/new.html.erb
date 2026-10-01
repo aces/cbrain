@@ -23,221 +23,201 @@
 -%>
 
 
-<% title 'Add New Server' %>
+<% title t('.title') %>
 
-<h2>Add New Server</h2>
+<h2><%= t('.headings.main') %></h2>
 
-<%= error_messages_for @bourreau, :object_name => "server" %>
+<%= error_messages_for @bourreau, :object_name => t('activerecord.models.remote_resource.one').downcase %>
 
 <%= form_for @bourreau, :as => :bourreau, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
   <div class="generalbox">
 
-        <p><%= f.label :name %><br/>
-        <%= f.text_field :name %><br/>
-        <div class="field_explanation">
-          Important note: this name must also be changed accordingly in the config file
-          <em>Bourreau/config/initializers/config_bourreau.rb</em>
-          for this server to restart properly later on.
-        </div>
+         <p><%= f.label      :name %><br/>
+            <%= f.text_field :name %><br/>
+            <%= t('.divs.name_html') %>
 
-        <p><%= f.label :system_from_email, "System 'From' reply address" %><br/>
-        <%= f.text_field :system_from_email %><br/>
-        <div class="field_explanation">If set, messages sent automatically by this system will contain this return address.</div>
+         <p><%= f.label      :system_from_email, t('.labels.system_from_email') %><br/>
+            <%= f.text_field :system_from_email %><br/>
+            <%= t('.divs.system_from_email_html') %>
 
-        <p><%= f.label :description %><br/>
-        <%= f.text_area :description, :rows => 10, :cols => 40 %><br/>
-        <div class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</div>
+        <p><%= f.label     :description %><br/>
+           <%= f.text_area :description, :rows => 10, :cols => 40 %><br/>
+           <%= t('.divs.description_html') %>
 
-        <p><%= f.label :user_id, "Owner" %><br/>
-        <%= user_select("bourreau[user_id]", { :selector => @bourreau }, { :disabled => ! current_user.has_role?(:admin_user) } ) %>
+        <p><%= f.label :user_id, t('.labels.owner') %><br/>
+           <%= user_select("bourreau[user_id]", { :selector => @bourreau }, { :disabled => ! current_user.has_role?(:admin_user) } ) %>
 
-        <p><%= f.label :group_id, "Project" %><br/>
-        <%= group_select("bourreau[group_id]", :selector => @bourreau) %>
+        <p><%= f.label :group_id, t('.labels.group') %><br/>
+           <%= group_select("bourreau[group_id]", :selector => @bourreau) %>
 
-        <p><%= f.label :online, "Status" %><br/>
-        <%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %>
+        <p><%= f.label  :online, t('.labels.status') %><br/>
+           <%= f.select :online, { t('.status.online') => true, t('.status.offline') => false }, :prompt => t('.status.prompt') %>
 
-        <p><%= f.label :rr_timeout, "Timeout for is alive check (seconds)" %><br/>
-        <%= f.text_field :rr_timeout, :size => 5 %>
+        <p><%= f.label      :rr_timeout, t('.labels.rr_timeout') %><br/>
+           <%= f.text_field :rr_timeout, :size => 5 %>
 
-        <span title="Time zone where this server is located.">
-          <p><%= f.label :time_zone, "Time Zone" %><br/>
-          <%= f.time_zone_select :time_zone,
-            ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
-            { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
-              :include_blank => true }
-           %>
+        <span title="<%= t('.titles.time_zone') %>">
+          <p><%= f.label            :time_zone, t('time_zone') %><br/>
+             <%= f.time_zone_select :time_zone,
+               ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
+               { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
+                 :include_blank => true }
+             %>
         </span>
 
         <p>
 
         <fieldset class="groupentry">
-          <legend>SSH Remote Control Configuration</legend>
-          <p><%= f.label :ssh_control_host, "Hostname" %><br/>
-                 <%= f.text_field :ssh_control_host, :size => 30 %>
-
-        <p><%= f.label :ssh_control_user, "Username" %><br/>
-               <%= f.text_field :ssh_control_user, :size => 10 %>
-
-         <p><%= f.label :ssh_control_port, "Port Number" %><br/>
-                     <%= f.text_field :ssh_control_port, :size => 6 %>
-
-         <p><%= f.label :ssh_control_rails_dir, "Rails Server Directory" %><br/>
-                     <%= f.text_field :ssh_control_rails_dir, :size => 60 %>
+          <legend><%= t('.legends.ssh_remote_control_configuration') %></legend>
+          <p><%= f.label      :ssh_control_host, t('.labels.ssh_control_host')  %><br/>
+             <%= f.text_field :ssh_control_host, :size => 30 %>
+          <p><%= f.label      :ssh_control_user, t('.labels.ssh_control_user') %><br/>
+             <%= f.text_field :ssh_control_user, :size => 10 %>
+          <p><%= f.label      :ssh_control_port, t('.labels.ssh_control_port') %><br/>
+             <%= f.text_field :ssh_control_port, :size => 6 %>
+          <p><%= f.label      :ssh_control_rails_dir, t('.labels.ssh_control_rails_dir') %><br/>
+             <%= f.text_field :ssh_control_rails_dir, :size => 60 %>
         </fieldset>
 
         <p>
 
         <fieldset class="groupentry">
-          <legend>Optional SSH JumpHost Configuration</legend>
-            <p><%= f.label      :jumphost_host, "JumpHost hostname" %><br/>
-               <%= f.text_field :jumphost_host, :size => 30 %><br/>
-            <p><%= f.label      :jumphost_user, "JumpHost username" %><br/>
-               <%= f.text_field :jumphost_user, :size => 10 %><br/>
-            <p><%= f.label      :jumphost_port, "JumpHost port" %><br/>
-               <%= f.text_field :jumphost_port, :size => 6 %><br/>
+          <legend><%= t('.legends.optional_ssh_jump_host_configuration') %></legend>
+          <p><%= f.label      :jumphost_host, t('.labels.jump_host') %><br/>
+             <%= f.text_field :jumphost_host, :size => 30 %><br/>
+          <p><%= f.label      :jumphost_user, t('.labels.jump_user') %><br/>
+             <%= f.text_field :jumphost_user, :size => 10 %><br/>
+          <p><%= f.label      :jumphost_port, t('.labels.jump_port') %><br/>
+             <%= f.text_field :jumphost_port, :size => 6 %><br/>
         </fieldset>
 
         <p>
 
         <fieldset class="groupentry">
-          <legend>Cache Management Configuration</legend>
-
-          <p><%= f.label :dp_cache_dir, "Path to Data Provider caches" %><br/>
-                 <%= f.text_field :dp_cache_dir, :size => 60 %><br/>
-          <div class="field_explanation">Warning! Changing this field will result in resetting the synchronization
-              status of all files from all Data Providers! Also, the Rails app will have to
-              be restarted, and all files in that directory will be erased!</div>
-
-          <p><%= f.label :spaced_dp_ignore_patterns, "Patterns for filenames to ignore" %><br/>
-                 <%= f.text_field :spaced_dp_ignore_patterns, :size => 80 %><br/>
-          <div class="field_explanation">Separate several patterns with spaces; each pattern can contain single '*'s, but no '/'s or special characters.</div>
-
-          <p><%= f.label :cache_trust_expire, "Cache Expiration Timeout" %><br/>
-                  <%= f.select :cache_trust_expire, [
-                      [ "Never",        "0"                  ],
-                      [ "Six hours",     6.hours.to_i.to_s   ],
-                      [ "Twelve hours", 12.hours.to_i.to_s   ],
-                      [ "One day",       1.day.to_i.to_s     ],
-                      [ "Three days",    3.days.to_i.to_s    ],
-                      [ "One week",      1.week.to_i.to_s    ],
-                      [ "Two weeks",     2.weeks.to_i.to_s   ],
-                      [ "One month",     1.month.to_i.to_s   ],
-                      [ "Two months",    2.months.to_i.to_s  ],
-                      [ "Three months",  3.months.to_i.to_s  ],
-                      [ "Six months",    6.months.to_i.to_s  ]
+          <legend><%= t('.legends.cache_management_configuration') %></legend>
+          <p><%= f.label      :dp_cache_dir, t('.labels.dp_cache_dir') %><br/>
+             <%= f.text_field :dp_cache_dir, :size => 60 %><br/>
+             <%= t('.divs.dp_cache_dir_html') %>
+          <p><%= f.label      :spaced_dp_ignore_patterns, t('.labels.spaced_dp_ignore_patterns') %><br/>
+             <%= f.text_field :spaced_dp_ignore_patterns, :size => 80 %><br/>
+             <%= t('.divs.spaced_dp_ignore_patterns_html') %>
+          <p><%= f.label  :cache_trust_expire, t('.labels.cache_trust_expire') %><br/>
+             <%= f.select :cache_trust_expire, [
+                      [ t('bourreaux.common.cache_trust_expire_select.never'),        "0"                  ],
+                      [ t('bourreaux.common.cache_trust_expire_select.six_hours'),     6.hours.to_i.to_s   ],
+                      [ t('bourreaux.common.cache_trust_expire_select.twelve_hours'), 12.hours.to_i.to_s   ],
+                      [ t('bourreaux.common.cache_trust_expire_select.one_day'),       1.day.to_i.to_s     ],
+                      [ t('bourreaux.common.cache_trust_expire_select.three_days'),    3.days.to_i.to_s    ],
+                      [ t('bourreaux.common.cache_trust_expire_select.one_week'),      1.week.to_i.to_s    ],
+                      [ t('bourreaux.common.cache_trust_expire_select.two_weeks'),     2.weeks.to_i.to_s   ],
+                      [ t('bourreaux.common.cache_trust_expire_select.one_month'),     1.month.to_i.to_s   ],
+                      [ t('bourreaux.common.cache_trust_expire_select.two_months'),    2.months.to_i.to_s  ],
+                      [ t('bourreaux.common.cache_trust_expire_select.three_months'),  3.months.to_i.to_s  ],
+                      [ t('bourreaux.common.cache_trust_expire_select.six_months'),    6.months.to_i.to_s  ]
                   ]
                   %></br>
-           <div class="field_explanation">This means that in the execution server's cache, files that have been recorded
-             as 'InSync' but were last accessed more than this amount of time will be considered untrustworthy
-             and will be re-synchronized the next time they are accessed. Set this to a value less than <em>N</em>
-             if the cluster's file policy, for instance, deletes all scratch files older than <em>N</em> days.</div>
+             <%= t('.divs.cache_trust_expire_html') %>
         </fieldset>
 
         <p>
 
         <fieldset class="groupentry">
-          <legend>Tool Version Configuration</legend>
-          A tool configuration for this Execution Server can be made once the server is created.
+          <legend><%= t('.legends.tool_version_configuration') %></legend>
+          <%= t('.tool_version_configuration_explanation') %>
         </fieldset>
 
         <p>
 
         <fieldset class="groupentry">
-          <legend>Cluster Management System Configuration</legend>
-          <p><%= f.label :cms_class, "Type of cluster" %><br/>
-          <%= f.select :cms_class, [
-                    [ "(Unconfigured)",  "" ],
-                    [ "Sun GridEngine",  "ScirSge" ],
-                    [ "PBS",             "ScirPbs" ],
-                    [ "MOAB",            "ScirMoab" ],
-                    [ "Sharcnet custom", "ScirSharcnet" ],
-                    [ "LSF",             "ScirLsf" ],
-                    [ "SLURM",           "ScirSlurm" ],
-                    [ "Google Cloud",    "ScirGcloudBatch" ],
-                    [ "UNIX processes",  "ScirUnix" ],
+          <legend><%= t('.legends.cluster_management_system_configuration') %></legend>
+          <p><%= f.label  :cms_class, t('.labels.cms_class') %><br/>
+             <%= f.select :cms_class, [
+                    [ t('.cms_class_select.unconfigured'),      ""                ],
+                    [ t('.cms_class_select.scir_sge'),          "ScirSge"         ],
+                    [ t('.cms_class_select.scir_pbs'),          "ScirPbs"         ],
+                    [ t('.cms_class_select.scir_moab'),         "ScirMoab"        ],
+                    [ t('.cms_class_select.scir_sharcnet'),     "ScirSharcnet"    ],
+                    [ t('.cms_class_select.scir_lsf'),          "ScirLsf"         ],
+                    [ t('.cms_class_select.scir_slurm'),        "ScirSlurm"       ],
+                    [ t('.cms_class_select.scir_gcloud_batch'), "ScirGcloudBatch" ],
+                    [ t('.cms_class_select.scir_unix'),         "ScirUnix"        ],
                   ]
           %>
 
-          <p><%= f.label :cms_shared_dir, "Path to shared work directory" %><br/>
-          <%= f.text_field :cms_shared_dir, :size => 60 %><br/>
-          <div class="field_explanation">Mandatory. This directory must be visible and writable from all nodes.
-                 This is were the work subdirectories for all tasks will be created.</div>
-
-          <p><%= f.label :cms_default_queue, "Default queue name" %><br/>
-          <%= f.text_field :cms_default_queue %><br/>
-          <div class="field_explanation">Optional.</div>
-
-          <p><%= f.label :cms_extra_qsub_args, "Extra cluster submission options(sbatch, qsub)" %><br/>
-          <%= f.text_field :cms_extra_qsub_args, :size => 60 %><br/>
-          <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
-
+          <p><%= f.label      :cms_shared_dir, t('.labels.cms_shared_dir') %><br/>
+             <%= f.text_field :cms_shared_dir, :size => 60 %><br/>
+             <%= t('.divs.cms_shared_dir_html') %>
+          <p><%= f.label      :cms_default_queue, t('.labels.cms_default_queue')  %><br/>
+             <%= f.text_field :cms_default_queue %><br/>
+             <%= t('.divs.cms_default_queue_html') %>
+          <p><%= f.label      :cms_extra_qsub_args, t('.labels.cms_extra_qsub_args')  %><br/>
+             <%= f.text_field :cms_extra_qsub_args, :size => 60 %><br/>
+             <%= t('.divs.cms_extra_qsub_args_html') %>
         </fieldset>
 
         <p>
 
         <fieldset class="groupentry">
-          <legend>Task Workers Configuration</legend>
+          <legend><%= t('.legends.task_workers_configuration') %></legend>
 
-          <p><%= f.label :workers_instances, "Number of Workers" %><br/>
-          <%= f.select :workers_instances, [
-                    [ "None (for debug)",  0 ],
-                    [ "1",                 1 ],
-                    [ "2",                 2 ],
-                    [ "3",                 3 ],
-                    [ "4",                 4 ],
-                    [ "5",                 5 ],
-                    [ "10",                10 ],
-                    [ "20",                20 ]
+          <p><%= f.label  :workers_instances, t('.labels.workers_instances') %><br/>
+             <%= f.select :workers_instances, [
+                    [ t('bourreaux.common.workers_instances_select.none'), 0  ],
+                    [ "1",                                          1  ],
+                    [ "2",                                          2  ],
+                    [ "3",                                          3  ],
+                    [ "4",                                          4  ],
+                    [ "5",                                          5  ],
+                    [ "10",                                         10 ],
+                    [ "20",                                         20 ]
               ]
           %>
 
-          <p><%= f.label :workers_chk_time, "Check interval" %><br/>
-          <%= f.select :workers_chk_time, [
-                    [ "5 seconds",               5 ],
-                    [ "10 seconds",              10 ],
-                    [ "30 seconds",              30 ],
-                    [ "1 minute (recommended)",  60 ],
-                    [ "2 minutes",               120 ],
-                    [ "5 minutes",               300 ],
-                    [ "15 minutes",              900 ],
-                    [ "1 hour",                  3600 ]
+          <p><%= f.label  :workers_chk_time, t('.labels.workers_chk_time') %><br/>
+             <%= f.select :workers_chk_time, [
+                    [ t('bourreaux.common.workers_chk_time_select.five_seconds'),    5    ],
+                    [ t('bourreaux.common.workers_chk_time_select.ten_seconds'),     10   ],
+                    [ t('bourreaux.common.workers_chk_time_select.thirty_seconds'),  30   ],
+                    [ t('bourreaux.common.workers_chk_time_select.one_minute'),      60   ],
+                    [ t('bourreaux.common.workers_chk_time_select.two_minutes'),     120  ],
+                    [ t('bourreaux.common.workers_chk_time_select.five_minutes'),    300  ],
+                    [ t('bourreaux.common.workers_chk_time_select.fifteen_minutes'), 900  ],
+                    [ t('bourreaux.common.workers_chk_time_select.one_hour'),        3600 ]
                 ]
           %>
 
-          <p><%= f.label :workers_log_to, "Log destination" %><br/>
-          <%= f.select :workers_log_to, [
-                    [ "Combined file (recommended)", "combined" ],
-                    [ "Separate files",              "separate" ],
-                    [ "RAILS log",                   "bourreau" ],
-                    [ "RAILS stdout",                "stdout" ],
-                    [ "RAILS stderr",                "stderr" ],
-                    [ "RAILS stdout and stderr",     "stdout|stderr" ],
-                    [ "No logging",                  "none" ]
+          <p><%= f.label  :workers_log_to, t('.labels.workers_log_to') %><br/>
+             <%= f.select :workers_log_to, [
+                    [ t('bourreaux.common.workers_log_to_select.combined_file'),            "combined"      ],
+                    [ t('bourreaux.common.workers_log_to_select.separate_files'),           "separate"      ],
+                    [ t('bourreaux.common.workers_log_to_select.rails_log'),                "bourreau"      ],
+                    [ t('bourreaux.common.workers_log_to_select.rails_stdout'),             "stdout"        ],
+                    [ t('bourreaux.common.workers_log_to_select.rails_stderr'),             "stderr"        ],
+                    [ t('bourreaux.common.workers_log_to_select.rails_stdout_and_stderr'),  "stdout|stderr" ],
+                    [ t('bourreaux.common.workers_log_to_select.no_logging'),               "none"          ]
                 ]
           %>
 
-          <p><%= f.label :workers_verbose, "Log verbosity" %><br/>
-          <%= f.select :workers_verbose, [
-                    [ "Normal",      1 ],
-                    [ "Debug info",  2 ]
+          <p><%= f.label  :workers_verbose, t('.labels.workers_verbose') %><br/>
+             <%= f.select :workers_verbose, [
+                    [ t('bourreaux.common.workers_verbose_select.normal'),      1 ],
+                    [ t('bourreaux.common.workers_verbose_select.debug_info'),  2 ]
                 ]
           %><br/>
-          <div class="field_explanation">This option has no affect if the logs are sent to the RAILS log.</div>
-
+          <%= t('.divs.workers_verbose_html') %>
         </fieldset>
 
         <p>
 
         <fieldset class="groupentry">
-          <legend>Task Limits</legend>
-          Task limits can be set once the Execution Server is created.
+          <legend><%= t('.legends.task_limits') %></legend>
+          <%= t('.task_limits_explanation') %>
         </fieldset>
 
   </div>
 
-  <p><%= submit_tag 'Create New Server' %></p>
+  <p><%= submit_tag t('.submit') %></p>
 
 <% end -%>
 

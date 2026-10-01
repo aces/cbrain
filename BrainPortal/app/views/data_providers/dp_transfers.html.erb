@@ -22,54 +22,17 @@
 #
 -%>
 
-<% title "Transfer Restrictions" %>
+<% title t('.title') %>
 
-<h2>Data Provider Transfer Restrictions Report</h2>
+<h2><%= t('.headings.main') %></h2>
 
 <% if @providers.empty? || @providers.size < 2 %>
 
-There is no information to show at this time.
+<%= t('no_information') %>
 
 <% else %>
 
-<p class="medium_paragraphs">
-This table shows which file transfers are allowed
-between Data Providers. Each cell of the table
-has two symbols, where <%= o_icon %> means <em>allowed</em>
-and <%= times_icon %> means <em>not allowed</em>.
-Transfers will succeed if <strong>both</strong> symbols
-show up as <%= o_icon %>&nbsp;<%= o_icon %>.
-</p>
-
-<p class="medium_paragraphs">
-<strong>First symbol</strong>: This one indicate
-restrictions for transferring files between Data Provider
-pairs, independently of the states of any other resources.
-The restrictions are not necessarily symmetrical: it's possible
-to configure Data Providers A and B such that transfers from
-A &rarr; B are allowed (<%= o_icon %>) while transfers
-from B &rarr; A are not (<%= times_icon %>).
-</p>
-
-<p class="medium_paragraphs">
-<strong>Second symbol</strong>:
-Since transfers are performed by a CBRAIN Portal,
-there are three other factors to take into account:
-</p>
-
-<ul>
-<li>whether or not Data Providers are <em>online</em> or <em>offline</em>;</li>
-<li>whether or not Data Providers are <em>read/write</em> or <em>read only</em>;</li>
-<li>whether or not the current Portal has itself access to each Data Provider.</li>
-</ul>
-
-<p class="medium_paragraphs">
-In such cases, Data Providers will be annotated with
-<%= html_colorize("(offline)") %>, <%= html_colorize("(read only)", "purple") %> and/or
-<%= html_colorize("(portal has no access)", "purple") %>.
-If all three properties allow the file transfers, the second
-symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
-</p>
+<%= t('.paragraphs.intro_html', ok: o_icon, no: times_icon, offline: html_colorize(t('.access.offline')), read_only: html_colorize(t('.access.read_only'), "purple"), no_access: html_colorize(t('.access.no_access'), "purple")) %>
 
 <% num_prov = @providers.size %>
 <%
@@ -86,7 +49,7 @@ symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
 
     <tr>
       <th colspan="2" rowspan="2">&nbsp;&nbsp;&nbsp;&nbsp;&rarr;<br>&uarr;&nbsp;&nbsp;&nbsp;&nbsp;</th>
-      <th colspan="<%= num_prov %>">Destination Data Provider</th>
+      <th colspan="<%= num_prov %>"><%= t('.headings.destination_dp') %></th>
     </tr>
 
     <tr class="no_wrap">
@@ -96,10 +59,10 @@ symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
            <%= nil and link_to_data_provider_if_accessible(dp, current_user, :html_options => { :class => dp.online? ? nil : 'error_link' }) %>
            <%= link_to_data_provider_if_accessible(dp, current_user) %>
            <br>
-           <%= html_colorize("(offline)")             if ! dp.online? %>
-           <%= html_colorize("(read only)", "purple") if   dp.read_only? %>
+           <%= html_colorize(t('.access.offline'))             if ! dp.online? %>
+           <%= html_colorize(t('.access.read_only'), "purple") if   dp.read_only? %>
            <% if ! can_sync_from.(dp) %>
-             <%= html_colorize("(portal has no access)", "purple") %>
+             <%= html_colorize(t('.access.no_access'), "purple") %>
            <% end %>
           </div>
         </th>
@@ -109,14 +72,14 @@ symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
     <% @providers.each_with_index do |dp_row,idx| %>
       <tr class="no_wrap">
         <% if idx == 0 %>
-          <th rowspan="<%= num_prov %>" class="vertical_text_container"><div class="vertical_text" style="height: auto; min-height: 14em">Source Data Provider</div></th>
+          <th rowspan="<%= num_prov %>" class="vertical_text_container"><div class="vertical_text" style="height: auto; min-height: 14em"><%= t('.headings.source_dp') %></div></th>
         <% end %>
         <th>
            <%= nil and link_to_data_provider_if_accessible(dp_row, current_user, :html_options => { :class => dp_row.online? ? nil : 'error_link' }) %>
            <%= link_to_data_provider_if_accessible(dp_row, current_user) %>
-           <%= html_colorize("(offline)")   if ! dp_row.online? %>
+           <%= html_colorize(t('.access.offline'))   if ! dp_row.online? %>
            <% if ! can_sync_from.(dp_row) %>
-             <br><%= html_colorize("(portal has no access)", "purple") %>
+             <br><%= html_colorize(t('.access.no_access'), "purple") %>
            <% end %>
         </th>
         <% @providers.each do |dp_col| %>
@@ -143,7 +106,7 @@ symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
 
   </table>
 
-  <%= center_legend("Copying or moving files:", [ [o_icon, "allowed"], [times_icon, "not allowed"] ] ) %>
+  <%= center_legend(t('.legends.title'), [ [o_icon, t('.legends.allowed')], [times_icon, t('.legends.not_allowed')] ] ) %>
 
 </span>
 

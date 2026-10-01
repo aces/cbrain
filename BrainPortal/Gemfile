@@ -58,6 +58,7 @@ gem 'pagy', '~>3.7'   # fast pagination for NeuroHub
 gem "jquery-rails"
 gem "jquery-ui-rails"
 gem "jquery-form-rails"
+gem "rails-i18n"
 
 # ActiveResource channel gems
 gem "activeresource", require: 'active_resource'

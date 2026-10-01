@@ -24,25 +24,25 @@
 
 
   <div class="menu-bar">
-    <%= link_to "New Request", new_signup_path, :class => "button" %>
+    <%= link_to t('.links.new_request'), new_signup_path, :class => "button" %>
 
     <%
        # Careful, the labels of the buttons below are used by the controller
        # to select which multi action to perform. Change them at both places.
     %>
 
-    <%= external_submit_button "Delete",                'signups_table_form', :class => "button", :name => 'operation', :value => 'delete', :data => { :confirm =>  'Delete the selected signup requests?' } %>
-    <%= external_submit_button "Adjust Login",          'signups_table_form', :class => "button", :name => 'operation', :value => 'fix_login' %>
-    <%= external_submit_button "Resend Confirm Email",  'signups_table_form', :class => "button", :name => 'operation', :value => 'reconfirm' %>
-    <%= external_submit_button "Toggle Hidden",         'signups_table_form', :class => "button", :name => 'operation', :value => 'toggle_hidden' %>
+    <%= external_submit_button t('delete'),                 'signups_table_form', :class => "button", :name => 'operation', :value => 'delete', :data => { :confirm =>  t('.delete_confirm') } %>
+    <%= external_submit_button t('.buttons.adjust_login'),          'signups_table_form', :class => "button", :name => 'operation', :value => 'fix_login' %>
+    <%= external_submit_button t('.buttons.resend_confirm_email'),  'signups_table_form', :class => "button", :name => 'operation', :value => 'reconfirm' %>
+    <%= external_submit_button t('.buttons.toggle_hidden'),         'signups_table_form', :class => "button", :name => 'operation', :value => 'toggle_hidden' %>
 
     <% if @scope.custom[:view_hidden] %>
-      <%= link_to "Hide Hidden Records", signups_path(:view_hidden => false), :class => "button" %>
+      <%= link_to t('.links.hide_hidden_records'), signups_path(:view_hidden => false), :class => "button" %>
     <% else %>
-      <%= link_to "Show All Records",    signups_path(:view_hidden => true),  :class => "button" %>
+      <%= link_to t('.links.show_all_records'),    signups_path(:view_hidden => true),  :class => "button" %>
     <% end %>
 
-    <%= scope_filter_link("Latest TODO", "signups#index", :replace,
+    <%= scope_filter_link(t('.links.latest_todo'), "signups#index", :replace,
           [ { :a => :approved_by, :v => '' }, { :a => :confirmed, :v => 1 } ],
           :url => { :controller => :signups, :action => :index, :view_hidden => false },
           :link => { :class => "button" }
@@ -64,9 +64,9 @@
   <div class="pagination">
     <span class="page_links">
       (
-      <%= pluralize @signups.total_entries, "signup" %>
+      <%= t('.links.signup_request', count: @signups.total_entries) %>
       <% if @num_hidden && @num_hidden > 0 %>
-        , <%= @num_hidden %> hidden <%= hidden_icon %>
+        , <%= @num_hidden %> <%= t('hidden') %> <%= hidden_icon %>
       <% end %>
       )
     </span>
@@ -96,25 +96,25 @@
     %>
 
     <%
-      t.column("Name", :last,
+      t.column(t('.columns.name'), :last,
         :sortable => true
       ) { |d| link_to d.full_name, signup_path(d) }
     %>
 
     <%
-      t.column("Edit", :edit) do |d|
+      t.column(t('.columns.edit'), :edit) do |d|
     %>
-      <%= link_to "Edit", edit_signup_path(d), :class => 'action_link' %>
+      <%= link_to t('.links.edit'), edit_signup_path(d), :class => 'action_link' %>
     <% end %>
 
     <%
-      t.column("Email", :email,
+      t.column(t('.columns.email'), :email,
         :sortable => true
       ) { |d| red_if((d.dup_email? and not d.approved?), d.email) }
     %>
 
     <%
-      t.column("Position", :position,
+      t.column(t('.columns.position'), :position,
         :sortable => true,
         :hidden   => true,
         :filters  => default_filters_for(@base_scope, :position)
@@ -122,7 +122,7 @@
     %>
 
     <%
-      t.column("Department", :department,
+      t.column(t('.columns.department'), :department,
         :sortable => true,
         :hidden   => true,
         #:filters  => default_filters_for(@base_scope, :department)
@@ -130,27 +130,27 @@
     %>
 
     <%
-      t.column("Institution", :institution,
+      t.column(t('.columns.institution'), :institution,
         :sortable => true,
         #:filters  => default_filters_for(@base_scope, :institution)
       )
     %>
 
     <%
-      t.column("Country", :country,
+      t.column(t('.columns.country'), :country,
         :sortable => true,
         :filters => default_filters_for(@base_scope, :country)
       )
     %>
 
     <%
-      t.column("Username", :login,
+      t.column(t('.columns.username'), :login,
         :sortable => true
       )
     %>
 
     <%
-      t.column("Comments", :comment) do |d|
+      t.column(t('.columns.comments'), :comment) do |d|
         html_tool_tip(crop_text_to(40, d.comment), :offset_x => 0, :offset_y => 20) do
           simple_format(d.comment, :sanitize => true)
         end if d.comment.present?
@@ -158,7 +158,7 @@
     %>
 
     <%
-      t.column("Private Comments", :admin_comment) do |d|
+      t.column(t('.columns.private_comments'), :admin_comment) do |d|
         html_tool_tip(crop_text_to(40, d.admin_comment), :offset_x => 0, :offset_y => 20) do
           simple_format(d.admin_comment, :sanitize => true)
         end if d.admin_comment.present?
@@ -166,48 +166,48 @@
     %>
 
     <%
-      t.column("In CBRAIN", :user) do |d|
+      t.column(t('.columns.in_cbrain'), :user) do |d|
         user = User.where(:id => d.user_id).first
         if (user)
           link_to_user_with_tooltip(user)
         else
-          "(None)"
+          t('none_parentheses')
         end
       end
     %>
 
     <%
-      t.column("Portal", :remote_resource) do |d|
+      t.column(t('.columns.portal'), :remote_resource) do |d|
         portal = d.remote_resource
         if (portal)
           link_to_bourreau_if_accessible(portal)
         else
-          "(None)"
+          t('none_parentheses')
         end
       end
     %>
 
     <%
-      t.column("Origin", :form_page,
+      t.column(t('.columns.origin'), :form_page,
         :sortable => true
       )
     %>
 
     <%
-      t.column("Created", :created_at,
+      t.column(t('.columns.created'), :created_at,
         :sortable => true
       ) do |d|
         html_tool_tip(to_localtime(d.created_at, :datetime), :offset_x => 0, :offset_y => 20) do
-          "Updated: #{d.updated_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z")}".html_safe
+          t('.tooltips.updated_at', time: d.updated_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z")).html_safe
         end
       end
     %>
 
     <%
-      t.column("Approved By", :approved_by,
+      t.column(t('.columns.approved_by'), :approved_by,
         :sortable => true,
         :filters => [ { :value => nil,
-                        :label => '(Not approved)',
+                        :label => t('.labels.not_approved'),
                         :indicator => @base_scope.where(:approved_by => nil).count,
                       }
                     ] +
@@ -216,7 +216,7 @@
     %>
 
     <%
-      t.column("Status", :status) do |d|
+      t.column(t('.columns.status'), :status) do |d|
     %>
       <%= render :partial => 'status', :locals => { :signup => d, :multi_lines => false } %>
     <% end %>

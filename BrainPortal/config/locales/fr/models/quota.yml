@@ -1,0 +1,6 @@
+fr:
+  activerecord:
+    models:
+      quota:
+        one: "Quota"
+        other: "Quotas"

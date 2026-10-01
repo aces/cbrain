@@ -1,0 +1,9 @@
+en:
+  activerecord:
+    models:
+      tag:
+        one: "Tag"
+        other: "Tags"
+      tag_downcase:
+        one: "tag"
+        other: "tags"

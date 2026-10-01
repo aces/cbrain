@@ -28,11 +28,11 @@ module UsersHelper
   # View helper to create a valid array for a role selection box on the
   # user create and edit pages.
   def roles_for_user(user)
-    roles = [["Normal User", "NormalUser"],["Site Manager","SiteManager"]]
+    roles = [[t('users.normal'), "NormalUser"],[t('users.site_manager'),"SiteManager"]]
 
     if user.has_role? :admin_user
-      roles << ["Admin User","AdminUser"]
-      roles << ["Automated User", "AutomatedUser"]
+      roles << [t('users.admin'),"AdminUser"]
+      roles << [t('users.automated'), "AutomatedUser"]
     end
 
     roles

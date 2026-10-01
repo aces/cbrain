@@ -18,13 +18,13 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
 <% myidlist = @task.new_record? ? @task.params[:interface_userfile_ids] : [ @task.params[params_var] ] %>
 
-Run <%= toolname %> on:<P>
+<%= t('.run_on', name: toolname ) %><P>
 
 <ul>
   <% (myidlist || []).each do |id| %>

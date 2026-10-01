@@ -22,9 +22,9 @@
 #
 -%>
 
-<h4>By Custom Filter</h4>
+<h4><%= t('.headings.by_custom_filter') %></h4>
 
-<%= link_to 'Create Custom Filter', {:controller => :custom_filters, :action => :new, :filter_class => @custom_filter.class.name} %>
+<%= link_to t('.links.create_custom_filter'), {:controller => :custom_filters, :action => :new, :filter_class => @custom_filter.class.name} %>
 
 <ul class="filter_menu">
   <%  @custom_filter.class.where(:user_id  => current_user.id).each do |filter| %>

@@ -25,7 +25,7 @@
 -%>
 
 <% max_entries = 25 %>
-<% title "Top #{max_entries} Tools By #{@mode == 'cpu' ? 'CPU' : 'count'}" %>
+<% title(@mode == 'cpu' ? t('.titles.cpu', count: max_entries) : t('.titles.count', count: max_entries)) %>
 
 <head>
   <title><%= RemoteResource.current_resource.name.presence || "CBRAIN" %><%= yield :title %></title>

@@ -32,7 +32,7 @@ class CustomFiltersController < ApplicationController
   def new #:nodoc:
     filter_param = "#{params[:filter_class]}".classify
     unless CustomFilter.descendants.map(&:name).include?(filter_param)
-      cb_error "Filter class required", :status  => :unprocessable_entity
+      cb_error t('custom_filters.errors.class_required'), :status  => :unprocessable_entity
     end
     filter_class  = Class.const_get(filter_param)
     @custom_filter = filter_class.new
@@ -51,7 +51,7 @@ class CustomFiltersController < ApplicationController
   def create #:nodoc:
     filter_param = "#{params[:filter_class]}".classify
     unless CustomFilter.descendants.map(&:name).include?(filter_param)
-      cb_error "Filter class required", :status  => :unprocessable_entity
+      cb_error t('custom_filters.errors.class_required'), :status  => :unprocessable_entity
     end
 
     filter_class   = Class.const_get(filter_param)
@@ -60,7 +60,7 @@ class CustomFiltersController < ApplicationController
 
     respond_to do |format|
       if @custom_filter.save
-        flash[:notice] = 'Filter successfully created.'
+        flash[:notice] = t('custom_filters.flash.created')
         format.html { redirect_to :controller => controller_name(), :action => :index }
       else
         format.html { render :action  => :new }
@@ -83,7 +83,7 @@ class CustomFiltersController < ApplicationController
 
     respond_to do |format|
       if @custom_filter.errors.empty?
-        flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully updated."
+        flash[:notice] = t('custom_filters.flash.updated', name: @custom_filter.name )
         format.html { render :action => :show }
       else
         format.html { render :action => :show }
@@ -97,7 +97,7 @@ class CustomFiltersController < ApplicationController
     @custom_filter = current_user.custom_filters.find(params[:id])
     @custom_filter.destroy
 
-    flash[:notice] = "Custom filter '#{@custom_filter.name}' deleted."
+    flash[:notice] = t('custom_filters.flash.deleted', name: @custom_filter.name)
 
     respond_to do |format|
       format.html { redirect_to :controller => controller_name(), :action => :index }

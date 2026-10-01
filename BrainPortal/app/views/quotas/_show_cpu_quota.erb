@@ -22,111 +22,82 @@
 #
 -%>
 
-<% title @quota.new_record? ? 'Create CPU Quota' : 'Edit CPU Quota' %>
+<% title @quota.new_record? ? t('.titles.create') : t('.titles.edit') %>
 
 <%= error_messages_for @quota %>
 
 <div class="menu_bar">
 
-  <%= link_to "CPU Quotas Table", quotas_path(:mode => :cpu), :class => :button %>
+  <%= link_to t('.links.cpu_quotas_table'), quotas_path(:mode => :cpu), :class => :button %>
 
   <% if ! @quota.new_record? %>
 
-    <%= link_to 'New CPU Quota',
+    <%= link_to t('.links.new_cpu_quota'),
         new_quota_path(:mode => :cpu), :class => :button %>
 
   <% end %>
 
 </div>
 
-
-
-<%= show_table(@quota, :as => :quota, :header => "CPU Quota Record",
+<%= show_table(@quota, :as => :quota, :header => t('.headings.record'),
                        :edit_condition => check_role(:admin_user)) do |t| %>
   <%= hidden_field_tag :mode, 'cpu' %>
 
-  <% t.cell("User", :show_width => 2) do %>
+  <% t.cell(t('.cells.user'), :show_width => 2) do %>
     <% if @quota.new_record? %>
-      <%= user_select("quota[user_id]", { :selector => @quota.user_id, :include_blank => '(Default For All Users)' }) %>
-      <div class="field_explanation">
-         You can leave the user field blank and instead specify a project, below.
-         You can also leave them both blank.
-      </div>
+      <%= user_select("quota[user_id]", { :selector => @quota.user_id, :include_blank => t('.blanks.default_all_users') }) %>
+        <%= t('.divs.user_html') %>
     <% else %>
       <%= @quota.is_for_user? ?
           link_to_user_if_accessible(@quota.user) :
-          html_colorize("(Default for all users)", 'orange') %>
+          html_colorize(t('.blanks.default_all_users'), 'orange') %>
     <% end %>
   <% end %>
 
-  <% t.cell("Project", :show_width => 2) do %>
+  <% t.cell(t('.cells.project'), :show_width => 2) do %>
     <% if @quota.new_record? %>
-      <%= group_select("quota[group_id]", { :selector => @quota.group_id, :include_blank => '(Any Project)' }) %>
-      <div class="field_explanation">
-         Instead of specifying a user, above, you can select a project, and the quota
-         will apply to all users of that project. User and Project are mutually exclusive
-         in a CPU quota. You can also leave them both blank.
-      </div>
+      <%= group_select("quota[group_id]", { :selector => @quota.group_id, :include_blank => t('.blanks.any_project') }) %>
+      <%= t('.divs.project_html') %>
     <% else %>
       <%= @quota.is_for_group? ?
           link_to_group_if_accessible(@quota.group) :
-          html_colorize("(Any Project)", 'orange') %>
+          html_colorize(t('.blanks.any_project'), 'orange') %>
     <% end %>
   <% end %>
 
-  <% t.cell("Execution Server", :show_width => 2) do %>
+  <% t.cell(t('.cells.execution_server'), :show_width => 2) do %>
     <% if @quota.new_record? %>
-      <%= bourreau_select("quota[remote_resource_id]", { :selector => @quota.remote_resource_id, :include_blank => '(Any Execution Server)' }) %>
-      <div class="field_explanation">
-         You can leave this blank, but then you must provider either a user or a project, above.
-      </div>
+      <%= bourreau_select("quota[remote_resource_id]", { :selector => @quota.remote_resource_id, :include_blank => t('.blanks.any_execution_server') }) %>
+      <%= t('.divs.execution_server_html') %>
     <% else %>
       <%= @quota.is_for_resource? ?
           link_to_bourreau_if_accessible(@quota.remote_resource) :
-          html_colorize("(Any Execution Server)", 'orange') %>
+          html_colorize(t('.blanks.any_execution_server'), 'orange') %>
     <% end %>
   <% end %>
 
-  <% t.edit_cell(:max_cpu_past_week, :show_width => 2, :header => "Max CPU time past week", :content => pretty_quota_cputime(@quota.max_cpu_past_week,true)) do |f| %>
+  <% t.edit_cell(:max_cpu_past_week, :show_width => 2, :header => t('.headings.max_cpu_week'), :content => pretty_quota_cputime(@quota.max_cpu_past_week,true)) do |f| %>
     <%= f.text_field :max_cpu_past_week, :size => 12 %>
-    <div class="field_explanation">
-       The limit CPU time is in seconds; when entering a new value,
-       you can use a unit as a suffix, such as in
-       <em>3.5h</em> (hours), <em>7d</em> (days), <em>4w</em> (weeks),
-       <em>3m</em> (months) and <em>1y</em> (years).
-       There are no suffixes for seconds and minutes.
-       A value of <em>0</em> means no time is allowed at all.
-    </div>
+    <%= t('.divs.max_cpu_past_week_html') %>
   <% end %>
 
-  <% t.edit_cell(:max_cpu_past_month, :show_width => 2, :header => "Max CPU time past month", :content => pretty_quota_cputime(@quota.max_cpu_past_month,true)) do |f| %>
+  <% t.edit_cell(:max_cpu_past_month, :show_width => 2, :header => t('.headings.max_cpu_month'), :content => pretty_quota_cputime(@quota.max_cpu_past_month,true)) do |f| %>
     <%= f.text_field :max_cpu_past_month, :size => 12 %>
-    <div class="field_explanation">
-       See the explanations for Max CPU time past week.
-    </div>
+      <%= t('.divs.max_cpu_past_month_html') %>
   <% end %>
 
-  <% t.edit_cell(:max_cpu_ever, :show_width => 2, :header => "Max CPU time in total", :content => pretty_quota_cputime(@quota.max_cpu_ever,true)) do |f| %>
+  <% t.edit_cell(:max_cpu_ever, :show_width => 2, :header => t('.headings.max_cpu_total'), :content => pretty_quota_cputime(@quota.max_cpu_ever,true)) do |f| %>
     <%= f.text_field :max_cpu_ever, :size => 12 %>
-    <div class="field_explanation">
-       See the explanations for Max CPU time past week.
-    </div>
+    <%= t('.divs.max_cpu_ever_html') %>
   <% end %>
 
-  <% t.edit_cell(:max_active_tasks, :show_width => 2, :header => "Max Active Tasks", :content => pretty_max_active_tasks(@quota)) do |f| %>
+  <% t.edit_cell(:max_active_tasks, :show_width => 2, :header => t('.headings.max_active_tasks'), :content => pretty_max_active_tasks(@quota)) do |f| %>
     <%= f.text_field :max_active_tasks, :size => 6 %>
-    <div class="field_explanation">
-       The maximum number of tasks that can be active at any given time on the Execution Server.
-       Leave blank to not set a limit. A value of zero will prevent any tasks from being launched.
-       Note that projects are ignored for these values, and that if several quota records apply
-       to a user and differ only by project, the minimum value found in that set will be used.
-       The core Admin account is used to set a maximum number of tasks IN TOTAL for an Execution
-       server (thus, no limit specific to that admin user can be specified here).
-    </div>
+    <%= t('.divs.max_active_tasks_html') %>
   <% end %>
 
 <% end %>
 
 <P>
-<%= render :partial => "layouts/log_report", :locals  => { :log  => @quota.getlog, :title => 'CPU Quota Record Log' } %>
+<%= render :partial => "layouts/log_report", :locals  => { :log  => @quota.getlog, :title => t('.titles.log') } %>
 

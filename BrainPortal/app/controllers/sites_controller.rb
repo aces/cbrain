@@ -67,7 +67,7 @@ class SitesController < ApplicationController
     respond_to do |format|
       if @site.save
         @site.addlog_context(self,"Created by '#{current_user.login}'")
-        flash[:notice] = 'Site was successfully created.'
+        flash[:notice] = t('sites.flash.created')
         format.html { redirect_to :action => :index, :format => :html }
         format.xml  { render :xml => @site, :status => :created, :location => @site }
       else
@@ -114,7 +114,7 @@ class SitesController < ApplicationController
         @site.addlog_object_list_updated("Users",    User,  original_user_ids,    @site.user_ids,     current_user, :login)
         @site.addlog_object_list_updated("Managers", User,  original_manager_ids, @site.managers.ids, current_user, :login)
         @site.addlog_object_list_updated("Groups",   Group, original_group_ids,   @site.group_ids,    current_user)
-        flash[:notice] = 'Site was successfully updated.'
+        flash[:notice] = t('sites.flash.updated')
         format.html { redirect_to(@site) }
         format.xml  { head :ok }
       else

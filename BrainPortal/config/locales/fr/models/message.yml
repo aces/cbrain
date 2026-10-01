@@ -1,0 +1,6 @@
+fr:
+  activerecord:
+    models:
+      message:
+        one: "Message"
+        other: "Messages"

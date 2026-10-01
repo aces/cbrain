@@ -36,15 +36,15 @@ module DateRangeRestriction
     return "" if date_attribute.blank?
 
     if (absolute_or_relative_from == "absolute") && absolute_from.blank?
-      return "You should enter an absolute 'from' date or de-select the radio button"
+      return I18n.t('date_range.errors.absolute_from_missing')
     end
 
     if (absolute_or_relative_to == "absolute") && absolute_to.blank?
-      return "You should enter an absolute 'to' date or de-select the radio button"
+      return I18n.t('date_range.errors.absolute_to_missing')
     end
 
     if (absolute_or_relative_to == "relative") && (absolute_or_relative_from == "relative") && (relative_from == relative_to)
-      return "You should choose 2 differents relatives dates"
+      return I18n.t('date_range.errors.same_relative_dates')
     end
 
     return ""

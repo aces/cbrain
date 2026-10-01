@@ -83,7 +83,7 @@ class UsersController < ApplicationController
   def show #:nodoc:
     @user = User.find(params[:id])
 
-    cb_error "You don't have permission to view this user.", :redirect  => start_page_path unless edit_permission?(@user)
+    cb_error t('users.errors.no_view_permission'), :redirect  => start_page_path unless edit_permission?(@user)
 
     @default_data_provider  = DataProvider.find_by_id(@user.meta["pref_data_provider_id"])
     @default_bourreau       = Bourreau.find_by_id(@user.meta["pref_bourreau_id"])
@@ -124,9 +124,9 @@ class UsersController < ApplicationController
         @user  = signup.to_user # turn signup record into a pre-filled user object
         portal = signup.remote_resource
         form   = signup.form_page # a keyword like CBRAIN or NeuroHub
-        flash.now[:notice]  = "Fields have been filled from a signup request.\n"
-        flash.now[:notice] += "That request was performed on portal '#{portal.name}'.\n" if portal
-        flash.now[:notice] += "The form used for the request was '#{form}'.\n"           if form
+        flash.now[:notice]  = t('users.flash.filled_from_signup')
+        flash.now[:notice] += t('users.flash.signup_portal', portal: portal.name) if portal
+        flash.now[:notice] += t('users.flash.signup_form', form: form)            if form
       end
     end
   end
@@ -159,7 +159,7 @@ class UsersController < ApplicationController
       # This is not a real attribute of the model, and must be added after user is created
       add_meta_data_from_form(@user, [ :pref_data_provider_id, :allowed_globus_provider_names ])
 
-      flash[:notice] = "User successfully created.\n"
+      flash[:notice] = t('users.flash.created')
 
       # Find signup record matching login name, and log creation and transfer some info.
       if signup = Signup.where(:id => params[:signup_id]).first
@@ -176,12 +176,12 @@ class UsersController < ApplicationController
       end
 
       if @user.email.blank? || @user.email =~ /example/i || @user.email !~ /@/
-        flash[:notice] += "Since this user has no proper email address, no welcome email was sent."
+        flash[:notice] += t('users.flash.no_welcome_email')
       else
         if send_welcome_email(@user, signup, new_user_attr[:password], no_password_reset_needed)
-          flash[:notice] += "A welcome email is being sent to '#{@user.email}'."
+          flash[:notice] += t('users.flash.welcome_email_sent', email: @user.email)
         else
-          flash[:error] = "Could not send email to '#{@user.email}' informing them that their account was created."
+          flash[:error] = t('users.flash.welcome_email_failed', email: @user.email)
         end
       end
       respond_to do |format|
@@ -201,10 +201,10 @@ class UsersController < ApplicationController
   def change_password #:nodoc:
     @user = User.find(params[:id])
     if ! edit_permission?(@user)
-       cb_error "You don't have permission to view this page.", :redirect => start_page_path
+       cb_error t('users.errors.no_view_permission'), :redirect => start_page_path
     end
     if user_must_link_to_oidc?(@user)
-      cb_error "Your account can only authenticate with an OpenID identities providers.", :redirect => user_path(current_user)
+      cb_error t('users.errors.openid_only_no_password'), :redirect => user_path(current_user)
     end
   end
 
@@ -212,7 +212,7 @@ class UsersController < ApplicationController
   # PUT /users/1.xml
   def update #:nodoc:
     @user          = User.where(:id => params[:id]).includes(:groups).first
-    cb_error "You don't have permission to update this user.", :redirect => start_page_path unless edit_permission?(@user)
+    cb_error t('users.errors.no_update_permission'), :redirect => start_page_path unless edit_permission?(@user)
 
     new_user_attr = user_params
     if new_user_attr[:group_ids] # the ID adjustment logic in this paragraph is awful FIXME
@@ -246,7 +246,7 @@ class UsersController < ApplicationController
 
     # IP whitelist
     params[:meta][:ip_whitelist].split(',').each do |ip|
-      IPAddr.new(ip.strip) rescue cb_error "Invalid whitelist IP address: #{ip}"
+      IPAddr.new(ip.strip) rescue cb_error t(t('users.errors.invalid_whitelist_ip', ip: ip))
     end if
       params[:meta] && params[:meta][:ip_whitelist]
 
@@ -293,7 +293,7 @@ class UsersController < ApplicationController
 
     respond_to do |format|
       if success
-        flash[:notice] = "User #{@user.login} was successfully updated."
+        flash[:notice] = t('users.flash.updated', login: @user.login)
         format.html  { redirect_to :action => :show }
         format.xml   { render :xml  => @user.for_api }
         format.json  { render :json => @user.for_api }
@@ -323,7 +323,7 @@ class UsersController < ApplicationController
 
     @user.destroy
 
-    flash[:notice] = "User '#{@user.login}' destroyed"
+    flash[:notice] = t('users.flash.destroyed', login: @user.login)
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
@@ -332,7 +332,7 @@ class UsersController < ApplicationController
       format.json { head :ok }
     end
   rescue ActiveRecord::DeleteRestrictionError => e
-    flash[:error]  = "User not destroyed: #{e.message}"
+    flash[:error]  = t('users.flash.destroy_failed', message: e.message)
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
@@ -398,7 +398,7 @@ class UsersController < ApplicationController
       if user_must_link_to_oidc?(@user)
         contact = RemoteResource.current_resource.support_email.presence || User.admin.email.presence || "the support staff"
         wipe_user_password_after_oidc_link("password-rest", @user)  # for legacy or erroneously set users
-        flash[:error] = "Your account can only authenticate with OpenID identities. Thus you are not allowed to use or reset password. Please contact #{contact} for help."
+        flash[:error] = t('users.flash.openid_only_reset_denied', contact: contact)
         respond_to do |format|
           format.html { redirect_to login_path }
           format.any { head :unauthorized }
@@ -407,7 +407,7 @@ class UsersController < ApplicationController
       end
       if @user.account_locked?
         contact = RemoteResource.current_resource.support_email.presence || User.admin.email.presence || "the support staff"
-        flash[:error] = "This account is locked, please write to #{contact} to get this account unlocked."
+        flash[:error] = t('users.flash.account_locked', contact: contact)
         respond_to do |format|
           format.html { redirect_to :action  => :request_password }
           format.xml  { head :unauthorized }
@@ -419,33 +419,33 @@ class UsersController < ApplicationController
       if @user.save
         if send_forgot_password_email(@user)
           @user.addlog("Password reset by user to random string and email sent.")
-          flash[:notice] = "#{@user.full_name}, your new password has been sent to you via e-mail. You should receive it shortly."
-          flash[:notice] += "\nIf you do not receive your new password within 24hrs, please contact your admin."
+          flash[:notice]  = t('users.flash.password_sent', full_name: @user.full_name)
+          flash[:notice] += t('users.flash.password_sent_delay_note')
         else
           @user.addlog("Password reset by user to random string BUT email FAILED to be sent.")
-          flash[:error] = "Could not send an email with the reset password!\nPlease contact your admin."
+          flash[:error] = t('users.flash.password_email_failed')
         end
         redirect_to login_path
       else
-        flash[:error] = "Unable to reset password.\nPlease contact your admin."
+        flash[:error] = t('users.flash.reset_failed')
         redirect_to :action  => :request_password
       end
     else
-      flash[:error] = "Unable to find user with login #{params[:login]} and email #{params[:email]}.\nPlease contact your admin."
+      flash[:error] = t('users.flash.user_not_found', login: params[:login], email: params[:email])
       redirect_to :action  => :request_password
     end
   end
 
   def push_keys #:nodoc:
     @user = User.find(params[:id])
-    cb_error "You don't have permission to update this user.", :redirect => user_path(@user) unless edit_permission?(@user)
+    cb_error t('users.errors.no_update_permission'), :redirect => user_path(@user) unless edit_permission?(@user)
 
     push_bids        = params[:push_keys_to].presence
     bourreau_to_push = Bourreau.find_all_accessible_by_user(@user).where(:id => push_bids).to_a
     ssh_key          = @user.ssh_key rescue nil
 
-    cb_error "No servers selected (or accessible by user).", :redirect => user_path(@user) if bourreau_to_push.empty?
-    cb_error "No user SSH key exists yet.",                  :redirect => user_path(@user) if ! ssh_key
+    cb_error t('users.errors.no_servers_selected'), :redirect => user_path(@user) if bourreau_to_push.empty?
+    cb_error t('users.errors.no_ssh_key'),          :redirect => user_path(@user) if ! ssh_key
 
     # Get ssh key pair
     pub_key  = ssh_key.public_key
@@ -471,8 +471,8 @@ class UsersController < ApplicationController
 
     respond_to do |format|
       format.html do
-        flash[:notice] = "Pushed user SSH keys to: #{ok_list.join(', ')}"            if ok_list.present?
-        flash[:error]  = "Failed to push user SSH keys to: #{error_list.join(', ')}" if error_list.present?
+        flash[:notice] = t('users.flash.keys_pushed', names: ok_list.join(', ')) if ok_list.present?
+        flash[:error]  = t('users.flash.keys_push_failed', names: error_list.join(', ') ) if error_list.present?
         redirect_to user_path(@user)
       end
 

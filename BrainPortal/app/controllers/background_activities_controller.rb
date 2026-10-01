@@ -130,14 +130,14 @@ class BackgroundActivitiesController < ApplicationController
     op      = :destroy             if params[:operation] == 'destroy'
     op      = :activate!           if params[:operation] == 'activate'
     op      = :force_single_retry  if params[:operation] == 'retry'
-    cb_error "Unknown operation" if op.blank?
+    cb_error t('background_activities.errors.unknown_operation') if op.blank?
     bac_ids = Array(params[:bac_ids])
     bacs = BackgroundActivity.where(:id => bac_ids)
     bacs = bacs.where(:user_id => current_user.id) if ! current_user.has_role? :admin_user
     bacs = bacs.to_a.select { |bac| bac.send(op) }
     # These messages are clumsy
-    flash[:notice] = "#{bacs.size} activities affected by '#{op.to_s.gsub(/\W/,"").humanize}'." if bacs.size  > 0
-    flash[:notice] = "No activities affected."  if bacs.size == 0
+    flash[:notice] = t('background_activities.flash.affected', count: bacs.size, action: op.to_s.gsub(/\W/,"").humanize ) if bacs.size  > 0
+    flash[:notice] = t('background_activities.flash.none_affected')  if bacs.size == 0
     redirect_to :action => :index
   end
 

@@ -34,13 +34,13 @@
     class="act-btn"
     data-dialog="toolsDialog"
     data-icon="ui-icon-play"
-  >Launch</span>
+  ><%= t('.static_actions.launch') %></span>
 
   <span id="upload-btn"
     class="act-btn"
     data-dialog="upload-dialog"
     data-icon="ui-icon-arrowthick-1-n"
-  >Upload</span>
+  ><%= t('.static_actions.upload') %></span>
 
   <span id="vown-btn"
     class="act-btn"
@@ -49,9 +49,9 @@
     data-ajax="1"
   >
     <% if @scope.custom[:view_all] %>
-      Show only my files
+      <%= t('.static_actions.show_only_my_files') %>
     <% else %>
-      Show all files
+      <%= t('.static_actions.show_all_files') %>
     <% end %>
   </span>
 
@@ -64,38 +64,38 @@
     data-method="POST"
     data-empty-selection="0"
     data-icon="ui-icon-arrowthickstop-1-s"
-  >Download</span>
+  ><%= t('.dynamic_actions.download') %></span>
 
   <span id="copy-btn"
     class="act-btn"
     data-dialog="cpmv-dialog"
     data-icon="ui-icon-copy"
-  >Copy</span>
+  ><%= t('.dynamic_actions.copy') %></span>
 
   <span id="move-btn"
     class="act-btn"
     data-dialog="cpmv-dialog"
     data-icon="ui-icon-arrowreturnthick-1-e"
-  >Move</span>
+  ><%= t('.dynamic_actions.move') %></span>
 
   <span id="ren-btn"
     class="act-btn"
     data-icon="ui-icon-pencil"
-  >Rename</span>
+  ><%= t('.dynamic_actions.rename') %></span>
 
   <span id="comp-btn"
     class="act-btn"
     data-url="<%= compress_userfiles_path() %>"
     data-method="POST"
     data-icon="ui-icon-suitcase"
-  >Compress</span>
+  ><%= t('.dynamic_actions.compress') %></span>
 
   <span id="ucomp-btn"
     class="act-btn"
     data-url="<%= uncompress_userfiles_path() %>"
     data-method="POST"
     data-icon="ui-icon-folder-open"
-  >Uncompress</span>
+  ><%= t('.dynamic_actions.uncompress') %></span>
 
   <span id="del-btn"
     class="act-btn"
@@ -103,15 +103,15 @@
     data-method="DELETE"
     data-icon="ui-icon-trash"
     data-confirm-dlg="delete-confirm"
-  >Delete</span>
+  ><%= t('delete') %></span>
 </div>
 
 <div id="menu-actions">
-  <span id="menu-btn" class="act-btn" data-icon="ui-icon-gear">More...</span>
+  <span id="menu-btn" class="act-btn" data-icon="ui-icon-gear"><%= t('.menu_actions.more') %></span>
   <ul id="menu-list">
     <li id="filters-item">
       <div>
-      Custom filters
+      <%= t('.menu_actions.custom_filters') %>
       </div>
       <ul id="filters-menu">
         <%= render(:partial => 'filter_items') %>
@@ -122,7 +122,7 @@
       data-dialog="tag-dialog"
     >
       <div>
-      Tags
+      <%= t('activerecord.models.tag.other')  %>
       <span class="ui-icon ui-icon-tag"></span>
       </div>
     </li>
@@ -133,7 +133,7 @@
       data-dialog="prop-dialog"
     >
       <div>
-      Properties
+      <%= t('userfiles.common.properties') %>
       <span class="ui-icon ui-icon-document-b"></span>
       </div>
     </li>
@@ -144,7 +144,7 @@
       data-confirm-dlg="qc-confirm"
     >
       <div>
-      Quality control
+      <%= t('userfiles.common.qc') %>
       <span class="ui-icon ui-icon-check"></span>
       </div>
     </li>
@@ -155,7 +155,7 @@
       data-empty-selection="0"
     >
       <div>
-      Synchronize
+      <%= t('userfiles.common.synchronize') %>
       <span class="ui-icon ui-icon-refresh"></span>
       </div>
     </li>
@@ -166,7 +166,7 @@
       data-empty-selection="0"
     >
       <div>
-      Mark as newer
+      <%= t('userfiles.common.mark_newer') %>
       <span class="ui-icon ui-icon-flag"></span>
       </div>
     </li>
@@ -177,7 +177,7 @@
       data-dialog="collection-dialog"
     >
       <div>
-      New collection
+      <%= t('.menu_actions.new_collection') %>
       <span class="ui-icon ui-icon-folder-collapsed"></span>
       </div>
     </li>
@@ -189,7 +189,7 @@
       data-method="GET"
     >
       <div>
-      Export as CSV
+      <%= t('.menu_actions.export_as_csv') %>
       <span class="ui-icon ui-icon-extlink"></span>
       </div>
     </li>
@@ -200,7 +200,7 @@
       data-method="POST"
     >
       <div>
-      Create a file list
+      <%= t('.menu_actions.create_file_list') %>
       <span class="ui-icon ui-icon-extlink"></span>
       </div>
     </li>
@@ -215,9 +215,9 @@
     >
       <div>
       <% if @scope.custom[:view_all] %>
-        Show only my files
+        <%= t('.menu_actions.show_only_my_files') %>
       <% else %>
-        Show all files
+        <%= t('.menu_actions.show_all_files') %>
       <% end %>
       <span class="ui-icon ui-icon-star"></span>
       </div>
@@ -230,9 +230,9 @@
     >
       <div>
       <% if @scope.custom[:view_hidden] %>
-        Hide hidden files
+        <%= t('.menu_actions.hide_hidden_files') %>
       <% else %>
-        Show hidden files
+        <%= t('.menu_actions.show_hidden_files') %>
       <% end %>
       <span class="ui-icon ui-icon-note"></span>
       </div>
@@ -245,9 +245,9 @@
     >
       <div>
       <% if @scope.custom[:tree_sort] %>
-        List view
+        <%= t('.menu_actions.list_view') %>
       <% else %>
-        Tree view
+        <%= t('.menu_actions.tree_view') %>
       <% end %>
       <span class="ui-icon ui-icon-arrowreturnthick-1-s"></span>
       </div>

@@ -67,7 +67,7 @@ module BasicHelper
 
   # Produces a pretty symbol for archived FileCollection
   def archived_icon(color="purple")
-    "<span style=\"color:#{color}\" class=\"bold_icon\">A</span>".html_safe
+    "<span style=\"color:#{color}\" class=\"bold_icon\">#{t('abbreviations.A')}</span>".html_safe
   end
 
   # Alternate toggle for session attributes that switch between values 'on' and 'off'

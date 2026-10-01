@@ -35,8 +35,8 @@ module DateRangePanelHelper
   def date_range_panel(current_selection = {}, params_name = "date_range", options = {})
     date_attributes         = options[:date_attributes] ||
                               [
-                                [:created_at, "By creation date"],
-                                [:updated_at, "By update date"]
+                                [:created_at, t('date_range.attributes.by_creation_date')],
+                                [:updated_at, t('date_range.attributes.by_update_date')]
                               ]
     without_abs             = options[:without_abs]
     offset_times,
@@ -88,51 +88,51 @@ module DateRangePanelHelper
 
     offset_times =
     [
-      [ "Past 24 Hours",
+      [ t('date_range.groups.past_24_hours'),
         [
-          [ "Right now",     0.seconds.to_i.to_s ],
-          [ "1 hour ago",    1.hour.to_i.to_s    ],
-          [ "3 hours ago",   3.hour.to_i.to_s    ],
-          [ "6 hours ago",   6.hour.to_i.to_s    ],
-          [ "12 hours ago", 12.hour.to_i.to_s    ],
+          [ t('date_range.offsets.right_now'),     0.seconds.to_i.to_s ],
+          [ t('date_range.offsets.hours_ago', count: 1),   1.hour.to_i.to_s   ],
+          [ t('date_range.offsets.hours_ago', count: 3),   3.hour.to_i.to_s   ],
+          [ t('date_range.offsets.hours_ago', count: 6),   6.hour.to_i.to_s   ],
+          [ t('date_range.offsets.hours_ago', count: 12), 12.hour.to_i.to_s   ],
         ]
       ],
-      [ "Days",
+      [ t('date_range.groups.days'),
         [
-          [ "1 day ago",     1.day.to_i.to_s     ],
-          [ "2 days ago",    2.day.to_i.to_s     ],
-          [ "3 days ago",    3.day.to_i.to_s     ],
-          [ "4 days ago",    4.day.to_i.to_s     ],
-          [ "5 days ago",    5.day.to_i.to_s     ],
-          [ "6 days ago",    6.day.to_i.to_s     ],
+          [ t('date_range.offsets.days_ago', count: 1), 1.day.to_i.to_s ],
+          [ t('date_range.offsets.days_ago', count: 2), 2.day.to_i.to_s ],
+          [ t('date_range.offsets.days_ago', count: 3), 3.day.to_i.to_s ],
+          [ t('date_range.offsets.days_ago', count: 4), 4.day.to_i.to_s ],
+          [ t('date_range.offsets.days_ago', count: 5), 5.day.to_i.to_s ],
+          [ t('date_range.offsets.days_ago', count: 6), 6.day.to_i.to_s ],
         ]
       ],
-      [ "Weeks",
+      [ t('date_range.groups.weeks'),
         [
-          [ "1 week ago",    1.week.to_i.to_s    ],
-          [ "2 weeks ago",   2.week.to_i.to_s    ],
-          [ "3 weeks ago",   3.week.to_i.to_s    ],
+          [ t('date_range.offsets.weeks_ago', count: 1), 1.weeks.to_i.to_s ],
+          [ t('date_range.offsets.weeks_ago', count: 2), 2.weeks.to_i.to_s ],
+          [ t('date_range.offsets.weeks_ago', count: 3), 3.weeks.to_i.to_s ],
         ]
       ],
-      [ "Months",
+      [ t('date_range.groups.months'),
         [
-          [ "1 month ago",   1.month.to_i.to_s   ],
-          [ "2 months ago",  2.month.to_i.to_s   ],
-          [ "3 months ago",  3.month.to_i.to_s   ],
-          [ "4 months ago",  4.month.to_i.to_s   ],
-          [ "5 months ago",  5.month.to_i.to_s   ],
-          [ "6 months ago",  6.month.to_i.to_s   ],
+          [ t('date_range.offsets.months_ago', count: 1), 1.months.to_i.to_s ],
+          [ t('date_range.offsets.months_ago', count: 2), 2.months.to_i.to_s ],
+          [ t('date_range.offsets.months_ago', count: 3), 3.months.to_i.to_s ],
+          [ t('date_range.offsets.months_ago', count: 4), 4.months.to_i.to_s ],
+          [ t('date_range.offsets.months_ago', count: 5), 5.months.to_i.to_s ],
+          [ t('date_range.offsets.months_ago', count: 6), 6.months.to_i.to_s ],
         ]
       ],
-      [ "Years",
+      [ t('date_range.groups.years'),
         [
-          [ "1 year ago",     1.year.to_i.to_s    ],
-          [ "18 months ago", 18.month.to_i.to_s   ],
-          [ "2 years ago",    2.year.to_i.to_s    ],
-          [ "3 years ago",    3.year.to_i.to_s    ],
-          [ "4 years ago",    4.year.to_i.to_s    ],
-          [ "5 years ago",    5.year.to_i.to_s    ],
-          [ "The Big Bang",   big_bang.to_s       ]
+          [ t('date_range.offsets.years_ago',  count: 1),   1.years.to_i.to_s  ],
+          [ t('date_range.offsets.months_ago', count: 18), 18.months.to_i.to_s ],
+          [ t('date_range.offsets.years_ago',  count: 2),   2.years.to_i.to_s  ],
+          [ t('date_range.offsets.years_ago',  count: 3),   3.years.to_i.to_s  ],
+          [ t('date_range.offsets.years_ago',  count: 4),   4.years.to_i.to_s  ],
+          [ t('date_range.offsets.years_ago',  count: 5),   5.years.to_i.to_s  ],
+          [ t('date_range.offsets.big_bang'),   big_bang.to_s       ]
         ]
       ]
     ]

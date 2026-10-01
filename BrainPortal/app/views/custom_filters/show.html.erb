@@ -27,12 +27,12 @@
 <% title "#{filter_type.capitalize.gsub('_',' ')}" %>
 
 <div class="menu_bar">
-  <%= link_to 'Delete', custom_filter_path(@custom_filter),  { :method => :delete, :class => "button"} %>
+  <%= link_to t('delete'), custom_filter_path(@custom_filter),  { :method => :delete, :class => "button"} %>
 </div>
 
 <br>
 
-<%= error_messages_for @custom_filter, :header_message => "custom filter could not be updated." %>
+<%= error_messages_for @custom_filter, :header_message => t('.errors.update') %>
 
 <div id="show_edit_custom_filter">
 <%= render :partial => "custom_filters/#{filter_type}", :locals  => {:custom_filter  => @custom_filter}  %>

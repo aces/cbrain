@@ -28,7 +28,7 @@ uniq_id = rand(100000).to_s
 %>
 <%
    num_online         = @bourreaux.count { |b| b.online? }
-   include_blank_text = num_online == 0 ? "No online server for this tool!" : "Select Server & Version"
+   include_blank_text = num_online == 0 ? t('.include_blanks.no_online_server') : t('.include_blanks.select_server_version')
    select_attributes  = {
      "class"                => 'request_on_change',
      "data-loading-message" => "&nbsp;",
@@ -42,13 +42,13 @@ uniq_id = rand(100000).to_s
 
 
 <div>
-  <strong>Server&nbsp;&amp;&nbsp;Version:</strong><br>
+  <strong><%= t('.labels.server_version_html') %></strong><br>
   <%= tool_config_select "tool_config_id", { :tool_configs => @tool_configs,
                                              :selector     => @tool_config },
                                              select_attributes %>
 
   <% if num_online > 0 %>
-    <%= submit_tag "Launch #{@tool.name}",
+    <%= submit_tag t('.submits.launch', name: @tool.name),
       "class"       => "button launch_tool",
       "data-url"    => url_for(:controller => :tasks, :action => :new, :tool_id => @tool.id)
     %>
@@ -62,4 +62,3 @@ uniq_id = rand(100000).to_s
   <% end %>
   </div>
 </div>
-

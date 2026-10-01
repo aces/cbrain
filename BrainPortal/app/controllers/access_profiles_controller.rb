@@ -63,7 +63,7 @@ class AccessProfilesController < ApplicationController
 
     respond_to do |format|
       if @access_profile.save
-        flash[:notice] = 'AccessProfile was successfully created.'
+        flash[:notice] = t('access_profiles.flash.created')
         format.html  { redirect_to :action => :index }
       else
         format.html  { render :action  => :show }
@@ -120,7 +120,7 @@ class AccessProfilesController < ApplicationController
 
     respond_to do |format|
       if success
-        flash[:notice] = 'AccessProfile was successfully updated.'
+        flash[:notice] = t('access_profiles.flash.updated')
         format.html { redirect_to :action => "show" }
         format.xml  { head :ok }
       else

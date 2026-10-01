@@ -34,7 +34,7 @@ module ResourceUsageHelper
     return "" if val.blank?
     return "" if ru == 0
     if ru.is_a?(TimeResourceUsage)
-      report  = pluralize(val, "second")
+      report  = pluralize(val, t('resource_usage.second'))
       report += " (" + pretty_elapsed(val, :num_components => 2) + ") " if val > 59
       return report
     end

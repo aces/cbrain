@@ -1,0 +1,349 @@
+fr:
+  tasks:
+    control:
+      headings:
+        main: "Contrôle des tâches :"
+      server_version_html: "Serveur&nbsp;&amp;&nbsp;version :"
+      select_server_version: "Sélectionner le serveur et la version"
+      save_results_to_html: "Enregistrer&nbsp;les&nbsp;résultats&nbsp;dans :"
+      select_data_provider: "(Sélectionner un serveur de stockage pour vos résultats)"
+      description_note: "(La première ligne doit être un court résumé, et les suivantes vos notes.)"
+    output_renaming_fieldset:
+      legends:
+        output_filenames_renaming: "Renommage des noms de fichiers de sortie"
+      output_files_pattern: "Les fichiers de sortie peuvent être nommés ou renommés automatiquement à l'aide de ce modèle :"
+      leave_blank_html: "<small>(Laissez ce champ vide pour que le programme nomme automatiquement les fichiers selon ses propres règles)</small>"
+      supported_keywords_html: "Les modèles peuvent inclure les <br /><em>{mots-clés}</em> suivants entre accolades, qui seront remplacés<br />automatiquement.<br /><p><br />Les mots-clés pris en charge sont :"
+    params:
+      headings:
+        main: "Paramètres de la tâche"
+    presets:
+      headings:
+        main: "Gestion des préréglages :"
+      submit_tag:
+        load_preset: "Charger un préréglage"
+        delete_preset: "Supprimer le préréglage"
+        save_preset: "Enregistrer le préréglage"
+      load_preset_configuration: "Charger une configuration prédéfinie :"
+      select_preset: "(Sélectionner un préréglage à charger)"
+      delete_this_preset: "Supprimer ce préréglage ?"
+      save_as_preset: "Enregistrer comme configuration prédéfinie :"
+      select_preset_to_overwrite: "(Sélectionner un préréglage à remplacer)"
+      or_as_new_name: " (ou sous un nouveau nom)"
+      save_as_site_preset: "Enregistrer comme préréglage du site :"
+    resource_usage:
+      legends:
+        main: "Historique de l'utilisation des ressources"
+      headings:
+        task_status: "État de la tâche"
+        usage_type: "Type d'utilisation"
+        time_used: "Temps utilisé"
+        disk_space_used: "Espace disque utilisé"
+      labels:
+        cpu: "CPU"
+        walltime: "Temps écoulé"
+        disk_space: "Espace disque"
+    show_prereqs:
+      other_tasks: "Ces autres tâches..."
+      must_be: "...doivent être dans les états suivants"
+      destroyed_task_parentheses: "(Tâche supprimée)"
+    task_menu:
+      dropdown:
+        update_attributes: "Mettre à jour les attributs"
+        for_failed_tasks: "Pour les tâches en échec"
+        for_completed_tasks: "Pour les tâches terminées"
+        terminating_and_cleaning_up: "Arrêt et nettoyage"
+        archiving: "Archivage"
+        filters: "Filtres"
+      paragraphs:
+        for_failed_tasks_html: "Ce panneau vous permet d'agir sur les tâches ayant échoué, d'une manière ou d'une autre.<br />La tentative de récupération après une erreur déclenchera le code de nettoyage ainsi qu'un redémarrage au<br />dernier stade de traitement réussi avant l'échec. Cela ne fonctionne pas toujours,<br />mais il est souvent utile d'essayer au moins une fois !"
+        for_completed_tasks_intro_html: "Ce panneau vous permet d'agir sur les tâches terminées avec succès.<br />Vous pouvez essayer de les redémarrer à trois étapes différentes de leur cycle de vie :"
+        for_completed_tasks_list_html: "<ul><li>À l'étape <strong>Configuration</strong>, lorsque les fichiers de données d'entrée<br />sont synchronisés sur le serveur de calcul et que les<br />scripts de traitement sont créés.</li><li>À l'étape <strong>Cluster</strong>, lorsque les scripts scientifiques<br />sont exécutés sur les nœuds du serveur de calcul.</li><li>À l'étape <strong>Post-traitement</strong>, lorsque les fichiers de sortie<br/>résultants sont renvoyés vers les fournisseurs de données de CBRAIN.</li></ul>"
+        for_completed_tasks_note_html: "Vous pouvez également dupliquer des tâches et les recréer sur un autre<br />serveur de calcul. Avant de les redémarrer, assurez-vous toutefois d'ajuster<br />la version de leur outil."
+        terminating_and_cleaning_up_html: "Ce panneau vous permet d'agir sur les tâches dont vous n'avez plus besoin.<br />Vous pouvez interrompre des tâches à n'importe quelle étape de leur cycle de vie, même<br />celles ayant échoué. Les tâches marquées <strong>Interrompue</strong> peuvent être redémarrées<br />ultérieurement."
+        remove_work_directories_note_html: "Il est également possible de supprimer les répertoires de travail des tâches<br />sur le serveur de calcul tout en conservant le reste des<br />informations des tâches. Cela est utile pour libérer de l'espace sur le serveur<br />ou lorsque les tâches ont traité des données confidentielles que<br />vous préférez ne pas laisser sur le serveur. Le panneau <em>Archivage</em><br />à gauche offre d'autres options pour gérer les<br />répertoires de travail des tâches."
+        remove_tasks_html: "Enfin, vous pouvez supprimer complètement des tâches. Cela effacera le répertoire de travail de la tâche<br />sur le serveur de calcul, y compris les fichiers de données temporaires, mais n'effacera pas<br />les fichiers de sortie d'une tâche terminée avec succès. Cela est utile si vous avez,<br />par exemple, des données confidentielles. La suppression d'une tâche <strong>supprimera</strong> également toute<br />archive du répertoire de travail de cette tâche, le cas échéant (comme indiqué par<br />les symboles %{workdir_status} et<br />%{userfile_status} dans la colonne « Taille du répertoire de travail »)."
+        archiving_1_html: "Ce panneau vous permet d'archiver le contenu du répertoire de travail<br />de vos tâches. Cela ne peut être effectué que pour les tâches dans un état<br />final, comme <strong>Terminée</strong>, <strong>Échec</strong> ou <strong>Interrompue</strong>."
+        archiving_2_html: "Le processus peut prendre beaucoup de temps pour chaque tâche archivée ou restaurée.<br />Veuillez donc patienter et ne demandez pas cette action plusieurs fois en parallèle."
+        archiving_3_html: "Il existe deux différents « niveaux » d'archivage :<br/>\n<ul>\n  <li class=\"dropmenu_info\">\n    L'archivage <em>sur le cluster</em> signifie que les fichiers de la tâche seront compressés et archivés, mais resteront sur le cluster. Ces tâches sont indiquées par le symbole %{workdir_status} dans la table d'index.\n  </li>\n  <li class=\"dropmenu_info\">\n    L'archivage <em>comme fichier</em> signifie que l'archive sera rapatriée dans votre gestionnaire de fichiers sous la forme d'un fichier « %{type} » et qu'aucune donnée ne restera sur le cluster. Ces tâches sont indiquées par le symbole %{userfile_status} dans la table d'index.\n  </li>\n</ul>"
+        archiving_4_html: "Le reste des informations sur les tâches ne sera en aucun cas modifié<br />lorsqu'elles seront archivées. Aucune opération ne peut être effectuée sur une tâche archivée, sauf<br />bien entendu sa désarchivage."
+      change:
+        owner: "Changer le propriétaire :"
+        group: "Changer le projet :"
+        data_provider: "Changer le serveur de stockage des résultats :"
+        tool_version: "Changer la version de l'outil :"
+      blanks:
+        select_another_owner: "(Sélectionner un autre propriétaire)"
+        select_another_group:  "(Sélectionner un autre projet)"
+        select_another_data_provider: "(Sélectionner un autre serveur de stockage)"
+        select_another_tool_version: "(Sélectionner une autre version de l'outil)"
+      hijacker:
+        trigger_error_recovery: "Déclencher la récupération après une erreur"
+        setup_stage: "'Configuration' stage"
+        cluster_stage: "Étape 'Cluster'"
+        post_processing_stage: "'Post-traitement' stage"
+        duplicate_tasks: "Dupliquer les tâches"
+        terminate_tasks: "Interrompre les tâches"
+        remove_work_directories: "Supprimer les répertoires de travail"
+        remove_tasks: "Supprimer les tâches"
+        archive_on_cluster: "Archiver sur le cluster"
+        archive_as_file: "Archiver comme fichier"
+        unarchive_tasks: "Désarchiver les tâches"
+      confirm:
+        terminate_tasks: "Êtes-vous certain de vouloir interrompre les tâches sélectionnées ?"
+        remove_work_directories: "Êtes-vous certain de vouloir supprimer les\nRÉPERTOIRES DE TRAVAIL des tâches sélectionnées ?"
+        remove_tasks: "Êtes-vous certain de vouloir supprimer les tâches sélectionnées ?\n\nREMARQUE IMPORTANTE : Cela supprimera également leurs répertoires de travail archivés, le cas échéant."
+      restart_at: "Redémarrer à :"
+      on_execution_server: "sur le serveur de calcul : "
+      optional_destination_dp_html: "Facultatif : lors de l'archivage <em>comme fichier</em>, choisissez un serveur de stockage de destination :<br />"
+      do_not_compress: "Ne pas compresser lors de l'archivage"
+    tasks_display:
+      titles:
+        expand_batch: "Développer le lot"
+        open_batch: "Ouvrir le lot"
+      switches:
+        switch_to_list_view: "Passer à la vue Liste"
+        switch_to_batch_view: "Passer à la vue par lot"
+      columns:
+        batch: "Lot"
+        task_type: "Type de tâche"
+        version: "Version"
+        description: "Description"
+        owner: "Propriétaire"
+        project: "Projet"
+        server: "Serveur de calcul"
+        current_status: "État actuel"
+        run_number: "Numéro d'exécution"
+        workdir_size: "Taille du répertoire de travail"
+        results_on: "Résultats sur"
+        time_submitted: "Date de soumission"
+        last_updated: "Dernière mise à jour"
+      legends:
+        on_cluster: "Sur le Cluster"
+        as_file: "Comme fichier"
+      task_count_colon:
+        one: "%{count} tâche :"
+        other: "%{count} tâches :"
+      total_space_html: "Espace total utilisé par les tâches : %{space}"
+      tasks_without_estimates:
+        one: "(1 tâche sans estimation d'espace)"
+        other: "(%{count} tâches sans estimation d'espace)"
+      disappeared_tasks: "Ce lot de tâches a disparu"
+      shared_parentheses: "(Partagé)"
+      workdir_archiving_status_symbols: "Symboles d'état de l'archivage du répertoire de travail :"
+    utility_interface_file_list:
+      run_on: "Exécuter %{name} sur :"
+    zenodo_deposit_form:
+      legends:
+        basic_deposit_information: "Informations de base sur le dépôt"
+      labels:
+        select_zenodo_token: "Sélectionner le jeton Zenodo à utiliser :"
+        title: "Titre"
+        description: "Description"
+        creators: "Créateurs"
+      options:
+        sandbox: "Sandbox"
+        main: "Principal"
+      explanation_html: "Doit être au format <em>nom de famille, prénom</em>.<br />Vous pourrez ajouter d'autres créateurs ultérieurement, une fois le dépôt créé."
+      submit: "Créer le dépôt"
+    edit:
+      edit_task: "Modifier la tâche %{name}"
+      submit: "Enregistrer les paramètres modifiés pour cette tâche"
+    index:
+      title: "Tâches"
+    new:
+      title: "Lancer %{name}"
+      headings:
+        main: "Lancer la tâche %{name}"
+      submit: "Démarrer %{name}"
+    show:
+      title: "Informations sur la tâche %{name}"
+      headings:
+        cluster_job_id: "ID du travail sur le cluster"
+        setup_prerequisites: "Prérequis de configuration"
+        post_processing_prerequisites: "Prérequis de post-traitement"
+      links:
+        edit_parameters: "Modifier les paramètres"
+        refresh: "Actualiser"
+        retry_failed: "Réessayer les tâches en échec"
+        restart_at_setup: "Redémarrer à la configuration"
+        restart_on_cluster: "Redémarrer sur le cluster"
+        restart_at_post_processing: "Redémarrer au post-traitement"
+        archive_on_cluster: "Archiver sur le cluster"
+        unarchive: "Désarchiver"
+        terminate_task: "Interrompre la tâche"
+        remove_work_directory: "Supprimer le répertoire de travail"
+        save_work_directory: "Enregistrer le répertoire de travail"
+        publish_to_zenodo: "Publier sur Zenodo"
+        remove_task: "Supprimer la tâche"
+        list_of_tasks: "Liste des tâches (%{count})"
+      confirm:
+        terminate_task: "Êtes-vous certain de vouloir interrompre cette tâche ?"
+        remove_work_directory: "Êtes-vous certain de vouloir supprimer le répertoire de travail de cette tâche ?"
+        remove_task: "Êtes-vous certain de vouloir supprimer cette tâche ?"
+        remove_task_note: "\n\nREMARQUE IMPORTANTE : Cela supprimera également son répertoire de travail archivé."
+      cells:
+        task_name: "Nom de la tâche"
+        task_description: "Description de la tâche"
+        execution_server: "Serveur de calcul"
+        owner: "Propriétaire"
+        tool_version: "Version de l'outil"
+        group: "Projet"
+        current_status: "État actuel"
+        time_submitted: "Date de soumission"
+        data_provider_for_results: "serveur de stockage pour les résultats"
+        zenodo_publication: "Publication Zenodo"
+        cluster_job_work_directory: "Répertoire de travail du travail sur le cluster"
+        not_yet_created_or_erased: "(Pas encore créé ou supprimé)"
+        size_of_work_directory: "Taille du répertoire de travail"
+        archiving_status: "État de l'archivage"
+        last_updated: "Dernière mise à jour"
+      zenodo_publication:
+        published: "Publié"
+        in_progress: "En cours"
+        none: "Aucune."
+      shared_with_task: "Partagé avec la tâche :"
+      archiving_status:
+        not: "Non archivé"
+        on_cluster: "Archivé sur le cluster."
+        as_file: "Archivé comme fichier %{link}"
+      rescue:
+        no_template_html: "<pre>Problème lors du chargement de la vue récapitulative (aucun modèle fourni par l'auteur de la tâche).</pre>"
+        template_error_html: "<pre>Problème lors du chargement de la vue récapitulative (erreur de modèle).</pre>"
+        show_summary_of_params_for_task: "Afficher le résumé des paramètres de la tâche %{name}"
+        error_rendering_yaml: "(Erreur lors du rendu YAML)"
+      in_the_task_manager: "Dans le gestionnaire de tâches, vous pouvez voir la liste complète"
+      in_this_batch: "des tâches de ce lot."
+      tabs:
+        parameters_in_yaml: "Paramètres en YAML"
+        parameters_in_json: "Paramètres en JSON"
+        full_task_object_in_json: "Objet de tâche complet en JSON"
+        stdout: "Sortie standard"
+        stderr: "Erreur standard"
+        script: "Script"
+        runtime_info: "Infos d'exécution"
+      paragraphs:
+        parameters_description_html: |
+          <p class="medium_paragraphs">
+           Ceci affiche uniquement les paramètres scientifiques associés à
+           cette tâche. Consultez la description du dernier panneau pour plus
+           d'informations.
+          </p>
+        parameters_in_json_html: |
+          <p class="medium_paragraphs">
+           Ceci affiche uniquement les paramètres scientifiques associés à
+           cette tâche. Consultez la description du dernier panneau pour plus
+           d'informations.
+          </p>
+        full_task_object_in_json_html: |
+          <p class="medium_paragraphs">
+            Cette structure affiche la quantité minimale d'informations nécessaires
+            pour créer une tâche CBRAIN similaire à celle-ci à l'aide de l'API CBRAIN.
+            Elle est fournie pour aider les développeurs qui travaillent avec l'API. Le niveau
+            supérieur contient les ID des ressources CBRAIN nécessaires pour la tâche
+            (p. ex. l'ID du groupe (projet), l'ID de l'utilisateur, la version de l'
+            outil, etc.). Ce sont les valeurs que vous voyez en haut de la page dans
+            la section <em>Info</em>.
+          </p>
+          <p class="medium_paragraphs">
+            Les informations sous <strong>"params"</strong> correspondent exactement à ce
+            qui est affiché dans l'onglet précédent. Elles contiennent généralement les paramètres
+            scientifiques de l'outil, où les noms de fichiers sont remplacés par les ID des
+            fichiers enregistrés dans CBRAIN.
+          </p>
+          <p class="medium_paragraphs">
+            Pour les outils intégrés à
+            <a href="https://github.com/boutiques/boutiques" target="_blank">Boutiques</a>,
+            la structure <strong>"params"</strong> contient une sous-structure appelée
+            <strong>"invoke"</strong> dans laquelle la plupart des paramètres scientifiques sont
+            déplacés. Cette structure doit correspondre exactement à la structure invoke attendue
+            par le programme <em>bosh</em> de Boutiques, mais encore une fois avec les noms de fichiers
+            remplacés par les ID des fichiers CBRAIN.
+          </p>
+          <p class="medium_paragraphs">
+            Notez que certaines clés et valeurs sont ajoutées à ces structures pendant ou
+            à la fin du traitement et ne sont pas requises au moment où la tâche est
+            soumise.
+          </p>
+      legends:
+        processing_log: "Journal de traitement"
+        prerequisites: "Prérequis"
+        cluster_job_captured_output: "Sortie capturée du travail sur le cluster"
+      outputs_not_available: "Comme cette tâche est archivée, les sorties ne sont pas disponibles pour le moment."
+      outputs_available: "Les sorties sont disponibles pour plusieurs exécutions :"
+      stdout_lim: "Seules les %{stdout_lim} dernières lignes sont affichées ici. Voir davantage de lignes de sortie standard :"
+      stderr_lim: "Seules les %{stderr_lim} dernières lignes sont affichées ici. Voir davantage de lignes d'erreur standard :"
+    zenodo:
+      title: "État de la publication Zenodo de %{name}"
+      links:
+        task_info: "Informations sur la tâche"
+        zenodo_deposit_editor: "Éditeur de dépôt Zenodo"
+        refresh_message: "actualiser cette page"
+        reset_deposit: "Réinitialiser le dépôt"
+      status:
+        complete: "terminé"
+        in_progress: "en cours"
+        incomplete: "incomplet"
+      legends:
+        prepare: "Étape 1: création du dépôt"
+        upload: "Étape 2: Importation des fichiers de données"
+        publish: "Étape 3: publication du dépôt"
+        reset_deposit_html: "Attention : ce dépôt se trouve dans le <strong>Sandbox Zenodo</strong>"
+      paragraphs:
+        prepare:
+          complete_html: "En tant qu'auteur, vous pouvez consulter et modifier le dépôt<br />à ce lien : %{link}"
+          incomplete_html: "Remplissez le formulaire ci-dessous pour créer le dépôt initial.<p>Vous pourrez modifier le contenu du formulaire à tout moment<br />ultérieurement, directement sur le site Web de Zenodo."
+        upload:
+          incomplete_html: "<span class=\"warning\">Avertissement : déjà publié :</span> dans %{link}"
+        publish:
+          doi_1_html: "Les sorties de cette tâche ont été publiées sous le DOI %{doi}"
+          doi_2_html: "Vous pouvez modifier davantage le dépôt ici : %{link}"
+          no_doi_1_html: "Vous pouvez modifier davantage le dépôt ici et cliquer sur le bouton <strong>Publier</strong> ici : %{link}"
+          no_doi_2_html: "Une fois le dépôt publié, veuillez revenir sur cette page (ou simplement %{link}) afin que le DOI du dépôt puisse être enregistré dans CBRAIN."
+          waiting: "En attente des étapes 1 et 2."
+        reset:
+          deposit_1_description_html: "Vous pouvez effacer toutes les informations enregistrées concernant le dépôt et l'état de publication Zenodo<br />dans CBRAIN, afin de recommencer ou de publier sur le site Zenodo principal."
+          deposit_2_description_html: "Cela n'effacera rien sur Zenodo <em>qui a été publié</em>,<br />mais effacera tout dépôt et tout téléversement non publié."
+          deposit_confirmation: "Êtes-vous certain de vouloir réinitialiser les informations du dépôt pour cette tâche ?"
+      prepare:
+        scheduled_for_upload: "Planifié pour l'importation :"
+        will_be_ignored: "Sera ignoré :"
+      upload:
+        waiting_for_initial_deposit: "En attente de la création du dépôt initial à l'étape 1."
+        it_can_take_some_time: "Le transfert du contenu de tous les fichiers vers Zenodo peut prendre un certain temps."
+    statuses:
+      new:                               "Nouvelle"
+      configured:                        "Configurée"
+      setting_up:                        "Configuration en cours"
+      queued:                            "En file d'attente"
+      on_cpu:                            "En cours d'exécution"
+      on_hold:                           "En attente"
+      suspended:                         "Suspendue"
+      data_ready:                        "Données prêtes"
+      post_processing:                   "Post-traitement"
+      completed:                         "Terminée"
+      terminated:                        "Interrompue"
+      failed:                            "Échec"
+      failed_to_setup:                   "Échec de la configuration"
+      failed_on_cluster:                 "Échec sur le cluster"
+      failed_to_post_process:            "Échec du post-traitement"
+      failed_setup_prerequisites:        "Échec des prérequis de configuration"
+      failed_post_process_prerequisites: "Échec des prérequis de post-traitement"
+      recover_setup:                     "Reprise de la configuration"
+      recover_cluster:                   "Reprise sur le cluster"
+      recover_post_process:              "Reprise du post-traitement"
+      recovering_setup:                  "Reprise de la configuration en cours"
+      recovering_cluster:                "Reprise sur le cluster en cours"
+      recovering_post_process:           "Reprise du post-traitement en cours"
+      restart_setup:                     "Redémarrage de la configuration"
+      restart_cluster:                   "Redémarrage sur le cluster"
+      restart_post_process:              "Redémarrage du post-traitement"
+      restarting_setup:                  "Redémarrage de la configuration en cours"
+      restarting_cluster:                "Redémarrage sur le cluster en cours"
+      restarting_post_process:           "Redémarrage du post-traitement en cours"
+      preset:                            "Préréglage"
+      site_preset:                       "Préréglage de site"
+      duplicated:                        "Dupliquée"
+      standby:                           "En veille"
+      total_uppercase:                   "TOTAL"
+      total:                             "Total"

@@ -1,0 +1,8 @@
+fr:
+  portal:
+    flash:
+      locked: "Ce portail a été verrouillé."
+      unlocked: "Ce portail a été déverrouillé."
+      eula_required: "CBRAIN ne peut pas être utilisé sans signer le contrat de licence utilisateur final."
+      eula_incomplete: "Un problème est survenu lors de votre soumission. Veuillez lire le contrat et cocher toutes les cases."
+      swagger_not_found: "Impossible de trouver la spécification SWAGGER du service. Désolé."

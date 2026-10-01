@@ -24,9 +24,6 @@ module ExceptionHelpers
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  NOT_FOUND_MSG = "The object you requested does not exist or is not accessible to you." #:nodoc:
-  CANNOT_DELETE_MSG = "The requested object could not be deleted." #:nodoc:
-
   def self.included(includer) #:nodoc:
     includer.class_eval do
       rescue_from StandardError,                              :with => :generic_exception
@@ -43,13 +40,13 @@ module ExceptionHelpers
   # Record not accessible.
   def record_not_found(exception)
     raise if Rails.env == 'development' #Want to see stack trace in dev.
-    flash[:error] = NOT_FOUND_MSG
+    flash[:error] = I18n.t('application.flash.object_not_found')
     respond_to do |format|
       format.html { redirect_to default_redirect }
       format.js   { render :partial  => "shared/flash_update",     :status => 404 }
       format.xml  { render :xml =>  {:error => exception.message}, :status => 404 }
       format.json { render :json => {:error => "The #{exception.model} with id = #{exception.id} doesn't exist",
-                                     :message => NOT_FOUND_MSG,
+                                     :message => I18n.t('application.flash.object_not_found'),
                                      :type => "object not found",
                                      :model => exception.model,
                                      :id => exception.id
@@ -60,13 +57,13 @@ module ExceptionHelpers
 
   def record_not_deleted(exception)
     raise if Rails.env == 'development' #Want to see stack trace in dev.
-    flash[:error] = CANNOT_DELETE_MSG
+    flash[:error] = I18n.t('application.flash.object_not_deleted')
     respond_to do |format|
       format.html { redirect_to default_redirect }
       format.js   { render :partial  => "shared/flash_update",     :status => 403 }
       format.xml  { render :xml =>  {:error => exception.message}, :status => 403 }
       format.json { render :json => {:error => "The #{exception.model} with id = #{exception.id} fails to delete",
-                                     :message => CANNOT_DELETE_MSG,
+                                     :message => I18n.t('application.flash.object_not_deleted'),
                                      :type => "delete failed",
                                      :model => exception.model,
                                      :id => exception.id
@@ -78,7 +75,7 @@ module ExceptionHelpers
   # Action not accessible.
   def unknown_action(exception)
     raise if Rails.env == 'development' #Want to see stack trace in dev.
-    flash[:error] = "The page you requested does not exist."
+    flash[:error] = I18n.t('application.flash.page_not_found')
     respond_to do |format|
       format.html { redirect_to default_redirect }
       format.js   { render :partial  => "shared/flash_update",     :status => 400 }
@@ -145,7 +142,7 @@ module ExceptionHelpers
     # Note that send_internal_error_message will also censure :password from the params hash
     exception_log = ExceptionLog.log_exception(exception, current_user, request) # explicit logging in exception logger, since we won't re-raise it now.
     Message.send_internal_error_message(current_user, "Exception Caught", exception, params, :exception_log => exception_log) rescue true
-    flash[:error] = "An error occurred. A message has been sent to the admins. Please try again later."
+    flash[:error] = I18n.t('application.flash.generic_exception')
     logger.error "Exception for controller #{params[:controller]}, action #{params[:action]}: #{exception.class} #{exception.message}"
     respond_to do |format|
       format.html { redirect_to default_redirect }

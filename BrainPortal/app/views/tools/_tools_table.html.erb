@@ -24,13 +24,13 @@
 
 <div class="menu_bar">
   <% if current_user.has_role?(:admin_user) %>
-    <%= link_to 'Create New Tool', new_tool_path, :class => "button menu_button" %>
-    <%= link_to 'Autoload Tools', { :action  => :create, :autoload  => true}, :method  => :post, :class => "button menu_button", :title => "Registers all subclasses of PortalTask as Tools" %>
-    <%= link_to 'Access Reports', { :controller => :tool_configs, :action => :report }, :class => "button menu_button" %>
+    <%= link_to t('.links.create_new_tool'), new_tool_path, :class => "button menu_button" %>
+    <%= link_to t('.links.autoload_tools'), { :action  => :create, :autoload  => true}, :method  => :post, :class => "button menu_button", :title => t('.titles.autoload_tools') %>
+    <%= link_to t('.links.access_reports'), { :controller => :tool_configs, :action => :report }, :class => "button menu_button" %>
   <% end %>
 
-  <%= link_to 'Tool Versions List', tool_configs_path, :class => "button menu_button" %>
-  <%= overlay_ajax_link "Help", "/doc/tool/tool_info.html", :class  => "button menu_button" %>
+  <%= link_to t('.links.tool_versions_list'), tool_configs_path, :class => "button menu_button" %>
+  <%= overlay_ajax_link t('help'), "/doc/#{I18n.locale}/tool/tool_info.html", :class  => "button menu_button" %>
 </div>
 
 <%=
@@ -56,7 +56,7 @@
   ) do |t|
 %>
   <%
-    t.column("Tool Name", :name,
+    t.column(t('.columns.name'), :name,
       :sortable => true
     ) do |tool|
       if current_user.has_role?(:admin_user)
@@ -66,26 +66,26 @@
       end
     end
 
-    t.column("Description", :description,
+    t.column(t('.columns.description'), :description,
       :sortable => true
     ) { |tool| overlay_description(tool.description) }
 
-    t.column("Category", :category,
+    t.column(t('.columns.category'), :category,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, :category)
     )
 
-    t.column("Owner", :owner,
+    t.column(t('.columns.owner'), :owner,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, User)
     ) { |tool| link_to_user_with_tooltip(tool.user) }
 
-    t.column("Project", :group,
+    t.column(t('.columns.group'), :group,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, Group)
     ) { |tool| link_to_group_if_accessible(tool.group) }
 
-    t.column("Execution & Versions", :exec) do |tool|
+    t.column(t('.columns.execution_versions'), :exec) do |tool|
       tool.bourreaux
         .reject { |b| ! b.can_be_accessed_by?(current_user) }
         .sort { |a,b| a.name.casecmp(b.name) }
@@ -96,15 +96,15 @@
             .size
           tcs.zero? ? "" :
             link_to_bourreau_if_accessible(b) + " " +
-            link_to("(#{pluralize tcs, "version"})", :controller => :tool_configs, :action => :index, :bourreau_id => b.id, :tool_id => tool.id, :_simple_filters => 1 )
+            link_to(t('.links.version_count', count: tcs), :controller => :tool_configs, :action => :index, :bourreau_id => b.id, :tool_id => tool.id, :_simple_filters => 1 )
         end
         .join('<br>')
         .html_safe
     end
 
     if current_user.has_role?(:admin_user)
-      t.column("Access?", :access) do |tool|
-        link_to 'Access?',
+      t.column(t('.columns.access'), :access) do |tool|
+        link_to t('.links.access'),
           {
             :controller => :tool_configs,
             :action     => :report,
@@ -114,15 +114,15 @@
       end
     end
 
-    t.column("Help", :help) do |tool|
+    t.column(t('.columns.help'), :help) do |tool|
       path   = tool.cbrain_task_class.public_path("edit_params_help.html") rescue nil
       path ||= tool.cbrain_task_class.help_filepath rescue nil # Boutiques help-page
-      overlay_ajax_link "Help", path.to_s if path
+      overlay_ajax_link t('help'), path.to_s if path
     end
 
-    t.column("Info", :info) do |tool|
+    t.column(t('.columns.info'), :info) do |tool|
       path = tool.cbrain_task_class.public_path("tool_info.html") rescue nil
-      overlay_ajax_link "Info", path.to_s if path
+      overlay_ajax_link t('.columns.info'), path.to_s if path
     end
   %>
 

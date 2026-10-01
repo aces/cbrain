@@ -23,14 +23,14 @@
 -%>
 
 
-<% title 'Add New Message' %>
+<% title t('.title') %>
 
 <div class="menu_bar">
-  <%= link_to "New CBRAIN Dashboard Message",   new_message_path(:for_dashboard => 'cbrain'),   :class => "button" %>
-  <%= link_to "New NeuroHub Dashboard Message", new_message_path(:for_dashboard => 'neurohub'), :class => "button" %>
+  <%= link_to t('.links.new_cbrain_dashboard'),   new_message_path(:for_dashboard => 'cbrain'),   :class => "button" %>
+  <%= link_to t('.links.new_neurohub_dashboard'), new_message_path(:for_dashboard => 'neurohub'), :class => "button" %>
 </div>
 
-<h2>Add New Message</h2>
+<h2><%= t('.title') %></h2>
 
 <%= error_messages_for(@message) %>
 
@@ -44,7 +44,7 @@
      </p>
 
      <p>
-     To users of project: <%= group_select(:group_id,
+     <%= t('.to_users_of_project') %> <%= group_select(:group_id,
            {
              :groups  => current_user.assignable_groups.order(:name),
              :selector => @group_id, # :group_id is not an attribute of Message.
@@ -58,7 +58,7 @@
         <%= f.check_box :critical %>
       </p>
       <p>
-        <%= f.label :send_email, "Send E-mail" %>
+        <%= f.label :send_email, t('.labels.send_email') %>
         <%= check_box_tag "message[send_email]", 1, false %>
       </p>
       <p>
@@ -74,7 +74,7 @@
         <%= f.text_area :variable_text, :rows => 5, :cols => 80 %>
       </p>
       <p>
-        <%= f.label :expiry_date, "Expiration date (current time: #{to_localtime(Time.now, :datetime)})" %><br>
+        <%= f.label :expiry_date, t('messages.common.labels.expiry_date', time: to_localtime(Time.now, :datetime)) %><br>
         <%=
           text_field_tag :expiry_date,
                          (@message.expiry ? "#{@message.expiry.strftime("%d/%m/%G")}" : ""),
@@ -89,7 +89,7 @@
         </p>
         <br>
         <p>
-      <%= f.submit "Submit" %>
+      <%= f.submit t('submit') %>
     </p>
   </div>
 <% end %>

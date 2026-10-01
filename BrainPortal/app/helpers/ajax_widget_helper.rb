@@ -74,7 +74,7 @@ module AjaxWidgetHelper
     atts = options.to_html_attributes
 
     initial_content = capture(&block) if block_given?
-    initial_content ||= html_colorize("Loading...")
+    initial_content ||= html_colorize(t('ajax_widget.loading'))
 
     html = "<#{element} #{atts}>"
     html += h(initial_content)

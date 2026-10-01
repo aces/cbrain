@@ -24,7 +24,7 @@
 #
 -%>
 
-<% title "CPU Over Time" %>
+<% title t('.title') %>
 
 <head>
   <title><%= RemoteResource.current_resource.name.presence || "CBRAIN" %><%= yield :title %></title>
@@ -51,7 +51,7 @@
 
 <div class="noc_users_table">
   <div class="noc_users_row noc_users_legend">
-    <span style="color: <%= total_color %>">Total CPU</span>
+    <span style="color: <%= total_color %>"><%= t('.total_cpu') %></span>
   </div>
 </div>
 

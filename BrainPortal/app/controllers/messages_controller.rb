@@ -109,7 +109,7 @@ class MessagesController < ApplicationController
 
     respond_to do |format|
       if @message.errors.empty?
-        flash.now[:notice] = 'Message was successfully sent.'
+        flash.now[:notice] = t('messages.flash.sent')
         format.xml  { render :xml => @message, :status => :created, :location => @message }
         format.html { redirect_to :action => :index }
       else
@@ -134,7 +134,7 @@ class MessagesController < ApplicationController
         format.xml  { head :ok }
         format.js   { head :ok }
       else
-        flash.now[:error] = "Problem updating message."
+        flash.now[:error] = t('messages.flash.update_failed')
         format.xml  { render :xml  => @message.errors, :status => :unprocessable_entity }
         format.js   { render :json => @message.errors, :status => :unprocessable_entity }
       end
@@ -156,7 +156,7 @@ class MessagesController < ApplicationController
       message_item.destroy
     end
 
-    flash[:notice] = "#{view_pluralize(deleted_count, "item")} deleted.\n"
+    flash[:notice] = t('messages.flash.deleted', count: deleted_count)
     redirect_to :action => :index
   end
 

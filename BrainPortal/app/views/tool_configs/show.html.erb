@@ -22,29 +22,29 @@
 #
 -%>
 
-<% title @tool_config.new_record? ? 'Create Tool Version' : 'Edit Tool Version' %>
+<% title @tool_config.new_record? ? t('.title.create') : t('.title.edit') %>
 
-  <strong>Important note:</strong>
+  <strong><%= t('.important_note') %></strong>
 
   <% if @tool_config.tool_id %>
-    This form applies to tool <strong><%= link_to @tool_config.tool.name, edit_tool_path(@tool_config.tool) %></strong>
+    <%= t('.applies_to_tool_html', tool: link_to(@tool_config.tool.name, edit_tool_path(@tool_config.tool))) %>
   <% else %>
-    This form applies to <strong>ALL tools</strong>
+    <%= t('.applies_to_all_tools_html') %>
   <% end %>
 
   <% if @tool_config.bourreau_id.blank? %>
-    running on <strong>ALL Execution Servers</strong>.<br>
+    <%= t('.running_on_all_servers_html') %><br>
   <% else %>
-    running on Execution Server <strong><%= link_to_bourreau_if_accessible(@tool_config.bourreau) %></strong>.
+    <%= t('.running_on_server_html', server: link_to_bourreau_if_accessible(@tool_config.bourreau)) %>
   <% end %>
 
   <div class="menu_bar">
     <% if @tool_glob_config && @tool_glob_config.id != @tool_config.id %>
-      <%= link_to "Common Config for tool #{@tool_glob_config.tool.name} on ALL Servers",
+      <%= link_to t('.common_config_tool', tool: @tool_glob_config.tool.name),
           tool_config_path(@tool_glob_config), :class => :button %>
     <% end %>
     <% if @bourreau_glob_config && @bourreau_glob_config.id != @tool_config.id %>
-      <%= link_to "Common Config for ALL tools on #{@bourreau_glob_config.bourreau.name} Server",
+      <%= link_to t('.common_config_server', server: @bourreau_glob_config.bourreau.name),
           tool_config_path(@bourreau_glob_config), :class => :button %>
     <% end %>
     <p>
@@ -59,12 +59,12 @@
   <p>
 
   <fieldset>
-    <legend>BASH scripts wrappers</legend>
-    This section displays the full BASH initialization prologue and epilogue script for the configuration shown above.
+    <legend><%= t('.bash_wrappers.legend') %></legend>
+    <%= t('.bash_wrappers.intro') %>
     <% if ( (@bourreau_glob_config ? 1 : 0) + (@tool_glob_config ? 1 : 0) + (@tool_config? 1 : 0) ) > 1 %>
-      It is surrounded by the BASH prologues or epilogues of other relevant global configurations.
+      <%= t('.bash_wrappers.surrounded') %>
     <% end %>
-    The commands are shown in the order of execution.
+    <%= t('.bash_wrappers.order') %>
     <p>
 
     <pre class="script_preview">
@@ -87,16 +87,16 @@
 
 <% if @bourreau_glob_config %>
   <p>
-    <%= render :partial => "layouts/log_report", :locals  => { :log  => @bourreau_glob_config.getlog, :title => "Log of Global Bourreau Tool Config ##{@bourreau_glob_config.id}" } %>
+    <%= render :partial => "layouts/log_report", :locals  => { :log  => @bourreau_glob_config.getlog, :title => t('.log.global_bourreau', id: @bourreau_glob_config.id) } %>
 <% end %>
 
 <% if @tool_glob_config %>
   <p>
-    <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_glob_config.getlog, :title => "Log of Global Tool Config ##{@tool_glob_config.id}" } %>
+    <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_glob_config.getlog, :title => t('.log.global_tool', id: @tool_glob_config.id) } %>
 <% end %>
 
 <% if @tool_local_config %>
   <p>
-    <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_local_config.getlog, :title => "Log of Specific Tool Config ##{@tool_local_config.id}" } %>
+    <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_local_config.getlog, :title => t('.log.specific', id: @tool_local_config.id) } %>
 <% end %>
 

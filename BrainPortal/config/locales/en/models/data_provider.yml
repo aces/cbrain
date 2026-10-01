@@ -1,0 +1,21 @@
+en:
+  activerecord:
+    models:
+      data_provider:
+        one: "Data Provider"
+        other: "Data Providers"
+    attributes:
+      data_provider:
+        name: "Name"
+        description: "Description"
+        type: "Type"
+        remote_host: "Remote Hostname"
+        alternate_host: "Alternate Hostname(s)"
+        remote_user: "Remote Username"
+        remote_port: "Remote Port Number"
+        remote_dir: "Full Directory Path"
+        containerized_path: "Containerized Data Path"
+        cloud_storage_client_identifier: "Client Identifier"
+        cloud_storage_client_token: "Client Token"
+        datalad_repository_url: "Datalad URL"
+        datalad_relative_path: "Datalad Relative Path"

@@ -1,0 +1,34 @@
+en:
+  noc:
+    cpu:
+      title: "CPU Over Time"
+      total_cpu: "Total CPU"
+    dashboard:
+      titles:
+        main: "Activity %{range}"
+        subtitle: "%{date} at %{time}"
+      headings:
+        users: "Users"
+        active_tasks: "Active Tasks"
+        active_transfers: "Active Transfers"
+        cpu_time: "CPU Time"
+        files_deltas: "Files Deltas"
+        exceptions: "Exceptions"
+        servers: "Execution Servers Caches And Tasks"
+        dp: "Data Providers Updated Files"
+      legends:
+        portal_suffix: " (Portal)"
+      labels:
+        cache: "Cache"
+        tasks: "Tasks"
+      offline: "OFFLINE!"
+    tools:
+      titles:
+        cpu: "Top %{count} Tools By CPU"
+        count: "Top %{count} Tools By count"
+    users:
+      title: "User Growth"
+      spans:
+        new_from_country: "New Users From %{country}"
+        new_from_elsewhere: "New Users From Elsewhere"
+        cumulative: "Cumulative Users"

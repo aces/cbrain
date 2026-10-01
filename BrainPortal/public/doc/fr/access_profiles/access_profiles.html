@@ -1,0 +1,102 @@
+
+<!--
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-->
+
+<!-- TODO: This page is not translated yet. It is a simple copy of the English version. -->
+
+<h1>Introduction au profil d'accès</h1>
+
+<p class="medium_paragraphs">
+
+Les profils d'accès permettent de simplifier l'affectation des utilisateurs aux projets.
+
+<p class="medium_paragraphs">
+
+Un profil d'accès est essentiellement un ensemble de projets. Lorsqu'un utilisateur est créé 
+ou modifié, il peut être associé à un ou plusieurs profils d'accès. En étant associé à ces profils d'accès, 
+l'utilisateur devient automatiquement membre de tous les projets inclus dans ces profils.
+
+<p class="medium_paragraphs">
+
+Pour clarifier, utilisons trois termes pour faire le lien entre ces trois concepts.
+ <em>utilisateurs</em>, <em>projets</em> et <em>profils d'accès</em>.
+
+<ul>
+  <li><em>Utilisateurs</em> sont <strong>membres</strong> de <em>projets</em></li>
+  <li><em>Projets</em> sont <strong>attribués</strong> aux <em>profils d'accès</em></li>
+  <li><em>Utilisateurs</em> sont <strong>liés</strong> aux <em>profils d'accès</em></li>
+</ul>
+
+<p class="medium_paragraphs">
+
+Un même projet peut être attribué à plusieurs profils d'accès, et un utilisateur peut être associé
+à plusieurs de ces profils. Si un projet est attribué à plusieurs profils auxquels l'utilisateur est associé, 
+celui-ci demeure membre du projet tant qu'il est attribué à au moins un de ces profils. 
+Autrement dit, l'ensemble des projets dont un utilisateur est membre correspond à l' <strong>union</strong> 
+de tous les projets attribués aux profils d'accès auxquels il est associé.
+  
+<p class="medium_paragraphs">
+
+Les profils d'accès et l'ensemble de leurs propriétés ne sont jamais visibles pour les utilisateurs standard.
+Pour ces utilisateurs, seule leur appartenance aux projets est visible.
+
+<h4>Creating an Access Profile</h4>
+
+<p class="medium_paragraphs">
+
+Lors de la création d'un nouveau profil d'accès, l'administrateur peut lui attribuer une couleur afin 
+de le distinguer des autres profils d'accès. Il peut également lui attribuer des projets dès sa création
+
+<h4>Suppression d'un profil d'accès</h4>
+
+<p class="medium_paragraphs">
+
+La suppression d'un profil d'accès n'entraîne pas la suppression des projets qui lui sont attribués. 
+Cependant, tous les utilisateurs associés à ce profil ne seront plus membres des projets qui lui étaient attribués, 
+à l'exception des projets également attribués à d'autres profils d'accès.
+
+<h4>Modification d'un profil d'accès : gestion des projets</h4>
+
+<p class="medium_paragraphs">
+
+La modification de l'ensemble des projets attribués à un profil d'accès prend effet immédiatement (par défaut) pour 
+tous les utilisateurs associés à ce profil d'accès. Si de nouveaux projets sont attribués au profil, les utilisateurs 
+en deviennent automatiquement membres. Si des projets sont retirés du profil, les utilisateurs peuvent perdre leur
+appartenance à ces projets.
+
+<p class="medium_paragraphs">
+
+Dans le formulaire, l'administrateur peut sélectionner, à l'aide des cases à cocher situées au bas de la liste des projets, 
+les utilisateurs qui seront affectés par les modifications. Si la case à cocher d'un utilisateur n'est pas sélectionnée, 
+son appartenance aux projets ne sera pas modifiée, quelles que soient les modifications apportées au profil d'accès.
+
+<h4>Modification d'un profil d'accès : gestion des utilisateurs</h4>
+
+<p class="medium_paragraphs">
+
+La modification de la liste des utilisateurs associés à un profil d'accès affectera tous les utilisateurs concernés: 
+ils deviendront membres de tous les projets de ce profil d'accès (si l'utilisateur est ajouté) ou pourront perdre
+l'accès à l'ensemble de ces projets.
+
+<p class="medium_paragraphs">
+

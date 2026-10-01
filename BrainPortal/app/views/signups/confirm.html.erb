@@ -22,19 +22,15 @@
 #
 -%>
 
-<% title 'Request Confirmed' %>
+<% title t('.title') %>
 
-<h1>Confirmed!</h1>
+<h1><%= t('.headings.main') %></h1>
 
-Thank you. You've confirmed your email address.
-<p>
-Now it's up to the administrators to review your request
-and you'll be notified if and when they approve it.
-<p>
+<%= t('.paragraphs.main_html') %>
 <% if @propose_view %>
-In the meantime you can <%= link_to 'have a look', signup_path(@signup) %> at your request, or even <%= link_to 'edit', edit_signup_path(@signup) %> it.
+<%= t('.paragraphs.propose_view_html', look: link_to(t('.links.have_a_look'), signup_path(@signup)), edit: link_to(t('edit').downcase, edit_signup_path(@signup))) %>
 <p>
 <% end %>
 
-(There is nothing else to do here, you might as well have a coffee and read the news)
+<%= t('.paragraphs.footer') %>
 

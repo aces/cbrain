@@ -1,0 +1,19 @@
+fr:
+  sessions:
+    errors:
+      oidc_out_of_sync: "La session %{name} n'est plus synchronisée avec CBRAIN"
+      oidc_fetch_failed: "Impossible de récupérer vos informations d'identité depuis %{name}"
+      identity_incomplete: "Il manque des informations dans la structure d'identité. Contactez les administrateurs"
+    flash:
+      logged_out: "Vous avez été déconnecté."
+      oidc_provider_not_allowed: "Erreur : votre compte ne peut s'authentifier qu'avec les fournisseurs suivants : %{providers}"
+      oidc_linked: "Votre compte CBRAIN est désormais lié à votre identité %{name}."
+      oidc_no_more_password: "\nNote importante : à partir de maintenant, vous ne pouvez plus vous connecter à CBRAIN avec un mot de passe."
+      oidc_auth_failed: "L'authentification %{name} a échoué"
+      oidc_unlinked: "Votre compte n'est plus lié à aucune identité %{name}"
+      invalid_credentials: "Nom d'utilisateur ou mot de passe invalide."
+      untrusted_ip: "Adresse IP source non fiable."
+      portal_locked: "Le système est actuellement verrouillé. Veuillez réessayer plus tard."
+      account_locked: "Ce compte est verrouillé, veuillez écrire à %{contact} pour le faire déverrouiller."
+      oidc_no_user_match: "Aucun compte CBRAIN ne correspond à votre identité %{name}. Créez un compte CBRAIN ou liez votre compte CBRAIN existant à votre fournisseur %{name}."
+      oidc_multiple_users_match: "Plusieurs comptes CBRAIN correspondent à votre identité %{name}. Veuillez contacter les administrateurs CBRAIN, car cela ne devrait jamais se produire."

@@ -25,57 +25,57 @@
 <% custom_filter ||= @custom_filter %>
 
 <p>
-Filename<br>
-<%= select :data, :file_name_type, [["Don't filter name", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => custom_filter.data_file_name_type%>
+<%= t('.by.filename') %><br>
+<%= select :data, :file_name_type, [[t('custom_filters.common.userfile.dont_filter_name'), ''], [t('custom_filters.common.match_type.match'), 'match'], [t('custom_filters.common.match_type.contain'), 'contain'], [t('custom_filters.common.match_type.begin'), 'begin'], [t('custom_filters.common.match_type.end'), 'end']], :selected => custom_filter.data_file_name_type%>
 <%= text_field_tag "data[file_name_term]", custom_filter.data_file_name_term %>
 
 <p>
-Parent name contains <small>(lists children)</small>:<br>
+<%= t('.by.parent_name_contains_html') %><br>
 <%= text_field_tag "data[parent_name_like]", custom_filter.data_parent_name_like %>
 
 <p>
-Child name contains <small>(lists parents)</small>:<br>
+<%= t('.by.child_name_contains_html') %><br>
 <%= text_field_tag "data[child_name_like]", custom_filter.data_child_name_like %>
 
 
 <p>
-  File types<br>
+  <%= t('.by.file_types') %><br>
   <%= userfile_type_select("data[types]", {:selector => custom_filter.data_types}, :include_blank => true, :multiple => true ) %>
 </p>
 
-Filtering by date<br>
+<%= t('.by.filtering_by_date') %><br>
 <%= date_range_panel(custom_filter[:data] || {}, "data") %>
 <p>
-Size<br>
-<%= select :data, :size_type, [["Don't filter size", ''], ['<', "1"], ['>', "2"]], :selected  => custom_filter.data_size_type %>
+<%= t('.by.size') %><br>
+<%= select :data, :size_type, [[t('custom_filters.common.userfile.dont_filter_size'), ''], ['<', "1"], ['>', "2"]], :selected  => custom_filter.data_size_type %>
 <%= text_field_tag "data[size_term]", @custom_filter.data_size_type == "" ? "" : @custom_filter.data_size_term %> kb
 
 <p>
-Owners<br>
+<%= t('.by.owners') %><br>
 <%= user_select("data[user_ids]", { :selector => custom_filter.data_user_ids }, { :include_blank => true, :multiple => true })  %>
 
 <p>
-Projects<br>
+<%= t('.by.projects') %><br>
 <%= group_select("data[group_ids]", { :selector => custom_filter.data_group_ids}, { :include_blank => true, :multiple => true })  %>
 
 <p>
-  Data Providers<br>
+  <%= t('.by.data_providers') %><br>
   <%= data_provider_select("data[data_provider_ids]", { :selector => custom_filter.data_data_provider_ids || '!' }, { :include_blank => true, :multiple => true })  %>
 </p>
 
 <p>
-Archiving status<br>
+<%= t('.by.archiving_status') %><br>
 <%= select :data, :archiving_status,
 [
-  ["Don't filter by archiving status", ''         ],
-  ["Archived",                         'archived' ],
-  ["Not archived",                     'none'     ],
+  [t('custom_filters.common.archiving.dont_filter'), ''         ],
+  [t('custom_filters.common.archiving.archived'),    'archived' ],
+  [t('custom_filters.common.archiving.not_archived'),'none'     ],
 ],
 :selected => custom_filter.data_archiving_status
 %>
 
 <p>
-  Synchronization status<br>
+  <%= t('.by.synchronization_status') %><br>
   <%=
   select_tag "data[sync_status]", options_for_select(["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"], :selected => custom_filter.data_sync_status),
               :multiple => true, :size => 6, :selected => custom_filter.data_sync_status
@@ -83,7 +83,7 @@ Archiving status<br>
 </p>
 
 <% if current_user.available_tags.count > 0 %>
-  Tags <br>
+  <%= t('.by.tags') %> <br>
   <%=
   select_tag "data[tag_ids]", options_for_select((current_user.available_tags.map { |tags| [tags.name, tags.id] }), :selected => custom_filter.data_tag_ids),
               :multiple => true, :size => 6, :selected => custom_filter.data_tag_ids

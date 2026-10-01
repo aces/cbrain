@@ -1,0 +1,20 @@
+en:
+  signups:
+    flash:
+      email_failed:              "It seems some error occurred. The email notification was probably not sent. There's nothing we can do about this."
+      updated:                   "The account request has been updated."
+      deleted:                   "The account request has been deleted."
+      confirmation_resent:       "A new confirmation email has been sent."
+      confirmation_resend_failed: "It seems some error occurred. Email notification was probably not sent. Try again later, or contact the admins."
+      deleted_records:
+        one:                     "Deleted %{count} record."
+        other:                   "Deleted %{count} records."
+      sent_confirmations:
+        one:                     "Sent %{count} confirmation email."
+        other:                   "Sent %{count} confirmation emails."
+      hidden_records:
+        one:                     "Hidden %{count} record"
+        other:                   "Hidden %{count} records"
+      revealed_records:
+        one:                     "Revealed %{count} record"
+        other:                   "Revealed %{count} records"

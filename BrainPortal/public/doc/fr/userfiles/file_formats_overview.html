@@ -1,0 +1,88 @@
+
+<!--
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-->
+
+<h1>Formats de fichiers d'imagerie médicale</h1>
+
+<br>
+<br>
+<b>MINC 1 et MINC 2</b>
+<br>
+MINC est une suite logicielle pour le stockage et la manipulation d'images médicales, développé à l'origine en 1993 par Peter Neelin au McConnell Brain Imaging Centre. Le nom MINC est l'acronyme de Medical Imaging NetCDF. MINC a été conçu pour permettre aux chercheurs d'utiliser un ensemble commun d'outils et de fichiers afin de travailler sur des images médicales dans diverses modalités. Le format de fichier a été défini initialement comme une spécialisation du format NetCDF (Network Common Data Form) créé par le Unidata Program Center à l'UCAR (University Corporation for Atmospheric Research). Le format NetCDF, ses bibliothèques et ses outils ont été conçus pour stocker des jeux de données génériques de dimensionnalité arbitraire. NetCDF a été choisi car il implémente de nombreuses fonctions qui étaient envisagées pour le système MINC.
+<br>
+<br>
+Comme la plupart des autres formats de données d'imagerie médicale, MINC permet aux données d'images médicales d'avoir une grande variété de types ou d'intervalles de données, et définit un ensemble standard de données auxiliaires décrivant les paramètres d'acquisition de l'image ou les informations du patient.
+<br>
+<br>
+Cependant, MINC se distingue de la plupart des autres formats d'imagerie médicale à plusieurs égards :
+<br>
+<ul>
+   <li>MINC est intrinsèquement N-dimensionnel. Les données MINC peuvent être structurées avec n'importe quel nombre de dimensions spatiales, temporelles ou autres, et ces dimensions peuvent être organisées dans un ordre arbitraire. En pratique, NetCDF limite les données à au plus 100 dimensions, mais cela ne s'est pas avéré être une restriction significative.</li>
+   <li>MINC est multimodal. MINC a été utilisé pour stocker des données de scanner (CT), d'IRM, de TEP, d'EEG et d'autres données d'imagerie médicale.</li>
+   <li>MINC est extensible. Un fichier MINC peut contenir une collection arbitraire d'attributs et de données auxiliaires. Si votre étude exige de conserver la pression artérielle d'un patient ou ses antécédents psychiatriques, ces informations peuvent être ajoutées à l'en-tête de vos fichiers MINC sans qu'il soit nécessaire de modifier le format de base.</li>
+   <li>MINC est auto-descriptif. La plupart des attributs et variables utilisés dans MINC portent des noms et des valeurs descriptifs qui peuvent être facilement interprétés par un utilisateur.</li>
+   <li>MINC permet la mise à l'échelle des données de voxel soit par image, soit par coupe.</li>
+   <li>MINC définit à la fois un système de coordonnées voxel et un système de coordonnées physiques. Un fichier MINC stocke en pratique une transformation linéaire qui définit la relation entre l'agencement logique des voxels dans le fichier et un système de coordonnées physiques de référence. Le système de coordonnées physiques peut être les coordonnées natives du scanner, ou un espace de coordonnées plus universel comme le système de Talairach.</li>
+</ul>
+Comme beaucoup de termes informatiques spécialisés, le terme « MINC » a été employé de plusieurs façons au fil des ans. Il peut désigner le format de fichier lui‑même, c'est‑à‑dire la définition de l'agencement physique et logique des données à l'intérieur d'un fichier MINC. Il s'applique également à l'environnement de programmation qui permet d'accéder aux fichiers au format MINC. Enfin, le terme désigne parfois l'ensemble en évolution rapide de programmes et de scripts qui analysent, modifient ou affichent des fichiers MINC.
+<br>
+<br>
+Le système MINC « core » peut être considéré comme incluant les éléments suivants :
+<br>
+<ul>
+   <li>le format de fichier lui‑même</li>
+   <li>l'interface de programmation « libminc », qui offre aux programmeurs un accès complet au format.</li>
+   <li>l'interface de programmation « volume_io », qui fournit une interface de programmation simplifiée mais restreinte pour le format MINC.</li>
+   <li>un ensemble d'outils écrits à l'aide de ces bibliothèques.</li>
+</ul>
+En complément des outils MINC de base, un grand nombre de programmes applicatifs supplémentaires existent et réalisent des opérations plus sophistiquées sur les fichiers MINC. Parmi eux figurent des programmes pour la visualisation, l'amélioration ou la correction d'images, la classification automatique des tissus et l'alignement (enregistrement) d'images.
+<br>
+<br>
+
+<b>Versions</b>
+<br>
+MINC 2 a été conçu pour résoudre quelques problèmes spécifiques qui avaient été identifiés dans MINC 1.
+<br>
+<ul>
+    <li>Taille de fichier limitée. Le format NetCDF utilisait des pointeurs 32 bits pour adresser les objets dans le fichier. Cela limitait effectivement la taille des fichiers à un maximum de 2 gigaoctets. Avec l'apparition d'atlas cérébraux à très haute résolution (issus de macrotomes ou d'autres sources) et de grands jeux de données d'IRMf, il est devenu clair que cette restriction pouvait poser un problème sérieux.</li>
+    <li>Types de données restreints. Le format NetCDF définit un petit ensemble fixe de types de données — entiers, nombres à virgule flottante et chaînes ASCII. Ni les données agrégées (tableaux ou structures) ni les données étiquetées (énumérées) ne sont prises en charge comme types fondamentaux dans NetCDF.</li>
+    <li>Options de stockage limitées. Les fichiers NetCDF stockent les données dans un tableau contigu. Cela freine l'ajout de données adressables par blocs ou de la compression interne au format NetCDF.</li>
+</ul>
+
+Comme la plupart de ces problèmes étaient inhérents au format MINC 1, la conception de MINC 2 a exigé une révision majeure du format. L'équipe de développement de MINC 2 a choisi de remplacer NetCDF par la bibliothèque HDF5 comme base du format MINC 2. HDF5 fournit un ensemble de fonctionnalités avancées qui ne sont pas disponibles dans NetCDF.
+<br>
+<br>
+
+<b>Autres formats de fichiers disponibles</b>
+<ul>
+    <li>hrtt</li>
+    <li>analyze</li>
+    <li>asipro</li>
+    <li>dicom</li>
+    <li>nii</li>
+    <li>cw5</li>
+</ul>
+
+<br>
+<br>
+
