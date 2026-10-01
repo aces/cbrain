@@ -294,7 +294,7 @@ class ClusterTask < CbrainTask
   # be the task's work directory.
   def safe_mkdir(relpath,mode=0700)
     relpath = relpath.to_s
-    cb_error "Current directory is not the task's work directory?" unless self.we_are_in_workdir
+    cb_error "Current directory is not the task's work directory?" unless self.are_we_in_workdir?
     cb_error "New directory argument must be a relative path." if
       relpath.blank? || relpath =~ /\A\//
     Dir.mkdir(relpath,mode) unless File.directory?(relpath)
@@ -312,7 +312,7 @@ class ClusterTask < CbrainTask
   def safe_symlink(original_entry,relpath)
     original_entry = original_entry.to_s
     relpath        = relpath.to_s
-    cb_error "Current directory is not the task's work directory?" unless self.we_are_in_workdir
+    cb_error "Current directory is not the task's work directory?" unless self.are_we_in_workdir?
     cb_error "New directory argument must be a relative path." if
       relpath.blank? || relpath =~ /\A\//
     File.unlink(relpath) if File.symlink?(relpath)
@@ -377,14 +377,12 @@ class ClusterTask < CbrainTask
     return results.count > 0
   end
 
-
-  def we_are_in_workdir #:nodoc:
+  def are_we_in_workdir? #:nodoc:
     full = self.full_cluster_workdir
     return false if full.blank?
-    cur_dir = Dir.getwd
-    Dir.chdir(full) do  # We need to do this in case the workdir goes through symlinks...
-      return false if cur_dir != Dir.getwd
-    end
+    cur_dir = Pathname.new(Dir.getwd).realpath.to_s
+    full    = Pathname.new(full).realpath.to_s
+    return false if cur_dir != full
     true
   end
 
@@ -618,7 +616,7 @@ class ClusterTask < CbrainTask
   # directory, even though its text is stored in "/tmp".
   def tool_config_system(command)
 
-    cb_error "Current directory is not the task's work directory?" unless self.we_are_in_workdir
+    cb_error "Current directory is not the task's work directory?" unless self.are_we_in_workdir?
 
     # Defines tmp file paths
     scriptfile = "/tmp/tool_script.#{$$}.#{Time.now.to_i}"
@@ -1145,7 +1143,7 @@ class ClusterTask < CbrainTask
   # For this method to work properly, the CWD must be set to the
   # task's work directory.
   def find_or_create_combined_file(qsub_outerr, science_outerr) #:nodoc:
-    cb_error "Current directory is not the task's work directory?" unless self.we_are_in_workdir
+    cb_error "Current directory is not the task's work directory?" unless self.are_we_in_workdir?
 
     # Report already prepared? Just return its basename
     combined_file = "#{qsub_outerr}-combined"
@@ -2674,7 +2672,7 @@ bash -c "exit $_cbrain_status_"
   # as a special, hidden userfile on the ScratchDataProvider.
   def load_singularity_image_from_repo #:nodoc:
     singularity_image_name     = self.tool_config.containerhub_image_name
-    singularity_index_location = self.tool_config.container_index_location.presence || "shub://"
+    singularity_index_location = self.tool_config.container_index_location.presence
 
     self.addlog("Building singularity image '#{singularity_image_name}'")
 

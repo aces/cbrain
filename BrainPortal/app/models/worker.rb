@@ -169,12 +169,10 @@ class Worker
     workers = []
     # We construct pattern that matches pidfiles: "some_prefix-*.run"
     match_pidfiles = self.construct_pidfile_name("*")
-    Dir.chdir(PIDFILES_DIR.to_s) do
-      Dir.glob(match_pidfiles).each do |pidfile|
-        worker = self.new
-        worker.initialize_from_pidfile(pidfile)
-        workers << worker if worker.is_alive?
-      end
+    Dir.glob((PIDFILES_DIR + match_pidfiles).to_s).each do |pidfile|
+      worker = self.new
+      worker.initialize_from_pidfile(pidfile)
+      workers << worker if worker.is_alive?
     end
     return workers
   end
@@ -704,14 +702,14 @@ class Worker
   end
 
   def pidfile_exists? #:nodoc:
-    self.pidfile.blank? ? false : File.exist?((PIDFILES_DIR + self.pidfile).to_s)
+    self.pidfile.to_s.blank? ? false : File.exist?((PIDFILES_DIR + self.pidfile).to_s)
   end
 
   public # Needs to be public as it's called from class method find_existing_workers()
 
   # Initializes a proxy object using a +pidfile+.
   def initialize_from_pidfile(pidfile) #:nodoc:
-    self.pidfile        = pidfile
+    self.pidfile        = Pathname.new(pidfile).basename.to_s
     self.pid            = self.class.extract_pid_from_pidfile_name(pidfile)
     self.role           = :proxy
   end
