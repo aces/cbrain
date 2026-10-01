@@ -2672,7 +2672,7 @@ bash -c "exit $_cbrain_status_"
   # as a special, hidden userfile on the ScratchDataProvider.
   def load_singularity_image_from_repo #:nodoc:
     singularity_image_name     = self.tool_config.containerhub_image_name
-    singularity_index_location = self.tool_config.container_index_location.presence || "shub://"
+    singularity_index_location = self.tool_config.container_index_location.presence
 
     self.addlog("Building singularity image '#{singularity_image_name}'")
 
