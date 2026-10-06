@@ -206,7 +206,7 @@ fr:
       archiving_status:
         not: "Non archivé"
         on_cluster: "Archivé sur le cluster."
-        as_file: "Archivé comme fichier %{link}"
+        as_file_html: "Archivé comme fichier %{link}"
       rescue:
         no_template_html: "<pre>Problème lors du chargement de la vue récapitulative (aucun modèle fourni par l'auteur de la tâche).</pre>"
         template_error_html: "<pre>Problème lors du chargement de la vue récapitulative (erreur de modèle).</pre>"

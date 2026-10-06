@@ -48,7 +48,7 @@
         html_colorize(t('.delay.awful'),    'red')
     end
 %>
-  <b><%= t('.last_wait_time', time: pretty_elapsed(latest_in_queue_delay.to_i, :num_components => 2), rating: rating ) %> <br/>
+  <b><%= t('.last_wait_time_html', time: pretty_elapsed(latest_in_queue_delay.to_i, :num_components => 2), rating: rating ) %> <br/>
   <% unless time_of_last_queue_delay.blank? %>
     <small><%= t('.queue_info', time: pretty_elapsed(Time.now.to_i - time_of_last_queue_delay.to_i, :num_components => 2)) %></small>&nbsp;
     <a href="#" id="showAdditionalToolInfo"><%= t('.more_info') %></a><br/>

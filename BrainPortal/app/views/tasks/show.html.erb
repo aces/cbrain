@@ -168,7 +168,7 @@
         <%= t('.archiving_status.on_cluster') %>
       <% else %>
         <% ar_file = @task.workdir_archive %>
-        <%= t('.archiving_status.as_file', link: link_to_userfile_if_accessible(ar_file) ) %> <%= colored_pretty_size(ar_file.size) if ar_file %>
+        <%= t('.archiving_status.as_file_html', link: link_to_userfile_if_accessible(ar_file) ) %> <%= colored_pretty_size(ar_file.size) if ar_file %>
       <% end %>
     <% end %>
 

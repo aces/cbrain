@@ -26,7 +26,7 @@
   <% if @info.name == "???" %>
     <% t.row do %>
       <% colorized_down = html_colorize(t('.server_status.down'), "red")%>
-      <%= t('.server_status.server_status', status: colorized_down) %>.
+      <%= t('.server_status.server_status_html', status: colorized_down) %>.
     <% end %>
 
   <% else %>
