@@ -187,7 +187,7 @@ fr:
         active_tasks: "Nombre de tâches actives (tous utilisateurs) : %{num_active}"
         queued_tasks: "Nombre de tâches en file d'attente (tous utilisateurs) : %{num_queued}"
         running_tasks: "Nombre de tâches en cours d'exécution (tous utilisateurs) : %{num_processing}"
-      last_wait_time: "Dernier temps d'attente : %{time} (%{rating})"
+      last_wait_time_html: "Dernier temps d'attente : %{time} (%{rating})"
       queue_info: "(Cela s'est produit il y a %{time})"
       more_info: "plus d'information"
     notes:
@@ -234,7 +234,7 @@ fr:
         ssh_public_key: "Clé publique SSH"
       server_status:
         down: "ARRÊTÉ"
-        server_status: "Ce serveur est actuellement %{status}"
+        server_status_html: "Ce serveur est actuellement %{status}"
       rails_server_uptime:
         up_since: "En fonctionnement depuis : %{time}"
         for: "pour : %{duration}"

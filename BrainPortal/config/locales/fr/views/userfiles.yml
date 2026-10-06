@@ -187,8 +187,8 @@ fr:
         immutable_file: "Fichier immuable"
         hidden_file: "Fichier masqué"
       zenodo_publication:
-        published: "Publié : %{link}"
-        in_progress: "En cours : %{link}"
+        published_html: "Publié : %{link}"
+        in_progress_html: "En cours : %{link}"
       legends:
         content: "Contenu"
       content:

@@ -154,12 +154,12 @@
     <% t.cell(t('.cells.zenodo_publication')) do %>
       <% if @userfile.zenodo_doi.present? %>
         <% if @userfile.zenodo_doi.starts_with?( ZenodoHelper::ZenodoSandboxDOIPrefix ) %>
-          <%= t('.zenodo_publication.published', link: link_to_deposit(@userfile.zenodo_deposit_id)) %>
+          <%= t('.zenodo_publication.published_html', link: link_to_deposit(@userfile.zenodo_deposit_id)) %>
         <% else %>
-          <%= t('.zenodo_publication.published', link: link_to_zenodo_doi(@userfile.zenodo_doi)) %>
+          <%= t('.zenodo_publication.published_html', link: link_to_zenodo_doi(@userfile.zenodo_doi)) %>
         <% end %>
       <% elsif @userfile.zenodo_deposit_id.present? %>
-          <%= t('.zenodo_publication.in_progress', link: link_to_deposit(@userfile.zenodo_deposit_id)) %>
+          <%= t('.zenodo_publication.in_progress_html', link: link_to_deposit(@userfile.zenodo_deposit_id)) %>
       <% else %>
           <%= t('none') %>.
       <% end %>

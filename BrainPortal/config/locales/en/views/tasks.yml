@@ -206,7 +206,7 @@ en:
       archiving_status:
         not: "Not archived"
         on_cluster: "Archived on cluster."
-        as_file: "Archived as file %{link}"
+        as_file_html: "Archived as file %{link}"
       rescue:
         no_template_html: "<pre>Problem loading summary view (no template provided by task author).</pre>"
         template_error_html: "<pre>Problem loading summary view (template error).</pre>"

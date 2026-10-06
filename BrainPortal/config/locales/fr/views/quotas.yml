@@ -68,7 +68,7 @@ fr:
       columns:
         user: "Utilisateur"
         default_for_all_users: "(Par défaut pour tous les utilisateurs)"
-        data_provider: "Data providers"
+        data_provider: "Serveurs de stockage"
         max_size: "Taille max"
         max_files: "Nombre max de fichiers"
         my_usage: "Ma consommation"
@@ -83,7 +83,7 @@ fr:
         show_edit_disk_quota: "Afficher/Modifier le quota disque"
       headings:
         user: "Utilisateur"
-        data_provider: "Data providers"
+        data_provider: "Serveurs de stockage"
         situation: "Situation"
         details: "Détails"
         quota_record: "Entrée de quota"
@@ -166,7 +166,7 @@ fr:
       links:
         disk_quotas_table: "Tableau des disques quotas"
         new_disk_quota: "Nouveau disque quota"
-        new_quota_same_provider: "Nouveau quota avec le même data provider"
+        new_quota_same_provider: "Nouveau quota avec le même serveur de stockage"
         new_quota_same_user: "Nouveau quota pour le même utilisateur"
       headings:
         record: "Entrée de disque quota"
@@ -174,10 +174,10 @@ fr:
         max_num_files: "Nombre maximal de fichiers"
       columns:
         user: "Utilisateur"
-        data_provider: "Data provider"
+        data_provider: "Serveur de stockage"
       blanks:
         default_all_users: "(Par défaut pour tous les utilisateurs)"
-        select_data_provider: "(Sélectionner un data provider)"
+        select_data_provider: "(Sélectionner un serveur de stockage)"
       divs:
         max_bytes_html: |
           <div class="field_explanation">
@@ -207,8 +207,8 @@ fr:
         disk_quota_explanations_html: |
           <p class="long_paragraphs">
           Cette page affiche les limites pour la quantité d'espace disque et le nombre
-          de fichiers qui peuvent être stockés sur chaque data providers. Chaque ligne est
-          une entrée de quota qui s'applique à un utilisateur ou à tous les utilisateurs, pour un data provider.
+          de fichiers qui peuvent être stockés sur chaque serveur de stockage. Chaque ligne est
+          une entrée de quota qui s'applique à un utilisateur ou à tous les utilisateurs, pour un serveur de stockage.
           Lorsqu'un utilisateur dépasse l'une des deux limites pour
           un fournisseur, il ne pourra plus créer de nouveaux fichiers.
         cpu_quota_explanations_html: |
