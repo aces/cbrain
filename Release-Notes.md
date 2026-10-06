@@ -1,6 +1,26 @@
 
 ## CBRAIN/NeuroHub Release Notes
 
+#### Version 7.2.0 Released 2026-10-06
+
+This release supports internationalisation (i18n).
+
+We're providing the interface in both English and French.
+Much of the interface is now translated. There are a few
+untranslated elements here and there, but we will fix
+them in future patches. For the moment, it's pretty great!
+
+This release is the work of Natacha Beck and Xuan Mai Pham.
+
+###### Other features and bug fixes
+
+* Some internal code of TaskWorkers no longer perform chdir()s
+  that were unnecessary.
+* Boutiques descriptors are reloaded automatically by the framework
+  if their timestamp change.
+* An API call for the 'available' action was implemented.
+* Mitigation code handling too many account requests.
+
 #### Version 7.1.0 Released 2026-09-09
 
 This release covers about 15 months of code improvements,

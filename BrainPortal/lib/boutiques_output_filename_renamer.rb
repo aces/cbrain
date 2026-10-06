@@ -36,7 +36,7 @@
 #       }
 #   }
 #
-# The key "outname_inputid1" is the ID of an entry in
+# The key "outputid1" is the ID of an entry in
 # the "output-files" section of the descriptor, and it indicates
 # which physical file in the work directory will be saved with the
 # newly generated name.
