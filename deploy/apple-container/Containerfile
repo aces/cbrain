@@ -1,0 +1,20 @@
+FROM docker.io/library/ruby:2.7.8-bullseye
+RUN printf 'deb https://archive.debian.org/debian bullseye main\n' > /etc/apt/sources.list && apt-get -o Acquire::Check-Valid-Until=false update && apt-get install -y --no-install-recommends \
+    default-libmysqlclient-dev mariadb-client nodejs rsync openssh-client openssh-server \
+    python3-pip libffi-dev libsodium-dev supervisor curl procps && \
+    pip3 install --no-cache-dir boutiques && rm -rf /var/lib/apt/lists/*
+RUN gem install bundler -v 2.4.22 --no-document
+WORKDIR /opt/cbrain
+COPY BrainPortal/Gemfile BrainPortal/Gemfile
+COPY Bourreau/Gemfile Bourreau/Gemfile
+RUN cd BrainPortal && bundle _2.4.22_ install --jobs 4 && \
+    cd ../Bourreau && bundle _2.4.22_ install --jobs 4
+COPY . .
+RUN cd BrainPortal && bundle exec rake cbrain:plugins:install:plugins
+
+COPY deploy/apple-container/local.rake BrainPortal/lib/tasks/apple_container_local.rake
+ENV RAILS_ENV=development
+EXPOSE 3000
+ENTRYPOINT ["/opt/cbrain/deploy/apple-container/entrypoint.sh"]
+# CBRAIN checks SSH-forwarded UNIX sockets with ss.
+RUN apt-get -o Acquire::Check-Valid-Until=false update && apt-get install -y --no-install-recommends iproute2 && rm -rf /var/lib/apt/lists/*
