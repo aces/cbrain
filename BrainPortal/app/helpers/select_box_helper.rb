@@ -591,7 +591,8 @@ module SelectBoxHelper
 
     user_by_lock_status_hash.sort.each do |status,users_by_status|
       user_name_id = users_by_status.sort_by { |u| u.login }.map { |u| ["#{u.login} (#{u.full_name})" , u.id] }
-      ordered_by_lock_status << [t("select_box.user_status_groups.#{status.parameterize(:separator => '_')}"), user_name_id]
+      status_label = t("select_box.user_status_groups.#{status.parameterize(:separator => '_')}")
+      ordered_by_lock_status << [ status_label , user_name_id ]
     end
 
     ordered_by_lock_status
