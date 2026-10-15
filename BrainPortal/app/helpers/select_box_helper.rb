@@ -214,7 +214,7 @@ module SelectBoxHelper
          end
          opt_pair #  [ "DpName", "3" ]    or   [ "DpName (offline)", "3", { :disabled => "true" } ]
        end
-       grouped_oplists << [ group_title, options_dps ]  # [ "GroupName", [  [ dp1, 1 ], [dp2, 2] ] ]
+       grouped_oplists << [ t("select_box.storage_groups.#{group_title.parameterize(:separator => '_')}"), options_dps ]  # [ "GroupName", [  [ dp1, 1 ], [dp2, 2] ] ]
     end
     grouped_options = grouped_options_for_select(grouped_oplists.compact, selected)
 

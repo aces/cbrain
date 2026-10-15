@@ -81,6 +81,9 @@ fr:
     run_number: "Un identifiant numérique qui augmente à chaque fois que la tâche est relancée, initialement défini à '1'"
     cluster: "Le nom du serveur d'exécution"
   select_box:
+    storage_groups:
+      service_storage: "Stockage de service"
+      user_storage:    "Stockage utilisateur"
     task_status_groups:
       standard_cycle: "Cycle normal"
       waiting:        "En attente"

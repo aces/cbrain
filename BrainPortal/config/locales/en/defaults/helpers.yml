@@ -81,6 +81,9 @@ en:
     run_number: "A numeric run number that increases everytime the task is restarted, initially set to '1'"
     cluster: "The name of the execution server"
   select_box:
+    storage_groups:
+      service_storage: "Service Storage"
+      user_storage:    "User Storage"
     task_status_groups:
       standard_cycle: "Standard Cycle"
       waiting:        "Waiting"
