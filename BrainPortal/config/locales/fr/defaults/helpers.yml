@@ -90,6 +90,9 @@ fr:
       other:          "Autres"
     no_execution_servers_html: "<strong style=\"color:red\">Aucun serveur de calcul disponible</strong>"
     offline_suffix:       " (hors ligne)"
+    user_status_groups:
+      active_users: "Utilisateurs actifs"
+      locked_users: "Utilisateurs verrouillés"
   scope_filters:
     sentence: "%{attribute} : %{operator}%{values}"
     none:     "(Aucun)"

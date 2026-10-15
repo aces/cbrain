@@ -90,6 +90,9 @@ en:
       other:          "Other"
     no_execution_servers_html: "<strong style=\"color:red\">No Execution Servers Available</strong>"
     offline_suffix:       " (offline)"
+    user_status_groups:
+      active_users: "Active users"
+      locked_users: "Locked users"
   scope_filters:
     sentence: "%{attribute}: %{operator}%{values}"
     none:     "(None)"
