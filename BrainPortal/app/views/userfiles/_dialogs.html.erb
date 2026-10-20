@@ -31,6 +31,8 @@
 <div id="upload-dialog"
   class="dlg-dialog"
   title="<%= t('.titles.upload_sf') %>"
+  data-cancel-label="<%= t('cancel') %>"
+  data-upload-label="<%= t('userfiles.common.upload') %>"
   data-max-upload-size="<%= RemoteResource.current_resource.meta[:upload_size_limit].to_i.megabytes %>"
   data-type-detect-url="<%= detect_file_type_userfiles_path %>"
 >
