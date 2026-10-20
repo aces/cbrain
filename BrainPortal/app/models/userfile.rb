@@ -1084,13 +1084,13 @@ class Userfile < ApplicationRecord
 
   def validate_associations #:nodoc:
     unless DataProvider.where( :id => self.data_provider_id ).exists?
-      errors.add(:data_provider, "does not exist")
+      errors.add(:data_provider, I18n.t('activerecord.errors.models.userfile.missing_association', :default => "does not exist"))
     end
     unless User.where( :id => self.user_id ).exists?
-      errors.add(:user, "does not exist")
+      errors.add(:user, I18n.t('activerecord.errors.models.userfile.missing_association', :default => "does not exist"))
     end
     unless Group.where( :id => self.group_id ).exists?
-      errors.add(:group, "does not exist")
+      errors.add(:group, I18n.t('activerecord.errors.models.userfile.missing_association', :default => "does not exist"))
     end
   end
 
@@ -1163,7 +1163,7 @@ class Userfile < ApplicationRecord
     )
     check_dup = check_dup.where(["id <> ?", self.id]) if self.id # if current file is registered, ignore that one
     return true unless check_dup.exists?
-    errors.add(:name, "already exists on data provider (and may belong to another user)")
+    errors.add(:name, I18n.t('activerecord.errors.models.userfile.name_conflict', :default => "already exists on data provider (and may belong to another user)"))
     false
   end
 
@@ -1186,12 +1186,12 @@ class Userfile < ApplicationRecord
     return true if self.data_provider_id.blank? # no check to make
     return true if self.browse_path.nil?
     if ! self.data_provider.has_browse_path_capabilities? # it's not supposed to be set
-      self.errors.add(:browse_path, 'has a value when it should not')
+      self.errors.add(:browse_path, I18n.t('activerecord.errors.models.userfile.unexpected_browse_path', :default => 'has a value when it should not'))
       return false
     end
     cleaned = self.class.is_legal_browse_path?(self.browse_path)
     if ! cleaned
-      self.errors.add(:browse_path, 'is invalid')
+      self.errors.add(:browse_path, :invalid)
       return false
     end
     true
