@@ -560,9 +560,9 @@ class UserfilesController < ApplicationController
       if !userfile.save
         flash[:error]  += t('userfiles.flash.file_not_added', name: basename)
         userfile.errors.each do |field, error|
-          flash[:error] += t('userfiles.flash.field_error', field: field.to_s.capitalize, error: error)
+          flash[:error] += t('userfiles.flash.field_error', field: userfile.class.human_attribute_name(field), error: error)
         end
-        if flash[:error].include? "Name has already been taken"
+        if userfile.errors.details[:name].any? { |detail| detail[:error] == :taken }
           flash[:error] += t('userfiles.flash.duplicate_name_note')
         end
         respond_to do |format|
