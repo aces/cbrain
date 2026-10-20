@@ -1,5 +1,11 @@
 fr:
   activerecord:
+    errors:
+      models:
+        userfile:
+          missing_association: "n’existe pas"
+          name_conflict: "existe déjà sur le serveur de stockage (et peut appartenir à un autre utilisateur)"
+          unexpected_browse_path: "a une valeur alors qu’il ne devrait pas en avoir"
     models:
       userfile:
         one: "Fichier"
