@@ -37,7 +37,11 @@
   <form action="<%= userfiles_path %>" method="post" enctype="multipart/form-data">
     <label for="up-file" class="dlg-fld-lbl"><%= t('userfiles.common.upload') %></label>
     <input id="up-file" class="dlg-fld" type="file" name="upload_file" />
-    <span id="up-file-warn" class="dlg-msg-err"></span>
+    <span id="up-file-warn" class="dlg-msg-err">
+      <span id="up-file-spaces" style="display: none"><%= t('.upload_warnings.spaces') %></span>
+      <span id="up-file-invalid" style="display: none"><%= t('.upload_warnings.invalid') %></span>
+      <span id="up-file-too-big" style="display: none"><%= t('.upload_warnings.too_big', :max => RemoteResource.current_resource.meta[:upload_size_limit].to_i) %></span>
+    </span>
     <br />
 
     <label for="up-dp" class="dlg-fld-lbl"><%= t('to') %></label>

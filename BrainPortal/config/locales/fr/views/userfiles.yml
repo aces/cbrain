@@ -23,6 +23,10 @@ fr:
       not_synced: "Ce fichier doit être synchronisé localement pour afficher les données de contrôle qualité."
       no_qc_data: "Ce fichier ne semble pas contenir de données de contrôle qualité, ou aucun modèle n'est disponible pour effectuer le contrôle qualité de ce type de fichier."
     dialogs:
+      upload_warnings:
+        spaces: "Les espaces ne sont pas autorisés dans le nom du fichier !"
+        invalid: "Nom de fichier non valide : il doit commencer par une lettre ou un chiffre et ne doit contenir ni barre oblique ni caractère ASCII nul."
+        too_big: "Fichier trop volumineux ! (> %{max} Mo)"
       titles:
         upload_sf: "Importation - Fichier unique"
         file_properties: "Propriétés du fichier"

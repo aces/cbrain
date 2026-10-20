@@ -786,7 +786,6 @@ $(function() {
         $('#upload-dialog')
           .undelegate('#up-file', 'change.uf.file-problem')
           .delegate(  '#up-file', 'change.uf.file-problem', function () {
-            var warning_text = "";
             var max = parseInt($('#upload-dialog').data('max-upload-size'));
             var bad_file;
             var filename = $(this).prop('files')[0].name;
@@ -807,17 +806,9 @@ $(function() {
 
             bad_file = ( bad_chars || file_too_big || spaces_in_name );
 
-            if ( bad_chars && spaces_in_name) {
-              warning_text += "No spaces allowed in filename! ";
-            }
-            else if ( bad_chars ) {
-              warning_text += "Illegal filename: must start with letter/digit, and no slashes, or ASCII nulls allowed. ";
-            }
-            if ( file_too_big ) {
-              warning_text += "Too large! (> " + max/1048576 + " MB) ";
-            }
-
-            $('#up-file-warn').text(warning_text);
+            $('#up-file-spaces').toggle(bad_chars && spaces_in_name);
+            $('#up-file-invalid').toggle(bad_chars && !spaces_in_name);
+            $('#up-file-too-big').toggle(file_too_big);
 
             $('#up-file-warn').css({
               visibility: bad_file ? 'visible' : 'hidden'
