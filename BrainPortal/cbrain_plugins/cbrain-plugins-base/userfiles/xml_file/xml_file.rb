@@ -21,7 +21,7 @@
 #
 
 # Model for text files containing XML documents.
-class XMLFile < TextFile
+class XmlFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

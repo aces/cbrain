@@ -128,7 +128,7 @@ class NhLorisHooksController < NeurohubApplicationController
   #    result_group_id:          123, # optional, can be name
   #  }
   #
-  # Produces: a CSVFile userfile
+  # Produces: a CsvFile userfile
   def csv_data_maker
 
     # Main params
@@ -150,7 +150,7 @@ class NhLorisHooksController < NeurohubApplicationController
     end.join("\n") + "\n"
 
     # Save result file
-    result = create_file_for_request(CSVFile, "Data.csv", csv_content)
+    result = create_file_for_request(CsvFile, "Data.csv", csv_content)
     result.addlog("Created by #{current_user.login} using #{self.class.name}/#{__method__}")
 
     # Report back to client

@@ -408,13 +408,13 @@ module ScopeHelper
   # considering +view+ as a filtered version of +base+ and counting possible
   # values in both.
   #
-  # For example, if +base+ is the Userfiles model containing TextFiles, CSVFiles
-  # and MincFiles and +view+ is a scope of base with just a few CSVFiles and
+  # For example, if +base+ is the Userfiles model containing TextFiles, CsvFiles
+  # and MincFiles and +view+ is a scope of base with just a few CsvFiles and
   # MincFiles, +scoped_filters_for+ one could have:
   #   scoped_filters_for(base, view, :type) # =>
   #   [
   #     { :value => 'TextFile', :indicator => 0, :label => '... (of 30)', ... },
-  #     { :value => 'CSVFile',  :indicator => 9, :label => '... (of 10)', ... },
+  #     { :value => 'CsvFile',  :indicator => 9, :label => '... (of 10)', ... },
   #     { :value => 'MincFile', :indicator => 3, :label => '... (of 53)', ... },
   #   ]
   #

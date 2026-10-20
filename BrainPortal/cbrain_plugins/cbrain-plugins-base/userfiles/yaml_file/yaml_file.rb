@@ -21,7 +21,7 @@
 #
 
 # Model for text file containing YAML structures.
-class YAMLFile < TextFile
+class YamlFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
