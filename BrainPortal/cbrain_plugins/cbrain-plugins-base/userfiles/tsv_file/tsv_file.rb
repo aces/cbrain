@@ -21,7 +21,7 @@
 #
 
 # Model for TSV file.
-class TsvFile < CSVFile
+class TsvFile < CsvFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

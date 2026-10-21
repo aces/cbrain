@@ -44,7 +44,7 @@
 #   0,,,,,,
 #   933,"hello.txt",3433434,"TextFile","SomeDP","jsmith","mygroup"
 #
-class CbrainFileList < CSVFile
+class CbrainFileList < CsvFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
@@ -89,7 +89,7 @@ class CbrainFileList < CSVFile
   # of the CSV data.
   def load_from_content(csv_file_content)
     flush_internal_caches()
-    @rows = CSVFile.parse_file_content_as_csv(csv_file_content, QUOTING_CHARACTER, FIELD_SEPARATOR)
+    @rows = CsvFile.parse_file_content_as_csv(csv_file_content, QUOTING_CHARACTER, FIELD_SEPARATOR)
   end
 
   # Returns an array of the IDs of the first column of the CSV file
