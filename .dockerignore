@@ -1,0 +1,8 @@
+.git
+.local
+**/log/*
+**/tmp/*
+**/.bundle
+**/config/database.yml
+**/config/initializers/config_portal.rb
+**/config/initializers/config_bourreau.rb
