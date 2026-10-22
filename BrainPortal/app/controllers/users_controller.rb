@@ -32,7 +32,7 @@ class UsersController < ApplicationController
   api_available :only => [ :index, :create, :show, :destroy, :update, :create_user_session, :push_keys, :new_token, :new_token_from_jwt ]
 
   before_action :login_required,        :except => [:request_password, :send_password, :new_token_from_jwt]
-  before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password, :push_keys, :new_token, :new_token_from_jwt]
+  before_action :manager_role_required, :except => [:show, :update, :request_password, :send_password, :change_password, :push_keys, :new_token, :new_token_from_jwt]
   before_action :admin_role_required,   :only =>   [:create_user_session]
 
   spurious_params_ban_ip :request_password => [],
@@ -192,8 +192,8 @@ class UsersController < ApplicationController
     else
       respond_to do |format|
         format.html { render :action => :new }
-        format.xml  { render :xml  => @user.errors, :status => :unprocessable_entity }
-        format.json { render :json => @user.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @user.errors, :status => :unprocessable_content }
+        format.json { render :json => @user.errors, :status => :unprocessable_content }
       end
     end
   end
@@ -308,8 +308,8 @@ class UsersController < ApplicationController
             render action: "show"
           end
         end
-        format.xml  { render :xml  => @user.errors, :status => :unprocessable_entity }
-        format.json { render :json => @user.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @user.errors, :status => :unprocessable_content }
+        format.json { render :json => @user.errors, :status => :unprocessable_content }
       end
     end
   end
@@ -478,7 +478,7 @@ class UsersController < ApplicationController
 
       format.json do
         status = :ok
-        status = :unprocessable_entity if error_list.present?
+        status = :unprocessable_content if error_list.present?
         render :json => { :pushed => ok_list, :failed => error_list }, :status => status
       end
     end

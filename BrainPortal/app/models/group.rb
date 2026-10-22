@@ -181,7 +181,7 @@ class Group < ApplicationRecord
         user_id = obj.user_id
       end
       new_group_id = user_id_to_own_group_id[user_id] ||= User.find(user_id).own_group.id
-      obj.update_attributes!( :group_id => new_group_id )
+      obj.update!( :group_id => new_group_id )
       obj.addlog("Group reset to ID=#{new_group_id} because group ID=#{self.id} was destroyed") rescue nil
     end
   end

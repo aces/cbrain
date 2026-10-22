@@ -117,7 +117,7 @@ class ToolsController < ApplicationController
         format.xml  { render :xml => @tool, :status => :created, :location => @tool }
       else
         format.html { render :action => :new }
-        format.xml  { render :xml => @tool.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml => @tool.errors, :status => :unprocessable_content }
       end
     end
   end
@@ -148,7 +148,7 @@ class ToolsController < ApplicationController
         format.xml  { head :ok }
       else
         format.html { render :action => "edit" }
-        format.xml  { render :xml => @tool.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml => @tool.errors, :status => :unprocessable_content }
       end
     end
   end

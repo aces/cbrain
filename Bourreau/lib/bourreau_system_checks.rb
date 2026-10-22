@@ -115,7 +115,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     myself        = RemoteResource.current_resource
     gridshare_dir = myself.cms_shared_dir
 
-    return unless Dir.exists?(gridshare_dir)
+    return unless Dir.exist?(gridshare_dir)
 
     #-----------------------------------------------------------------------------
     puts "B> Making sure work directories for local tasks exist (in background)"
@@ -237,7 +237,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     myself        = RemoteResource.current_resource
     gridshare_dir = myself.cms_shared_dir
 
-    if gridshare_dir.blank? || ! Dir.exists?(gridshare_dir)
+    if gridshare_dir.blank? || ! Dir.exist?(gridshare_dir)
       puts "B> \t- SKIPPING! No global task work directory yet configured!"
       return
     end
@@ -274,7 +274,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     myself        = RemoteResource.current_resource
     gridshare_dir = myself.cms_shared_dir
 
-    if gridshare_dir.blank? || ! Dir.exists?(gridshare_dir)
+    if gridshare_dir.blank? || ! Dir.exist?(gridshare_dir)
       puts "B> \t- SKIPPING! No global task work directory yet configured!"
       return
     end
@@ -327,7 +327,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     gridshare_dir = myself.cms_shared_dir
     cache_dir     = myself.dp_cache_dir
 
-    return unless Dir.exists?(gridshare_dir) && Dir.exists?(cache_dir)
+    return unless Dir.exist?(gridshare_dir) && Dir.exist?(cache_dir)
 
     #----------------------------------------------------------------------------
     puts "B> Making sure the grid share directory has a symlink to the data provider cache..."
@@ -339,7 +339,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
       return
     end
 
-    File.unlink(sym_path) if File.exists?(sym_path)
+    File.unlink(sym_path) if File.exist?(sym_path)
     File.symlink(cache_dir, sym_path)
 
     puts "B> \t- '#{sym_path}' -> '#{cache_dir}'"

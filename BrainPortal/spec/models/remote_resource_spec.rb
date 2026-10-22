@@ -44,7 +44,7 @@ describe RemoteResource do
   end
   describe "#current_resource_db_config" do
     it "should return a hash with db configuration" do
-      expect(RemoteResource.current_resource_db_config).to have_key("database")
+      expect(RemoteResource.current_resource_db_config).to have_key(:database)
     end
   end
   describe "#after_destroy" do
@@ -262,7 +262,7 @@ describe RemoteResource do
   end
   describe "#valid_token?" do
     before(:each) do
-      remote_resource.update_attributes(:cache_md5 => "valid")
+      remote_resource.update(:cache_md5 => "valid")
     end
     it "should return true if the token is valid" do
       expect(RemoteResource.valid_token?("valid")).to be_truthy
@@ -283,7 +283,7 @@ describe RemoteResource do
       allow(Rails.cache).to receive(:fetch).and_return(info_object)
     end
     it "should return false if offline" do
-      remote_resource.update_attributes(:online =>  false)
+      remote_resource.update(:online =>  false)
       expect(remote_resource.is_alive?).to be_falsey
     end
     context "with a valid info object" do

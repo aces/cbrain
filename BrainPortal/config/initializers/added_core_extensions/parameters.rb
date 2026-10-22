@@ -20,12 +20,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+require "cbrain_file_revision"
+require "cbrain_extensions"
+
 ###################################################################
 # CBRAIN ActionController::Parameters extensions
 ###################################################################
 class ActionController::Parameters
 
-  include CBRAINExtensions::ParametersExtensions::Utilities
+  include CbrainExtensions::ParametersExtensions::Utilities
 
 end
 

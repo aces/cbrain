@@ -27,7 +27,6 @@
 # running tests on the bourreau code side.
 #
 
-require 'readline'
 require 'socket'
 require 'etc'
 
@@ -121,7 +120,7 @@ default_support_dir     = "#{rails_home}/seeds_dev_support_dir"
 print "[#{default_support_dir}] "
 seeds_dev_support_dir   = STDIN.tty? ? STDIN.gets.strip.presence : nil
 seeds_dev_support_dir ||= default_support_dir
-Dir.mkdir(seeds_dev_support_dir) unless Dir.exists?(seeds_dev_support_dir)
+Dir.mkdir(seeds_dev_support_dir) unless Dir.exist?(seeds_dev_support_dir)
 
 puts <<STEP
 
@@ -135,8 +134,8 @@ main_bourreau_dir       = (Pathname.new(rails_home).parent + "Bourreau").to_s # 
 main_bourreau_gridshare = "#{seeds_dev_support_dir}/test_bourreau_gridshare"
 main_bourreau_dp_cache  = "#{seeds_dev_support_dir}/test_bourreau_dp_cache"
 
-Dir.mkdir(main_bourreau_gridshare) unless Dir.exists?(main_bourreau_gridshare)
-Dir.mkdir(main_bourreau_dp_cache)  unless Dir.exists?(main_bourreau_dp_cache)
+Dir.mkdir(main_bourreau_gridshare) unless Dir.exist?(main_bourreau_gridshare)
+Dir.mkdir(main_bourreau_dp_cache)  unless Dir.exist?(main_bourreau_dp_cache)
 
 main_bourreau = Bourreau.seed_record!({
     :ssh_control_rails_dir => main_bourreau_dir,

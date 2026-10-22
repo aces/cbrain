@@ -263,7 +263,8 @@ fi
 if test "$mode" = "console" ; then
   echo ""
   echo "Bourreau Console Starting on $curhost."
-  script/rails console $environment # this will BLOCK
+  export RAILS_ENV=$environment
+  script/rails console # this will BLOCK
   errcode=$?
   echo ""
   echo "Bourreau Console Exiting on $curhost."

@@ -115,16 +115,6 @@
         </div>
       <% end %>
 
-      <% t.edit_cell :nh_site_url_prefix,
-                     :header => t('.headings.neurohub_base_url'),
-                     :content => (@bourreau.nh_site_url_prefix.blank? ? "(#{t('none')})" : @bourreau.nh_site_url_prefix),
-                     :show_width => 2 do |f| %>
-        <%= f.text_field :nh_site_url_prefix, :size => 40 %><br/>
-        <div class="field_explanation">
-          <%= t('.field_explanations.neurohub_base_url_html') %>
-        </div>
-      <% end %>
-
       <% t.edit_cell :small_logo,
                      :header => t('.headings.small_logo'),
                      :content => (@bourreau.small_logo.blank? ? "(#{t('none')})" : @bourreau.small_logo),
@@ -172,14 +162,6 @@
       <% t.edit_cell(:system_from_email, :header => t('.headings.system_from_email')) do |f| %>
         <%= f.text_field :system_from_email, :size => 30 %><br/>
           <div class="field_explanation"><%= t('.field_explanations.system_from_email') %></div>
-      <% end %>
-      <% t.edit_cell(:nh_support_email, :header => t('.headings.nh_support_email')) do |f| %>
-        <%= f.text_field :nh_support_email, :size => 30 %><br/>
-        <div class="field_explanation"><%= t('.field_explanations.nh_support_email_html') %></div>
-      <% end %>
-      <% t.edit_cell(:nh_system_from_email, :header => t('.headings.nh_system_from_email')) do |f| %>
-        <%= f.text_field :nh_system_from_email, :size => 30 %><br/>
-        <div class="field_explanation"><%= t('.field_explanations.nh_system_from_email') %></div>
       <% end %>
       <% t.edit_cell("meta[error_message_mailing_list]", :header => t('.headings.error_notifications'), :content => link_to_group_if_accessible(@bourreau.meta[:error_message_mailing_list])) do %>
         <%= group_select("meta[error_message_mailing_list]", {:include_blank => t('.all_admins'), :selector => @bourreau.meta[:error_message_mailing_list], :groups => WorkGroup.where(:creator_id => AdminUser.all.map(&:id)) } ) %>

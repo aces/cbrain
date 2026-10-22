@@ -134,7 +134,6 @@ en:
         generate_api_token: "Generate new API token"
         unlink_identity: "Unlink this %{name} identity"
         link_identity: "Link a %{name} identity"
-        neurohub_interface: "NeuroHub interface"
       prompts:
         select_site: "(Select a site)"
       cells:
@@ -207,5 +206,4 @@ en:
       no_identity: "(No %{name} identity linked to your account)"
       orcid_id: "ORCID ID:"
       no_orcid: "(No ORCID identity linked to your account)"
-      orcid_note_html: "<strong>Note:</strong> Use the %{link} to manage the ORCID identity link"
       submit: "Update Projects"

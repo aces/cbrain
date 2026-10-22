@@ -502,7 +502,7 @@ describe PortalTask do
 
     describe "#as_json" do
       it "should return a valid json" do
-        expect(params_errors.as_json.to_s).to eq("{\"test\"=>[\"is bad\", \"is invalid\"]}")
+        expect(params_errors.as_json.to_s).to eq('{"test" => ["is bad", "is invalid"]}')
       end
     end
 
@@ -594,13 +594,6 @@ describe PortalTask do
       end
     end
 
-    describe "#set" do
-      it "should forward the call to set to the real error object with the la parameter name" do
-        expect(real_errors).to receive(:set).with(param_path.to_la_id.to_sym, Array(msg))
-        params_errors.set(param_path.to_s, [msg])
-      end
-    end
-
     describe "#size" do
 
       it "should return the number of params errors and exclude real errors" do
@@ -629,14 +622,6 @@ describe PortalTask do
           }
         }
       end
-    end
-
-    describe "#to_xml" do
-
-      it "should output XML" do
-        expect(real_errors.to_xml.to_s).to include("xml")
-      end
-
     end
 
     describe "#values" do

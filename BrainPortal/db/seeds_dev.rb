@@ -40,7 +40,6 @@
 # for testing user interface elements, resource access, etc etc.
 #
 
-require 'readline'
 require 'socket'
 require 'etc'
 
@@ -146,7 +145,7 @@ default_support_dir     = "#{rails_home}/seeds_dev_support_dir"
 print "[#{default_support_dir}] "
 seeds_dev_support_dir   = STDIN.gets.strip.presence
 seeds_dev_support_dir ||= default_support_dir
-Dir.mkdir(seeds_dev_support_dir) unless Dir.exists?(seeds_dev_support_dir)
+Dir.mkdir(seeds_dev_support_dir) unless Dir.exist?(seeds_dev_support_dir)
 
 puts <<STEP
 
@@ -335,7 +334,7 @@ data provider cache directory configured. Creating one in:
 
 WARN
   myself.dp_cache_dir = cache_dir
-  Dir.mkdir(cache_dir) unless Dir.exists?(cache_dir)
+  Dir.mkdir(cache_dir) unless Dir.exist?(cache_dir)
   myself.save!
   DataProvider.cache_revision_of_last_init # finalize initialization of dir
 end
@@ -352,7 +351,7 @@ en_dp = EnCbrainSmartDataProvider.seed_record!({
     :online => true, :read_only => false,
     :not_syncable => false
   })
-Dir.mkdir(en_dp_dir) unless Dir.exists?(en_dp_dir)
+Dir.mkdir(en_dp_dir) unless Dir.exist?(en_dp_dir)
 
 #---------------------------------------------------
 ssh_dp_dir = "#{seeds_dev_support_dir}/dp_browsable"
@@ -367,7 +366,7 @@ ssh_dp = SshDataProvider.seed_record!({
     :online => true, :read_only => false,
     :not_syncable => false
   })
-Dir.mkdir(ssh_dp_dir) unless Dir.exists?(ssh_dp_dir)
+Dir.mkdir(ssh_dp_dir) unless Dir.exist?(ssh_dp_dir)
 seeded_dp << ssh_dp
 
 #---------------------------------------------------
@@ -383,7 +382,7 @@ lb_dp = SshDataProvider.seed_record!({
     :online => true, :read_only => false,
     :not_syncable => false
   })
-Dir.mkdir(lb_dp_dir) unless Dir.exists?(lb_dp_dir)
+Dir.mkdir(lb_dp_dir) unless Dir.exist?(lb_dp_dir)
 seeded_dp << lb_dp
 
 #---------------------------------------------------
@@ -399,7 +398,7 @@ nether_dp = EnCbrainSmartDataProvider.seed_record!({
     :online => true, :read_only => false,
     :not_syncable => false
   })
-Dir.mkdir(nether_dp_dir) unless Dir.exists?(nether_dp_dir)
+Dir.mkdir(nether_dp_dir) unless Dir.exist?(nether_dp_dir)
 seeded_dp << nether_dp
 
 #---------------------------------------------------
@@ -415,7 +414,7 @@ pember_dp = EnCbrainSmartDataProvider.seed_record!({
     :online => true, :read_only => false,
     :not_syncable => false
   })
-Dir.mkdir(pember_dp_dir) unless Dir.exists?(pember_dp_dir)
+Dir.mkdir(pember_dp_dir) unless Dir.exist?(pember_dp_dir)
 seeded_dp << pember_dp
 
 #---------------------------------------------------
@@ -431,7 +430,7 @@ collins_dp = SshDataProvider.seed_record!({
     :online => true, :read_only => false,
     :not_syncable => false
   })
-Dir.mkdir(collins_dp_dir) unless Dir.exists?(collins_dp_dir)
+Dir.mkdir(collins_dp_dir) unless Dir.exist?(collins_dp_dir)
 seeded_dp << collins_dp
 
 
@@ -461,8 +460,8 @@ main_bourreau_gridshare = "#{main_bourreau_dir}/gridshare"
 main_bourreau_dp_cache  = "#{main_bourreau_dir}/dp_cache"
 
 system("rsync","-a","#{rails_home}/../Bourreau/", main_bourreau_dir);
-Dir.mkdir(main_bourreau_gridshare) unless Dir.exists?(main_bourreau_gridshare)
-Dir.mkdir(main_bourreau_dp_cache)  unless Dir.exists?(main_bourreau_dp_cache)
+Dir.mkdir(main_bourreau_gridshare) unless Dir.exist?(main_bourreau_gridshare)
+Dir.mkdir(main_bourreau_dp_cache)  unless Dir.exist?(main_bourreau_dp_cache)
 
 main_bourreau = Bourreau.seed_record!({
     :ssh_control_rails_dir => main_bourreau_dir,
@@ -493,8 +492,8 @@ pember_bourreau_gridshare = "#{pember_bourreau_dir}/gridshare"
 pember_bourreau_dp_cache  = "#{pember_bourreau_dir}/dp_cache"
 
 system("rsync","-a","#{rails_home}/../Bourreau/", pember_bourreau_dir);
-Dir.mkdir(pember_bourreau_gridshare) unless Dir.exists?(pember_bourreau_gridshare)
-Dir.mkdir(pember_bourreau_dp_cache)  unless Dir.exists?(pember_bourreau_dp_cache)
+Dir.mkdir(pember_bourreau_gridshare) unless Dir.exist?(pember_bourreau_gridshare)
+Dir.mkdir(pember_bourreau_dp_cache)  unless Dir.exist?(pember_bourreau_dp_cache)
 
 pember_bourreau = Bourreau.seed_record!({
     :ssh_control_rails_dir => pember_bourreau_dir,
@@ -525,8 +524,8 @@ longbourne_bourreau_gridshare = "#{longbourne_bourreau_dir}/gridshare"
 longbourne_bourreau_dp_cache  = "#{longbourne_bourreau_dir}/dp_cache"
 
 system("rsync","-a","#{rails_home}/../Bourreau/", longbourne_bourreau_dir);
-Dir.mkdir(longbourne_bourreau_gridshare) unless Dir.exists?(longbourne_bourreau_gridshare)
-Dir.mkdir(longbourne_bourreau_dp_cache)  unless Dir.exists?(longbourne_bourreau_dp_cache)
+Dir.mkdir(longbourne_bourreau_gridshare) unless Dir.exist?(longbourne_bourreau_gridshare)
+Dir.mkdir(longbourne_bourreau_dp_cache)  unless Dir.exist?(longbourne_bourreau_dp_cache)
 
 longbourne_bourreau = Bourreau.seed_record!({
     :ssh_control_rails_dir => longbourne_bourreau_dir,

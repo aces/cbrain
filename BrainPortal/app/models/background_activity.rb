@@ -99,7 +99,7 @@ class BackgroundActivity < ApplicationRecord
   cbrain_abstract_model! # objects of this class are not to be instanciated
 
   serialize_as_indifferent_hash :items
-  serialize                     :messages
+  serialize                     :messages, :coder => YAML
   serialize_as_indifferent_hash :options
 
   validates_presence_of :status
@@ -857,7 +857,7 @@ class BackgroundActivity < ApplicationRecord
   def status_is_correct #:nodoc:
     return true if ALL_STATUS.include?(self.status)
     self.errors.add(:status, 'is not acceptable')
-    throw :abort
+    false
   end
 
   def repeat_is_correct #:nodoc:
@@ -877,14 +877,14 @@ class BackgroundActivity < ApplicationRecord
       repeat_error.('has invalid minutes') if min !~ /[012345][0-9]/
     end
 
-    throw :abort if self.errors.count > 0
+    return false if self.errors.count > 0
     true
   end
 
   def items_is_array #:nodoc:
     return true if self.items.is_a?(Array)
     self.errors.add(:items, 'is not an array')
-    throw :abort
+    false
   end
 
   #########################################################
@@ -953,7 +953,8 @@ class BackgroundActivity < ApplicationRecord
         model = model_file.sub(/\.rb$/,"").classify
         next if BackgroundActivity.const_defined? model # already loaded? Skip.
         #puts_blue "Loading Userfile subclass #{model} from #{model_file} ..."
-       require_dependency(Rails.root + "app/models/background_activity" + model_file)
+        #require_dependency(Rails.root + "app/models/background_activity" + model_file)
+        require(Rails.root + "app/models/background_activity" + model_file)
       end
     end
   end

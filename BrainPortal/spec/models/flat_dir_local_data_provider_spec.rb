@@ -21,7 +21,6 @@
 #
 
 require 'rails_helper'
-require 'pry-byebug'
 
 describe FlatDirLocalDataProvider do
   let(:local_data_provider) {create(:flat_dir_local_data_provider)}

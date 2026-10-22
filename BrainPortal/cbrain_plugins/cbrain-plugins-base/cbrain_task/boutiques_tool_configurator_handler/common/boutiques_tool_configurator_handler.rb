@@ -22,7 +22,7 @@
 
 # Common methods for both sides, Portal and Bourreau
 
-class BoutiquesToolConfiguratorHandler
+class CbrainTask::BoutiquesToolConfiguratorHandler
 
   def selected_old_tool_config
     @_old_tc ||= selected_tool_config(self.invoke_params[:old_tool_config_id])

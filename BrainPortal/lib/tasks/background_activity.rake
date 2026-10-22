@@ -18,16 +18,17 @@ namespace :cbrain do
       worker_pool = WorkerPool.find_pool(BackgroundActivityWorker)
       if worker_pool.workers.size > 0
         puts "BackgroundActivityWorkers already exist: PID=#{worker_pool.workers.map(&:pid).join(", ")}"
-        break
+        next nil
       end
 
-      baclogger = Log4r::Logger.new(worker_name)
-      outputter = Log4r::FileOutputter.new('background_activity_outputter',
-                    :filename  => "#{Rails.root}/log/#{worker_name}.log",
-                    :formatter => Log4r::PatternFormatter.new(:pattern => "%d %l %m")
-                    )
-      baclogger.add(outputter)
-      baclogger.level = Log4r::DEBUG
+      baclogger = Logger.new(
+        "#{Rails.root}/log/#{worker_name}.log",
+        100, 1_048_576,  # up to 100 files, 1mb each
+      )
+      baclogger.formatter = Proc.new do |severity, time, progname, msg|
+        sprintf("%s %s %s\n",time.strftime("%Y-%m-%d %H:%M:%S"),severity,msg)
+      end
+      baclogger.level = 'debug'
 
       worker_pool = WorkerPool.create_or_find_pool(BackgroundActivityWorker,
          num_workers, # number of instances

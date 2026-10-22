@@ -2,7 +2,7 @@
 #
 # CBRAIN Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2008-2026
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -20,48 +20,55 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
 #----------------------
 # In the :default group
 #----------------------
 
-gem 'rails', '~> 5.0.6'
+gem "rails", "~> 8.1.3"
 
 # Network components mostly
-gem "net-ssh",       :require => 'net/ssh'
-gem "net-sftp",      :require => 'net/sftp'
+gem "net-ssh",       :require => "net/ssh"
+gem "net-sftp",      :require => "net/sftp"
 gem "x25519"
-gem "rbnacl"
 gem "ed25519"
-gem "rbnacl-libsodium"
 gem "bcrypt_pbkdf"
+# You can comment-out the following two gems if you don't mind not having 'userkey' data providers.
+# They are usually the most tricky to compile and integrate into the app.
+gem "rbnacl"
+gem "rbnacl-libsodium"
 
 # Other utilities
-gem "sys-proctable", '~> 1.2.0'
-gem "mysql2",        '< 0.5'
-gem "log4r"
-gem "puma"
+gem "sys-proctable"
+gem "mysql2"
 gem "pbkdf2-ruby"
 gem "json-schema"
-gem "aws-sdk-s3", '~> 1'
+gem "aws-sdk-s3"
+gem "jwt", ">= 3.0.0"
+gem "shannon"
+gem "csv"
 
 # ActiveResource channel gems
-gem "activeresource", require: 'active_resource'
+gem "activeresource", require: "active_resource"
 gem "actionpack-xml_parser"
 gem "activemodel-serializers-xml"
+gem "rexml"
 
-#----------------------
-# Development
-#----------------------
+# Bourreau console gems; feel free to comment-out if you never plan to run the console
+gem "hirb"
+gem "looksee"
 
-group :development do
-  gem "looksee"
-  gem "hirb"
-  gem "pry"
-  gem "pry-byebug"
-  gem "listen", '~> 3.0.5'
-end
+# Use the Puma web server [https://github.com/puma/puma]
+gem "puma", ">= 5.0"
+# Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
+gem "importmap-rails"
+# Hotwire's SPA-like page accelerator [https://turbo.hotwired.dev]
+gem "turbo-rails"
+
+# Reduces boot times through caching; required in config/boot.rb
+# cannot be used on the bourreau side because of symlinks
+#gem "bootsnap", require: false
 
 #----------------------
 # Test
@@ -69,9 +76,11 @@ end
 
 group :test do
   gem "rspec"
+  gem "rspec-core"
   gem "rspec-rails"
   gem "factory_bot",       '6.4.2', :require => false
   gem "factory_bot_rails", '6.4.2', :require => false
+  gem "observer"
   gem "rails-controller-testing"
   gem "rspec-mocks"
   gem "rspec-activemodel-mocks"

@@ -29,10 +29,10 @@ class SingleFile < Userfile
 
   validates :type, :subclass => { :root_class => SingleFile }
 
-  before_create :set_num_files_to_one 
+  before_create :set_num_files_to_one
 
   def self.valid_file_classes #:nodoc:
-    @valid_file_classes ||= [SingleFile] + SingleFile.descendants
+    [SingleFile] + SingleFile.descendants
   end
 
   def pretty_type #:nodoc:
@@ -48,7 +48,7 @@ class SingleFile < Userfile
   end
 
   def set_num_files_to_one #:nodoc:
-    self.num_files ||= 1
+    self.num_files = 1
   end
 
   # Invoke the GNU utility gzip to compress or uncompress the file,

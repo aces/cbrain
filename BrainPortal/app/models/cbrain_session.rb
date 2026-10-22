@@ -248,7 +248,7 @@ class CbrainSession
       # hash subclass does not support a collision-handling block/proc. To work
       # around this, HashWithIndifferentAccess objects are converted back into
       # regular hashes.
-      base = base.to_hash if base.is_a?(HashWithIndifferentAccess)
+      base = base.to_hash if base.is_a?(ActiveSupport::HashWithIndifferentAccess)
 
       base.merge!(new) do |key, old, new|
         # Recursively merge hashes with the same key

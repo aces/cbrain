@@ -113,7 +113,7 @@ class CbrainTask::BashScriptor < ClusterTask
     file_ids     = params[:interface_userfile_ids] || []
     file_ids.each do |id|
       full_touch_file = self.full_cluster_workdir.to_s + "/" + self.qsub_script_basename.to_s + "-#{id}"
-      unless File.exists?(full_touch_file)
+      unless File.exist?(full_touch_file)
         self.addlog("Could not find the special file that indicates successful completion for file '#{id}'.")
         self.addlog("Maybe you forgot to add 'touch {cbrain_touch_when_completed}' to your script?")
         return false
@@ -148,7 +148,7 @@ class CbrainTask::BashScriptor < ClusterTask
       # Create output file
       out_class = out_type.constantize
       cb_error "Type #{out_type} not a subclass of Userfile." unless out_class < Userfile
-      cb_error "No file found for path #{src_path} ?"         unless File.exists?(src_path)
+      cb_error "No file found for path #{src_path} ?"         unless File.exist?(src_path)
       out_userfile = safe_userfile_find_or_new(out_class, :name => out_name)
       out_userfile.user_id  = (params[:saved_files_user_id].presence  || self.user_id).to_i
       out_userfile.group_id = (params[:saved_files_group_id].presence || self.group_id).to_i

@@ -59,12 +59,12 @@ class BrainPortal < RemoteResource
 
   # Lock the portal
   def lock! #:nodoc:
-    self.update_attributes!(:portal_locked => true)
+    self.update!(:portal_locked => true)
   end
 
   # Unlock the portal
   def unlock! #:nodoc:
-    self.update_attributes!(:portal_locked => false)
+    self.update!(:portal_locked => false)
   end
 
 end

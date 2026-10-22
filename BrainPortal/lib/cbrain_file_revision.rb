@@ -227,7 +227,7 @@ class CbrainFileRevision
     packages_full_paths = Dir.glob(packages_pattern)
     packages_full_paths.each do |pack_full| # "/path/to/BrainPortal/cbrain-plugins/cbrain-plugins-neuro"
       csv_file = Pathname.new(pack_full) + FLATFILE_BASENAME
-      next unless File.exists?(csv_file.to_s)
+      next unless File.exist?(csv_file.to_s)
       package = Pathname.new(pack_full).basename   # "cbrain-plugins-neuro"
       self.load_static_revision_file(csv_file.to_s, rails_app_basename + "cbrain_plugins" + package)
     end
@@ -307,7 +307,7 @@ class CbrainFileRevision
 
     # We need to fetch the info of the REAL file if the original
     # target was a symlink, because symlink don't change much in GIT!
-    @fullpath = File.exists?(@fullpath) ? Pathname.new(@fullpath).realpath.to_s : @fullpath.to_s
+    @fullpath = File.exist?(@fullpath) ? Pathname.new(@fullpath).realpath.to_s : @fullpath.to_s
     @basename = File.basename(@fullpath)
 
     return self if @basename.blank?

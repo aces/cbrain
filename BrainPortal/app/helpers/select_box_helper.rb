@@ -564,7 +564,7 @@ module SelectBoxHelper
     while ! queue.empty? do
        first = queue.shift
        lev   = klass_lev[first]
-       desc  = first.direct_descendants.sort { |a,b| a.name <=> b.name }
+       desc  = first.subclasses.sort { |a,b| a.name <=> b.name }
        desc.each { |d| klass_lev[d] = lev + 1 }
        queue = desc + queue
        final << first unless !include_top && first == top

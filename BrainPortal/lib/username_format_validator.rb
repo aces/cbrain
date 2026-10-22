@@ -27,7 +27,7 @@ class UsernameFormatValidator < ActiveModel::EachValidator #:nodoc:
   # Iterator that validates a username, UNIX style
   def validate_each(object, attribute, value) #:nodoc:
     unless value.blank? || value =~ /\A[a-zA-Z]\w*\z/
-      object.errors[attribute] << (options[:message] || "contains invalid characters")
+      object.errors.add(attribute, (options[:message] || "contains invalid characters"))
     end
   end
 

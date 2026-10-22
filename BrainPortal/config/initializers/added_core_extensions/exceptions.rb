@@ -20,12 +20,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+require "cbrain_file_revision"
+require "cbrain_extensions"
+
 ###################################################################
 # CBRAIN Core Exception extensions
 ###################################################################
 class Exception
 
-  include CBRAINExtensions::ExceptionExtensions::Utilities
+  include CbrainExtensions::ExceptionExtensions::Utilities
 
 end
 

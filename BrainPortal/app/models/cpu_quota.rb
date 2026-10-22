@@ -293,14 +293,15 @@ class CpuQuota < Quota
     false
   end
 
-  # This attribute is only for DiskQuota; since we using STI,
-  # we keep it clean by zapping it.
+  # This attribute is only for DiskQuota; since we are using STI,
+  # we keep things clean by zapping it.
   def nulllify_disk_quota_atts
     self.data_provider_id = nil
     true
   end
 
   # Replaces nil with zeros in our three main ID attributes
+  # This is a 'before_save' callback
   def zero_nil_relations
     self.user_id            ||= 0
     self.remote_resource_id ||= 0

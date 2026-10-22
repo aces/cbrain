@@ -28,7 +28,7 @@ class FilenameFormatValidator < ActiveModel::EachValidator #:nodoc:
   def validate_each(object, attribute, value)
     return if value.blank? # allowed during validation, disallowed elsewhere
     return if Userfile.is_legal_filename?(value)
-    object.errors[attribute] << (options[:message] || "contains invalid characters")
+    object.errors.add(attribute, (options[:message] || "contains invalid characters"))
   end
 
 end

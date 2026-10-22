@@ -30,14 +30,14 @@
   <%=
     scope_custom_link(
       (button_view ? t('.buttons.switch_to_list_view') : t('.buttons.switch_to_button_view')),
-      @scope, { 'button' => !button_view }, { :link => { :class => 'button' } }
+      @scope, { 'button' => !button_view }, :link => { :class => 'button' }
     )
   %>
 
   <%=
     scope_custom_link(
       (@scope.custom[:small_buttons] ? t('.links.large_buttons') : t('.links.small_buttons')),
-      @scope, { 'small_buttons' => !@scope.custom[:small_buttons] }, { :link => { :class => 'button' } }
+      @scope, { 'small_buttons' => !@scope.custom[:small_buttons] }, :link => { :class => 'button' }
     ) if button_view
   %>
 

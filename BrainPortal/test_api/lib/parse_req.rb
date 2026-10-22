@@ -211,6 +211,7 @@ class ParseReq #:nodoc:
 
     # CONTENT TYPE
     @got_ctype = headers['Content-Type'] || "unk" # 'application/json ; charset=utf8'
+    @got_ctype = 'application/json' if @got_ctype == "unk" && @got_code.to_s =~ /4\d\d/
     @got_ctype.sub!(/\s*;.*/,"")
     if @got_ctype != (@expected_ctype)
       errors << "C_TYPE: #{@got_ctype} <> #{@expected_ctype}"

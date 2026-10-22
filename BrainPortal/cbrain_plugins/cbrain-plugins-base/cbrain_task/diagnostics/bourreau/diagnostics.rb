@@ -471,16 +471,16 @@ class CbrainTask::Diagnostics < ClusterTask
     qsub_err = qsub_stderr_basename(    self.run_number )
     sci_out  = science_stdout_basename( self.run_number )
     sci_err  = science_stderr_basename( self.run_number )
-    if File.exists?(qsub_out)
+    if File.exist?(qsub_out)
       system("cp",qsub_out,qsub_stdout_basename(self.run_number + 1))
     end
-    if File.exists?(qsub_err)
+    if File.exist?(qsub_err)
       system("cp",qsub_err,qsub_stderr_basename(self.run_number + 1))
     end
-    if File.exists?(sci_out)
+    if File.exist?(sci_out)
       system("cp",sci_out,science_stdout_basename(self.run_number + 1))
     end
-    if File.exists?(sci_err)
+    if File.exist?(sci_err)
       system("cp",sci_err,science_stderr_basename(self.run_number + 1))
     end
     return true

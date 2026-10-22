@@ -62,8 +62,8 @@ class TagsController < ApplicationController
         format.xml  { render :xml  => @tag.for_api, :status => :created, :location => @tag }
         format.json { render :json => @tag.for_api, :status => :created, :location => @tag }
       else
-        format.xml  { render :xml  => @tag.errors, :status => :unprocessable_entity }
-        format.json { render :json => @tag.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @tag.errors, :status => :unprocessable_content }
+        format.json { render :json => @tag.errors, :status => :unprocessable_content }
       end
       format.js
     end
@@ -76,13 +76,13 @@ class TagsController < ApplicationController
     @tag = current_user.tags.find(params[:id])
 
     respond_to do |format|
-      if @tag.update_attributes(tag_params)
+      if @tag.update(tag_params)
         flash[:notice] = t('tags.flash.updated')
         format.xml  { head :ok, :content_type => 'text/plain' }
         format.json { head :ok }
       else
-        format.xml  { render :xml  => @tag.errors, :status => :unprocessable_entity }
-        format.json { render :json => @tag.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @tag.errors, :status => :unprocessable_content }
+        format.json { render :json => @tag.errors, :status => :unprocessable_content }
       end
     end
   end

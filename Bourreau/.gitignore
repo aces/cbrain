@@ -13,3 +13,6 @@
 # CBRAIN added ignore rules
 Gemfile.lock
 
+# Ignore key files for decrypting credentials and more.
+/config/*.key
+

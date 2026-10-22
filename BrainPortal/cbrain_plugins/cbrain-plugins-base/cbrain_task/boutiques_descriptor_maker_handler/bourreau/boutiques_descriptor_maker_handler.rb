@@ -28,7 +28,7 @@
 # Given that there is no code to actually execute on an Execution
 # server, all main framework methods are defined to 'fail'.
 # The class still needs to exist to let the Bourreau boot properly.
-class BoutiquesDescriptorMakerHandler < BoutiquesClusterTask
+class CbrainTask::BoutiquesDescriptorMakerHandler < BoutiquesClusterTask
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

@@ -1,1 +1,0 @@
-../../../BrainPortal/config/initializers/initialize_console.rb

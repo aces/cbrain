@@ -122,9 +122,9 @@ class SshKey
 
     # Check that they seem valid
     raise RuntimeError.new("Public file for SSH Key '#{@name}' does not exist.")  unless
-      File.exists?(pub_path)  && File.size(pub_path)  > 50
+      File.exist?(pub_path)  && File.size(pub_path)  > 50
     raise RuntimeError.new("Private file for SSH Key '#{@name}' does not exist.") unless
-      File.exists?(priv_path) && File.size(priv_path) > 300
+      File.exist?(priv_path) && File.size(priv_path) > 300
     true
   end
 

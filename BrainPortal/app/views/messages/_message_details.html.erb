@@ -24,7 +24,7 @@
 
 <% if mess.description.present? %>
   <p class="mess_<%= mess.message_type.to_s %>">
-    <% if mess.message_type == 'cbrain_dashboard' || mess.message_type == 'neurohub_dashboard' %>
+    <% if mess.message_type == 'cbrain_dashboard' %>
       <%= (mess.description.presence || "").html_safe %>
     <% else %>
       <%= mess.parse_links( :description ).gsub(/\n/,"<BR>").html_safe %>

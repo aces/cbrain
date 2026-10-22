@@ -32,7 +32,7 @@ class CustomFiltersController < ApplicationController
   def new #:nodoc:
     filter_param = "#{params[:filter_class]}".classify
     unless CustomFilter.descendants.map(&:name).include?(filter_param)
-      cb_error t('custom_filters.errors.class_required'), :status  => :unprocessable_entity
+      cb_error t('custom_filters.errors.class_required'), :status  => :unprocessable_content
     end
     filter_class  = Class.const_get(filter_param)
     @custom_filter = filter_class.new
@@ -51,7 +51,7 @@ class CustomFiltersController < ApplicationController
   def create #:nodoc:
     filter_param = "#{params[:filter_class]}".classify
     unless CustomFilter.descendants.map(&:name).include?(filter_param)
-      cb_error t('custom_filters.errors.class_required'), :status  => :unprocessable_entity
+      cb_error t('custom_filters.errors.class_required'), :status  => :unprocessable_content
     end
 
     filter_class   = Class.const_get(filter_param)

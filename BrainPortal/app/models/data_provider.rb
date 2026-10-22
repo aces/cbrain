@@ -25,7 +25,6 @@ require 'fileutils'
 require 'pathname'
 require 'socket'
 require 'digest/md5'
-require 'file_info'
 
 #
 # = Data Provider interface
@@ -520,7 +519,7 @@ class DataProvider < ApplicationRecord
     localpath = localpath.to_s # in case we get a Pathname
     cb_error "Error: provider #{self.name} is offline."                                   unless self.online?
     cb_error "Error: provider #{self.name} is read_only."                                 if     self.read_only?
-    cb_error "Error: file does not exist: '#{localpath}'."                                unless File.exists?(localpath)
+    cb_error "Error: file does not exist: '#{localpath}'."                                unless File.exist?(localpath)
     cb_error "Error: file #{userfile.name} is immutable."                                 if     userfile.immutable?
     cb_error "Error: incompatible directory '#{localpath}' given for a SingleFile."       if
         userfile.is_a?(SingleFile)     && File.directory?(localpath)
@@ -531,11 +530,11 @@ class DataProvider < ApplicationRecord
     SyncStatus.ready_to_modify_cache(userfile) do
       needslash=""
       if File.directory?(localpath)
-        FileUtils.remove_entry(dest, true) if File.exists?(dest) && ! File.directory?(dest)
+        FileUtils.remove_entry(dest, true) if File.exist?(dest) && ! File.directory?(dest)
         Dir.mkdir(dest) unless File.directory?(dest)
         needslash="/"
       else
-        FileUtils.remove_entry(dest, true) if File.exists?(dest) && File.directory?(dest)
+        FileUtils.remove_entry(dest, true) if File.exist?(dest) && File.directory?(dest)
       end
       need_dotslash = Pathname.new(localpath).relative? ? "./" : ""
       rsyncout = bash_this("rsync -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{need_dotslash}#{shell_escape(localpath)}#{needslash} #{shell_escape(dest)} 2>&1")
@@ -564,11 +563,11 @@ class DataProvider < ApplicationRecord
     return true if source == localpath
     needslash=""
     if File.directory?(source)
-      FileUtils.remove_entry(localpath, true) if File.exists?(localpath) && ! File.directory?(localpath)
+      FileUtils.remove_entry(localpath, true) if File.exist?(localpath) && ! File.directory?(localpath)
       Dir.mkdir(localpath) unless File.directory?(localpath)
       needslash="/"
     else
-      FileUtils.remove_entry(localpath, true) if File.exists?(localpath) && File.directory?(localpath)
+      FileUtils.remove_entry(localpath, true) if File.exist?(localpath) && File.directory?(localpath)
     end
     rsyncout = bash_this("rsync -a -l --no-g --chmod=u=rwX,g=rX,Dg+s,o=r --delete #{self.rsync_excludes} #{shell_escape(source)}#{needslash} #{shell_escape(localpath)} 2>&1")
     cb_error "Failed to rsync cache file '#{source}' to local file '#{localpath}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
@@ -949,7 +948,7 @@ class DataProvider < ApplicationRecord
     localpath = localpath.to_s # in case we get a Pathname
     cb_error "Error: provider #{self.name} is offline."                                   unless self.online?
     cb_error "Error: provider #{self.name} is read_only."                                 if     self.read_only?
-    cb_error "Error: file does not exist: '#{localpath}'."                                unless File.exists?(localpath)
+    cb_error "Error: file does not exist: '#{localpath}'."                                unless File.exist?(localpath)
     cb_error "Error: file #{userfile.name} is immutable."                                 if     userfile.immutable?
     cb_error "Error: incompatible directory '#{localpath}' given for a SingleFile."       if
         userfile.is_a?(SingleFile)     && File.directory?(localpath)

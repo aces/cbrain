@@ -56,8 +56,8 @@ class Userfile < ApplicationRecord
                           :filename_format => true
 
   # Callbacks specific to some DataProvider properties
-  before_create           :flat_dir_dp_name_uniqueness # this method is also used as a validator (see below)
-  validate                :flat_dir_dp_name_uniqueness # this method is also used as a before_create callback (see above)
+  before_create           :flat_dir_dp_name_uniqueness_throw
+  validate                :flat_dir_dp_name_uniqueness
   before_save             :browse_path_nullify
   validate                :validate_browse_path
 
@@ -287,7 +287,7 @@ class Userfile < ApplicationRecord
   # by +user+. Actually returns a ActiveRecord::Relation.
   def get_tags_for_user(user)
     user = User.find(user) unless user.is_a?(User)
-    self.tags.where(:user_id => user.id).or(self.tags.where(:user_id => User.admin.id, :group_id => Group.everyone.id, :name => [ 'QC_PASS', 'QC_FAIL', 'QC_UNKNOWN']))
+    self.tags.where('tags.user_id' => user.id)
   end
 
   # Set the tags associated with this file to those
@@ -868,21 +868,23 @@ class Userfile < ApplicationRecord
   # can be found, typically under the CBRAIN plugins directory. For a
   # model such as TextFile, it would map to a single directory:
   #
-  #   "/path/to/cbrain_plugins/installed-plugins/userfiles/text_file/views"
+  #   "userfiles/cbrain_plugins/text_file/views"
   #
   # If given a basename or relative path for a partial (without the leading
   # underscore), will return the path to that partial. E.g. with "abc/def"
   #
-  #   "/path/to/cbrain_plugins/installed-plugins/userfiles/text_file/views/abc/_def"
+  #   "userfiles/cbrain_plugins/text_file/views/abc/def"
   #
   # Returns a Pathname object.
   def self.view_path(partial_name=nil)
-    base = Pathname.new(CBRAIN::ViewsPlugins_Dir) + self.to_s.underscore
+    base = Pathname.new("userfiles/cbrain_plugins") + self.to_s.underscore
     return base if partial_name.to_s.blank?
     partial_name = Pathname.new(partial_name.to_s).cleanpath
     raise "View partial path outside of userfile plugin." if partial_name.absolute? || partial_name.to_s =~ /\A\.\./
-    base = base + partial_name.to_s.sub(/([^\/]+)\z/,'_\1')
-    base
+    base = base + partial_name.to_s #.sub(/([^\/]+)\z/,'_\1')
+    #return "#{base}.html.erb" if File.exist?("#{base}.html.erb")
+    #return "#{base}.html"     if File.exist?("#{base}.html")
+    base.to_s
   end
 
   # Returns the directory where some public assets (files) for the current model
@@ -908,7 +910,7 @@ class Userfile < ApplicationRecord
     public_file = Pathname.new(public_file.to_s).cleanpath
     raise "Public file path outside of userfile plugin." if public_file.absolute? || public_file.to_s =~ /\A\.\./
     base = base + public_file
-    return nil unless File.exists?((Rails.root + "public").to_s + base.to_s)
+    return nil unless File.exist?((Rails.root + "public").to_s + base.to_s)
     base
   end
 
@@ -1167,6 +1169,11 @@ class Userfile < ApplicationRecord
     false
   end
 
+  def flat_dir_dp_name_uniqueness_throw #:nodoc:
+    throw :abort unless self.flat_dir_dp_name_uniqueness
+    true
+  end
+
   # This method is used as a before_save callback.
   # If a userfile record has a browse_path present, nullify it if
   # the associated data provider does not have the browse_path capability
@@ -1220,7 +1227,8 @@ class Userfile < ApplicationRecord
         model = model_file.sub(/\.rb\z/,"").classify
         next if Object.const_defined? model # already loaded? Skip.
         #puts_blue "Loading Userfile subclass #{model} from #{model_file} ..."
-        require_dependency "#{CBRAIN::UserfilesPlugins_Dir}/#{model_file}"
+        #require_dependency "#{CBRAIN::UserfilesPlugins_Dir}/#{model_file}"
+        require "#{CBRAIN::UserfilesPlugins_Dir}/#{model_file}"
       end
     end
   end

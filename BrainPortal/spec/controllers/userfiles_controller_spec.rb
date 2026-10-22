@@ -24,8 +24,8 @@ require 'rails_helper'
 
 def mock_upload_file_param(name = "dummy_file")
   file_name = "cbrain_test_file_#{name}"
-  FileUtils.touch("spec/fixtures/#{file_name}")
-  file = fixture_file_upload("/#{file_name}")
+  FileUtils.touch("spec/fixtures/files/#{file_name}")
+  file = fixture_file_upload("#{file_name}")
   class << file; attr_reader :tempfile; end
   file
 end
@@ -52,6 +52,8 @@ RSpec.describe UserfilesController, :type => :controller do
   end
 
   context "collection action" do
+
+    render_views
 
     describe "index" do
 
@@ -598,13 +600,13 @@ RSpec.describe UserfilesController, :type => :controller do
       end
 
       it "should use the userfile's partial if available" do
-        allow(File).to receive(:exists?).and_return(true)
+        allow(File).to receive(:exist?).and_return(true)
         post :quality_control_panel, params: {userfile: userfile}
         expect(assigns[:qc_view_file]).not_to match("_default")
       end
 
       it "should use the default partial if no userfile-specific partial available" do
-        allow(File).to receive(:exists?).and_return(false)
+        allow(File).to receive(:exist?).and_return(false)
         post :quality_control_panel, params: {userfile: userfile}
         expect(assigns[:qc_view_file]).to match("_default")
       end
@@ -1004,22 +1006,25 @@ RSpec.describe UserfilesController, :type => :controller do
     describe "display" do
       let(:mock_viewer) {Userfile::Viewer.new(mock_userfile.class, {:userfile_class => mock_userfile.class.name, :name => "Text File", :partial => "text_file"})}
 
+      render_views
+
       before(:each) do
         session[:session_id] = 'session_id'
         allow(Userfile).to      receive(:find_accessible_by_user).and_return(mock_userfile)
-        allow(File).to          receive(:exists?).and_return(true)
+        allow(File).to          receive(:exist?).and_return(true)
       end
 
       it "should render :text_file partial if viewer exist" do
         allow(TextFile).to      receive(:find_viewer).and_return(mock_viewer)
         get :display, params: {:viewer => "Text File", :apply_div => "false", :id => 1}
-        expect(response).to render_template(:file => "_text_file.html.erb")
+        expect(response).to render_template("userfiles/cbrain_plugins/text_file/_text_file")
       end
 
       it "should try to find a partial with the viewer name if the userfile doesn't have an associated viewer" do
         allow(TextFile).to      receive(:find_viewer).and_return(nil)
-        expect(File).to receive(:exists?).and_return(true)
+        expect(File).to receive(:exist?).and_return(true)
         get :display, params: {:id => 1, :viewer => "hello"}
+        expect(response).to render_template(:display)
       end
 
       it "should render the display partial a div is requested" do
@@ -1117,7 +1122,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
       context "when the update is successful" do
         before(:each) do
-          allow(mock_userfile).to receive(:update_attributes).and_return(true)
+          allow(mock_userfile).to receive(:update).and_return(true)
         end
 
 

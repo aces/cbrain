@@ -20,7 +20,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-module CBRAINExtensions #:nodoc:
+require 'action_controller'
+
+module CbrainExtensions #:nodoc:
   module ParametersExtensions #:nodoc:
 
     # CBRAIN ActionController::Parameters utilities.
@@ -38,10 +40,10 @@ module CBRAINExtensions #:nodoc:
       # The normal behavior of +require+ is to raise an exception
       # in these two cases.
       def require_as_params(key)
-        return ActionController::Parameters.new() if ! self.has_key?(key)
+        return ::ActionController::Parameters.new() if ! self.has_key?(key)
         current_value = self[key]
         return current_value if
-          current_value.is_a?(ActionController::Parameters) &&
+          current_value.is_a?(::ActionController::Parameters) &&
           current_value.empty?
         self.require(key) # normal behavior
       end

@@ -96,15 +96,3 @@ IRB.conf[:PROMPT][:CUSTOM] = {
 IRB.conf[:PROMPT_MODE]  = :CUSTOM
 IRB.conf[:SAVE_HISTORY] = 5000 # why not
 
-#####################################################
-# Load external IRBRC files
-#####################################################
-
-IRB.rc_file_generators do |rcgen|
-  rc_file_path = rcgen.call("rc")
-  if File.exist?(rc_file_path)
-    load rc_file_path
-    break
-  end
-end
-

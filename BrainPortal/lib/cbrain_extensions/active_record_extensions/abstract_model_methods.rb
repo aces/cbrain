@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-module CBRAINExtensions #:nodoc:
+module CbrainExtensions #:nodoc:
 
   module ActiveRecordExtensions #:nodoc:
 
@@ -74,5 +74,5 @@ module CBRAINExtensions #:nodoc:
 
   end # module ActiveRecord
 
-end # module CBRAINExtensions
+end # module CbrainExtensions
 

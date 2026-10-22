@@ -231,7 +231,7 @@ module ActRecLog
       calling_class  = "" if ! options[:show_class]
 
       # Prepare the string for the method name, as in "methodname() "
-      calling_method = options[:prefix] || ( calling_info.match(/in `(.*)'/) ? ($1 + "() ") : "unknown() " )
+      calling_method = options[:prefix] || ( calling_info.match(/in .(.*)'/) ? ($1 + "() ") : "unknown() " )
       calling_method = "" if ! options[:show_method]
       calling_method.sub!(/(block|rescue).*? in /, "")
 
@@ -254,7 +254,7 @@ module ActRecLog
       if use_internal
         @tmp_internal_log = log
       else
-        arl.update_attributes( { :log => log } )
+        arl.update( { :log => log } )
       end
     rescue
       # puts_green "EX: #{ex.class}: #{ex.message}\n#{ex.backtrace.join("\n")}"
@@ -373,7 +373,7 @@ module ActRecLog
     true
   end
 
-  # This method is just like update_attributes(), but also logs
+  # This method is just like update(), but also logs
   # the changed attributes using addlog_changed_attributes().
   # The method returns false if the object could not be updated
   # or is invalid.
@@ -462,7 +462,7 @@ module ActRecLog
     while log.size > 65500 && log =~ /\n/   # TODO: archive ?
       log.sub!(/^[^\n]*\n/,"")
     end
-    arl.update_attributes( { :log => log } )
+    arl.update( { :log => log } )
   end
 
   # Destroy the log associated with an ActiveRecord.
@@ -493,7 +493,7 @@ module ActRecLog
     return true  if @tmp_internal_log.blank?
     arl = active_record_log_find_or_create
     log = (arl.log || "") + @tmp_internal_log.to_s
-    arl.update_attributes( { :log => log } )
+    arl.update( :log => log )
     @tmp_internal_log = ""
     true
   end

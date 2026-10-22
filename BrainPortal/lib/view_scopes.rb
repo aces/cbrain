@@ -152,7 +152,7 @@ module ViewScopes
     def initialize
       @filters   = []
       @order     = []
-      @custom    = HashWithIndifferentAccess.new
+      @custom    = ActiveSupport::HashWithIndifferentAccess.new
     end
 
     # Create a deep copy of the Scope +other+, down to each Filter in *filters*
@@ -281,7 +281,7 @@ module ViewScopes
       return nil unless hash.is_a?(Hash)
 
       hash = hash.with_indifferent_access unless
-        hash.is_a?(HashWithIndifferentAccess)
+        hash.is_a?(ActiveSupport::HashWithIndifferentAccess)
 
       scope = self.new
 
@@ -329,7 +329,7 @@ module ViewScopes
       return nil unless hash.is_a?(Hash)
 
       hash = hash.with_indifferent_access unless
-        hash.is_a?(HashWithIndifferentAccess)
+        hash.is_a?(ActiveSupport::HashWithIndifferentAccess)
 
       compact = {
         # Compact filtering rules
@@ -517,7 +517,7 @@ module ViewScopes
         return nil unless hash.is_a?(Hash)
 
         hash = hash.with_indifferent_access unless
-          hash.is_a?(HashWithIndifferentAccess)
+          hash.is_a?(ActiveSupport::HashWithIndifferentAccess)
 
         filter = self.new
 
@@ -853,7 +853,7 @@ module ViewScopes
         return nil unless hash.is_a?(Hash)
 
         hash = hash.with_indifferent_access unless
-          hash.is_a?(HashWithIndifferentAccess)
+          hash.is_a?(ActiveSupport::HashWithIndifferentAccess)
 
         order = self.new
 
@@ -1038,7 +1038,7 @@ module ViewScopes
         return nil unless hash.is_a?(Hash)
 
         hash = hash.with_indifferent_access unless
-          hash.is_a?(HashWithIndifferentAccess)
+          hash.is_a?(ActiveSupport::HashWithIndifferentAccess)
 
         pagination = self.new
         pagination.page     = Integer(hash['i'] || hash['page'] || 1) rescue 1
@@ -1120,7 +1120,7 @@ module ViewScopes
       compact = hash.stringify_keys.to_h
 
       hash = hash.with_indifferent_access unless
-        hash.is_a?(HashWithIndifferentAccess)
+        hash.is_a?(ActiveSupport::HashWithIndifferentAccess)
 
       # Shorten attribute values
       values.each do |key, long, short|
@@ -1402,7 +1402,7 @@ module ViewScopes
     scope.tr!('-_', '+/')
     scope = Base64.decode64(scope)
     scope = ActiveSupport::Gzip.decompress(scope)
-    scope = YAML.safe_load(scope, [Date, Time, DateTime])
+    scope = YAML.safe_load(scope, :permitted_classes => [Date, Time, DateTime])
     scope
   end
 

@@ -21,7 +21,8 @@
 #
 
 #
-# CbrainTask class loader code
+# CbrainTask class loader code ; when symlinks point to this, actually
+# loads a class located deeper in the plugins tree.
 #
 
 1.times do # just starts a block so local variable don't pollute anything
@@ -36,14 +37,19 @@
   myshorttype = Rails.root.to_s =~ /BrainPortal\z/ ? "portal" : "bourreau"
   dirname     = File.dirname(__FILE__)
   model       = basename.sub(/.rb\z/,"")
-  bytype_code = "#{dirname}/#{model}/#{myshorttype}/#{model}.rb"
-  common_code = "#{dirname}/#{model}/common/#{model}.rb"
+  bytype_code = "#{dirname}/../task_support_links/#{model}/#{myshorttype}/#{model}.rb"
+  common_code = "#{dirname}/../task_support_links/#{model}/common/#{model}.rb"
 
   if ! CbrainTask.const_defined? model.classify
     #puts_blue "LOADING #{bytype_code}"
-    require_dependency bytype_code if File.exists?(bytype_code)
-    require_dependency common_code if File.exists?(common_code)
+    #require_dependency bytype_code if File.exist?(bytype_code)
+    #require_dependency common_code if File.exist?(common_code)
+    require bytype_code if File.exist?(bytype_code)
+    require common_code if File.exist?(common_code)
   end
 
 end
+
+# This is needed to make the framework happy with this file
+class CbrainTask::CbrainTaskClassLoader ; end
 

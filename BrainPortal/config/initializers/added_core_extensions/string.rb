@@ -20,12 +20,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+require "cbrain_file_revision"
+require "cbrain_extensions"
+
 ###################################################################
 # CBRAIN String extensions
 ###################################################################
 class String
 
-  include CBRAINExtensions::StringExtensions::Utilities
+  include CbrainExtensions::StringExtensions::Utilities
 
 end
 

@@ -152,7 +152,7 @@ class SyncStatus < ApplicationRecord
 
       # No need to do anything if the data is already in sync!
       if state.status == "InSync"
-        state.update_attributes( :accessed_at => Time.now )
+        state.update( :accessed_at => Time.now )
         return true
       end
 
@@ -198,7 +198,7 @@ class SyncStatus < ApplicationRecord
       # AFTER successful cache-modifying operation
       lambda do |implstatus|
         state.status_transition("ToCache", "InSync") # checked OK
-        state.update_attributes( :accessed_at => Time.now, :synced_at => Time.now )
+        state.update( :accessed_at => Time.now, :synced_at => Time.now )
         puts "SYNC: ToCache: #{state.pretty} Finish" if DebugMessages
         implstatus
       end,
@@ -254,7 +254,7 @@ class SyncStatus < ApplicationRecord
 
       # No need to do anything if the data is already in sync!
       if state.status == "InSync"
-        state.update_attributes( :accessed_at => Time.now )
+        state.update( :accessed_at => Time.now )
         return true
       end
 
@@ -292,7 +292,7 @@ class SyncStatus < ApplicationRecord
         # obsolete.
         puts "SYNC: ToProv: #{state.pretty} Others => ProvNewer" if DebugMessages
         others = self.get_status_of_other_caches(userfile_id)
-        others.each { |o| o.update_attributes( :status => "ProvNewer" ) } # your cache is out of date
+        others.each { |o| o.update( :status => "ProvNewer" ) } # your cache is out of date
         # Call the provider's implementation of the sync operation.
         puts "SYNC: ToProv: #{state.pretty} YIELD" if DebugMessages
       end,
@@ -300,7 +300,7 @@ class SyncStatus < ApplicationRecord
       # AFTER successful provider-modifying operation
       lambda do |implstatus|
         state.status_transition("ToProvider", final_status) # checked OK
-        state.update_attributes( :accessed_at => Time.now, :synced_at => Time.now )
+        state.update( :accessed_at => Time.now, :synced_at => Time.now )
         puts "SYNC: ToProv: #{state.pretty} Finish" if DebugMessages
         implstatus
       end,
@@ -309,7 +309,7 @@ class SyncStatus < ApplicationRecord
       lambda do |implerror|
         # Provider side is no good as far as we know
         others = self.get_status_of_other_caches(userfile_id) rescue []
-        others.each { |o| o.update_attributes( :status => "Corrupted" ) rescue nil }
+        others.each { |o| o.update( :status => "Corrupted" ) rescue nil }
         state.status_transition("ToProvider", "Corrupted") # checked OK
         puts "SYNC: ToProv: #{state.pretty} Except" if DebugMessages
       end
@@ -478,7 +478,7 @@ class SyncStatus < ApplicationRecord
       # AFTER successful provider-modifying operation
       lambda do |implstatus|
         others = self.get_status_of_other_caches(userfile_id)
-        others.each { |o| o.update_attributes( :status => "ProvNewer" ) } # Mark all other status fields...
+        others.each { |o| o.update( :status => "ProvNewer" ) } # Mark all other status fields...
         state.status_transition("ToProvider", "ProvNewer") # checked OK
         puts "SYNC: ModProv: ProvNewer ALL" if DebugMessages
         implstatus

@@ -120,6 +120,6 @@
     "custom": {
         "cbrain:readonly-input-files": true,
         "cbrain:author": "Pierre Rioux <pierre.rioux@mcgill.ca>",
-        "cbrain:inherits-from-class": "BoutiquesDescriptorMakerHandler"
+        "cbrain:inherits-from-class": "CbrainTask::BoutiquesDescriptorMakerHandler"
     }
 }

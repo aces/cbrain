@@ -50,7 +50,7 @@ RSpec.describe VaultSshDataProvider, :type => :model do
 
     it "should return a cbrain error if isn't browsable" do
       allow(vault_ssh_data_provider).to receive(:is_browsable?).and_return(false)
-      expect(lambda{vault_ssh_data_provider.impl_provider_list_all}).to raise_error(CbrainError)
+      expect { vault_ssh_data_provider.impl_provider_list_all }.to raise_error(CbrainError)
     end
 
     it "should start an SFTP session" do

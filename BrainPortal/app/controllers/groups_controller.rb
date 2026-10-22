@@ -31,7 +31,7 @@ class GroupsController < ApplicationController
 
   before_action :login_required
 
-  before_action :license_check, :only => [:show, :create, :switch, :edit, :update, :unregister, :destroy]
+  before_action :license_check, :only => [:show, :create, :switch, :update, :unregister, :destroy]
 
   # GET /groups
   # GET /groups.xml
@@ -127,8 +127,8 @@ class GroupsController < ApplicationController
       else
         @users = current_user.available_users.where( "users.login<>'admin'" ).order( :login )
         format.html { render :new  }
-        format.xml  { render :xml  => @group.errors, :status => :unprocessable_entity }
-        format.json { render :json => @group.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @group.errors, :status => :unprocessable_content }
+        format.json { render :json => @group.errors, :status => :unprocessable_content }
       end
     end
   end
@@ -200,8 +200,8 @@ class GroupsController < ApplicationController
       else
         @group.reload
         format.html { render :action => "show" }
-        format.xml  { render :xml  => @group.errors, :status => :unprocessable_entity }
-        format.json { render :json => @group.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @group.errors, :status => :unprocessable_content }
+        format.json { render :json => @group.errors, :status => :unprocessable_content }
       end
     end
   end
@@ -214,8 +214,8 @@ class GroupsController < ApplicationController
       if current_user.id == @group.creator_id
         flash[:error] = t('groups.flash.cannot_unregister_creator')
         format.html { redirect_to group_path(@group) }
-        format.xml  { head :unprocessable_entity }
-        format.json { head :unprocessable_entity }
+        format.xml  { head :unprocessable_content }
+        format.json { head :unprocessable_content }
       else
         original_user_ids = @group.user_ids
         @group.user_ids   = @group.user_ids - [current_user.id]

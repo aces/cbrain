@@ -12,6 +12,7 @@ namespace :db do
       db_file    = (Rails.root + "config/database.yml").to_s
       db_configs = YAML.load(File.read(db_file))
       db_config  = db_configs[Rails.env]
+      db_config  = db_config['primary'] if db_config['primary']
 
       raise RuntimeError.new("Can't find the current DB configuration") unless db_config.present?
       raise RuntimeError.new("This only works for mysql adapters")      unless db_config['adapter'] =~ /^mysql/

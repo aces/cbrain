@@ -103,7 +103,7 @@ class SignupsController < ApplicationController
       return
     end
 
-    @signup.update_attributes(signup_params)
+    @signup.update(signup_params)
 
     if ! @signup.save
       render :action => :new

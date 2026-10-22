@@ -159,7 +159,7 @@ class Site < ApplicationRecord
     site_group = SiteGroup.new(:name => self.name, :site_id  => self.id)
     unless site_group.save
       self.errors.add(:base, "Site Group: #{site_group.errors.full_messages.join(", ")}")
-      return false
+      throw :abort
     end
   end
 
@@ -167,7 +167,7 @@ class Site < ApplicationRecord
     if user.has_role? :site_manager
       user.update_attribute(:type, "NormalUser")
     end
-    user.own_group.update_attributes!(:site => nil)
+    user.own_group.update!(:site => nil)
   end
 
   def remove_user_from_site_group(user) #:nodoc:
@@ -211,7 +211,7 @@ class Site < ApplicationRecord
     end
 
     User.find(@new_user_ids).each do |user|
-      user.own_group.update_attributes!(:site_id => self.id)
+      user.own_group.update!(:site_id => self.id)
       unless site_group.blank? || self.groups.exists?(site_group.id)
         user.group_ids |= [ site_group.id ]
       end
@@ -221,7 +221,7 @@ class Site < ApplicationRecord
   def system_group_rename #:nodoc:
     if self.changed.include?("name")
       old_name = self.changes["name"].first
-      SiteGroup.find_by_name(old_name).update_attributes!(:name => self.name)
+      SiteGroup.find_by_name(old_name).update!(:name => self.name)
     end
   end
 

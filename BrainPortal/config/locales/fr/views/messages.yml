@@ -62,19 +62,15 @@ fr:
       title: "Ajouter un nouveau message du tableau de bord"
       headings:
         main: "Ajouter un nouveau message du tableau de bord"
-      labels:
-        dashboard: "Tableau de bord"
       explanations:
         dashboard_html: |
           Pour les messages du tableau de bord, ce que vous saisissez ici sera inséré littéralement
           dans le code de la page. Vous pouvez donc utiliser n'importe quel élément HTML,
-          mais assurez‑vous de savoir ce que vous faites. Pour NeuroHub, nous recommandons d'entourer
-          l'ensemble du texte d'au moins un élément &lt;P&gt;.
+          mais assurez‑vous de savoir ce que vous faites.
     new:
       title: "Ajouter un nouveau message"
       links:
         new_cbrain_dashboard: "Nouveau message tableau de bord CBRAIN"
-        new_neurohub_dashboard: "Nouveau message tableau de bord NeuroHub"
       to_users_of_project: "Aux utilisateurs du projet :"
       labels:
         send_email: "Envoyer un e‑mail"

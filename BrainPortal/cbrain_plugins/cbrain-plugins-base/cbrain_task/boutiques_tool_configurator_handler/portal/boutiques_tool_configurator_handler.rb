@@ -23,7 +23,7 @@
 # This class is an intermediate class between BoutiquesPortalTask and
 # BoutiquesToolConfigurator. It provides special functionality
 # to allow the interface to dynamically show the list of ToolConfigs.
-class BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
+class CbrainTask::BoutiquesToolConfiguratorHandler < BoutiquesPortalTask
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

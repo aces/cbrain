@@ -20,6 +20,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+require "cbrain_file_revision"
+require "cbrain_extensions"
+
 ###################################################################
 # CBRAIN Object extensions
 ###################################################################
@@ -27,8 +30,8 @@ class Object #:nodoc:
 
   Revision_info=CbrainFileRevision.unknown_rev_info #:nodoc:
 
-  include CBRAINExtensions::ObjectExtensions::DeepClone
-  include CBRAINExtensions::ObjectExtensions::RevisionTracking
+  include CbrainExtensions::ObjectExtensions::DeepClone
+  include CbrainExtensions::ObjectExtensions::RevisionTracking
 
 end
 

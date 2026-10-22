@@ -29,7 +29,7 @@
   base_dir = base_directory rescue params[:base_directory]
 %>
 
-<%= render :file   => FileCollection.view_path(:file_collection_form),
+<%= render :partial   => FileCollection.view_path(:file_collection_form),
            :locals => { :base_directory => base_dir } %>
 
 <div id="sub_viewer_filecollection_cbrain"></div>

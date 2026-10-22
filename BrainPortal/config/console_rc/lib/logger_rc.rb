@@ -20,12 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Create a new logger for ActiveRecord operations
-console_logger              = Logger.new(STDOUT)
-console_logger.formatter    = Proc.new { |s,d,p,m| "#{m}\n" }
-ApplicationRecord.logger    = console_logger
-ActiveResource::Base.logger = console_logger
-
 # Disable AR logging (actually, just sets logging level to ERROR).
 # If a block is given, the effect only lasts for the duration
 # of the block, and then logging is returned to whatever state

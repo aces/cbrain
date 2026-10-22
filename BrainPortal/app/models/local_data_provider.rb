@@ -165,7 +165,7 @@ class LocalDataProvider < DataProvider
     issues = []
 
     # Make sure all registered files exist
-    self.userfiles.all.select { |u| ! File.exists?(self.provider_full_path(u)) }.each do |miss|
+    self.userfiles.all.select { |u| ! File.exist?(self.provider_full_path(u)) }.each do |miss|
       issues << {
         :type        => :missing,
         :message     => "Userfile '#{miss.name}'",

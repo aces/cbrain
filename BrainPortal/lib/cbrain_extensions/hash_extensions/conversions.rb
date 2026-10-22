@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-module CBRAINExtensions #:nodoc:
+module CbrainExtensions #:nodoc:
   module HashExtensions #:nodoc:
 
     # Hash conversion methods.
@@ -64,7 +64,7 @@ module CBRAINExtensions #:nodoc:
       # This method was removed from Hash in Rails 5.1.
       def hide_filtered
         filtered_keys   = Rails.application.config.filter_parameters.presence || [ :password, :token, :ssh_key ]
-        filter_object   = ActionDispatch::Http::ParameterFilter.new(filtered_keys)
+        filter_object   = ActiveSupport::ParameterFilter.new(filtered_keys)
         filter_object.filter(self.clone)
       end
 

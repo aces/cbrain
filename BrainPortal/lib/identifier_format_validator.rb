@@ -28,7 +28,7 @@ class IdentifierFormatValidator < ActiveModel::EachValidator #:nodoc:
   # simple identifier (letter, then letters digits underscore dashes...)
   def validate_each(object, attribute, value) #:nodoc:
     unless value.blank? || value =~ /\A[a-zA-Z][\w\-]*\z/
-      object.errors[attribute] << (options[:message] || "contains invalid characters")
+      object.errors.add(attribute, (options[:message] || "contains invalid characters"))
     end
   end
 

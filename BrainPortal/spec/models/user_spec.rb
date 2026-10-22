@@ -564,7 +564,7 @@ describe User do
       normal_user.site = site1
       normal_user.password = nil # avoid re-encrypting
       expect(normal_user.save).to be(true)
-      expect(site1.own_group.users).to include(normal_user)
+      expect(site1.own_group.user_ids).to include(normal_user.id)
     end
 
     it "should remove user to old site" do
@@ -572,7 +572,7 @@ describe User do
       normal_user.site = site1
       normal_user.password = nil # avoid re-encrypting
       expect(normal_user.save).to be(true)
-      expect(start_site.own_group.users).not_to include(normal_user)
+      expect(start_site.own_group.reload.user_ids).not_to include(normal_user.id)
     end
   end
 

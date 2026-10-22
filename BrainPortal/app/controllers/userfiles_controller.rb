@@ -358,7 +358,7 @@ class UserfilesController < ApplicationController
     # Not an officially registered viewer, but it will work for the current rendering.
     if @viewer.blank? && viewer_name =~ /\A\w+\z/
       partial_filename_base = (viewer_userfile_class.view_path + "_#{viewer_name}.#{request.format.to_sym}").to_s
-      if File.exists?(partial_filename_base) || File.exists?(partial_filename_base + ".erb")
+      if File.exist?("#{Rails.root}/app/views/#{partial_filename_base}") || File.exist?("#{Rails.root}/app/views/#{partial_filename_base}.erb")
         @viewer = Userfile::Viewer.new(viewer_userfile_class, :partial => viewer_name)
       end
     end
@@ -382,7 +382,7 @@ class UserfilesController < ApplicationController
 
     # Render partial
     if params[:apply_div] == "false"
-      render :file   => @viewer.partial_path.to_s, :layout => params[:apply_layout].present?
+      render :partial => @viewer.partial_path.to_s, :layout => params[:apply_layout].present?
       return
     end
 
@@ -523,7 +523,7 @@ class UserfilesController < ApplicationController
     if upload_stream.blank?
       respond_to do |format|
         format.html  { redirect_to redirect_path }
-        format.json  { head :unprocessable_entity }
+        format.json  { head :unprocessable_content }
       end
       return
     end
@@ -572,7 +572,7 @@ class UserfilesController < ApplicationController
         respond_to do |format|
           format.html { redirect_to redirect_path }
           format.json {
-                          render :json => { :notice => flash[:error] }, :status => :unprocessable_entity
+                          render :json => { :notice => flash[:error] }, :status => :unprocessable_content
                           flash.discard # no need to repeat error message
                       }
         end
@@ -614,8 +614,8 @@ class UserfilesController < ApplicationController
       flash[:error] += t('userfiles.flash.unsupported_extension', name: basename)
       respond_to do |format|
         format.html { redirect_to redirect_path }
-        format.json { render :json => flash[:error], :status  => :unprocessable_entity}
-        format.xml  { render :xml  => flash[:error], :status  => :unprocessable_entity}
+        format.json { render :json => flash[:error], :status  => :unprocessable_content}
+        format.xml  { render :xml  => flash[:error], :status  => :unprocessable_content}
       end
       return
     end
@@ -628,8 +628,8 @@ class UserfilesController < ApplicationController
         flash[:error] = t('userfiles.flash.collection_exists', name: collection_name)
         respond_to do |format|
           format.html { redirect_to redirect_path }
-          format.json { render :json => flash[:error], :status  => :unprocessable_entity}
-          format.xml  { render :xml  => flash[:error], :status  => :unprocessable_entity}
+          format.json { render :json => flash[:error], :status  => :unprocessable_content}
+          format.xml  { render :xml  => flash[:error], :status  => :unprocessable_content}
         end
         return
       end
@@ -682,8 +682,8 @@ class UserfilesController < ApplicationController
         end
         respond_to do |format|
           format.html { redirect_to redirect_path }
-          format.json { render :json => flash[:error], :status  => :unprocessable_entity}
-          format.xml  { render :xml  => flash[:error], :status  => :unprocessable_entity}
+          format.json { render :json => flash[:error], :status  => :unprocessable_content}
+          format.xml  { render :xml  => flash[:error], :status  => :unprocessable_content}
         end
       end # save collection
       return
@@ -764,8 +764,8 @@ class UserfilesController < ApplicationController
       else
         @userfile.reload
         format.html { render(:action  => 'show') }
-        format.xml  { render :xml  => @userfile.errors, :status => :unprocessable_entity }
-        format.json { render :json => @userfile.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @userfile.errors, :status => :unprocessable_content }
+        format.json { render :json => @userfile.errors, :status => :unprocessable_content }
       end
     end
   end
@@ -985,7 +985,7 @@ class UserfilesController < ApplicationController
 
     @userfile     = Userfile.find_accessible_by_user(@filelist[@current_index], current_user, :access_requested => :read)
     @qc_view_file = @userfile.view_path("qc_panel.html.erb").to_s # model-specific view partial, in its plugin directory
-    if ! File.exists?(@qc_view_file)
+    if ! File.exist?("#{Rails.root}/app.views/#{@qc_view_file}")
       @qc_view_file = "userfiles/_default_qc_panel.html.erb" # default provided by cbrain
     end
 
@@ -1234,7 +1234,7 @@ class UserfilesController < ApplicationController
       userfile = userfiles_list[0]
       fullpath = userfile.cache_full_path
       DataUsage.increase_downloads(current_user, userfile)
-      send_file fullpath, :stream => true, :filename => is_blank ? fullpath.basename : specified_filename
+      send_file fullpath.to_s, :stream => true, :filename => is_blank ? fullpath.basename.to_s : specified_filename.to_s
       return
     end
 
@@ -1846,7 +1846,7 @@ class UserfilesController < ApplicationController
         return nil unless hash.is_a?(Hash)
 
         hash = hash.with_indifferent_access unless
-          hash.is_a?(HashWithIndifferentAccess)
+          hash.is_a?(ActiveSupport::HashWithIndifferentAccess)
 
         filter = self.new
         filter.value = Array(hash['value'] || hash['v'])
@@ -1961,7 +1961,7 @@ class UserfilesController < ApplicationController
       return nil unless hash.is_a?(Hash)
 
       hash = hash.with_indifferent_access unless
-        hash.is_a?(HashWithIndifferentAccess)
+        hash.is_a?(ActiveSupport::HashWithIndifferentAccess)
 
       filter = self.new
 

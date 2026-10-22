@@ -175,7 +175,7 @@ class SshAgent
   def self.create(name, socketpath=nil)
     exists = self.find_by_name(name).try(:aliveness)
     raise "Agent named '#{name}' already exists." if exists
-    raise "Socket or file '#{socketpath}' already exists." if socketpath.present? && File.exists?(socketpath)
+    raise "Socket or file '#{socketpath}' already exists." if socketpath.present? && File.exist?(socketpath)
     dash_a     = socketpath.present? ? "-a #{socketpath.bash_escape}" : ""
     agent_out  = IO.popen("#{CONFIG[:exec_ssh_agent]} -s #{dash_a}","r") { |fh| fh.read }
     socket,pid = parse_agent_config_file(agent_out)

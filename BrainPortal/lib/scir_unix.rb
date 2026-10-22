@@ -124,7 +124,7 @@ class ScirUnix < Scir
 
   class JobTemplate < Scir::JobTemplate #:nodoc:
 
-    SYSTEM_HAS_TIMEOUT = `type -p timeout`.present?
+    SYSTEM_HAS_TIMEOUT = `bash -c "type -p timeout"`.present?
 
     # NOTE: We use a custom 'run' method in the Session, instead of Scir's version.
     def qsub_command #:nodoc:

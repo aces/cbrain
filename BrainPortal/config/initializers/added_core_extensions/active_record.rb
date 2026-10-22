@@ -20,6 +20,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+require "cbrain_file_revision"
+require "cbrain_extensions"
+
 ###################################################################
 # CBRAIN ActiveRecord extensions
 ###################################################################
@@ -32,13 +35,13 @@ module ActiveRecord #:nodoc:
     # ActiveRecord::Relation safety net to avoid OoM conditions
     #####################################################################
 
-    prepend CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::SafeInspect
+    prepend CbrainExtensions::ActiveRecordExtensions::RelationExtensions::SafeInspect
 
     #####################################################################
     # ActiveRecord::Relation Added Behavior For API Requests
     #####################################################################
 
-    include CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::ForApiRequests
+    include CbrainExtensions::ActiveRecordExtensions::RelationExtensions::ForApiRequests
 
   end
 
@@ -48,12 +51,12 @@ module ActiveRecord #:nodoc:
   #####################################################################
 
   class AssociationRelation
-    prepend CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::SafeInspect
+    prepend CbrainExtensions::ActiveRecordExtensions::RelationExtensions::SafeInspect
   end
 
   module Associations
     class CollectionProxy
-      prepend CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::SafeInspect
+      prepend CbrainExtensions::ActiveRecordExtensions::RelationExtensions::SafeInspect
     end
   end
 

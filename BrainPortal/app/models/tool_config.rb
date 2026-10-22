@@ -37,7 +37,7 @@ class ToolConfig < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  serialize       :env_array
+  serialize       :env_array, :coder => YAML
 
   belongs_to      :bourreau, :optional => true     # can be nil; it means it applies to all bourreaux
   belongs_to      :tool, :optional => true         # can be nil; it means it applies to all tools
@@ -484,29 +484,29 @@ class ToolConfig < ApplicationRecord
     # Should only have one container_engine of particular type
     available_engine = ["Singularity","Docker"]
     if self.container_engine.present? && available_engine.exclude?(self.container_engine)
-      errors[:container_engine] = "is not valid"
+      errors.add(:container_engine, "is not valid")
     end
     # Should only have a containerhub_image_name or a container_image_userfile_id
     if self.containerhub_image_name.present? && self.container_image_userfile_id.present?
-      errors[:containerhub_image_name]     = "cannot be set when a container image Userfile ID is set"
-      errors[:container_image_userfile_id] = "cannot be set when a container hub name is set"
+      errors.add(:containerhub_image_name    , "cannot be set when a container image Userfile ID is set")
+      errors.add(:container_image_userfile_id, "cannot be set when a container hub name is set")
     end
     # A tool_config with a containerhub_image_name or a container_image_userfile_id should have a container_engine
     if (self.containerhub_image_name.present? || self.container_image_userfile_id.present?) && self.container_engine.blank?
-      errors[:container_engine] = "should be set when a container image name or a container userfile ID is set"
+      errors.add(:container_engine, "should be set when a container image name or a container userfile ID is set")
     end
     # A tool_config with a container_engine should have a containerhub_image_name or a container_image_userfile_id
     if self.container_engine.present? && ( self.containerhub_image_name.blank? && self.container_image_userfile_id.blank? )
-      errors[:container_engine] = "a container hub image name or a container image userfile ID should be set when the container engine is set"
+      errors.add(:container_engine, "a container hub image name or a container image userfile ID should be set when the container engine is set")
     end
 
     if self.container_engine.present? && self.container_engine == "Singularity"
       if self.container_index_location.present? && self.container_index_location !~ /\A[a-z0-9]+\:\/\/\z/i
-        errors[:container_index_location] = "is invalid for container engine Singularity. Should end in '://'."
+        errors.add(:container_index_location, "is invalid for container engine Singularity. Should end in '://'.")
       end
     elsif self.container_engine.present? && self.container_engine == "Docker"
       if self.container_index_location.present? && self.container_index_location !~ /\Adocker:\/\/\z|\A[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}\z/i
-        errors[:container_index_location] = "is invalid for container engine Docker. Should be a valid hostname."
+        errors.add(:container_index_location, "is invalid for container engine Docker. Should be a valid hostname.")
       end
     end
     return errors.empty?

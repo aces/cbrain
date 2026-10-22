@@ -24,7 +24,7 @@
 # BoutiquesDescriptorMaker. It provides special functionality
 # to allow the interface to dynamically show and render a JSON for
 # a boutiques descriptor.
-class BoutiquesDescriptorMakerHandler < BoutiquesPortalTask
+class CbrainTask::BoutiquesDescriptorMakerHandler < BoutiquesPortalTask
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

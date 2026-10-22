@@ -20,7 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'log4r'
 require 'sys/proctable'
 
 # = Worker Class
@@ -71,8 +70,6 @@ class Worker
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  include Log4r
-
   PIDFILES_DIR = Pathname.new(Rails.root.to_s) + "tmp/pids"
   LOGFILES_DIR = Pathname.new(Rails.root.to_s) + "log"
 
@@ -94,11 +91,11 @@ class Worker
   # How frequently the worker's code is to be invoked (in seconds)
   attr_accessor :check_interval
   # Our personal logger; can be supplied externally,
-  # or internally as a Log4r::Logger object (set it to :auto)
+  # or internally as a Logger object (set it to :auto)
   # A nil value disables logging.
   attr_accessor :worker_log
-  # Log level for logger when supplied internally (Log4r constant)
-  # The default (very verbose) value is Log4r::DEBUG
+  # Log level for logger when supplied internally
+  # The default (very verbose) value is :debug
   attr_accessor :log_level
   # A CBRAIN User or Group used for notification with Message
   # if an exception occurs in the worker. The default is nil,
@@ -129,11 +126,11 @@ class Worker
   #
   #  :check_interval => 10,             # Number of seconds between each call to do_regular_work().
   #
-  #  :worker_log     => logger_object,  # An Log4r compatible object; must answer to .debug, .info,
+  #  :worker_log     => logger_object,  # An Logger compatible object; must answer to .debug, .info,
   #                                     # .warn and .fatal; the keyword :auto can be supplied
   #                                     # to let the class configure one automatically.
   #
-  #  :log_level      => Log4r::DEBUG    # If :auto was provided to :worker_log, the log level for it.
+  #  :log_level      => :debug,         # If :auto was provided to :worker_log, the log level for it.
   #
   #  :name           => 'Xyz',          # A name saved in Worker's process; will show up with 'ps'.
   #
@@ -212,20 +209,17 @@ class Worker
       begin
         # Initialize logger
         if self.worker_log && self.worker_log.is_a?(Symbol) && self.worker_log == :auto
-          log = Logger.new self.pretty_name
-          log.outputters = FileOutputter.new('log_file_outputter',
-                             :filename  => "#{LOGFILES_DIR}/#{self.pretty_name}.log",
-                             :formatter => PatternFormatter.new(:pattern => "%d %l %m"),
-                             :trunc     => false)
-          log.level=self.log_level || Log4r::DEBUG
+          log = Logger.new("#{LOGFILES_DIR}/#{self.pretty_name}.log", 100, 1000000)
+          log.formatter = Proc.new do |severity, time, progname, msg|
+            sprintf("%s: %s %s %s\n", self.pretty_name, time.strftime("%Y-%m-%d %H:%M:%S"),severity,msg)
+          end
+          log.level=self.log_level || :debug
           self.worker_log = log
-          self.patch_logger # auto prefix messages in logger with pretty_name()
         elsif self.worker_log.blank?  # Null logger, ignores everything
           self.worker_log = Logger.root
         else # Using custom logger!
           cb_error "Logger object doesn't seem to support methods debug(), info() etc..." unless
             self.worker_log.respond_to?(:debug) && self.worker_log.respond_to?(:info)
-          self.patch_logger # auto prefix messages in logger with pretty_name()
         end
 
         # Initialize variables modified by signals
@@ -477,16 +471,6 @@ class Worker
     self.worker_log.debug "Ready for next check."
   end
 
-  # Patch logger through a transparent interface so that
-  # the worker's pretty_name is always prefixed to all messages.
-  def patch_logger #:nodoc:
-    self.validate_I_am_a_worker
-    prefixer = LoggerPrefixer.new
-    prefixer.true_logger = self.worker_log
-    prefixer.prefix      = self.pretty_name + ": "
-    self.worker_log      = prefixer
-  end
-
   # Dump trace to logger at 'info' level or to trap_log if within a trap
   # handler (+trap_context+ is specified)
   def dump_trace(trap_context = nil) #:nodoc:
@@ -650,7 +634,7 @@ class Worker
   def validate_I_am_a_worker #:nodoc:
     if self.role != :worker
       #./worker.rb:256:in `main_loop'
-      caller[1] =~ /([^\/]\S*\:\d+):in `(\S+)'\s*$/
+      caller[1] =~ /([^\/]\S*\:\d+):in .(\S+)'\s*$/
       mycontext = Regexp.last_match[2] + "() at " + Regexp.last_match[1]
       cb_error "Worker '#{self.pretty_name}' API error: method '#{mycontext}' called from proxy?!?"
     end
@@ -659,7 +643,7 @@ class Worker
   def validate_I_am_a_proxy #:nodoc:
     if self.role != :proxy
       #./worker.rb:256:in `main_loop'
-      caller[1] =~ /([^\/]\S*\:\d+):in `(\S+)'\s*$/
+      caller[1] =~ /([^\/]\S*\:\d+):in .(\S+)'\s*$/
       mycontext = Regexp.last_match[2] + "() at " + Regexp.last_match[1]
       cb_error "Worker '#{self.pretty_name}' API error: method '#{mycontext}' called from worker?!?"
     end
@@ -738,6 +722,4 @@ class LoggerPrefixer #:nodoc:
     true_logger.fatal(prefix + message)
   end
 end
-
-Log4r::Logger.new("dummy") && true # needed so that the constants Log4r::INFO, DEBUG etc appear!
 

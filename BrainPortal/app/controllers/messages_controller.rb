@@ -113,7 +113,7 @@ class MessagesController < ApplicationController
         format.xml  { render :xml => @message, :status => :created, :location => @message }
         format.html { redirect_to :action => :index }
       else
-        format.xml  { render :xml => @message.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml => @message.errors, :status => :unprocessable_content }
         format.html { render :action => :new  }
       end
     end
@@ -130,13 +130,13 @@ class MessagesController < ApplicationController
 
     # It seems we only support changing the read/unread attribute.
     respond_to do |format|
-      if @message.update_attributes(:read =>  params[:read])
+      if @message.update(:read =>  params[:read])
         format.xml  { head :ok }
         format.js   { head :ok }
       else
         flash.now[:error] = t('messages.flash.update_failed')
-        format.xml  { render :xml  => @message.errors, :status => :unprocessable_entity }
-        format.js   { render :json => @message.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @message.errors, :status => :unprocessable_content }
+        format.js   { render :json => @message.errors, :status => :unprocessable_content }
       end
     end
   end

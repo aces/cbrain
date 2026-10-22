@@ -27,7 +27,7 @@ class BackgroundActivitiesController < ApplicationController
   api_available :only => [ :show, :index ]
 
   before_action :login_required
-  before_action :admin_role_required,  :only => [:new, :create, :destroy]
+  before_action :admin_role_required,  :only => [:new, :create]
 
   # Admin only, HTML only
   def new #:nodoc:
@@ -130,7 +130,11 @@ class BackgroundActivitiesController < ApplicationController
     op      = :destroy             if params[:operation] == 'destroy'
     op      = :activate!           if params[:operation] == 'activate'
     op      = :force_single_retry  if params[:operation] == 'retry'
+
     cb_error t('background_activities.errors.unknown_operation') if op.blank?
+    # The only op that a normal user can perform is cancel
+    cb_error t('background_activities.errors.not_allowed')       if !current_user.has_role?(:admin_user) && op != :cancel!
+
     bac_ids = Array(params[:bac_ids])
     bacs = BackgroundActivity.where(:id => bac_ids)
     bacs = bacs.where(:user_id => current_user.id) if ! current_user.has_role? :admin_user

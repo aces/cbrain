@@ -134,7 +134,6 @@ fr:
         generate_api_token: "Générer un nouveau jeton API"
         unlink_identity: "Dissocier cette identité %{name}"
         link_identity: "Lier une identité %{name}"
-        neurohub_interface: "Interface NeuroHub"
       prompts:
         select_site: "(Sélectionner un site)"
       cells:
@@ -206,5 +205,4 @@ fr:
       no_identity: "(Aucune identité %{name} liée à votre compte)"
       orcid_id: "ID ORCID :"
       no_orcid: "(Aucune identité ORCID liée à votre compte)"
-      orcid_note_html: "<strong>Remarque :</strong> Utilisez le %{link} pour gérer le lien d'identité ORCID"
       submit: "Mettre à jour les projets"

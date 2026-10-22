@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-module CBRAINExtensions #:nodoc:
+module CbrainExtensions #:nodoc:
   module ArrayExtensions #:nodoc:
 
     # Convert array to hash based on given block.

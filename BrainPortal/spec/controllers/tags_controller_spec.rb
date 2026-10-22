@@ -66,10 +66,10 @@ RSpec.describe TagsController, :type => :controller do
           allow(tag).to receive(:save).and_return(false)
         end
 
-        it "should return :unprocessable_entity status in xml" do
+        it "should return :unprocessable_content status in xml" do
           params[:format] = "xml"
           post :create, params: params
-          expect(response.status).to eq(Rack::Utils::SYMBOL_TO_STATUS_CODE[:unprocessable_entity])
+          expect(response.status).to eq(Rack::Utils::SYMBOL_TO_STATUS_CODE[:unprocessable_content])
         end
       end
     end
@@ -95,11 +95,11 @@ RSpec.describe TagsController, :type => :controller do
       end
 
       context "when update fails" do
-        it "should return :unprocessable_entity status in xml" do
+        it "should return :unprocessable_content status in xml" do
           params[:tag][:name]   = "#"
           params[:format]       = "xml"
           put :update, params: params
-          expect(response.status).to eq(Rack::Utils::SYMBOL_TO_STATUS_CODE[:unprocessable_entity])
+          expect(response.status).to eq(Rack::Utils::SYMBOL_TO_STATUS_CODE[:unprocessable_content])
         end
       end
     end

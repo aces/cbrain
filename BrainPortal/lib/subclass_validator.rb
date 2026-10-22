@@ -46,7 +46,7 @@ class SubclassValidator < ActiveModel::EachValidator #:nodoc:
     end
 
     unless valid_types.include?(value)
-      object.errors[attribute] << (options[:message] || " '#{value}' is not a valid subtype of #{root_class}")
+      object.errors.add(attribute, (options[:message] || " '#{value}' is not a valid subtype of #{root_class}"))
     end
   end
 

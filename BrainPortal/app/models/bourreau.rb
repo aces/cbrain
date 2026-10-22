@@ -448,7 +448,7 @@ class Bourreau < RemoteResource
        { :name           => "TaskWorker #{myself.name}",
          :check_interval => chk_time,
          :worker_log     => logger, # nil, a logger object, or :auto
-         :log_level      => verbose > 1 ? Log4r::DEBUG : Log4r::INFO # for :auto
+         :log_level      => verbose > 1 ? :debug : :info # for :auto
        }
     )
     worker_pool.wake_up_workers
@@ -504,33 +504,19 @@ class Bourreau < RemoteResource
 
     # Option 2: log to stdout or stderr
     if log_to =~ /stdout|stderr/i
-      blogger = Log4r::Logger['TaskWorker']
-      unless blogger
-        blogger = Log4r::Logger.new('TaskWorker')
-        if log_to =~ /stdout/i
-          stdout_op = Log4r::Outputter.stdout
-          stdout_op.formatter = Log4r::PatternFormatter.new(:pattern => "%d %l %m")
-          blogger.add(stdout_op)
+        blogger = Logger.new( log_to =~ /stdout/i ? STDOUT : STDERR )
+        blogger.formatter = Proc.new do |severity, time, progname, msg|
+          sprintf("%s %s %s\n",time.strftime("%Y-%m-%d %H:%M:%S"),severity,msg)
         end
-        if log_to =~ /stderr/i
-          stderr_op = Log4r::Outputter.stderr
-          stderr_op.formatter = Log4r::PatternFormatter.new(:pattern => "%d %l %m")
-          blogger.add(stderr_op)
-        end
-        blogger.level = verbose_level > 1 ? Log4r::DEBUG : Log4r::INFO
-      end
+        blogger.level = verbose_level > 1 ? :debug : :info
 
     # Option 3: combined log a file
     elsif log_to == 'combined'
-      blogger = Log4r::Logger['TaskWorker']
-      unless blogger
-        blogger = Log4r::Logger.new('TaskWorker')
-        blogger.add(Log4r::RollingFileOutputter.new('task_workers_outputter',
-                      :filename  => "#{Rails.root}/log/TaskWorkers.combined..log",
-                      :formatter => Log4r::PatternFormatter.new(:pattern => "%d %l %m"),
-                      :maxsize   => 1000000, :trunc => 600000))
-        blogger.level = verbose_level > 1 ? Log4r::DEBUG : Log4r::INFO
-      end
+        blogger = Logger.new("#{Rails.root}/log/TaskWorkers.combined.log", 100, 1000000)
+        blogger.formatter = Proc.new do |severity, time, progname, msg|
+          sprintf("%s %s %s\n",time.strftime("%Y-%m-%d %H:%M:%S"),severity,msg)
+        end
+        blogger.level = verbose_level > 1 ? :debug : :info
 
     # Option 4: use RAIL's own logger
     elsif log_to == 'bourreau'

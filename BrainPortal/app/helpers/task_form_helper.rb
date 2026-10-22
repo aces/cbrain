@@ -33,7 +33,7 @@ module TaskFormHelper
   #
   # will return
   #
-  #   "tasks/cbrain_plugins/cbrain_task/{taskname}/views/my_stuff.html.erb"
+  #   "tasks/cbrain_plugins/installed-plugins/task_support_links/{taskname}/views/my_stuff.html.erb"
   #
   # which will work through the symlink at the 'cbrain_plugins' level.
   # Note that the real file must start with a '_', like all partials.
@@ -57,9 +57,9 @@ module TaskFormHelper
     parents << 'BoutiquesTask' if @task.class < BoutiquesPortalTask
     parents.each do |parent|
       dirname = parent.to_s.demodulize.underscore
-      file    = "tasks/cbrain_plugins/installed-plugins/cbrain_task/#{dirname}/views/#{basename}.html.erb"
-      next unless File.exists?(Rails.root + "app/views" + file)
-      return "tasks/cbrain_plugins/installed-plugins/cbrain_task/#{dirname}/views/#{plain}.html.erb"
+      file    = "tasks/cbrain_plugins/installed-plugins/task_support_links/#{dirname}/views/#{basename}.html.erb"
+      next unless File.exist?(Rails.root + "app/views" + file)
+      return "tasks/cbrain_plugins/installed-plugins/task_support_links/#{dirname}/views/#{plain}"
     end
     cb_error "Cannot find task partial '#{partial_name}' for task #{@task.class}"
   end

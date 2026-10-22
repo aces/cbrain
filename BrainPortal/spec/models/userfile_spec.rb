@@ -489,16 +489,10 @@ describe Userfile do
 
 
 
- describe "#self.pretty_type" do
-    let(:mock_file) {mock_model(LogFile, :name => "log_file").as_null_object}
-
-
-    it "should call name.gsub" do
-      mock_file
-      name = double("name")
-      expect(LogFile).to receive(:name).and_return(name)
-      expect(name).to receive(:gsub)
-      LogFile.pretty_type
+  describe "#self.pretty_type" do
+    it "should generate a name out of the class" do
+      expect(LogFile.pretty_type).to eq('Log File')
+      expect(TextFile.pretty_type).to eq('Text File')
     end
   end
 

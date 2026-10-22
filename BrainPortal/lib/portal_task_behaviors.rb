@@ -1,0 +1,711 @@
+
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+# This subclass of CbrainTask provides the methods and developer API
+# for deploying CbrainTasks on the BrainPortal side.
+module PortalTaskBehaviors
+
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+  # Adds class methods and class callbacks
+  def self.included(includer) #:nodoc:
+    includer.class_eval do
+      extend PorBehavClassMethods
+      validate :task_is_proper_subclass
+    end
+  end
+
+
+
+  ##################################################################
+  # Core Object Methods
+  ##################################################################
+
+  # Automatically register the task's version when new() is invoked.
+  def initialize(arguments = {}) #:nodoc:
+    super(arguments)
+    baserev = Revision_info
+    subrev  = self.revision_info
+    self.addlog("#{baserev.basename} rev. #{baserev.short_commit}", :caller_level => 2)
+    self.addlog("#{subrev.basename} rev. #{subrev.short_commit}",   :caller_level => 2)
+  end
+
+  # Backwards compatibility auto adaptation:
+  # if a task's code is extended to include new parameters,
+  # then this will re-insert their default values
+  # into the params[] hash.
+  #
+  # This used to be an 'after_find' callback, but it was
+  # much too expensive when a large number of tasks were
+  # reloaded.
+  def add_new_params_defaults #:nodoc:
+    params = self.params              || {}
+    mydef  = self.default_launch_args || {}
+    mydef.each do |k,v|
+      next if params.has_key?(k)
+      if v.is_a?(String) || v.is_a?(Array) || v.is_a?(Hash)
+         params[k] = v.clone
+      else
+         params[k] = v
+      end
+    end
+    self.params = params
+  end
+
+
+
+  #######################################################
+  # Task Launch API
+  #######################################################
+
+  # This method should return a simple hash table
+  # with the default launch arguments for your task;
+  # the content of your CbrainTask's :params
+  # attribute will be initialized to be a perfect
+  # copy of this hash table.
+  def default_launch_args
+    self.class.default_launch_args
+  end
+
+  # The class version of default_launch_args is
+  # deprecated; in subclasses, please
+  # define the instance method version.
+  module PorBehavClassMethods
+  def default_launch_args
+    {}
+  end
+  end
+
+  # This method should return a hash mapping the raw
+  # IDs of your task's parameters (as used with the
+  # CbrainTaskFormBuilder helper methods) to prettier
+  # names that will be used for error messages. For
+  # instance, if your form defines a field like this:
+  #
+  #   <%= params_text_field :rand_seed %>
+  #
+  # and you validate it in your model with
+  #
+  #   params_errors.add(:rand_seed, "must be odd")
+  #
+  # then you can make sure the error message is
+  # prettier by making this method return
+  #
+  #    :rand_seed => 'The random seed number'
+  #
+  # as one of the elements of the hash.
+  # Keys of the hash can be arbitrary paramspaths:
+  #
+  #    'employee[name]' => 'The name of the employee'
+  #
+  # This hash is used by the PortalTask's own class
+  # method human_attribute_name().
+  module PorBehavClassMethods
+  def pretty_params_names
+    {}
+  end
+  end
+
+  # This method will be called before the view for the
+  # task object is rendered. It doesn't have to do
+  # anything but it can initialize some parameters based
+  # on the list of interface_userfile_ids for instance.
+  #
+  # If the method returns a non-empty string, this
+  # will be shown as a message.
+  def before_form
+    ""
+  end
+
+  # This method will be called if the user clicks
+  # on a button matching refresh_form_regex (/refresh/ by default)
+  # when creating a new task or editing an existing one. It
+  # doesn't have to do anything, but usually it's
+  # convenient when we want to dynamicallty adjust
+  # some of the form elements.
+  def refresh_form
+    ""
+  end
+
+  # This method is called to check if a task form submission
+  # corresponds to a refresh action. If the button the user clicked
+  # matches this, refresh_form is called.
+  # Defaults to /refresh/
+  def refresh_form_regex
+    /refresh/i
+  end
+
+  # This method is called after the user has clicked
+  # to submit the form for the task, but before it
+  # is launched. Just like before_form(), it doesn't have
+  # to do anything but it can initialize some parameters based
+  # on the list of interface_userfile_ids for instance.
+  #
+  # If the method returns a non-empty string, this
+  # will be shown as a message.
+  def after_form
+    ""
+  end
+
+  # This method returns the final list of fully completed
+  # CbrainTask objects that will be launched; the returned
+  # value must be an array of CbrainTask that may or may not
+  # include the current object. The default value is simply
+  # an array containing +self+.
+  def final_task_list
+    [ self ]
+  end
+
+  # This method can be called to do any processing you
+  # feel like doing after the final_task_list has been
+  # saved; the task list with the saved objects will be
+  # provided in argument.
+  #
+  # If the method returns a non-empty string, this
+  # will be shown as a message.
+  def after_final_task_list_saved(task_list)
+    ""
+  end
+
+  # This method should identify which attributes
+  # in params are not to be modified during
+  # a task edit session. The returned value of the method
+  # should simply be a hash table where the keys are
+  # the untouchable attributes and the values are true.
+  # By default the content of the hash is
+  #
+  #    { :interface_userfile_ids => true }
+  #
+  # The values in this default hash WILL be
+  # added to whatever other values are returned
+  # by overridden versions of this method (in other
+  # words, even if you don't explicitly include
+  # :interface_userfile_ids in the hash, it will
+  # be in there).
+  def untouchable_params_attributes
+    { :interface_userfile_ids => true }
+  end
+
+  # Similarly to untouchable_params_attributes, this method
+  # should return a hash where the keys identify
+  # params attributes that should NOT be reloaded when
+  # the user loads a preset. The default is an empty hash.
+  def unpresetable_params_attributes
+    {}
+  end
+
+  ######################################################
+  # Wrappers around official API
+  # These are not to be called by subtasks nor
+  # overridden; they're meant to intercept errors and
+  # and make sure that task programmers properly
+  # return meaningful values for their implementation
+  # of API methods.
+  ######################################################
+
+  def wrapper_default_launch_args #:nodoc:
+    begin
+      ret = self.default_launch_args
+      raise ScriptError.new("Coding error: method default_launch_args() for #{self.class} did not return a hash?!?") unless
+        ret.is_a?(Hash)
+      return ret
+    rescue CbrainError, CbrainNotice => cber
+      raise cber
+    rescue => other
+      cber = ScriptError.new("Coding error: method default_launch_args() for #{self.class} raised an exception: #{other.class}: #{other.message}")
+      cber.set_backtrace(other.backtrace.dup)
+      raise cber
+    end
+  end
+
+  def wrapper_before_form #:nodoc:
+    begin
+      was_new = self.new_record?
+      ret = self.before_form
+      raise ScriptError.new("Coding error: method before_form() for #{self.class} did not return a string?!?") unless
+        ret.is_a?(String)
+      raise ScriptError.new("Coding error: method before_form() for #{self.class} SAVED its object!") if was_new && ! self.new_record?
+      return ret
+    rescue CbrainError, CbrainNotice => cber
+      raise cber
+    rescue => other
+      cber = ScriptError.new("Coding error: method before_form() for #{self.class} raised an exception: #{other.class}: #{other.message}")
+      cber.set_backtrace(other.backtrace.dup)
+      raise cber
+    end
+  end
+
+  def wrapper_refresh_form #:nodoc:
+    begin
+      was_new = self.new_record?
+      ret = self.refresh_form
+      raise ScriptError.new("Coding error: method refresh_form() for #{self.class} did not return a string?!?") unless
+        ret.is_a?(String)
+      raise ScriptError.new("Coding error: method refresh_form() for #{self.class} SAVED its object!") if was_new && ! self.new_record?
+      return ret
+    rescue CbrainError, CbrainNotice => cber
+      self.errors.add(:base, "#{cber.class.to_s.sub(/Cbrain/,"")} in form: #{cber.message}\n")
+      return ret || ""
+    rescue => other
+      cber = ScriptError.new("Coding error: method refresh_form() for #{self.class} raised an exception: #{other.class}: #{other.message}")
+      cber.set_backtrace(other.backtrace.dup)
+      raise cber
+    end
+  end
+
+  def wrapper_after_form #:nodoc:
+    begin
+      was_new = self.new_record?
+      ret = self.after_form
+      raise ScriptError.new("Coding error: method after_form() for #{self.class} did not return a string?!?") unless
+        ret.is_a?(String)
+      raise ScriptError.new("Coding error: method after_form() for #{self.class} SAVED its object!") if
+        (was_new && ! self.new_record?) && ! self.class.properties[:i_save_my_task_in_after_form]
+      return ret
+    rescue CbrainError, CbrainNotice => cber
+      self.errors.add(:base, "#{cber.class.to_s.sub(/Cbrain/,"")} in form: #{cber.message}\n")
+      return ret || ""
+    rescue => other
+      cber = ScriptError.new("Coding error: method after_form() for #{self.class} raised an exception: #{other.class}: #{other.message}")
+      cber.set_backtrace(other.backtrace.dup)
+      raise cber
+    end
+  end
+
+  def wrapper_final_task_list #:nodoc:
+    begin
+      list_plus_message = self.final_task_list  # [t,t,t]     OR     [ [t,t,t], message ]
+      if list_plus_message.size == 2 && list_plus_message[0].is_a?(Array) # when an optional message is returned
+        ret,message = list_plus_message
+      else # standard case
+        ret = list_plus_message
+        message = nil
+      end
+      raise ScriptError.new("Coding error: method final_task_list() for #{self.class} did not return an array?!?") unless
+        ret.is_a?(Array)
+      raise ScriptError.new("Coding error: method final_task_list() for #{self.class} returned an array but it doesn't contain CbrainTasks?!?") if
+        ret.detect { |t| ! t.is_a?(CbrainTask) }
+      if ! self.class.properties[:i_save_my_tasks_in_final_task_list]
+         raise ScriptError.new("Coding error: method final_task_list() for #{self.class} SAVED one or more of its tasks?!?") if
+          ret.detect { |t| ! t.new_record? }
+      end
+      return ret,message
+    rescue CbrainError, CbrainNotice => cber
+      raise cber
+    rescue => other
+      cber = ScriptError.new("Coding error: method final_task_list() for #{self.class} raised an exception: #{other.class}: #{other.message}")
+      cber.set_backtrace(other.backtrace.dup)
+      raise cber
+    end
+  end
+
+  def wrapper_after_final_task_list_saved(tasklist) #:nodoc:
+    begin
+      ret = self.after_final_task_list_saved(tasklist)
+      raise ScriptError.new("Coding error: method after_final_task_list_saved() for #{self.class} did not return a string?!?") unless
+        ret.is_a?(String)
+      return ret
+    rescue CbrainError, CbrainNotice => cber
+      raise cber
+    rescue => other
+      cber = ScriptError.new("Coding error: method after_final_task_list_saved() for #{self.class} raised an exception: #{other.class}: #{other.message}")
+      cber.set_backtrace(other.backtrace.dup)
+      raise cber
+    end
+  end
+
+  # Used internally to add ALWAYS PRESENT attributes.
+  def wrapper_untouchable_params_attributes #:nodoc:
+    att = self.untouchable_params_attributes || {}
+    ext = att.merge(
+      :interface_userfile_ids => true
+    )
+    return ext
+  end
+
+  # Used internally to specify params attributes
+  # that should not be modified when reloading a preset.
+  def wrapper_unpresetable_params_attributes #:nodoc:
+    att = self.unpresetable_params_attributes || {}
+    return att
+  end
+
+
+
+  #######################################################
+  # Methods For CbrainTask Form Builder
+  #######################################################
+
+  def params_path_value(paramspath) #:nodoc:
+    params     = self.params || {}
+    stringpath = paramspath.to_s
+    foundvalue = params
+    key        = ""
+    while stringpath != ""
+      break unless stringpath =~ /\A(\[?([\w\.\-]+)\]?)/
+      brackets = Regexp.last_match[1]   # "[abcdef]"
+      key      = Regexp.last_match[2]   # "abcdef"
+      stringpath = stringpath[brackets.size .. -1]
+      if foundvalue.is_a?(Hash)
+        foundvalue = foundvalue[key.to_sym] || foundvalue[key]
+      elsif foundvalue.is_a?(Array) && key =~ /\A\d+\z/
+        foundvalue = foundvalue[key.to_i]
+      else
+        cb_error "Can't access params structure for '#{paramspath}' (stopped at '#{key}' with current structure a '#{foundvalue.class}'."
+      end
+      break if foundvalue.nil?
+    end
+    cb_error "Can't find intermediate params structure for '#{paramspath}' (stopped at '#{key}' for '#{foundvalue.inspect}')" if stringpath != "" && stringpath != "[]"
+    foundvalue
+  end
+
+  # Wrapper around the ActiveModel::Errors class.
+  # This class answers to the same methods as the errors
+  # object but its 'attributes' are actually paramspaths.
+  #
+  # See the Rails classes ActiveModel::Validations and
+  # ActiveModel::Errors for more information.
+  #
+  # One major difference between the standard Errors model
+  # and this implementation is that the params attribute
+  # names are stored as keys 'encoded' with a prefix.
+  # E.g. the parameter :xyz is stored with key
+  # :cbrain_task_BRA_params_KET__BRA_xyz_KET_ and "hello[goodbye]" with
+  # key :cbrain_task_BRA_params_KET__BRA_hello_KET__BRA_goodbye_KET_. This
+  # however is transparent to the user of the class.
+  class ParamsErrors
+
+    include Enumerable
+
+    attr_writer :real_errors, :base
+
+    def [](paramspath) #:nodoc:
+      @real_errors[path2key(paramspath)]
+    end
+
+    def []=(paramspath,*args) #:nodoc:
+      @real_errors.add(path2key(paramspath),*args)
+    end
+
+    def add(paramspath,*args) #:nodoc:
+      @real_errors.add(path2key(paramspath),*args)
+    end
+
+    def add_on_blank(paramspaths,*args) #:nodoc:
+      Array(paramspaths).map do |paramspath|
+        value = @base.params_path_value(paramspath.to_s)
+        add(paramspath, "is blank") if value.blank?
+      end.compact
+    end
+
+    def add_on_empty(paramspaths,*args) #:nodoc:
+      Array(paramspaths).map do |paramspath|
+        value = @base.params_path_value(paramspath.to_s)
+        is_empty = value.respond_to?(:empty?) ? value.empty? : false
+        add(paramspath, "is empty") if value.nil? || is_empty
+      end.compact
+    end
+
+    def as_json(*args) #:nodoc:
+      to_hash.as_json(*args)
+    end
+
+    def blank? #:nodoc:
+      count.zero?
+    end
+
+    def clear #:nodoc:
+      keys.each { |k| delete(k) }
+    end
+
+    def count #:nodoc:
+      inject(0) { |c, _| c + 1 }
+    end
+
+    def delete(paramspath) #:nodoc:
+      @real_errors.delete(path2key(paramspath))
+    end
+
+    def each(&block) #:nodoc:
+      @real_errors.each do |error_obj|
+        attr = error_obj.attribute
+        msg  = error_obj.message
+        next unless attr.to_s =~ /\Acbrain_task_BRA_params_KET_/ # see path2key below
+        yield key2path(attr), msg
+      end
+    end
+
+    def empty? #:nodoc:
+      count == 0
+    end
+
+    def full_message(paramspath, message) #:nodoc:
+      human = @base.class.human_attribute_name(paramspath)
+      "#{human} #{message}"
+    end
+
+    def full_messages #:nodoc:
+      map { |paramspath, msg| full_message(paramspath, msg) }
+    end
+
+    def full_messages_for(paramspath) #:nodoc:
+      self[paramspath].map { |msg| full_message(paramspath, msg) }
+    end
+
+    def get(paramspath) #:nodoc:
+      # for some reason the get() and set() method REALLY want a symbol
+      @real_errors[path2key(paramspath)]
+    end
+
+    def include?(paramspath) #:nodoc:
+      @real_errors.include?(path2key(paramspath))
+    end
+
+    def keys #:nodoc:
+      map { |key, _| key }.uniq
+    end
+
+    def to_hash(full_messages = false) #:nodoc:
+      inject({}) do |hash, pair|
+        paramspath, msg = *pair
+        hash[paramspath] ||= []
+        hash[paramspath] << (full_messages ? full_message(paramspath, msg) : msg)
+        hash
+      end
+    end
+
+    def to_xml(options={}) #:nodoc:
+      to_a.to_xml options.reverse_merge(:root => "errors", :skip_types => true)
+    end
+
+    def values #:nodoc:
+      keys.map { |paramspath| self[paramspath] }
+    end
+
+    alias :key?      :include?
+    alias :has_key?  :include?
+    alias :added?    :include?
+    alias :to_a      :full_messages
+    alias :size      :count
+
+    private
+
+    # Will transform an arbitrary paramspath, such as "abc[def]"
+    # into a sort of key which likely will not interfere with
+    # the real attributes of the model, e.g.
+    #
+    #   :cbrain_task_BRA_params_KET__BRA_abc_KET__BRA_def_KET_
+    #
+    # Right now this method just calls the String method to_la_id().
+    # The key returned is a symbol.
+    def path2key(paramspath) #:nodoc:
+      paramspath.to_la_id.to_sym
+    end
+
+    # Does the reverse of path2key(); the result is a string.
+    #
+    # From :cbrain_task_BRA_params_KET__BRA_abc_KET__BRA_def_KET_
+    # will return "abc[def]".
+    def key2path(key) #:nodoc:
+      key.to_s.from_la_id
+    end
+
+  end
+
+  # Returns the equivalent of the 'errors' object for the
+  # task, but where the attributes are in fact paramspath
+  # values for the task's params[] hash. This works much like
+  # the standard ActiveModel::Errors class. This is used for
+  # validating the task's params. For instance:
+  #
+  #   params = task.params || {}
+  #   name   = params[:name]
+  #   age    = params[:info][age]
+  #   task.params_errors.add(:name, "is blank!") if name.blank?
+  #   task.params_errors.add('info[age]', "is not set!") if age.blank?
+  #
+  # This would result in the two error messages
+  #
+  #   name is blank!
+  #   info age is not set!
+  #
+  # In conjunction with pretty_params_names(), the error messages
+  # can be made more elegant by giving better names to the
+  # parameters.
+  def params_errors
+    return @params_errors_cache if @params_errors_cache
+    @params_errors_cache = ParamsErrors.new
+    @params_errors_cache.real_errors = self.errors
+    @params_errors_cache.base        = self
+    @params_errors_cache
+  end
+
+  # Needed in case of a dup()
+  def params_errors_clear #:nodoc:
+    @params_errors_cache = nil
+  end
+
+  def dup #:nodoc:
+    obj = super
+    obj.params_errors_clear
+    obj
+  end
+
+  # This method returns a 'pretty' name for a params attributes.
+  # This implementation will try to look up a hash table returned
+  # by the class method pretty_params_names() first, so an
+  # easy way to provide beautiful names for your parameters
+  # is to make pretty_params_names() return such a hash.
+  module PorBehavClassMethods
+  def human_attribute_name(attname,options={})
+    sattname   = attname.to_s.from_la_id # string version of attname, which is usually a symbol now
+    prettyhash = self.pretty_params_names || {}
+    # We try to guess many ways that the task programmer could have
+    # stored for the keys of his 'pretty' names in the hash.
+    extended = prettyhash.dup.with_indifferent_access
+    prettyhash.each do |att,name| # extend it with to_la_id automatically...
+      next unless att.is_a?(String) && att.include?('[')
+      id_att = att.to_la_id
+      next if extended.has_key?(id_att)
+      extended[id_att] = name
+    end
+    return extended[sattname] if extended.has_key?(sattname)
+    super(sattname,options.merge({ :default => sattname.humanize }))
+  end
+  end
+
+  # Restores from old_params any attributes listed in the
+  # untouchable_params_attributes hash, potentially including those
+  # defined in unpresetable_params
+  def restore_untouchable_attributes(old_params, options = {}) #:nodoc:
+    cur_params    = self.params || {}
+    untouchables  = self.wrapper_untouchable_params_attributes
+    unpresetables = options[:include_unpresetable] ? self.wrapper_unpresetable_params_attributes : {}
+    att_list = untouchables.keys + unpresetables.keys
+    att_list.each do |untouch|
+      cur_params[untouch] = old_params[untouch] if old_params.has_key?(untouch)
+    end
+    self.params = cur_params
+    true
+  end
+
+
+
+  ##################################################################
+  # Bourreau-side Connection Methods
+  ##################################################################
+
+  # Contacts the Bourreau side and request a copy of the tasks's
+  # STDOUT, STDERR and job script.
+  def capture_job_out_err(run_number=nil,stdout_lim=2000,stderr_lim=2000)
+    cb_error "Cannot get task's stdout and stderr: this task is archived."           if self.workdir_archived?
+    cb_error "Cannot get task's stdout and stderr: this task has no work directory." if self.cluster_workdir.blank?
+    bourreau  = self.bourreau
+    cb_error "Cannot get task's stdout and stderr: this execution server is not online." if bourreau.nil? || ! bourreau.online?
+    control = bourreau.send_command_get_task_outputs(self.id,run_number,stdout_lim,stderr_lim)
+    self.cluster_stdout = control.cluster_stdout
+    self.cluster_stderr = control.cluster_stderr
+    self.script_text    = control.script_text
+    self.runtime_info   = control.runtime_info
+    true
+  end
+
+
+
+  ##################################################################
+  # Methods To Fetch View Files
+  ##################################################################
+
+  # Returns the directory where some public assets (files) for the current task
+  # can be found, as served from the webserver. For a task such as UnixWc,
+  # it would map to this relative path:
+  #
+  #   "/cbrain_plugins/cbrain_tasks/unix_wc"
+  #
+  # This relative path, as seen from the "public" directory of the Rails app,
+  # is a symbolic link to the "views/public" subdirectory where the task plugin
+  # was installed.
+  #
+  # When given an argument 'public_file', the path returned will be extended
+  # to point to a sub file of that directory. E.g. with "abc/def.csv" :
+  #
+  #   "/cbrain_plugins/cbrain_tasks/unix_wc/abc/def.csv"
+  #
+  # Returns nil if no file exists that match the argument 'public_file'.
+  # Otherwise, returns a Pathname object.
+  module PorBehavClassMethods
+  def public_path(public_file=nil)
+    base = Pathname.new("/cbrain_plugins/cbrain_tasks") + self.to_s.demodulize.underscore
+    return base if public_file.to_s.blank?
+    public_file = Pathname.new(public_file.to_s).cleanpath
+    raise "Public file path outside of task plugin." if public_file.absolute? || public_file.to_s =~ /\A\.\./
+    base = base + public_file
+    return nil unless File.exist?((Rails.root + "public").to_s + base.to_s)
+    base
+  end
+  end
+
+  # See the class method of the same name.
+  def public_path(public_file=nil)
+    self.class.public_path(public_file)
+  end
+
+
+
+  ##################################################################
+  # Zenodo Hooks
+  ##################################################################
+
+  public
+
+  # NOTE: implementers of tasks must also provide zenodo_outputfile_ids()
+  # for the Zenodo publishing interface to work!
+
+  # We only provide a minimal amount of base information;
+  # The user can fill in the details later.
+  def base_zenodo_deposit #:nodoc:
+    ZenodoClient::Deposit.new(
+      :metadata => ZenodoClient::DepositMetadata.new(
+        :title       => "Outputs of #{self.pretty_name}-#{self.id}",
+        :description => ("Files and meta data for CBRAIN task #{self.pretty_name}@#{self.bname_tid}" +
+                         "\n\n#{self.description}").strip,
+      )
+    )
+  end
+
+
+
+  ##################################################################
+  # Lifecycle hooks
+  ##################################################################
+
+  private
+
+  # Returns true only if
+  def task_is_proper_subclass #:nodoc:
+    return true if PortalTask.descendants.include? self.class
+    self.errors.add(:base, "is not a proper subclass of PortalTask.")
+    false
+  end
+
+end
+

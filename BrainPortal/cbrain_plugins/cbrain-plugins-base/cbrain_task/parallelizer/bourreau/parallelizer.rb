@@ -164,7 +164,7 @@ class CbrainTask::Parallelizer < ClusterTask #:nodoc:
       touchfile = done_touchfile(otask)
 
       if status == 'Configured'
-        if File.exists?(touchfile)
+        if File.exist?(touchfile)
           self.addlog("Subtask #{otask.tname_tid} seems to have finished, marking it as Data Ready.")
           disable_subtask(otask) # we no longer control it
           otask.status_transition!('Configured','Data Ready')

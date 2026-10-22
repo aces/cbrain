@@ -32,15 +32,21 @@ describe TaskCustomFilter do
   let(:bourreau2) { create(:bourreau) }
 
   let(:cbrain_task1) {
-    create(:cbrain_task, :description => "desc1", :user_id => user1.id, :bourreau_id => bourreau1.id,
-                    :created_at => "2011-04-04", :status => "New",
-                    :updated_at => "2011-05-04")
+    t=create(:cbrain_task, :description => "desc1", :user_id => user1.id, :bourreau_id => bourreau1.id,
+                    :created_at => "2011-01-04", :status => "New",
+                    :updated_at => "2011-02-04")
+    t.update(:created_at => DateTime.parse("2011-01-04 12:00:00"), # stupidly, create() no longer sets those
+             :updated_at => DateTime.parse("2011-02-04 12:00:00"))
+    t
   }
 
   let(:cbrain_task2) {
-    create(:cbrain_task, :description => "desc2", :user_id => user2.id, :bourreau_id => bourreau2.id,
-                    :created_at => "2011-04-29", :status => "Completed",
-                    :updated_at => "2011-05-29")
+    t=create(:cbrain_task, :description => "desc2", :user_id => user2.id, :bourreau_id => bourreau2.id,
+                    :created_at => "2012-01-04", :status => "Completed",
+                    :updated_at => "2012-02-04")
+    t.update(:created_at => DateTime.parse("2012-01-04 12:00:00"),
+             :updated_at => DateTime.parse("2012-02-04 12:00:00"))
+    t
   }
 
   describe "#filter_scope" do
@@ -56,47 +62,63 @@ describe TaskCustomFilter do
     end
 
     it "should filter tasks by user_ids" do
-      filter.data = { :user_ids => [ cbrain_task1.user_id.to_s ] }
-      expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1])
+      t1=cbrain_task1
+      t2=cbrain_task2
+      filter.data = { :user_ids => [ t1.user_id.to_s ] }
+      expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([t1])
     end
 
     it "should filter tasks by bourreau_ids" do
-      filter.data = { :bourreau_id => [ cbrain_task1.bourreau_id.to_s ] }
-      expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1])
+      t1=cbrain_task1
+      t2=cbrain_task2
+      filter.data = { :bourreau_ids => [ t1.bourreau_id.to_s ] }
+      expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([t1])
     end
 
     it "should filter tasks by status" do
-      filter.data = { :status => [ cbrain_task1.status ] }
-      expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1])
+      t1=cbrain_task1
+      t2=cbrain_task2
+      filter.data = { :status => [ t1.status ] }
+      expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([t1])
     end
 
     context "with date" do
 
       it "should only keep task created between 'data[:absolute_from] and 'data[:absolute_to]'" do
-        filter.data = { :date_attribute => "created_at", :absolute_or_relative_from=>"absolute", :absolute_or_relative_to=>"absolute", :absolute_from => "04/04/2011", :absolute_to => "04/04/2011" }
-        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1])
+        t1=cbrain_task1
+        t2=cbrain_task2
+        filter.data = { :date_attribute => "created_at", :absolute_or_relative_from=>"absolute", :absolute_or_relative_to=>"absolute", :absolute_from => "2011-01-03", :absolute_to => "2011-01-05" }
+        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([t1])
       end
 
-      it "should only keep task updates between 'data[:absolute_from] and 'data[:absolute_to]'" do
-        filter.data = { :date_attribute => "updated_at", :absolute_or_relative_from=>"absolute", :absolute_or_relative_to=>"absolute", :absolute_from => "04/05/2011", :absolute_to => "04/05/2011" }
-        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1])
+      it "should only keep task updated between 'data[:absolute_from] and 'data[:absolute_to]'" do
+        t1=cbrain_task1
+        t2=cbrain_task2
+        filter.data = { :date_attribute => "updated_at", :absolute_or_relative_from=>"absolute", :absolute_or_relative_to=>"absolute", :absolute_from => "2011-02-03", :absolute_to => "2011-02-05" }
+        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([t1])
       end
 
-      it "should only keep task created between 'data[:absolute_from] and 'data[:relative_date_to]'" do
-        filter.data = { :date_attribute => "created_at", :absolute_or_relative_from=>"absolute", :absolute_or_relative_to=>"relative", :absolute_from => "29/04/2011", :relative_to => "0" }
-        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task2])
+      it "should only keep task created between 'data[:absolute_from] and 'data[:relative_to]'" do
+        t1=cbrain_task1
+        t2=cbrain_task2
+        filter.data = { :date_attribute => "created_at", :absolute_or_relative_from=>"absolute", :absolute_or_relative_to=>"relative", :absolute_from => "2012-01-03", :relative_to => "0" }
+        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([t2])
       end
 
-      it "should only keep task updated between 'data[:absolute_from] and 'data[:relative_date_to]'" do
-        filter.data = { :date_attribute => "updated_at", :absolute_or_relative_from=>"absolute", :absolute_or_relative_to=>"relative", :absolute_from => "29/05/2011", :relative_to => "0" }
-        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task2])
+      it "should only keep task updated between 'data[:absolute_from] and 'data[:relative_to]'" do
+        t1=cbrain_task1
+        t2=cbrain_task2
+        filter.data = { :date_attribute => "updated_at", :absolute_or_relative_from=>"absolute", :absolute_or_relative_to=>"relative", :absolute_from => "2012-02-03", :relative_to => "0" }
+        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([t2])
       end
 
       it "should only keep task updated last week" do
-        filter.data = { :date_attribute => "updated_at", :absolute_or_relative_from=>"relative", :absolute_or_relative_to=>"relative", :relative_from => "#{1.week}", :relative_to => "0" }
-        cbrain_task1.updated_at = Date.today - 1.day
-        cbrain_task1.save!
-        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1])
+        t1=cbrain_task1
+        t2=cbrain_task2
+        filter.data = { :date_attribute => "updated_at", :absolute_or_relative_from=>"relative", :absolute_or_relative_to=>"relative", :relative_from => "#{1.week.to_i}", :relative_to => "0" }
+        t1.updated_at = Date.today - 1.day
+        t1.save!
+        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([t1])
       end
 
     end

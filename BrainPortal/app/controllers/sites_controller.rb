@@ -72,7 +72,7 @@ class SitesController < ApplicationController
         format.xml  { render :xml => @site, :status => :created, :location => @site }
       else
         format.html { render :action  => :new }
-        format.xml  { render :xml => @site.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml => @site.errors, :status => :unprocessable_content }
       end
     end
   end
@@ -121,7 +121,7 @@ class SitesController < ApplicationController
         @site.restore_managers
         @site.reload
         format.html { render :action => "show" }
-        format.xml  { render :xml => @site.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml => @site.errors, :status => :unprocessable_content }
       end
     end
   end

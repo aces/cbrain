@@ -51,8 +51,8 @@ class SessionDataController < ApplicationController
 
   rescue => ex
     respond_to do |format|
-      format.xml  { render :xml  => { :error => ex.message }, :status => :unprocessable_entity }
-      format.json { render :json => { :error => ex.message }, :status => :unprocessable_entity }
+      format.xml  { render :xml  => { :error => ex.message }, :status => :unprocessable_content }
+      format.json { render :json => { :error => ex.message }, :status => :unprocessable_content }
     end
   end
 

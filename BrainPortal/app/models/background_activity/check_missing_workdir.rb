@@ -50,7 +50,7 @@ class BackgroundActivity::CheckMissingWorkdir < BackgroundActivity
   def process(task_id)
     task = CbrainTask.where(:bourreau_id => self.remote_resource_id).find(task_id)
     full = task.full_cluster_workdir
-    return [ true, nil        ] if Dir.exists?(full.to_s)
+    return [ true, nil        ] if Dir.exist?(full.to_s)
     task.cluster_workdir      = nil
     task.cluster_workdir_size = nil
     task.workdir_archived     = false if task.workdir_archive_userfile_id.blank?

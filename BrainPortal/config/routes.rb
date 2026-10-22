@@ -283,32 +283,6 @@ Rails.application.routes.draw do
     end
 
     # NeuroHub Resources
-    resources :nh_invitations, :only => [ :new, :create, :index, :update, :destroy]
-    resources :nh_signups
-    resources :nh_users,       :only => [ :myaccount, :edit, :update] do
-      collection do
-        get  'change_password'
-        post 'new_token'
-      end
-    end
-    resources :nh_storages do # yeah pluralized, looks weird because it's uncountable
-      member do
-        post :check
-        post :autoregister
-      end
-    end
-    resources :nh_projects do
-      member do
-        get  :files
-        get  :new_license
-        post :add_license
-        get  :show_license
-        post :sign_license
-        get  :new_file
-        post :upload_file
-      end
-    end
-    resources :nh_messages,    :except => [ :edit, :show ]
     resources :nh_loris_hooks, :only => [] do
       collection do
         post :file_list_maker

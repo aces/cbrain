@@ -16,6 +16,7 @@ namespace :cbrain do
     userfiles_plugins_dir   = installed_plugins_dir + "userfiles"
     views_plugins_dir       = installed_plugins_dir + "views"
     tasks_plugins_dir       = installed_plugins_dir + "cbrain_task"
+    task_support_links_dir  = installed_plugins_dir + "task_support_links"
     boutiques_plugins_dir   = installed_plugins_dir + "boutiques_descriptors"
     lib_plugins_dir         = installed_plugins_dir + "lib"
 
@@ -93,7 +94,7 @@ namespace :cbrain do
                 plugin_location  = plugins_dir + package + u_slash_f
                 symlink_value    = plugin_location.relative_path_from(symlink_location.parent)
 
-                if File.exists?(symlink_location) || File.symlink?(symlink_location) # gee exists? returns false on bad symlink
+                if File.exist?(symlink_location) || File.symlink?(symlink_location) # gee exist? returns false on bad symlink
                   if File.symlink?(symlink_location)
                     if File.readlink(symlink_location) == symlink_value.to_s
                       puts "-> #{name.capitalize} already setup: '#{plugin}'." if verbose
@@ -147,11 +148,18 @@ namespace :cbrain do
 
             # Setup each cbrain_task plugin
             erase_dead_symlinks.('task', tasks_plugins_dir)
-            setup.('cbrain_task/*', 'task', tasks_plugins_dir,
+            erase_dead_symlinks.('task', task_support_links_dir)
+            setup.('cbrain_task/*', 'task', task_support_links_dir,
               condition: lambda { |f| File.directory?(f) },
               after: lambda do |symlink_location|
-                if ! File.symlink?("#{symlink_location}.rb")
-                  File.symlink "cbrain_task_class_loader.rb", "#{symlink_location}.rb"
+                base=Pathname.new(symlink_location).basename
+                if ! File.exist?("#{tasks_plugins_dir}/#{base}.rb") &&
+                  (
+                    File.exist?("cbrain_task/#{base}/portal/#{base}.rb")  ||
+                    File.exist?("cbrain_task/#{base}/common/#{base}.rb")  ||
+                    File.exist?("cbrain_task/#{base}/bourreau/#{base}.rb")
+                  )
+                  File.link "#{tasks_plugins_dir}/cbrain_task_class_loader.rb", "#{tasks_plugins_dir}/#{base}.rb"
                 end
               end
             )
@@ -201,7 +209,7 @@ namespace :cbrain do
         userfiles_public_dirs.each do |fullpath| # "/a/b/rails/cbrain_plugins/installed-plugins/views/text_file/public"
           relpath  = Pathname.new(fullpath).relative_path_from(public_userfiles) # ../(...)/cbrain_plugins/installed-plugins/views/text_file/public
           filename = relpath.parent.basename # "text_file"
-          if File.exists?(filename) || File.symlink?(filename)
+          if File.exist?(filename) || File.symlink?(filename)
             if File.symlink?(filename) && (File.readlink(filename) == relpath.to_s)
               puts "-> Assets for userfile already set up: '#{filename}'." if verbose
               logger.('AssetSymlinkIsOk','(installed)','userfile',filename) if verbose
@@ -219,17 +227,17 @@ namespace :cbrain do
       end
 
       Dir.chdir(public_tasks) do
-        tasks_public_dirs = Dir.glob(tasks_plugins_dir + "*/views/public")
+        tasks_public_dirs = Dir.glob(task_support_links_dir + "*/views/public")
         if tasks_public_dirs.empty?
           puts "-> No public assets made available by any tasks." if verbose
         else
           puts "Found #{tasks_public_dirs.size} task(s) with public assets to set up..." if verbose
         end
 
-        tasks_public_dirs.each do |fullpath| # "/a/b/rails/cbrain_plugins/installed-plugins/cbrain_tasks/diagnostics/views/public"
+        tasks_public_dirs.each do |fullpath| # "/a/b/rails/cbrain_plugins/installed-plugins/task_support_links/diagnostics/views/public"
           relpath  = Pathname.new(fullpath).relative_path_from(public_tasks) # ../(...)/cbrain_plugins/cbrain_tasks/diagnostics/views/public
           taskname = relpath.parent.parent.basename # "diagnostics"
-          if File.exists?(taskname) || File.symlink?(taskname)
+          if File.exist?(taskname) || File.symlink?(taskname)
             if File.symlink?(taskname) && (File.readlink(taskname) == relpath.to_s)
               puts "-> Assets for task already set up: '#{taskname}'." if verbose
               logger.('AssetSymlinkIsOk','(installed)','task',taskname) if verbose
@@ -242,7 +250,7 @@ namespace :cbrain do
           end
           puts "-> Creating assets symbolic link for task '#{taskname}'." if verbose
           logger.('MakeAssetSymlink','(installed)','task',taskname)
-          File.symlink(relpath,taskname)  # "diagnostics" -> "../(...)/cbrain_plugins/installed-plugins/cbrain_tasks/diagnostics/views/public"
+          File.symlink(relpath,taskname)  # "diagnostics" -> "../(...)/cbrain_plugins/installed-plugins/task_support_links/diagnostics/views/public"
         end
       end
 
@@ -286,9 +294,18 @@ namespace :cbrain do
 
       erase.('userfile',   userfiles_plugins_dir)
       erase.('views',      views_plugins_dir)
-      erase.('task',       tasks_plugins_dir)
+      erase.('task',       tasks_plugins_dir) # this doesn't do anyting anymore now that we use hard links
+      erase.('task_links', task_support_links_dir)
       erase.('boutiques',  boutiques_plugins_dir)
       erase.('lib',        lib_plugins_dir)
+
+      # Handle the hardlinks in tasks_plugins_dir
+      Dir.chdir(tasks_plugins_dir) do
+        Dir.glob('*').select { |f| File.file?(f) }.each do |f|
+          next if f == 'cbrain_task_class_loader.rb' # this stays there always
+          File.unlink(f)
+        end
+      end
 
     end
 

@@ -20,13 +20,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+require "cbrain_file_revision"
+require "cbrain_extensions"
+
 ###################################################################
 # CBRAIN Array extensions
 ###################################################################
 class Array
 
-  include CBRAINExtensions::ArrayExtensions::HashedPartitions
-  include CBRAINExtensions::ArrayExtensions::Miscellaneous
+  include CbrainExtensions::ArrayExtensions::HashedPartitions
+  include CbrainExtensions::ArrayExtensions::Miscellaneous
 
 end
 

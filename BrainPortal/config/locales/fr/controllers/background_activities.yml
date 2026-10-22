@@ -2,6 +2,7 @@ fr:
   background_activities:
     errors:
       unknown_operation: "Opération inconnue"
+      not_allowed:       "Opération pas permise"
     flash:
       affected: "%{count} activités concernées par '%{action}'."
       none_affected: "Aucune activité concernée."

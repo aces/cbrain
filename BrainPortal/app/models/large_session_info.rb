@@ -27,7 +27,7 @@ class LargeSessionInfo < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  serialize :data
+  serialize :data, :coder => YAML
 
   belongs_to :user # we no longer allow them to be nil
 

@@ -362,12 +362,13 @@ class S3FlatDataProvider < DataProvider
   end
 
   # Before save callback. The client start path needs to be
-  # nil, or a relative path such as 'a/b/c' with no leading slash.
+  # nil, or a relative path such as 'a/b/c' with no leading
+  # or trailing slashes.
   def canonify_path_start
     start = (self.cloud_storage_client_path_start.presence || "")
       .strip
-      .sub(/\A\//,"") # remove leading /
-      .sub(/\/\z/,"") # remove trailing /
+      .sub(/\A\/+/,"") # remove leading /
+      .sub(/\/+\z/,"") # remove trailing /
       .strip
     self.cloud_storage_client_path_start = start.presence
     true

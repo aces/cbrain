@@ -203,7 +203,7 @@
     "custom": {
         "cbrain:readonly-input-files":  true,
         "cbrain:author":                "Pierre Rioux <pierre.rioux@mcgill.ca>",
-        "cbrain:inherits-from-class":   "BoutiquesToolConfiguratorHandler",
+        "cbrain:inherits-from-class":   "CbrainTask::BoutiquesToolConfiguratorHandler",
         "cbrain:no-run-id-for-outputs": [ "apptainer_sif_name" ],
         "cbrain:input_notes": [
           "Select two ToolConfigs, called 'NEW' and 'OLD'.",

@@ -119,7 +119,7 @@ class CbrainTask::MyCksum < ClusterTask
     runid   = self.run_id # utility method, returns "#{task_id}-#{run_number}"
     prefix  = params[:output_file_prefix]
     outname = "#{prefix}myout-#{runid}.txt"
-    cb_error "Can't find my output file '#{outname}' ?!?" unless File.exists?(outname)
+    cb_error "Can't find my output file '#{outname}' ?!?" unless File.exist?(outname)
     outfile = safe_userfile_find_or_new(TextFile,  # utility of ClusterTask
                 { :name => outname,
                   :data_provider_id => self.results_data_provider_id.presence || infile.data_provider_id

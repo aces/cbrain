@@ -528,13 +528,13 @@ module BoutiquesSupport
 
       # Returns a modified hash with keys all padded with '|'
       max_pad_keys = ->(hash) do
-        copy = HashWithIndifferentAccess.new.merge(hash.dup)
+        copy = ActiveSupport::HashWithIndifferentAccess.new.merge(hash.dup)
         max  = maxkeylength.(copy)
         pad_keys.(copy,max)
         copy
       end
 
-      final  = HashWithIndifferentAccess.new.merge(self.dup)
+      final  = ActiveSupport::HashWithIndifferentAccess.new.merge(self.dup)
 
       final['inputs'].map!       { |input|  max_pad_keys.(input)  }
       final['output-files'].map! { |output| max_pad_keys.(output) } if final['output-files'].present?
@@ -620,6 +620,24 @@ module BoutiquesSupport
     def cb_invoke_html_id(force_list = nil)
       as_list = (self.list && force_list.nil?) || force_list == true
       self.class.cb_invoke_html_id(self.id, as_list)
+    end
+
+    # This method conflicts with the method 'minimum(key)' in Enumerable.
+    # To keep as much compatibility as possible, if invoked with an
+    # argument, the Enumerable method is called, otherwise we fetch from
+    # the hash.
+    def minimum(key=nil)
+      return super(key) if key
+      self[:minimum]
+    end
+
+    # This method conflicts with the method 'maximum(key)' in Enumerable.
+    # To keep as much compatibility as possible, if invoked with an
+    # argument, the Enumerable method is called, otherwise we fetch from
+    # the hash.
+    def maximum(key=nil)
+      return super(key) if key
+      self[:maximum]
     end
 
   end # class BoutiquesSupport::Input

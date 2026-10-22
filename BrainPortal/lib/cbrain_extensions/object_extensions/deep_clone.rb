@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-module CBRAINExtensions #:nodoc:
+module CbrainExtensions #:nodoc:
   module ObjectExtensions #:nodoc:
     # Make a thorough deep clone of a data structure.
     # To be included in Object.

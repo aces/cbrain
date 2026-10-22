@@ -479,7 +479,7 @@ class SshMaster
     pidfile = self.pidfile_path
     CONFIG[:SPAWN_WAIT_TIME].times do
       break if File.exist?(socket)         &&
-               File.exists?(pidfile)       &&
+               File.exist?(pidfile)        &&
                File.size(pidfile)      > 0 &&
                self.raw_read_pidfile  != 0  # a zero means not yet fully setup; a nil is an error and no need to wait further
       debugTrace("... waiting for confirmed creation of socket and PID file...")

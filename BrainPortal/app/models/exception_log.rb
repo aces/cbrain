@@ -27,10 +27,10 @@ class ExceptionLog < ApplicationRecord
 
   belongs_to :user
 
-  serialize :backtrace
-  serialize :request
-  serialize :request_headers
-  serialize :session
+  serialize :backtrace,       :coder => YAML
+  serialize :request,         :coder => YAML
+  serialize :request_headers, :coder => YAML
+  serialize :session,         :coder => YAML
 
 
   # Create an exception record based on exception, user, current request.

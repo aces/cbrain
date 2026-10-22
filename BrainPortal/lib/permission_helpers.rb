@@ -58,7 +58,7 @@ module PermissionHelpers
   # Helper method to render and error page. Will render public/<+status+>.html
   def access_error(status)
     respond_to do |format|
-      format.html  { render(:file => (Rails.root.to_s + '/public/' + status.to_s), :status  => status, :layout => false ) }
+      format.html  { render(:file => (Rails.root.to_s + '/public/' + status.to_s + '.html'), :status  => status, :layout => false ) }
       format.xml   { head status }
       format.json  { head status }
     end

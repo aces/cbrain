@@ -403,7 +403,7 @@ describe "Bourreau Boutiques Tests" do
     # Clean up after each test
     after(:each) do
       # Also need to get rid of the (simulated) exit file
-      File.delete( @simExitFile ) if @simExitFile.present? && File.exists?( @simExitFile )
+      File.delete( @simExitFile ) if @simExitFile.present? && File.exist?( @simExitFile )
       # Destroy the registered userfiles and the data_provider, so as not to affect downstream tests
       # Needed to destroy actual output files written to the filesystem
       Userfile.all.each{ |uf| uf.destroy }
@@ -440,7 +440,7 @@ describe "Bourreau Boutiques Tests" do
       # Check that save_results works as expected for existent files
       it "can save results files" do
         # Make sure the file on the filesystem exists
-        expect( File.exists?(@fname_base) ).to be true
+        expect( File.exist?(@fname_base) ).to be true
         # Ensure the file has not been registered/created yet
         expect( @task.userfile_exists(@userfileClass, @reqOutfileProps) ).to be false
         # Ensure that saving the results occurs error-free
@@ -455,7 +455,7 @@ describe "Bourreau Boutiques Tests" do
       # Check that, when a required output file is not present, the task fails gracefully
       it "fails non-catastrophically when a required output file is not there" do
         # The output file should exist
-        expect( File.exists? @fname_base ).to be true
+        expect( File.exist? @fname_base ).to be true
         # Destroy the required output file
         File.delete( @fname_base )
         # Attempting to save_results should return a 'failure' error code
@@ -470,7 +470,7 @@ describe "Bourreau Boutiques Tests" do
         # Inform the generated task to look for the optional output file
         @task.params[:invoke] = @task.invoke_params.merge!({:o => @optOutFileName})
         # Ensure the file exists
-        expect( File.exists? @optOutFileName ).to be true
+        expect( File.exist? @optOutFileName ).to be true
         # Attempt to save both the optional and required output files. Should succeed.
         @task.cluster_commands
         expect( @task.save_results ).to be true
@@ -490,7 +490,7 @@ describe "Bourreau Boutiques Tests" do
         @task.params[:invoke] = @task.invoke_params.merge!({:o => @optOutFileName})
         @switchDescriptor.(@unrestricted_descriptor) # resets to full standard
         # Ensure the file does not exist
-        expect( File.exists? @optOutFileName ).to be false
+        expect( File.exist? @optOutFileName ).to be false
         # Attempt to save both the optional and required output files. Should succeed (in terms of return value).
         @task.cluster_commands
         expect( @task.save_results ).to be true

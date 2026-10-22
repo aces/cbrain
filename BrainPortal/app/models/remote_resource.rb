@@ -52,12 +52,12 @@ class RemoteResource < ApplicationRecord
 
   cbrain_abstract_model! # objects of this class are not to be instanciated
 
-  serialize             :dp_ignore_patterns
+  serialize             :dp_ignore_patterns, :coder => YAML
 
   # These are the ActionMailer's delivery_method_options, and for the moment
   # can only be set by the admin using the Rails console; leaving them blank
   # means the mailers use whatever is configured in the Rails environment config.
-  serialize             :email_delivery_options
+  serialize             :email_delivery_options, :coder => YAML
 
   validates             :name,
                         :uniqueness        => true,
@@ -148,7 +148,7 @@ class RemoteResource < ApplicationRecord
   def self.current_resource_db_config(railsenv = nil)
     railsenv ||= (Rails.env || 'production')
     myconfigs  = ApplicationRecord.configurations
-    myconfig   = myconfigs[railsenv].dup
+    myconfig   = myconfigs.find_db_config(railsenv).configuration_hash.dup
     myconfig
   end
 
@@ -619,7 +619,7 @@ class RemoteResource < ApplicationRecord
     cb_error "SSH public key only accessible for the current resource." unless self.id == self.class.current_resource.id
     return @ssh_public_key if @ssh_public_key
     home = CBRAIN::Rails_UserHome
-    if File.exists?("#{home}/.ssh/id_cbrain_ed25519.pub")
+    if File.exist?("#{home}/.ssh/id_cbrain_ed25519.pub")
       @ssh_public_key = File.read("#{home}/.ssh/id_cbrain_ed25519.pub") rescue ""
     else
       @ssh_public_key = ""
@@ -984,15 +984,11 @@ class RemoteResource < ApplicationRecord
        num_workers && num_workers >= 0 && num_workers < 21
 
     worker_name = "BacWorker"
-    baclogger = Log4r::Logger[worker_name]
-    unless baclogger
-      baclogger = Log4r::Logger.new(worker_name)
-      baclogger.add(Log4r::RollingFileOutputter.new('background_activity_outputter',
-                    :filename  => "#{Rails.root}/log/#{worker_name}.combined..log",
-                    :formatter => Log4r::PatternFormatter.new(:pattern => "%d %l %m"),
-                    :maxsize   => 1000000, :trunc => 600000))
-      baclogger.level = Log4r::INFO
+    baclogger = Logger.new("#{Rails.root}/log/#{worker_name}.combined.log", 100, 1000000)
+    baclogger.formatter = Proc.new do |severity, time, progname, msg|
+      sprintf("%s %s %s\n",time.strftime("%Y-%m-%d %H:%M:%S"),severity,msg)
     end
+    baclogger.level = :info
 
     WorkerPool.create_or_find_pool(BackgroundActivityWorker,
        num_workers, # number of instances

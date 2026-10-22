@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-module CBRAINExtensions #:nodoc:
+module CbrainExtensions #:nodoc:
   module ActiveRecordExtensions #:nodoc:
 
     # ActiveRecord extensions to handle loading and saving STI models.
@@ -125,7 +125,7 @@ module CBRAINExtensions #:nodoc:
 
       private
 
-      def create_or_update(*args) #:nodoc:
+      def create_or_update(**args) #:nodoc:
         if @__unscope_type_condition__
           unscope_type_condition do
             super

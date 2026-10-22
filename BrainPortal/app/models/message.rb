@@ -361,7 +361,7 @@ class Message < ApplicationRecord
     arr.join.html_safe
   end
 
-  # before_destroy callback
+  # before_create callback
   def track_resource_usage_create
     return true if self.message_type != "communication"  # only user to user communication is counted so far
     message_size = 0

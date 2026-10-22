@@ -84,7 +84,7 @@ class User < ApplicationRecord
   before_save               :encrypt_password
   before_save               :destroy_sessions_if_locked
   before_save               :apply_access_profiles
-  after_update              :system_group_site_update
+  before_update             :system_group_site_update
   after_destroy             :destroy_system_group
   after_destroy             :destroy_empty_work_groups
   after_destroy             :destroy_user_sessions
@@ -614,7 +614,7 @@ class User < ApplicationRecord
   end
 
   def system_group_site_update  #:nodoc:
-    self.own_group.update_attributes(:site_id => self.site_id)
+    self.own_group.update(:site_id => self.site_id)
 
     if self.changed.include?("site_id")
       unless self.changes["site_id"].first.blank?
@@ -662,7 +662,7 @@ class User < ApplicationRecord
     user_group = UserGroup.new(:name => self.login, :site_id  => self.site_id)
     unless user_group.save
       self.errors.add(:base, "User Group: #{user_group.errors.full_messages.join(", ")}")
-      return false
+      throw :abort
     end
 
     everyone_group = Group.everyone

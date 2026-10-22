@@ -116,7 +116,7 @@ class BourreauxController < ApplicationController
     else
       respond_to do |format|
         format.html  { render :action => :new}
-        format.xml   { render :xml    => @bourreau.errors.to_xml, :status => :unprocessable_entity }
+        format.xml   { render :xml    => @bourreau.errors.to_xml, :status => :unprocessable_content }
       end
     end
   end
@@ -140,7 +140,7 @@ class BourreauxController < ApplicationController
       @bourreau.reload
       respond_to do |format|
         format.html { render :action => 'show' }
-        format.xml  { render :xml  => @bourreau.errors, :status  => :unprocessable_entity }
+        format.xml  { render :xml  => @bourreau.errors, :status  => :unprocessable_content }
       end
       return
     end
@@ -176,7 +176,7 @@ class BourreauxController < ApplicationController
       # Record new ID for local cache; this can also be done during the boot process.
       if (@bourreau.id == RemoteResource.current_resource.id)
         md5 = DataProvider.create_cache_md5
-        @bourreau.update_attributes( :cache_md5 => md5 )
+        @bourreau.update( :cache_md5 => md5 )
       end
 
       Message.send_message(current_user,
@@ -251,8 +251,8 @@ class BourreauxController < ApplicationController
   rescue
     respond_to do |format|
       format.html { render :plain  => '<strong style="color:red">No Information Available</strong>' }
-      format.xml  { head :unprocessable_entity }
-      format.json { head :unprocessable_entity }
+      format.xml  { head :unprocessable_content }
+      format.json { head :unprocessable_content }
     end
   end
 

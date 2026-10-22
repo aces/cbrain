@@ -39,7 +39,8 @@ class ApplicationController < ActionController::Base #:nodoc:
     Dir.chdir(File.join(Rails.root.to_s, "app", "models")) do
       Dir.glob("*.rb").each do |model|
         model.sub!(/.rb$/,"")
-        require_dependency "#{model}.rb" unless Object.const_defined? model.classify
+        #require_dependency "#{model}.rb" unless Object.const_defined? model.classify
+        require "#{model}.rb" unless Object.const_defined? model.classify
       end
     end
   rescue => error

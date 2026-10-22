@@ -253,8 +253,8 @@ class ToolConfigsController < ApplicationController
         format.xml  { head     :ok                                   }
       else
         format.html { render :action => :show } # @tool_config.reload  ? or may be just bad fields?
-        format.json { render :json => @tool_config.errors, :status => :unprocessable_entity }
-        format.xml  { render :xml  => @tool_config.errors, :status => :unprocessable_entity }
+        format.json { render :json => @tool_config.errors, :status => :unprocessable_content }
+        format.xml  { render :xml  => @tool_config.errors, :status => :unprocessable_content }
       end
     end
   end

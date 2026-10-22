@@ -69,9 +69,9 @@ class HelpDocumentsController < ApplicationController
         format.xml  { render :xml  => @doc, :status => :created, :location => doc_url(@doc) }
         format.json { render :json => @doc, :status => :created, :location => doc_url(@doc) }
       else
-        format.html { head   :unprocessable_entity }
-        format.xml  { render :xml  => @doc.errors, :status => :unprocessable_entity }
-        format.json { render :json => @doc.errors, :status => :unprocessable_entity }
+        format.html { head   :unprocessable_content }
+        format.xml  { render :xml  => @doc.errors, :status => :unprocessable_content }
+        format.json { render :json => @doc.errors, :status => :unprocessable_content }
       end
     end
   end

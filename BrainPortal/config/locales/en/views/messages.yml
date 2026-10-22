@@ -62,19 +62,15 @@ en:
       title: "Add New Dashboard Message"
       headings:
         main: "Add New Dashboard Message"
-      labels:
-        dashboard: "Dashboard"
       explanations:
         dashboard_html: |
           For dashboard messages, whatever is entered here will be substituted literally
           in the page's code. So you can use whatever HTML elements you want, but make sure
-          you know what you're doing. For NeuroHub, we recommend surrounding the entire text
-          with at least one &lt;P&gt; element.
+          you know what you're doing.
     new:
       title: "Add New Message"
       links:
         new_cbrain_dashboard: "New CBRAIN Dashboard Message"
-        new_neurohub_dashboard: "New NeuroHub Dashboard Message"
       to_users_of_project: "To users of project:"
       labels:
         send_email: "Send E-mail"

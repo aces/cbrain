@@ -24,7 +24,8 @@ class ApplicationRecord < ActiveRecord::Base #:nodoc:
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  self.abstract_class = true
+  primary_abstract_class
+  self.abstract_class = true # Old CBRAIN equivalent of primary_abstract_class ?
 
   ###################################################################
   # ActiveRecord Added Behavior For MetaData
@@ -42,39 +43,39 @@ class ApplicationRecord < ActiveRecord::Base #:nodoc:
   # Pretty Type methods
   ############################################################################
 
-  include CBRAINExtensions::ActiveRecordExtensions::PrettyType
+  include CbrainExtensions::ActiveRecordExtensions::PrettyType
 
   ###################################################################
   # ActiveRecord Added Behavior For Single Table Inheritance
   ###################################################################
 
-  include CBRAINExtensions::ActiveRecordExtensions::SingleTableInheritance
+  include CbrainExtensions::ActiveRecordExtensions::SingleTableInheritance
 
   ###################################################################
   # ActiveRecord Added Behavior For Abstract Models
   ###################################################################
 
-  include CBRAINExtensions::ActiveRecordExtensions::AbstractModelMethods
+  include CbrainExtensions::ActiveRecordExtensions::AbstractModelMethods
 
   ###################################################################
   # ActiveRecord Added Behavior For Serialization
   ###################################################################
 
-  include CBRAINExtensions::ActiveRecordExtensions::AttributeSerialization
-  include CBRAINExtensions::ActiveRecordExtensions::RecordSerialization
+  include CbrainExtensions::ActiveRecordExtensions::AttributeSerialization
+  include CbrainExtensions::ActiveRecordExtensions::RecordSerialization
 
   ###################################################################
   # ActiveRecord Added Behavior For Core Models
   ###################################################################
 
-  include CBRAINExtensions::ActiveRecordExtensions::CoreModels
+  include CbrainExtensions::ActiveRecordExtensions::CoreModels
 
   ###################################################################
   # ActiveRecord Added Behavior For Hiding Attributes
   ###################################################################
 
-  include CBRAINExtensions::ActiveRecordExtensions::HiddenAttributes
-  include CBRAINExtensions::ActiveRecordExtensions::ApiAttrVisible
+  include CbrainExtensions::ActiveRecordExtensions::HiddenAttributes
+  include CbrainExtensions::ActiveRecordExtensions::ApiAttrVisible
 
   # This method is used when .for_api() is invoked on
   # a relation, to limit the number of records returned

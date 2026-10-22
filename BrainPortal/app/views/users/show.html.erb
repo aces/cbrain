@@ -190,7 +190,7 @@
     <% end %>
 
     <%
-      # Note: should be in a if/end block testing for the configuration of orcid_uri, like in NeuroHub
+      # TODO: should be in a if/end block testing for the configuration of orcid_uri
     %>
     <% t.cell t('.cells.orcid_identity'), :show_width => 2 do %>
       <% orcid_id = @user.meta["orcid"] %>
@@ -199,7 +199,6 @@
        <% else %>
          <%= t('.no_orcid') %>
        <% end %>
-       <br><small><%= t('.orcid_note_html', link: link_to(t('.links.neurohub_interface'), myaccount_path)) %></small>
     <% end %>
 
   <% end %>

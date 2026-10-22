@@ -31,18 +31,9 @@
 <%= form_for @message, :as => :message, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
   <%= hidden_field_tag :for_dashboard, @message.message_type.presence || "cbrain" %>
+  <%= # f.hidden_field :message_type %>
 
   <div class="generalbox">
-
-    <p>
-      <%= f.label :message_type do %>
-        <%= t('.labels.dashboard') %><br>
-      <% end %>
-      <%= f.select :message_type, [
-         [ "CBRAIN",   "cbrain_dashboard"  ],
-         [ "NeuroHub", "neurohub_dashboard"],
-      ] %>
-    </p>
 
     <% # group_id is not the attribute of the Message object %>
     <%= hidden_field_tag :group_id, current_user.own_group.id %>

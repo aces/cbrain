@@ -51,7 +51,7 @@
 #
 # In that case the class that x belongs to is an anonymous
 # subclass of RestrictedHash.
-class RestrictedHash < HashWithIndifferentAccess
+class RestrictedHash < ActiveSupport::HashWithIndifferentAccess
 
    Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

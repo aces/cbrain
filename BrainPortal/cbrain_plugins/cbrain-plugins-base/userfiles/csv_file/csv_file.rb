@@ -173,3 +173,4 @@ class CsvFile < TextFile
   end
 
 end
+

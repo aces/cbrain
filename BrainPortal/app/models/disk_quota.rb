@@ -160,7 +160,7 @@ class DiskQuota < Quota
 
     # All quotas are OK with this rule
     return true if (self.max_bytes > 0 && self.max_files > 0)
-    # Only 0 in both fields is allowed if using negative numbers
+    # 0 is allowed only if both fields have it
     return true if (self.max_bytes == 0 && self.max_files == 0)
 
     # Log errors

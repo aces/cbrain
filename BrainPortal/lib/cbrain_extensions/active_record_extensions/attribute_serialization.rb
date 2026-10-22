@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-module CBRAINExtensions #:nodoc:
+module CbrainExtensions #:nodoc:
   module ActiveRecordExtensions #:nodoc:
 
     # ActiveRecord Added Behavior For Serialization of Attributes
@@ -34,35 +34,25 @@ module CBRAINExtensions #:nodoc:
         end
       end
 
-      # Call this method in a :after_initialize callback, passing it
-      # a list of attributes that are supposed to be serialized hash
-      # with indifferent access; if they are, nothing happens. If they
+      # Call this method in a :after_initialize callback. It will
+      # check attributes that are supposed to be serialized as hash
+      # with indifferent access. If they are, nothing happens. If they
       # happen to be ordinary hashes, they'll be upgraded.
       def ensure_serialized_hash_are_indifferent #:nodoc:
         to_update = {}
         attlist = self.class.indifferent_attributes.keys
         attlist.each do |att|
           the_hash = read_attribute(att) # value of serialized attribute, as reconstructed by ActiveRecord
-          if the_hash.is_a?(Hash) && ! the_hash.is_a?(HashWithIndifferentAccess)
-            #puts_blue "Oh oh, must fix #{self.class.name}-#{self.id} -> #{att}"
-            #new_hash = HashWithIndifferentAccess.new_from_hash_copying_default(the_hash)
+          if the_hash.is_a?(Hash) && ! the_hash.is_a?(ActiveSupport::HashWithIndifferentAccess)
+            #puts_blue "Oh oh, must fix #{self.class.name}-#{self.id} -> #{att} (#{the_hash.class})"
+            #new_hash = ActiveSupport::HashWithIndifferentAccess.new_from_hash_copying_default(the_hash)
             new_hash = the_hash.with_indifferent_access
             to_update[att] = new_hash
           end
         end
 
-        unless to_update.empty?
-          # Proper code that is supposed to update it once and for all in the DB:
-
-          #self.update_attributes(to_update) # reactive once YAML dumping is fixed in Rails
-
-          # Unfortunately, currently a HashWithIndifferentAccess is serialized EXACTLY as a Hash, so
-          # it doesn't save any differently in the DB. To prevent unnecessary writes and rewrites of
-          # always the same serialized Hash, we'll just update the attribute in memory instead:
-          to_update.each do |att,val|
-            write_attribute(att,val)
-          end
-        end
+        # Update it once and for all in the DB
+        self.update(to_update) if to_update.present?
 
         true
       end

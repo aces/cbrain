@@ -24,7 +24,7 @@
 # Seed for CBRAIN
 #
 
-require 'readline'
+require 'reline'
 require 'socket'
 require 'reline'
 
@@ -110,7 +110,7 @@ portal_name_file = "#{Rails.root}/config/initializers/config_portal.rb"
 if ENV['CBRAIN_RAILS_APP_NAME'] # env variable has priority
   puts "Found environment variable 'CBRAIN_RAILS_APP_NAME'..."
   portal_name = ENV['CBRAIN_RAILS_APP_NAME']
-elsif File.exists?(portal_name_file)
+elsif File.exist?(portal_name_file)
   puts "Found config file '#{portal_name_file}', loading it..."
   require portal_name_file rescue nil
   portal_name = CBRAIN::CBRAIN_RAILS_APP_NAME if CBRAIN.const_defined?('CBRAIN_RAILS_APP_NAME')
@@ -173,8 +173,8 @@ admin = CoreAdmin.seed_record!(
 end
 
 # Update creator ID for the two system groups
-admin.own_group.update_attributes!(:creator_id => admin.id)
-everyone.update_attributes!(:creator_id => admin.id)
+admin.own_group.update!(:creator_id => admin.id)
+everyone.update!(:creator_id => admin.id)
 
 # Create portal object
 BrainPortal.seed_record!(

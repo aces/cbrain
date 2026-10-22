@@ -329,7 +329,7 @@ describe DataProvider do
       expect{provider.cache_copy_from_local_file(userfile, "localpath")}.to raise_error(CbrainError, "Error: provider #{provider.name} is read_only.")
     end
     it "should raise an exception if userfile doesn't exist" do
-      allow(File).to receive(:exists?).and_return(false)
+      allow(File).to receive(:exist?).and_return(false)
       expect{provider.cache_copy_from_local_file(userfile, "localpath")}.to raise_error(CbrainError, /^Error: file does not exist/)
     end
     it "should raise an exception if userfile is immutable" do
@@ -338,7 +338,7 @@ describe DataProvider do
     end
     context "checking file type conflicts" do
       before(:each) do
-        allow(File).to receive(:exists?).and_return(true)
+        allow(File).to receive(:exist?).and_return(true)
         allow(File).to receive(:directory?).and_return(false)
         allow(File).to receive(:file?).and_return(false)
       end
@@ -364,7 +364,7 @@ describe DataProvider do
         allow(Dir).to        receive(:mkdir)
         allow(File).to       receive(:file?).and_return(true)
         allow(File).to       receive(:directory?).and_return(false)
-        allow(File).to       receive(:exists?).and_return(true)
+        allow(File).to       receive(:exist?).and_return(true)
       end
       it "should determine the path in the cache" do
         expect(provider).to receive(:cache_full_path)
@@ -414,7 +414,7 @@ describe DataProvider do
         allow(Dir).to receive(:mkdir)
         allow(File).to receive(:file?).and_return(true)
         allow(File).to receive(:directory?).and_return(false)
-        allow(File).to receive(:exists?).and_return(true)
+        allow(File).to receive(:exist?).and_return(true)
       end
       it "should sync the userfile to the cache" do
         expect(provider).to receive(:sync_to_cache)
@@ -774,7 +774,8 @@ describe DataProvider do
 
   describe "#validate_destroy" do
     it "should prevent destruction if associated userfiles still exist" do
-      destroyed_provider = create(:data_provider, :userfiles => [create(:single_file)])
+      destroyed_provider = create(:data_provider)
+      userfile = create(:single_file, :data_provider_id => destroyed_provider.id)
       expect{ destroyed_provider.destroy }.to raise_error(ActiveRecord::DeleteRestrictionError)
     end
     it "should allow destruction if no associated userfiles still exist" do
@@ -955,7 +956,7 @@ describe DataProvider do
       expect {DataProvider.this_is_a_proper_cache_dir!(cache_root)}.to raise_error(CbrainError, /cache directory not accessible/)
     end
     it "should return true if the revision file exists" do
-      allow(File).to receive(:exists?).and_return(true)
+      allow(File).to receive(:exist?).and_return(true)
       expect(DataProvider.this_is_a_proper_cache_dir!(cache_root)).to be_truthy
     end
     it "should raise an exception if unable to read the contents of the cache root" do
@@ -988,7 +989,7 @@ describe DataProvider do
     end
     it "should raise an exception if the cache directory is not a string or a path" do
       allow(RemoteResource).to receive_message_chain(:current_resource, :dp_cache_dir).and_return(123)
-      expect {DataProvider.cache_rootdir}.to raise_error(TypeError, /no implicit conversion/)
+      expect {DataProvider.cache_rootdir}.to raise_error(TypeError, /requires a String/)
     end
   end
 
