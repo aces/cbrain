@@ -1,5 +1,7 @@
 en:
   tools:
+    errors:
+      not_cbrain_task_subclass: "doesn't seem to be a code subclass of CbrainTask."
     flash:
       created:               "Tool was successfully created."
       updated:               "Tool was successfully updated."

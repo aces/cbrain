@@ -856,25 +856,25 @@ class BackgroundActivity < ApplicationRecord
 
   def status_is_correct #:nodoc:
     return true if ALL_STATUS.include?(self.status)
-    self.errors.add(:status, 'is not acceptable')
+    self.errors.add(:status, I18n.t('activerecord.errors.models.background_activity.status_not_acceptable'))
     throw :abort
   end
 
   def repeat_is_correct #:nodoc:
     self.repeat='one_shot' if self.repeat.blank?
-    repeat_error = ->(message) { self.errors.add(:repeat, message) }
+    repeat_error = ->(key) { self.errors.add(:repeat, I18n.t(key, :scope => 'activerecord.errors.models.background_activity')) }
     match = REPEAT_REGEXES.detect { |r| m=r.match(self.repeat) and break m }
-    repeat_error.('is not valid') if ! match
+    repeat_error.(:repeat_invalid) if ! match
 
     if match && match.length == 3 # for start+NNN
       repeat_minutes = match[2]
-      repeat_error.('has an invalid start+NNN minutes') if repeat_minutes.to_i < 10 || repeat_minutes.to_i > 10080
+      repeat_error.(:repeat_invalid_start_minutes) if repeat_minutes.to_i < 10 || repeat_minutes.to_i > 10080
     end
 
     if match && match.length == 4 # for all the keyword@HH:MM
       hour, min = match[2], match[3]
-      repeat_error.('has an invalid hour') if hour !~ /[01][0-9]|2[0123]/
-      repeat_error.('has invalid minutes') if min !~ /[012345][0-9]/
+      repeat_error.(:repeat_invalid_hour) if hour !~ /[01][0-9]|2[0123]/
+      repeat_error.(:repeat_invalid_minutes) if min !~ /[012345][0-9]/
     end
 
     throw :abort if self.errors.count > 0
@@ -883,7 +883,7 @@ class BackgroundActivity < ApplicationRecord
 
   def items_is_array #:nodoc:
     return true if self.items.is_a?(Array)
-    self.errors.add(:items, 'is not an array')
+    self.errors.add(:items, I18n.t('activerecord.errors.models.background_activity.items_not_array'))
     throw :abort
   end
 
@@ -895,7 +895,7 @@ class BackgroundActivity < ApplicationRecord
   # to verify that the background activity is configured to run on a bourreau
   def must_be_on_bourreau!
     return true if Bourreau.where(:id => self.remote_resource_id).exists?
-    self.errors.add(:remote_resource_id, 'is not a Bourreau')
+    self.errors.add(:remote_resource_id, I18n.t('activerecord.errors.models.background_activity.not_a_bourreau'))
     throw :abort
   end
 
@@ -903,7 +903,7 @@ class BackgroundActivity < ApplicationRecord
   # to verify that the background activity is configured to run on a portal
   def must_be_on_portal!
     return true if BrainPortal.where(:id => self.remote_resource_id).exists?
-    self.errors.add(:remote_resource_id, 'is not a BrainPortal')
+    self.errors.add(:remote_resource_id, I18n.t('activerecord.errors.models.background_activity.not_a_portal'))
     throw :abort
   end
 
@@ -934,7 +934,7 @@ class BackgroundActivity < ApplicationRecord
   def options_have!(key) #:nodoc:
     opts = self.options || {}
     return true if opts[key].present?
-    self.errors.add(:options, "is missing #{key.to_s.humanize}")
+    self.errors.add(:options, I18n.t('activerecord.errors.models.background_activity.option_missing', :option => key.to_s.humanize))
     false
   end
 
@@ -959,4 +959,3 @@ class BackgroundActivity < ApplicationRecord
   end
 
 end
-

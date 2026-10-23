@@ -22,3 +22,8 @@ fr:
     site_id: &site "Site"
     site: *site
     online: "En ligne"
+  activerecord:
+    errors:
+      messages:
+        missing_license_files:        "Certains fichiers de licence n'existent pas : %{list}\nVeuillez placer le ou les fichiers de licence dans /public/licenses ou retirer cette configuration.\n"
+        missing_custom_license_files: "Certains fichiers de licence n'existent pas : %{list}\nVeuillez prévenir les responsables ou les administrateurs pour corriger ces fichiers.\n"

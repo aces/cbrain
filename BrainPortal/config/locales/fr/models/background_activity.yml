@@ -4,3 +4,15 @@ fr:
       background_activity:
         one: "Activité en arrière-plan"
         other: "Activités en arrière-plan"
+    errors:
+      models:
+        background_activity:
+          status_not_acceptable:        "n'est pas acceptable"
+          repeat_invalid:               "n'est pas valide"
+          repeat_invalid_start_minutes: "a un nombre de minutes start+NNN invalide"
+          repeat_invalid_hour:          "a une heure invalide"
+          repeat_invalid_minutes:       "a des minutes invalides"
+          items_not_array:              "n'est pas un tableau"
+          not_a_bourreau:               "n'est pas un serveur d'exécution"
+          not_a_portal:                 "n'est pas un BrainPortal"
+          option_missing:               "ne contient pas %{option}"

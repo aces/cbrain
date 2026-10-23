@@ -54,7 +54,7 @@ module BoutiquesInputRegexChecker
     # Run the checks
     checkers.each do |input_id,regex_message|
       regex,message = *regex_message
-      message       = "Contains invalid characters" if message.blank?
+      message       = I18n.t('activerecord.errors.models.boutiques_portal_task.regex_invalid_characters') if message.blank?
       input         = descriptor.input_by_id(input_id)
       value         = self.invoke_params[input_id]
       next if value.nil? && input.optional # nothing to check

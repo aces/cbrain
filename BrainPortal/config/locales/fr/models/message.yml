@@ -4,3 +4,9 @@ fr:
       message:
         one: "Message"
         other: "Messages"
+    errors:
+      models:
+        message:
+          header_blank:         "ne peut pas être vide"
+          header_too_long:      "est trop long, il ne peut pas dépasser 255 octets"
+          description_too_long: "est trop longue, elle ne peut pas dépasser 64 Ko"

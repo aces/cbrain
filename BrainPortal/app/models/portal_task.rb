@@ -392,7 +392,7 @@ class PortalTask < CbrainTask
       raise ScriptError.new("Coding error: method refresh_form() for #{self.class} SAVED its object!") if was_new && ! self.new_record?
       return ret
     rescue CbrainError, CbrainNotice => cber
-      self.errors.add(:base, "#{cber.class.to_s.sub(/Cbrain/,"")} in form: #{cber.message}\n")
+      self.errors.add(:base, I18n.t('activerecord.errors.models.portal_task.in_form', :kind => cber.class.to_s.sub(/Cbrain/,""), :error => cber.message))
       return ret || ""
     rescue => other
       cber = ScriptError.new("Coding error: method refresh_form() for #{self.class} raised an exception: #{other.class}: #{other.message}")
@@ -411,7 +411,7 @@ class PortalTask < CbrainTask
         (was_new && ! self.new_record?) && ! self.class.properties[:i_save_my_task_in_after_form]
       return ret
     rescue CbrainError, CbrainNotice => cber
-      self.errors.add(:base, "#{cber.class.to_s.sub(/Cbrain/,"")} in form: #{cber.message}\n")
+      self.errors.add(:base, I18n.t('activerecord.errors.models.portal_task.in_form', :kind => cber.class.to_s.sub(/Cbrain/,""), :error => cber.message))
       return ret || ""
     rescue => other
       cber = ScriptError.new("Coding error: method after_form() for #{self.class} raised an exception: #{other.class}: #{other.message}")
@@ -542,7 +542,7 @@ class PortalTask < CbrainTask
     def add_on_blank(paramspaths,*args) #:nodoc:
       Array(paramspaths).map do |paramspath|
         value = @base.params_path_value(paramspath.to_s)
-        add(paramspath, "is blank") if value.blank?
+        add(paramspath, I18n.t('activerecord.errors.models.portal_task.param_blank')) if value.blank?
       end.compact
     end
 
@@ -550,7 +550,7 @@ class PortalTask < CbrainTask
       Array(paramspaths).map do |paramspath|
         value = @base.params_path_value(paramspath.to_s)
         is_empty = value.respond_to?(:empty?) ? value.empty? : false
-        add(paramspath, "is empty") if value.nil? || is_empty
+        add(paramspath, I18n.t('activerecord.errors.models.portal_task.param_empty')) if value.nil? || is_empty
       end.compact
     end
 
@@ -831,9 +831,8 @@ class PortalTask < CbrainTask
   # Returns true only if
   def task_is_proper_subclass #:nodoc:
     return true if PortalTask.descendants.include? self.class
-    self.errors.add(:base, "is not a proper subclass of PortalTask.")
+    self.errors.add(:base, I18n.t('activerecord.errors.models.portal_task.not_proper_subclass'))
     false
   end
 
 end
-

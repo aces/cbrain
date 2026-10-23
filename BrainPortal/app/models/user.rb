@@ -557,7 +557,7 @@ class User < ApplicationRecord
   def encrypt_password #:nodoc:
     return true if password.blank?
     if self.salt.present? && self.crypted_password.present? && authenticated?(password) # means the password matches the current hash
-      self.errors.add(:password, "cannot be set to be the same as the previous one!")
+      self.errors.add(:password, I18n.t('activerecord.errors.models.user.same_password'))
       throw :abort
     end
     self.salt             = Digest::SHA1.hexdigest("--#{Time.now.to_s}--#{login}--#{rand(999999)}--")
@@ -603,13 +603,13 @@ class User < ApplicationRecord
 
   def prevent_group_collision #:nodoc:
     if self.login && SystemGroup.find_by_name(self.login)
-      errors.add(:login, "already in use by an existing project.")
+      errors.add(:login, I18n.t('activerecord.errors.models.user.login_taken_by_project'))
     end
   end
 
   def immutable_login #:nodoc:
     if self.changed.include? "login"
-      errors.add(:login, "is immutable.")
+      errors.add(:login, I18n.t('activerecord.errors.models.user.login_immutable'))
     end
   end
 
@@ -638,7 +638,7 @@ class User < ApplicationRecord
       score += 1 if self.password.length > 14
     end
     if score < 3
-      errors.add(:password, "must have three of the following properties: an uppercase letter, a lowercase letter, a digit, a symbol or be at least 15 characters in length")
+      errors.add(:password, I18n.t('activerecord.errors.models.user.weak_password'))
     end
   end
 
@@ -661,7 +661,7 @@ class User < ApplicationRecord
   def add_system_groups #:nodoc:
     user_group = UserGroup.new(:name => self.login, :site_id  => self.site_id)
     unless user_group.save
-      self.errors.add(:base, "User Group: #{user_group.errors.full_messages.join(", ")}")
+      self.errors.add(:base, I18n.t('activerecord.errors.models.user.user_group_error', :errors => user_group.errors.full_messages.join(", ")))
       return false
     end
 

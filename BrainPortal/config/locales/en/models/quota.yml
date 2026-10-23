@@ -4,3 +4,16 @@ en:
       quota:
         one: "Quota"
         other: "Quotas"
+    errors:
+      models:
+        cpu_quota:
+          must_be_positive_or_zero:    "must be 0 or > 0"
+          month_below_week:            "cannot be less than the limit for the week"
+          ever_below_month:            "cannot be less than the limit for the month"
+          user_with_group:             "cannot be configured with a group too"
+          group_with_user:             "cannot be configured with a user too"
+          need_user_group_or_bourreau: "need at least one of user, group, or execution server"
+          owner_missing:               "One of user, remote_resource, or group must be present"
+        disk_quota:
+          must_be_positive_or_zero: "must be 0 or > 0"
+          both_limits_zero:         "when using 0, both limits must be set to 0"

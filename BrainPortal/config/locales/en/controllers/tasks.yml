@@ -16,6 +16,10 @@ en:
       tmp_tar_failed:               "Cannot create tmp tar file for FileCollection #%{id}"
       bad_params_argument:          "Got argument that is not a ActionController::Parameters set with permitted=true..."
       no_such_preset:               "No such preset ID '%{id}'"
+      results_data_provider_missing: "must be provided"
+      bourreau_offline:              "is on an Execution Server that is currently offline"
+      invalid_task_in_set:           "While creating a set of tasks, at least one of them was found to be invalid, probably because a file selected as input was not appropriate."
+      select_server_and_version:     "Please select a Server and a Version for the tool."
     flash:
       bourreau_not_available:       "Warning: the Execution Server '%{name}' for this task is not available right now."
       select_a_tool:                "Please select a tool to run."

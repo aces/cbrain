@@ -92,17 +92,17 @@ class MessagesController < ApplicationController
     end
 
     if @message.header.blank?
-      @message.errors.add(:header, "cannot be left blank.")
+      @message.errors.add(:header, t('messages.errors.header_blank'))
     end
 
     if @group_id.blank?
-      @message.errors.add(:base, "You need to specify the project whose members will receive this message.")
+      @message.errors.add(:base, t('messages.errors.no_destination_group'))
     elsif @message.errors.empty?
       group = current_user.assignable_groups.find(@group_id)
       if group
         @message.send_me_to(group)
       else
-        @message.errors.add(:base, "Invalid project specified for message destination.")
+        @message.errors.add(:base, t('messages.errors.invalid_destination_group'))
       end
     end
     prepare_messages

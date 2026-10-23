@@ -106,7 +106,7 @@ class ToolsController < ApplicationController
     task_class = task_class.demodulize
     subclass = CbrainTask.const_get(task_class) rescue Object
     unless subclass < CbrainTask # strictly subclass
-      @tool.errors.add(:cbrain_task_class_name, "doesn't seem to be a code subclass of CbrainTask.")
+      @tool.errors.add(:cbrain_task_class_name, t('tools.errors.not_cbrain_task_subclass'))
     end
 
     respond_to do |format|

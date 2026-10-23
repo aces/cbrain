@@ -158,7 +158,7 @@ class Site < ApplicationRecord
   def create_system_group #:nodoc:
     site_group = SiteGroup.new(:name => self.name, :site_id  => self.id)
     unless site_group.save
-      self.errors.add(:base, "Site Group: #{site_group.errors.full_messages.join(", ")}")
+      self.errors.add(:base, I18n.t('activerecord.errors.models.site.site_group_error', :errors => site_group.errors.full_messages.join(", ")))
       return false
     end
   end
@@ -227,7 +227,7 @@ class Site < ApplicationRecord
 
   def prevent_group_collision #:nodoc:
     if self.name && SystemGroup.find_by_name(self.name)
-      errors.add(:name, "already in use by an existing project.")
+      errors.add(:name, I18n.t('activerecord.errors.models.site.name_taken_by_project'))
     end
   end
 
