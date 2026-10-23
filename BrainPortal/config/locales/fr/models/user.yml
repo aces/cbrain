@@ -20,3 +20,11 @@ fr:
         default_data_provider: "Serveur de stockage par défaut"
         forced_openid_providers: "Fournisseurs d'identité OpenID imposés"
         password: "Mot de passe"
+    errors:
+      models:
+        user:
+          same_password:          "ne peut pas être identique au précédent !"
+          login_taken_by_project: "est déjà utilisé par un projet existant."
+          login_immutable:        "ne peut pas être modifié."
+          weak_password:          "doit avoir trois des propriétés suivantes : une majuscule, une minuscule, un chiffre, un symbole ou une longueur d'au moins 15 caractères"
+          user_group_error:       "Projet de l'utilisateur : %{errors}"

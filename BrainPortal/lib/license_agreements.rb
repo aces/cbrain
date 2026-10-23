@@ -76,7 +76,7 @@ module LicenseAgreements
 
     if invalid_licenses.presence
       invalid_licenses_list = invalid_licenses.join(", ")
-      self.errors.add(:base, "Some licence agreement files do not exist: #{invalid_licenses_list}\nPlease place the license file(s) in /public/licenses or unconfigure it.\n")
+      self.errors.add(:base, I18n.t('activerecord.errors.messages.missing_license_files', :list => invalid_licenses_list))
       return false
     end
     return true

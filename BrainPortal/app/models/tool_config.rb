@@ -548,48 +548,48 @@ class ToolConfig < ApplicationRecord
       when 'file' # full path specification for a local file, e.g. "file:/myfiles/c.sqs"
         if id_or_name !~ /^\/\S+\.(sqs|sqfs|squashfs)$/
           self.errors.add(:singularity_overlays_specs,
-            " contains invalid #{kind} named '#{id_or_name}'. It should be a full path that ends in .squashfs, .sqs or .sqfs")
+            I18n.t('activerecord.errors.models.tool_config.overlay_invalid_file', :kind => kind, :name => id_or_name))
         end
 
       when 'userfile' # db-registered file spec, e.g. "userfile:42"
         if id_or_name !~ /\A\d+\z/
           self.errors.add(:singularity_overlays_specs,
-            %{" contains invalid userfile id '#{id_or_name}'. The userfile id should be an integer number."}
+            I18n.t('activerecord.errors.models.tool_config.overlay_userfile_id_not_integer', :id => id_or_name)
           )
         else
           userfile = SingleFile.where(:id => id_or_name).first
         end
         if ! userfile
           self.errors.add(:singularity_overlays_specs,
-            %{" contains invalid userfile id '#{id_or_name}'. The file with id '#{id_or_name}' is not found."}
+            I18n.t('activerecord.errors.models.tool_config.overlay_userfile_not_found', :id => id_or_name)
           )
         elsif userfile.name.to_s !~ /\.(sqs|sqfs|squashfs)$/
           self.errors.add(:singularity_overlays_specs,
-          " contains invalid userfile with id '#{id_or_name}' and name '#{userfile.name}'. File name should end in .squashfs, .sqs or .sqfs")
+            I18n.t('activerecord.errors.models.tool_config.overlay_userfile_bad_name', :id => id_or_name, :name => userfile.name))
           # todo maybe or/and check file type?
         end
 
       when 'dp' # DataProvider specs: "dp:name" or "dp:ID"
         dp = DataProvider.where_id_or_name(id_or_name).first
         if !dp
-          self.errors.add(:singularity_overlays_specs, "contains invalid DP '#{id_or_name}' (no such DP)")
+          self.errors.add(:singularity_overlays_specs, I18n.t('activerecord.errors.models.tool_config.overlay_no_such_dp', :name => id_or_name))
         elsif ! dp.is_a?(SingSquashfsDataProvider)
-          self.errors.add(:singularity_overlays_specs, "DataProvider '#{id_or_name}' is not a SingSquashfsDataProvider")
+          self.errors.add(:singularity_overlays_specs, I18n.t('activerecord.errors.models.tool_config.overlay_not_squashfs_dp', :name => id_or_name))
         end
 
       when 'ext3capture' # ext3 filesystem as a basename with an initial size
         # The basename is limited to letters, digits, numbers and dashes; the =SIZE suffix must end with G or M
         if id_or_name !~ /\A\w[\w\.-]+=([1-9]\d*)[mg]\z/i
-          self.errors.add(:singularity_overlays_specs, "contains invalid ext3capture specification (must be like ext3capture:basename=1g or 2m etc)")
+          self.errors.add(:singularity_overlays_specs, I18n.t('activerecord.errors.models.tool_config.overlay_invalid_ext3capture'))
         end
 
       when 'bindmount' # this is for binding to container rather than overlays
         if id_or_name !~ /\A\/\w[\w\.\-\/]+:\/\w[\w\.\-\/]+(:ro)?\z/
-          self.errors.add(:singularity_overlays_specs, "contains invalid bindmount specification (must be like 'bindmount:/path/in/bourreau:/path/in/container' with or without a final ':ro') and free from special characters")
+          self.errors.add(:singularity_overlays_specs, I18n.t('activerecord.errors.models.tool_config.overlay_invalid_bindmount'))
         end
       else
         # Other errors
-        self.errors.add(:singularity_overlays_specs, "contains invalid specification '#{kind}:#{id_or_name}'")
+        self.errors.add(:singularity_overlays_specs, I18n.t('activerecord.errors.models.tool_config.overlay_invalid_spec', :spec => "#{kind}:#{id_or_name}"))
       end
     end
 
@@ -606,7 +606,7 @@ class ToolConfig < ApplicationRecord
     return if     self.new_record?
     return unless self.version_name_change
     return unless self.tool&.cbrain_task_class_name&.to_s&.match(/^BoutiquesTask::/)
-    self.errors.add(:version_name, 'cannot be changed because this is a Boutiques tool')
+    self.errors.add(:version_name, I18n.t('activerecord.errors.models.tool_config.version_name_locked'))
   end
 
 

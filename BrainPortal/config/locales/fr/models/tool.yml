@@ -4,3 +4,16 @@ fr:
       tool:
         one: "Outil"
         other: "Outils"
+    errors:
+      models:
+        tool_config:
+          overlay_invalid_file:            " contient un %{kind} invalide nommé '%{name}'. Il doit s'agir d'un chemin complet se terminant par .squashfs, .sqs ou .sqfs"
+          overlay_userfile_id_not_integer: " contient un ID de fichier invalide '%{id}'. L'ID du fichier doit être un nombre entier."
+          overlay_userfile_not_found:      " contient un ID de fichier invalide '%{id}'. Le fichier d'ID '%{id}' est introuvable."
+          overlay_userfile_bad_name:       " contient un fichier invalide d'ID '%{id}' et de nom '%{name}'. Le nom du fichier doit se terminer par .squashfs, .sqs ou .sqfs"
+          overlay_no_such_dp:              "contient un serveur de stockage invalide '%{name}' (inexistant)"
+          overlay_not_squashfs_dp:         "le serveur de stockage '%{name}' n'est pas un SingSquashfsDataProvider"
+          overlay_invalid_ext3capture:     "contient une spécification ext3capture invalide (doit être de la forme ext3capture:basename=1g ou 2m, etc.)"
+          overlay_invalid_bindmount:       "contient une spécification bindmount invalide (doit être de la forme 'bindmount:/path/in/bourreau:/path/in/container', avec ou sans ':ro' final) et sans caractères spéciaux"
+          overlay_invalid_spec:            "contient une spécification invalide '%{spec}'"
+          version_name_locked:             "ne peut pas être modifié car il s'agit d'un outil Boutiques"

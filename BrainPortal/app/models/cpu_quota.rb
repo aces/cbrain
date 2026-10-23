@@ -255,14 +255,14 @@ class CpuQuota < Quota
                     self.max_cpu_ever.blank?
 
     # Log errors for bad values
-    self.errors.add(:max_cpu_past_week,  "must be 0 or > 0") if self.max_cpu_past_week  < 0
-    self.errors.add(:max_cpu_past_month, "must be 0 or > 0") if self.max_cpu_past_month < 0
-    self.errors.add(:max_cpu_ever,       "must be 0 or > 0") if self.max_cpu_ever       < 0
+    self.errors.add(:max_cpu_past_week,  I18n.t('activerecord.errors.models.cpu_quota.must_be_positive_or_zero')) if self.max_cpu_past_week  < 0
+    self.errors.add(:max_cpu_past_month, I18n.t('activerecord.errors.models.cpu_quota.must_be_positive_or_zero')) if self.max_cpu_past_month < 0
+    self.errors.add(:max_cpu_ever,       I18n.t('activerecord.errors.models.cpu_quota.must_be_positive_or_zero')) if self.max_cpu_ever       < 0
 
     # log inconsistencies between the limits
-    self.errors.add(:max_cpu_past_month, "cannot be less than the limit for the week")  if
+    self.errors.add(:max_cpu_past_month, I18n.t('activerecord.errors.models.cpu_quota.month_below_week')) if
       self.max_cpu_past_month <  self.max_cpu_past_week
-    self.errors.add(:max_cpu_ever,       "cannot be less than the limit for the month") if
+    self.errors.add(:max_cpu_ever,       I18n.t('activerecord.errors.models.cpu_quota.ever_below_month')) if
       self.max_cpu_ever       <  self.max_cpu_past_month
 
     return ! self.errors.any?
@@ -287,9 +287,9 @@ class CpuQuota < Quota
     return true if uid > 0 &&  gid == 0  # case 1 and 4
     return true if gid > 0 &&  uid == 0  # case 3 and 5
     return true if rrid > 0 && uid == 0 && gid == 0 # case 2
-    self.errors.add(:user_id,  'cannot be configured with a group too') if uid > 0
-    self.errors.add(:group_id, 'cannot be configured with a user too')  if gid > 0
-    self.errors.add(:base, 'need at least one of user, group, or execution server') if self.errors.empty?
+    self.errors.add(:user_id,  I18n.t('activerecord.errors.models.cpu_quota.user_with_group')) if uid > 0
+    self.errors.add(:group_id, I18n.t('activerecord.errors.models.cpu_quota.group_with_user')) if gid > 0
+    self.errors.add(:base,     I18n.t('activerecord.errors.models.cpu_quota.need_user_group_or_bourreau')) if self.errors.empty?
     false
   end
 
@@ -306,7 +306,7 @@ class CpuQuota < Quota
     self.remote_resource_id ||= 0
     self.group_id           ||= 0
     if self.user_id == 0 && self.remote_resource_id == 0 && self.group_id == 0
-      self.errors.add(:base, 'One of user, remote_resource, or group must be present')
+      self.errors.add(:base, I18n.t('activerecord.errors.models.cpu_quota.owner_missing'))
       throw :abort
     end
     true

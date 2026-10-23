@@ -1,7 +1,9 @@
 fr:
   tool_configs:
     errors:
-      need_tool_or_bourreau: "Il faut au moins un identifiant d'outil ou un identifiant de bourreau."
+      need_tool_or_bourreau: "Il faut au moins un identifiant d'outil ou un identifiant de serveur d'execution."
+      invalid_env_name: "Nom de variable d'environnement invalide '%{name}'"
+      blank_env_value:  "Valeur vide invalide pour la variable '%{name}'"
     flash:
       appended_info: "Informations ajoutées depuis une autre configuration d'outil."
       no_changes: "Aucune modification effectuée."

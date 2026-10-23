@@ -158,7 +158,7 @@ class BoutiquesPortalTask < PortalTask
     # ---------------------------------------------------------------
     expected = descriptor.inputs.map(&:id)
     notexp   = invoke_params.keys - expected
-    self.errors.add(:base, "We received some unexpected parameters: #{notexp.join(", ")}") if notexp.present?
+    self.errors.add(:base, I18n.t('activerecord.errors.models.boutiques_portal_task.unexpected_params', :list => notexp.join(", "))) if notexp.present?
 
     # ---------------------------------------------------------------
     # Check that any enum parameters have been given allowable values
@@ -199,7 +199,7 @@ class BoutiquesPortalTask < PortalTask
         next if isInactive(dontneedinput)
         params_errors.add(
           dontneedinput.cb_invoke_name,
-          "is disabled by " + input.name
+          I18n.t('activerecord.errors.models.boutiques_portal_task.disabled_by', :name => input.name)
         )
       end
 
@@ -209,7 +209,7 @@ class BoutiquesPortalTask < PortalTask
         next if ! isInactive(needinput)
         params_errors.add(
           needinput.cb_invoke_name,
-          "is required for " + input.name
+          I18n.t('activerecord.errors.models.boutiques_portal_task.required_for', :name => input.name)
         )
       end
 
@@ -243,7 +243,7 @@ class BoutiquesPortalTask < PortalTask
         currNumRows   = (cbcsv.ordered_raw_ids || []).length
         numRows     ||= currNumRows
         if currNumRows != numRows
-          params_errors.add(invokename, " does not have the same number of files (#{currNumRows}) as in other present cbcsvs (#{numRows})")
+          params_errors.add(invokename, I18n.t('activerecord.errors.models.boutiques_portal_task.cbcsv_row_count_mismatch', :count => currNumRows, :expected => numRows))
           next
         end
       end
@@ -475,7 +475,7 @@ class BoutiquesPortalTask < PortalTask
   # a .cbcsv for anything except generating a CbrainFileList object.
   def checkCbcsvType(f,id)
     isCbcsv = f.is_a?(CbrainFileList)
-    msg = " is not of type CbrainFileList (file #{f.name})! Please convert it with the file manager. (Type: #{f.class})"
+    msg = I18n.t('activerecord.errors.models.boutiques_portal_task.cbcsv_wrong_type', :name => f.name, :type => f.class)
     params_errors.add(id, msg) unless isCbcsv
     isCbcsv
   end
@@ -483,9 +483,9 @@ class BoutiquesPortalTask < PortalTask
   # Check that the user can access the cbcsv files
   def ascertainCbcsvUserAccess(f,id)
     # Error message when a file cannot be found (e.g. non-existent id)
-    msg1 = lambda { |i| " - unable to find file with id #{i} in cbcsv #{f.name}. Ensure you own all the given files." }
+    msg1 = lambda { |i| I18n.t('activerecord.errors.models.boutiques_portal_task.cbcsv_file_not_found', :id => i, :name => f.name) }
     # Error message when an exception is thrown
-    msg2 = lambda { |e| " cbcsv accessibility error in #{f.name}! Possibly due to cbcsv malformation. (Received error: #{e.inspect})" }
+    msg2 = lambda { |e| I18n.t('activerecord.errors.models.boutiques_portal_task.cbcsv_access_error', :name => f.name, :error => e.inspect) }
     errFlag = true # Whether the error checking found a problem
     begin # Check that the user has access to all of the files in the cbcsv
       f.sync_to_cache # We need the content of the cbcsv
@@ -507,7 +507,7 @@ class BoutiquesPortalTask < PortalTask
     # Error-check the remainder of the file with max_errors = 1 and non-strict (so zero rows can have anything in them)
     allGood   = cbcsv.validate_extra_attributes(self.user, 1, false, file_access_symbol()) rescue false # returns true if no errors
     allGood ||= cbcsv.errors # If there were errors, we want to look at them
-    params_errors.add(id, "has attributes (in cbcsv: #{cbcsv.name}) that are invalid (Received error: #{allGood.messages})") unless (allGood == true)
+    params_errors.add(id, I18n.t('activerecord.errors.models.boutiques_portal_task.cbcsv_invalid_attributes', :name => cbcsv.name, :error => allGood.messages)) unless (allGood == true)
     allGood
   end
 
@@ -572,30 +572,30 @@ class BoutiquesPortalTask < PortalTask
       # Try to convert to integer and then float. Cant? then its not a number.
       when :number
         if value.blank?
-          params_errors.add(invokename, ": value missing")
+          params_errors.add(invokename, I18n.t('activerecord.errors.models.boutiques_portal_task.value_missing'))
         elsif (value.is_a?(Integer) || value.is_a?(Float))
           value
         elsif (number = (Integer(value) rescue Float(value) rescue nil))
           value = number
         else
-          params_errors.add(invokename, ": not a number (#{value})")
+          params_errors.add(invokename, I18n.t('activerecord.errors.models.boutiques_portal_task.not_a_number', :value => value))
         end
 
       # Nothing special required for strings, bar for symbols being acceptable strings.
       when :string
         value = value.to_s                                                  if value.is_a?(Symbol)
-        params_errors.add(invokename, " is not a string")               unless value.is_a?(String)
+        params_errors.add(invokename, I18n.t('activerecord.errors.models.boutiques_portal_task.not_a_string')) unless value.is_a?(String)
         value = value.to_s.strip # now force it
-        params_errors.add(invokename, " is blank")                           if value.blank? && !empty_string_allowed
+        params_errors.add(invokename, I18n.t('activerecord.errors.models.boutiques_portal_task.string_blank')) if value.blank? && !empty_string_allowed
         # The following checks are to prevent cases when a string param is used as a path
         if value.present?
-          params_errors.add(invokename, " cannot contain newlines")          if value =~ /[\n\r]/
-          params_errors.add(invokename, " cannot start with this character") if value =~ /^[\.\/]+/
-          params_errors.add(invokename, " cannot move up dirs")              if value.include? "/../"
+          params_errors.add(invokename, I18n.t('activerecord.errors.models.boutiques_portal_task.contains_newlines')) if value =~ /[\n\r]/
+          params_errors.add(invokename, I18n.t('activerecord.errors.models.boutiques_portal_task.bad_first_character')) if value =~ /^[\.\/]+/
+          params_errors.add(invokename, I18n.t('activerecord.errors.models.boutiques_portal_task.moves_up_dirs')) if value.include? "/../"
         end
         # Finally, check allowed characters
         if value.present? && input.value_choices.blank? # valid value choices are checked elsewhere
-          params_errors.add(invokename, " contains invalid characters")  unless value.match?(charset_regex) # we can use a string in the match method
+          params_errors.add(invokename, I18n.t('activerecord.errors.models.boutiques_portal_task.invalid_characters')) unless value.match?(charset_regex) # we can use a string in the match method
         end
 
       # Try to match against various common representation of true and false
@@ -604,25 +604,25 @@ class BoutiquesPortalTask < PortalTask
         value = false if value.to_s =~ /\A(false|f|no|n|off|0|)\z/i
 
         if ! [ true, false ].include?(value)
-          params_errors.add(invokename, ": not true or false (#{value})")
+          params_errors.add(invokename, I18n.t('activerecord.errors.models.boutiques_portal_task.not_a_boolean', :value => value))
         end
 
       # Make sure the file ID is valid, accessible, not already used and
       # of the correct type.
       when :file
         unless (Integer(value) rescue nil)
-          params_errors.add(invokename, ": invalid or missing userfile")
+          params_errors.add(invokename, I18n.t('activerecord.errors.models.boutiques_portal_task.userfile_invalid'))
           next nil # remove bad value
         end
 
         file = Userfile.find_accessible_by_user(value, self.user, :access_requested => file_access_symbol()) rescue nil
         unless file
-          params_errors.add(invokename, ": cannot find userfile (ID #{value})")
+          params_errors.add(invokename, I18n.t('activerecord.errors.models.boutiques_portal_task.userfile_not_found', :id => value))
           next nil # remove bad value
         end
 
         if @taken_files[file.id].present? && @taken_files[file.id] != input.id
-          params_errors.add(invokename, ": file name already in use (#{file.name})")
+          params_errors.add(invokename, I18n.t('activerecord.errors.models.boutiques_portal_task.file_already_used', :name => file.name))
         else
           @taken_files[file.id] = input.id
         end
@@ -641,7 +641,7 @@ class BoutiquesPortalTask < PortalTask
     string_values  = Array(value).map(&:to_s)
     allowed_values = input.value_choices.map(&:to_s)
     return if (string_values - allowed_values).empty? # I hope that comparing the sets as strings is OK
-    params_errors.add(input.cb_invoke_name, "was not given an acceptable value")
+    params_errors.add(input.cb_invoke_name, I18n.t('activerecord.errors.models.boutiques_portal_task.unacceptable_value'))
   end
 
   def check_number_param(input)
@@ -651,7 +651,7 @@ class BoutiquesPortalTask < PortalTask
     if input.integer
       ok = values.all? { |v| Integer(v.to_s) rescue false }
       if ! ok
-        params_errors.add(input.cb_invoke_name, "must be specified as integer")
+        params_errors.add(input.cb_invoke_name, I18n.t('activerecord.errors.models.boutiques_portal_task.not_an_integer'))
         return # no need to check anything else
       end
     end
@@ -664,7 +664,7 @@ class BoutiquesPortalTask < PortalTask
       ok = values.all? { |v| v >  input.minimum.to_f } if clusive == 'exclusive'
       ok = values.all? { |v| v >= input.minimum.to_f } if clusive == 'inclusive'
       if ! ok
-        params_errors.add(input.cb_invoke_name, "violates #{clusive} minimum value #{input.minimum}")
+        params_errors.add(input.cb_invoke_name, I18n.t("activerecord.errors.models.boutiques_portal_task.violates_#{clusive}_minimum", :value => input.minimum))
       end
     end
 
@@ -673,7 +673,7 @@ class BoutiquesPortalTask < PortalTask
       ok = values.all? { |v| v <  input.maximum.to_f } if clusive == 'exclusive'
       ok = values.all? { |v| v <= input.maximum.to_f } if clusive == 'inclusive'
       if ! ok
-        params_errors.add(input.cb_invoke_name, "violates #{clusive} maximum value #{input.maximum}")
+        params_errors.add(input.cb_invoke_name, I18n.t("activerecord.errors.models.boutiques_portal_task.violates_#{clusive}_maximum", :value => input.maximum))
       end
     end
 
@@ -682,16 +682,16 @@ class BoutiquesPortalTask < PortalTask
   def check_list_param(input)
     values = invoke_params[input.id]
     if ! values.is_a?(Enumerable)
-      params_errors.add(input.cb_invoke_name, "is not a list?!?") # internal error?
+      params_errors.add(input.cb_invoke_name, I18n.t('activerecord.errors.models.boutiques_portal_task.not_a_list')) # internal error?
       return
     end
     min   = input.min_list_entries # can be nil
     max   = input.max_list_entries # can be nil
     if min && values.size < min
-      params_errors.add(input.cb_invoke_name, "must contain at least #{min} values")
+      params_errors.add(input.cb_invoke_name, I18n.t('activerecord.errors.models.boutiques_portal_task.too_few_values', :count => min))
     end
     if max && values.size > max
-      params_errors.add(input.cb_invoke_name, "must contain no more than #{max} values")
+      params_errors.add(input.cb_invoke_name, I18n.t('activerecord.errors.models.boutiques_portal_task.too_many_values', :count => max))
     end
   end
 
@@ -700,7 +700,7 @@ class BoutiquesPortalTask < PortalTask
     are_set = members.select { |inputid| ! isInactive(descriptor.input_by_id inputid) }
     return if are_set.size <= 1
     are_set.each do |inputid|
-      params_errors.add(group.name, " can have at most one parameter set")
+      params_errors.add(group.name, I18n.t('activerecord.errors.models.boutiques_portal_task.group_mutex'))
       #input = descriptor.input_by_id(inputid)
       #add error for input too?
     end
@@ -710,14 +710,14 @@ class BoutiquesPortalTask < PortalTask
     members = group.members
     are_set = members.select { |inputid| ! isInactive(descriptor.input_by_id inputid) }
     return if are_set.size > 0
-    params_errors.add(group.name, " need at least one parameter set")
+    params_errors.add(group.name, I18n.t('activerecord.errors.models.boutiques_portal_task.group_one_required'))
   end
 
   def check_allornone_group(group, descriptor = self.descriptor_for_after_form)
     members = group.members
     num_unset = members.count { |inputid| isInactive(descriptor.input_by_id inputid) }
     return if num_unset == 0 || num_unset == members.size # all, or none
-    params_errors.add(group.name, " need either all the parameters set or neither")
+    params_errors.add(group.name, I18n.t('activerecord.errors.models.boutiques_portal_task.group_all_or_none'))
   end
 
   # MAYBE IN COMMON
@@ -757,9 +757,9 @@ class BoutiquesPortalTask < PortalTask
     if self.errors.blank?
       cur_version = self.tool_config.version_name
       alt_version = compat_tool_config.version_name
-      self.errors.add(:base, "The Boutiques Descriptor for version '#{cur_version}' of this task has disappeared. This is a configuration error, contact the administrators.")
-      self.errors.add(:base, "A descriptor from another version ('#{alt_version}') is currently in use to allow you to view the parameters.")
-      self.errors.add(:unsavable, ": The parameters for this task cannot be modified.") # this special error prevents the save button from working
+      self.errors.add(:base, I18n.t('activerecord.errors.models.boutiques_portal_task.descriptor_disappeared', :version => cur_version))
+      self.errors.add(:base, I18n.t('activerecord.errors.models.boutiques_portal_task.using_other_version_descriptor', :version => alt_version))
+      self.errors.add(:unsavable, I18n.t('activerecord.errors.models.boutiques_portal_task.unsavable')) # this special error prevents the save button from working
     end
 
     compat_tool_config.boutiques_descriptor
@@ -784,10 +784,10 @@ class BoutiquesPortalTask < PortalTask
     # Add persistent errors, to make sure the task cannot be touched.
     if self.errors.blank?
       cur_version = self.tool_config.version_name
-      self.errors.add(:base, "The Boutiques Descriptor for version '#{cur_version}' of this task has disappeared. This is a configuration error, contact the administrators.")
-      self.errors.add(:base, "A replacement descriptor is currently in use to allow you to view the parameters.")
-      self.errors.add(:base, "Because the type information for the parameters is missing, they are all shown as strings.")
-      self.errors.add(:unsavable, ": The parameters for this task cannot be modified.") # this special error prevents the save button from working
+      self.errors.add(:base, I18n.t('activerecord.errors.models.boutiques_portal_task.descriptor_disappeared', :version => cur_version))
+      self.errors.add(:base, I18n.t('activerecord.errors.models.boutiques_portal_task.using_placeholder_descriptor'))
+      self.errors.add(:base, I18n.t('activerecord.errors.models.boutiques_portal_task.params_shown_as_strings'))
+      self.errors.add(:unsavable, I18n.t('activerecord.errors.models.boutiques_portal_task.unsavable')) # this special error prevents the save button from working
     end
 
     # Main descriptor

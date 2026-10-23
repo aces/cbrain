@@ -16,6 +16,10 @@ fr:
       tmp_tar_failed: "Impossible de créer le fichier tar temporaire pour la FileCollection #%{id}"
       bad_params_argument: "Argument reçu qui n'est pas un ensemble ActionController::Parameters avec permitted=true..."
       no_such_preset: "Aucun préréglage avec l'identifiant '%{id}'"
+      results_data_provider_missing: "doit être fourni"
+      bourreau_offline:              "est sur un serveur d'exécution actuellement hors ligne"
+      invalid_task_in_set:           "Lors de la création d'un ensemble de tâches, au moins l'une d'elles s'est révélée invalide, probablement parce qu'un fichier sélectionné en entrée n'était pas approprié."
+      select_server_and_version:     "Veuillez sélectionner un serveur et une version pour l'outil."
     flash:
       bourreau_not_available: "Attention : le serveur de calcul '%{name}' de cette tâche n'est pas disponible pour le moment."
       select_a_tool: "Veuillez sélectionner un outil à exécuter."

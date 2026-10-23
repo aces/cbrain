@@ -1,5 +1,7 @@
 fr:
   tools:
+    errors:
+      not_cbrain_task_subclass: "ne semble pas être une sous-classe de CbrainTask."
     flash:
       created: "L'outil a été créé avec succès."
       updated: "L'outil a été mis à jour avec succès."

@@ -61,7 +61,7 @@ module BoutiquesFileNameMatcher
           file.is_a?(CbrainFileList) || file.name.match(regex) # we don't validate the names of CbrainFileLists
         end
       if ! found_match
-        params_errors.add(input.cb_invoke_name, "does not have a proper name (should match #{regex.inspect})")
+        params_errors.add(input.cb_invoke_name, I18n.t('activerecord.errors.models.boutiques_portal_task.file_name_mismatch', :regex => regex.inspect))
       end
     end
 

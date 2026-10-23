@@ -4,3 +4,8 @@ fr:
       site:
         one: "Site"
         other: "Sites"
+    errors:
+      models:
+        site:
+          site_group_error:      "Projet du site : %{errors}"
+          name_taken_by_project: "est déjà utilisé par un projet existant."

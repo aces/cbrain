@@ -4,3 +4,16 @@ fr:
       quota:
         one: "Quota"
         other: "Quotas"
+    errors:
+      models:
+        cpu_quota:
+          must_be_positive_or_zero:    "doit être 0 ou > 0"
+          month_below_week:            "ne peut pas être inférieure à la limite de la semaine"
+          ever_below_month:            "ne peut pas être inférieure à la limite du mois"
+          user_with_group:             "ne peut pas être configuré en même temps qu'un projet"
+          group_with_user:             "ne peut pas être configuré en même temps qu'un utilisateur"
+          need_user_group_or_bourreau: "il faut au moins un utilisateur, un projet ou un serveur d'exécution"
+          owner_missing:               "Un utilisateur, un serveur ou un projet doit être indiqué"
+        disk_quota:
+          must_be_positive_or_zero: "doit être 0 ou > 0"
+          both_limits_zero:         "si 0 est utilisé, les deux limites doivent valoir 0"

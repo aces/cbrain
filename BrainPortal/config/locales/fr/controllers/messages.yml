@@ -1,5 +1,9 @@
 fr:
   messages:
+    errors:
+      header_blank:              "ne peut pas être vide."
+      no_destination_group:      "Vous devez indiquer le projet dont les membres recevront ce message."
+      invalid_destination_group: "Le projet indiqué comme destinataire du message est invalide."
     flash:
       sent: "Le message a été envoyé avec succès."
       update_failed: "Problème lors de la mise à jour du message."

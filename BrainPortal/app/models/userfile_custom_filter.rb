@@ -84,7 +84,7 @@ class UserfileCustomFilter < CustomFilter
     return true if self.data_types.empty?
     valid_types = Userfile.sti_descendant_names
     return true if ( self.data_types - valid_types ).empty?
-    errors.add(:data_types, 'contains invalid file types')
+    errors.add(:data_types, I18n.t('activerecord.errors.models.userfile_custom_filter.invalid_types'))
     return false
   end
 
@@ -92,18 +92,18 @@ class UserfileCustomFilter < CustomFilter
     my_ids = cleaned_array_for_attribute(:user_ids)
     return true if my_ids.empty?
     return true if (my_ids.map(&:to_i) - self.user.available_users.pluck(:id)).empty?
-    errors.add(:data_user_ids, 'are not all accessible users')
+    errors.add(:data_user_ids, I18n.t('activerecord.errors.models.userfile_custom_filter.inaccessible_users'))
     false
   end
 
   def valid_data_filename #:nodoc:
     if self.data_file_name_type.present? && !["match", "contain", "begin", "end"].include?(self.data_file_name_type)
-      errors.add(:file_name_type, 'is not a valid file name matcher')
+      errors.add(:file_name_type, I18n.t('activerecord.errors.models.userfile_custom_filter.invalid_file_name_type'))
       return false
     end
     if self.data_file_name_type.present?  && !self.data_file_name_term.present? ||
        !self.data_file_name_type.present? && self.data_file_name_term.present?
-      errors.add(:file_name_type, 'both filename fields should be set if you want to filter by filename')
+       errors.add(:file_name_type, I18n.t('activerecord.errors.models.userfile_custom_filter.incomplete_file_name'))
       return false
     end
     true
@@ -113,19 +113,19 @@ class UserfileCustomFilter < CustomFilter
     return true if self.data_size_type.blank? && self.data_size_term.blank?
     if self.data_size_type.present?  && !self.data_size_term.present? ||
        !self.data_size_type.present? && self.data_size_term.present?
-      errors.add(:data_size, 'both size fields should be set if you want to filter by size')
+       errors.add(:data_size, I18n.t('activerecord.errors.models.userfile_custom_filter.incomplete_size'))
       return false
     end
     if !["1","2"].include? self.data_size_type
-      errors.add(:data_size_term, 'is not a valid operator for size comparaison')
+      errors.add(:data_size_term, I18n.t('activerecord.errors.models.userfile_custom_filter.invalid_size_operator'))
       return false
     end
     if self.data_size_term.blank?
-      errors.add(:data_size_term, 'should be set')
+      errors.add(:data_size_term, I18n.t('activerecord.errors.models.userfile_custom_filter.size_term_missing'))
       return false
     end
     if self.data_size_term !~ /^\d+$/
-      errors.add(:data_size_term, "should be an integer")
+      errors.add(:data_size_term, I18n.t('activerecord.errors.models.userfile_custom_filter.size_term_not_integer'))
       return false
     end
     return true
@@ -135,7 +135,7 @@ class UserfileCustomFilter < CustomFilter
     my_ids = cleaned_array_for_attribute(:group_ids)
     return true if my_ids.blank?
     return true if (my_ids.map(&:to_i) - self.user.viewable_group_ids).empty?
-    errors.add(:data_group_ids, 'have groups that are not accessible')
+    errors.add(:data_group_ids, I18n.t('activerecord.errors.models.userfile_custom_filter.inaccessible_groups'))
     false
   end
 
@@ -143,7 +143,7 @@ class UserfileCustomFilter < CustomFilter
     self.data_tag_ids = cleaned_array_for_attribute(:tag_ids)
     return true if self.data_tag_ids.empty?
     return true if (self.data_tag_ids.map(&:to_i) - self.user.available_tags.pluck(:id)).empty?
-    errors.add(:data_tag_ids, 'some tags are not accessible')
+    errors.add(:data_tag_ids, I18n.t('activerecord.errors.models.userfile_custom_filter.inaccessible_tags'))
     return false
   end
 
@@ -151,7 +151,7 @@ class UserfileCustomFilter < CustomFilter
     dp_ids = cleaned_array_for_attribute(:data_provider_ids)
     return true if dp_ids.empty?
     return true if (dp_ids.map(&:to_i) - DataProvider.find_all_accessible_by_user(self.user).pluck(:id)).empty?
-    errors.add(:data_data_provider_ids, 'are not all accessible data providers')
+    errors.add(:data_data_provider_ids, I18n.t('activerecord.errors.models.userfile_custom_filter.inaccessible_data_providers'))
     false
   end
 
@@ -160,14 +160,14 @@ class UserfileCustomFilter < CustomFilter
     return true if self.data_sync_status.empty?
     return true if
       ( self.data_sync_status - ["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"] ).empty?
-    errors.add(:data_sync_status, 'contain invalid sync status names')
+    errors.add(:data_sync_status, I18n.t('activerecord.errors.models.userfile_custom_filter.invalid_sync_status'))
     return false
   end
 
   def valid_data_archiving_status #:nodoc:
     return true if self.data_archiving_status.blank?
     return true if ["archived", "none"].include? self.data_archiving_status
-    errors.add(:data_archiving_status, 'is not a valid archiving status')
+    errors.add(:data_archiving_status, I18n.t('activerecord.errors.models.userfile_custom_filter.invalid_archiving_status'))
     return false
   end
 

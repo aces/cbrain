@@ -4,3 +4,9 @@ en:
       message:
         one: "Message"
         other: "Messages"
+    errors:
+      models:
+        message:
+          header_blank:         "cannot be left blank"
+          header_too_long:      "is too long, it cannot exceed 255 byte"
+          description_too_long: "is too long, it cannot exceed 64 Kb"

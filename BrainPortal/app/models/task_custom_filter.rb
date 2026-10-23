@@ -74,7 +74,7 @@ class TaskCustomFilter < CustomFilter
     my_ids = cleaned_array_for_attribute(:user_ids)
     return true if my_ids.empty?
     return true if (my_ids.map(&:to_i) - self.user.available_users.pluck(:id)).empty?
-    errors.add(:data_user_ids, 'are not all accessible users')
+    errors.add(:data_user_ids, I18n.t('activerecord.errors.models.task_custom_filter.inaccessible_users'))
     false
   end
 
@@ -82,7 +82,7 @@ class TaskCustomFilter < CustomFilter
     my_ids = cleaned_array_for_attribute(:group_ids)
     return true if my_ids.blank?
     return true if (my_ids.map(&:to_i) - self.user.viewable_group_ids).empty?
-    errors.add(:data_group_ids, 'have groups that are not accessible')
+    errors.add(:data_group_ids, I18n.t('activerecord.errors.models.task_custom_filter.inaccessible_groups'))
     false
   end
 
@@ -90,7 +90,7 @@ class TaskCustomFilter < CustomFilter
     my_ids = cleaned_array_for_attribute(:bourreau_ids)
     return true if my_ids.empty?
     return true if (my_ids.map(&:to_i) - Bourreau.find_all_accessible_by_user(self.user).pluck(:id)).empty?
-    errors.add(:data_bourreau_ids, 'are not all accessible bourreaux')
+    errors.add(:data_bourreau_ids, I18n.t('activerecord.errors.models.task_custom_filter.inaccessible_bourreaux'))
     return false
   end
 
@@ -99,18 +99,18 @@ class TaskCustomFilter < CustomFilter
     return true if self.data_types.empty?
     valid_types = CbrainTask.sti_descendant_names
     return true if ( self.data_types - valid_types ).empty?
-    errors.add(:data_types, 'contains invalid file types')
+    errors.add(:data_types, I18n.t('activerecord.errors.models.task_custom_filter.invalid_types'))
     return false
   end
 
   def valid_data_description #:nodoc:
     if self.data_description_type.present? && !["match", "contain", "begin", "end"].include?(self.data_description_type)
-      errors.add(:data_description_type, 'is not a valid description matcher')
+      errors.add(:data_description_type, I18n.t('activerecord.errors.models.task_custom_filter.invalid_description_type'))
       return false
     end
     if self.data_description_type.present?  && !self.data_description_term.present? ||
        !self.data_description_type.present? && self.data_description_term.present?
-      errors.add(:data_description_type, 'both description fields should be set if you want to filter by description')
+      errors.add(:data_description_type, I18n.t('activerecord.errors.models.task_custom_filter.incomplete_description'))
       return false
     end
     true
@@ -119,21 +119,21 @@ class TaskCustomFilter < CustomFilter
   def valid_data_wd_status #:nodoc:
     return true if self.data_wd_status.blank?
     return true if [ 'shared', 'not_shared', 'exists', 'none' ].include? self.data_wd_status
-    errors.add(:data_wd_status, 'is not a valid work directory status')
+    errors.add(:data_wd_status, I18n.t('activerecord.errors.models.task_custom_filter.invalid_wd_status'))
   end
 
   def valid_data_status #:nodoc:
     self.data_status = cleaned_array_for_attribute(:status)
     return true if self.data_status.empty?
     return true if ( self.data_status -  (CbrainTask::ALL_STATUS - ["Preset", "SitePreset", "Duplicated"])).empty?
-    errors.add(:data_data_status, 'some task status are invalid')
+    errors.add(:data_data_status, I18n.t('activerecord.errors.models.task_custom_filter.invalid_status'))
     return false
   end
 
   def valid_data_archiving_status #:nodoc:
     return true if self.data_archiving_status.blank?
     return true if ["none", "cluster", "file"].include? self.data_archiving_status
-    errors.add(:data_archiving_status, 'is not a valid archiving status')
+    errors.add(:data_archiving_status, I18n.t('activerecord.errors.models.task_custom_filter.invalid_archiving_status'))
     return false
   end
 
