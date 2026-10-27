@@ -1,0 +1,7 @@
+fr:
+  workdir_notifications:
+    saved: "Répertoire de travail de la tâche enregistré"
+    description: "Le répertoire de travail de la tâche a été enregistré en tant que TaskRawWorkdir"
+    links: "Pour %{task}, dans %{file}"
+    failed: "Impossible d’enregistrer le répertoire de travail"
+    error: "Impossible d’enregistrer le répertoire de travail pour %{task}"
