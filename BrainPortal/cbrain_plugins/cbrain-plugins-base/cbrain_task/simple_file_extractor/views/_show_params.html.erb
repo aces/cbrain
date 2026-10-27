@@ -23,7 +23,7 @@
 -%>
 
 <br>
-<strong>Output:</strong>
+<strong><%= t('simple_file_extractor_ui.outputs') %></strong>
 <p>
-Final file: <%= link_to_userfile_if_accessible params[:output_file_id] %>
+<%= t('simple_file_extractor_ui.final') %> <%= link_to_userfile_if_accessible params[:output_file_id] %>
 
