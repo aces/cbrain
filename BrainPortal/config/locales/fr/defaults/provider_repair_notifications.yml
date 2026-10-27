@@ -1,0 +1,17 @@
+fr:
+  provider_repair_notifications:
+    started:
+      one: "Réparation de %{count} incohérence en arrière-plan."
+      other: "Réparation de %{count} incohérences en arrière-plan."
+    success:
+      one: "%{count} problème corrigé."
+      other: "%{count} problèmes corrigés."
+    failed:
+      one: "Sur %{total}, %{count} n’a pas pu être corrigé :"
+      other: "Sur %{total}, %{count} n’ont pas pu être corrigés :"
+    repaired: "|%{message}| : corrigé"
+    action: " (action effectuée : %{action})"
+    report: "Rapport :"
+    issues:
+      one: "%{count} problème"
+      other: "%{count} problèmes"

@@ -1,0 +1,17 @@
+en:
+  provider_repair_notifications:
+    started:
+      one: "Repair %{count} inconsistency in background."
+      other: "Repair %{count} inconsistencies in background."
+    success:
+      one: "%{count} issue repaired successfully."
+      other: "%{count} issues repaired successfully."
+    failed:
+      one: "Out of %{total}, %{count} could not be repaired:"
+      other: "Out of %{total}, %{count} could not be repaired:"
+    repaired: "|%{message}|: repaired"
+    action: " (action taken: %{action})"
+    report: "Report:"
+    issues:
+      one: "%{count} issue"
+      other: "%{count} issues"
