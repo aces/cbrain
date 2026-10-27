@@ -57,3 +57,10 @@ en:
       preset_delete_not_owner:      "Cannot delete a preset that doesn't belong to you.\n"
       preset_update_not_owner:      "Cannot update a preset that does not belong to you.\n"
       preset_saved:                 "Saved preset '%{description}'.\n"
+    update_notifications:
+      success: "Finished sending update to your task(s)"
+      failure: "Failed to update your task(s)"
+      no_access: "you don't have access to this task(s)"
+      group_not_accessible: "new group is not accessible by task's owner"
+      provider_not_accessible: "new data provider is not accessible by task's owner"
+      tool_config_error: "error when updating tool config"
