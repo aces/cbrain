@@ -23,31 +23,31 @@
 -%>
 
 <% file_ids = params[:interface_userfile_ids] || [] %>
-<strong><%= file_ids.size %> userfiles to be processed:</strong><BR>
+<strong><%= t('bash_scriptor_ui.files', count: file_ids.size) %></strong><BR>
 <UL>
   <% file_ids[0,10].each do |id| %>
     <LI><%= link_to_userfile_if_accessible id %></LI>
   <% end %>
   <% if file_ids.size > 10 %>
-    <LI><%= file_ids.size - 10 %> more files...)</LI>
+    <LI><%= t('bash_scriptor_ui.more', count: file_ids.size - 10) %></LI>
   <% end %>
 </UL>
 
 <P>
 
-<strong>Options:</strong>
+<strong><%= t('bash_scriptor_ui.options') %></strong>
 <p>
 <ul>
-<li>Time estimate for each file: <%= pretty_elapsed(params[:time_estimate_per_file].to_i || 60) %></li>
-<li>Files saved as owner: <%= link_to_user_if_accessible params[:saved_files_user_id] %></li>
-<li>Files saved to project: <%= link_to_group_if_accessible params[:saved_files_group_id] %></li>
+<li><%= t('bash_scriptor_ui.estimate') %> <%= pretty_elapsed(params[:time_estimate_per_file].to_i || 60) %></li>
+<li><%= t('bash_scriptor_ui.saved_owner') %> <%= link_to_user_if_accessible params[:saved_files_user_id] %></li>
+<li><%= t('bash_scriptor_ui.saved_project') %> <%= link_to_group_if_accessible params[:saved_files_group_id] %></li>
 </ul>
 
-<STRONG>Outputs:</STRONG>
+<STRONG><%= t('bash_scriptor_ui.outputs') %></STRONG>
 <P>
 <UL>
 <% (params[:output_userfile_ids].presence || []).each do |id| %>
-  <LI>Userfile: <%= link_to_userfile_if_accessible id %></LI>
+  <LI><%= t('bash_scriptor_ui.userfile') %> <%= link_to_userfile_if_accessible id %></LI>
 <% end %>
 </UL>
 
