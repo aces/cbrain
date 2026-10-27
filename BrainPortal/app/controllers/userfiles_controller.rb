@@ -1047,21 +1047,21 @@ class UserfilesController < ApplicationController
         if result == :success
           Message.send_message(current_user,
                               :message_type  => :notice,
-                              :header        => "Collections Merged",
+                              :header        => t('collection_merge_notifications.merged'),
                               :variable_text => "[[#{collection.name}][/userfiles/#{collection.id}]]"
                               )
           collection.addlog(self, "Created by #{current_user.login} by merging #{userfiles.size} files.")
         elsif result == :collision
           Message.send_message(current_user,
                               :message_type  => :error,
-                              :header        => "Collection could not be merged.",
-                              :variable_text => "There was a collision among the file names."
+                              :header        => t('collection_merge_notifications.failed'),
+                              :variable_text => t('collection_merge_notifications.collision')
                               )
         end
       rescue => e
         Message.send_message(current_user,
                             :message_type  => :error,
-                            :header        => "The collection was not created correctly on #{DataProvider.find_all_accessible_by_user(current_user).where( :id => data_provider_id, :online => true, :read_only => false ).first.name}",
+                            :header        => t('collection_merge_notifications.provider_failed', provider: DataProvider.find_all_accessible_by_user(current_user).where(:id => data_provider_id, :online => true, :read_only => false).first.name),
                             :variable_text => "#{e.message}\n#{collection.name}\n"
                               )
       end

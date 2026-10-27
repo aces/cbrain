@@ -1,0 +1,6 @@
+en:
+  collection_merge_notifications:
+    merged: "Collections Merged"
+    failed: "Collection could not be merged."
+    collision: "There was a collision among the file names."
+    provider_failed: "The collection was not created correctly on %{provider}"
