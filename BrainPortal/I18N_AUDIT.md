@@ -13,24 +13,45 @@ controls/help, Zenodo notifications, and the site-description label cleanup.
 These patches were composed in a temporary source snapshot before scanning.
 Do not treat a pending PR as already deployed.
 
-## Confirmed remaining strings
+## Confirmed findings and fix PRs
 
-Paths below are relative to BrainPortal. Each row is suitable for a separate,
-scoped follow-up; it is not covered by the changes above.
+Paths below are relative to BrainPortal. The findings below now have separate fix
+PRs targeting `dev`, tested in English and French. These are pending changes,
+not a claim that the fixes have already merged or been deployed.
 
-| Area | Source and examples | Suggested verification |
-| --- | --- | --- |
-| File upload notifications | `app/controllers/userfiles_controller.rb`: `File Uploaded`, `Collection Uploaded`, failed collection upload | Success/failure messages in both locales; preserve API behavior |
-| Collection merge and archive extraction | Same controller: `Collections Merged`, `File extraction completed/failed` | Success/failure and singular/plural counts; preserve names and links |
-| Data-provider repair notifications | `app/controllers/data_providers_controller.rb`: repair progress and failed-repair summary | Zero/one/multiple inconsistencies; stub repair operations |
-| Viewer and availability responses | `userfiles_controller.rb`: selection/viewer errors; `data_providers_controller.rb` and `bourreaux_controller.rb`: `No Information Available` | HTML/AJAX responses and escaping of filenames/viewer names |
-| Task submission summary | `app/controllers/tasks_controller.rb`: `Submitted ... tasks; some messages follow.` | One/multiple submissions; keep tool names unchanged |
-| Project invitations | `app/models/invitation.rb`, `send_out`: invitation subject and email body | Recipient-language policy, in-app display and captured email; no real invitations |
-| Work-directory notifications | `app/models/cluster_task.rb`: saved/failed work-directory messages | Worker locale loading and recipient language; preserve task links |
-| Loading feedback | `public/javascripts/cbrain.js`: `Loading...`, `Error loading element` | Success/error AJAX paths; put translated text in HTML per #1660 |
-| File launch bar | `public/javascripts/userfiles.js` and `cbrain/userfiles/launch_task.js`: `Select some files to launch`, `Launch`, `No files selected` | Empty/selected files, button enablement and launch parameters |
-| Boutiques preview | `cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/views/_form_js.html.erb`: unequal cbcsv lengths warning, changing-parameter heading and `Task` column | Single/multiple lists and unequal lengths; keep descriptor values unchanged |
-| Other built-in tool forms | `simple_file_extractor`, `cb_serializer`, `bash_scriptor` views: headings and explanatory text | One tool per PR; distinguish UI prose from executable examples |
+| Area | Source and examples | Verification scope | Fix PRs |
+| --- | --- | --- | --- |
+| File upload notifications | `app/controllers/userfiles_controller.rb`: `File Uploaded`, `Collection Uploaded`, failed collection upload | Success/failure messages in both locales; preserve API behavior | [#1691](https://github.com/aces/cbrain/pull/1691) |
+| Collection merge and archive extraction | Same controller: `Collections Merged`, `File extraction completed/failed` | Success/failure and singular/plural counts; preserve names and links | [#1692](https://github.com/aces/cbrain/pull/1692), [#1693](https://github.com/aces/cbrain/pull/1693) |
+| Data-provider repair notifications | `app/controllers/data_providers_controller.rb`: repair progress and failed-repair summary | Zero/one/multiple inconsistencies; stub repair operations | [#1694](https://github.com/aces/cbrain/pull/1694) |
+| Viewer and availability responses | `userfiles_controller.rb`: selection/viewer errors; `data_providers_controller.rb` and `bourreaux_controller.rb`: `No Information Available` | HTML/AJAX responses and escaping of filenames/viewer names | [#1696](https://github.com/aces/cbrain/pull/1696) |
+| Task submission summary | `app/controllers/tasks_controller.rb`: `Submitted ... tasks; some messages follow.` | One/multiple submissions; keep tool names unchanged | [#1695](https://github.com/aces/cbrain/pull/1695) |
+| Project invitations | `app/models/invitation.rb`, `send_out`: invitation subject and email body | Recipient-language policy, in-app display and captured email; no real invitations | [#1697](https://github.com/aces/cbrain/pull/1697) |
+| Work-directory notifications | `app/models/cluster_task.rb`: saved/failed work-directory messages | Worker locale loading and recipient language; preserve task links | [#1698](https://github.com/aces/cbrain/pull/1698) |
+| Loading feedback | `public/javascripts/cbrain.js`: `Loading...`, `Error loading element` | Success/error AJAX paths; put translated text in HTML per #1660 | [#1699](https://github.com/aces/cbrain/pull/1699) |
+| File launch bar | `public/javascripts/userfiles.js` and `cbrain/userfiles/launch_task.js`: `Select some files to launch`, `Launch`, `No files selected` | Empty/selected files, button enablement and launch parameters | [#1700](https://github.com/aces/cbrain/pull/1700) |
+| Boutiques preview | `cbrain_plugins/cbrain-plugins-base/cbrain_task/boutiques_task/views/_form_js.html.erb`: unequal cbcsv lengths warning, changing-parameter heading and `Task` column | Single/multiple lists and unequal lengths; keep descriptor values unchanged | [#1701](https://github.com/aces/cbrain/pull/1701) |
+| Other built-in tool forms | `simple_file_extractor`, `cb_serializer`, `bash_scriptor` views: headings and explanatory text | One tool per PR; distinguish UI prose from executable examples | [#1702](https://github.com/aces/cbrain/pull/1702) (SimpleFileExtractor), [#1703](https://github.com/aces/cbrain/pull/1703) (CBSerializer), [#1704](https://github.com/aces/cbrain/pull/1704) (BashScriptor) |
+
+## Follow-up validation
+
+The fourteen fixes were composed with the existing i18n changes, including
+#1677, in the isolated Apple-container deployment (Ruby 2.7.8 / Rails 5.0.7.2).
+English/French checks covered the real notification construction expressions
+with 0/1/2 counts, actual invitation callbacks and captured email, and the
+worker save method with file/provider operations stubbed. Invitation and worker
+messages were checked with the process locale opposite to the recipient's
+saved preference; the worker dictionary also loaded independently of the portal.
+
+Browser checks covered persisted notifications, actual tool partials and their
+controls/help, viewer/availability responses and escaping, AJAX loading/error
+handlers, launch selection/button/payload behavior, and single/multiple/unequal
+CBCSV previews. External operations were not run: no emails were delivered,
+provider repairs performed, scripts executed, or processing jobs launched.
+Each fix PR records its specific test scope and limitations.
+
+The preview checks also exposed a numeric/string CBCSV ID mismatch that hid
+multi-list previews and warnings; #1701 fixes that comparison.
 
 ## Dictionary cleanup
 
@@ -63,6 +84,8 @@ counts. This pass does not cover every portal view/helper, external plugin,
 email, worker execution path or dynamically generated string.
 
 After these follow-ups merge, repeat the source scan and a bilingual browser
-pass. In particular, verify background-message language explicitly: translating
-a string in the current process locale does not establish a recipient-language
-policy. Keep #1660 open until these remaining audits and decisions are resolved.
+pass. The invitation and work-directory follow-ups now use the recipient’s saved
+language; other background-message paths still need auditing before making a
+system-wide recipient-language guarantee. Keep #1660 open for the broader
+coverage and dictionary audits described above; the concrete rows in this
+inventory are now covered by the linked fix PRs.
