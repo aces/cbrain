@@ -193,7 +193,7 @@ class UserfilesController < ApplicationController
     @userfiles   = Userfile.find_all_accessible_by_user(current_user, :access_requested => :write).where(:id => file_ids).all.to_a
     @have_parent = @userfiles.any? { |u| u.parent_id  }
     if ! ( @userfiles.size >= 2  || @have_parent )
-      render :html  => "<span class=\"warning\">You must select either:<br> 1) several files without parents or<br> 2) one file with a parent.</span>".html_safe
+      render :html  => helpers.content_tag(:span, helpers.t('viewer_feedback.selection_html'), :class => 'warning')
       return
     end
 
@@ -370,7 +370,7 @@ class UserfilesController < ApplicationController
 
     # No viewer
     if ! @viewer
-      render :html => "<div class=\"warning\">Could not find viewer #{ERB::Util.html_escape(viewer_name || '(Unset)')}.</div>".html_safe, :status  => "404"
+      render :html => helpers.content_tag(:div, t('viewer_feedback.missing', viewer: viewer_name || t('viewer_feedback.unset')), :class => 'warning'), :status  => "404"
       return
     end
 
@@ -397,15 +397,15 @@ class UserfilesController < ApplicationController
 
     # Just to provide some production information about the error.
     # @userfile could be nil if userfile_for_viewer(), above, crashed or returned nil.
-    @userfile ||= (Userfile.where(:id => params[:id]).first || SingleFile.new(:name => "(Missing file with ID #{params[:id]})"))
+    @userfile ||= (Userfile.where(:id => params[:id]).first || SingleFile.new(:name => t('viewer_feedback.missing_file', id: params[:id])))
     ExceptionLog.log_exception(exception, current_user, request)
     Message.send_message(current_user,
       :message_type => 'error',
-      :header => "Could not view #{@userfile.name}",
-      :description => "An internal error occurred when trying to display the contents of #{@userfile.name}."
+      :header => t('viewer_feedback.header', name: @userfile.name),
+      :description => t('viewer_feedback.description', name: @userfile.name)
     )
 
-    render :html => "<div class=\"warning\">Error generating view code for viewer '#{ERB::Util.html_escape(params[:viewer] || '(Unset)')}'. Admins have been notified and will look into the problem. In the meantime, there's not much you can do about this.</div>".html_safe
+    render :html => helpers.content_tag(:div, t('viewer_feedback.error', viewer: params[:viewer] || t('viewer_feedback.unset')), :class => 'warning')
   end
 
   def show #:nodoc:

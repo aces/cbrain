@@ -1,0 +1,10 @@
+en:
+  viewer_feedback:
+    selection_html: "You must select either:<br> 1) several files without parents or<br> 2) one file with a parent."
+    missing: "Could not find viewer %{viewer}."
+    unset: "(Unset)"
+    missing_file: "(Missing file with ID %{id})"
+    header: "Could not view %{name}"
+    description: "An internal error occurred when trying to display the contents of %{name}."
+    error: "Error generating view code for viewer '%{viewer}'. Admins have been notified and will look into the problem. In the meantime, there’s not much you can do about this."
+    unavailable: "No Information Available"
