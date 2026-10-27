@@ -1,0 +1,6 @@
+en:
+  boutiques_input_hints:
+    nothing_to_select: "(Nothing to select)"
+    note: "Note:"
+    single_file: "This tool requires only one mandatory input file. If this field is left empty, a separate task will be launched for each of the remaining unselected files."
+    missing_data: "(Nothing to select: missing data)"
