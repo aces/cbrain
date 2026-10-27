@@ -1,7 +1,7 @@
 <% if object.errors.any? %>
   <%
-    object_name    ||= object.class.to_s.demodulize.underscore.humanize.downcase
-    header_message ||= t('.header_message', object_errors: pluralize(object.errors.count, "error"), object_name: object_name)
+    object_name    ||= object.class.model_name.human.downcase
+    header_message ||= t('.header_message', count: object.errors.count, object_name: object_name)
     message        ||= t('.message')
     html_options   ||= {}
   %>
