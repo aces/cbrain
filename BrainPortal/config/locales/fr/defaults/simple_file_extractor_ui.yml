@@ -1,0 +1,20 @@
+fr:
+  simple_file_extractor_ui:
+    inputs: "Résumé des entrées"
+    patterns: "Motifs d’extraction :"
+    about: "À propos de ces motifs :"
+    output: "Nom du fichier de sortie"
+    intro_html: "Ces motifs sont des <em>motifs de recherche de fichiers</em> de style UNIX, et non des <em>expressions régulières</em>."
+    asterisk: "Un astérisque correspond à zéro, un ou plusieurs caractères, sauf « / »."
+    question: "Un point d’interrogation correspond à un seul caractère, sauf « / »."
+    prefix_html: "En général, les motifs commencent par <em>*/</em>, car le premier élément doit correspondre au nom des FileCollections."
+    help: "Consultez le lien d’aide ci-dessus pour plus d’informations et des exemples."
+    toggle: "(Afficher/Masquer)"
+    files:
+      one: "%{count} fichier à traiter :"
+      other: "%{count} fichiers à traiter :"
+    more:
+      one: "%{count} fichier supplémentaire…"
+      other: "%{count} fichiers supplémentaires…"
+    outputs: "Sortie :"
+    final: "Fichier final :"

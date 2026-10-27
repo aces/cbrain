@@ -23,51 +23,50 @@
 -%>
 
 <fieldset>
-  <legend>Inputs summary</legend>
+  <legend><%= t('simple_file_extractor_ui.inputs') %></legend>
   <% file_ids = params[:interface_userfile_ids] || [] %>
-  <strong><%= file_ids.size %> files to be processed:</strong><BR>
+  <strong><%= t('simple_file_extractor_ui.files', count: file_ids.size) %></strong><BR>
   <ul>
     <% file_ids[0,10].each do |id| %>
       <li><%= link_to_userfile_if_accessible id %></li>
     <% end %>
     <% if file_ids.size > 10 %>
-      <li>(<%= file_ids.size - 10 %> more files...)</li>
+      <li>(<%= t('simple_file_extractor_ui.more', count: file_ids.size - 10) %>)</li>
     <% end %>
   </ul>
 </fieldset>
 
 <fieldset>
-  <legend>Extraction patterns:</legend>
+  <legend><%= t('simple_file_extractor_ui.patterns') %></legend>
   <% 10.times do |i| %>
     <%= form.params_text_field "patterns[#{i}]", :size => 120 %><p>
   <% end %>
   <p>
-  <strong>About these patterns:</strong>
-  <%= show_hide_toggle "(Show/Hide)", "#pat-notes", :class  => 'action_link' %>
+  <strong><%= t('simple_file_extractor_ui.about') %></strong>
+  <%= show_hide_toggle t('simple_file_extractor_ui.toggle'), "#pat-notes", :class  => 'action_link' %>
   <br>
   <div id="pat-notes" style="display: none">
-    These patterns are UNIX style <em>file matching patterns</em>, not <em>regular expressions</em>.
+    <%= t('simple_file_extractor_ui.intro_html') %>
     <p>
     <dl>
       <dt>*</dt>
       <dd>
-        An asterisk matches zero, one, or many characters, except "/".
+        <%= t('simple_file_extractor_ui.asterisk') %>
       </dd>
       <dt>?</dt>
       <dd>
-        A question mark matches a single character, except "/".
+        <%= t('simple_file_extractor_ui.question') %>
       </dd>
     </dl>
     <p>
-    Typically, all patterns will start with <em>*/</em> because the first component must match
-    the names of the FileCollections themselves.
+    <%= t('simple_file_extractor_ui.prefix_html') %>
     <p>
-    See the 'help' link above for more information and examples.
+    <%= t('simple_file_extractor_ui.help') %>
   </div>
 </fieldset>
 
 <fieldset>
-  <legend>Output name</legend>
+  <legend><%= t('simple_file_extractor_ui.output') %></legend>
   <%= form.params_text_field :output_file_name, :size => 40 %>
 </fieldset>
 
