@@ -1,0 +1,6 @@
+fr:
+  descriptor_maker_controls:
+    check: "Vérifier le descripteur"
+    reorder: "Réordonner les propriétés :"
+    pad: "Aligner les valeurs avec des espaces :"
+    preview: "Aperçu"
