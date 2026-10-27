@@ -590,7 +590,7 @@ class UserfilesController < ApplicationController
           userfile.addlog_context(self, "Uploaded by #{current_user.login}")
           Message.send_message(current_user,
                                :message_type   => 'notice',
-                               :header         => "File Uploaded",
+                               :header         => t('upload_notifications.file'),
                                :variable_text  => "#{userfile.pretty_type} [[#{userfile.name}][/userfiles/#{userfile.id}]]"
                                )
         ensure
@@ -654,13 +654,13 @@ class UserfilesController < ApplicationController
             collection.addlog_context(self, "Uploaded by #{current_user.login}, extracted from #{basename}")
             Message.send_message(current_user,
                                   :message_type   => 'notice',
-                                  :header         => "Collection Uploaded",
+                                  :header         => t('upload_notifications.collection'),
                                   :variable_text  => "#{collection.pretty_type} [[#{collection.name}][/userfiles/#{collection.id}]]"
                                   )
           rescue => e
             Message.send_message(current_user,
               :message_type   => 'error',
-              :header         => 'Failed to upload collection',
+              :header         => t('upload_notifications.failed'),
               :description     => e.message
               )
           ensure
