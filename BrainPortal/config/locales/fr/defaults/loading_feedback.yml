@@ -1,0 +1,4 @@
+fr:
+  loading_feedback:
+    loading: "Chargement…"
+    error: "Erreur lors du chargement de l’élément"

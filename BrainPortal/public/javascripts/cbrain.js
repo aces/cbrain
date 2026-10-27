@@ -355,7 +355,7 @@
         },
         error: function(e) {
           if (!error_message) {
-            error_message = "<span class='loading_message'>Error loading element</span>";
+            error_message = $('#cbrain-loading-templates .loading-error').html();
           }
           if (replace) {
             current_element.replaceWith(error_message);
@@ -982,7 +982,7 @@
       }
 
       if (!before_content) {
-        before_content = "<span class='loading_message'>Loading...</span>";
+        before_content = $('#cbrain-loading-templates .loading-progress').html();
       }
 
       before_content = $(before_content);

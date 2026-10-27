@@ -1,0 +1,4 @@
+en:
+  loading_feedback:
+    loading: "Loading..."
+    error: "Error loading element"
