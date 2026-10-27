@@ -52,7 +52,7 @@
 <h1><%= @descriptor.name %> <%= @descriptor.tool_version %></h1>
 
 <% if @descriptor.description.presence %>
-  <h2>Description</h2>
+  <h2><%= t('boutiques_help_headings.description') %></h2>
   <% (@descriptor.description.presence || "").split("\n").each do |line| %>
     <%= line %><br>
   <% end %>
@@ -60,48 +60,48 @@
 <% end %>
 
 <% if @descriptor.author.present? %>
-  <strong>Tool Author:</strong> <%= @descriptor.author %>
+  <strong><%= t('boutiques_help_headings.author') %></strong> <%= @descriptor.author %>
   <br>
 <% end %>
 
 <% if @descriptor.tool_doi.present? %>
-  <strong>Tool DOI:</strong> <%= link_to @descriptor.tool_doi, @descriptor.tool_doi, :target => '_blank', :class => 'action_link' %>
+  <strong><%= t('boutiques_help_headings.doi') %></strong> <%= link_to @descriptor.tool_doi, @descriptor.tool_doi, :target => '_blank', :class => 'action_link' %>
   <br>
 <% end %>
 
 <% if @descriptor.url.present? %>
-  <strong>Tool URL:</strong> <%= link_to @descriptor.url, @descriptor.url, :target => '_blank', :class => 'action_link' %>
+  <strong><%= t('boutiques_help_headings.url') %></strong> <%= link_to @descriptor.url, @descriptor.url, :target => '_blank', :class => 'action_link' %>
   <br>
 <% end %>
 
 <% if @descriptor.descriptor_url.present? %>
-  <strong>Boutiques Descriptor:</strong> <%= link_to @descriptor.descriptor_url, @descriptor.descriptor_url, :target => '_blank', :class => 'action_link' %>
+  <strong><%= t('boutiques_help_headings.descriptor') %></strong> <%= link_to @descriptor.descriptor_url, @descriptor.descriptor_url, :target => '_blank', :class => 'action_link' %>
   <br>
 <% end %>
 
 <%- unless other_inputs.empty? -%>
-<h2>Parameters</h2>
+<h2><%= t('boutiques_help_headings.parameters') %></h2>
 <ul>
   <%- other_inputs.each { |input| format_param.(input) } -%>
 </ul>
 <%- end -%>
 
 <%- unless file_inputs.empty? -%>
-<h2>Input files</h2>
+<h2><%= t('boutiques_help_headings.inputs') %></h2>
 <ul>
   <%- file_inputs.each { |input| format_param.(input) } -%>
 </ul>
 
 <%- end -%>
 <%- unless outputs.empty? -%>
-<h2>Output files</h2>
+<h2><%= t('boutiques_help_headings.outputs') %></h2>
 <ul>
   <%- outputs.each { |output| format_param.(output) } -%>
 </ul>
 <%- end -%>
 
 <%- unless file_inputs.empty? -%>
-<h2>Launching Multiple Tasks</h2>
+<h2><%= t('boutiques_help_headings.multiple') %></h2>
 <%- single_file = (file_inputs.length == 1) && (! file_inputs.first.optional) -%>
 <p>
   Multiple instances of this tool can <%= "also" if single_file %> be launched simultaneously using the <em>CBRAIN File List</em> mechanism ("cbcsv" files).
