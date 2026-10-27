@@ -1,0 +1,11 @@
+fr:
+  boutiques_help_headings:
+    description: "Description"
+    author: "Auteur de l’outil :"
+    doi: "DOI de l’outil :"
+    url: "URL de l’outil :"
+    descriptor: "Descripteur Boutiques :"
+    parameters: "Paramètres"
+    inputs: "Fichiers d’entrée"
+    outputs: "Fichiers de sortie"
+    multiple: "Lancement de plusieurs tâches"
