@@ -1216,9 +1216,9 @@ class TasksController < ApplicationController
         begin
           #Process.setproctitle "ZenodoUpload ID=#{userfile.id} #{idx+1}/#{userfiles.size}"
           upload_userfile_to_deposit(deposit, userfile)
-          uploaded << "File: #{userfile.name} (ID=#{userfile.id})"
+          uploaded << t('tasks.zenodo_notifications.file', name: userfile.name, id: userfile.id)
         rescue => ex
-          errors   << "File: #{userfile.name} (ID=#{userfile.id}): #{ex.class}: #{ex.message}"
+          errors   << t('tasks.zenodo_notifications.file_error', name: userfile.name, id: userfile.id, error: "#{ex.class}: #{ex.message}")
         end
       end
 
@@ -1243,18 +1243,18 @@ class TasksController < ApplicationController
       if errors.present?
         Message.send_message(current_user,
           :message_type  => 'error',
-          :header        => "Could not send a file to Zenodo",
-          :description   => "Some errors occurred while sending files to Zenodo",
-          :variable_text => "For #{view_pluralize(errors.size,"file")}:\n" + errors.join("\n")
+          :header        => t('tasks.zenodo_notifications.failure_header'),
+          :description   => t('tasks.zenodo_notifications.failure_description'),
+          :variable_text => t('tasks.zenodo_notifications.for_files', count: errors.size) + errors.join("\n")
         )
       end
 
       if uploaded.present?
         Message.send_message(current_user,
           :message_type  => 'notice',
-          :header        => "Uploaded files to Zenodo",
-          :description   => "These files were uploaded to Zenodo",
-          :variable_text => "For #{view_pluralize(uploaded.size,"file")}:\n" + uploaded.join("\n")
+          :header        => t('tasks.zenodo_notifications.success_header'),
+          :description   => t('tasks.zenodo_notifications.success_description'),
+          :variable_text => t('tasks.zenodo_notifications.for_files', count: uploaded.size) + uploaded.join("\n")
         )
       end
     end
@@ -1296,7 +1296,7 @@ class TasksController < ApplicationController
 
     return nil # it means all is OK
   rescue => ex
-    return "File: #{filename}: #{ex.class}: #{ex.message}"
+    return t('tasks.zenodo_notifications.text_file_error', name: filename, error: "#{ex.class}: #{ex.message}")
   ensure
     File.unlink(content_path) rescue nil
   end
