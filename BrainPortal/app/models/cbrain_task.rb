@@ -37,6 +37,7 @@ class CbrainTask < ApplicationRecord
   include ResourceAccess
 
   before_validation     :set_group
+  before_validation     :set_cleanup_policy_defaults, on: :create
   after_save            :after_save_set_batch_id
   after_destroy         :remove_workdir_archive
 
@@ -264,6 +265,24 @@ class CbrainTask < ApplicationRecord
     }
   end
 
+  def should_cleanup_component?(component)
+    if self.status == 'Completed'
+     case success_cleanup_policy
+      when 'erase_workdir'             then component == :workdir
+     when 'erase_workdir_and_outputs'  then [:workdir, :outputs].include?(component)
+     when 'erase_all'                 then [:workdir, :inputs, :outputs].include?(component)
+     when 'erase_caches'              then [:inputs, :outputs].include?(component)
+     else false
+     end
+   elsif self.status == 'Failed' || self.status.in?(CbrainTask::FAILED_STATUS)
+     case failure_cleanup_policy
+      when 'erase_workdir'             then component == :workdir
+      else false
+     end
+   else
+     false
+    end
+  end
 
   ##################################################################
   # Utility Methods
@@ -1004,6 +1023,11 @@ class CbrainTask < ApplicationRecord
 
       self.group_id = owner.own_group.id
     end
+  end
+
+  def set_cleanup_policy_defaults
+    self.success_cleanup_policy ||= 'erase_workdir_and_outputs'
+    self.failure_cleanup_policy ||= 'keep_all'
   end
 
   def remove_workdir_archive #:nodoc:
