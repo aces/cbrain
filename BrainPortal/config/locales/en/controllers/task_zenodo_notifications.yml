@@ -1,0 +1,13 @@
+en:
+  tasks:
+    zenodo_notifications:
+      failure_header: "Could not send a file to Zenodo"
+      failure_description: "Some errors occurred while sending files to Zenodo"
+      success_header: "Uploaded files to Zenodo"
+      success_description: "These files were uploaded to Zenodo"
+      for_files:
+        one: "For %{count} file:\n"
+        other: "For %{count} files:\n"
+      file: "File: %{name} (ID=%{id})"
+      file_error: "File: %{name} (ID=%{id}): %{error}"
+      text_file_error: "File: %{name}: %{error}"
