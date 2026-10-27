@@ -1,0 +1,10 @@
+en:
+  boutiques_multi_task_help:
+    intro_single: "Multiple instances of this tool can also be launched simultaneously using the CBRAIN File List mechanism (\"cbcsv\" files). A cbcsv file is a CSV file listing a user’s files registered in CBRAIN."
+    intro_multiple: "Multiple instances of this tool can be launched simultaneously using the CBRAIN File List mechanism (\"cbcsv\" files). A cbcsv file is a CSV file listing a user’s files registered in CBRAIN."
+    single_file_expansion: "When there is only one file input, any cbcsv files automatically assigned to that input are expanded into their constituent files, generating a task for each row."
+    create_list: "To create a cbcsv file in CBRAIN, select input files under the \"Files\" tab, click \"More\", then \"Create a file list\". The resulting file is added to your CBRAIN files. Each row represents a file, and the first column contains its CBRAIN ID."
+    launch_tasks: "Selecting a cbcsv file for a file input launches one task per row. Each task receives the file from that row in place of the cbcsv file for that input."
+    multiple_lists: "If you supply cbcsv files for several inputs, the lists must have the same number of rows. Tasks use corresponding rows from all lists together. To launch every combination of files, construct the lists explicitly with those combinations."
+    edit_list: "You can also download, edit, and upload a cbcsv file, for example when you already have an ordered list of files for a task."
+    null_inputs: "A row with ID 0 (zero) in the first column represents a null input: no value is supplied for that input in the corresponding task."
