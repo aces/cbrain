@@ -1,0 +1,6 @@
+fr:
+  boutiques_input_hints:
+    nothing_to_select: "(Aucune option à sélectionner)"
+    note: "Remarque :"
+    single_file: "Cet outil ne nécessite qu’un seul fichier d’entrée obligatoire. Si ce champ reste vide, une tâche distincte sera lancée pour chacun des fichiers restants non sélectionnés."
+    missing_data: "(Aucune option à sélectionner : données manquantes)"

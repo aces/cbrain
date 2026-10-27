@@ -72,7 +72,7 @@
               :optional  => opt,  # only used in :dropdown partial
               :default   => input.default_value,
               :value     => value,
-              :none_msg  => '(Nothing to select)',
+              :none_msg  => t('boutiques_input_hints.nothing_to_select'),
             }
       %>
 
@@ -81,7 +81,7 @@
       <%-
         if @descriptor.qualified_to_launch_multiple_tasks? && @descriptor.sole_mandatory_file_input.id == input.id
       -%>
-        <span class="tsk-prm-desc"><b>Note:</b> This tool requires only one mandatory input file. If this field is left empty, a separate task will be launched for each of the remaining unselected files.</span>
+        <span class="tsk-prm-desc"><b><%= t('boutiques_input_hints.note') %></b> <%= t('boutiques_input_hints.single_file') %></span>
         <br/>
       <%-  end -%>
       <%= render :partial => task_partial(:dropdown), :locals =>
@@ -91,7 +91,7 @@
               :optional  => opt,
               :default   => interface_files.count == 1 ? interface_files.first.id.to_s : nil,
               :value     => value,
-              :none_msg  => '(Nothing to select)', # not used
+              :none_msg  => t('boutiques_input_hints.nothing_to_select'), # not used
             }
       %>
 
