@@ -394,6 +394,10 @@ class UserfilesController < ApplicationController
     exception = e.respond_to?(:original_exception) ? e.original_exception : e
 
     raise exception unless Rails.env == 'production'
+
+    # Just to provide some production information about the error.
+    # @userfile could be nil if userfile_for_viewer(), above, crashed or returned nil.
+    @userfile ||= (Userfile.where(:id => params[:id]).first || SingleFile.new(:name => "(Missing file with ID #{params[:id]})"))
     ExceptionLog.log_exception(exception, current_user, request)
     Message.send_message(current_user,
       :message_type => 'error',
