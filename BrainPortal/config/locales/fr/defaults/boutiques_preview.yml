@@ -1,0 +1,8 @@
+fr:
+  boutiques_preview:
+    unequal: "Attention : les fichiers cbcsv n’ont pas tous la même longueur"
+    current: "Paramètres de la tâche actuelle"
+    constant: "Paramètres identiques pour toutes les tâches"
+    changing: "Valeurs des paramètres qui varient selon les tâches :"
+    task: "Tâche"
+    enabled: "Vrai"

@@ -122,6 +122,14 @@ int_inputs_list     = int_inputs.map(&:id)
 
 %>
 
+<div id="boutiques-preview-labels" style="display:none" aria-hidden="true">
+  <span class="unequal"><%= t('boutiques_preview.unequal') %></span>
+  <span class="current"><%= t('boutiques_preview.current') %></span>
+  <span class="constant"><%= t('boutiques_preview.constant') %></span>
+  <span class="changing"><%= t('boutiques_preview.changing') %></span>
+  <span class="task"><%= t('boutiques_preview.task') %></span>
+  <span class="enabled"><%= t('boutiques_preview.enabled') %></span>
+</div>
 <script type="application/javascript">
 
 "use strict";
@@ -565,6 +573,7 @@ $(function () {
 
   /* Preview Button */
   $("#previewer").click(function () {
+    var previewLabel = function(key) { return $('#boutiques-preview-labels .' + key).html(); };
     // Classes for the modal (popup)
     var mdiv = 'preview-modal', mcont = 'preview-modal-content', mclose = 'preview-modal-close';
     // Input parameters (fetch ids and data from cbcsvs and json descriptor)
@@ -573,7 +582,7 @@ $(function () {
     var reqed  = <%== json_escape( inputs.select { |p| ! p.optional }.map(&:id).to_json     ) %>;
     var files  = <%== json_escape( file_inputs.map(&:id).to_json                            ) %>;
     var cbcsvs = <%== json_escape( cbcsvs.map(&:name).to_json                               ) %>;
-    var cids   = <%== json_escape( cbcsvs.map(&:id).to_json                                 ) %>;
+    var cids   = <%== json_escape( cbcsvs.map { |f| f.id.to_s }.to_json                                 ) %>;
     var flags  = <%== json_escape( inputs.select { |p| p.type == 'Flag' }.map(&:id).to_json ) %>;
     var cfmap  = <%== json_escape( cbcsvToFiles.to_json                                     ) %>;
     var fileIdsToNames = <%== json_escape( interface_files.pluck(:id,:name).to_h.to_json    ) %>;
@@ -656,7 +665,7 @@ $(function () {
         nTasks = (nTasks==1 || nTasks > plen) ? plen : nTasks;
         // Warning if the cbcsvs do not seem to be the right length
         if( lens.some(function(e,i,a){ return plen != e }) ) {
-          modalText += "<font color=\"red\">Warning: cbcsvs with multiple unequal lengths detected</font><br><br>";
+          modalText += "<font color=\"red\">" + previewLabel('unequal') + "</font><br><br>";
           break;
         }
       }
@@ -680,9 +689,7 @@ $(function () {
       if (genericCase    === undefined) { genericCase    = true; }
 
       // Generate the title
-      modalText += "<strong>Parameters " +
-                     ((!singleFileCase && !genericCase) ? "for current task" : "that are constant across tasks") +
-                   "</strong><br>";
+      modalText += "<strong>" + previewLabel((!singleFileCase && !genericCase) ? 'current' : 'constant') + "</strong><br>";
       // Start the table
       modalText += "<table class=" + tableFillClass.slice(0,-1) + " " + staticTblClass.slice(1) + ">" + "<tbody class=" + tableBodyClass + ">";
       // Loop over possible entries (i.e. parameter ids)
@@ -693,7 +700,7 @@ $(function () {
           // Skip files in the single file special case
           if( singleFileCase && ($.inArray(id, files) != -1) ) { continue; }
           // Extract the values associated to that parameter (flags are given true)
-          var vals = ($.inArray(id, flags) != -1) ? "True" : getVals( id, true );
+          var vals = ($.inArray(id, flags) != -1) ? previewLabel('enabled') : getVals( id, true );
           // Ignore cbcsvs in the generic case (they will be in the dynamic table)
           if( genericCase && ($.inArray(vals, cids) != -1) ) { continue; }
           // Parameter name to put in the table
@@ -711,7 +718,7 @@ $(function () {
       if (singleFileCase === undefined) { singleFileCase = true; }
 
       // Add the title
-      modalText += "<strong>Parameter values that change across tasks:</strong><br><br>";
+      modalText += "<strong>" + previewLabel('changing') + "</strong><br><br>";
       // Get parameters with cbcsv entries
       var iteratedParams = [];
       for( var i = 0; i < numIds; ++i ) {
@@ -719,7 +726,7 @@ $(function () {
         // Only consider active or required parameters
         if( isActiveParam( id ) || $.inArray(id, reqed) != -1 ) {
           // Extract the values associated to that parameter (flags are given true)
-          var vals = ($.inArray(id, flags) != -1) ? "True" : getVals( id, true );
+          var vals = ($.inArray(id, flags) != -1) ? previewLabel('enabled') : getVals( id, true );
           // Grab the id & name if it is a cbcsv inside
           if( $.inArray(vals, cids) != -1 ){
             iteratedParams.push( [id, names[i]] );
@@ -728,7 +735,7 @@ $(function () {
       }
       // Now for the table head
       modalText += "<table class=" + tableFillClass + "><thead class=" + tableHeadClass + ">" +
-                   "<tr class=" + tableRowClass + "><th class=" + tableThClass + ">Task</th>";
+                   "<tr class=" + tableRowClass + "><th class=" + tableThClass + ">" + previewLabel('task') + "</th>";
       if( singleFileCase ) { // Only one parameter is being iterated over
         modalText += "<th class=" + tableThClass + ">" + singleName + "</th>";
       } else { // Need to generate a column for each parameter with a cbcsv
