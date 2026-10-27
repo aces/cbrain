@@ -1,0 +1,9 @@
+fr:
+  cb_serializer_ui:
+    tasks: "Liste des autres tâches contrôlées"
+    state: "état actuel :"
+    missing: "La tâche nº %{id} n’existe plus"
+    "on": "Activée"
+    "off": "Désactivée"
+    explanation: "Cette tâche n’a pas de paramètres. Elle exécute les autres tâches ci-dessous de façon séquentielle :"
+    restart_html: "Remarque : les cases à cocher ne modifieront les prérequis de la tâche qu’après un redémarrage.<br>Seules les tâches sélectionnées seront relancées."

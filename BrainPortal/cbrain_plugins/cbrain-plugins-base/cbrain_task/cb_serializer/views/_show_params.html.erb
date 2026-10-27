@@ -23,10 +23,10 @@
 -%>
 
 <fieldset>
-  <legend>List of other tasks under control</legend>
+  <legend><%= t('cb_serializer_ui.tasks') %></legend>
 
   <p>
-  This task has no parameters. It just run these other tasks in serial fashion:
+  <%= t('cb_serializer_ui.explanation') %>
   </p>
 
   <ul>
@@ -36,12 +36,12 @@
   <%   subtask = CbrainTask.find_by_id(tid) %>
     <li>
       <% if subtask %>
-        <%= red_if(! enabled, "On", "Off", :color1 => 'green') %>
+        <%= red_if(! enabled, t('cb_serializer_ui.on'), t('cb_serializer_ui.off'), :color1 => 'green') %>
         <%= link_to_task_if_accessible(subtask, nil, :name => subtask.fullname) %>
-        (currently in state <strong><%= colored_status(subtask.status) %></strong>)
+        (<%= t('cb_serializer_ui.state') %> <strong><%= colored_status(subtask.status) %></strong>)
       <% else %>
-        <%= html_colorize("Off") %>
-        (Task #<%= h(tid) %> no longer exists)
+        <%= html_colorize(t('cb_serializer_ui.off')) %>
+        (<%= t('cb_serializer_ui.missing', id: tid) %>)
       <% end %>
     </li>
   <% end %>
