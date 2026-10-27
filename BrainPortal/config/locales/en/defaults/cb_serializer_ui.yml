@@ -1,0 +1,9 @@
+en:
+  cb_serializer_ui:
+    tasks: "List of other tasks under control"
+    state: "currently in state"
+    missing: "Task #%{id} no longer exists"
+    "on": "On"
+    "off": "Off"
+    explanation: "This task has no parameters. It runs these other tasks sequentially:"
+    restart_html: "Note: The checkboxes will adjust the task’s prerequisites only after a restart.<br>Only the selected tasks will be re-run."
