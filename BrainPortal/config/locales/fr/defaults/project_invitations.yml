@@ -1,0 +1,6 @@
+fr:
+  project_invitations:
+    subject: "%{sender} vous invite à rejoindre le projet %{project}"
+    email: "Bonjour ! Ceci est un message automatique du système CBRAIN.\n\nVotre collègue %{sender} vous invite à rejoindre le projet CBRAIN « %{project} ». À votre prochaine connexion, un message d’invitation vous permettra de rejoindre ce projet.\n"
+    description: "Votre collègue %{sender} vous invite à rejoindre le projet %{project}."
+    accept: "Accepter"
