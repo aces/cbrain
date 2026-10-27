@@ -1,0 +1,16 @@
+en:
+  archive_extraction_notifications:
+    completed: "File extraction completed"
+    failed: "File extraction failed"
+    success: "Your files have been extracted from archive '%{archive}'"
+    error: "Some errors occurred while extracting files from archive '%{archive}'"
+    intro: "Based on the content of the archive we found:"
+    extracted:
+      one: "%{count} file successfully extracted;"
+      other: "%{count} files successfully extracted;"
+    failed_count:
+      one: "%{count} file failed extracting;"
+      other: "%{count} files failed extracting;"
+    nested:
+      one: "%{count} file was ignored because it is nested in a subdirectory."
+      other: "%{count} files were ignored because they are nested in subdirectories."

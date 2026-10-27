@@ -1601,30 +1601,32 @@ class UserfilesController < ApplicationController
 
     # Report these values using new comm mechanism
     # [status, successful_files, failed_files, nested_files]
-    report = "Based on the content of the archive we found:\n" +
-            "#{successful_files.size.to_s} files successfully extracted;\n" +
-            "#{failed_files.size.to_s} files failed extracting;\n" +
-            "#{nested_files.size.to_s} files were ignored because they are nested in subdirectories.\n"
+    report = [
+      t('archive_extraction_notifications.intro'),
+      t('archive_extraction_notifications.extracted', count: successful_files.size),
+      t('archive_extraction_notifications.failed_count', count: failed_files.size),
+      t('archive_extraction_notifications.nested', count: nested_files.size)
+    ].join("\n") + "\n"
     if status == :success && failed_files.size == 0 && nested_files.size == 0
       Message.send_message(current_user,
         :message_type  => 'notice',
-        :header  => "File extraction completed",
-        :description  => "Your files have been extracted from archive '#{archive_file_name}'",
+        :header  => t('archive_extraction_notifications.completed'),
+        :description  => t('archive_extraction_notifications.success', archive: archive_file_name),
         :variable_text  => report
       )
     else
       Message.send_message(current_user,
         :message_type  => 'error',
-        :header  => "File extraction failed",
-        :description  => "Some errors occurred while extracting files from archive '#{archive_file_name}'",
+        :header  => t('archive_extraction_notifications.failed'),
+        :description  => t('archive_extraction_notifications.error', archive: archive_file_name),
         :variable_text  => report
       )
     end
   rescue => e
     Message.send_message(current_user,
       :message_type  => 'error',
-      :header  => "File extraction failed",
-      :description  => "Some errors occurred while extracting files from archive '#{archive_file_name}'",
+      :header  => t('archive_extraction_notifications.failed'),
+      :description  => t('archive_extraction_notifications.error', archive: archive_file_name),
       :variable_text  => e.message
     )
   end
