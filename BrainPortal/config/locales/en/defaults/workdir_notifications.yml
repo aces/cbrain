@@ -1,0 +1,7 @@
+en:
+  workdir_notifications:
+    saved: "Saved task work directory"
+    description: "Task work directory was saved as a TaskRawWorkdir"
+    links: "For %{task} under %{file}"
+    failed: "Could not save work directory"
+    error: "Unable to save work directory for %{task}"
