@@ -1,0 +1,9 @@
+en:
+  file_launch:
+    launch: "Launch"
+    launch_tool: "Launch %{tool}"
+    prepare_tool: "Prepare %{tool}"
+    select_tool_html: "Select some files to launch %{tool}"
+    no_files: "No files selected"
+    one_file_html: "Launch with %{count} file"
+    many_files_html: "Launch with %{count} files"
