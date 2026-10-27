@@ -18,7 +18,9 @@ en:
         show: "Show"
         on_word: "on"
     error_messages:
-      header_message: "%{object_errors} prohibited this %{object_name} from being saved:"
+      header_message:
+        one: "%{count} error prohibited this %{object_name} from being saved:"
+        other: "%{count} errors prohibited this %{object_name} from being saved:"
       message: "There were problems with the following fields:"
     group_tables:
       labels:

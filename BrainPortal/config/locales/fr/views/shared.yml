@@ -18,7 +18,9 @@ fr:
         show: "Afficher"
         on_word: "sur"
     error_messages:
-      header_message: "%{object_errors} ont empêché l'enregistrement de ce %{object_name}:"
+      header_message:
+        one: "Impossible d’enregistrer %{object_name} : %{count} erreur."
+        other: "Impossible d’enregistrer %{object_name} : %{count} erreurs."
       message: "Des problèmes ont été détectés dans les champs suivants :"
     group_tables:
       labels:
