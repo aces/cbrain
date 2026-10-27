@@ -27,16 +27,24 @@
  * Event namespace: .uf
  */
 
+// Read translated HTML; keep file counts and tool names out of HTML parsing.
+function cbrain_file_selection_text(count) {
+  var labels = $('#file-launch-template');
+  if (!count) return labels.find('.no-files').text();
+  var label = labels.find(count === 1 ? '.one-file' : '.many-files').clone();
+  label.find('.file-count').text(count);
+  return label.text();
+}
+
 // Generate the launch_bar div for userfile index
 function cbrain_userfile_launch_bar(tool_name, file_status_text, have_selection, url) {
-  $('.launch_bar').remove();
+  $('.launch_bar').not('#file-launch-template .launch_bar').remove();
 
-  $('#menu_bar').after(
-    $('<div class="launch_bar">')
-      .append($('<span class="info">Select some files to launch <span id="tool_name_to_launch">' + tool_name + '</span></span>'))
-      .append($('<span class="file_status">' + file_status_text + '</span>'))
-      .append($('<button>Launch</button>').button({ disabled: !have_selection }))
-  );
+  var bar = $('#file-launch-template').children('.launch_bar').clone();
+  bar.find('.tool-name').attr('id', 'tool_name_to_launch').text(tool_name);
+  bar.find('.file_status').text(file_status_text);
+  bar.find('button').button({ disabled: !have_selection });
+  $('#menu_bar').after(bar);
 
   /* Launch the task when the launch bar's button is clicked */
   $('.launch_bar button').click(function () {
@@ -102,7 +110,7 @@ function launch_task() {
   var nb_selected_files = parseInt($('.psel-count').text());
   var have_selection    = nb_selected_files > 0;
 
-  var file_status_text  = have_selection ? "Launch with " + nb_selected_files + " file(s)" : "No files selected";
+  var file_status_text  = cbrain_file_selection_text(nb_selected_files);
   var url               = "tasks/new?tool_id=" + prepare_tool_id;
 
   // Generate the launch_bar div and attach action on the userfile_checkboxes

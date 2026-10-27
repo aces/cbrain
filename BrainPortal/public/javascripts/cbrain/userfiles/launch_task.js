@@ -32,7 +32,7 @@ $(document).delegate('div#tool_version_selector', 'new_content', function (event
   if (launch_button.length === 0) return;
 
   var userfile_checkboxes = $("input[name='file_ids[]']");
-  var tool_name           = launch_button.val().replace("Launch ", "");
+  var tool_name           = launch_button.data('tool-name');
 
   /* Do we have some files selected to launch the task on? */
   function have_selection() {
@@ -43,7 +43,7 @@ $(document).delegate('div#tool_version_selector', 'new_content', function (event
   };
 
   launch_button
-    .val((have_selection() ? "Launch " : "Prepare ") + tool_name)
+    .val($(this).find(have_selection() ? '.launch-label' : '.prepare-label').text())
     .unbind('click.launch_task')
     .bind('click.launch_task', function (event) {
       /* If we have userfiles selected, we can launch the task right away! */
@@ -56,7 +56,7 @@ $(document).delegate('div#tool_version_selector', 'new_content', function (event
       event.stopPropagation();
 
       // Generate the launch_bar div
-      cbrain_userfile_launch_bar(tool_name, "No files selected", false, launch_button.data('url'));
+      cbrain_userfile_launch_bar(tool_name, cbrain_file_selection_text(0), false, launch_button.data('url'));
     });
   //  Attach action on the userfile_checkboxes
   cbrain_attach_userfile_checkboxes(userfile_checkboxes, tool_name, launch_button);

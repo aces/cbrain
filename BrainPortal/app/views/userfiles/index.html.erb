@@ -31,6 +31,16 @@
 
 <% content_for :scripts do %>
   <%= javascript_include_tag 'cbrain/userfiles/launch_task' %>
+  <div id="file-launch-template" style="display:none" aria-hidden="true">
+    <div class="launch_bar">
+      <span class="info"><%= t('file_launch.select_tool_html', tool: content_tag(:span, '', class: 'tool-name')) %></span>
+      <span class="file_status"></span>
+      <button><%= t('file_launch.launch') %></button>
+    </div>
+    <span class="no-files"><%= t('file_launch.no_files') %></span>
+    <span class="one-file"><%= t('file_launch.one_file_html', count: content_tag(:span, '', class: 'file-count')) %></span>
+    <span class="many-files"><%= t('file_launch.many_files_html', count: content_tag(:span, '', class: 'file-count')) %></span>
+  </div>
   <%= javascript_include_tag 'cbrain/userfiles/tools_interface' %>
 <% end %>
 
