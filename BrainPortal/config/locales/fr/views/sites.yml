@@ -22,8 +22,6 @@ fr:
         main: "Ajouter un nouveau site"
       titles:
         brief_description_title: "Brève description du site."
-      labels:
-        description: "Description"
       paragraphs:
         brief_description_html: |
           <div class="field_explanation">

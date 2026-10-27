@@ -22,8 +22,6 @@ en:
         main: "Add New Site"
       titles:
         brief_description_title: "Brief description of the site."
-      labels:
-        description: "Description"
       paragraphs:
         brief_description_html: |
           <div class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</div>
