@@ -1,0 +1,10 @@
+fr:
+  boutiques_multi_task_help:
+    intro_single: "Plusieurs instances de cet outil peuvent également être lancées simultanément à l’aide des listes de fichiers CBRAIN (fichiers \"cbcsv\"). Un fichier cbcsv est un fichier CSV qui répertorie des fichiers de l’utilisateur enregistrés dans CBRAIN."
+    intro_multiple: "Plusieurs instances de cet outil peuvent être lancées simultanément à l’aide des listes de fichiers CBRAIN (fichiers \"cbcsv\"). Un fichier cbcsv est un fichier CSV qui répertorie des fichiers de l’utilisateur enregistrés dans CBRAIN."
+    single_file_expansion: "Lorsqu’il n’y a qu’une seule entrée de fichier, les fichiers cbcsv qui lui sont automatiquement attribués sont développés en leurs fichiers constitutifs, avec une tâche générée pour chaque ligne."
+    create_list: "Pour créer un fichier cbcsv dans CBRAIN, sélectionnez des fichiers d’entrée dans l’onglet \"Fichiers\", cliquez sur \"Plus\", puis sur \"Créer une liste de fichiers\". Le fichier créé est ajouté à vos fichiers CBRAIN. Chaque ligne représente un fichier et la première colonne contient son identifiant CBRAIN."
+    launch_tasks: "Sélectionner un fichier cbcsv pour une entrée de fichier lance une tâche par ligne. Chaque tâche reçoit le fichier de cette ligne à la place du fichier cbcsv pour cette entrée."
+    multiple_lists: "Si vous fournissez des fichiers cbcsv pour plusieurs entrées, les listes doivent avoir le même nombre de lignes. Les tâches utilisent ensemble les lignes correspondantes de toutes les listes. Pour lancer toutes les combinaisons de fichiers, construisez explicitement les listes avec ces combinaisons."
+    edit_list: "Vous pouvez également télécharger, modifier et téléverser un fichier cbcsv, par exemple si vous disposez déjà d’une liste ordonnée de fichiers pour une tâche."
+    null_inputs: "Une ligne dont la première colonne contient l’identifiant 0 (zéro) représente une entrée nulle : aucune valeur n’est fournie pour cette entrée dans la tâche correspondante."
