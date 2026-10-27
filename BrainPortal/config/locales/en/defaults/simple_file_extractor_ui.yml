@@ -1,0 +1,20 @@
+en:
+  simple_file_extractor_ui:
+    inputs: "Inputs summary"
+    patterns: "Extraction patterns:"
+    about: "About these patterns:"
+    output: "Output name"
+    intro_html: "These patterns are UNIX style <em>file matching patterns</em>, not <em>regular expressions</em>."
+    asterisk: "An asterisk matches zero, one, or many characters, except \"/\"."
+    question: "A question mark matches a single character, except \"/\"."
+    prefix_html: "Typically, all patterns will start with <em>*/</em> because the first component must match\n    the names of the FileCollections themselves."
+    help: "See the 'help' link above for more information and examples."
+    toggle: "(Show/Hide)"
+    files:
+      one: "%{count} file to be processed:"
+      other: "%{count} files to be processed:"
+    more:
+      one: "%{count} more file…"
+      other: "%{count} more files…"
+    outputs: "Output:"
+    final: "Final file:"
