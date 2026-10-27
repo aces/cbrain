@@ -19,8 +19,8 @@ fr:
         on_word: "sur"
     error_messages:
       header_message:
-        one: "Impossible d’enregistrer %{object_name} : %{count} erreur."
-        other: "Impossible d’enregistrer %{object_name} : %{count} erreurs."
+        one: "Échec de l’enregistrement (%{object_name}) : %{count} erreur."
+        other: "Échec de l’enregistrement (%{object_name}) : %{count} erreurs."
       message: "Des problèmes ont été détectés dans les champs suivants :"
     group_tables:
       labels:
