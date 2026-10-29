@@ -621,7 +621,7 @@ class TasksController < ApplicationController
       new_tasklist = tasklist.dup
       new_tasklist.reject! { |task| ! task.has_owner_access?(current_user) }
       failed_tasks = tasklist - new_tasklist
-      failed_list["you don't have access to this task(s)"]  = failed_tasks if failed_tasks.present?
+      failed_list[t('tasks.update_notifications.no_access')]  = failed_tasks if failed_tasks.present?
       tasklist     = new_tasklist
 
       operation =
@@ -638,7 +638,7 @@ class TasksController < ApplicationController
               (! user_to_avail_group_ids[t_uid][new_group_id])
             end
             failed_tasks = tasklist - new_tasklist
-            failed_list["new group is not accessible by task's owner"] = failed_tasks if failed_tasks.present?
+            failed_list[t('tasks.update_notifications.group_not_accessible')] = failed_tasks if failed_tasks.present?
             tasklist     = new_tasklist
             ["update_attributes", {:group_id => new_group_id}]
           when :results_data_provider
@@ -651,7 +651,7 @@ class TasksController < ApplicationController
               (! user_to_avail_dp_ids[t_uid][new_dp_id])
             end
             failed_tasks = tasklist - new_tasklist
-            failed_list["new data provider is not accessible by task's owner"] = failed_tasks if failed_tasks.present?
+            failed_list[t('tasks.update_notifications.provider_not_accessible')] = failed_tasks if failed_tasks.present?
             tasklist     = new_tasklist
             ["update_attributes", {:results_data_provider_id => new_dp_id}]
           when :tool_config
@@ -670,7 +670,7 @@ class TasksController < ApplicationController
               (user_to_avail_new_tool_config[t_uid] == 0) || (old_tcid_to_tool_id[old_tcid] != new_tool_config.tool_id) || (old_bid != new_tool_config.bourreau_id)
             end
             failed_tasks = tasklist - new_tasklist
-            failed_list["error when updating tool config"] = failed_tasks if failed_tasks.present?
+            failed_list[t('tasks.update_notifications.tool_config_error')] = failed_tasks if failed_tasks.present?
             tasklist     = new_tasklist
             ["update_attributes", {:tool_config_id => new_tool_config.id}]
         end
@@ -680,11 +680,11 @@ class TasksController < ApplicationController
       if do_in_spawn
         # Message for successful actions
         if success_list.present?
-          notice_message_sender("Finished sending update to your task(s)", success_list)
+          notice_message_sender(t('tasks.update_notifications.success'), success_list)
         end
         # Message for failed actions
         if failed_list.present?
-          error_message_sender("Failed to update your task(s)", failed_list)
+          error_message_sender(t('tasks.update_notifications.failure'), failed_list)
         end
       end
 

@@ -1,0 +1,5 @@
+en:
+  task_message_helpers:
+    for_tasks:
+      one: "For %{count} task"
+      other: "For %{count} tasks"
