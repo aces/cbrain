@@ -1075,6 +1075,20 @@ class DataProvider < ApplicationRecord
     nil
   end
 
+  # Loads the model file of every subclass. Zeitwerk loads classes on first use, so
+  # when eager loading is off (development, test) DataProvider.descendants only
+  # contains the classes used so far. Call this before relying on that list.
+  #
+  # Do not call this from an initializer: loading these classes queries the database,
+  # which breaks 'rake db:create'. Do not call it from an override of descendants
+  # either: Rails calls descendants while a class is being loaded, whenever
+  # it defines a callback, and the circular load raises a NameError.
+  def self.preload_subclasses
+    Dir.glob(Rails.root.join("app/models/*_data_provider.rb")).each do |model_file|
+      File.basename(model_file, ".rb").camelize.constantize
+    end
+  end
+
   # Returns the site this data provider belongs to.
   def site
     @site ||= self.user.site
