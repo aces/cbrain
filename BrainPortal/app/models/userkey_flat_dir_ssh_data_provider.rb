@@ -32,6 +32,12 @@ class UserkeyFlatDirSshDataProvider < FlatDirSshDataProvider
 
   api_attr_visible :remote_user, :remote_host, :remote_dir, :remote_port
 
+  # Hidden from the admin creation form: users create this
+  # type themselves, through the create_personal action.
+  def self.pretty_category_name #:nodoc:
+    nil
+  end
+
   def impl_is_alive? #:nodoc:
     user = self.user # we use the owner as the way to check if it's alive
     return false unless self.master(user, nil).is_alive?

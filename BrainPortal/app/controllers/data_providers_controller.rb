@@ -80,8 +80,6 @@ class DataProvidersController < ApplicationController
                                   :online    => true,
                                   :read_only => false
                                 )
-
-    @typelist = get_type_list
   end
 
   def create  #:nodoc:
@@ -99,7 +97,6 @@ class DataProvidersController < ApplicationController
         format.json { render :json  => @provider.for_api }
       end
     else
-      @typelist = get_type_list
       respond_to do |format|
         format.html { render :action => :new }
         format.xml  { render :xml  => @provider.errors, :status => :unprocessable_content }
@@ -804,18 +801,6 @@ class DataProvidersController < ApplicationController
         :description,
       )
     end
-  end
-
-  def get_type_list #:nodoc:
-    data_provider_list = [ "FlatDirSshDataProvider" ]
-    if check_role(:site_manager) || check_role(:admin_user)
-      data_provider_list = DataProvider.descendants.map(&:name)
-      data_provider_list.delete(UserkeyFlatDirSshDataProvider.name) # this type is for regular users
-                                                                    # not for admins
-    end
-    grouped_options = data_provider_list.to_a.hashed_partitions { |name| name.constantize.pretty_category_name }
-    grouped_options.delete(nil) # data providers that can not be on this list return a category name of nil, so we remove them
-    grouped_options.keys.sort.map { |type| [ type, grouped_options[type].sort ] }
   end
 
   # A name to store the scope for the browsing page;
