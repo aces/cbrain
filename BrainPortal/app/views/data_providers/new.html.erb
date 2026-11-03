@@ -56,7 +56,7 @@
     <span title="<%= t('.titles.type') %>">
 
       <p><%= f.label :type, t('.labels.type') %><br/>
-      <%= f.select :type, grouped_options_for_select(@typelist, @provider.type), { :prompt => t('.select_provider_type') } %><br/>
+      <%= f.select :type, data_provider_type_choices, { :prompt => t('.select_provider_type') } %><br/>
       <div class="field_explanation"><%= show_hide_toggle t('.field_explanations.type_info_toggle'), "#data_provider_classes", :class  => 'action_link' %></div>
       </p>
 
