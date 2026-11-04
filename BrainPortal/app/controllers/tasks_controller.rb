@@ -1526,7 +1526,7 @@ class TasksController < ApplicationController
 
       if spawn_messages.present?
         Message.send_message(current_user, {
-          :header        => "Submitted #{tasklist.size} #{maintask.pretty_name} tasks; some messages follow.",
+          :header        => t('task_submission_notifications.submitted', count: tasklist.size, tool: maintask.pretty_name),
           :message_type  => :notice,
           :variable_text => spawn_messages
           }
