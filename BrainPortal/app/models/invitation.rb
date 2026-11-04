@@ -34,21 +34,21 @@ class Invitation < Message
 
   # Send an invitation to project +group+ from +sender+ to +users+.
   def self.send_out(sender, group, users)
-    self.send_message(users,
-      :message_type => "notice",
-      :header       =>  "You've been invited by #{sender.full_name} to join project #{group.name}",
-      :invitation_group_id => group.id,
-      :send_email   =>  true,
-      :sender_id    =>  sender.id,
-      :description  =>  <<-EMAIL_BODY # this is only shown in the emails, see add_description() below
-Hello! This is an automatic message from the CBRAIN system.
-
-Your colleague #{sender.full_name} has invited you
-to join the CBRAIN project "#{group.name}". When you
-next connect you should see an invitation message which
-will allow you to join.
-      EMAIL_BODY
-    )
+    # Invitations are persisted and emailed in each recipient's saved language.
+    find_users_for_destination(users).flat_map do |recipient|
+      locale = recipient.meta[:locale].to_s.to_sym
+      locale = I18n.default_locale unless I18n.available_locales.include?(locale)
+      I18n.with_locale(locale) do
+        send_message(recipient,
+          :message_type        => "notice",
+          :header              => I18n.t('project_invitations.subject', sender: sender.full_name, project: group.name),
+          :invitation_group_id => group.id,
+          :send_email          => true,
+          :sender_id           => sender.id,
+          :description         => I18n.t('project_invitations.email', sender: sender.full_name, project: group.name)
+        )
+      end
+    end
   end
 
   private
@@ -58,12 +58,12 @@ will allow you to join.
   end
 
   def add_description #:nodoc:
-    self.description = <<-CB_MARKUP
-      You've been invited to join project #{group.name} by
-      your colleague #{self.sender.full_name}.
-
-      [[Accept][/invitations/#{self.id}][put]]
-    CB_MARKUP
+    locale = user.meta[:locale].to_s.to_sym
+    locale = I18n.default_locale unless I18n.available_locales.include?(locale)
+    I18n.with_locale(locale) do
+      self.description = I18n.t('project_invitations.description', project: group.name, sender: sender.full_name) +
+        "\n\n[[#{I18n.t('project_invitations.accept')}][/invitations/#{id}][put]]"
+    end
     self.save!
   end
 
