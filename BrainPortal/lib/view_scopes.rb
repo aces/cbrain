@@ -1278,7 +1278,7 @@ module ViewScopes
             common.map { |attr,value|
               if value.is_a?(Array)
                 { 'a' => attr.to_s, 'v' => value.to_a.map(&:to_s), 'o' => 'in' }
-              elsif value.to_s =~ /^([<>]=?)\s*(.+)\z/  # ">2020-01-01", "<= 34" etc
+              elsif value.to_s =~ /\A([<>]=?)\s*(\S+)\z/  # ">2020-01-01", "<= 34" etc
                 comparison,val = Regexp.last_match[1..2]
                 { 'a' => attr.to_s, 'v' => val, 'o' => comparison }
               else

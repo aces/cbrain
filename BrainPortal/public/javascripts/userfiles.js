@@ -743,24 +743,31 @@ $(function() {
       var upload_button = undefined;
 
       $('#upload-dialog')
-        .dialog('option', 'buttons', {
-          'Cancel': function (event) {
-            $(this).trigger('close.uf');
+        .dialog('option', 'buttons', [
+          {
+            text: $('#upload-dialog').data('cancel-label'),
+            click: function (event) {
+              $(this).trigger('close.uf');
+            }
           },
-          'Upload': function (event) {
-            var dialog = $(this);
+          {
+            text: $('#upload-dialog').data('upload-label'),
+            'class': 'upload-submit',
+            click: function (event) {
+              var dialog = $(this);
 
-            dialog.trigger('close.uf');
-            userfiles.upload(dialog.children('form')[0])
-              .then(userfiles.refresh);
+              dialog.trigger('close.uf');
+              userfiles.upload(dialog.children('form')[0])
+                .then(userfiles.refresh);
+            }
           }
-        })
+        ])
         .unbind('open.uf.up-open')
         .bind(  'open.uf.up-open', function () {
           if (!upload_button)
             upload_button = $('#upload-dialog')
               .parent()
-              .find(':button:contains("Upload")');
+              .find('button.upload-submit');
 
           upload_button
             .toggleClass('ui-state-disabled', true)

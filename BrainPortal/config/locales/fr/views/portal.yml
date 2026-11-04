@@ -89,7 +89,7 @@ fr:
         rendered_html: "'Rendu' : %{checkbox}"
         redirected_html: "'Redirigé' : %{checkbox}"
         user_html: "'Utilisateur' : %{checkbox}"
-        completed_html: "'Terminé' : %{checkbox}"
+        completed_html: "'Fini' : %{checkbox}"
         sql_html: "'SQL' : %{checkbox}"
         load_html: "'Chargement' : %{checkbox}"
         exists_html: "'Existe' : %{checkbox}"

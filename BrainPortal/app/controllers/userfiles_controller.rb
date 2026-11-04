@@ -394,6 +394,10 @@ class UserfilesController < ApplicationController
     exception = e.respond_to?(:original_exception) ? e.original_exception : e
 
     raise exception unless Rails.env == 'production'
+
+    # Just to provide some production information about the error.
+    # @userfile could be nil if userfile_for_viewer(), above, crashed or returned nil.
+    @userfile ||= (Userfile.where(:id => params[:id]).first || SingleFile.new(:name => "(Missing file with ID #{params[:id]})"))
     ExceptionLog.log_exception(exception, current_user, request)
     Message.send_message(current_user,
       :message_type => 'error',
@@ -560,9 +564,9 @@ class UserfilesController < ApplicationController
       if !userfile.save
         flash[:error]  += t('userfiles.flash.file_not_added', name: basename)
         userfile.errors.each do |field, error|
-          flash[:error] += t('userfiles.flash.field_error', field: field.to_s.capitalize, error: error)
+          flash[:error] += t('userfiles.flash.field_error', field: userfile.class.human_attribute_name(field), error: error)
         end
-        if flash[:error].include? "Name has already been taken"
+        if userfile.errors.details[:name].any? { |detail| detail[:error] == :taken }
           flash[:error] += t('userfiles.flash.duplicate_name_note')
         end
         respond_to do |format|
@@ -586,7 +590,7 @@ class UserfilesController < ApplicationController
           userfile.addlog_context(self, "Uploaded by #{current_user.login}")
           Message.send_message(current_user,
                                :message_type   => 'notice',
-                               :header         => "File Uploaded",
+                               :header         => t('upload_notifications.file'),
                                :variable_text  => "#{userfile.pretty_type} [[#{userfile.name}][/userfiles/#{userfile.id}]]"
                                )
         ensure
@@ -650,13 +654,13 @@ class UserfilesController < ApplicationController
             collection.addlog_context(self, "Uploaded by #{current_user.login}, extracted from #{basename}")
             Message.send_message(current_user,
                                   :message_type   => 'notice',
-                                  :header         => "Collection Uploaded",
+                                  :header         => t('upload_notifications.collection'),
                                   :variable_text  => "#{collection.pretty_type} [[#{collection.name}][/userfiles/#{collection.id}]]"
                                   )
           rescue => e
             Message.send_message(current_user,
               :message_type   => 'error',
-              :header         => 'Failed to upload collection',
+              :header         => t('upload_notifications.failed'),
               :description     => e.message
               )
           ensure
@@ -1043,21 +1047,21 @@ class UserfilesController < ApplicationController
         if result == :success
           Message.send_message(current_user,
                               :message_type  => :notice,
-                              :header        => "Collections Merged",
+                              :header        => t('collection_merge_notifications.merged'),
                               :variable_text => "[[#{collection.name}][/userfiles/#{collection.id}]]"
                               )
           collection.addlog(self, "Created by #{current_user.login} by merging #{userfiles.size} files.")
         elsif result == :collision
           Message.send_message(current_user,
                               :message_type  => :error,
-                              :header        => "Collection could not be merged.",
-                              :variable_text => "There was a collision among the file names."
+                              :header        => t('collection_merge_notifications.failed'),
+                              :variable_text => t('collection_merge_notifications.collision')
                               )
         end
       rescue => e
         Message.send_message(current_user,
                             :message_type  => :error,
-                            :header        => "The collection was not created correctly on #{DataProvider.find_all_accessible_by_user(current_user).where( :id => data_provider_id, :online => true, :read_only => false ).first.name}",
+                            :header        => t('collection_merge_notifications.provider_failed', provider: DataProvider.find_all_accessible_by_user(current_user).where(:id => data_provider_id, :online => true, :read_only => false).first.name),
                             :variable_text => "#{e.message}\n#{collection.name}\n"
                               )
       end
@@ -1597,30 +1601,32 @@ class UserfilesController < ApplicationController
 
     # Report these values using new comm mechanism
     # [status, successful_files, failed_files, nested_files]
-    report = "Based on the content of the archive we found:\n" +
-            "#{successful_files.size.to_s} files successfully extracted;\n" +
-            "#{failed_files.size.to_s} files failed extracting;\n" +
-            "#{nested_files.size.to_s} files were ignored because they are nested in subdirectories.\n"
+    report = [
+      t('archive_extraction_notifications.intro'),
+      t('archive_extraction_notifications.extracted', count: successful_files.size),
+      t('archive_extraction_notifications.failed_count', count: failed_files.size),
+      t('archive_extraction_notifications.nested', count: nested_files.size)
+    ].join("\n") + "\n"
     if status == :success && failed_files.size == 0 && nested_files.size == 0
       Message.send_message(current_user,
         :message_type  => 'notice',
-        :header  => "File extraction completed",
-        :description  => "Your files have been extracted from archive '#{archive_file_name}'",
+        :header  => t('archive_extraction_notifications.completed'),
+        :description  => t('archive_extraction_notifications.success', archive: archive_file_name),
         :variable_text  => report
       )
     else
       Message.send_message(current_user,
         :message_type  => 'error',
-        :header  => "File extraction failed",
-        :description  => "Some errors occurred while extracting files from archive '#{archive_file_name}'",
+        :header  => t('archive_extraction_notifications.failed'),
+        :description  => t('archive_extraction_notifications.error', archive: archive_file_name),
         :variable_text  => report
       )
     end
   rescue => e
     Message.send_message(current_user,
       :message_type  => 'error',
-      :header  => "File extraction failed",
-      :description  => "Some errors occurred while extracting files from archive '#{archive_file_name}'",
+      :header  => t('archive_extraction_notifications.failed'),
+      :description  => t('archive_extraction_notifications.error', archive: archive_file_name),
       :variable_text  => e.message
     )
   end

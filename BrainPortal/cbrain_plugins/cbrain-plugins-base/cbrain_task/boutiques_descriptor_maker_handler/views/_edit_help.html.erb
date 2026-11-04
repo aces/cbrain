@@ -22,84 +22,26 @@
 #
 -->
 
-<h1>Boutiques Descriptor Maker</h1>
-
-This form allows you to design and visualize a Boutiques descriptor
-for a task.
-
-<p>
-
-The descriptor is in JSON format and the syntax is very strict.
-
-<p>
-
-You start with a sample descriptor with five example inputs (a file,
-a string, a number, a flag and a selection box).
-
-<p>
-
-Add new inputs and meta data as needed, and click on the <strong>Check
-Descriptor</strong> button to refresh this page and validate the
-descriptor.
-
-<p>
-
-If the descriptor's syntax is valid, it will be re-validated by
-<em>bosh</em> and messages will be shown below. If this validation
-step works too, then an example of the generated command will be
-shown, based on the content of the generated form shown underneath.
-
-<p>
-
-You can enter values in the generated form to see what effects they
-have on both the validation and the command line. <strong>Note:</strong>
-because the form shows the inputs from the previous round of
-'checking the descriptor', you may have to click the <strong>Check
-Descriptor</strong> button twice to get the form data posted and the
-descriptor's input properly in sync.
-
-<p>
-
-At any time, you can return to the initial example descriptor by
-wiping blank the entire JSON descriptor text area.
-
-<h2>Recommendations</h2>
-
+<h1><%= t('descriptor_maker_help.title') %></h1>
+<p><%= t('descriptor_maker_help.intro') %></p>
+<p><%= t('descriptor_maker_help.syntax') %></p>
+<p><%= t('descriptor_maker_help.sample') %></p>
+<p><%= t('descriptor_maker_help.check_html') %></p>
+<p><%= t('descriptor_maker_help.validation_html') %></p>
+<p><%= t('descriptor_maker_help.values_html') %></p>
+<p><%= t('descriptor_maker_help.reset') %></p>
+<h2><%= t('descriptor_maker_help.recommendations') %></h2>
 <ul>
-  <li>
-    Make sure you enter a proper name for the tool, something with
-    no spaces or special characters, e.g. "Brainmangler" or "SuperConfabulator"
-  </li>
-  <li>
-    The 'tool-version' also needs a proper string value.
-  </li>
-  <li>
-    The 'author' and 'descriptor-url' fields are for the author of
-    the tool. Enter your own name in the "custom -&gt; 'cbrain:author'"
-    section instead.
-  </li>
+  <li><%= t('descriptor_maker_help.name') %></li>
+  <li><%= t('descriptor_maker_help.version') %></li>
+  <li><%= t('descriptor_maker_help.author') %></li>
 </ul>
-
-<h2>More information</h2>
-
-The full Boutiques specification is available at
-<a href="https://github.com/boutiques/boutiques" target="_blank">GitHub/Boutiques</a>.
-
-<p>
-
-Other resources:
-
+<h2><%= t('descriptor_maker_help.more') %></h2>
+<p><%= t('descriptor_maker_help.spec_html', link: link_to('GitHub/Boutiques', 'https://github.com/boutiques/boutiques', target: '_blank')) %></p>
+<p><%= t('descriptor_maker_help.resources') %></p>
 <ul>
-  <li>
-    <a href="https://github.com/boutiques/boutiques/tree/master/boutiques/schema" target="_blank">Full JSON schema</a> from the Boutiques project itself.
-  </li>
-  <li>
-    <a href="https://github.com/boutiques/boutiques/tree/master/boutiques/schema/examples" target="_blank">Examples</a> from the Boutiques project.
-  </li>
-  <li>
-    <a href="https://github.com/aces/cbrain-plugins-neuro/tree/master/cbrain_task_descriptors" target="_blank">Examples</a> from the CBRAIN Neuro plugins, with traditional descriptors.
-  </li>
-  <li>
-    <a href="https://github.com/aces/cbrain-plugins-neuro/tree/master/boutiques_descriptors" target="_blank">Examples</a> from the CBRAIN Neuro plugins, with extra CBRAIN behavior extensions.
-  </li>
+  <li><%= t('descriptor_maker_help.schema_source_html', link: link_to(t('descriptor_maker_help.schema'), 'https://github.com/boutiques/boutiques/tree/master/boutiques/schema', target: '_blank')) %></li>
+  <li><%= t('descriptor_maker_help.examples_source_html', link: link_to(t('descriptor_maker_help.examples'), 'https://github.com/boutiques/boutiques/tree/master/boutiques/schema/examples', target: '_blank')) %></li>
+  <li><%= t('descriptor_maker_help.traditional_html', link: link_to(t('descriptor_maker_help.examples'), 'https://github.com/aces/cbrain-plugins-neuro/tree/master/cbrain_task_descriptors', target: '_blank')) %></li>
+  <li><%= t('descriptor_maker_help.extensions_html', link: link_to(t('descriptor_maker_help.examples'), 'https://github.com/aces/cbrain-plugins-neuro/tree/master/boutiques_descriptors', target: '_blank')) %></li>
 </ul>

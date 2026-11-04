@@ -1,5 +1,8 @@
 en:
   activerecord:
+    attributes:
+      message:
+        header: "Header"
     models:
       message:
         one: "Message"
