@@ -57,3 +57,10 @@ fr:
       preset_delete_not_owner: "Impossible de supprimer un préréglage qui ne vous appartient pas.\n"
       preset_update_not_owner: "Impossible de mettre à jour un préréglage qui ne vous appartient pas.\n"
       preset_saved: "Préréglage '%{description}' enregistré.\n"
+    update_notifications:
+      success: "Mise à jour de vos tâches terminée"
+      failure: "Échec de la mise à jour de vos tâches"
+      no_access: "vous n’avez pas accès à ces tâches"
+      group_not_accessible: "le propriétaire de la tâche n’a pas accès au nouveau projet"
+      provider_not_accessible: "le propriétaire de la tâche n’a pas accès au nouveau serveur de stockage"
+      tool_config_error: "erreur lors de la mise à jour de la configuration de l’outil"
