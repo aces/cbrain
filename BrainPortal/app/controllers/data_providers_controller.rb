@@ -286,7 +286,7 @@ class DataProvidersController < ApplicationController
 
   rescue
     respond_to do |format|
-      format.html { render :html => '<strong style="color:red">No Information Available</strong>'.html_safe }
+      format.html { render :html => helpers.content_tag(:strong, t('viewer_feedback.unavailable'), :style => 'color:red') }
       format.xml  { head :unprocessable_entity }
       format.json { head :unprocessable_entity }
     end
