@@ -301,9 +301,9 @@ class Message < ApplicationRecord
   end
 
   def validate_input  # checks user input for empty field in the header, add error messages (presently used in nh only)
-    self.errors.add(:header,      "cannot be left blank")                      if self.header.blank?
-    self.errors.add(:header,      "is too long, it cannot exceed 255 byte")    if self.header.bytesize > 255
-    self.errors.add(:description, "is too long, it cannot exceed 64 Kb")       if self.description.bytesize > 64000
+    self.errors.add(:header,      I18n.t('activerecord.errors.models.message.header_blank'))         if self.header.blank?
+    self.errors.add(:header,      I18n.t('activerecord.errors.models.message.header_too_long'))      if self.header.bytesize > 255
+    self.errors.add(:description, I18n.t('activerecord.errors.models.message.description_too_long')) if self.description.bytesize > 64000
   end
 
   private

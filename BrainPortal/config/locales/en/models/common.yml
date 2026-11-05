@@ -22,3 +22,8 @@ en:
     site_id: &site "Site"
     site: *site
     online: "Online"
+  activerecord:
+    errors:
+      messages:
+        missing_license_files:        "Some licence agreement files do not exist: %{list}\nPlease place the license file(s) in /public/licenses or unconfigure it.\n"
+        missing_custom_license_files: "Some license agreement files do not exist: %{list}\nPlease inform the maintainers or admins to fix issues with files.\n"

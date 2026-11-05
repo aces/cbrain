@@ -20,3 +20,11 @@ en:
         default_data_provider: "Default Data Provider"
         forced_openid_providers: "Forced OpenID Identity Providers"
         password: "Password"
+    errors:
+      models:
+        user:
+          same_password:          "cannot be set to be the same as the previous one!"
+          login_taken_by_project: "already in use by an existing project."
+          login_immutable:        "is immutable."
+          weak_password:          "must have three of the following properties: an uppercase letter, a lowercase letter, a digit, a symbol or be at least 15 characters in length"
+          user_group_error:       "User Group: %{errors}"

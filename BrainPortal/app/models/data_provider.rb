@@ -714,7 +714,7 @@ class DataProvider < ApplicationRecord
     rr_allowed_syncing!("rename content on")
     return true if newname == userfile.name
     unless Userfile.is_legal_filename?(newname)
-      userfile.errors.add(:name, "contains illegal characters.")
+      userfile.errors.add(:name, I18n.t('activerecord.errors.models.data_provider.illegal_file_name'))
       return false
     end
     target_exists = self.userfiles
@@ -731,7 +731,7 @@ class DataProvider < ApplicationRecord
         userfile.save!
         true
       else
-        userfile.errors.add(:name, "could not be changed on data provider.")
+        userfile.errors.add(:name, I18n.t('activerecord.errors.models.data_provider.rename_failed'))
         false
       end
     end
@@ -1133,7 +1133,7 @@ class DataProvider < ApplicationRecord
   # This method can be overrided in subclasses.
   def owner_is_appropriate #:nodoc:
     return true if User.where(:id => self.user_id).first.is_a?(AdminUser)
-    self.errors.add(:user_id, 'must be an administrator')
+    self.errors.add(:user_id, I18n.t('activerecord.errors.models.data_provider.owner_must_be_admin'))
     return false
   end
 
@@ -1624,4 +1624,3 @@ class DataProvider < ApplicationRecord
   end
 
 end
-

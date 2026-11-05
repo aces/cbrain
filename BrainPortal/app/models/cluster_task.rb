@@ -2720,7 +2720,7 @@ bash -c "exit $_cbrain_status_"
   # Returns true only if
   def task_is_proper_subclass #:nodoc:
     return true if ClusterTask.descendants.include? self.class
-    self.errors.add(:base, "is not a proper subclass of ClusterTask.")
+    self.errors.add(:base, I18n.t('activerecord.errors.models.cluster_task.not_proper_subclass'))
     false
   end
 
