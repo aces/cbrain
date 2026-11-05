@@ -1359,7 +1359,7 @@ $(function() {
 
       progress.progressbar({ value: false });
       dialog.dialog({
-        title:         'Uploading...',
+        title:         $('#cbrain-loading-templates .upload-progress').text(),
         modal:         true,
         resizable:     false,
         draggable:     false,
