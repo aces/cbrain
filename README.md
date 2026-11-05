@@ -46,3 +46,8 @@ running on the HPC where it resides.
 
 CBRAIN is extensively documented in its [Wiki](https://github.com/aces/cbrain/wiki).
 
+
+## Local deployment on macOS
+
+To run BrainPortal and a local Bourreau worker with Apple’s `container` CLI,
+see [the local deployment guide](deploy/apple-container/README.md).
