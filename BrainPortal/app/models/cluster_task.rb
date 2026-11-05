@@ -2116,18 +2116,21 @@ exit $status
 
     file_collection.cache_copy_from_local_file(full_cluster_workdir)
 
+    message_locale = user && user.meta[:locale].to_s.to_sym
+    message_locale = I18n.default_locale unless I18n.available_locales.include?(message_locale)
+
     if file_collection.save
       Message.send_message(user,
-        :header        => "Saved task work directory",
-        :description   => "Task work directory was saved as a TaskRawWorkdir",
-        :variable_text => "For [[#{self.fullname}][/tasks/#{self.id}]] under [[#{userfile_name}][/userfiles/#{file_collection.id}]]",
+        :header        => I18n.t('workdir_notifications.saved', locale: message_locale),
+        :description   => I18n.t('workdir_notifications.description', locale: message_locale),
+        :variable_text => I18n.t('workdir_notifications.links', locale: message_locale, task: "[[#{self.fullname}][/tasks/#{self.id}]]", file: "[[#{userfile_name}][/userfiles/#{file_collection.id}]]"),
         :type          => :notice,
       ) if user
       self.addlog("Saved work directory in TaskRawWorkdir #{userfile_name}.")
     else
       Message.send_message(user,
-        :header        => "Could not save work directory",
-        :description   => "Unable to save work directory for [[#{self.pretty_type}][/tasks/#{self.id}]]",
+        :header        => I18n.t('workdir_notifications.failed', locale: message_locale),
+        :description   => I18n.t('workdir_notifications.error', locale: message_locale, task: "[[#{self.pretty_type}][/tasks/#{self.id}]]"),
         :variable_text => "#{self.errors.full_messages.join("\n")}",
         :type          => :error,
       ) if user
