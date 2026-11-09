@@ -15,3 +15,16 @@ en:
       resource:
         one: "Resource"
         other: "Resources"
+    errors:
+      models:
+        remote_resource:
+          ignore_patterns_not_array:  "is not an array."
+          bad_ignore_pattern:         "has unacceptable pattern: '%{pattern}'."
+          jumphost_port_without_host: "cannot be present if no host and username are provided"
+          jumphost_host_required:     "is required if a username is provided"
+          jumphost_user_required:     "is required if a host is provided"
+          cache_dir_not_absolute:     "must be an absolute path."
+          cache_dir_invalid:          " is invalid (does not exist, is unaccessible, contains data or is a system directory)."
+          cache_dir_error:            " is invalid: %{error}"
+        bourreau:
+          reverse_service_param_blank: "cannot be blank if the option to use the reverse service is selected"

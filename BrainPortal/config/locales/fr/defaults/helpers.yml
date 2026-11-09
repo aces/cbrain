@@ -81,6 +81,9 @@ fr:
     run_number: "Un identifiant numérique qui augmente à chaque fois que la tâche est relancée, initialement défini à '1'"
     cluster: "Le nom du serveur d'exécution"
   select_box:
+    storage_groups:
+      service_storage: "Stockage de service"
+      user_storage:    "Stockage utilisateur"
     task_status_groups:
       standard_cycle: "Cycle normal"
       waiting:        "En attente"
@@ -90,6 +93,9 @@ fr:
       other:          "Autres"
     no_execution_servers_html: "<strong style=\"color:red\">Aucun serveur de calcul disponible</strong>"
     offline_suffix:       " (hors ligne)"
+    user_status_groups:
+      active_users: "Utilisateurs actifs"
+      locked_users: "Utilisateurs verrouillés"
   scope_filters:
     sentence: "%{attribute} : %{operator}%{values}"
     none:     "(Aucun)"

@@ -348,7 +348,7 @@ class UsersController < ApplicationController
     for_user    = User.find(for_user_id)
 
     new_user_session = LargeSessionInfo.new(
-      user_id:    for_user_id,
+      user_id:    for_user.id,
       session_id: SecureRandom.hex,
       active: true,
       data: {

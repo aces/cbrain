@@ -62,7 +62,7 @@ module BoutiquesFileNameVerifier
         end
       if ! found_match
         input = descriptor.input_by_id(inputid)
-        params_errors.add(input.cb_invoke_name, "is not suitable for naming an output file. Please, change to a value that starts with a letter or number and avoid special or unprintable symbols")
+        params_errors.add(input.cb_invoke_name, I18n.t('activerecord.errors.models.boutiques_portal_task.unsuitable_output_name'))
       end
     end
 

@@ -1,5 +1,9 @@
 fr:
   messages:
+    errors:
+      header_required: "ne peut pas être laissé vide."
+      project_required: "Vous devez préciser le projet dont les membres recevront ce message."
+      invalid_project: "Le projet indiqué comme destination du message est invalide."
     flash:
       sent: "Le message a été envoyé avec succès."
       update_failed: "Problème lors de la mise à jour du message."

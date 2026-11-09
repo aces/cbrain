@@ -2,6 +2,8 @@ en:
   tool_configs:
     errors:
       need_tool_or_bourreau: "Need at least one of tool ID or bourreau ID."
+      invalid_env_name: "Invalid environment variable name '%{name}'"
+      blank_env_value:  "Invalid blank variable value for '%{name}'"
     flash:
       appended_info:         "Appended info from another Tool Config."
       no_changes:            "No changes made."

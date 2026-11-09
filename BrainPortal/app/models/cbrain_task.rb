@@ -998,7 +998,7 @@ class CbrainTask < ApplicationRecord
       return true unless self.user_id
       owner = self.user
       unless owner
-        errors.add(:base, "user_id does not point to an existing user.")
+        errors.add(:base, I18n.t('activerecord.errors.models.cbrain_task.user_missing'))
         return false
       end
 
@@ -1169,4 +1169,3 @@ class CbrainTask < ApplicationRecord
   end
 
 end
-

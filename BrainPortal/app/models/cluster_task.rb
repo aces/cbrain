@@ -29,4 +29,3 @@
 # Note that within the definition of PortalTask, we include distinct
 # modules to somehow recreate the original situation. See the code there.
 ClusterTask = PortalTask
-

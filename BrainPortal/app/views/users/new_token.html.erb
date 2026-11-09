@@ -38,7 +38,7 @@
 <%= t('.paragraphs.token_html') %>
 <strong><%= t('.titles.notes') %></strong>:
 
-<% pretty_how_long = SessionHelpers::SESSION_API_TOKEN_VALIDITY.inspect %>
+<% pretty_how_long = pretty_elapsed(SessionHelpers::SESSION_API_TOKEN_VALIDITY) %>
 <ul>
   <li>
     <%= t('.li.validity', duration: pretty_how_long) %>

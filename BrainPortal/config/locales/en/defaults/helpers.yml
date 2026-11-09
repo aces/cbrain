@@ -81,6 +81,9 @@ en:
     run_number: "A numeric run number that increases everytime the task is restarted, initially set to '1'"
     cluster: "The name of the execution server"
   select_box:
+    storage_groups:
+      service_storage: "Service Storage"
+      user_storage:    "User Storage"
     task_status_groups:
       standard_cycle: "Standard Cycle"
       waiting:        "Waiting"
@@ -90,6 +93,9 @@ en:
       other:          "Other"
     no_execution_servers_html: "<strong style=\"color:red\">No Execution Servers Available</strong>"
     offline_suffix:       " (offline)"
+    user_status_groups:
+      active_users: "Active users"
+      locked_users: "Locked users"
   scope_filters:
     sentence: "%{attribute}: %{operator}%{values}"
     none:     "(None)"

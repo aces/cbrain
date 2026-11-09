@@ -68,6 +68,10 @@ fr:
           dans le code de la page. Vous pouvez donc utiliser n'importe quel élément HTML,
           mais assurez‑vous de savoir ce que vous faites.
     new:
+      message_types:
+        system: "Système"
+        notice: "Avis"
+        error: "Erreur"
       title: "Ajouter un nouveau message"
       links:
         new_cbrain_dashboard: "Nouveau message tableau de bord CBRAIN"

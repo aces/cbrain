@@ -27,16 +27,24 @@
  * Event namespace: .uf
  */
 
+// Read translated HTML; keep file counts and tool names out of HTML parsing.
+function cbrain_file_selection_text(count) {
+  var labels = $('#file-launch-template');
+  if (!count) return labels.find('.no-files').text();
+  var label = labels.find(count === 1 ? '.one-file' : '.many-files').clone();
+  label.find('.file-count').text(count);
+  return label.text();
+}
+
 // Generate the launch_bar div for userfile index
 function cbrain_userfile_launch_bar(tool_name, file_status_text, have_selection, url) {
-  $('.launch_bar').remove();
+  $('.launch_bar').not('#file-launch-template .launch_bar').remove();
 
-  $('#menu_bar').after(
-    $('<div class="launch_bar">')
-      .append($('<span class="info">Select some files to launch <span id="tool_name_to_launch">' + tool_name + '</span></span>'))
-      .append($('<span class="file_status">' + file_status_text + '</span>'))
-      .append($('<button>Launch</button>').button({ disabled: !have_selection }))
-  );
+  var bar = $('#file-launch-template').children('.launch_bar').clone();
+  bar.find('.tool-name').attr('id', 'tool_name_to_launch').text(tool_name);
+  bar.find('.file_status').text(file_status_text);
+  bar.find('button').button({ disabled: !have_selection });
+  $('#menu_bar').after(bar);
 
   /* Launch the task when the launch bar's button is clicked */
   $('.launch_bar button').click(function () {
@@ -102,7 +110,7 @@ function launch_task() {
   var nb_selected_files = parseInt($('.psel-count').text());
   var have_selection    = nb_selected_files > 0;
 
-  var file_status_text  = have_selection ? "Launch with " + nb_selected_files + " file(s)" : "No files selected";
+  var file_status_text  = cbrain_file_selection_text(nb_selected_files);
   var url               = "tasks/new?tool_id=" + prepare_tool_id;
 
   // Generate the launch_bar div and attach action on the userfile_checkboxes
@@ -743,24 +751,31 @@ $(function() {
       var upload_button = undefined;
 
       $('#upload-dialog')
-        .dialog('option', 'buttons', {
-          'Cancel': function (event) {
-            $(this).trigger('close.uf');
+        .dialog('option', 'buttons', [
+          {
+            text: $('#upload-dialog').data('cancel-label'),
+            click: function (event) {
+              $(this).trigger('close.uf');
+            }
           },
-          'Upload': function (event) {
-            var dialog = $(this);
+          {
+            text: $('#upload-dialog').data('upload-label'),
+            'class': 'upload-submit',
+            click: function (event) {
+              var dialog = $(this);
 
-            dialog.trigger('close.uf');
-            userfiles.upload(dialog.children('form')[0])
-              .then(userfiles.refresh);
+              dialog.trigger('close.uf');
+              userfiles.upload(dialog.children('form')[0])
+                .then(userfiles.refresh);
+            }
           }
-        })
+        ])
         .unbind('open.uf.up-open')
         .bind(  'open.uf.up-open', function () {
           if (!upload_button)
             upload_button = $('#upload-dialog')
               .parent()
-              .find(':button:contains("Upload")');
+              .find('button.upload-submit');
 
           upload_button
             .toggleClass('ui-state-disabled', true)
@@ -786,7 +801,6 @@ $(function() {
         $('#upload-dialog')
           .undelegate('#up-file', 'change.uf.file-problem')
           .delegate(  '#up-file', 'change.uf.file-problem', function () {
-            var warning_text = "";
             var max = parseInt($('#upload-dialog').data('max-upload-size'));
             var bad_file;
             var filename = $(this).prop('files')[0].name;
@@ -807,17 +821,9 @@ $(function() {
 
             bad_file = ( bad_chars || file_too_big || spaces_in_name );
 
-            if ( bad_chars && spaces_in_name) {
-              warning_text += "No spaces allowed in filename! ";
-            }
-            else if ( bad_chars ) {
-              warning_text += "Illegal filename: must start with letter/digit, and no slashes, or ASCII nulls allowed. ";
-            }
-            if ( file_too_big ) {
-              warning_text += "Too large! (> " + max/1048576 + " MB) ";
-            }
-
-            $('#up-file-warn').text(warning_text);
+            $('#up-file-spaces').toggle(bad_chars && spaces_in_name);
+            $('#up-file-invalid').toggle(bad_chars && !spaces_in_name);
+            $('#up-file-too-big').toggle(file_too_big);
 
             $('#up-file-warn').css({
               visibility: bad_file ? 'visible' : 'hidden'
@@ -1361,7 +1367,7 @@ $(function() {
 
       progress.progressbar({ value: false });
       dialog.dialog({
-        title:         'Uploading...',
+        title:         $('#cbrain-loading-templates .upload-progress').text(),
         modal:         true,
         resizable:     false,
         draggable:     false,

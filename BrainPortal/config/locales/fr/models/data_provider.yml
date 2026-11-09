@@ -19,3 +19,9 @@ fr:
         cloud_storage_client_token: "Jeton du client de stockage cloud"
         datalad_repository_url: "URL du dépôt Datalad"
         datalad_relative_path: "Chemin relatif Datalad"
+    errors:
+      models:
+        data_provider:
+          illegal_file_name:   "contient des caractères non autorisés."
+          rename_failed:       "n'a pas pu être modifié sur le serveur de stockage."
+          owner_must_be_admin: "doit être un administrateur"

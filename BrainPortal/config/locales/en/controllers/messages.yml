@@ -1,5 +1,9 @@
 en:
   messages:
+    errors:
+      header_required: "cannot be left blank."
+      project_required: "You need to specify the project whose members will receive this message."
+      invalid_project: "Invalid project specified for message destination."
     flash:
       sent:           "Message was successfully sent."
       update_failed:  "Problem updating message."

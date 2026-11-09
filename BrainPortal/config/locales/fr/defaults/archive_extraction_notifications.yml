@@ -1,0 +1,16 @@
+fr:
+  archive_extraction_notifications:
+    completed: "Extraction des fichiers terminée"
+    failed: "Échec de l’extraction des fichiers"
+    success: "Vos fichiers ont été extraits de l’archive « %{archive} »"
+    error: "Des erreurs sont survenues lors de l’extraction des fichiers de l’archive « %{archive} »"
+    intro: "D’après le contenu de l’archive :"
+    extracted:
+      one: "%{count} fichier extrait avec succès;"
+      other: "%{count} fichiers extraits avec succès;"
+    failed_count:
+      one: "%{count} fichier n’a pas pu être extrait;"
+      other: "%{count} fichiers n’ont pas pu être extraits;"
+    nested:
+      one: "%{count} fichier ignoré car il se trouve dans un sous-répertoire."
+      other: "%{count} fichiers ignorés car ils se trouvent dans des sous-répertoires."

@@ -28,13 +28,11 @@ module MessageHelpers
   # Send a generic notice message, with the succes count.
   def notice_message_sender(header,success_list,receiver=current_user)
 
-    type   = generic_human_type(success_list.first)
-
     # Send message
     Message.send_message(receiver,
       :message_type  => :notice,
       :header        => header,
-      :variable_text => "For #{view_pluralize(success_list.count,type)}"
+      :variable_text => message_count_prefix(success_list)
     )
   end
 
@@ -45,7 +43,6 @@ module MessageHelpers
 
     # Return the first object of failed_list
     object = failed_list.first.last.first
-    type   = generic_human_type(object)
     # Define path
     path   = object.class.sti_root_class.to_s.underscore.pluralize
     if object.is_a?(RemoteResource)
@@ -56,7 +53,7 @@ module MessageHelpers
 
     report      = ""
     failed_list.each do |message,objects|
-      report     += "For #{view_pluralize(objects.size,type)}, #{message}:\n"
+      report     += "#{message_count_prefix(objects)}, #{message}:\n"
       report     += objects.sort_by(&:name).map { |o| "[[#{o.name}][/#{path}/#{o.id}]]\n" }.join("")
     end
 
@@ -68,6 +65,11 @@ module MessageHelpers
   end
 
   private
+
+  def message_count_prefix(objects)
+    return I18n.t('task_message_helpers.for_tasks', :count => objects.size) if objects.first.is_a?(CbrainTask)
+    "For #{view_pluralize(objects.size, generic_human_type(objects.first))}"
+  end
 
   def generic_human_type(object) #:nodoc:
     type = object.class.pretty_type

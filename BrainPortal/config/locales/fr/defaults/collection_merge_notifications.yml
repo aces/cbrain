@@ -1,0 +1,6 @@
+fr:
+  collection_merge_notifications:
+    merged: "Collections fusionnées"
+    failed: "La collection n’a pas pu être fusionnée."
+    collision: "Certains noms de fichiers sont identiques."
+    provider_failed: "La collection n’a pas été créée correctement sur %{provider}"

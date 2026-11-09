@@ -23,6 +23,10 @@ en:
       not_synced: "This file must be synced locally to view QC data."
       no_qc_data: "This file does not seem to contain any QC data, or no template is available to QC this file type."
     dialogs:
+      upload_warnings:
+        spaces: "No spaces allowed in filename!"
+        invalid: "Illegal filename: must start with letter/digit, and no slashes, or ASCII nulls allowed."
+        too_big: "Too large! (> %{max} MB)"
       titles:
         upload_sf: "Upload - Single file"
         file_properties: "File properties"

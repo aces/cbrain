@@ -66,6 +66,11 @@ module CbrainRailsBourreau
       CbrainBootValidations.validate!
     end
 
+    config.i18n.load_path += Dir[Rails.root.join('..', 'BrainPortal', 'config', 'locales', '**', '*.yml')]
+
+    # JavaScript files you want as :defaults (application.js is always included).
+    # config.action_view.javascript_expansions[:defaults] = %w(jquery rails)
+
     # Configure the CBRAIN console with all our helpers
     console do
       # This is a trick where we synthetically add the path to a irbrc-type file

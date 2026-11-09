@@ -4,6 +4,7 @@ fr:
       not_accessible: "Serveur de stockage non accessible par l'utilisateur courant."
     errors:
       invalid_browse_path: "Le chemin de navigation est invalide"
+      type_not_allowed:    "n'est pas autorisé"
     flash:
       created: "Serveur de stockage créé avec succès."
       created_test_configuration: " Veuillez cliquer sur le bouton Tester la configuration. Des tests seront exécutés sur la configuration de stockage actuelle. Notez que si ces tests échouent, le stockage sera marqué 'hors ligne'."

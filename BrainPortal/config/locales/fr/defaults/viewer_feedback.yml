@@ -1,0 +1,10 @@
+fr:
+  viewer_feedback:
+    selection_html: "Vous devez sélectionner soit :<br> 1) plusieurs fichiers sans parent, soit<br> 2) un fichier avec un parent."
+    missing: "Visionneuse %{viewer} introuvable."
+    unset: "(Non défini)"
+    missing_file: "(Fichier introuvable avec l’identifiant %{id})"
+    header: "Impossible d’afficher %{name}"
+    description: "Une erreur interne est survenue lors de l’affichage du contenu de %{name}."
+    error: "Erreur lors de la génération de l’affichage pour la visionneuse « %{viewer} ». Les administrateurs ont été informés et examineront le problème. Aucune action de votre part n’est nécessaire pour le moment."
+    unavailable: "Aucune information disponible"

@@ -164,9 +164,9 @@ class DiskQuota < Quota
     return true if (self.max_bytes == 0 && self.max_files == 0)
 
     # Log errors
-    self.errors.add(:max_bytes, "must be 0 or > 0") if self.max_bytes < 0
-    self.errors.add(:max_files, "must be 0 or > 0") if self.max_files < 0
-    self.errors.add(:base,      "when using 0, both limits must be set to 0") if self.max_bytes == 0 || self.max_files == 0
+    self.errors.add(:max_bytes, I18n.t('activerecord.errors.models.disk_quota.must_be_positive_or_zero')) if self.max_bytes < 0
+    self.errors.add(:max_files, I18n.t('activerecord.errors.models.disk_quota.must_be_positive_or_zero')) if self.max_files < 0
+    self.errors.add(:base,      I18n.t('activerecord.errors.models.disk_quota.both_limits_zero')) if self.max_bytes == 0 || self.max_files == 0
   end
 
   # These attributes are only for CpuQuota

@@ -36,7 +36,7 @@
       <% end %>
       <% lines.shift %>
       <% if lines.size > 0 %>
-        <%= show_hide_toggle "(Show more)", "##{rando}", :class => 'action_link', :slide_effect => true, :slide_duration => 'fast' %>
+        <%= show_hide_toggle t('boutiques_description.show_more'), "##{rando}", :class => 'action_link', :slide_effect => true, :slide_duration => 'fast' %>
         <div id="<%= rando %>" style="display: none">
           <% lines.each do |line| %>
             <%= line %><br>

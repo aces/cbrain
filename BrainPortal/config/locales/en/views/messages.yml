@@ -68,6 +68,10 @@ en:
           in the page's code. So you can use whatever HTML elements you want, but make sure
           you know what you're doing.
     new:
+      message_types:
+        system: "System"
+        notice: "Notice"
+        error: "Error"
       title: "Add New Message"
       links:
         new_cbrain_dashboard: "New CBRAIN Dashboard Message"
