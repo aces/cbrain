@@ -19,3 +19,9 @@ en:
         cloud_storage_client_token: "Client Token"
         datalad_repository_url: "Datalad URL"
         datalad_relative_path: "Datalad Relative Path"
+    errors:
+      models:
+        data_provider:
+          illegal_file_name:   "contains illegal characters."
+          rename_failed:       "could not be changed on data provider."
+          owner_must_be_admin: "must be an administrator"

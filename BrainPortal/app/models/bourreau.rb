@@ -555,7 +555,7 @@ class Bourreau < RemoteResource
     %i( reverse_service_user reverse_service_host reverse_service_port
         reverse_service_db_socket_path reverse_service_ssh_agent_socket_path )
     .each do |att|
-      errors.add( att, "cannot be blank if the option to use the reverse service is selected") if
+      errors.add( att, I18n.t('activerecord.errors.models.bourreau.reverse_service_param_blank')) if
         self.send(att).blank?
     end
   end

@@ -170,7 +170,7 @@ class RemoteResource < ApplicationRecord
 
     ig_pat = self.dp_ignore_patterns || [] # nil and [] are ok
     unless ig_pat.is_a?(Array)
-      errors.add(:dp_ignore_patterns,"is not an array.")
+      errors.add(:dp_ignore_patterns, I18n.t('activerecord.errors.models.remote_resource.ignore_patterns_not_array'))
       return false
     end
 
@@ -184,7 +184,7 @@ class RemoteResource < ApplicationRecord
         pattern =~ /\*\*/ ||
         pattern =~ /\// ||
         pattern !~ /\A[\w\-\.\+\=\@\%\&\:\,\~\*\?]+\z/ # very strict! other special characters can cause shell side-effects!
-        errors.add(:spaced_dp_ignore_patterns, "has unacceptable pattern: '#{pattern}'." )
+        errors.add(:spaced_dp_ignore_patterns, I18n.t('activerecord.errors.models.remote_resource.bad_ignore_pattern', :pattern => pattern))
         all_ok = false
       end
     end
@@ -195,11 +195,11 @@ class RemoteResource < ApplicationRecord
   # JumpHost config is optional, but if set, we need both the host and user
   def jumphost_config_is_valid
     return true if self.jumphost_host.blank? && self.jumphost_user.blank? && self.jumphost_port.blank? # most common sitch
-    self.errors.add(:jumphost_port, "cannot be present if no host and username are provided") if
+    self.errors.add(:jumphost_port, I18n.t('activerecord.errors.models.remote_resource.jumphost_port_without_host')) if
       self.jumphost_port.present? && (self.jumphost_host.blank? || self.jumphost_user.blank?)
-    self.errors.add(:jumphost_host, "is required if a username is provided") if
+    self.errors.add(:jumphost_host, I18n.t('activerecord.errors.models.remote_resource.jumphost_host_required')) if
       self.jumphost_host.blank? && self.jumphost_user.present?
-    self.errors.add(:jumphost_user, "is required if a host is provided") if
+    self.errors.add(:jumphost_user, I18n.t('activerecord.errors.models.remote_resource.jumphost_user_required')) if
       self.jumphost_user.blank? && self.jumphost_host.present?
     return (self.errors[:jumphost_host].empty? && self.errors[:jumphost_user].empty? && self.errors[:jumphost_port].empty?)
   end
@@ -214,7 +214,7 @@ class RemoteResource < ApplicationRecord
     return true if path.blank?  # We allow this even if it won't work, until the admin sets it.
 
     if path !~ /\A\//
-      errors.add(:dp_cache_dir, "must be an absolute path.")
+      errors.add(:dp_cache_dir, I18n.t('activerecord.errors.models.remote_resource.cache_dir_not_absolute'))
       return false
     end
 
@@ -226,11 +226,11 @@ class RemoteResource < ApplicationRecord
         :host                   => is_local ? Socket.gethostname : self.ssh_control_host,
         :for_remote_resource_id => self.id
       unless valid
-        errors.add(:dp_cache_dir," is invalid (does not exist, is unaccessible, contains data or is a system directory).")
+        errors.add(:dp_cache_dir, I18n.t('activerecord.errors.models.remote_resource.cache_dir_invalid'))
         return false
       end
     rescue => ex
-      errors.add(:dp_cache_dir," is invalid: #{ex.message}")
+      errors.add(:dp_cache_dir, I18n.t('activerecord.errors.models.remote_resource.cache_dir_error', :error => ex.message))
       return false
     end
 

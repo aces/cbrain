@@ -16,6 +16,10 @@ en:
       tmp_tar_failed:               "Cannot create tmp tar file for FileCollection #%{id}"
       bad_params_argument:          "Got argument that is not a ActionController::Parameters set with permitted=true..."
       no_such_preset:               "No such preset ID '%{id}'"
+      results_data_provider_missing: "must be provided"
+      bourreau_offline:              "is on an Execution Server that is currently offline"
+      invalid_task_in_set:           "While creating a set of tasks, at least one of them was found to be invalid, probably because a file selected as input was not appropriate."
+      select_server_and_version:     "Please select a Server and a Version for the tool."
     flash:
       bourreau_not_available:       "Warning: the Execution Server '%{name}' for this task is not available right now."
       select_a_tool:                "Please select a tool to run."
@@ -57,3 +61,10 @@ en:
       preset_delete_not_owner:      "Cannot delete a preset that doesn't belong to you.\n"
       preset_update_not_owner:      "Cannot update a preset that does not belong to you.\n"
       preset_saved:                 "Saved preset '%{description}'.\n"
+    update_notifications:
+      success: "Finished sending update to your task(s)"
+      failure: "Failed to update your task(s)"
+      no_access: "you don't have access to this task(s)"
+      group_not_accessible: "new group is not accessible by task's owner"
+      provider_not_accessible: "new data provider is not accessible by task's owner"
+      tool_config_error: "error when updating tool config"

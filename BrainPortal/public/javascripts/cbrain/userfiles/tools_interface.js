@@ -125,7 +125,7 @@ $(document).ready(function() {
     if (e.target != this && e.target != link[0]) return;
 
     $("#tool_version_selector")
-      .html('<span class="loading_message">Loading...</span>')
+      .html($('#cbrain-loading-templates .loading-progress').html())
       .appendTo("#tool_" + link.data("toolId"));
 
     $.ajax({

@@ -15,3 +15,16 @@ fr:
       resource:
         one: "Ressource"
         other: "Ressources"
+    errors:
+      models:
+        remote_resource:
+          ignore_patterns_not_array:  "n'est pas un tableau."
+          bad_ignore_pattern:         "contient un motif inacceptable : '%{pattern}'."
+          jumphost_port_without_host: "ne peut pas être indiqué si aucun hôte ni nom d'utilisateur ne sont fournis"
+          jumphost_host_required:     "est requis si un nom d'utilisateur est fourni"
+          jumphost_user_required:     "est requis si un hôte est fourni"
+          cache_dir_not_absolute:     "doit être un chemin absolu."
+          cache_dir_invalid:          " est invalide (n'existe pas, est inaccessible, contient des données ou est un répertoire système)."
+          cache_dir_error:            " est invalide : %{error}"
+        bourreau:
+          reverse_service_param_blank: "ne peut pas être vide si l'option du service inverse est sélectionnée"

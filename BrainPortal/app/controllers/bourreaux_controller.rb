@@ -250,7 +250,7 @@ class BourreauxController < ApplicationController
 
   rescue
     respond_to do |format|
-      format.html { render :plain  => '<strong style="color:red">No Information Available</strong>' }
+      format.html { render :plain  => helpers.content_tag(:strong, t('viewer_feedback.unavailable'), :style => 'color:red') }
       format.xml  { head :unprocessable_entity }
       format.json { head :unprocessable_entity }
     end

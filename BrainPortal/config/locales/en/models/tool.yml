@@ -4,3 +4,16 @@ en:
       tool:
         one: "Tool"
         other: "Tools"
+    errors:
+      models:
+        tool_config:
+          overlay_invalid_file:            " contains invalid %{kind} named '%{name}'. It should be a full path that ends in .squashfs, .sqs or .sqfs"
+          overlay_userfile_id_not_integer: " contains invalid userfile id '%{id}'. The userfile id should be an integer number."
+          overlay_userfile_not_found:      " contains invalid userfile id '%{id}'. The file with id '%{id}' is not found."
+          overlay_userfile_bad_name:       " contains invalid userfile with id '%{id}' and name '%{name}'. File name should end in .squashfs, .sqs or .sqfs"
+          overlay_no_such_dp:              "contains invalid DP '%{name}' (no such DP)"
+          overlay_not_squashfs_dp:         "DataProvider '%{name}' is not a SingSquashfsDataProvider"
+          overlay_invalid_ext3capture:     "contains invalid ext3capture specification (must be like ext3capture:basename=1g or 2m etc)"
+          overlay_invalid_bindmount:       "contains invalid bindmount specification (must be like 'bindmount:/path/in/bourreau:/path/in/container' with or without a final ':ro') and free from special characters"
+          overlay_invalid_spec:            "contains invalid specification '%{spec}'"
+          version_name_locked:             "cannot be changed because this is a Boutiques tool"

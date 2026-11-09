@@ -94,8 +94,8 @@ module CustomLicense
 
     pretty = invalid_license_ids.join(", ")
 
-    self.errors.add(:base, "Some license agreement files do not exist: #{pretty}\n
-                            Please inform the maintainers or admins to fix issues with files.\n")
+    self.errors.add(:base, I18n.t('activerecord.errors.messages.missing_custom_license_files', :list => pretty))
+
 
     return false
   end
@@ -143,4 +143,3 @@ module CustomLicense
   end
 
 end
-

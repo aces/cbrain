@@ -4,3 +4,15 @@ en:
       background_activity:
         one: "Background Activity"
         other: "Background Activities"
+    errors:
+      models:
+        background_activity:
+          status_not_acceptable:        "is not acceptable"
+          repeat_invalid:               "is not valid"
+          repeat_invalid_start_minutes: "has an invalid start+NNN minutes"
+          repeat_invalid_hour:          "has an invalid hour"
+          repeat_invalid_minutes:       "has invalid minutes"
+          items_not_array:              "is not an array"
+          not_a_bourreau:               "is not a Bourreau"
+          not_a_portal:                 "is not a BrainPortal"
+          option_missing:               "is missing %{option}"

@@ -12,6 +12,7 @@ fr:
       archive_overflow: "Dépassement : plus de 50 fichiers trouvés dans l'archive."
       download_file_creation_failed: "Erreur lors de la création du fichier de téléchargement. La liste de fichiers est peut-être trop longue, ou certains fichiers sont manquants. Désolé."
       invalid_viewer_class: "Paramètre viewer_userfile_class invalide : %{class}"
+      rename_failed_on_provider: "n'a pas pu être modifié sur le serveur de stockage. Un fichier portant ce nom existe probablement déjà."
     flash:
       at_least_one_file: "Vous devez sélectionner au moins un fichier pour cette opération."
       marked_newer: "%{count} fichiers marqués comme plus récents sur leur serveur de stockage."

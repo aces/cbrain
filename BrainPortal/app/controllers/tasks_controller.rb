@@ -395,11 +395,11 @@ class TasksController < ApplicationController
     # because of the large history of old tasks that don't have
     # the attribute set.
     if @task.results_data_provider_id.blank? || @task.results_data_provider.blank?
-      @task.errors.add(:results_data_provider_id, 'must be provided')
+      @task.errors.add(:results_data_provider_id, t('tasks.errors.results_data_provider_missing'))
     end
 
     if @tool_config && @tool_config.bourreau.present? && ! @tool_config.bourreau.online?
-      @task.errors.add(:tool_config_id, 'is on an Execution Server that is currently offline')
+      @task.errors.add(:tool_config_id, t('tasks.errors.bourreau_offline'))
     end
 
     if @task.errors.any? || ! @task.valid?
@@ -430,7 +430,7 @@ class TasksController < ApplicationController
 
       # Found at least one faulty task, so inform user
       task.errors.each { |key,message| @task.errors.add(key,message) } # copy error messages, if any
-      @task.errors.add(:base, "While creating a set of tasks, at least one of them was found to be invalid, probably because a file selected as input was not appropriate.")
+      @task.errors.add(:base, t('tasks.errors.invalid_task_in_set'))
       flash.now[:error] += af_messages
 
       # Re-render the form
@@ -524,7 +524,7 @@ class TasksController < ApplicationController
     begin
       messages += @task.wrapper_after_form
     rescue CbrainError, CbrainNotice => ex
-      @task.errors.add(:base, "#{ex.class.to_s.sub(/Cbrain/,"")} in form: #{ex.message}\n")
+      @task.errors.add(:base, t('activerecord.errors.models.portal_task.in_form', :kind => ex.class.to_s.sub(/Cbrain/,""), :error => ex.message))
     end
 
     unless @task.errors.empty? && @task.valid?
@@ -621,7 +621,7 @@ class TasksController < ApplicationController
       new_tasklist = tasklist.dup
       new_tasklist.reject! { |task| ! task.has_owner_access?(current_user) }
       failed_tasks = tasklist - new_tasklist
-      failed_list["you don't have access to this task(s)"]  = failed_tasks if failed_tasks.present?
+      failed_list[t('tasks.update_notifications.no_access')]  = failed_tasks if failed_tasks.present?
       tasklist     = new_tasklist
 
       operation =
@@ -638,7 +638,7 @@ class TasksController < ApplicationController
               (! user_to_avail_group_ids[t_uid][new_group_id])
             end
             failed_tasks = tasklist - new_tasklist
-            failed_list["new group is not accessible by task's owner"] = failed_tasks if failed_tasks.present?
+            failed_list[t('tasks.update_notifications.group_not_accessible')] = failed_tasks if failed_tasks.present?
             tasklist     = new_tasklist
             ["update_attributes", {:group_id => new_group_id}]
           when :results_data_provider
@@ -651,7 +651,7 @@ class TasksController < ApplicationController
               (! user_to_avail_dp_ids[t_uid][new_dp_id])
             end
             failed_tasks = tasklist - new_tasklist
-            failed_list["new data provider is not accessible by task's owner"] = failed_tasks if failed_tasks.present?
+            failed_list[t('tasks.update_notifications.provider_not_accessible')] = failed_tasks if failed_tasks.present?
             tasklist     = new_tasklist
             ["update_attributes", {:results_data_provider_id => new_dp_id}]
           when :tool_config
@@ -670,7 +670,7 @@ class TasksController < ApplicationController
               (user_to_avail_new_tool_config[t_uid] == 0) || (old_tcid_to_tool_id[old_tcid] != new_tool_config.tool_id) || (old_bid != new_tool_config.bourreau_id)
             end
             failed_tasks = tasklist - new_tasklist
-            failed_list["error when updating tool config"] = failed_tasks if failed_tasks.present?
+            failed_list[t('tasks.update_notifications.tool_config_error')] = failed_tasks if failed_tasks.present?
             tasklist     = new_tasklist
             ["update_attributes", {:tool_config_id => new_tool_config.id}]
         end
@@ -680,11 +680,11 @@ class TasksController < ApplicationController
       if do_in_spawn
         # Message for successful actions
         if success_list.present?
-          notice_message_sender("Finished sending update to your task(s)", success_list)
+          notice_message_sender(t('tasks.update_notifications.success'), success_list)
         end
         # Message for failed actions
         if failed_list.present?
-          error_message_sender("Failed to update your task(s)", failed_list)
+          error_message_sender(t('tasks.update_notifications.failure'), failed_list)
         end
       end
 
@@ -1216,9 +1216,9 @@ class TasksController < ApplicationController
         begin
           #Process.setproctitle "ZenodoUpload ID=#{userfile.id} #{idx+1}/#{userfiles.size}"
           upload_userfile_to_deposit(deposit, userfile)
-          uploaded << "File: #{userfile.name} (ID=#{userfile.id})"
+          uploaded << t('tasks.zenodo_notifications.file', name: userfile.name, id: userfile.id)
         rescue => ex
-          errors   << "File: #{userfile.name} (ID=#{userfile.id}): #{ex.class}: #{ex.message}"
+          errors   << t('tasks.zenodo_notifications.file_error', name: userfile.name, id: userfile.id, error: "#{ex.class}: #{ex.message}")
         end
       end
 
@@ -1243,18 +1243,18 @@ class TasksController < ApplicationController
       if errors.present?
         Message.send_message(current_user,
           :message_type  => 'error',
-          :header        => "Could not send a file to Zenodo",
-          :description   => "Some errors occurred while sending files to Zenodo",
-          :variable_text => "For #{view_pluralize(errors.size,"file")}:\n" + errors.join("\n")
+          :header        => t('tasks.zenodo_notifications.failure_header'),
+          :description   => t('tasks.zenodo_notifications.failure_description'),
+          :variable_text => t('tasks.zenodo_notifications.for_files', count: errors.size) + errors.join("\n")
         )
       end
 
       if uploaded.present?
         Message.send_message(current_user,
           :message_type  => 'notice',
-          :header        => "Uploaded files to Zenodo",
-          :description   => "These files were uploaded to Zenodo",
-          :variable_text => "For #{view_pluralize(uploaded.size,"file")}:\n" + uploaded.join("\n")
+          :header        => t('tasks.zenodo_notifications.success_header'),
+          :description   => t('tasks.zenodo_notifications.success_description'),
+          :variable_text => t('tasks.zenodo_notifications.for_files', count: uploaded.size) + uploaded.join("\n")
         )
       end
     end
@@ -1296,7 +1296,7 @@ class TasksController < ApplicationController
 
     return nil # it means all is OK
   rescue => ex
-    return "File: #{filename}: #{ex.class}: #{ex.message}"
+    return t('tasks.zenodo_notifications.text_file_error', name: filename, error: "#{ex.class}: #{ex.message}")
   ensure
     File.unlink(content_path) rescue nil
   end
@@ -1419,7 +1419,7 @@ class TasksController < ApplicationController
     if tool_config && tool_config.bourreau
       task.bourreau = tool_config.bourreau
     else
-      task.errors.add(:base, "Please select a Server and a Version for the tool.")
+      task.errors.add(:base, t('tasks.errors.select_server_and_version'))
     end
 
     # Security checks
@@ -1526,7 +1526,7 @@ class TasksController < ApplicationController
 
       if spawn_messages.present?
         Message.send_message(current_user, {
-          :header        => "Submitted #{tasklist.size} #{maintask.pretty_name} tasks; some messages follow.",
+          :header        => t('task_submission_notifications.submitted', count: tasklist.size, tool: maintask.pretty_name),
           :message_type  => :notice,
           :variable_text => spawn_messages
           }

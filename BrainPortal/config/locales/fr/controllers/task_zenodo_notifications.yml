@@ -1,0 +1,13 @@
+fr:
+  tasks:
+    zenodo_notifications:
+      failure_header: "Impossible d’envoyer un fichier à Zenodo"
+      failure_description: "Des erreurs se sont produites lors de l’envoi de fichiers à Zenodo"
+      success_header: "Fichiers envoyés à Zenodo"
+      success_description: "Ces fichiers ont été envoyés à Zenodo"
+      for_files:
+        one: "Pour %{count} fichier :\n"
+        other: "Pour %{count} fichiers :\n"
+      file: "Fichier : %{name} (ID=%{id})"
+      file_error: "Fichier : %{name} (ID=%{id}) : %{error}"
+      text_file_error: "Fichier : %{name} : %{error}"

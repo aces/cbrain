@@ -128,7 +128,7 @@ class DataProvidersController < ApplicationController
     @provider.update_attributes(s3_provider_params)      if @provider.is_a?(S3FlatDataProvider)
 
     authorized_type     = [UserkeyFlatDirSshDataProvider, S3FlatDataProvider, S3MultiLevelDataProvider]
-    @provider.errors.add(:type, "is not allowed") unless authorized_type.include?(@provider.type)
+    @provider.errors.add(:type, t('data_providers.errors.type_not_allowed')) unless authorized_type.include?(@provider.type)
 
     # Fix some attributes
     @provider.user_id  = current_user.id
@@ -286,7 +286,7 @@ class DataProvidersController < ApplicationController
 
   rescue
     respond_to do |format|
-      format.html { render :html => '<strong style="color:red">No Information Available</strong>'.html_safe }
+      format.html { render :html => helpers.content_tag(:strong, t('viewer_feedback.unavailable'), :style => 'color:red') }
       format.xml  { head :unprocessable_entity }
       format.json { head :unprocessable_entity }
     end
@@ -674,7 +674,7 @@ class DataProvidersController < ApplicationController
 
     Message.send_message(current_user,
       :message_type  => :notice,
-      :header        => "Repair #{@issues.size} inconsistencies in background.",
+      :header        => t('provider_repair_notifications.started', count: @issues.size),
     )
 
     CBRAIN.spawn_with_active_records(:admin, "Repair DP #{@provider.name}") do
@@ -696,10 +696,10 @@ class DataProvidersController < ApplicationController
       if failed_list.empty?
         Message.send_message(current_user,
           :message_type  => :notice,
-          :header        => "#{@issues.size} issue(s) repaired successfully.",
+          :header        => t('provider_repair_notifications.success', count: @issues.size),
           :variable_text => success_list.map do |issue|
-            line  = ["|#{issue[:message]}|: repaired"]
-            line << " (action taken: #{issue[:action].to_s.titleize})" if issue[:action]
+            line  = [t('provider_repair_notifications.repaired', message: issue[:message])]
+            line << t('provider_repair_notifications.action', action: issue[:action].to_s.titleize) if issue[:action]
             line << "\n"
             line.join
           end.join
@@ -707,8 +707,8 @@ class DataProvidersController < ApplicationController
       else
         Message.send_message(current_user,
           :message_type  => :error,
-          :header        => "Out of #{@issues.size} issue(s), #{failed_list.size} could not be repaired:",
-          :variable_text => "Report:\n" + failed_list.map { |issue,ex| "|#{issue[:message]}|: #{ex.message}" }.join("\n")
+          :header        => t('provider_repair_notifications.failed', count: failed_list.size, total: t('provider_repair_notifications.issues', count: @issues.size)),
+          :variable_text => t('provider_repair_notifications.report') + "\n" + failed_list.map { |issue,ex| "|#{issue[:message]}|: #{ex.message}" }.join("\n")
         )
       end
     end

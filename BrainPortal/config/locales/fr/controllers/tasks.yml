@@ -16,6 +16,10 @@ fr:
       tmp_tar_failed: "Impossible de créer le fichier tar temporaire pour la FileCollection #%{id}"
       bad_params_argument: "Argument reçu qui n'est pas un ensemble ActionController::Parameters avec permitted=true..."
       no_such_preset: "Aucun préréglage avec l'identifiant '%{id}'"
+      results_data_provider_missing: "doit être fourni"
+      bourreau_offline:              "est sur un serveur d'exécution actuellement hors ligne"
+      invalid_task_in_set:           "Lors de la création d'un ensemble de tâches, au moins l'une d'elles s'est révélée invalide, probablement parce qu'un fichier sélectionné en entrée n'était pas approprié."
+      select_server_and_version:     "Veuillez sélectionner un serveur et une version pour l'outil."
     flash:
       bourreau_not_available: "Attention : le serveur de calcul '%{name}' de cette tâche n'est pas disponible pour le moment."
       select_a_tool: "Veuillez sélectionner un outil à exécuter."
@@ -57,3 +61,10 @@ fr:
       preset_delete_not_owner: "Impossible de supprimer un préréglage qui ne vous appartient pas.\n"
       preset_update_not_owner: "Impossible de mettre à jour un préréglage qui ne vous appartient pas.\n"
       preset_saved: "Préréglage '%{description}' enregistré.\n"
+    update_notifications:
+      success: "Mise à jour de vos tâches terminée"
+      failure: "Échec de la mise à jour de vos tâches"
+      no_access: "vous n’avez pas accès à ces tâches"
+      group_not_accessible: "le propriétaire de la tâche n’a pas accès au nouveau projet"
+      provider_not_accessible: "le propriétaire de la tâche n’a pas accès au nouveau serveur de stockage"
+      tool_config_error: "erreur lors de la mise à jour de la configuration de l’outil"
