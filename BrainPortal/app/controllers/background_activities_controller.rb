@@ -57,7 +57,7 @@ class BackgroundActivitiesController < ApplicationController
     @bac.options   = {}.with_indifferent_access
     @bac.configure_for_dynamic_items!
 
-    @bac.errors.add(:type, "is not a proper type") if @bac.class == BackgroundActivity # exact test
+    @bac.errors.add(:type, t('background_activities.errors.improper_type')) if @bac.class == BackgroundActivity # exact test
 
     # Parse starts time
     spar = schedule_params
@@ -74,7 +74,7 @@ class BackgroundActivitiesController < ApplicationController
       start = nil if @start_now != '1' && (start < Time.now || start > 6.months.from_now)
       @bac.start_at = start
     end
-    @bac.errors.add(:base, "Start date or time is invalid (no past date and max six months ahead)") if @bac.start_at.blank?
+    @bac.errors.add(:base, t('background_activities.errors.invalid_start_date')) if @bac.start_at.blank?
 
     # Parse repeat pattern
     @repeat, @repeat_hour, @repeat_min = spar[:repeat], spar[:repeat_hour], spar[:repeat_min]
@@ -170,15 +170,15 @@ class BackgroundActivitiesController < ApplicationController
       max_0_100.(opt[:count_fail]),
       max_0_100.(opt[:count_exc]),
     )
-    @bac.errors.add(:base, "Test activity doesn't have any items?") if @bac.items.size == 0
+    @bac.errors.add(:base, t('background_activities.errors.no_test_items')) if @bac.items.size == 0
     @bac.options = opt.to_h # just for form persistency; these values aren't used in the BAC
   end
 
   def add_options_for_ruby_runner
     opt = params_options.permit( :prepare_dynamic_items, :process, :before_first_item, :after_last_item )
     @bac.options = opt.to_h # just for form persistency; these values aren't used in the BAC
-    @bac.errors.add(:base, "prepare_dynamic_items() is blank") if @bac.options[:prepare_dynamic_items].blank?
-    @bac.errors.add(:base, "process() is blank")               if @bac.options[:process].blank?
+    @bac.errors.add(:base, t('background_activities.errors.prepare_dynamic_items_blank')) if @bac.options[:prepare_dynamic_items].blank?
+    @bac.errors.add(:base, t('background_activities.errors.process_blank'))               if @bac.options[:process].blank?
   end
 
   # This code makes a bunch of verification so that the ID
@@ -229,7 +229,7 @@ class BackgroundActivitiesController < ApplicationController
            :with_types => [], :without_types => [] )
     @bac.options.merge! opt.to_h.with_indifferent_access # use to_h, not to_hash !!!
     if @bac.options[:days_older].to_s !~ /\A\d\z|\A[1-9]\d{1,2}\z/
-      @bac.errors.add(:options,'does not specify a number of days between 0 and 999')
+      @bac.errors.add(:options, t('background_activities.errors.invalid_number_of_days'))
     end
   end
 
@@ -237,7 +237,7 @@ class BackgroundActivitiesController < ApplicationController
     opt = params_options.permit( :days_older )
     @bac.options.merge! opt.to_h.with_indifferent_access # use to_h, not to_hash !!!
     if @bac.options[:days_older].to_s !~ /\A\d\z|\A[1-9]\d{1,2}\z/
-      @bac.errors.add(:options,'does not specify a number of days between 0 and 999')
+      @bac.errors.add(:options, t('background_activities.errors.invalid_number_of_days'))
     end
   end
 

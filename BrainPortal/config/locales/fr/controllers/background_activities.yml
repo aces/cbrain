@@ -2,6 +2,12 @@ fr:
   background_activities:
     errors:
       unknown_operation: "Opération inconnue"
+      improper_type:               "n'est pas un type valide"
+      invalid_start_date:          "La date ou l'heure de début est invalide (pas de date passée, et six mois à l'avance au maximum)"
+      no_test_items:               "L'activité de test n'a aucun élément ?"
+      prepare_dynamic_items_blank: "prepare_dynamic_items() est vide"
+      process_blank:               "process() est vide"
+      invalid_number_of_days:      "n'indique pas un nombre de jours entre 0 et 999"
     flash:
       affected: "%{count} activités concernées par '%{action}'."
       none_affected: "Aucune activité concernée."

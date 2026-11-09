@@ -185,9 +185,9 @@ class ToolConfigsController < ApplicationController
         next if env_name.blank? && env_val.blank?
         @tool_config.env_array << [ env_name, env_val ]
         if env_name !~ /\A[A-Z][A-Z0-9_]+\z/i
-          @tool_config.errors.add(:base, "Invalid environment variable name '#{env_name}'")
+          @tool_config.errors.add(:base, t('tool_configs.errors.invalid_env_name', :name => env_name))
         elsif env_val !~ /\S/
-          @tool_config.errors.add(:base, "Invalid blank variable value for '#{env_name}'")
+          @tool_config.errors.add(:base, t('tool_configs.errors.blank_env_value', :name => env_name))
         end
       end
     end
@@ -351,4 +351,3 @@ class ToolConfigsController < ApplicationController
   end
 
 end
-

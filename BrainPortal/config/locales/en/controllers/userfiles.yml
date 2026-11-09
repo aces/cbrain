@@ -12,6 +12,7 @@ en:
       archive_overflow:                "Overflow: more than 50 files found in archive."
       download_file_creation_failed:   "Error creating the download file. The file list might be too long, or some files are missing. Sorry."
       invalid_viewer_class:            "Invalid params viewer_userfile_class %{class}"
+      rename_failed_on_provider: "could not be changed on the storage provider. A file with that name likely already exists."
     flash:
       at_least_one_file:               "Must have at least one file selected for this operation."
       marked_newer:                    "Marked %{count} files as newer on their Data Provider."

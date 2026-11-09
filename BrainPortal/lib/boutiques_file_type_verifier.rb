@@ -61,7 +61,7 @@ module BoutiquesFileTypeVerifier
           file.is_a?(CbrainFileList) || types.any? { |type| file.is_a?(type) }
         end
       if ! found_match
-        params_errors.add(input.cb_invoke_name, "is not of the proper type (should be #{typenames.join(",")})")
+        params_errors.add(input.cb_invoke_name, I18n.t('activerecord.errors.models.boutiques_portal_task.wrong_file_type', :types => typenames.join(",")))
       end
     end
 

@@ -395,11 +395,11 @@ class TasksController < ApplicationController
     # because of the large history of old tasks that don't have
     # the attribute set.
     if @task.results_data_provider_id.blank? || @task.results_data_provider.blank?
-      @task.errors.add(:results_data_provider_id, 'must be provided')
+      @task.errors.add(:results_data_provider_id, t('tasks.errors.results_data_provider_missing'))
     end
 
     if @tool_config && @tool_config.bourreau.present? && ! @tool_config.bourreau.online?
-      @task.errors.add(:tool_config_id, 'is on an Execution Server that is currently offline')
+      @task.errors.add(:tool_config_id, t('tasks.errors.bourreau_offline'))
     end
 
     if @task.errors.any? || ! @task.valid?
@@ -430,7 +430,7 @@ class TasksController < ApplicationController
 
       # Found at least one faulty task, so inform user
       task.errors.each { |key,message| @task.errors.add(key,message) } # copy error messages, if any
-      @task.errors.add(:base, "While creating a set of tasks, at least one of them was found to be invalid, probably because a file selected as input was not appropriate.")
+      @task.errors.add(:base, t('tasks.errors.invalid_task_in_set'))
       flash.now[:error] += af_messages
 
       # Re-render the form
@@ -524,7 +524,7 @@ class TasksController < ApplicationController
     begin
       messages += @task.wrapper_after_form
     rescue CbrainError, CbrainNotice => ex
-      @task.errors.add(:base, "#{ex.class.to_s.sub(/Cbrain/,"")} in form: #{ex.message}\n")
+      @task.errors.add(:base, t('activerecord.errors.models.portal_task.in_form', :kind => ex.class.to_s.sub(/Cbrain/,""), :error => ex.message))
     end
 
     unless @task.errors.empty? && @task.valid?
@@ -1419,7 +1419,7 @@ class TasksController < ApplicationController
     if tool_config && tool_config.bourreau
       task.bourreau = tool_config.bourreau
     else
-      task.errors.add(:base, "Please select a Server and a Version for the tool.")
+      task.errors.add(:base, t('tasks.errors.select_server_and_version'))
     end
 
     # Security checks
