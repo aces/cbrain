@@ -40,7 +40,7 @@
 
      <p>
        <%= f.label :message_type %><br />
-       <%= f.select :message_type, ["system", "notice", "error"] %>
+       <%= f.select :message_type, ["system", "notice", "error"].map { |type| [t(".message_types.#{type}"), type] } %>
      </p>
 
      <p>

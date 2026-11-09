@@ -71,6 +71,10 @@ fr:
           mais assurez‑vous de savoir ce que vous faites. Pour NeuroHub, nous recommandons d'entourer
           l'ensemble du texte d'au moins un élément &lt;P&gt;.
     new:
+      message_types:
+        system: "Système"
+        notice: "Avis"
+        error: "Erreur"
       title: "Ajouter un nouveau message"
       links:
         new_cbrain_dashboard: "Nouveau message tableau de bord CBRAIN"

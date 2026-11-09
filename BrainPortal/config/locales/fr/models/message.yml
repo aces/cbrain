@@ -2,6 +2,9 @@ fr:
   activerecord:
     attributes:
       message:
+        message_type: "Type de message"
+        critical: "Critique"
+        variable_text: "Texte variable"
         header: "Objet"
     models:
       message:
