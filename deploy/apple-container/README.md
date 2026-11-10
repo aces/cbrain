@@ -98,3 +98,39 @@ plus the image builder during builds.
 
 The smoke check leaves its completed task and Diagnostics report in CBRAIN so
 you can inspect them in the portal. Each invocation creates one small report.
+
+## Optional Slurm profile
+
+Select the Slurm profile in a separate shell:
+
+```sh
+export CBRAIN_LOCAL_PROFILE=slurm
+deploy/apple-container/apple-container.sh build
+deploy/apple-container/apple-container.sh up
+deploy/apple-container/apple-container.sh smoke
+```
+
+Open <http://localhost:3003>. Use the same launcher commands (`credentials`,
+`status`, `logs`, and `stop`) with the profile selected. The profile uses its
+own containers, volumes, credentials, and database under the `cbrain-slurm`
+prefix and `.local/apple-container/slurm` state directory.
+
+Bourreau uses `ScirSlurm` and submits jobs to the separate
+`cbrain-slurm-node` container. That container runs the Slurm controller,
+compute daemon, and accounting daemon. Accounting uses a dedicated schema
+in the profile's MariaDB. Bourreau and the compute node mount the same
+`/cluster` directory for job work, cache, and Slurm configuration. Keep
+the profile's state directory with its volumes to preserve that data and
+the Munge key.
+
+Inspect scheduler state and job history:
+
+```sh
+container exec -e SLURM_CONF=/cluster/slurm.conf cbrain-slurm-bourreau sinfo
+container exec -e SLURM_CONF=/cluster/slurm.conf cbrain-slurm-bourreau sacct -X
+```
+
+The node has two CPUs and a one-hour job limit. It uses Slurm's process-based
+tracking with cgroup enforcement disabled. The profile is intended for
+plain local jobs such as Diagnostics. Allow about 9 GB of memory for the
+running services.

@@ -9,6 +9,18 @@ COPY BrainPortal/Gemfile BrainPortal/Gemfile
 COPY Bourreau/Gemfile Bourreau/Gemfile
 RUN cd BrainPortal && bundle _2.4.22_ install --jobs 4 && \
     cd ../Bourreau && bundle _2.4.22_ install --jobs 4
+# CBRAIN checks SSH-forwarded UNIX sockets with ss.
+RUN apt-get -o Acquire::Check-Valid-Until=false update && apt-get install -y --no-install-recommends iproute2 && rm -rf /var/lib/apt/lists/*
+
+# The optional profile uses the same Slurm packages in Bourreau and the node.
+ARG CBRAIN_SLURM=0
+RUN if [ "$CBRAIN_SLURM" = 1 ]; then \
+      apt-get -o Acquire::Check-Valid-Until=false update && \
+      apt-get install -y --no-install-recommends \
+        munge slurm-client slurmctld slurmd slurmdbd && \
+      rm -rf /var/lib/apt/lists/*; \
+    fi
+
 COPY . .
 RUN cd BrainPortal && bundle exec rake cbrain:plugins:install:plugins
 
@@ -16,5 +28,3 @@ COPY deploy/apple-container/local.rake BrainPortal/lib/tasks/apple_container_loc
 ENV RAILS_ENV=development
 EXPOSE 3000
 ENTRYPOINT ["/opt/cbrain/deploy/apple-container/entrypoint.sh"]
-# CBRAIN checks SSH-forwarded UNIX sockets with ss.
-RUN apt-get -o Acquire::Check-Valid-Until=false update && apt-get install -y --no-install-recommends iproute2 && rm -rf /var/lib/apt/lists/*

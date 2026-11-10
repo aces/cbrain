@@ -37,11 +37,13 @@ namespace :db do
       if worker.persisted? && (worker.ssh_control_host != worker_host || !worker.is_alive?(:ping, true))
         worker.stop_tunnels
       end
+      slurm = ENV['CBRAIN_LOCAL_PROFILE'] == 'slurm'
       worker.assign_attributes(:user_id => admin.id, :group_id => group.id,
-        :description => 'Local Apple container UNIX worker', :online => true, :read_only => false,
+        :description => 'Local Apple container worker', :online => true, :read_only => false,
         :ssh_control_host => worker_host, :ssh_control_user => 'root', :ssh_control_port => 22,
-        :ssh_control_rails_dir => '/opt/cbrain/Bourreau', :cms_class => 'ScirUnix',
-        :cms_shared_dir => '/data/work', :dp_cache_dir => '/data/worker-cache',
+        :ssh_control_rails_dir => '/opt/cbrain/Bourreau', :cms_class => slurm ? 'ScirSlurm' : 'ScirUnix',
+        :cms_shared_dir => slurm ? '/cluster/work' : '/data/work',
+        :dp_cache_dir => slurm ? '/cluster/cache' : '/data/worker-cache',
         :workers_instances => 1, :workers_chk_time => 5, :workers_log_to => 'combined', :workers_verbose => 1)
       worker.save!
       provider = DataProvider.find_by(:name => 'LocalStorage') || EnCbrainSshDataProvider.new(:name => 'LocalStorage')

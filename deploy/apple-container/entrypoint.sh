@@ -2,6 +2,10 @@
 set -euo pipefail
 umask 077
 
+if [ "${1:-portal}" = slurm-node ]; then
+  exec /opt/cbrain/deploy/apple-container/slurm/entrypoint.sh
+fi
+
 setup_app() {
   local app=$1
   mkdir -p "/opt/cbrain/$app/tmp/pids" "/opt/cbrain/$app/tmp/sockets" "/data/logs/$app"
@@ -29,6 +33,13 @@ if [ "${1:-portal}" = worker ]; then
   # SSH-launched shells need the image's Ruby and Bundler on PATH.
   # shellcheck disable=SC2016
   printf 'export PATH=/usr/local/bundle/bin:/usr/local/bin:$PATH\nexport GEM_HOME=/usr/local/bundle\n' > /root/.bashrc
+  if [ "${CBRAIN_LOCAL_PROFILE:-unix}" = slurm ]; then
+    mkdir -p /cluster/work /cluster/cache
+    cd /opt/cbrain
+    # shellcheck source=deploy/apple-container/slurm/start-munge.sh
+    source deploy/apple-container/slurm/start-munge.sh
+    printf 'export SLURM_CONF=/cluster/slurm.conf\n' >> /root/.bashrc
+  fi
   exec /usr/sbin/sshd -D -e "${sshd_options[@]}"
 fi
 
