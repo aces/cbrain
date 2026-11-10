@@ -45,6 +45,7 @@ namespace :db do
         :cms_shared_dir => slurm ? '/cluster/work' : '/data/work',
         :dp_cache_dir => slurm ? '/cluster/cache' : '/data/worker-cache',
         :workers_instances => 1, :workers_chk_time => 5, :workers_log_to => 'combined', :workers_verbose => 1)
+      worker.singularity_executable_name = 'apptainer' if slurm
       worker.save!
       provider = DataProvider.find_by(:name => 'LocalStorage') || EnCbrainSshDataProvider.new(:name => 'LocalStorage')
       DataProvider.transaction do

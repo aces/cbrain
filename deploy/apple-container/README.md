@@ -123,6 +123,24 @@ in the profile's MariaDB. Bourreau and the compute node mount the same
 the profile's state directory with its volumes to preserve that data and
 the Munge key.
 
+The Slurm image includes ARM64 Apptainer 1.5.5. For a containerized tool, set
+the Tool Config's container engine to **Singularity** and select an ARM64
+image. For an OCI source, use `docker://` as the index location. Bourreau
+builds and caches a SIF under `/cluster/cache`, then stages it for the Slurm
+job to run on the compute node. The default Diagnostics smoke test uses the
+plain tool configuration.
+
+To update an existing Slurm deployment, let active jobs finish, then run
+these commands with the Slurm profile selected. The database, named volumes,
+and shared cluster directory are retained.
+
+```sh
+deploy/apple-container/apple-container.sh build
+deploy/apple-container/apple-container.sh stop
+container delete cbrain-slurm-bourreau cbrain-slurm-node cbrain-slurm-app
+deploy/apple-container/apple-container.sh up
+```
+
 Inspect scheduler state and job history:
 
 ```sh
@@ -131,6 +149,5 @@ container exec -e SLURM_CONF=/cluster/slurm.conf cbrain-slurm-bourreau sacct -X
 ```
 
 The node has two CPUs and a one-hour job limit. It uses Slurm's process-based
-tracking with cgroup enforcement disabled. The profile is intended for
-plain local jobs such as Diagnostics. Allow about 9 GB of memory for the
-running services.
+tracking with cgroup enforcement disabled. Allow about 9 GB of memory for
+the running services.

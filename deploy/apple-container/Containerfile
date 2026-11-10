@@ -12,13 +12,25 @@ RUN cd BrainPortal && bundle _2.4.22_ install --jobs 4 && \
 # CBRAIN checks SSH-forwarded UNIX sockets with ss.
 RUN apt-get -o Acquire::Check-Valid-Until=false update && apt-get install -y --no-install-recommends iproute2 && rm -rf /var/lib/apt/lists/*
 
-# The optional profile uses the same Slurm packages in Bourreau and the node.
+# Bourreau builds SIF images and the compute node executes them.
+# Use the portable EL8 ARM64 build for compatibility with Bullseye.
 ARG CBRAIN_SLURM=0
 RUN if [ "$CBRAIN_SLURM" = 1 ]; then \
       apt-get -o Acquire::Check-Valid-Until=false update && \
       apt-get install -y --no-install-recommends \
-        munge slurm-client slurmctld slurmd slurmdbd && \
-      rm -rf /var/lib/apt/lists/*; \
+        munge slurm-client slurmctld slurmd slurmdbd cpio rpm2cpio && \
+      rpm=apptainer-1.5.5-1.el8.aarch64.rpm && \
+      curl -fsSL --retry 3 -o /tmp/install-unprivileged.sh \
+        https://raw.githubusercontent.com/apptainer/apptainer/v1.5.5/tools/install-unprivileged.sh && \
+      curl -fsSL --retry 3 -o "/tmp/$rpm" \
+        "https://download.fedoraproject.org/pub/epel/8/Everything/aarch64/Packages/a/$rpm" && \
+      printf '%s  %s\n' \
+        a097956eafa6ab3dd843ee429d0b774ed029753bfadf013b8046556228fac6f2 /tmp/install-unprivileged.sh \
+        113d396128088cec904f0f06a5f225deac00f40b40f10e20bdc138de25085f3d "/tmp/$rpm" | sha256sum -c - && \
+      bash /tmp/install-unprivileged.sh -e -d el8 -a aarch64 -v "/tmp/$rpm" /opt/apptainer && \
+      ln -s /opt/apptainer/bin/apptainer /usr/local/bin/apptainer && \
+      apptainer --version && \
+      rm -rf /var/lib/apt/lists/* /tmp/install-unprivileged.sh "/tmp/$rpm"; \
     fi
 
 COPY . .
