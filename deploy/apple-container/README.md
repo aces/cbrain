@@ -1,7 +1,7 @@
 # Local CBRAIN with Apple container
 
-This runs BrainPortal and a local Bourreau (`ScirUnix`) inside an ARM64 Linux
-container, with MariaDB in a second container. It uses Apple's `container` CLI;
+This runs BrainPortal, a local Bourreau (`ScirUnix`), and MariaDB in three
+ARM64 Linux containers. It uses Apple's `container` CLI;
 Docker Desktop and Docker Compose are not needed. `Containerfile` uses the OCI
 build syntax accepted by Apple container; `.dockerignore` is its build-context
 exclusion file.
@@ -29,7 +29,8 @@ command does not track subsequent password changes.
 
 The setup creates `LocalPortal`, `LocalBourreau`, `LocalStorage`, and local
 Diagnostics, Parallelizer, and CbSerializer tool configurations. The worker runs
-UNIX jobs inside the app container. Scientific tools and their datasets must be
+UNIX jobs inside `cbrain-bourreau`. BrainPortal starts the execution server
+and its task worker over SSH. Scientific tools and their datasets must be
 installed/configured separately.
 
 ```sh
@@ -41,33 +42,58 @@ deploy/apple-container/apple-container.sh stop
 deploy/apple-container/apple-container.sh up
 ```
 
-Only port 3000 is published, on `127.0.0.1`. SSH is internal to the app container;
-MariaDB is on the private `cbrain-local` network. Both Rails apps share the app
-container to keep local UNIX jobs, SSH tunnels, and file paths straightforward.
+Only the portal's HTTP port (3000) is published, on `127.0.0.1`. All three
+containers use the `cbrain-local` network. The portal starts Bourreau over SSH
+and forwards its database connection through that SSH session. Bourreau
+uses the forwarded portal identity to read and write `LocalStorage` on
+the portal container. The launcher installs the SSH host keys it reads
+from each container.
+
+To recreate the worker while retaining its work directories and host key:
+
+```sh
+container stop cbrain-bourreau
+container delete cbrain-bourreau
+deploy/apple-container/apple-container.sh up
+deploy/apple-container/apple-container.sh smoke
+```
+
+Wait for active tasks to finish before stopping the worker. `up` discovers its
+new address and reconnects the portal.
 
 ## Persistence and rebuilds
 
 - `cbrain-db-data`: MariaDB database.
-- `cbrain-app-data`: uploaded files, job work directories, caches, SSH identity,
-  and startup logs.
+- `cbrain-app-data`: provider files, portal cache, SSH identity and host key,
+  and portal logs.
+- `cbrain-bourreau-data`: task work directories, worker cache, SSH host key,
+  and Bourreau logs.
 - `.local/apple-container/env`: generated passwords and session secret, mode 600,
   excluded from Git and the image. Keep this file with database backups.
 
 `stop` preserves containers and volumes. If MariaDB receives a new IP on restart,
-`up` recreates the app container with the new address and reuses its data volume. Repeated startup runs migrations and
-ensures the local resources exist; it does not reseed or reset an existing admin
-password. Source code is copied into the image, so rebuild after code changes.
-To replace the app container after a build while keeping all data:
+`up` recreates the portal container with the new address and reuses its data
+volume. Repeated startup runs migrations and ensures the local resources exist.
+The admin password is set when the database is first seeded.
+Source code is copied into the image. Rebuild and recreate both app
+containers after code changes while keeping their volumes:
 
 ```sh
-container stop cbrain-app
-container delete cbrain-app
+deploy/apple-container/apple-container.sh build
+container stop cbrain-bourreau cbrain-app
+container delete cbrain-bourreau cbrain-app
 deploy/apple-container/apple-container.sh up
 ```
 
+On upgrade from the combined container, build the new image and run `up`.
+The launcher replaces the combined app container, copies its work directories
+and worker cache into the new worker volume, and updates `LocalStorage` to
+use SSH. The provider keeps the same record and files. Its old cache status
+entries are cleared so each app can resync through SSH.
+
 This is a local development deployment. The upstream application uses Rails 5.0
 and Ruby 2.7, and the Ruby image requires Debian's Bullseye archive. Do not expose
-this deployment publicly. Budget approximately 5 GB RAM for the running services
+this deployment publicly. Budget approximately 7 GB RAM for the running services
 plus the image builder during builds.
 
 The smoke check leaves its completed task and Diagnostics report in CBRAIN so
