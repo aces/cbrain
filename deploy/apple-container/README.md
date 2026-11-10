@@ -8,8 +8,8 @@ exclusion file.
 
 ## Start
 
-Requires an Apple silicon Mac running macOS 26 or newer and Apple's `container`
-CLI on `PATH`. Install the signed package from the
+Requires an Apple silicon Mac running macOS 26 or newer, Python 3, and Apple's
+`container` CLI on `PATH`. Install the signed package from the
 [Apple container releases](https://github.com/apple/container/releases).
 The launcher checks these prerequisites before invoking container commands or
 creating local state, and explains how to resolve a missing prerequisite.
@@ -18,12 +18,12 @@ The `credentials` command can still read saved credentials without the runtime.
 From the repository root:
 
 ```sh
-deploy/apple-container/apple-container.sh build
 deploy/apple-container/apple-container.sh up
 deploy/apple-container/apple-container.sh credentials
 ```
 
-Open <http://localhost:3000> and sign in as `admin` using the generated initial
+The first `up` builds the image and starts the services. Open
+<http://localhost:3000> and sign in as `admin` using the generated initial
 password. CBRAIN asks you to change it on first login. The initial password
 command does not track subsequent password changes.
 
@@ -49,18 +49,6 @@ uses the forwarded portal identity to read and write `LocalStorage` on
 the portal container. The launcher installs the SSH host keys it reads
 from each container.
 
-To recreate the worker while retaining its work directories and host key:
-
-```sh
-container stop cbrain-bourreau
-container delete cbrain-bourreau
-deploy/apple-container/apple-container.sh up
-deploy/apple-container/apple-container.sh smoke
-```
-
-Wait for active tasks to finish before stopping the worker. `up` discovers its
-new address and reconnects the portal.
-
 ## Persistence and rebuilds
 
 - `cbrain-db-data`: MariaDB database.
@@ -71,21 +59,27 @@ new address and reconnects the portal.
 - `.local/apple-container/env`: generated passwords and session secret, mode 600,
   excluded from Git and the image. Keep this file with database backups.
 
+Run the launcher from the checkout that created the profile. Its containers
+and volumes are shared across checkouts, while its credentials live in that
+checkout's `.local` directory.
+
 `stop` preserves containers and volumes. If MariaDB receives a new IP on restart,
 `up` recreates the portal container with the new address and reuses its data
-volume. Repeated startup runs migrations and ensures the local resources exist.
+volume. Portal startup runs migrations, and `up` ensures the local resources exist.
 The admin password is set when the database is first seeded.
-Source code is copied into the image. Rebuild and recreate both app
-containers after code changes while keeping their volumes:
+
+After changing the source, let active jobs finish, then rebuild and restart
+the selected profile.
 
 ```sh
-deploy/apple-container/apple-container.sh build
-container stop cbrain-bourreau cbrain-app
-container delete cbrain-bourreau cbrain-app
-deploy/apple-container/apple-container.sh up
+deploy/apple-container/apple-container.sh rebuild
 ```
 
-On upgrade from the combined container, build the new image and run `up`.
+`rebuild` builds the image and replaces the application containers while
+keeping the database, named volumes, and shared work directory. The `build`
+command is available for building the image on its own.
+
+On upgrade from the combined container, run `rebuild`.
 The launcher replaces the combined app container, copies its work directories
 and worker cache into the new worker volume, and updates `LocalStorage` to
 use SSH. The provider keeps the same record and files. Its old cache status
@@ -105,7 +99,6 @@ Select the Slurm profile in a separate shell:
 
 ```sh
 export CBRAIN_LOCAL_PROFILE=slurm
-deploy/apple-container/apple-container.sh build
 deploy/apple-container/apple-container.sh up
 deploy/apple-container/apple-container.sh smoke
 ```
@@ -129,17 +122,6 @@ image. For an OCI source, use `docker://` as the index location. Bourreau
 builds and caches a SIF under `/cluster/cache`, then stages it for the Slurm
 job to run on the compute node. The default Diagnostics smoke test uses the
 plain tool configuration.
-
-To update an existing Slurm deployment, let active jobs finish, then run
-these commands with the Slurm profile selected. The database, named volumes,
-and shared cluster directory are retained.
-
-```sh
-deploy/apple-container/apple-container.sh build
-deploy/apple-container/apple-container.sh stop
-container delete cbrain-slurm-bourreau cbrain-slurm-node cbrain-slurm-app
-deploy/apple-container/apple-container.sh up
-```
 
 Inspect scheduler state and job history:
 

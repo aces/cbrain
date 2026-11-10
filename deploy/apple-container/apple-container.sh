@@ -9,7 +9,8 @@ case "$profile" in
   slurm) prefix=cbrain-slurm; portal_port=3003; slurm=1; STATE="$STATE/slurm" ;;
   *) echo 'CBRAIN_LOCAL_PROFILE must be unix or slurm' >&2; exit 1 ;;
 esac
-IMAGE="$prefix-local:dev"
+# Use the canonical tag written by container build.
+IMAGE="docker.io/library/$prefix-local:dev"
 app="$prefix-app"
 worker="$prefix-bourreau"
 db="$prefix-db"
@@ -40,16 +41,19 @@ check_host() {
   fi
 }
 
+usage() {
+  echo 'Usage: deploy/apple-container/apple-container.sh {up|rebuild|build|stop|status|logs|credentials|shell|smoke}' >&2
+  exit 2
+}
+
 # Reading saved credentials needs neither a compatible host nor the runtime.
 case "${1:-up}" in
-  build|up|stop|logs|status|smoke|shell) check_host ;;
+  up|rebuild|build|stop|logs|status|smoke|shell) check_host ;;
   credentials) ;;
-  *) echo 'Usage: deploy/apple-container/apple-container.sh {build|up|stop|status|logs|credentials|shell|smoke}' >&2; exit 2 ;;
+  *) usage ;;
 esac
-mkdir -p "$STATE"
-chmod 700 "$STATE"
 exists() { container inspect "$1" >/dev/null 2>&1; }
-running() { container list --format json | python3 -c 'import json,sys; sys.exit(not any(c["configuration"]["id"] == sys.argv[1] for c in json.load(sys.stdin)))' "$1"; }
+running() { container list --quiet | grep -Fx "$1" >/dev/null; }
 container_ip() {
   container inspect "$1" | python3 -c 'import json,sys; print(json.load(sys.stdin)[0]["status"]["networks"][0]["ipv4Address"].split("/")[0])'
 }
@@ -69,177 +73,195 @@ trust_host() {
   ' sh "$address" "$key"
 }
 
-case "${1:-up}" in
-  build)
-    container system start
-    container build --cpus 4 --memory 4G --build-arg "CBRAIN_SLURM=$slurm" -t "$IMAGE" -f "$ROOT/deploy/apple-container/Containerfile" "$ROOT"
-    ;;
-  up)
-    container system start
-    container image inspect "$IMAGE" >/dev/null 2>&1 || { echo "Build the app first: deploy/apple-container/apple-container.sh build" >&2; exit 1; }
-    if [ ! -f "$STATE/env" ]; then
-      umask 077
-      {
-        echo "MARIADB_DATABASE=cbrain"
-        echo "MARIADB_USER=cbrain"
-        echo "MARIADB_PASSWORD=$(openssl rand -hex 24)"
-        echo "MARIADB_ROOT_PASSWORD=$(openssl rand -hex 24)"
-        echo "CBRAIN_ADMIN_PASSWORD=Cb1!$(openssl rand -hex 16)"
-        echo "SECRET_KEY_BASE=$(openssl rand -hex 64)"
-        if [ "$slurm" = 1 ]; then
-          echo "SLURM_DB_PASSWORD=$(openssl rand -hex 24)"
-        fi
-      } > "$STATE/env"
+start_service() {
+  local service=$1 data_dir=$2
+  shift 2
+  if ! exists "$service"; then
+    container volume inspect "$service-data" >/dev/null 2>&1 || container volume create "$service-data"
+    container run -d --name "$service" --network "$network" -v "$service-data:$data_dir" "$@"
+  elif ! running "$service"; then
+    container start "$service"
+  fi
+}
+
+stop_service() {
+  if running "$1"; then container stop "$1"; fi
+}
+
+remove_service() {
+  if exists "$1"; then
+    stop_service "$1"
+    container delete "$1"
+  fi
+}
+
+wait_for() {
+  local service=$1 attempts=$2 message=$3 attempt
+  shift 3
+  for ((attempt = 0; attempt < attempts; attempt++)); do
+    if "$@" >/dev/null 2>&1; then return 0; fi
+    if ! running "$service"; then break; fi
+    sleep 2
+  done
+  echo "$message" >&2
+  container logs "$service" >&2 || true
+  if [ "$service" = "$app" ]; then
+    container exec "$app" tail -n 40 /data/portal-log/server.log >&2 || true
+  fi
+  return 1
+}
+
+slurm_ready() {
+  container exec -e SLURM_CONF=/cluster/slurm.conf "$node" sinfo -N -h -o '%t' |
+    grep -Ex 'idle|mix|alloc'
+}
+
+build_image() {
+  container build --cpus 4 --memory 4G --build-arg "CBRAIN_SLURM=$slurm" -t "$IMAGE" -f "$ROOT/deploy/apple-container/Containerfile" "$ROOT"
+}
+
+check_start_tools() {
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo 'Error: Starting the deployment requires Python 3 to read Apple container metadata.' >&2
+    exit 1
+  fi
+}
+
+services=("$worker" "$app")
+if [ "$slurm" = 1 ]; then services+=("$node"); fi
+
+prepare_state() {
+  # Container names are shared across checkouts, but this file lives in the checkout.
+  if exists "$db" || { [ ! -s "$STATE/env" ] && container volume inspect "$db-data" >/dev/null 2>&1; }; then
+    if [ ! -s "$STATE/env" ] ||
+       [ "$(sed -n 's/^MARIADB_PASSWORD=//p' "$STATE/env")" != "$(container_env "$db" MARIADB_PASSWORD)" ]; then
+      echo "Error: $db-data needs the credentials from its original checkout. Restore $STATE/env before starting it." >&2
+      return 1
     fi
-    container network inspect "$network" >/dev/null 2>&1 || container network create "$network"
-    container volume inspect "$db-data" >/dev/null 2>&1 || container volume create "$db-data"
-    container volume inspect "$app-data" >/dev/null 2>&1 || container volume create "$app-data"
-    container volume inspect "$worker-data" >/dev/null 2>&1 || container volume create "$worker-data"
-    if ! exists "$db"; then
-      container run -d --name "$db" --network "$network" --memory 1G \
-        --env-file "$STATE/env" -v "$db-data:/var/lib/mysql" docker.io/library/mariadb:10.11
-    elif ! running "$db"; then
-      container start "$db"
-    fi
-    ready=false
-    for _attempt in {1..60}; do
-      if container exec "$db" healthcheck.sh --connect --innodb_initialized >/dev/null 2>&1; then ready=true; break; fi
-      sleep 2
-    done
-    "$ready" || { echo "MariaDB did not become ready. Run container logs $db" >&2; exit 1; }
-    db_ip=$(container_ip "$db")
-    worker_mount=(-v "$worker-data:/data")
-    if [ "$slurm" = 1 ]; then
-      mkdir -p "$STATE/cluster"
-      if [ ! -s "$STATE/cluster/munge.key" ]; then
-        (umask 077; openssl rand -out "$STATE/cluster/munge.key" 32)
+  fi
+  mkdir -p "$STATE"
+  chmod 700 "$STATE"
+  if [ ! -f "$STATE/env" ]; then
+    umask 077
+    {
+      echo "MARIADB_DATABASE=cbrain"
+      echo "MARIADB_USER=cbrain"
+      echo "MARIADB_PASSWORD=$(openssl rand -hex 24)"
+      echo "MARIADB_ROOT_PASSWORD=$(openssl rand -hex 24)"
+      echo "CBRAIN_ADMIN_PASSWORD=Cb1!$(openssl rand -hex 16)"
+      echo "SECRET_KEY_BASE=$(openssl rand -hex 64)"
+      if [ "$slurm" = 1 ]; then
+        echo "SLURM_DB_PASSWORD=$(openssl rand -hex 24)"
       fi
-      slurm_db_password=$(sed -n 's/^SLURM_DB_PASSWORD=//p' "$STATE/env")
-      [[ "$slurm_db_password" =~ ^[a-f0-9]{48}$ ]] || { echo 'Invalid Slurm database password' >&2; exit 1; }
-      # Use a separate accounting schema and user in this profile's MariaDB.
-      # shellcheck disable=SC2016
-      container exec -i "$db" sh -c 'MYSQL_PWD="$MARIADB_ROOT_PASSWORD" exec mariadb -uroot' <<SQL
+    } > "$STATE/env"
+  fi
+}
+
+start_profile() {
+  local db_ip portal_ip portal_key worker_ip slurm_db_password
+  local worker_options=(-e "CBRAIN_LOCAL_PROFILE=$profile")
+  container network inspect "$network" >/dev/null 2>&1 || container network create "$network"
+  start_service "$db" /var/lib/mysql --memory 1G --env-file "$STATE/env" docker.io/library/mariadb:10.11
+  wait_for "$db" 60 'MariaDB did not become ready' \
+    container exec "$db" healthcheck.sh --connect --innodb_initialized
+  db_ip=$(container_ip "$db")
+  if [ "$slurm" = 1 ]; then
+    mkdir -p "$STATE/cluster"
+    if [ ! -s "$STATE/cluster/munge.key" ]; then
+      (umask 077; openssl rand -out "$STATE/cluster/munge.key" 32)
+    fi
+    slurm_db_password=$(sed -n 's/^SLURM_DB_PASSWORD=//p' "$STATE/env")
+    [[ "$slurm_db_password" =~ ^[a-f0-9]{48}$ ]] || { echo 'Invalid Slurm database password' >&2; exit 1; }
+    # Use a separate accounting schema and user in this profile's MariaDB.
+    # shellcheck disable=SC2016
+    container exec -i "$db" sh -c 'MYSQL_PWD="$MARIADB_ROOT_PASSWORD" exec mariadb -uroot' <<SQL
 CREATE DATABASE IF NOT EXISTS slurm_acct_db;
 CREATE USER IF NOT EXISTS 'slurm'@'%' IDENTIFIED BY '$slurm_db_password';
 GRANT ALL ON slurm_acct_db.* TO 'slurm'@'%';
 SQL
-      container volume inspect "$node-data" >/dev/null 2>&1 || container volume create "$node-data"
-      if exists "$node" && [ "$(container_env "$node" CBRAIN_DB_HOST)" != "$db_ip" ]; then
-        if running "$node"; then container stop "$node"; fi
-        container delete "$node"
-      fi
-      if ! exists "$node"; then
-        container run -d --name "$node" --network "$network" --cpus 2 --memory 2G \
-          -e "CBRAIN_DB_HOST=$db_ip" -e "SLURM_DB_PASSWORD=$slurm_db_password" \
-          -v "$node-data:/data" -v "$STATE/cluster:/cluster" "$IMAGE" slurm-node
-      elif ! running "$node"; then
-        container start "$node"
-      fi
-      ready=false
-      for _attempt in {1..60}; do
-        if container exec -e SLURM_CONF=/cluster/slurm.conf "$node" sinfo -N -h -o '%t' 2>/dev/null |
-          grep -Eq '^(idle|mix|alloc)$'; then
-          ready=true
-          break
+    if exists "$node" && [ "$(container_env "$node" CBRAIN_DB_HOST)" != "$db_ip" ]; then
+      remove_service "$node"
+    fi
+    start_service "$node" /data --cpus 2 --memory 2G \
+      -e "CBRAIN_DB_HOST=$db_ip" -e "SLURM_DB_PASSWORD=$slurm_db_password" \
+      -v "$STATE/cluster:/cluster" "$IMAGE" slurm-node
+    wait_for "$node" 60 'Slurm node did not register' slurm_ready
+    worker_options+=(-v "$STATE/cluster:/cluster")
+  fi
+  # Replace the legacy combined app container or refresh a changed DB address.
+  if exists "$app"; then
+    if [ "$(container_env "$app" CBRAIN_DB_HOST)" != "$db_ip" ] ||
+       [ "$(container_env "$app" CBRAIN_SPLIT_PORTAL)" != 1 ]; then
+      remove_service "$app"
+    fi
+  fi
+  # The worker's database socket belongs to the portal's SSH session.
+  if ! running "$app"; then stop_service "$worker"; fi
+  start_service "$app" /data --cpus 4 --memory 4G \
+    --env-file "$STATE/env" -e "CBRAIN_DB_HOST=$db_ip" -e CBRAIN_SPLIT_PORTAL=1 \
+    -p "127.0.0.1:$portal_port:3000" "$IMAGE"
+  wait_for "$app" 120 'Portal did not become ready' curl -fsS --max-time 2 "http://127.0.0.1:$portal_port/"
+  portal_ip=$(container_ip "$app")
+  portal_key=$(container exec "$app" cat /data/ssh/id_cbrain_ed25519.pub)
+  if exists "$worker" && [ "$(container_env "$worker" CBRAIN_PORTAL_PUBLIC_KEY)" != "$portal_key" ]; then
+    remove_service "$worker"
+  fi
+  start_service "$worker" /data --cpus 2 --memory 2G \
+    -e "CBRAIN_PORTAL_PUBLIC_KEY=$portal_key" \
+    "${worker_options[@]}" "$IMAGE" worker
+  wait_for "$worker" 30 'Bourreau SSH host key was not created' \
+    container exec "$worker" test -s /data/ssh/host_ed25519.pub
+  worker_ip=$(container_ip "$worker")
+  trust_host "$app" "$worker_ip" "$worker"
+  trust_host "$app" "$portal_ip" "$app"
+  trust_host "$worker" "$portal_ip" "$app"
+
+  wait_for "$worker" 30 'Bourreau did not become reachable over SSH' \
+    container exec "$app" ssh -i /root/.ssh/id_cbrain_ed25519 \
+    -o BatchMode=yes -o ConnectTimeout=2 "root@$worker_ip" true
+
+  # Preserve the old worker's work directories and cache on first upgrade.
+  if [ "$slurm" = 0 ]; then
+    # shellcheck disable=SC2016
+    container exec "$app" bash -e -c '
+    target="root@$1"
+    ssh_options=(-i /root/.ssh/id_cbrain_ed25519 -o BatchMode=yes -o ConnectTimeout=5)
+    if ! ssh "${ssh_options[@]}" "$target" test -f /data/.legacy-worker-imported; then
+      for dir in /data/work /data/worker-cache; do
+        if [ -d "$dir" ]; then
+          rsync -a -e "ssh ${ssh_options[*]}" "$dir/" "$target:$dir/"
         fi
-        running "$node" || { container logs "$node"; exit 1; }
-        sleep 2
       done
-      "$ready" || { echo 'Slurm node did not register' >&2; container logs "$node"; exit 1; }
-      worker_mount+=(-v "$STATE/cluster:/cluster")
+      ssh "${ssh_options[@]}" "$target" touch /data/.legacy-worker-imported
     fi
-    # Replace the legacy combined app container or refresh a changed DB address.
-    if exists "$app"; then
-      if [ "$(container_env "$app" CBRAIN_DB_HOST)" != "$db_ip" ] ||
-         [ "$(container_env "$app" CBRAIN_SPLIT_PORTAL)" != 1 ]; then
-        if running "$app"; then container stop "$app"; fi
-        container delete "$app"
-      fi
-    fi
-    # The worker's database socket belongs to the portal's SSH session.
-    if ! running "$app" && running "$worker"; then
-      container stop "$worker"
-    fi
-    if ! exists "$app"; then
-      container run -d --name "$app" --network "$network" --cpus 4 --memory 4G \
-        --env-file "$STATE/env" -e "CBRAIN_DB_HOST=$db_ip" -e CBRAIN_SPLIT_PORTAL=1 \
-        -v "$app-data:/data" -p "127.0.0.1:$portal_port:3000" "$IMAGE"
-    elif ! running "$app"; then
-      container start "$app"
-    fi
-    ready=false
-    for _attempt in {1..120}; do
-      if curl -fsS "http://127.0.0.1:$portal_port/" >/dev/null 2>&1; then ready=true; break; fi
-      running "$app" || { container logs "$app"; container exec "$app" tail -n 40 /data/portal-log/server.log || true; exit 1; }
-      sleep 2
-    done
-    "$ready" || { echo 'Portal did not become ready; run deploy/apple-container/apple-container.sh logs' >&2; exit 1; }
-    portal_ip=$(container_ip "$app")
-    portal_key=$(container exec "$app" cat /data/ssh/id_cbrain_ed25519.pub)
-    if exists "$worker" && [ "$(container_env "$worker" CBRAIN_PORTAL_PUBLIC_KEY)" != "$portal_key" ]; then
-      if running "$worker"; then container stop "$worker"; fi
-      container delete "$worker"
-    fi
-    if ! exists "$worker"; then
-      container run -d --name "$worker" --network "$network" --cpus 2 --memory 2G \
-        -e "CBRAIN_PORTAL_PUBLIC_KEY=$portal_key" -e "CBRAIN_LOCAL_PROFILE=$profile" \
-        "${worker_mount[@]}" "$IMAGE" worker
-    elif ! running "$worker"; then
-      container start "$worker"
-    fi
-    ready=false
-    for _attempt in {1..30}; do
-      if container exec "$worker" test -s /data/ssh/host_ed25519.pub; then ready=true; break; fi
-      running "$worker" || { container logs "$worker"; exit 1; }
-      sleep 2
-    done
-    "$ready" || { echo 'Bourreau SSH host key was not created' >&2; exit 1; }
-    worker_ip=$(container_ip "$worker")
-    trust_host "$app" "$worker_ip" "$worker"
-    trust_host "$app" "$portal_ip" "$app"
-    trust_host "$worker" "$portal_ip" "$app"
+    ' bash "$worker_ip"
+  fi
 
-    ready=false
-    for _attempt in {1..30}; do
-      if container exec "$app" ssh -i /root/.ssh/id_cbrain_ed25519 \
-        -o BatchMode=yes -o ConnectTimeout=2 "root@$worker_ip" true; then
-        ready=true
-        break
-      fi
-      running "$worker" || { container logs "$worker"; exit 1; }
-      sleep 2
-    done
-    "$ready" || { echo 'Bourreau did not become reachable over SSH' >&2; exit 1; }
+  container exec -w /opt/cbrain/BrainPortal -e "CBRAIN_WORKER_HOST=$worker_ip" \
+    -e "CBRAIN_STORAGE_HOST=$portal_ip" -e "CBRAIN_LOCAL_PROFILE=$profile" "$app" bundle exec rake db:local:worker
+  echo "CBRAIN: http://localhost:$portal_port — login: admin"
+  echo "Initial password: deploy/apple-container/apple-container.sh credentials (change on first login)"
+}
 
-    # Preserve the old worker's work directories and cache on first upgrade.
-    if [ "$slurm" = 0 ]; then
-      # shellcheck disable=SC2016
-      container exec "$app" bash -e -c '
-      target="root@$1"
-      ssh_options=(-i /root/.ssh/id_cbrain_ed25519 -o BatchMode=yes -o ConnectTimeout=5)
-      if ! ssh "${ssh_options[@]}" "$target" test -f /data/.legacy-worker-imported; then
-        for dir in /data/work /data/worker-cache; do
-          if [ -d "$dir" ]; then
-            rsync -a -e "ssh ${ssh_options[*]}" "$dir/" "$target:$dir/"
-          fi
-        done
-        ssh "${ssh_options[@]}" "$target" touch /data/.legacy-worker-imported
-      fi
-      ' bash "$worker_ip"
+case "${1:-up}" in
+  build)
+    container system start
+    build_image
+    ;;
+  up|rebuild)
+    check_start_tools
+    container system start
+    prepare_state
+    if [ "${1:-up}" = rebuild ]; then
+      build_image
+      for service in "${services[@]}"; do remove_service "$service"; done
+    elif ! container image inspect "$IMAGE" >/dev/null 2>&1; then
+      build_image
     fi
-
-    container exec -w /opt/cbrain/BrainPortal -e "CBRAIN_WORKER_HOST=$worker_ip" \
-      -e "CBRAIN_STORAGE_HOST=$portal_ip" -e "CBRAIN_LOCAL_PROFILE=$profile" "$app" bundle exec rake db:local:worker
-    echo "CBRAIN: http://localhost:$portal_port — login: admin"
-    echo "Initial password: deploy/apple-container/apple-container.sh credentials (change on first login)"
+    start_profile
     ;;
   stop)
-    services=("$worker" "$app")
-    if [ "$slurm" = 1 ]; then services+=("$node"); fi
-    services+=("$db")
-    for name in "${services[@]}"; do
-      if exists "$name" && running "$name"; then container stop "$name"; fi
-    done
+    for service in "${services[@]}" "$db"; do stop_service "$service"; done
     ;;
   logs)
     container logs "$app"
@@ -251,5 +273,5 @@ SQL
   smoke) container exec -w /opt/cbrain/BrainPortal "$app" bundle exec rake db:local:smoke ;;
   credentials) sed -n 's/^CBRAIN_ADMIN_PASSWORD=/Initial admin password: /p' "$STATE/env" ;;
   shell) container exec -it -w /opt/cbrain/BrainPortal "$app" bash ;;
-  *) echo 'Usage: deploy/apple-container/apple-container.sh {build|up|stop|status|logs|credentials|shell|smoke}' >&2; exit 2 ;;
+  *) usage ;;
 esac

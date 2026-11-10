@@ -66,8 +66,8 @@ namespace :db do
           :category => name == 'Diagnostics' ? 'scientific tool' : 'background',
           :select_menu_text => "Launch #{name}")
         tool.save!
-        config = ToolConfig.find_or_initialize_by(:tool_id => tool.id, :bourreau_id => worker.id)
-        config.assign_attributes(:group_id => group.id, :version_name => 'local', :ncpus => 1)
+        config = ToolConfig.find_or_initialize_by(:tool_id => tool.id, :bourreau_id => worker.id, :version_name => 'local')
+        config.assign_attributes(:group_id => group.id, :ncpus => 1)
         config.save!
       end
       abort(worker.operation_messages) unless worker.start
@@ -82,7 +82,7 @@ namespace :db do
       abort('Bourreau is not responding') unless worker.is_alive?(:ping, true)
       provider = DataProvider.find_by_name!('LocalStorage')
       tool = Tool.find_by_name!('Diagnostics')
-      config = ToolConfig.find_by!(:tool_id => tool.id, :bourreau_id => worker.id)
+      config = ToolConfig.find_by!(:tool_id => tool.id, :bourreau_id => worker.id, :version_name => 'local')
       params = CbrainTask::Diagnostics.default_launch_args.transform_values { |v| v.is_a?(Numeric) ? v.to_s : v }
       params[:interface_userfile_ids] = []
       task = CbrainTask::Diagnostics.create!(:user_id => User.admin.id,
