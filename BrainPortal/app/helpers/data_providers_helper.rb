@@ -25,6 +25,21 @@ module DataProvidersHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # Returns the DataProvider types that can be selected in the creation form,
+  # grouped by category, in the structure form.select renders as <optgroup>s:
+  #
+  #   [ [ "Category A", [ "SomeDataProvider", "OtherDataProvider" ] ], ... ]
+  #
+  # Classes whose pretty_category_name is nil are hidden.
+  def data_provider_type_choices
+    DataProvider.preload_subclasses
+    DataProvider.descendants
+      .select(&:pretty_category_name)
+      .group_by(&:pretty_category_name)
+      .map { |category, classes| [ category, classes.map(&:name).sort ] }
+      .sort_by(&:first)
+  end
+
   # This method reformats a long SSH key text so that it
   # is folded on several lines.
   def pretty_ssh_key(ssh_key)

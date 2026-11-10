@@ -28,8 +28,12 @@
 # session.
 class ApplicationController < ActionController::Base
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
-  allow_browser versions: :modern
-
+  # Same floors as Rails' :modern, except Opera: :modern pins it at 106, the
+  # desktop release built on Chromium 120. Opera for Android reports the same
+  # "OPR/" token on its own, lower numbering (102 was current in October
+  # 2026), so :modern rejects an up-to-date Opera mobile.
+  allow_browser versions: { safari: 17.2, chrome: 120, firefox: 121, opera: 100, ie: false }
+  
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 

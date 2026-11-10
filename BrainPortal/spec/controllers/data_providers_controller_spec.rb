@@ -54,13 +54,18 @@ RSpec.describe DataProvidersController, :type => :controller do
           expect(DataProvider).to receive(:new)
           get :new
         end
-        it "should get the type list" do
-          expect(controller).to receive(:get_type_list)
-          get :new
-        end
         it "should render the new page" do
           get :new
           expect(response).to render_template(:new)
+        end
+        context "with the view rendered" do
+          render_views
+          it "should offer the data provider types grouped by category" do
+            get :new
+            type_select = Nokogiri::HTML(response.body).at_css("select#data_provider_type")
+            expect(type_select.css("optgroup").map { |group| group["label"] }).to include(FlatDirSshDataProvider.pretty_category_name)
+            expect(type_select.css("option").map { |option| option["value"] }).to include("FlatDirSshDataProvider")
+          end
         end
       end
       describe "create" do
