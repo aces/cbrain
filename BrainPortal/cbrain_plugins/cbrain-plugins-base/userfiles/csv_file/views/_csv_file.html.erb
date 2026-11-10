@@ -25,7 +25,6 @@
 <div id="sub_viewer_csvfile">
   <%= stylesheet_link_tag    'tablesorter_themes/blue/style' %>
   <%= javascript_include_tag 'jquery.tablesorter.min' %>
-  <%= javascript_include_tag 'jquery.metadata' %>
 
   <% if @userfile.is_locally_synced? %>
     <% quote, separator, invalid_encoding = @userfile.guess_csv_quote_sep %>
