@@ -1,5 +1,0 @@
-fr:
-  task_submission_notifications:
-    submitted:
-      one: "%{count} tâche %{tool} soumise; des messages suivent."
-      other: "%{count} tâches %{tool} soumises; des messages suivent."

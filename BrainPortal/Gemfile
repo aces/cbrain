@@ -86,6 +86,7 @@ group :development do
   gem "pry"
   gem "pry-byebug"
   gem "listen"
+  gem "i18n-tasks"
 end
 
 #----------------------

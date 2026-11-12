@@ -73,12 +73,12 @@
       :login => { :a => 'account_locked' },
       :site  => { :a => 'site_id' }
     }
-  ) do |t|
+  ) do |dt|
 %>
   <%
-    t.pagination
+    dt.pagination
 
-    t.column(t('.columns.login'), :login,
+    dt.column(t('.columns.login'), :login,
       :sortable => true,
       :filters  => scoped_filters_for(
         @base_scope, @scope, :account_locked,
@@ -99,27 +99,27 @@
       )
     end
 
-    t.column(t('.columns.full_name'), :full_name,
+    dt.column(t('.columns.full_name'), :full_name,
       :sortable => true
     )
 
-    t.column(t('.columns.email'), :email,
+    dt.column(t('.columns.email'), :email,
       :sortable => true
     ) { |u| mail_to u.email }
 
-    t.column(t('.columns.position'), :position,
+    dt.column(t('.columns.position'), :position,
       :sortable => true
     )
 
-    t.column(t('.columns.affiliation'), :affiliation,
+    dt.column(t('.columns.affiliation'), :affiliation,
       :sortable => true
     )
 
-    t.column(t('.columns.last_connection'), :last_connection,
+    dt.column(t('.columns.last_connection'), :last_connection,
       :sortable => true
     ) { |u| u.last_connected_at ? to_localtime(u.last_connected_at, :datetime) : t('unknown') }
 
-    t.column(t('.columns.groups'), :groups) do |u|
+    dt.column(t('.columns.groups'), :groups) do |u|
       group_names = u.assignable_groups.order(:name).pluck(:name).reject { |n| n == u.login }
       if group_names.size > 1 && group_names.size < 40
         html_tool_tip(t('.project_count', count: group_names.size), :offset_x => 60) do
@@ -134,37 +134,37 @@
       end
     end
 
-    t.column(t('.role'), :type,
+    dt.column(t('.role'), :type,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, :type)
     ) { |u| u.type.underscore.titleize }
 
-    t.column(t('.columns.site'), :site,
+    dt.column(t('.columns.site'), :site,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, Site)
     ) { |u| link_to_site_if_accessible(u.site) }
 
-    t.column(t('activerecord.attributes.user.city'), :city,
+    dt.column(t('activerecord.attributes.user.city'), :city,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, :city)
     )
 
-    t.column(t('activerecord.attributes.user.country'), :country,
+    dt.column(t('activerecord.attributes.user.country'), :country,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, :country)
     )
 
-    t.column(t('time_zone'), :time_zone,
+    dt.column(t('time_zone'), :time_zone,
       :sortable => true,
     ) { |u| u.time_zone || t('unset_parentheses') }
 
-    t.column(t('activerecord.models.file.other'), :files) do |u|
+    dt.column(t('activerecord.models.file', count: 2), :files) do |u|
       size = Userfile.where(:user_id => u.id).sum(:size)
       index_count_filter(@users_file_counts[u.id], :userfiles, { :user_id => u.id }, :show_zeros => 1) +
       (size > 0 ? " (#{t('users.common.used', size: colored_pretty_size(size))})" : "").html_safe
     end
 
-    t.column(t('activerecord.models.cbrain_task.other'), :tasks) do |u|
+    dt.column(t('activerecord.models.cbrain_task', count:2), :tasks) do |u|
       size = CbrainTask.real_tasks.where(:user_id => u.id).sum(:cluster_workdir_size)
       unk  = CbrainTask.real_tasks.where(:user_id => u.id, :cluster_workdir_size => nil).where("cluster_workdir IS NOT NULL").count
       index_count_filter(@users_task_counts[u.id], :tasks, { :user_id => u.id }, :show_zeros => 1) +
@@ -174,12 +174,12 @@
       ).html_safe
     end
 
-    t.column(t('switch'), :switch) do |u|
+    dt.column(t('switch'), :switch) do |u|
       link_to t('switch'), switch_user_path(u), :class => 'action_link', :method  => :post if u != User.admin
     end
 
     if current_user.has_role? :admin_user
-      t.column(t('.access'), :access) do |u|
+      dt.column(t('.access'), :access) do |u|
         link_to t('.access_q'),
           {
             :controller => :tool_configs,

@@ -104,7 +104,7 @@
 <h2><%= t('boutiques_help_headings.multiple') %></h2>
 <%- single_file = (file_inputs.length == 1) && (! file_inputs.first.optional) -%>
 <p>
-  <%= t(single_file ? 'boutiques_multi_task_help.intro_single' : 'boutiques_multi_task_help.intro_multiple') %>
+  <%= single_file ? t('boutiques_multi_task_help.intro_single') : t('boutiques_multi_task_help.intro_multiple') %>
   <%- if single_file -%>
     <%= t('boutiques_multi_task_help.single_file_expansion') %>
   <%- end -%>

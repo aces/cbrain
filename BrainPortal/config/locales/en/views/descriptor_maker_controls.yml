@@ -1,6 +1,0 @@
-en:
-  descriptor_maker_controls:
-    check: "Check Descriptor"
-    reorder: "Reorder properties:"
-    pad: "Pad values with spaces:"
-    preview: "Preview"

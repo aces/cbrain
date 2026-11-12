@@ -35,7 +35,7 @@
     <%= render :partial => 'available_tools_table',    :locals => { :tools  => @restricted_tools, :category => :restricted } %>
   <% end %>
 
-  <%= tb.tab(t('dataset.other')) do %>
+  <%= tb.tab(t('dataset', count: 2)) do %>
     <%= render :partial => 'available_datasets_table', :locals => { :groups => @public_groups,    :category => :open       } %>
     <%= render :partial => 'available_datasets_table', :locals => { :groups => @private_groups,   :category => :restricted } %>
   <% end %>

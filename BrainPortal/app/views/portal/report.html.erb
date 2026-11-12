@@ -425,35 +425,35 @@
 
           <% if @model_atts.include?(:user_id) %>
             <tr class="report_fix_attributes">
-              <th><%= t('labels.user_colon.other') %></th>
+              <th><%= t('labels.user_colon', count: 2) %></th>
               <td><%= user_select          :user_id,          { :selector => params[:user_id] },                                  :multiple => true, :size => 5 %></td>
             </tr>
           <% end %>
 
           <% if @model_atts.include?(:group_id) %>
             <tr class="report_fix_attributes">
-            <th><%= t('labels.group_colon.other') %></th>
+            <th><%= t('labels.group_colon', count: 2) %></th>
             <td><%= group_select         :group_id,         { :selector => params[:group_id] },                                 :multiple => true, :size => 5 %></td>
             </tr>
           <% end %>
 
           <% if @model_atts.include?(:data_provider_id) %>
             <tr class="report_fix_attributes">
-              <th><%= t('labels.data_provider_colon.other') %></th>
+              <th><%= t('labels.data_provider_colon', count: 2) %></th>
             <td><%= data_provider_select :data_provider_id, { :selector => params[:data_provider_id], :offline_is_ok => true }, :multiple => true, :size => 5 %></td>
             </tr>
           <% end %>
 
           <% if @model_atts.include?(:bourreau_id) %>
             <tr class="report_fix_attributes">
-            <th><%= t('labels.execution_server_colon.other') %></th>
+            <th><%= t('labels.execution_server_colon', count: 2) %></th>
             <td><%= bourreau_select      :bourreau_id,      { :selector => params[:bourreau_id],      :offline_is_ok => true }, :multiple => true, :size => 5 %></td>
             </tr>
           <% end %>
 
           <% if @model_atts.include?(:type) %>
             <tr class="report_fix_attributes">
-            <th><%= t('labels.type_colon.other') %></th>
+            <th><%= t('labels.type_colon', count: 2) %></th>
             <td>
             <% if @model <= Userfile %>
               <%= userfile_type_select :type, {:selector => params[:type]} , :multiple => true, :size => 5 %>
@@ -470,7 +470,7 @@
 
           <% if @model_atts.include?(:status) %>
             <tr class="report_fix_attributes">
-            <th><%= t('labels.status_colon.other') %></th>
+            <th><%= t('labels.status_colon', count: 2) %></th>
               <td><%= task_status_select :status, {:selector => params[:status]}, :multiple => true, :size => 5 %></td>
             </tr>
           <% end %>
