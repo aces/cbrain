@@ -1,0 +1,123 @@
+Ce document décrit les différents types de serveurs de stockage
+implémentés dans CBRAIN. Ils ne sont pas tous utiles dans tous les cas. En production,
+le type recommandé est <strong>EnCbrainSmartDataProvider</strong>
+pour le stockage de données officiel et <strong>FlatDirSshDataProvider</strong> pour le stockage
+personnel des utilisateurs.
+
+<p>
+De nombreux types, en trois variantes :
+
+<dl>
+    <dt>Local</dt>
+    <dd><em>Type</em><strong>Local</strong>DataProviders
+    stockent leurs informations sur le système de fichiers local où réside le service CBRAIN ; cela signifie que les fichiers ne seront pas accessibles depuis
+    d'autres composants distants de l'installation CBRAIN, par exemple
+    des serveurs de calcul situés sur d'autres hôtes ou supercalculateurs. Leur
+    avantage est qu'ils sont rapides d'accès, et le portail CBRAIN n'aura
+    pas besoin de faire une copie locale des fichiers pour les traiter
+    ou les visualiser.
+    </dd>
+
+    <dt>Ssh</dt>
+    <dd><em>Type</em><strong>Ssh</strong>DataProviders
+    stockent leurs informations sur un système de fichiers situé sur une machine UNIX distante
+    accessible via un compte SSH ; le contenu d'un fichier est récupéré et mis en cache en utilisant
+    SFTP ou la commande <em>rsync</em> et copié localement chaque fois qu'un
+    composant de CBRAIN (y compris le portail) a besoin d'y accéder.
+    </dd>
+
+    <dt>Smart</dt>
+    <dd><em>Type</em><strong>Smart</strong>DataProviders
+    sont intelligents en ce sens qu'ils se comporteront soit comme une variante <strong>Local</strong> soit
+    comme une variante <strong>Ssh</strong> du même type. Le choix est effectué par
+    chaque composant CBRAIN (Portail, bourreau) indépendamment. Chaque
+    composant compare le nom d'hôte où il s'exécute au <em>Remote Hostname</em>
+    configuré pour le serveur ; s'ils correspondent, le DataProvider <strong>Smart</strong>
+    se comportera comme un serveur <strong>Local</strong>, contournant toute forme
+    de mise en cache. S'ils ne correspondent pas, il se comportera comme un serveur <strong>Ssh</strong>,
+    transférant alors les fichiers et les mettant en cache au besoin.
+    </dd>
+</dl>
+
+<hr>
+
+Le reste de ce document décrit les différents types disponibles, qui
+diffèrent par <em>le type de structure de fichiers</em> qu'ils utilisent pour stocker
+les fichiers des utilisateurs.
+
+<strong>FlatDir*DataProvider :</strong>
+Les fichiers du serveur sont stockés dans un répertoire plat, d'un
+seul niveau, spécifié directement par l'attribut <em>Remote Directory</em> de l'objet. Le fichier "hello" est stocké dans un chemin de ce type :
+<pre>    /remote_dir/hello</pre>
+Notez que pour des raisons historiques, <strong>SshDataProvider</strong>
+est un synonyme de <strong>FlatDirSshDataProvider</strong>.
+
+<p>
+
+<strong>EnCbrain*DataProvider :</strong> Les
+fichiers sont stockés dans un chemin déterminé de manière unique par
+l'ID du fichier. Un fichier nommé "hello" avec l'ID 41233 sera stocké
+ainsi :
+<pre>    /root_dir/04/12/33/hello</pre>
+Ces serveurs ont l'avantage que les fichiers peuvent être renommés et
+réaffectés à de nouveaux propriétaires avec des modifications minimales de la structure du système de fichiers.
+Les EnCbrain*DataProviders sont les serveurs
+recommandés pour les déploiements en production. Le répertoire de données où
+les fichiers sont stockés <em>n'est pas destiné à être consulté ou modifié par
+des moyens externes</em>, c'est-à-dire qu'aucun utilisateur ne devrait accéder
+directement aux fichiers à cet endroit.
+<p>
+
+<strong>Vault*DataProvider :</strong>
+Les fichiers du serveur sont stockés dans un répertoire plat, deux niveaux
+de profondeur, spécifié par l'attribut <em>Remote Directory</em>
+de l'objet et par le nom de connexion de l'utilisateur. Le fichier "hello"
+de l'utilisateur "myuser" est donc stocké à un chemin de ce type :
+<pre>    /remote_dir/myuser/hello</pre>
+Sur ce type de serveur, il n'est pas possible de réaffecter la propriété
+d'un fichier.
+<p>
+
+<strong>IncomingVault*DataProvider :</strong> Cette classe se comporte comme le
+VaultSshDataProvider, sauf qu'elle est navigable. Lors de la navigation, seul
+le sous-répertoire nommé comme le login de l'utilisateur courant sera
+visible. Idéal pour accéder à un <em>Remote Directory</em> en zone restreinte pour du contenu entrant, où les utilisateurs
+peuvent téléverser des fichiers dans ces sous-répertoires par d'autres canaux. Une configuration typique
+utiliserait également le <em>Remote Directory</em> comme racine pour
+un serveur SFTP ou FTP entrant (c'est en fait la raison du nom de ce type de serveur).
+<p>
+
+<strong>S3DataProvider :</strong> Cette classe se connecte au service de stockage cloud S3 d'Amazon.
+Les fichiers seront stockés dans un bucket nommé
+"gbrain_{nom}" où nom est le nom du serveur.
+L'utilisation de ce serveur nécessite d'obtenir une clé d'accès
+et un token secret. Ne renommez pas ce serveur si des fichiers
+y sont enregistrés, sauf si vous renommez également le bucket ! Toutes
+les FileCollections sont uploadées et téléchargées en .tar.gz, donc
+ce DP n'est pas particulièrement efficace pour les grands jeux de données.
+
+<p>
+
+<strong>S3FlatDataProvider :</strong> C'est une classe qui se connecte au
+service de stockage cloud S3 d'Amazon en utilisant le nouveau SDK AWS pour S3 Version 3.0.
+Un bucket et un chemin de départ doivent être spécifiés et avoir été créés
+via AWS. L'utilisation de ce serveur nécessite également une clé d'accès
+et un token secret pour Amazon Web Services. Pour plus d'informations, veuillez visiter
+<a href="https://aws.amazon.com" title="Amazon AWS">https://aws.amazon.com</a>.
+Les fichiers seront stockés en tant qu'objets dans le magasin S3Object et le serveur se comportera essentiellement
+comme un serveur FlatDataProvider.
+
+<p>
+
+<strong>SingSquashfsDataProvider</strong> Cette classe se connecte à un ensemble de
+un ou plusieurs fichiers squashfs (tous nommés avec l'extension <em>.squashfs</em>) via
+un handler de conteneur Singularity. Les prérequis sont :<br>
+<ul>
+    <li>que tous les fichiers squashfs se trouvent dans le <em>Physical Data Location</em>,</li>
+    <li>que l'image Singularity s'y trouve également et soit nommée <em><%= SingSquashfsDataProvider::SINGULARITY_IMAGE_BASENAME %></em>,</li>
+    <li>que cette image contienne un système Linux de base avec au moins <em>rsync</em> installé,</li>
+    <li>et que le chemin vers la racine des données à l'intérieur du conteneur soit fourni dans le <em>Containerized Data Path</em> sous la section <em>Containerized Storage Configuration</em>.</li>
+</ul>
+Notez que ce DP est déjà 'smart' : si le <em>Remote Host</em>
+configuré pour lui correspond à l'hôte courant, il n'effectuera pas son
+opération de données via un master SSH.

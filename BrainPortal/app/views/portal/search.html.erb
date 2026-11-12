@@ -114,7 +114,7 @@
   <% end %>
 <% end %>
 
-<% result_table.(:tcs, t('tool_version.other')) do |tc, r, c| %>
+<% result_table.(:tcs, t('tool_version', count: 2)) do |tc, r, c| %>
   <% if current_user.has_role?(:admin_user) %>
     <%= tc.tool.name %>@<%= tc.bourreau.name%> : <%= link_to tc.version_name, tool_config_path(tc) %>
   <%  else %>

@@ -193,7 +193,7 @@ class UserfilesController < ApplicationController
     @userfiles   = Userfile.find_all_accessible_by_user(current_user, :access_requested => :write).where(:id => file_ids).all.to_a
     @have_parent = @userfiles.any? { |u| u.parent_id  }
     if ! ( @userfiles.size >= 2  || @have_parent )
-      render :html  => helpers.content_tag(:span, helpers.t('viewer_feedback.selection_html'), :class => 'warning')
+      render :html  => helpers.content_tag(:span, t('viewer_feedback.selection_html').html_safe, :class => 'warning')
       return
     end
 

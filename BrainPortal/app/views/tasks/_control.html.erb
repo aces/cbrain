@@ -55,7 +55,7 @@
     </td>
 
     <td rowspan="2">
-      <strong><%= t('labels.description_colon.one') %></strong><br>
+      <strong><%= t('labels.description_colon', count: 1) %></strong><br>
       <%= text_area_tag "cbrain_task[description]", @task.description, :rows => 4, :cols => 35 %><br>
       <div class="field_explanation"><%= t('.description_note') %></div>
     </td>
@@ -68,7 +68,7 @@
     </td>
 
     <td>
-      <strong><%= t('labels.group_colon.one') %></strong><br>
+      <strong><%= t('labels.group_colon', count: 1) %></strong><br>
       <%= group_select "cbrain_task[group_id]", @task.group_id %>
     </td>
   </tr>

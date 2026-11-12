@@ -246,7 +246,7 @@ class UsersController < ApplicationController
 
     # IP whitelist
     params[:meta][:ip_whitelist].split(',').each do |ip|
-      IPAddr.new(ip.strip) rescue cb_error t(t('users.errors.invalid_whitelist_ip', ip: ip))
+      IPAddr.new(ip.strip) rescue cb_error t('users.errors.invalid_whitelist_ip', ip: ip)
     end if
       params[:meta] && params[:meta][:ip_whitelist]
 

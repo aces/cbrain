@@ -53,9 +53,10 @@ data:
 # Find translate calls
 search:
   ## Paths or `Find.find` patterns to search in:
-  # paths:
-  #  - app/
-
+  paths:
+   - app/
+   - lib/
+   - cbrain_plugins/
   ## Root directories for relative keys resolution.
   # relative_roots:
   #   - app/controllers
@@ -79,13 +80,15 @@ search:
     - app/assets/fonts
     - app/assets/videos
     - app/assets/builds
+    - app/assets/javascripts/chosen_1.8.7.jquery.min.js
+    - cbrain_plugins/installed-plugins
 
   ## Alternatively, the only files or `File.fnmatch patterns` to search in `paths`:
   ## If specified, this settings takes priority over `exclude`, but `exclude` still applies.
   # only: ["*.rb", "*.html.slim"]
 
   ## If `strict` is `false`, guess usages such as t("categories.#{category}.title"). The default is `true`.
-  # strict: true
+  strict: false
 
   ## Allows adding ast_matchers for finding translations using the AST-scanners
   ## The available matchers are:
@@ -96,9 +99,9 @@ search:
   ##     Matches ActionMailer's default_i18n_subject method
   ##
   ## To implement your own, please see `I18n::Tasks::Scanners::AstMatchers::BaseMatcher`.
-  # ast_matchers:
-  #   - 'I18n::Tasks::Scanners::AstMatchers::RailsModelMatcher'
-  #   - 'I18n::Tasks::Scanners::AstMatchers::DefaultI18nSubjectMatcher'
+  ast_matchers:
+    - 'I18n::Tasks::Scanners::AstMatchers::RailsModelMatcher'
+    - 'I18n::Tasks::Scanners::AstMatchers::DefaultI18nSubjectMatcher'
 
   ## Multiple scanners can be used. Their results are merged.
   ## The options specified above are passed down to each scanner. Per-scanner options can be specified as well.
@@ -142,8 +145,10 @@ search:
 # - '{devise,simple_form}.*'
 
 ## Consider these keys used:
-# ignore_unused:
-# - 'activerecord.attributes.*'
+ignore_unused:
+  - 'activerecord.{attributes,models,errors}.*'
+  - 'attributes.*'
+  - 'will_paginate.*'
 # - '{devise,kaminari,will_paginate}.*'
 # - 'simple_form.{yes,no}'
 # - 'simple_form.{placeholders,hints,labels}.*'
