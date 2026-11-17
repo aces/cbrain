@@ -503,6 +503,7 @@ class BourreauWorker < Worker
     end # case 'status' is 'New', 'Data Ready', 'Recover*' and 'Restart*'
 
 
+    enqueue_post_task_cleanup_policies(task)
 
     #####################################################################
     # Task notification section
@@ -602,6 +603,40 @@ class BourreauWorker < Worker
       Message.send_message(User.find(user_id), atts.merge(:variable_text => "Number of tasks blocked: #{count}"))
     end
     return true # means quota is exceeded
+  end
+
+  # Enqueues the post-task cleanup policies for a task that has just finished
+  def enqueue_post_task_cleanup_policies(task)
+    return unless task.status.in?(CbrainTask::FINAL_STATUS)
+
+    if task.should_cleanup_component?(:workdir)
+     BackgroundActivity::RemoveTaskWorkdir.new(
+        :user_id            => task.user_id,
+        :remote_resource_id => task.bourreau_id,
+        :status             => 'InProgress',
+        :items              => [ task.id ]
+      ).save
+    end
+
+    if task.should_cleanup_component?(:inputs)
+      BackgroundActivity::RemoveTaskInputs.new(
+        :user_id            => task.user_id,
+        :remote_resource_id => task.bourreau_id,
+        :status             => 'InProgress',
+        :items              => [ task.id ]
+      ).save
+    end
+
+    if task.should_cleanup_component?(:outputs)
+      BackgroundActivity::RemoveTaskOutputs.new(
+        :user_id            => task.user_id,
+        :remote_resource_id => task.bourreau_id,
+        :status             => 'InProgress',
+        :items              => [ task.id ]
+      ).save
+    end
+  rescue => e
+    Rails.logger.error "Post-task cleanup policies hook crashed for task ##{task.id}: #{e.message}"
   end
 
 end
