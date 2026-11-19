@@ -141,6 +141,8 @@ Rails.application.routes.draw do
       get  'stream/*file_path' => 'userfiles#stream'
       get  'display'
       post 'extract_from_collection'
+      post 'trust'
+      post 'trust_creator'
     end
     collection do
       post   'download'
