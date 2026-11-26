@@ -48,7 +48,7 @@ sleep 20 # a small initial wait for things to settle
 status=7 # What curl returns if socket doesn't exist or is not connected
 while test -e $socket ; do
   # Aliveness check, done every 20 minutes
-  curl -f --head --unix-socket $socket "http://fakehost/controls/ping.xml?watcher=$$" >/dev/null 2>/dev/null
+  curl -f --head --unix-socket $socket "http://128.0.0.1/controls/ping.xml?watcher=$$" >/dev/null 2>/dev/null
   status=$?
   test $status -ne 0 && break
 
