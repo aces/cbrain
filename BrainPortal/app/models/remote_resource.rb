@@ -149,6 +149,7 @@ class RemoteResource < ApplicationRecord
     railsenv ||= (Rails.env || 'production')
     myconfigs  = ApplicationRecord.configurations
     myconfig   = myconfigs.find_db_config(railsenv).configuration_hash.dup
+                 .transform_keys { |k| k.to_s }
     myconfig
   end
 
