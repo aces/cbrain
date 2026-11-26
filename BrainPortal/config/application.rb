@@ -55,7 +55,8 @@ module CbrainRailsPortal
       ActiveSupport::TimeZone,
       ActiveSupport::TimeWithZone,
       ActionController::Parameters,
-      Set
+      Set,
+      ActionDispatch::Flash::FlashHash
     ]
 
     # Schedule the validation code to run after the application boots

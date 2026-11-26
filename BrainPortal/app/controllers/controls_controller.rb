@@ -113,7 +113,10 @@ class ControlsController < ApplicationController
   private
 
   def process_command(command) #:nodoc:
-    puts "Received COMMAND: #{command.inspect}" rescue "Exception in inspecting command?!?"
+    timestamp = Time.now.localtime.strftime("%Y-%m-%d %H:%M:%S")
+    prettycom = command.inspect rescue "Exception in inspecting command?!?"
+    # This goes to the app's stdout, but we could send this to the logger too.
+    puts "#{timestamp} Received COMMAND: #{prettycom}"
 
     myself = RemoteResource.current_resource
     myself.class.process_command(command)

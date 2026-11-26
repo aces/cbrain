@@ -906,12 +906,12 @@ class Userfile < ApplicationRecord
   # Otherwise, returns a Pathname object.
   def self.public_path(public_file=nil)
     base = Pathname.new("/cbrain_plugins/userfiles") + self.to_s.underscore
-    return base if public_file.to_s.blank?
+    return base.to_s if public_file.to_s.blank?
     public_file = Pathname.new(public_file.to_s).cleanpath
     raise "Public file path outside of userfile plugin." if public_file.absolute? || public_file.to_s =~ /\A\.\./
     base = base + public_file
     return nil unless File.exist?((Rails.root + "public").to_s + base.to_s)
-    base
+    base.to_s
   end
 
   # Add a viewer to the calling class.

@@ -81,4 +81,11 @@ Rails.application.configure do
   #
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+
+  # CBRAIN logging preferences (overrides the settings above)
+  config.log_level = :info
+  config.logger = ActiveSupport::Logger.new("#{Rails.root}/log/#{Rails.env}.log")
+  config.log_tags = [ ]
+  config.log_formatter = nil # not used in our custom logger
+
 end
