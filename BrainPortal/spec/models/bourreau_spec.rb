@@ -58,8 +58,7 @@ describe Bourreau do
       allow(bourreau).to receive(:has_remote_control_info?).and_return(true)
       allow(bourreau).to receive(:start_tunnels).and_return(true)
       allow(bourreau).to receive(:write_to_remote_shell_command)
-      allow(File).to receive(:read).and_return("Bourreau Started")
-      allow(File).to receive(:unlink)
+      allow(bourreau).to receive(:read_and_delete_captfile).and_return("Bourreau Started")
     end
     it "should set online to true" do
       bourreau.online = false
@@ -87,7 +86,7 @@ describe Bourreau do
       expect(bourreau.start).to be_truthy
     end
     it "should return false if the server launch failed" do
-      allow(File).to receive(:read).and_return("Something wrong")
+      allow(bourreau).to receive(:read_and_delete_captfile).and_return("Something Wrong")
       expect(bourreau.start).to be_falsey
     end
   end

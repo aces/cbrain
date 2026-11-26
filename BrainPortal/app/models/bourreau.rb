@@ -195,8 +195,8 @@ class Bourreau < RemoteResource
     start_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; script/cbrain_remote_ctl start -e #{myrailsenv.to_s.bash_escape} 2>&1"
     self.write_to_remote_shell_command(start_command, :stdout => captfile) { |io| io.write(db_yml) }
 
-    out = File.read(captfile) rescue ""
-    File.unlink(captfile) rescue true
+    out = read_and_delete_captfile(captfile)
+
     all_ok = (out =~ /Bourreau Started/i) # from output of 'cbrain_remote_ctl'
     logit.( "Execution Server #{self.name} #{all_ok ? 'started' : 'failed'}.\n" +
             "Command: #{start_command}\n" +
@@ -209,6 +209,12 @@ class Bourreau < RemoteResource
     return false
   #ensure
   #  Rails.logger.debug self.operation_messages if self.operation_messages.present?
+  end
+
+  def read_and_delete_captfile(captfilepath) #:nodoc:
+    content = File.read(captfilepath) rescue ""
+    File.unlink(captfilepath) rescue true
+    content
   end
 
   # Stop a Bourreau remotely. The requirements for this to work are
