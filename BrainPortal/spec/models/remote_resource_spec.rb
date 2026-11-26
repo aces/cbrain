@@ -44,7 +44,7 @@ describe RemoteResource do
   end
   describe "#current_resource_db_config" do
     it "should return a hash with db configuration" do
-      expect(RemoteResource.current_resource_db_config).to have_key(:database)
+      expect(RemoteResource.current_resource_db_config).to have_key("database")
     end
   end
   describe "#after_destroy" do
